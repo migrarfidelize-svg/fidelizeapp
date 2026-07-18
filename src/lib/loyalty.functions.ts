@@ -232,23 +232,44 @@ export const searchCustomer = createServerFn({ method: "POST" })
   });
 
 // ---------- Onboarding ----------
+const SLUG_RESERVED = new Set(["app", "admin", "auth", "onboarding", "api", "l", "c", "precos", "termos", "privacidade", "404", "bloqueado"]);
+
+const establishmentSchema = z.object({
+  name: z.string({ required_error: "Informe o nome da empresa." })
+    .trim()
+    .min(2, "O nome da empresa precisa ter pelo menos 2 caracteres.")
+    .max(80, "O nome da empresa pode ter no máximo 80 caracteres."),
+  slug: z.string({ required_error: "Informe o endereço público." })
+    .trim()
+    .toLowerCase()
+    .min(3, "O endereço público precisa ter pelo menos 3 caracteres.")
+    .max(60, "O endereço público pode ter no máximo 60 caracteres.")
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use apenas letras minúsculas, números e hífens (sem espaços ou acentos).")
+    .refine((v) => !SLUG_RESERVED.has(v), "Este endereço é reservado. Escolha outro."),
+  description: z.string().max(500, "A descrição pode ter no máximo 500 caracteres.").optional(),
+  address: z.string().max(200, "O endereço pode ter no máximo 200 caracteres.").optional(),
+  phone: z.string().max(20, "Telefone inválido.").optional(),
+  whatsapp: z.string().max(20, "WhatsApp inválido.").optional(),
+  primary_color: z.string().max(20).default("#5B21B6"),
+  accent_color: z.string().max(20).default("#F97066"),
+  logo_url: z.string().max(2000, "Link do logo muito longo.").url("Link do logo inválido.").optional().or(z.literal("")).transform((v) => v || undefined),
+  campaign_name: z.string().trim().min(2, "O nome da campanha precisa ter pelo menos 2 caracteres.").max(80).default("Cartão Fidelidade"),
+  stamps_required: z.number({ invalid_type_error: "Número de carimbos inválido." }).int().min(2, "Mínimo de 2 carimbos.").max(50, "Máximo de 50 carimbos.").default(10),
+  reward_title: z.string({ required_error: "Descreva a recompensa da campanha." }).trim().min(2, "Descreva a recompensa com pelo menos 2 caracteres.").max(120, "A recompensa pode ter no máximo 120 caracteres."),
+  reward_description: z.string().max(500, "Os detalhes da recompensa podem ter no máximo 500 caracteres.").optional(),
+});
+
+function parseEstablishmentInput(d: unknown) {
+  const r = establishmentSchema.safeParse(d);
+  if (r.success) return r.data;
+  // Retorna a primeira mensagem em pt-BR (sempre já traduzida acima).
+  const first = r.error.errors[0];
+  throw new Error(first?.message ?? "Dados inválidos. Revise o formulário.");
+}
+
 export const createEstablishment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({
-    name: z.string().trim().min(2).max(80),
-    slug: z.string().trim().min(3).max(60).regex(/^[a-z0-9-]+$/),
-    description: z.string().max(500).optional(),
-    address: z.string().max(200).optional(),
-    phone: z.string().max(20).optional(),
-    whatsapp: z.string().max(20).optional(),
-    primary_color: z.string().max(20).default("#5B21B6"),
-    accent_color: z.string().max(20).default("#F97066"),
-    logo_url: z.string().url().max(500).optional().or(z.literal("")).transform((v) => v || undefined),
-    campaign_name: z.string().trim().min(2).max(80).default("Cartão Fidelidade"),
-    stamps_required: z.number().int().min(2).max(50).default(10),
-    reward_title: z.string().trim().min(2).max(120),
-    reward_description: z.string().max(500).optional(),
-  }).parse(d))
+  .inputValidator((d: unknown) => parseEstablishmentInput(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: est, error } = await supabase.from("establishments").insert({
@@ -257,7 +278,7 @@ export const createEstablishment = createServerFn({ method: "POST" })
     }).select("*").single();
     if (error) {
       if (error.code === "23505") throw new Error("Este endereço já está em uso, escolha outro.");
-      throw new Error(error.message);
+      throw new Error("Não foi possível criar a empresa. Tente novamente em instantes.");
     }
     await supabase.from("establishment_members").insert({ establishment_id: est.id, user_id: userId, role: "owner" });
     const { data: camp, error: ce } = await supabase.from("campaigns").insert({
