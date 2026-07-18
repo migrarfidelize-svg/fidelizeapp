@@ -472,9 +472,3 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
     </div>
   );
 }
-      <DialogFooter>
-        <Button onClick={onSubmit} disabled={saving}>{saving ? "Salvando…" : editing ? "Salvar alterações" : "Criar campanha"}</Button>
-      </DialogFooter>
-    </DialogContent>
-  );
-}
