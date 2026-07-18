@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Copy, Download, Share2, FileImage, FileText, Printer, Palette, Settings2, Sparkles, Loader2, Image as ImageIcon, Save, Trash2, CheckCircle2, AlertTriangle, Layers } from "lucide-react";
+import { Copy, Download, Share2, FileImage, FileText, Printer, Palette, Settings2, Sparkles, Loader2, Image as ImageIcon, Save, Trash2, CheckCircle2, AlertTriangle, Layers, Undo2, Redo2, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import QRCode from "qrcode";
 import { toPng, toJpeg } from "html-to-image";
@@ -24,18 +24,95 @@ export const Route = createFileRoute("/_authenticated/app/qrcodes")({
   component: QRCodes,
 });
 
-const SEGMENT_DEFAULTS: Record<Segment, { primary: string; accent: string; bg: string }> = {
-  espetinhos: { primary: "#c1121f", accent: "#f77f00", bg: "#fff8f0" },
-  cafeteria: { primary: "#6f4e37", accent: "#c19a6b", bg: "#fdf6ec" },
-  barbearia: { primary: "#1f2937", accent: "#d4a017", bg: "#f5f3ef" },
-  petshop: { primary: "#2563eb", accent: "#f59e0b", bg: "#eff6ff" },
-  lavajato: { primary: "#0284c7", accent: "#38bdf8", bg: "#f0f9ff" },
-  salao: { primary: "#be185d", accent: "#f472b6", bg: "#fdf2f8" },
-  restaurante: { primary: "#b91c1c", accent: "#f59e0b", bg: "#fff7ed" },
-  oficina: { primary: "#1f2937", accent: "#f97316", bg: "#f3f4f6" },
-  loja: { primary: "#7c3aed", accent: "#22d3ee", bg: "#f5f3ff" },
-  outro: { primary: "#7c3aed", accent: "#f472b6", bg: "#faf5ff" },
+type SegmentPreset = {
+  primary: string; accent: string; bg: string; text: string;
+  title: string; subtitle: string; ctaNearQR: string; ctaFooter: string; rewardHint: string;
 };
+const SEGMENT_PRESETS: Record<Segment, SegmentPreset> = {
+  espetinhos: {
+    primary: "#c1121f", accent: "#f77f00", bg: "#fff8f0", text: "#1a0a05",
+    title: "Seu próximo espetinho pode ser grátis!",
+    subtitle: "Escaneie o QR Code, crie seu cartão digital e acumule carimbos a cada pedido. Sem app, sem burocracia.",
+    ctaNearQR: "Aponte a câmera e participe",
+    ctaFooter: "Peça, carimbe, ganhe.",
+    rewardHint: "Complete {n} carimbos e ganhe {reward}.",
+  },
+  cafeteria: {
+    primary: "#6f4e37", accent: "#c19a6b", bg: "#fdf6ec", text: "#1c1208",
+    title: "Cada café te leva mais perto de um grátis.",
+    subtitle: "Cadastre-se em segundos e comece a colecionar carimbos digitais a cada visita.",
+    ctaNearQR: "Aponte a câmera do celular",
+    ctaFooter: "Beba, colecione, ganhe.",
+    rewardHint: "A cada {n} cafés, o próximo é por nossa conta.",
+  },
+  barbearia: {
+    primary: "#1f2937", accent: "#d4a017", bg: "#f5f3ef", text: "#0f172a",
+    title: "Estilo que rende recompensa.",
+    subtitle: "Escaneie, crie seu cartão fidelidade e ganhe cortes exclusivos a cada visita.",
+    ctaNearQR: "Escaneie para entrar",
+    ctaFooter: "Corte, marque, ganhe.",
+    rewardHint: "Complete {n} cortes e ganhe {reward}.",
+  },
+  petshop: {
+    primary: "#2563eb", accent: "#f59e0b", bg: "#eff6ff", text: "#0f172a",
+    title: "Mais mimos pro seu pet a cada visita.",
+    subtitle: "Cadastre-se e acumule carimbos em banhos, tosas e produtos.",
+    ctaNearQR: "Aponte a câmera",
+    ctaFooter: "Cuide, colecione, ganhe.",
+    rewardHint: "A cada {n} visitas, ganhe {reward}.",
+  },
+  lavajato: {
+    primary: "#0284c7", accent: "#38bdf8", bg: "#f0f9ff", text: "#0c1e2b",
+    title: "Lave, junte carimbos, ganhe um grátis.",
+    subtitle: "Cartão fidelidade digital sem baixar nada. Rápido, fácil e sempre no seu celular.",
+    ctaNearQR: "Escaneie e participe",
+    ctaFooter: "Brilho recompensado.",
+    rewardHint: "Complete {n} lavagens e ganhe {reward}.",
+  },
+  salao: {
+    primary: "#be185d", accent: "#f472b6", bg: "#fdf2f8", text: "#2a0a1c",
+    title: "Beleza que vira recompensa.",
+    subtitle: "Escaneie o QR Code, monte seu cartão fidelidade e ganhe serviços exclusivos.",
+    ctaNearQR: "Aponte a câmera",
+    ctaFooter: "Cuide-se, colecione, ganhe.",
+    rewardHint: "A cada {n} visitas, ganhe {reward}.",
+  },
+  restaurante: {
+    primary: "#b91c1c", accent: "#f59e0b", bg: "#fff7ed", text: "#1a0a05",
+    title: "Comer aqui tem recompensa.",
+    subtitle: "Cadastre-se e ganhe carimbos a cada pedido. Sem baixar aplicativo.",
+    ctaNearQR: "Aponte a câmera do celular",
+    ctaFooter: "Peça, carimbe, ganhe.",
+    rewardHint: "A cada {n} pedidos, ganhe {reward}.",
+  },
+  oficina: {
+    primary: "#1f2937", accent: "#f97316", bg: "#f3f4f6", text: "#0f172a",
+    title: "Cuide do seu carro e ganhe por isso.",
+    subtitle: "Cartão fidelidade digital para clientes fiéis. Escaneie e comece agora.",
+    ctaNearQR: "Escaneie para participar",
+    ctaFooter: "Manutenção que compensa.",
+    rewardHint: "A cada {n} serviços, ganhe {reward}.",
+  },
+  loja: {
+    primary: "#7c3aed", accent: "#22d3ee", bg: "#f5f3ff", text: "#1a0f2e",
+    title: "Compre, colecione, ganhe.",
+    subtitle: "Escaneie o QR Code e monte seu cartão fidelidade em segundos.",
+    ctaNearQR: "Aponte a câmera",
+    ctaFooter: "Sua fidelidade vale prêmio.",
+    rewardHint: "A cada {n} compras, ganhe {reward}.",
+  },
+  outro: {
+    primary: "#7c3aed", accent: "#f472b6", bg: "#faf5ff", text: "#1a0f2e",
+    title: "Ganhe recompensas a cada visita!",
+    subtitle: "Escaneie o QR Code, crie seu cartão fidelidade digital e comece a acumular carimbos.",
+    ctaNearQR: "Aponte a câmera e participe",
+    ctaFooter: "Escaneie e participe agora",
+    rewardHint: "Complete {n} carimbos e ganhe {reward}.",
+  },
+};
+const SEGMENT_DEFAULTS: Record<Segment, { primary: string; accent: string; bg: string }> = Object.fromEntries(
+  (Object.keys(SEGMENT_PRESETS) as Segment[]).map((k) => [k, { primary: SEGMENT_PRESETS[k].primary, accent: SEGMENT_PRESETS[k].accent, bg: SEGMENT_PRESETS[k].bg }])
+) as Record<Segment, { primary: string; accent: string; bg: string }>;
 
 // ============ WCAG contrast helpers ============
 function hexToRgb(hex: string) {
@@ -346,14 +423,88 @@ function QRCodes() {
     finally { setBatchNode(null); setExporting(false); }
   }
 
+  // ---------- History (undo/redo) ----------
+  const HISTORY_LIMIT = 60;
+  const historyRef = useRef<{ past: string[]; future: string[]; lastSig: string }>({ past: [], future: [], lastSig: "" });
+  const isApplyingRef = useRef(false);
+  const [historyTick, setHistoryTick] = useState(0);
+  const stateSig = JSON.stringify(currentState());
+  useEffect(() => {
+    if (isApplyingRef.current) { isApplyingRef.current = false; historyRef.current.lastSig = stateSig; return; }
+    if (historyRef.current.lastSig === stateSig) return;
+    const t = setTimeout(() => {
+      const h = historyRef.current;
+      if (h.lastSig && h.lastSig !== stateSig) {
+        h.past.push(h.lastSig);
+        if (h.past.length > HISTORY_LIMIT) h.past.shift();
+        h.future = [];
+      }
+      h.lastSig = stateSig;
+      setHistoryTick((x) => x + 1);
+    }, 350);
+    return () => clearTimeout(t);
+  }, [stateSig]);
+  const canUndo = historyRef.current.past.length > 0;
+  const canRedo = historyRef.current.future.length > 0;
+  function undo() {
+    const h = historyRef.current;
+    const prev = h.past.pop(); if (!prev) return;
+    h.future.push(h.lastSig); h.lastSig = prev;
+    isApplyingRef.current = true;
+    applyState(JSON.parse(prev)); setHistoryTick((x) => x + 1);
+  }
+  function redo() {
+    const h = historyRef.current;
+    const next = h.future.pop(); if (!next) return;
+    h.past.push(h.lastSig); h.lastSig = next;
+    isApplyingRef.current = true;
+    applyState(JSON.parse(next)); setHistoryTick((x) => x + 1);
+  }
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const mod = e.ctrlKey || e.metaKey;
+      if (!mod) return;
+      const target = e.target as HTMLElement | null;
+      // still allow shortcuts even in inputs — designers expect it
+      if (e.key.toLowerCase() === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
+      else if ((e.key.toLowerCase() === "z" && e.shiftKey) || e.key.toLowerCase() === "y") { e.preventDefault(); redo(); }
+      void target;
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // ---------- Segment presets ----------
+  function applySegmentPreset(seg: Segment, mode: "all" | "colors" | "texts" = "all") {
+    const p = SEGMENT_PRESETS[seg];
+    setSegment(seg);
+    if (mode === "all" || mode === "colors") {
+      setPrimaryColor(p.primary); setAccentColor(p.accent); setBackgroundColor(p.bg); setTextColor(p.text);
+    }
+    if (mode === "all" || mode === "texts") {
+      setTitle(p.title); setSubtitle(p.subtitle); setCtaNearQR(p.ctaNearQR); setCtaFooter(p.ctaFooter);
+      const n = activeCampaign?.stamps_required ?? 10;
+      const r = activeCampaign?.reward_title?.toLowerCase() ?? "uma recompensa exclusiva";
+      setRewardTextOverride(p.rewardHint.replace("{n}", String(n)).replace("{reward}", r));
+    }
+    toast.success(`Preset "${SEGMENT_LABEL[seg]}" aplicado`);
+  }
+
   if (!est) return <div className="text-muted-foreground">Carregando…</div>;
 
   return (
     <div className="space-y-6">
-      <div>
-        <div className="text-xs uppercase tracking-widest text-muted-foreground">Divulgação</div>
-        <h1 className="font-display text-3xl font-bold">Divulgue seu programa de fidelidade</h1>
-        <p className="text-sm text-muted-foreground mt-1 max-w-2xl">Crie materiais personalizados com QR Code — com sangria para impressão, validação de leitura e variações salvas.</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="text-xs uppercase tracking-widest text-muted-foreground">Divulgação</div>
+          <h1 className="font-display text-3xl font-bold">Divulgue seu programa de fidelidade</h1>
+          <p className="text-sm text-muted-foreground mt-1 max-w-2xl">Crie materiais personalizados com QR Code — com sangria para impressão, validação de leitura e variações salvas.</p>
+        </div>
+        <div className="flex items-center gap-1 rounded-lg border bg-card p-1">
+          <Button size="sm" variant="ghost" onClick={undo} disabled={!canUndo} title="Desfazer (Ctrl+Z)"><Undo2 className="h-4 w-4" /></Button>
+          <Button size="sm" variant="ghost" onClick={redo} disabled={!canRedo} title="Refazer (Ctrl+Shift+Z)"><Redo2 className="h-4 w-4" /></Button>
+          <span className="text-[11px] text-muted-foreground px-2">{historyRef.current.past.length} passos</span>
+        </div>
       </div>
 
       {/* Format picker */}
@@ -418,6 +569,15 @@ function QRCodes() {
                     <SelectContent>{(Object.keys(SEGMENT_LABEL) as Segment[]).map((k) => <SelectItem key={k} value={k}>{SEGMENT_LABEL[k]}</SelectItem>)}</SelectContent>
                   </Select>
                 </Field>
+                <div className="rounded-lg border bg-primary-soft/40 p-3 space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-medium"><Wand2 className="h-3.5 w-3.5 text-primary" />Preset do segmento</div>
+                  <p className="text-[11px] text-muted-foreground">Aplica paleta + textos sugeridos para <strong>{SEGMENT_LABEL[segment]}</strong>. Depois é só ajustar o que quiser.</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    <Button size="sm" onClick={() => applySegmentPreset(segment, "all")} className="gradient-brand text-primary-foreground h-7 text-xs"><Sparkles className="mr-1 h-3 w-3" />Aplicar tudo</Button>
+                    <Button size="sm" variant="outline" onClick={() => applySegmentPreset(segment, "colors")} className="h-7 text-xs">Só cores</Button>
+                    <Button size="sm" variant="outline" onClick={() => applySegmentPreset(segment, "texts")} className="h-7 text-xs">Só textos</Button>
+                  </div>
+                </div>
                 <ColorField label="Cor principal (afeta contraste do QR)" value={primaryColor} onChange={setPrimaryColor} />
                 <ColorField label="Cor secundária" value={accentColor} onChange={setAccentColor} />
                 <ColorField label="Fundo" value={backgroundColor} onChange={setBackgroundColor} />
