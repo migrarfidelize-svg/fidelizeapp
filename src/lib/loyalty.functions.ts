@@ -778,7 +778,7 @@ export const getEstablishmentCampaigns = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const { data: rows, error } = await supabase.from("campaigns")
-      .select("id, name, type, reward_title, reward_description, rules, stamps_required, stamp_icon, stamp_validity_days, reward_validity_days, active, created_at")
+      .select("id, name, type, reward_title, reward_description, rules, stamps_required, stamp_icon, stamp_validity_days, reward_validity_days, primary_color, accent_color, active, created_at")
       .eq("establishment_id", data.establishment_id)
       .order("active", { ascending: false })
       .order("created_at", { ascending: true });
