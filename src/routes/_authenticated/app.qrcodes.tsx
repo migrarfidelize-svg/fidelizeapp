@@ -18,6 +18,7 @@ import QRCode from "qrcode";
 import { toPng, toJpeg } from "html-to-image";
 import { jsPDF } from "jspdf";
 import { PromoPoster, FORMATS, SEGMENT_LABEL, type PromoConfig, type PromoFormat, type Segment } from "@/components/PromoPoster";
+import { LogoUploadButton } from "@/components/LogoUploadButton";
 
 export const Route = createFileRoute("/_authenticated/app/qrcodes")({
   head: () => ({ meta: [{ title: "Divulgação — Fidelize" }] }),
