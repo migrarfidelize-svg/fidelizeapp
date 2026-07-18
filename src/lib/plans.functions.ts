@@ -99,20 +99,13 @@ export const adminListPlans = createServerFn({ method: "GET" })
 // ---------- Admin: update plan basic fields ----------
 const planUpdateSchema = z.object({
   id: z.string().uuid(),
-  slug: z.string().min(2).max(40).regex(/^[a-z0-9-]+$/, "slug inválido").optional(),
-  name: z.string().min(2).max(80).optional(),
+  name: z.string().min(2).max(80),
   description: z.string().max(400).nullable().optional(),
-  currency: z.string().min(3).max(3).optional(),
   price_monthly: z.number().min(0).nullable().optional(),
   price_yearly: z.number().min(0).nullable().optional(),
   customer_limit: z.number().int().min(0).nullable().optional(),
   employee_limit: z.number().int().min(0).nullable().optional(),
   campaign_limit: z.number().int().min(0).nullable().optional(),
-  unit_limit: z.number().int().min(0).nullable().optional(),
-  stamp_limit: z.number().int().min(0).nullable().optional(),
-  email_limit: z.number().int().min(0).nullable().optional(),
-  storage_limit_mb: z.number().int().min(0).nullable().optional(),
-  ticket_limit: z.number().int().min(0).nullable().optional(),
   is_featured: z.boolean().optional(),
   is_active: z.boolean().optional(),
   display_order: z.number().int().min(0).optional(),
@@ -126,6 +119,7 @@ export const adminUpdatePlan = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertSuperAdmin(context.supabase, context.userId);
     const { id, ...patch } = data;
+    // strip undefined; keep nulls (except for price_monthly which is non-null in schema)
     const clean: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(patch)) {
       if (v === undefined) continue;
@@ -138,49 +132,7 @@ export const adminUpdatePlan = createServerFn({ method: "POST" })
     return upd;
   });
 
-// ---------- Admin: create a new plan ----------
-export const adminCreatePlan = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({
-    tier: z.enum(["free", "starter", "pro", "enterprise"]),
-    slug: z.string().min(2).max(40).regex(/^[a-z0-9-]+$/),
-    name: z.string().min(2).max(80),
-    price_monthly: z.number().min(0).default(0),
-  }).parse(d))
-  .handler(async ({ data, context }) => {
-    await assertSuperAdmin(context.supabase, context.userId);
-    const { data: created, error } = await context.supabase.from("plans")
-      .insert({ tier: data.tier, slug: data.slug, name: data.name, price_monthly: data.price_monthly, currency: "BRL", is_active: true, display_order: 99 })
-      .select("*").single();
-    if (error) throw new Error(error.message);
-    return created;
-  });
-
-// ---------- Admin: archive/unarchive plan ----------
-export const adminArchivePlan = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid(), archived: z.boolean() }).parse(d))
-  .handler(async ({ data, context }) => {
-    await assertSuperAdmin(context.supabase, context.userId);
-    const { error } = await context.supabase.from("plans")
-      .update({ archived_at: data.archived ? new Date().toISOString() : null, is_active: !data.archived })
-      .eq("id", data.id);
-    if (error) throw new Error(error.message);
-    return { ok: true };
-  });
-
-// ---------- Admin: delete a feature from a plan ----------
-export const adminDeleteFeature = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
-  .handler(async ({ data, context }) => {
-    await assertSuperAdmin(context.supabase, context.userId);
-    const { error } = await context.supabase.from("plan_features").delete().eq("id", data.id);
-    if (error) throw new Error(error.message);
-    return { ok: true };
-  });
-
-// ---------- Admin: toggle/upsert a feature on a plan ----------
+// ---------- Admin: toggle a feature on a plan ----------
 export const adminToggleFeature = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
@@ -188,24 +140,20 @@ export const adminToggleFeature = createServerFn({ method: "POST" })
     feature_key: z.string().min(1).max(60),
     feature_name: z.string().min(1).max(120),
     enabled: z.boolean(),
-    limit_value: z.number().int().min(0).nullable().optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
     await assertSuperAdmin(context.supabase, context.userId);
-    const payload: any = {
-      plan_id: data.plan_id,
-      feature_key: data.feature_key,
-      feature_name: data.feature_name,
-      enabled: data.enabled,
-    };
-    if (data.limit_value !== undefined) payload.limit_value = data.limit_value;
     const { data: upsert, error } = await context.supabase.from("plan_features")
-      .upsert(payload, { onConflict: "plan_id,feature_key" })
+      .upsert({
+        plan_id: data.plan_id,
+        feature_key: data.feature_key,
+        feature_name: data.feature_name,
+        enabled: data.enabled,
+      }, { onConflict: "plan_id,feature_key" })
       .select("*").single();
     if (error) throw new Error(error.message);
     return upsert;
   });
-
 
 // ---------- Merchant: change plan for their own establishment ----------
 export const changeEstablishmentPlan = createServerFn({ method: "POST" })
