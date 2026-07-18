@@ -199,6 +199,9 @@ function extractPalette(url: string): Promise<Palette> {
     img.onerror = () => reject(new Error("falha ao carregar imagem"));
     img.src = url;
   });
+}
+
+
 
 // ============ Variations (localStorage) ============
 type SavedVariation = { id: string; name: string; savedAt: number; state: StoredState };
