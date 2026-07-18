@@ -74,8 +74,6 @@ export const getHelpArticle = createServerFn({ method: "GET" })
       .eq("published", true)
       .neq("id", article.id)
       .limit(4);
-    // fire and forget view increment
-    await sb.rpc("noop" as any).catch(() => {});
     return { category: cat, article, related: related ?? [] };
   });
 
