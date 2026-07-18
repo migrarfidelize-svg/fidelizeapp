@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 
-export const Route = createFileRoute("/_authenticated/app/config")({
+export const Route = createFileRoute("/_authenticated/admin/config")({
   head: () => ({ meta: [{ title: "Configurações — Fidelize" }] }),
   component: ConfigPage,
 });
