@@ -97,11 +97,8 @@ export const trackArticleView = createServerFn({ method: "POST" })
   .inputValidator((d: { articleId: string }) => z.object({ articleId: z.string().uuid() }).parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.rpc("increment_help_view" as any, { _id: data.articleId }).catch(async () => {
-      // Fallback: increment via update
-      const { data: cur } = await supabaseAdmin.from("help_articles").select("views").eq("id", data.articleId).maybeSingle();
-      if (cur) await supabaseAdmin.from("help_articles").update({ views: (cur.views ?? 0) + 1 }).eq("id", data.articleId);
-    });
+    const { data: cur } = await supabaseAdmin.from("help_articles").select("views").eq("id", data.articleId).maybeSingle();
+    if (cur) await supabaseAdmin.from("help_articles").update({ views: (cur.views ?? 0) + 1 }).eq("id", data.articleId);
     return { ok: true };
   });
 
