@@ -119,8 +119,15 @@ export const adminUpdatePlan = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertSuperAdmin(context.supabase, context.userId);
     const { id, ...patch } = data;
+    // strip undefined; keep nulls (except for price_monthly which is non-null in schema)
+    const clean: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(patch)) {
+      if (v === undefined) continue;
+      if (k === "price_monthly" && v === null) continue;
+      clean[k] = v;
+    }
     const { data: upd, error } = await context.supabase.from("plans")
-      .update(patch).eq("id", id).select("*").single();
+      .update(clean as any).eq("id", id).select("*").single();
     if (error) throw new Error(error.message);
     return upd;
   });
