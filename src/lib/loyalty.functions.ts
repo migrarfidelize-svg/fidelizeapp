@@ -212,9 +212,12 @@ export const undoLastStamp = createServerFn({ method: "POST" })
     const { data: last } = await supabase.from("stamps").select("*").eq("card_id", data.card_id).is("reverted_at", null).order("created_at", { ascending: false }).limit(1).maybeSingle();
     if (!last) throw new Error("Nenhum carimbo para desfazer");
     if (Date.now() - new Date(last.created_at).getTime() > 60_000) throw new Error("Prazo para desfazer expirou (60s)");
-    await supabase.from("stamps").update({ reverted_at: new Date().toISOString(), reverted_by: userId }).eq("id", last.id);
+    const { data: updSt, error: sErr } = await supabase.from("stamps").update({ reverted_at: new Date().toISOString(), reverted_by: userId }).eq("id", last.id).select("id");
+    if (sErr) throw new Error(sErr.message);
+    if (!updSt || updSt.length === 0) throw new Error("Sem permissão para desfazer este carimbo.");
     const { data: card } = await supabase.from("loyalty_cards").select("*").eq("id", data.card_id).single();
-    await supabase.from("loyalty_cards").update({ stamps: Math.max(0, card!.stamps - 1) }).eq("id", data.card_id);
+    const { error: cErr } = await supabase.from("loyalty_cards").update({ stamps: Math.max(0, card!.stamps - 1) }).eq("id", data.card_id);
+    if (cErr) throw new Error(cErr.message);
     await auditLog(card!.establishment_id, userId, "stamp_undone", "loyalty_card", data.card_id, {});
     return { ok: true };
   });
