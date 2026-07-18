@@ -24,7 +24,7 @@ function slugify(s: string) {
   return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
 }
 
-type Article = { id: string; title: string; slug: string; published: boolean; views: number; helpful_count: number; not_helpful_count: number; category_id: string | null };
+type Article = { id: string; title: string; slug: string; excerpt: string | null; body_html: string; tags: string[] | null; published: boolean; views: number; helpful_count: number; not_helpful_count: number; category_id: string | null };
 type ArticleDraft = { id?: string; title: string; slug: string; excerpt: string; body_html: string; category_id: string | null; published: boolean; tags: string[] };
 
 function KbManager() {

@@ -272,7 +272,7 @@ export const listArticlesAdmin = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const [{ data: cats }, { data: arts }] = await Promise.all([
       context.supabase.from("kb_categories").select("*").eq("establishment_id", data.establishment_id).order("sort_order"),
-      context.supabase.from("kb_articles").select("id, title, slug, published, views, helpful_count, not_helpful_count, category_id, updated_at").eq("establishment_id", data.establishment_id).order("updated_at", { ascending: false }),
+      context.supabase.from("kb_articles").select("id, title, slug, excerpt, body_html, tags, published, views, helpful_count, not_helpful_count, category_id, updated_at").eq("establishment_id", data.establishment_id).order("updated_at", { ascending: false }),
     ]);
     return { categories: cats ?? [], articles: arts ?? [] };
   });
