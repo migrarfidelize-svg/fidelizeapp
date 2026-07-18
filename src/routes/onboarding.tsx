@@ -48,6 +48,7 @@ function Onboarding() {
     name: "", slug: "", description: "", primary_color: "#5B21B6", accent_color: "#F97066",
     logo_url: "" as string,
     campaign_name: "Cartão Fidelidade", stamps_required: 10, reward_title: "", reward_description: "",
+    stamp_icon: "coffee",
   });
 
   function set<K extends keyof typeof f>(k: K, v: (typeof f)[K]) {
