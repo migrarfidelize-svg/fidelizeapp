@@ -835,6 +835,7 @@ export const createCampaign = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { establishment_id, ...rest } = data;
+    await enforceLimit(supabase, establishment_id, "campaigns", 1);
     const { data: row, error } = await supabase.from("campaigns").insert({
       establishment_id,
       name: rest.name,
