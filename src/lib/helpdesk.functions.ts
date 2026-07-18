@@ -89,14 +89,11 @@ export const submitArticleFeedback = createServerFn({ method: "POST" })
     await supabaseAdmin.from("kb_feedback").insert({
       article_id: data.article_id, helpful: data.helpful, comment: data.comment ?? null,
     });
-    await supabaseAdmin.rpc("kb_bump_feedback" as never, { _id: data.article_id, _helpful: data.helpful } as never).then(() => undefined).catch(async () => {
-      // fallback
-      const { data: a } = await supabaseAdmin.from("kb_articles").select("helpful_count, not_helpful_count").eq("id", data.article_id).single();
-      if (a) await supabaseAdmin.from("kb_articles").update({
-        helpful_count: (a.helpful_count ?? 0) + (data.helpful ? 1 : 0),
-        not_helpful_count: (a.not_helpful_count ?? 0) + (data.helpful ? 0 : 1),
-      }).eq("id", data.article_id);
-    });
+    const { data: a } = await supabaseAdmin.from("kb_articles").select("helpful_count, not_helpful_count").eq("id", data.article_id).single();
+    if (a) await supabaseAdmin.from("kb_articles").update({
+      helpful_count: (a.helpful_count ?? 0) + (data.helpful ? 1 : 0),
+      not_helpful_count: (a.not_helpful_count ?? 0) + (data.helpful ? 0 : 1),
+    }).eq("id", data.article_id);
     return { ok: true };
   });
 
@@ -255,7 +252,7 @@ export const updateTicket = createServerFn({ method: "POST" })
     tags: z.array(z.string().max(30)).max(10).optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    const patch: Record<string, unknown> = {};
+    const patch: Partial<{ status: typeof data.status; priority: typeof data.priority; assigned_to: string | null; tags: string[]; solved_at: string }> = {};
     if (data.status !== undefined) {
       patch.status = data.status;
       if (data.status === "solved") patch.solved_at = new Date().toISOString();
@@ -263,7 +260,7 @@ export const updateTicket = createServerFn({ method: "POST" })
     if (data.priority !== undefined) patch.priority = data.priority;
     if (data.assigned_to !== undefined) patch.assigned_to = data.assigned_to;
     if (data.tags !== undefined) patch.tags = data.tags;
-    const { error } = await context.supabase.from("tickets").update(patch).eq("id", data.ticket_id);
+    const { error } = await context.supabase.from("tickets").update(patch as never).eq("id", data.ticket_id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
