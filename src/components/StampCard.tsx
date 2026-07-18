@@ -1,8 +1,11 @@
-import { Coffee, Scissors, Pizza, Star, IceCream, ShoppingBag, Wrench, Sparkles, Gift } from "lucide-react";
+import { Coffee, Scissors, Pizza, Star, IceCream, ShoppingBag, Wrench, Sparkles, Gift, Heart, Check, Beer, Cookie, Utensils, Car, Dumbbell, Flower2, Cake, Croissant, Wine, Dog, Leaf } from "lucide-react";
 
 const ICONS: Record<string, typeof Coffee> = {
   coffee: Coffee, scissors: Scissors, pizza: Pizza, star: Star,
   icecream: IceCream, bag: ShoppingBag, wrench: Wrench, sparkles: Sparkles, gift: Gift,
+  heart: Heart, check: Check, beer: Beer, cookie: Cookie, utensils: Utensils,
+  car: Car, dumbbell: Dumbbell, flower: Flower2, cake: Cake, croissant: Croissant,
+  wine: Wine, dog: Dog, leaf: Leaf,
 };
 
 function initialsOf(name: string): string {
