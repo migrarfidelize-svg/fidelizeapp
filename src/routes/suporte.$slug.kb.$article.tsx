@@ -64,7 +64,7 @@ function ArticlePage() {
           <div className="mt-10">
             <h2 className="font-semibold mb-3">Artigos relacionados</h2>
             <ul className="space-y-2">
-              {related.map(r => (
+              {related.map((r: { id: string; slug: string; title: string }) => (
                 <li key={r.id}>
                   <Link to="/suporte/$slug/kb/$article" params={{ slug: params.slug, article: r.slug }} className="text-sm text-primary hover:underline">{r.title}</Link>
                 </li>
