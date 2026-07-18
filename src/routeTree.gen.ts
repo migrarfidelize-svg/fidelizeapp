@@ -48,6 +48,7 @@ import { Route as AuthenticatedAdminAuditoriaRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminAssinaturasRouteImport } from './routes/_authenticated/admin.assinaturas'
 import { Route as AuthenticatedAdminAlertasRouteImport } from './routes/_authenticated/admin.alertas'
 import { Route as AuthenticatedAdminSuporteIndexRouteImport } from './routes/_authenticated/admin.suporte.index'
+import { Route as AuthenticatedAdminPlanosIndexRouteImport } from './routes/_authenticated/admin.planos.index'
 import { Route as SuporteSlugKbArticleRouteImport } from './routes/suporte.$slug.kb.$article'
 import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/api/public/hooks/process-email-queue'
 import { Route as AuthenticatedAdminSuporteIdRouteImport } from './routes/_authenticated/admin.suporte.$id'
@@ -261,6 +262,12 @@ const AuthenticatedAdminSuporteIndexRoute =
     path: '/suporte/',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminPlanosIndexRoute =
+  AuthenticatedAdminPlanosIndexRouteImport.update({
+    id: '/planos/',
+    path: '/planos/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const SuporteSlugKbArticleRoute = SuporteSlugKbArticleRouteImport.update({
   id: '/suporte/$slug/kb/$article',
   path: '/suporte/$slug/kb/$article',
@@ -327,6 +334,7 @@ export interface FileRoutesByFullPath {
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
+  '/admin/planos/': typeof AuthenticatedAdminPlanosIndexRoute
   '/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
 }
 export interface FileRoutesByTo {
@@ -369,6 +377,7 @@ export interface FileRoutesByTo {
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
+  '/admin/planos': typeof AuthenticatedAdminPlanosIndexRoute
   '/admin/suporte': typeof AuthenticatedAdminSuporteIndexRoute
 }
 export interface FileRoutesById {
@@ -415,6 +424,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
+  '/_authenticated/admin/planos/': typeof AuthenticatedAdminPlanosIndexRoute
   '/_authenticated/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
 }
 export interface FileRouteTypes {
@@ -461,6 +471,7 @@ export interface FileRouteTypes {
     | '/admin/suporte/$id'
     | '/api/public/hooks/process-email-queue'
     | '/suporte/$slug/kb/$article'
+    | '/admin/planos/'
     | '/admin/suporte/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -503,6 +514,7 @@ export interface FileRouteTypes {
     | '/admin/suporte/$id'
     | '/api/public/hooks/process-email-queue'
     | '/suporte/$slug/kb/$article'
+    | '/admin/planos'
     | '/admin/suporte'
   id:
     | '__root__'
@@ -548,6 +560,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/suporte/$id'
     | '/api/public/hooks/process-email-queue'
     | '/suporte/$slug/kb/$article'
+    | '/_authenticated/admin/planos/'
     | '/_authenticated/admin/suporte/'
   fileRoutesById: FileRoutesById
 }
@@ -845,6 +858,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSuporteIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/planos/': {
+      id: '/_authenticated/admin/planos/'
+      path: '/planos'
+      fullPath: '/admin/planos/'
+      preLoaderRoute: typeof AuthenticatedAdminPlanosIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/suporte/$slug/kb/$article': {
       id: '/suporte/$slug/kb/$article'
       path: '/suporte/$slug/kb/$article'
@@ -889,6 +909,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminEmpresaIdRoute: typeof AuthenticatedAdminEmpresaIdRoute
   AuthenticatedAdminSuporteIdRoute: typeof AuthenticatedAdminSuporteIdRoute
+  AuthenticatedAdminPlanosIndexRoute: typeof AuthenticatedAdminPlanosIndexRoute
   AuthenticatedAdminSuporteIndexRoute: typeof AuthenticatedAdminSuporteIndexRoute
 }
 
@@ -905,6 +926,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminEmpresaIdRoute: AuthenticatedAdminEmpresaIdRoute,
   AuthenticatedAdminSuporteIdRoute: AuthenticatedAdminSuporteIdRoute,
+  AuthenticatedAdminPlanosIndexRoute: AuthenticatedAdminPlanosIndexRoute,
   AuthenticatedAdminSuporteIndexRoute: AuthenticatedAdminSuporteIndexRoute,
 }
 
