@@ -22,7 +22,7 @@ interface Props {
 }
 
 export function StampCard({ brandName, logoUrl, customerName, stamps, required, reward, primary = "#5B21B6", accent = "#F97066", icon = "coffee", code }: Props) {
-  const Icon = ICONS[icon] ?? Coffee;
+  const Icon = getStampIcon(icon);
   const cells = Array.from({ length: required }, (_, i) => i < stamps);
   const missing = Math.max(0, required - stamps);
   return (
