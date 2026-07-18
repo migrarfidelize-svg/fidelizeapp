@@ -1087,39 +1087,137 @@ export type Database = {
           },
         ]
       }
-      plans: {
+      plan_features: {
         Row: {
           created_at: string
+          enabled: boolean
+          feature_key: string
+          feature_name: string
+          id: string
+          limit_value: number | null
+          plan_id: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          feature_key: string
+          feature_name: string
+          id?: string
+          limit_value?: number | null
+          plan_id: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          feature_key?: string
+          feature_name?: string
+          id?: string
+          limit_value?: number | null
+          plan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_features_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plans: {
+        Row: {
+          active_card_limit: number | null
+          archived_at: string | null
+          button_text: string | null
+          campaign_limit: number | null
+          created_at: string
+          currency: string
+          customer_limit: number | null
+          description: string | null
+          display_order: number
+          email_limit: number | null
+          employee_limit: number | null
           features: Json
           id: string
+          is_active: boolean
+          is_featured: boolean
           max_campaigns: number | null
           max_customers: number | null
           max_staff: number | null
           name: string
           price_monthly: number
+          price_yearly: number | null
+          slug: string
+          stamp_limit: number | null
+          storage_limit_mb: number | null
+          ticket_limit: number | null
           tier: Database["public"]["Enums"]["plan_tier"]
+          trial_days: number
+          unit_limit: number | null
+          updated_at: string
         }
         Insert: {
+          active_card_limit?: number | null
+          archived_at?: string | null
+          button_text?: string | null
+          campaign_limit?: number | null
           created_at?: string
+          currency?: string
+          customer_limit?: number | null
+          description?: string | null
+          display_order?: number
+          email_limit?: number | null
+          employee_limit?: number | null
           features?: Json
           id?: string
+          is_active?: boolean
+          is_featured?: boolean
           max_campaigns?: number | null
           max_customers?: number | null
           max_staff?: number | null
           name: string
           price_monthly?: number
+          price_yearly?: number | null
+          slug: string
+          stamp_limit?: number | null
+          storage_limit_mb?: number | null
+          ticket_limit?: number | null
           tier: Database["public"]["Enums"]["plan_tier"]
+          trial_days?: number
+          unit_limit?: number | null
+          updated_at?: string
         }
         Update: {
+          active_card_limit?: number | null
+          archived_at?: string | null
+          button_text?: string | null
+          campaign_limit?: number | null
           created_at?: string
+          currency?: string
+          customer_limit?: number | null
+          description?: string | null
+          display_order?: number
+          email_limit?: number | null
+          employee_limit?: number | null
           features?: Json
           id?: string
+          is_active?: boolean
+          is_featured?: boolean
           max_campaigns?: number | null
           max_customers?: number | null
           max_staff?: number | null
           name?: string
           price_monthly?: number
+          price_yearly?: number | null
+          slug?: string
+          stamp_limit?: number | null
+          storage_limit_mb?: number | null
+          ticket_limit?: number | null
           tier?: Database["public"]["Enums"]["plan_tier"]
+          trial_days?: number
+          unit_limit?: number | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1890,6 +1988,46 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_establishment_plan: {
+        Args: { _est: string }
+        Returns: {
+          active_card_limit: number | null
+          archived_at: string | null
+          button_text: string | null
+          campaign_limit: number | null
+          created_at: string
+          currency: string
+          customer_limit: number | null
+          description: string | null
+          display_order: number
+          email_limit: number | null
+          employee_limit: number | null
+          features: Json
+          id: string
+          is_active: boolean
+          is_featured: boolean
+          max_campaigns: number | null
+          max_customers: number | null
+          max_staff: number | null
+          name: string
+          price_monthly: number
+          price_yearly: number | null
+          slug: string
+          stamp_limit: number | null
+          storage_limit_mb: number | null
+          ticket_limit: number | null
+          tier: Database["public"]["Enums"]["plan_tier"]
+          trial_days: number
+          unit_limit: number | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "plans"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_establishment_access: {
         Args: { _est: string; _user: string }
         Returns: boolean
@@ -1900,6 +2038,10 @@ export type Database = {
           _min_role: Database["public"]["Enums"]["member_role"]
           _user: string
         }
+        Returns: boolean
+      }
+      has_plan_feature: {
+        Args: { _est: string; _feature: string }
         Returns: boolean
       }
       is_helpdesk_admin: {
