@@ -305,9 +305,9 @@ function QRCodes() {
     logoUrl: est?.logo_url, qrDataUrl, publicUrl,
     benefits: ["Cartão sempre no celular", "Nenhum aplicativo necessário", "Recompensas exclusivas", "Cadastro em segundos"],
     contactLine, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay,
-    showCropMarks, showSafeArea,
+    showCropMarks, showSafeArea, qrScale,
     ...overrides,
-  }), [format, segment, title, subtitle, ctaNearQR, ctaFooter, rewardText, primaryColor, accentColor, backgroundColor, textColor, showBrand, est, qrDataUrl, publicUrl, contactLine, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay, showCropMarks, showSafeArea]);
+  }), [format, segment, title, subtitle, ctaNearQR, ctaFooter, rewardText, primaryColor, accentColor, backgroundColor, textColor, showBrand, est, qrDataUrl, publicUrl, contactLine, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay, showCropMarks, showSafeArea, qrScale]);
 
   const config = buildConfig();
   const dims = FORMATS[format];
