@@ -239,6 +239,12 @@ function Onboarding() {
           </div>
         </div>
       </div>
+      <LogoCropper
+        file={rawFile}
+        open={cropOpen}
+        onOpenChange={(o) => { setCropOpen(o); if (!o) setRawFile(null); }}
+        onCropped={uploadCropped}
+      />
     </div>
   );
 }
