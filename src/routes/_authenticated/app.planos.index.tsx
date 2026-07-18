@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Star, Check, Loader2, Users, Sparkles, UserCog, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
+import { PaymentDialog } from "@/components/PaymentDialog";
 
 export const Route = createFileRoute("/_authenticated/app/planos/")({
   component: MerchantPlansPage,
