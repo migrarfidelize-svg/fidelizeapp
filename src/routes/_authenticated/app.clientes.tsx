@@ -404,9 +404,72 @@ function Clientes() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Bulk confirm */}
+      <AlertDialog open={!!bulkAction} onOpenChange={(o) => !o && setBulkAction(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {bulkAction === "delete"
+                ? `Excluir ${selected.size} cliente${selected.size === 1 ? "" : "s"}?`
+                : bulkAction === "block"
+                ? `Bloquear ${selected.size} cliente${selected.size === 1 ? "" : "s"}?`
+                : `Desbloquear ${selected.size} cliente${selected.size === 1 ? "" : "s"}?`}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {bulkAction === "delete"
+                ? "Ação permanente: remove cartões, carimbos e recompensas de todos os selecionados. Requer perfil gestor."
+                : bulkAction === "block"
+                ? "Clientes bloqueados não poderão receber carimbos até serem desbloqueados."
+                : "Os clientes voltarão a poder receber carimbos normalmente."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkBusy}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={bulkBusy}
+              className={bulkAction === "delete" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+              onClick={async () => {
+                if (!est || !bulkAction) return;
+                setBulkBusy(true);
+                try {
+                  const ids = Array.from(selected);
+                  if (bulkAction === "delete") {
+                    const r = await bulkDeleteCustomers({ data: { establishment_id: est.id, customer_ids: ids } });
+                    toast.success(`${r.affected} cliente(s) excluído(s)`);
+                  } else {
+                    const r = await bulkSetBlocked({ data: { establishment_id: est.id, customer_ids: ids, blocked: bulkAction === "block" } });
+                    toast.success(`${r.affected} cliente(s) atualizado(s)`);
+                  }
+                  setSelected(new Set());
+                  setBulkAction(null);
+                  void refetch();
+                  qc.invalidateQueries({ queryKey: ["customer-stats"] });
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : "Erro na ação em lote");
+                } finally {
+                  setBulkBusy(false);
+                }
+              }}
+            >
+              {bulkBusy ? "Processando…" : "Confirmar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Import CSV */}
+      <ImportCsvDialog
+        open={importing}
+        onClose={() => setImporting(false)}
+        establishmentId={est?.id}
+        campaigns={campaigns ?? []}
+        onImported={() => { void refetch(); qc.invalidateQueries({ queryKey: ["customer-stats"] }); }}
+      />
     </div>
   );
 }
+
 
 function StatCard({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: number; accent?: string }) {
   return (
