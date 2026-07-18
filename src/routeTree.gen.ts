@@ -19,6 +19,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as CTokenRouteImport } from './routes/c.$token'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
 import { Route as AuthenticatedAppQrcodesRouteImport } from './routes/_authenticated/app.qrcodes'
 import { Route as AuthenticatedAppEquipeRouteImport } from './routes/_authenticated/app.equipe'
@@ -76,6 +77,11 @@ const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   path: '/app',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -122,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/precos': typeof PrecosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/c/$token': typeof CTokenRoute
   '/l/$slug': typeof LSlugRoute
@@ -140,6 +147,7 @@ export interface FileRoutesByTo {
   '/precos': typeof PrecosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/c/$token': typeof CTokenRoute
   '/l/$slug': typeof LSlugRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/precos': typeof PrecosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/c/$token': typeof CTokenRoute
   '/l/$slug': typeof LSlugRoute
@@ -179,6 +188,7 @@ export interface FileRouteTypes {
     | '/precos'
     | '/privacidade'
     | '/termos'
+    | '/admin'
     | '/app'
     | '/c/$token'
     | '/l/$slug'
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/precos'
     | '/privacidade'
     | '/termos'
+    | '/admin'
     | '/c/$token'
     | '/l/$slug'
     | '/app/campanhas'
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/precos'
     | '/privacidade'
     | '/termos'
+    | '/_authenticated/admin'
     | '/_authenticated/app'
     | '/c/$token'
     | '/l/$slug'
@@ -311,6 +323,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/app/': {
       id: '/_authenticated/app/'
       path: '/'
@@ -387,10 +406,12 @@ const AuthenticatedAppRouteWithChildren =
   AuthenticatedAppRoute._addFileChildren(AuthenticatedAppRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
 }
 
