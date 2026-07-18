@@ -722,6 +722,7 @@ export const createEstablishment = createServerFn({ method: "POST" })
     const { data: camp, error: ce } = await supabase.from("campaigns").insert({
       establishment_id: est.id, name: data.campaign_name, stamps_required: data.stamps_required,
       reward_title: data.reward_title, reward_description: data.reward_description,
+      stamp_icon: data.stamp_icon,
     }).select("id").single();
     if (ce) throw new Error(ce.message);
     return { establishment_id: est.id, slug: est.slug, campaign_id: camp.id };
