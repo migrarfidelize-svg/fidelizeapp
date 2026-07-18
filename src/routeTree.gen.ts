@@ -16,6 +16,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AjudaIndexRouteImport } from './routes/ajuda.index'
 import { Route as SuporteMeusRouteImport } from './routes/suporte.meus'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
@@ -25,11 +26,13 @@ import { Route as AuthNovaSenhaRouteImport } from './routes/auth.nova-senha'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as SuporteSlugIndexRouteImport } from './routes/suporte.$slug.index'
+import { Route as AjudaCategoryIndexRouteImport } from './routes/ajuda.$category.index'
 import { Route as AuthenticatedSuporteIndexRouteImport } from './routes/_authenticated/suporte.index'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as SuporteChamadoIdRouteImport } from './routes/suporte.chamado.$id'
 import { Route as SuporteSlugNovoRouteImport } from './routes/suporte.$slug.novo'
+import { Route as AjudaCategoryArticleRouteImport } from './routes/ajuda.$category.$article'
 import { Route as AuthenticatedAppSuporteRouteImport } from './routes/_authenticated/app.suporte'
 import { Route as AuthenticatedAppQrcodesRouteImport } from './routes/_authenticated/app.qrcodes'
 import { Route as AuthenticatedAppPagamentosRouteImport } from './routes/_authenticated/app.pagamentos'
@@ -49,6 +52,7 @@ import { Route as AuthenticatedAdminConfigRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminAuditoriaRouteImport } from './routes/_authenticated/admin.auditoria'
 import { Route as AuthenticatedAdminAssinaturasRouteImport } from './routes/_authenticated/admin.assinaturas'
 import { Route as AuthenticatedAdminAlertasRouteImport } from './routes/_authenticated/admin.alertas'
+import { Route as AuthenticatedAdminAjudaRouteImport } from './routes/_authenticated/admin.ajuda'
 import { Route as AuthenticatedAppPlanosIndexRouteImport } from './routes/_authenticated/app.planos.index'
 import { Route as AuthenticatedAdminSuporteIndexRouteImport } from './routes/_authenticated/admin.suporte.index'
 import { Route as AuthenticatedAdminPlanosIndexRouteImport } from './routes/_authenticated/admin.planos.index'
@@ -91,6 +95,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AjudaIndexRoute = AjudaIndexRouteImport.update({
+  id: '/ajuda/',
+  path: '/ajuda/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SuporteMeusRoute = SuporteMeusRouteImport.update({
@@ -138,6 +147,11 @@ const SuporteSlugIndexRoute = SuporteSlugIndexRouteImport.update({
   path: '/suporte/$slug/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AjudaCategoryIndexRoute = AjudaCategoryIndexRouteImport.update({
+  id: '/ajuda/$category/',
+  path: '/ajuda/$category/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedSuporteIndexRoute =
   AuthenticatedSuporteIndexRouteImport.update({
     id: '/suporte/',
@@ -162,6 +176,11 @@ const SuporteChamadoIdRoute = SuporteChamadoIdRouteImport.update({
 const SuporteSlugNovoRoute = SuporteSlugNovoRouteImport.update({
   id: '/suporte/$slug/novo',
   path: '/suporte/$slug/novo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AjudaCategoryArticleRoute = AjudaCategoryArticleRouteImport.update({
+  id: '/ajuda/$category/$article',
+  path: '/ajuda/$category/$article',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAppSuporteRoute = AuthenticatedAppSuporteRouteImport.update({
@@ -274,6 +293,11 @@ const AuthenticatedAdminAlertasRoute =
     path: '/alertas',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminAjudaRoute = AuthenticatedAdminAjudaRouteImport.update({
+  id: '/ajuda',
+  path: '/ajuda',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedAppPlanosIndexRoute =
   AuthenticatedAppPlanosIndexRouteImport.update({
     id: '/planos/',
@@ -343,6 +367,8 @@ export interface FileRoutesByFullPath {
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
   '/suporte/meus': typeof SuporteMeusRoute
+  '/ajuda/': typeof AjudaIndexRoute
+  '/admin/ajuda': typeof AuthenticatedAdminAjudaRoute
   '/admin/alertas': typeof AuthenticatedAdminAlertasRoute
   '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
@@ -362,11 +388,13 @@ export interface FileRoutesByFullPath {
   '/app/pagamentos': typeof AuthenticatedAppPagamentosRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
+  '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/app/': typeof AuthenticatedAppIndexRoute
   '/suporte/': typeof AuthenticatedSuporteIndexRoute
+  '/ajuda/$category/': typeof AjudaCategoryIndexRoute
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
@@ -391,6 +419,8 @@ export interface FileRoutesByTo {
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
   '/suporte/meus': typeof SuporteMeusRoute
+  '/ajuda': typeof AjudaIndexRoute
+  '/admin/ajuda': typeof AuthenticatedAdminAjudaRoute
   '/admin/alertas': typeof AuthenticatedAdminAlertasRoute
   '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
@@ -410,11 +440,13 @@ export interface FileRoutesByTo {
   '/app/pagamentos': typeof AuthenticatedAppPagamentosRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
+  '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/app': typeof AuthenticatedAppIndexRoute
   '/suporte': typeof AuthenticatedSuporteIndexRoute
+  '/ajuda/$category': typeof AjudaCategoryIndexRoute
   '/suporte/$slug': typeof SuporteSlugIndexRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
@@ -443,6 +475,8 @@ export interface FileRoutesById {
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
   '/suporte/meus': typeof SuporteMeusRoute
+  '/ajuda/': typeof AjudaIndexRoute
+  '/_authenticated/admin/ajuda': typeof AuthenticatedAdminAjudaRoute
   '/_authenticated/admin/alertas': typeof AuthenticatedAdminAlertasRoute
   '/_authenticated/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/_authenticated/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
@@ -462,11 +496,13 @@ export interface FileRoutesById {
   '/_authenticated/app/pagamentos': typeof AuthenticatedAppPagamentosRoute
   '/_authenticated/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/_authenticated/app/suporte': typeof AuthenticatedAppSuporteRoute
+  '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
   '/_authenticated/suporte/': typeof AuthenticatedSuporteIndexRoute
+  '/ajuda/$category/': typeof AjudaCategoryIndexRoute
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
   '/_authenticated/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/_authenticated/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
@@ -495,6 +531,8 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/l/$slug'
     | '/suporte/meus'
+    | '/ajuda/'
+    | '/admin/ajuda'
     | '/admin/alertas'
     | '/admin/assinaturas'
     | '/admin/auditoria'
@@ -514,11 +552,13 @@ export interface FileRouteTypes {
     | '/app/pagamentos'
     | '/app/qrcodes'
     | '/app/suporte'
+    | '/ajuda/$category/$article'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/admin/'
     | '/app/'
     | '/suporte/'
+    | '/ajuda/$category/'
     | '/suporte/$slug/'
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
@@ -543,6 +583,8 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/l/$slug'
     | '/suporte/meus'
+    | '/ajuda'
+    | '/admin/ajuda'
     | '/admin/alertas'
     | '/admin/assinaturas'
     | '/admin/auditoria'
@@ -562,11 +604,13 @@ export interface FileRouteTypes {
     | '/app/pagamentos'
     | '/app/qrcodes'
     | '/app/suporte'
+    | '/ajuda/$category/$article'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/admin'
     | '/app'
     | '/suporte'
+    | '/ajuda/$category'
     | '/suporte/$slug'
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
@@ -594,6 +638,8 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/l/$slug'
     | '/suporte/meus'
+    | '/ajuda/'
+    | '/_authenticated/admin/ajuda'
     | '/_authenticated/admin/alertas'
     | '/_authenticated/admin/assinaturas'
     | '/_authenticated/admin/auditoria'
@@ -613,11 +659,13 @@ export interface FileRouteTypes {
     | '/_authenticated/app/pagamentos'
     | '/_authenticated/app/qrcodes'
     | '/_authenticated/app/suporte'
+    | '/ajuda/$category/$article'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/_authenticated/admin/'
     | '/_authenticated/app/'
     | '/_authenticated/suporte/'
+    | '/ajuda/$category/'
     | '/suporte/$slug/'
     | '/_authenticated/admin/empresa/$id'
     | '/_authenticated/admin/suporte/$id'
@@ -642,8 +690,11 @@ export interface RootRouteChildren {
   InviteTokenRoute: typeof InviteTokenRoute
   LSlugRoute: typeof LSlugRoute
   SuporteMeusRoute: typeof SuporteMeusRoute
+  AjudaIndexRoute: typeof AjudaIndexRoute
+  AjudaCategoryArticleRoute: typeof AjudaCategoryArticleRoute
   SuporteSlugNovoRoute: typeof SuporteSlugNovoRoute
   SuporteChamadoIdRoute: typeof SuporteChamadoIdRoute
+  AjudaCategoryIndexRoute: typeof AjudaCategoryIndexRoute
   SuporteSlugIndexRoute: typeof SuporteSlugIndexRoute
   ApiPublicHooksProcessEmailQueueRoute: typeof ApiPublicHooksProcessEmailQueueRoute
   ApiPublicWebhooksMercadopagoRoute: typeof ApiPublicWebhooksMercadopagoRoute
@@ -699,6 +750,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ajuda/': {
+      id: '/ajuda/'
+      path: '/ajuda'
+      fullPath: '/ajuda/'
+      preLoaderRoute: typeof AjudaIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/suporte/meus': {
@@ -764,6 +822,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuporteSlugIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ajuda/$category/': {
+      id: '/ajuda/$category/'
+      path: '/ajuda/$category'
+      fullPath: '/ajuda/$category/'
+      preLoaderRoute: typeof AjudaCategoryIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/suporte/': {
       id: '/_authenticated/suporte/'
       path: '/suporte'
@@ -797,6 +862,13 @@ declare module '@tanstack/react-router' {
       path: '/suporte/$slug/novo'
       fullPath: '/suporte/$slug/novo'
       preLoaderRoute: typeof SuporteSlugNovoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ajuda/$category/$article': {
+      id: '/ajuda/$category/$article'
+      path: '/ajuda/$category/$article'
+      fullPath: '/ajuda/$category/$article'
+      preLoaderRoute: typeof AjudaCategoryArticleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/app/suporte': {
@@ -932,6 +1004,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAlertasRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/ajuda': {
+      id: '/_authenticated/admin/ajuda'
+      path: '/ajuda'
+      fullPath: '/admin/ajuda'
+      preLoaderRoute: typeof AuthenticatedAdminAjudaRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/app/planos/': {
       id: '/_authenticated/app/planos/'
       path: '/planos'
@@ -999,6 +1078,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminAjudaRoute: typeof AuthenticatedAdminAjudaRoute
   AuthenticatedAdminAlertasRoute: typeof AuthenticatedAdminAlertasRoute
   AuthenticatedAdminAssinaturasRoute: typeof AuthenticatedAdminAssinaturasRoute
   AuthenticatedAdminAuditoriaRoute: typeof AuthenticatedAdminAuditoriaRoute
@@ -1018,6 +1098,7 @@ interface AuthenticatedAdminRouteChildren {
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminAjudaRoute: AuthenticatedAdminAjudaRoute,
   AuthenticatedAdminAlertasRoute: AuthenticatedAdminAlertasRoute,
   AuthenticatedAdminAssinaturasRoute: AuthenticatedAdminAssinaturasRoute,
   AuthenticatedAdminAuditoriaRoute: AuthenticatedAdminAuditoriaRoute,
@@ -1109,8 +1190,11 @@ const rootRouteChildren: RootRouteChildren = {
   InviteTokenRoute: InviteTokenRoute,
   LSlugRoute: LSlugRoute,
   SuporteMeusRoute: SuporteMeusRoute,
+  AjudaIndexRoute: AjudaIndexRoute,
+  AjudaCategoryArticleRoute: AjudaCategoryArticleRoute,
   SuporteSlugNovoRoute: SuporteSlugNovoRoute,
   SuporteChamadoIdRoute: SuporteChamadoIdRoute,
+  AjudaCategoryIndexRoute: AjudaCategoryIndexRoute,
   SuporteSlugIndexRoute: SuporteSlugIndexRoute,
   ApiPublicHooksProcessEmailQueueRoute: ApiPublicHooksProcessEmailQueueRoute,
   ApiPublicWebhooksMercadopagoRoute: ApiPublicWebhooksMercadopagoRoute,

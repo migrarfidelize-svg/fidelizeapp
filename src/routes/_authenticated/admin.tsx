@@ -6,7 +6,7 @@ import { getAdminStatus, bootstrapSuperAdmin } from "@/lib/admin.functions";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock, UsersRound, Settings, Mail, FileText, ListChecks, LifeBuoy, Package, DollarSign, ChevronDown, Wallet, Megaphone, Cog } from "lucide-react";
+import { Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock, UsersRound, Settings, Mail, FileText, ListChecks, LifeBuoy, Package, DollarSign, ChevronDown, Wallet, Megaphone, Cog, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -89,6 +89,17 @@ function AdminLayout() {
         { to: "/admin/emails", label: "E-mail", icon: Mail, exact: true },
         { to: "/admin/email-templates", label: "Templates", icon: FileText },
         { to: "/admin/email-fila", label: "Fila de envio", icon: ListChecks },
+      ],
+    },
+    {
+      key: "comunicacao",
+      label: "Comunicação",
+      icon: Mail,
+      items: [
+        { to: "/admin/emails", label: "E-mail", icon: Mail, exact: true },
+        { to: "/admin/email-templates", label: "Templates", icon: FileText },
+        { to: "/admin/email-fila", label: "Fila de envio", icon: ListChecks },
+        { to: "/admin/ajuda", label: "Central de Ajuda", icon: BookOpen },
       ],
     },
     {

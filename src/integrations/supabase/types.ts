@@ -755,6 +755,168 @@ export type Database = {
         }
         Relationships: []
       }
+      help_article_views: {
+        Row: {
+          article_id: string
+          created_at: string
+          id: number
+          user_id: string | null
+        }
+        Insert: {
+          article_id: string
+          created_at?: string
+          id?: number
+          user_id?: string | null
+        }
+        Update: {
+          article_id?: string
+          created_at?: string
+          id?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "help_article_views_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "help_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      help_articles: {
+        Row: {
+          category_id: string
+          content: string
+          created_at: string
+          excerpt: string | null
+          helpful_no: number
+          helpful_yes: number
+          id: string
+          keywords: string | null
+          published: boolean
+          reading_time: number
+          slug: string
+          sort_order: number
+          title: string
+          updated_at: string
+          views: number
+        }
+        Insert: {
+          category_id: string
+          content: string
+          created_at?: string
+          excerpt?: string | null
+          helpful_no?: number
+          helpful_yes?: number
+          id?: string
+          keywords?: string | null
+          published?: boolean
+          reading_time?: number
+          slug: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+          views?: number
+        }
+        Update: {
+          category_id?: string
+          content?: string
+          created_at?: string
+          excerpt?: string | null
+          helpful_no?: number
+          helpful_yes?: number
+          id?: string
+          keywords?: string | null
+          published?: boolean
+          reading_time?: number
+          slug?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          views?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "help_articles_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "help_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      help_categories: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      help_feedback: {
+        Row: {
+          article_id: string
+          comment: string | null
+          created_at: string
+          helpful: boolean
+          id: number
+          user_id: string | null
+        }
+        Insert: {
+          article_id: string
+          comment?: string | null
+          created_at?: string
+          helpful: boolean
+          id?: number
+          user_id?: string | null
+        }
+        Update: {
+          article_id?: string
+          comment?: string | null
+          created_at?: string
+          helpful?: boolean
+          id?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "help_feedback_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "help_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       helpdesk_members: {
         Row: {
           active: boolean

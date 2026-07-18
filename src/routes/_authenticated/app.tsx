@@ -87,7 +87,7 @@ function AppLayout() {
     { to: "/app/qrcodes", label: "QR Codes", icon: QrCode, exact: false },
     { to: "/app/equipe", label: "Equipe", icon: UsersRound, exact: false },
     
-    { to: "/app/kb", label: "Base", icon: BookOpen, exact: false },
+    { to: "/ajuda", label: "Central de Ajuda", icon: BookOpen, exact: false },
     { to: "/app/planos", label: "Planos", icon: Package, exact: false },
     { to: "/app/pagamentos", label: "Pagamentos", icon: Receipt, exact: false },
     { to: "/suporte", label: "Fale com a Fidelize", icon: LifeBuoy, exact: false },
