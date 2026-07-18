@@ -155,6 +155,35 @@ function Onboarding() {
             </div>
           </div>
 
+          <div>
+            <Label>Logo do seu negócio (opcional)</Label>
+            <div className="mt-2 flex items-center gap-4">
+              <div className="h-20 w-20 shrink-0 rounded-2xl border bg-muted/40 grid place-items-center overflow-hidden">
+                {f.logo_url ? (
+                  <img src={f.logo_url} alt="Logo" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-xs text-muted-foreground text-center px-1">Sem logo</span>
+                )}
+              </div>
+              <div className="flex-1 space-y-2">
+                <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden" onChange={onPickLogo} />
+                <div className="flex gap-2 flex-wrap">
+                  <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => fileRef.current?.click()}>
+                    {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+                    {f.logo_url ? "Trocar logo" : "Enviar logo"}
+                  </Button>
+                  {f.logo_url && (
+                    <Button type="button" variant="ghost" size="sm" onClick={removeLogo}>
+                      <X className="h-4 w-4 mr-1" /> Remover
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">PNG, JPG, WEBP ou SVG. Até 3 MB. Ideal: quadrado.</p>
+              </div>
+            </div>
+          </div>
+
+
           <div className="border-t pt-6 space-y-4">
             <h2 className="font-display text-lg font-semibold">Primeira campanha</h2>
             <div>
