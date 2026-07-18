@@ -59,35 +59,42 @@ function Onboarding() {
       toast.error("Envie uma imagem PNG, JPG, WEBP ou SVG.");
       return;
     }
-    if (file.size > 3 * 1024 * 1024) {
-      toast.error("Logo muito grande (máx. 3 MB).");
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Imagem muito grande (máx. 5 MB).");
       return;
     }
+    setRawFile(file);
+    setCropOpen(true);
+    if (fileRef.current) fileRef.current.value = "";
+  }
+
+  async function uploadCropped(blob: Blob) {
     setUploading(true);
     try {
       const { data: userData } = await supabase.auth.getUser();
       const uid = userData.user?.id;
       if (!uid) throw new Error("Sessão expirada");
-      const ext = (file.name.split(".").pop() || "png").toLowerCase();
-      const path = `${uid}/${crypto.randomUUID()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("logos").upload(path, file, {
-        cacheControl: "31536000", upsert: false, contentType: file.type,
+      const path = `${uid}/${crypto.randomUUID()}.png`;
+      const { error: upErr } = await supabase.storage.from("logos").upload(path, blob, {
+        cacheControl: "31536000", upsert: false, contentType: "image/png",
       });
       if (upErr) throw upErr;
       const { data: signed, error: sErr } = await supabase.storage.from("logos").createSignedUrl(path, SIGNED_URL_TTL);
       if (sErr || !signed?.signedUrl) throw sErr || new Error("Falha ao gerar link");
       set("logo_url", signed.signedUrl);
-      toast.success("Logo enviado!");
+      setLogoRev((r) => r + 1);
+      toast.success("Logo atualizado!");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao enviar logo");
     } finally {
       setUploading(false);
-      if (fileRef.current) fileRef.current.value = "";
+      setRawFile(null);
     }
   }
 
   function removeLogo() {
     set("logo_url", "");
+    setLogoRev((r) => r + 1);
   }
 
   async function submit(e: React.FormEvent) {
