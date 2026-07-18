@@ -33,8 +33,15 @@ function CustomerCard() {
   const d = data!;
   const est = d.establishment!;
   const bg = `linear-gradient(135deg, ${est.primary_color} 0%, ${est.accent_color} 130%)`;
+  const [qrDataUrl, setQrDataUrl] = useState<string>("");
+  useEffect(() => {
+    const url = `${window.location.origin}/c/${token}`;
+    QRCode.toDataURL(url, { width: 512, margin: 1, errorCorrectionLevel: "M", color: { dark: "#111111", light: "#ffffff" } })
+      .then(setQrDataUrl).catch(() => {});
+  }, [token]);
 
   return (
+
     <div className="min-h-screen bg-muted/30 pb-16">
       <div className="h-40" style={{ background: bg }} />
       <div className="mx-auto max-w-xl px-4 -mt-24">
