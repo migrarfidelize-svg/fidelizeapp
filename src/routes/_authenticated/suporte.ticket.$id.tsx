@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Send, Info, Lock } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/suporte/$id")({
+export const Route = createFileRoute("/_authenticated/suporte/ticket/$id")({
   head: () => ({ meta: [{ title: "Ticket — Suporte" }] }),
   component: Ticket,
 });
