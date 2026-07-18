@@ -212,6 +212,7 @@ type StoredState = {
   showBrand: boolean; bgImageUrl: string | null; bgZoom: number; bgOffsetX: number; bgOffsetY: number; bgOverlay: number;
   qrScale?: number;
   qrColor?: string;
+  cornerStyle?: "sharp" | "rounded";
 };
 const storageKey = (estId: string) => `fidelize-promos-v1-${estId}`;
 function loadVariations(estId: string): SavedVariation[] {
