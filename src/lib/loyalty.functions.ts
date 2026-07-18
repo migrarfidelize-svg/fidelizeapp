@@ -588,6 +588,9 @@ export const importCustomersCsv = createServerFn({ method: "POST" })
       return { dry_run: true, summary, preview, inserted: 0 };
     }
 
+    // Plan limit check for real import
+    await enforceLimit(supabase, data.establishment_id, "customers", toInsert.length);
+
     // Insert in chunks
     let inserted = 0;
     const chunkSize = 100;
