@@ -579,6 +579,56 @@ export type Database = {
           },
         ]
       }
+      subscription_events: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          actor_id: string | null
+          created_at: string
+          establishment_id: string
+          event_type: string
+          from_plan: string | null
+          id: string
+          message: string | null
+          metadata: Json
+          to_plan: string | null
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          actor_id?: string | null
+          created_at?: string
+          establishment_id: string
+          event_type: string
+          from_plan?: string | null
+          id?: string
+          message?: string | null
+          metadata?: Json
+          to_plan?: string | null
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          actor_id?: string | null
+          created_at?: string
+          establishment_id?: string
+          event_type?: string
+          from_plan?: string | null
+          id?: string
+          message?: string | null
+          metadata?: Json
+          to_plan?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_events_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
