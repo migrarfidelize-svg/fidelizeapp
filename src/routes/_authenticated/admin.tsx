@@ -79,7 +79,7 @@ function AdminLayout() {
           <Link to="/app" className="text-xs text-muted-foreground"><ArrowLeft className="h-4 w-4" /></Link>
         </header>
         <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto"><Outlet /></main>
-        <nav className="md:hidden grid grid-cols-3 border-t bg-card">
+        <nav className="md:hidden grid grid-cols-5 border-t bg-card">
           {nav.map((n) => {
             const active = n.exact ? pathname === n.to : pathname.startsWith(n.to);
             return (
