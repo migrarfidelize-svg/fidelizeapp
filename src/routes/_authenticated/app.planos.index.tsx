@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Star, Check, Loader2, Users, Sparkles, UserCog, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
+import { PaymentDialog } from "@/components/PaymentDialog";
 
 export const Route = createFileRoute("/_authenticated/app/planos/")({
   component: MerchantPlansPage,
@@ -42,6 +43,7 @@ function MerchantPlansPage() {
 
   const [pending, setPending] = useState<null | { slug: string; name: string; tier: string; price: number; kind: "upgrade" | "downgrade" | "plan_change" }>(null);
   const [saving, setSaving] = useState(false);
+  const [payFor, setPayFor] = useState<null | { slug: string; name: string; price_monthly: number; tier: string }>(null);
 
   function askChange(p: any) {
     if (!activeEst || !currentTier) return;
@@ -49,7 +51,13 @@ function MerchantPlansPage() {
     const kind: "upgrade" | "downgrade" | "plan_change" =
       (PLAN_RANK[p.tier] ?? 0) > (PLAN_RANK[currentTier] ?? 0) ? "upgrade"
       : (PLAN_RANK[p.tier] ?? 0) < (PLAN_RANK[currentTier] ?? 0) ? "downgrade" : "plan_change";
-    setPending({ slug: p.slug, name: p.name, tier: p.tier, price: Number(p.price_monthly ?? 0), kind });
+    const price = Number(p.price_monthly ?? 0);
+    // Plano pago em upgrade/change → paga via Mercado Pago; downgrade ou plano grátis → alteração direta
+    if (price > 0 && kind !== "downgrade") {
+      setPayFor({ slug: p.slug, name: p.name, price_monthly: price, tier: p.tier });
+    } else {
+      setPending({ slug: p.slug, name: p.name, tier: p.tier, price, kind });
+    }
   }
 
   async function confirmChange() {
@@ -174,6 +182,13 @@ function MerchantPlansPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <PaymentDialog
+        open={!!payFor}
+        onOpenChange={(o) => !o && setPayFor(null)}
+        plan={payFor}
+        establishmentId={activeEst?.id ?? ""}
+      />
     </div>
   );
 }
