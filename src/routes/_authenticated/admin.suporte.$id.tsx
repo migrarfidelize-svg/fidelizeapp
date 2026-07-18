@@ -129,7 +129,7 @@ function AdminTicket() {
                     {m.is_internal && <span className="text-yellow-800 font-medium">· Nota interna</span>}
                   </div>
                   <div className="whitespace-pre-wrap text-sm">{m.message}</div>
-                  <AttachmentList items={(m.attachments as unknown as AttachmentRef[]) ?? []} />
+                  <AttachmentList items={(m.attachments as unknown as AttachmentRef[]) ?? []} signer={(a) => signFn({ data: a })} />
                 </div>
               </div>
             );
