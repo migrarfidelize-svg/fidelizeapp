@@ -26,6 +26,7 @@ import { Route as AuthNovaSenhaRouteImport } from './routes/auth.nova-senha'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as SuporteSlugIndexRouteImport } from './routes/suporte.$slug.index'
+import { Route as AjudaCategoryIndexRouteImport } from './routes/ajuda.$category.index'
 import { Route as AuthenticatedSuporteIndexRouteImport } from './routes/_authenticated/suporte.index'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
@@ -142,6 +143,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
 const SuporteSlugIndexRoute = SuporteSlugIndexRouteImport.update({
   id: '/suporte/$slug/',
   path: '/suporte/$slug/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AjudaCategoryIndexRoute = AjudaCategoryIndexRouteImport.update({
+  id: '/ajuda/$category/',
+  path: '/ajuda/$category/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSuporteIndexRoute =
@@ -374,6 +380,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/app/': typeof AuthenticatedAppIndexRoute
   '/suporte/': typeof AuthenticatedSuporteIndexRoute
+  '/ajuda/$category/': typeof AjudaCategoryIndexRoute
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
@@ -423,6 +430,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/app': typeof AuthenticatedAppIndexRoute
   '/suporte': typeof AuthenticatedSuporteIndexRoute
+  '/ajuda/$category': typeof AjudaCategoryIndexRoute
   '/suporte/$slug': typeof SuporteSlugIndexRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
@@ -476,6 +484,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
   '/_authenticated/suporte/': typeof AuthenticatedSuporteIndexRoute
+  '/ajuda/$category/': typeof AjudaCategoryIndexRoute
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
   '/_authenticated/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/_authenticated/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
@@ -529,6 +538,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/app/'
     | '/suporte/'
+    | '/ajuda/$category/'
     | '/suporte/$slug/'
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
@@ -578,6 +588,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/app'
     | '/suporte'
+    | '/ajuda/$category'
     | '/suporte/$slug'
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
@@ -630,6 +641,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/_authenticated/app/'
     | '/_authenticated/suporte/'
+    | '/ajuda/$category/'
     | '/suporte/$slug/'
     | '/_authenticated/admin/empresa/$id'
     | '/_authenticated/admin/suporte/$id'
@@ -657,6 +669,7 @@ export interface RootRouteChildren {
   AjudaIndexRoute: typeof AjudaIndexRoute
   SuporteSlugNovoRoute: typeof SuporteSlugNovoRoute
   SuporteChamadoIdRoute: typeof SuporteChamadoIdRoute
+  AjudaCategoryIndexRoute: typeof AjudaCategoryIndexRoute
   SuporteSlugIndexRoute: typeof SuporteSlugIndexRoute
   ApiPublicHooksProcessEmailQueueRoute: typeof ApiPublicHooksProcessEmailQueueRoute
   ApiPublicWebhooksMercadopagoRoute: typeof ApiPublicWebhooksMercadopagoRoute
@@ -782,6 +795,13 @@ declare module '@tanstack/react-router' {
       path: '/suporte/$slug'
       fullPath: '/suporte/$slug/'
       preLoaderRoute: typeof SuporteSlugIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ajuda/$category/': {
+      id: '/ajuda/$category/'
+      path: '/ajuda/$category'
+      fullPath: '/ajuda/$category/'
+      preLoaderRoute: typeof AjudaCategoryIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/suporte/': {
@@ -1132,6 +1152,7 @@ const rootRouteChildren: RootRouteChildren = {
   AjudaIndexRoute: AjudaIndexRoute,
   SuporteSlugNovoRoute: SuporteSlugNovoRoute,
   SuporteChamadoIdRoute: SuporteChamadoIdRoute,
+  AjudaCategoryIndexRoute: AjudaCategoryIndexRoute,
   SuporteSlugIndexRoute: SuporteSlugIndexRoute,
   ApiPublicHooksProcessEmailQueueRoute: ApiPublicHooksProcessEmailQueueRoute,
   ApiPublicWebhooksMercadopagoRoute: ApiPublicWebhooksMercadopagoRoute,
