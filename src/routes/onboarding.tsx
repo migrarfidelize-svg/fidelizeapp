@@ -39,6 +39,9 @@ function Onboarding() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [cropOpen, setCropOpen] = useState(false);
+  const [rawFile, setRawFile] = useState<File | null>(null);
+  const [logoRev, setLogoRev] = useState(0); // força reload da <img> quando trocamos o logo
   const [f, setF] = useState({
     name: "", slug: "", description: "", primary_color: "#5B21B6", accent_color: "#F97066",
     logo_url: "" as string,
