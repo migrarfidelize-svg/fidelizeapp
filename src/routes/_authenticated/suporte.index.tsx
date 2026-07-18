@@ -84,7 +84,7 @@ function SupportInbox() {
                 const Icon = s.icon;
                 return (
                   <li key={t.id}>
-                    <Link to="/suporte/$id" params={{ id: t.id }}
+                    <Link to="/suporte/ticket/$id" params={{ id: t.id }}
                       className="block rounded-xl border bg-card p-4 hover:border-primary/40 hover:shadow-sm transition">
                       <div className="flex items-start gap-3">
                         <div className="flex-1 min-w-0">
