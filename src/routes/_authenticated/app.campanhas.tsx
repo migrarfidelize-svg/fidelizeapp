@@ -123,6 +123,9 @@ function CampanhasPage() {
         ? (c.stamp_icon as FormState["stamp_icon"]) : "star",
       stamp_validity_days: c.stamp_validity_days?.toString() ?? "",
       reward_validity_days: c.reward_validity_days?.toString() ?? "",
+      use_custom_colors: !!(c.primary_color || c.accent_color),
+      primary_color: c.primary_color ?? est?.primary_color ?? "#5B21B6",
+      accent_color: c.accent_color ?? est?.accent_color ?? "#F97066",
     });
     setOpen(true);
   }
