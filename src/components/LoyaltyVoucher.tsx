@@ -1,19 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
 import {
-  Coffee, Scissors, Pizza, Star, IceCream, ShoppingBag, Wrench, Sparkles, Gift,
-  Heart, Check, Beer, Cookie, Utensils, Car, Dumbbell, Flower2, Cake, Croissant, Wine, Dog, Leaf,
-  CalendarClock, Clock3, PartyPopper, CheckCircle2,
+  Gift, CalendarClock, Clock3, PartyPopper, CheckCircle2,
 } from "lucide-react";
 import { formatDate } from "@/lib/format";
-
-const ICONS: Record<string, typeof Coffee> = {
-  coffee: Coffee, scissors: Scissors, pizza: Pizza, star: Star,
-  icecream: IceCream, bag: ShoppingBag, wrench: Wrench, sparkles: Sparkles, gift: Gift,
-  heart: Heart, check: Check, beer: Beer, cookie: Cookie, utensils: Utensils,
-  car: Car, dumbbell: Dumbbell, flower: Flower2, cake: Cake, croissant: Croissant,
-  wine: Wine, dog: Dog, leaf: Leaf,
-};
+import { getStampIcon } from "@/lib/stampIcons";
 
 function initialsOf(name: string): string {
   const parts = (name || "").trim().split(/\s+/).filter(Boolean);
