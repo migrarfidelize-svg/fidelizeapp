@@ -59,6 +59,7 @@ export interface PromoConfig {
   bgOverlay?: number;
   showCropMarks?: boolean;
   showSafeArea?: boolean;
+  qrScale?: number;
 }
 
 function withAlpha(hex: string, a: number) {
