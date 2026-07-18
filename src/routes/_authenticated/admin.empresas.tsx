@@ -9,9 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Search, MoreVertical, Ban, CheckCircle2, ExternalLink, Trash2, CreditCard } from "lucide-react";
+import { Search, MoreVertical, Ban, CheckCircle2, ExternalLink, Trash2, CreditCard, Download, BarChart3, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/format";
+import { downloadCSV, downloadPDF } from "@/lib/export";
+import { adminReportPaymentFailure } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/empresas")({
   component: AdminEmpresas,
