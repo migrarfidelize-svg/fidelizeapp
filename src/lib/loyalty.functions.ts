@@ -814,7 +814,7 @@ const campaignInput = z.object({
   reward_description: z.string().max(500).optional().or(z.literal("")).transform(v => v || undefined),
   rules: z.string().max(1000).optional().or(z.literal("")).transform(v => v || undefined),
   stamps_required: z.number().int().min(2, "Mínimo de 2 carimbos.").max(50, "Máximo de 50 carimbos."),
-  stamp_icon: z.enum(["star", "heart", "check", "coffee"]).default("star"),
+  stamp_icon: z.string().trim().min(1).max(32).default("star"),
   stamp_validity_days: z.number().int().min(0).max(3650).nullable().optional(),
   reward_validity_days: z.number().int().min(0).max(3650).nullable().optional(),
   primary_color: hexColor,
