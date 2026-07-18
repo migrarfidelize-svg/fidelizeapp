@@ -162,3 +162,238 @@ export const listEmailLogs = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     return { logs: rows ?? [] };
   });
+
+// ============ Email templates (Super Admin only) ============
+export const listEmailTemplates = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("email_templates")
+      .select("id, slug, name, description, subject, variables, is_system, active, updated_at")
+      .order("is_system", { ascending: false })
+      .order("name", { ascending: true });
+    if (error) throw new Error(error.message);
+    return { templates: data ?? [] };
+  });
+
+export const getEmailTemplate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("email_templates").select("*").eq("id", data.id).maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!row) throw new Error("Template não encontrado");
+    return row;
+  });
+
+const templateWriteSchema = z.object({
+  slug: z.string().trim().min(2).max(80).regex(/^[a-z0-9_]+$/, "Use apenas letras minúsculas, números e _"),
+  name: z.string().trim().min(2).max(120),
+  description: z.string().max(500).optional().nullable(),
+  subject: z.string().trim().min(2).max(300),
+  html: z.string().min(10),
+  text: z.string().optional().nullable(),
+  variables: z.array(z.string().max(60)).max(30).default([]),
+  active: z.boolean().default(true),
+});
+
+export const createEmailTemplate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => templateWriteSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin.from("email_templates").insert({
+      slug: data.slug, name: data.name, description: data.description ?? null,
+      subject: data.subject, html: data.html, text: data.text ?? null,
+      variables: data.variables as any, active: data.active,
+      updated_by: context.userId, is_system: false,
+    }).select("id").single();
+    if (error) throw new Error(error.message);
+    return { id: row.id };
+  });
+
+export const updateEmailTemplate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => templateWriteSchema.extend({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // system templates: allow editing content but not slug
+    const { data: current } = await supabaseAdmin.from("email_templates").select("is_system, slug").eq("id", data.id).maybeSingle();
+    if (!current) throw new Error("Template não encontrado");
+    const patch: any = {
+      name: data.name, description: data.description ?? null,
+      subject: data.subject, html: data.html, text: data.text ?? null,
+      variables: data.variables as any, active: data.active,
+      updated_by: context.userId,
+    };
+    if (!current.is_system) patch.slug = data.slug;
+    const { error } = await supabaseAdmin.from("email_templates").update(patch).eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
+export const deleteEmailTemplate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: current } = await supabaseAdmin.from("email_templates").select("is_system").eq("id", data.id).maybeSingle();
+    if (!current) throw new Error("Template não encontrado");
+    if (current.is_system) throw new Error("Templates do sistema não podem ser removidos (apenas desativados).");
+    const { error } = await supabaseAdmin.from("email_templates").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
+export const previewEmailTemplate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    subject: z.string(),
+    html: z.string(),
+    text: z.string().optional().nullable(),
+    variables: z.record(z.string(), z.any()).default({}),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const { renderVariables } = await import("./email.server");
+    return {
+      subject: renderVariables(data.subject, data.variables),
+      html: renderVariables(data.html, data.variables),
+      text: data.text ? renderVariables(data.text, data.variables) : null,
+    };
+  });
+
+export const sendTemplatePreview = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    to: z.string().email(),
+    subject: z.string(),
+    html: z.string(),
+    text: z.string().optional().nullable(),
+    variables: z.record(z.string(), z.any()).default({}),
+    template: z.string().optional(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const { sendPlatformEmail, renderVariables } = await import("./email.server");
+    const res = await sendPlatformEmail({
+      to: data.to,
+      subject: renderVariables(data.subject, data.variables),
+      html: renderVariables(data.html, data.variables),
+      text: data.text ? renderVariables(data.text, data.variables) : undefined,
+      template: data.template ?? "preview",
+      actor_id: context.userId,
+      log_status: "test",
+    });
+    if (!res.ok) throw new Error(res.error ?? "Falha ao enviar prévia");
+    return { ok: true as const, resend_id: res.resend_id };
+  });
+
+// ============ Email queue admin ============
+export const listEmailQueue = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    status: z.enum(["pending","processing","sent","failed","all"]).default("all"),
+    limit: z.number().int().min(1).max(200).default(100),
+  }).parse(d ?? {}))
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    let q = supabaseAdmin.from("email_queue")
+      .select("id, to_email, subject, template, status, attempts, max_attempts, next_attempt_at, last_error, resend_id, created_at, sent_at")
+      .order("created_at", { ascending: false }).limit(data.limit);
+    if (data.status !== "all") q = q.eq("status", data.status);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+    return { items: rows ?? [] };
+  });
+
+export const retryQueueItem = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("email_queue")
+      .update({ status: "pending", next_attempt_at: new Date().toISOString(), last_error: null })
+      .eq("id", data.id).in("status", ["failed","pending","processing"]);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
+export const deleteQueueItem = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("email_queue").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
+export const runQueueNow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const { processEmailQueue } = await import("./email.server");
+    return await processEmailQueue(50);
+  });
+
+// ============ Password recovery (público) ============
+export const requestPasswordRecovery = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({
+    email: z.string().trim().email().max(200),
+    redirect_to: z.string().url().optional(),
+  }).parse(d))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { sendTemplateEmail, enqueueEmail, renderTemplate } = await import("./email.server");
+
+    // Gera link de recuperação via Admin API (não vaza se o usuário existe)
+    let actionLink: string | null = null;
+    let userName = "";
+    try {
+      const { data: link } = await (supabaseAdmin.auth.admin as any).generateLink({
+        type: "recovery",
+        email: data.email,
+        options: data.redirect_to ? { redirectTo: data.redirect_to } : undefined,
+      });
+      actionLink = link?.properties?.action_link ?? null;
+      userName = (link?.user?.user_metadata as any)?.full_name ?? "";
+    } catch {
+      // Silencioso — sempre responder sucesso para evitar user enumeration
+    }
+
+    if (actionLink) {
+      const variables = { name: userName || "cliente", action_link: actionLink };
+      try {
+        await sendTemplateEmail({
+          to: data.email,
+          template: "password_recovery",
+          variables,
+        });
+      } catch (err: any) {
+        // Se o template estiver indisponível, enfileira um fallback
+        try {
+          const rendered = await renderTemplate("password_recovery", variables);
+          await enqueueEmail({
+            to: data.email, subject: rendered.subject, html: rendered.html,
+            text: rendered.text ?? undefined, template: "password_recovery",
+            variables, last_error: err?.message ?? "Falha inicial",
+          });
+        } catch {
+          // último recurso: template ausente
+        }
+      }
+    }
+    return { ok: true as const };
+  });
