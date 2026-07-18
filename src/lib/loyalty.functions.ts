@@ -289,6 +289,183 @@ export const listCustomers = createServerFn({ method: "POST" })
     return { customers: customers ?? [], total: count ?? 0, page: data.page, page_size: data.page_size };
   });
 
+// ---------- Advanced list with filters (Customers base) ----------
+export const listCustomersAdvanced = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    establishment_id: z.string().uuid(),
+    query: z.string().trim().max(80).optional().default(""),
+    status: z.enum(["all", "active", "blocked", "opt_in", "recent", "inactive"]).optional().default("all"),
+    campaign_id: z.string().uuid().optional().nullable(),
+    sort: z.enum(["last_visit", "created", "name", "visits"]).optional().default("last_visit"),
+    dir: z.enum(["asc", "desc"]).optional().default("desc"),
+    page: z.number().int().min(1).default(1),
+    page_size: z.number().int().min(1).max(100).default(20),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const from = (data.page - 1) * data.page_size;
+    const to = from + data.page_size - 1;
+    let query = supabase.from("customers")
+      .select("id, name, phone, code, email, birthdate, visits_count, last_visit_at, created_at, blocked, marketing_opt_in, notes", { count: "exact" })
+      .eq("establishment_id", data.establishment_id);
+    const q = data.query.trim();
+    if (q) {
+      const isPhone = /^\d+$/.test(q);
+      const filter = isPhone
+        ? `phone.ilike.%${q}%,code.ilike.%${q}%`
+        : `name.ilike.%${q}%,phone.ilike.%${q}%,code.ilike.%${q}%,email.ilike.%${q}%`;
+      query = query.or(filter);
+    }
+    if (data.status === "active") query = query.eq("blocked", false);
+    if (data.status === "blocked") query = query.eq("blocked", true);
+    if (data.status === "opt_in") query = query.eq("marketing_opt_in", true);
+    if (data.status === "recent") query = query.gte("last_visit_at", new Date(Date.now() - 30 * 86400_000).toISOString());
+    if (data.status === "inactive") query = query.or(`last_visit_at.is.null,last_visit_at.lt.${new Date(Date.now() - 60 * 86400_000).toISOString()}`);
+    if (data.campaign_id) {
+      const { data: ids } = await supabase.from("loyalty_cards").select("customer_id").eq("campaign_id", data.campaign_id);
+      const cids = (ids ?? []).map((r: { customer_id: string }) => r.customer_id);
+      if (cids.length === 0) return { customers: [], total: 0, page: data.page, page_size: data.page_size };
+      query = query.in("id", cids);
+    }
+    const col = data.sort === "last_visit" ? "last_visit_at" : data.sort === "created" ? "created_at" : data.sort === "name" ? "name" : "visits_count";
+    query = query.order(col, { ascending: data.dir === "asc", nullsFirst: false });
+    const { data: customers, error, count } = await query.range(from, to);
+    if (error) throw new Error(error.message);
+    return { customers: customers ?? [], total: count ?? 0, page: data.page, page_size: data.page_size };
+  });
+
+export const getCustomerStats = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ establishment_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const est = data.establishment_id;
+    const now = Date.now();
+    const [total, blocked, optin, recent, newMonth] = await Promise.all([
+      supabase.from("customers").select("id", { count: "exact", head: true }).eq("establishment_id", est),
+      supabase.from("customers").select("id", { count: "exact", head: true }).eq("establishment_id", est).eq("blocked", true),
+      supabase.from("customers").select("id", { count: "exact", head: true }).eq("establishment_id", est).eq("marketing_opt_in", true),
+      supabase.from("customers").select("id", { count: "exact", head: true }).eq("establishment_id", est).gte("last_visit_at", new Date(now - 30 * 86400_000).toISOString()),
+      supabase.from("customers").select("id", { count: "exact", head: true }).eq("establishment_id", est).gte("created_at", new Date(now - 30 * 86400_000).toISOString()),
+    ]);
+    return {
+      total: total.count ?? 0,
+      blocked: blocked.count ?? 0,
+      opt_in: optin.count ?? 0,
+      active_30d: recent.count ?? 0,
+      new_30d: newMonth.count ?? 0,
+    };
+  });
+
+export const getCustomerDetail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ customer_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: customer, error } = await supabase.from("customers").select("*").eq("id", data.customer_id).maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!customer) throw new Error("Cliente não encontrado");
+    const { data: cards } = await supabase.from("loyalty_cards").select("*, campaigns(id, name, stamps_required, reward_title, stamp_icon, active)").eq("customer_id", customer.id);
+    const cardIds = (cards ?? []).map((c: { id: string }) => c.id);
+    const [stamps, rewards, consents] = await Promise.all([
+      cardIds.length ? supabase.from("stamps").select("id, card_id, created_at, cycle, reverted_at, added_by").in("card_id", cardIds).order("created_at", { ascending: false }).limit(50) : Promise.resolve({ data: [] as unknown[] }),
+      cardIds.length ? supabase.from("rewards").select("*").in("card_id", cardIds).order("unlocked_at", { ascending: false }) : Promise.resolve({ data: [] as unknown[] }),
+      supabase.from("consents").select("*").eq("customer_id", customer.id).order("created_at", { ascending: false }),
+    ]);
+    return {
+      customer,
+      cards: cards ?? [],
+      stamps: (stamps.data as unknown[]) ?? [],
+      rewards: (rewards.data as unknown[]) ?? [],
+      consents: (consents.data as unknown[]) ?? [],
+    };
+  });
+
+const customerInputSchema = z.object({
+  name: z.string().trim().min(2).max(80),
+  phone: z.string().trim().regex(/^\d{10,11}$/, "Telefone inválido"),
+  email: z.string().trim().email().max(120).optional().or(z.literal("")).transform(v => v || null),
+  birthdate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")).transform(v => v || null),
+  notes: z.string().max(1000).optional().or(z.literal("")).transform(v => v || null),
+  marketing_opt_in: z.boolean().default(false),
+});
+
+export const createCustomerRow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    establishment_id: z.string().uuid(),
+    campaign_id: z.string().uuid().optional().nullable(),
+    ...customerInputSchema.shape,
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    // dedupe by phone
+    const { data: dup } = await supabase.from("customers").select("id").eq("establishment_id", data.establishment_id).eq("phone", data.phone).maybeSingle();
+    if (dup) throw new Error("Já existe um cliente com este telefone.");
+    const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+    const access_token = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
+    const { data: created, error } = await supabase.from("customers").insert({
+      establishment_id: data.establishment_id,
+      name: data.name, phone: data.phone, email: data.email, birthdate: data.birthdate,
+      notes: data.notes, marketing_opt_in: data.marketing_opt_in,
+      code, access_token,
+    }).select("*").single();
+    if (error) throw new Error(error.message);
+    if (data.campaign_id) {
+      const { error: ce } = await supabase.from("loyalty_cards").insert({
+        customer_id: created.id, campaign_id: data.campaign_id,
+        establishment_id: data.establishment_id, stamps: 0, cycle: 1,
+      });
+      if (ce) throw new Error("Cliente criado mas cartão falhou: " + ce.message);
+    }
+    await auditLog(data.establishment_id, context.userId, "customer_created", "customer", created.id, { name: created.name });
+    return created;
+  });
+
+export const updateCustomerRow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    customer_id: z.string().uuid(),
+    ...customerInputSchema.shape,
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: upd, error } = await supabase.from("customers").update({
+      name: data.name, phone: data.phone, email: data.email, birthdate: data.birthdate,
+      notes: data.notes, marketing_opt_in: data.marketing_opt_in,
+    }).eq("id", data.customer_id).select("*").single();
+    if (error) throw new Error(error.message);
+    await auditLog(upd.establishment_id, context.userId, "customer_updated", "customer", upd.id, {});
+    return upd;
+  });
+
+export const setCustomerBlocked = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ customer_id: z.string().uuid(), blocked: z.boolean() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: upd, error } = await supabase.from("customers").update({ blocked: data.blocked }).eq("id", data.customer_id).select("id, establishment_id, blocked").single();
+    if (error) throw new Error(error.message);
+    await auditLog(upd.establishment_id, context.userId, data.blocked ? "customer_blocked" : "customer_unblocked", "customer", upd.id, {});
+    return upd;
+  });
+
+export const deleteCustomerRow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ customer_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: c } = await supabase.from("customers").select("id, establishment_id, name").eq("id", data.customer_id).maybeSingle();
+    if (!c) throw new Error("Cliente não encontrado");
+    const { error } = await supabase.from("customers").delete().eq("id", data.customer_id);
+    if (error) throw new Error("Sem permissão ou erro ao excluir: " + error.message);
+    await auditLog(c.establishment_id, context.userId, "customer_deleted", "customer", c.id, { name: c.name });
+    return { ok: true };
+  });
+
+
+
 
 export const getCustomerTokenByCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
