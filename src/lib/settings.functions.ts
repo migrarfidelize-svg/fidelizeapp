@@ -408,10 +408,11 @@ export const processDataRequest = createServerFn({ method: "POST" })
     } else {
       // Anonymize customer + delete cards/consents
       const anonPhone = `deleted_${createHash("sha256").update(req.customer_id).digest("hex").slice(0, 10)}`;
-      await supabaseAdmin.from("customers").update({
-        name: "Cliente removido", phone: anonPhone, email: null, birthday: null,
+      await (supabaseAdmin.from("customers") as any).update({
+        name: "Cliente removido", phone: anonPhone, email: null,
         marketing_opt_in: false, notes: null,
       }).eq("id", req.customer_id);
+
       await supabaseAdmin.from("consents").delete().eq("customer_id", req.customer_id);
       await supabaseAdmin.from("data_requests").update({
         status: "done", processed_at: new Date().toISOString(),
