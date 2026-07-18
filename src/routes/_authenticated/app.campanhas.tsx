@@ -60,7 +60,7 @@ type FormState = {
   reward_description: string;
   rules: string;
   stamps_required: number;
-  stamp_icon: "star" | "heart" | "check" | "coffee";
+  stamp_icon: string;
   stamp_validity_days: string;
   reward_validity_days: string;
   use_custom_colors: boolean;
@@ -120,8 +120,7 @@ function CampanhasPage() {
       reward_description: c.reward_description ?? "",
       rules: c.rules ?? "",
       stamps_required: c.stamps_required,
-      stamp_icon: (["star", "heart", "check", "coffee"] as const).includes(c.stamp_icon as never)
-        ? (c.stamp_icon as FormState["stamp_icon"]) : "star",
+      stamp_icon: c.stamp_icon || "star",
       stamp_validity_days: c.stamp_validity_days?.toString() ?? "",
       reward_validity_days: c.reward_validity_days?.toString() ?? "",
       use_custom_colors: !!(c.primary_color || c.accent_color),
@@ -366,13 +365,31 @@ function CampaignDialog({
             </div>
             <div className="space-y-1.5">
               <Label>Ícone do carimbo</Label>
-              <Select value={form.stamp_icon} onValueChange={(v) => setForm({ ...form, stamp_icon: v as FormState["stamp_icon"] })}>
+              <Select value={form.stamp_icon} onValueChange={(v) => setForm({ ...form, stamp_icon: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="star">Estrela</SelectItem>
                   <SelectItem value="heart">Coração</SelectItem>
                   <SelectItem value="check">Check</SelectItem>
                   <SelectItem value="coffee">Café</SelectItem>
+                  <SelectItem value="scissors">Tesoura</SelectItem>
+                  <SelectItem value="pizza">Pizza</SelectItem>
+                  <SelectItem value="icecream">Sorvete</SelectItem>
+                  <SelectItem value="bag">Sacola</SelectItem>
+                  <SelectItem value="wrench">Chave inglesa</SelectItem>
+                  <SelectItem value="sparkles">Brilho</SelectItem>
+                  <SelectItem value="gift">Presente</SelectItem>
+                  <SelectItem value="beer">Cerveja</SelectItem>
+                  <SelectItem value="wine">Vinho</SelectItem>
+                  <SelectItem value="cookie">Biscoito</SelectItem>
+                  <SelectItem value="cake">Bolo</SelectItem>
+                  <SelectItem value="croissant">Croissant</SelectItem>
+                  <SelectItem value="utensils">Talheres</SelectItem>
+                  <SelectItem value="car">Carro</SelectItem>
+                  <SelectItem value="dumbbell">Halter</SelectItem>
+                  <SelectItem value="flower">Flor</SelectItem>
+                  <SelectItem value="dog">Pet</SelectItem>
+                  <SelectItem value="leaf">Folha</SelectItem>
                 </SelectContent>
               </Select>
             </div>
