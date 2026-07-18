@@ -5,7 +5,7 @@ import { getAdminStatus, bootstrapSuperAdmin } from "@/lib/admin.functions";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock, UsersRound, Settings, Mail } from "lucide-react";
+import { Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock, UsersRound, Settings, Mail, FileText, ListChecks } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -54,7 +54,9 @@ function AdminLayout() {
     { to: "/admin/alertas", label: "Alertas", icon: Bell, exact: false },
     { to: "/admin/auditoria", label: "Auditoria", icon: FileClock, exact: false },
     { to: "/admin/equipe", label: "Equipe", icon: UsersRound, exact: false },
-    { to: "/admin/emails", label: "E-mail", icon: Mail, exact: false },
+    { to: "/admin/emails", label: "E-mail", icon: Mail, exact: true },
+    { to: "/admin/email-templates", label: "Templates", icon: FileText, exact: false },
+    { to: "/admin/email-fila", label: "Fila de envio", icon: ListChecks, exact: false },
     { to: "/admin/config", label: "Configurações", icon: Settings, exact: false },
   ] as const;
 

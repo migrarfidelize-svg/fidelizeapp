@@ -445,6 +445,117 @@ export type Database = {
         }
         Relationships: []
       }
+      email_queue: {
+        Row: {
+          actor_id: string | null
+          attempts: number
+          created_at: string
+          establishment_id: string | null
+          html: string
+          id: string
+          last_error: string | null
+          max_attempts: number
+          next_attempt_at: string
+          resend_id: string | null
+          sent_at: string | null
+          status: string
+          subject: string
+          template: string | null
+          text: string | null
+          to_email: string
+          updated_at: string
+          variables: Json
+        }
+        Insert: {
+          actor_id?: string | null
+          attempts?: number
+          created_at?: string
+          establishment_id?: string | null
+          html: string
+          id?: string
+          last_error?: string | null
+          max_attempts?: number
+          next_attempt_at?: string
+          resend_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subject: string
+          template?: string | null
+          text?: string | null
+          to_email: string
+          updated_at?: string
+          variables?: Json
+        }
+        Update: {
+          actor_id?: string | null
+          attempts?: number
+          created_at?: string
+          establishment_id?: string | null
+          html?: string
+          id?: string
+          last_error?: string | null
+          max_attempts?: number
+          next_attempt_at?: string
+          resend_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          template?: string | null
+          text?: string | null
+          to_email?: string
+          updated_at?: string
+          variables?: Json
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          html: string
+          id: string
+          is_system: boolean
+          name: string
+          slug: string
+          subject: string
+          text: string | null
+          updated_at: string
+          updated_by: string | null
+          variables: Json
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          html: string
+          id?: string
+          is_system?: boolean
+          name: string
+          slug: string
+          subject: string
+          text?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          variables?: Json
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          html?: string
+          id?: string
+          is_system?: boolean
+          name?: string
+          slug?: string
+          subject?: string
+          text?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          variables?: Json
+        }
+        Relationships: []
+      }
       establishment_members: {
         Row: {
           active: boolean

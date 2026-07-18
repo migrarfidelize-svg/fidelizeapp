@@ -20,6 +20,8 @@ import { Route as SuporteMeusRouteImport } from './routes/suporte.meus'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as CTokenRouteImport } from './routes/c.$token'
+import { Route as AuthRecuperarRouteImport } from './routes/auth.recuperar'
+import { Route as AuthNovaSenhaRouteImport } from './routes/auth.nova-senha'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as SuporteSlugIndexRouteImport } from './routes/suporte.$slug.index'
@@ -37,11 +39,14 @@ import { Route as AuthenticatedAppCampanhasRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminEquipeRouteImport } from './routes/_authenticated/admin.equipe'
 import { Route as AuthenticatedAdminEmpresasRouteImport } from './routes/_authenticated/admin.empresas'
 import { Route as AuthenticatedAdminEmailsRouteImport } from './routes/_authenticated/admin.emails'
+import { Route as AuthenticatedAdminEmailTemplatesRouteImport } from './routes/_authenticated/admin.email-templates'
+import { Route as AuthenticatedAdminEmailFilaRouteImport } from './routes/_authenticated/admin.email-fila'
 import { Route as AuthenticatedAdminConfigRouteImport } from './routes/_authenticated/admin.config'
 import { Route as AuthenticatedAdminAuditoriaRouteImport } from './routes/_authenticated/admin.auditoria'
 import { Route as AuthenticatedAdminAssinaturasRouteImport } from './routes/_authenticated/admin.assinaturas'
 import { Route as AuthenticatedAdminAlertasRouteImport } from './routes/_authenticated/admin.alertas'
 import { Route as SuporteSlugKbArticleRouteImport } from './routes/suporte.$slug.kb.$article'
+import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/api/public/hooks/process-email-queue'
 import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authenticated/admin.empresa.$id'
 
 const TermosRoute = TermosRouteImport.update({
@@ -97,6 +102,16 @@ const CTokenRoute = CTokenRouteImport.update({
   id: '/c/$token',
   path: '/c/$token',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRecuperarRoute = AuthRecuperarRouteImport.update({
+  id: '/recuperar',
+  path: '/recuperar',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthNovaSenhaRoute = AuthNovaSenhaRouteImport.update({
+  id: '/nova-senha',
+  path: '/nova-senha',
+  getParentRoute: () => AuthRoute,
 } as any)
 const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   id: '/app',
@@ -189,6 +204,18 @@ const AuthenticatedAdminEmailsRoute =
     path: '/emails',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminEmailTemplatesRoute =
+  AuthenticatedAdminEmailTemplatesRouteImport.update({
+    id: '/email-templates',
+    path: '/email-templates',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminEmailFilaRoute =
+  AuthenticatedAdminEmailFilaRouteImport.update({
+    id: '/email-fila',
+    path: '/email-fila',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminConfigRoute =
   AuthenticatedAdminConfigRouteImport.update({
     id: '/config',
@@ -218,6 +245,12 @@ const SuporteSlugKbArticleRoute = SuporteSlugKbArticleRouteImport.update({
   path: '/suporte/$slug/kb/$article',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksProcessEmailQueueRoute =
+  ApiPublicHooksProcessEmailQueueRouteImport.update({
+    id: '/api/public/hooks/process-email-queue',
+    path: '/api/public/hooks/process-email-queue',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedAdminEmpresaIdRoute =
   AuthenticatedAdminEmpresaIdRouteImport.update({
     id: '/empresa/$id',
@@ -227,13 +260,15 @@ const AuthenticatedAdminEmpresaIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/precos': typeof PrecosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/app': typeof AuthenticatedAppRouteWithChildren
+  '/auth/nova-senha': typeof AuthNovaSenhaRoute
+  '/auth/recuperar': typeof AuthRecuperarRoute
   '/c/$token': typeof CTokenRoute
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
@@ -242,6 +277,8 @@ export interface FileRoutesByFullPath {
   '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
   '/admin/config': typeof AuthenticatedAdminConfigRoute
+  '/admin/email-fila': typeof AuthenticatedAdminEmailFilaRoute
+  '/admin/email-templates': typeof AuthenticatedAdminEmailTemplatesRoute
   '/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/admin/empresas': typeof AuthenticatedAdminEmpresasRoute
   '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
@@ -258,15 +295,18 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AuthenticatedAppIndexRoute
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
+  '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/precos': typeof PrecosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
+  '/auth/nova-senha': typeof AuthNovaSenhaRoute
+  '/auth/recuperar': typeof AuthRecuperarRoute
   '/c/$token': typeof CTokenRoute
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
@@ -275,6 +315,8 @@ export interface FileRoutesByTo {
   '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
   '/admin/config': typeof AuthenticatedAdminConfigRoute
+  '/admin/email-fila': typeof AuthenticatedAdminEmailFilaRoute
+  '/admin/email-templates': typeof AuthenticatedAdminEmailTemplatesRoute
   '/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/admin/empresas': typeof AuthenticatedAdminEmpresasRoute
   '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
@@ -291,19 +333,22 @@ export interface FileRoutesByTo {
   '/app': typeof AuthenticatedAppIndexRoute
   '/suporte/$slug': typeof SuporteSlugIndexRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
+  '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/precos': typeof PrecosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
+  '/auth/nova-senha': typeof AuthNovaSenhaRoute
+  '/auth/recuperar': typeof AuthRecuperarRoute
   '/c/$token': typeof CTokenRoute
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
@@ -312,6 +357,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/_authenticated/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
   '/_authenticated/admin/config': typeof AuthenticatedAdminConfigRoute
+  '/_authenticated/admin/email-fila': typeof AuthenticatedAdminEmailFilaRoute
+  '/_authenticated/admin/email-templates': typeof AuthenticatedAdminEmailTemplatesRoute
   '/_authenticated/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/_authenticated/admin/empresas': typeof AuthenticatedAdminEmpresasRoute
   '/_authenticated/admin/equipe': typeof AuthenticatedAdminEquipeRoute
@@ -328,6 +375,7 @@ export interface FileRoutesById {
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
   '/_authenticated/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
+  '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
 }
 export interface FileRouteTypes {
@@ -341,6 +389,8 @@ export interface FileRouteTypes {
     | '/termos'
     | '/admin'
     | '/app'
+    | '/auth/nova-senha'
+    | '/auth/recuperar'
     | '/c/$token'
     | '/invite/$token'
     | '/l/$slug'
@@ -349,6 +399,8 @@ export interface FileRouteTypes {
     | '/admin/assinaturas'
     | '/admin/auditoria'
     | '/admin/config'
+    | '/admin/email-fila'
+    | '/admin/email-templates'
     | '/admin/emails'
     | '/admin/empresas'
     | '/admin/equipe'
@@ -365,6 +417,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/suporte/$slug/'
     | '/admin/empresa/$id'
+    | '/api/public/hooks/process-email-queue'
     | '/suporte/$slug/kb/$article'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -374,6 +427,8 @@ export interface FileRouteTypes {
     | '/precos'
     | '/privacidade'
     | '/termos'
+    | '/auth/nova-senha'
+    | '/auth/recuperar'
     | '/c/$token'
     | '/invite/$token'
     | '/l/$slug'
@@ -382,6 +437,8 @@ export interface FileRouteTypes {
     | '/admin/assinaturas'
     | '/admin/auditoria'
     | '/admin/config'
+    | '/admin/email-fila'
+    | '/admin/email-templates'
     | '/admin/emails'
     | '/admin/empresas'
     | '/admin/equipe'
@@ -398,6 +455,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/suporte/$slug'
     | '/admin/empresa/$id'
+    | '/api/public/hooks/process-email-queue'
     | '/suporte/$slug/kb/$article'
   id:
     | '__root__'
@@ -410,6 +468,8 @@ export interface FileRouteTypes {
     | '/termos'
     | '/_authenticated/admin'
     | '/_authenticated/app'
+    | '/auth/nova-senha'
+    | '/auth/recuperar'
     | '/c/$token'
     | '/invite/$token'
     | '/l/$slug'
@@ -418,6 +478,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/assinaturas'
     | '/_authenticated/admin/auditoria'
     | '/_authenticated/admin/config'
+    | '/_authenticated/admin/email-fila'
+    | '/_authenticated/admin/email-templates'
     | '/_authenticated/admin/emails'
     | '/_authenticated/admin/empresas'
     | '/_authenticated/admin/equipe'
@@ -434,13 +496,14 @@ export interface FileRouteTypes {
     | '/_authenticated/app/'
     | '/suporte/$slug/'
     | '/_authenticated/admin/empresa/$id'
+    | '/api/public/hooks/process-email-queue'
     | '/suporte/$slug/kb/$article'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  AuthRoute: typeof AuthRoute
+  AuthRoute: typeof AuthRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
   PrecosRoute: typeof PrecosRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
@@ -452,6 +515,7 @@ export interface RootRouteChildren {
   SuporteSlugNovoRoute: typeof SuporteSlugNovoRoute
   SuporteChamadoIdRoute: typeof SuporteChamadoIdRoute
   SuporteSlugIndexRoute: typeof SuporteSlugIndexRoute
+  ApiPublicHooksProcessEmailQueueRoute: typeof ApiPublicHooksProcessEmailQueueRoute
   SuporteSlugKbArticleRoute: typeof SuporteSlugKbArticleRoute
 }
 
@@ -533,6 +597,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/c/$token'
       preLoaderRoute: typeof CTokenRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/auth/recuperar': {
+      id: '/auth/recuperar'
+      path: '/recuperar'
+      fullPath: '/auth/recuperar'
+      preLoaderRoute: typeof AuthRecuperarRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/nova-senha': {
+      id: '/auth/nova-senha'
+      path: '/nova-senha'
+      fullPath: '/auth/nova-senha'
+      preLoaderRoute: typeof AuthNovaSenhaRouteImport
+      parentRoute: typeof AuthRoute
     }
     '/_authenticated/app': {
       id: '/_authenticated/app'
@@ -653,6 +731,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminEmailsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/email-templates': {
+      id: '/_authenticated/admin/email-templates'
+      path: '/email-templates'
+      fullPath: '/admin/email-templates'
+      preLoaderRoute: typeof AuthenticatedAdminEmailTemplatesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/email-fila': {
+      id: '/_authenticated/admin/email-fila'
+      path: '/email-fila'
+      fullPath: '/admin/email-fila'
+      preLoaderRoute: typeof AuthenticatedAdminEmailFilaRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/config': {
       id: '/_authenticated/admin/config'
       path: '/config'
@@ -688,6 +780,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuporteSlugKbArticleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/process-email-queue': {
+      id: '/api/public/hooks/process-email-queue'
+      path: '/api/public/hooks/process-email-queue'
+      fullPath: '/api/public/hooks/process-email-queue'
+      preLoaderRoute: typeof ApiPublicHooksProcessEmailQueueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/empresa/$id': {
       id: '/_authenticated/admin/empresa/$id'
       path: '/empresa/$id'
@@ -703,6 +802,8 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminAssinaturasRoute: typeof AuthenticatedAdminAssinaturasRoute
   AuthenticatedAdminAuditoriaRoute: typeof AuthenticatedAdminAuditoriaRoute
   AuthenticatedAdminConfigRoute: typeof AuthenticatedAdminConfigRoute
+  AuthenticatedAdminEmailFilaRoute: typeof AuthenticatedAdminEmailFilaRoute
+  AuthenticatedAdminEmailTemplatesRoute: typeof AuthenticatedAdminEmailTemplatesRoute
   AuthenticatedAdminEmailsRoute: typeof AuthenticatedAdminEmailsRoute
   AuthenticatedAdminEmpresasRoute: typeof AuthenticatedAdminEmpresasRoute
   AuthenticatedAdminEquipeRoute: typeof AuthenticatedAdminEquipeRoute
@@ -715,6 +816,8 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminAssinaturasRoute: AuthenticatedAdminAssinaturasRoute,
   AuthenticatedAdminAuditoriaRoute: AuthenticatedAdminAuditoriaRoute,
   AuthenticatedAdminConfigRoute: AuthenticatedAdminConfigRoute,
+  AuthenticatedAdminEmailFilaRoute: AuthenticatedAdminEmailFilaRoute,
+  AuthenticatedAdminEmailTemplatesRoute: AuthenticatedAdminEmailTemplatesRoute,
   AuthenticatedAdminEmailsRoute: AuthenticatedAdminEmailsRoute,
   AuthenticatedAdminEmpresasRoute: AuthenticatedAdminEmpresasRoute,
   AuthenticatedAdminEquipeRoute: AuthenticatedAdminEquipeRoute,
@@ -763,10 +866,22 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface AuthRouteChildren {
+  AuthNovaSenhaRoute: typeof AuthNovaSenhaRoute
+  AuthRecuperarRoute: typeof AuthRecuperarRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthNovaSenhaRoute: AuthNovaSenhaRoute,
+  AuthRecuperarRoute: AuthRecuperarRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  AuthRoute: AuthRoute,
+  AuthRoute: AuthRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
   PrecosRoute: PrecosRoute,
   PrivacidadeRoute: PrivacidadeRoute,
@@ -778,6 +893,7 @@ const rootRouteChildren: RootRouteChildren = {
   SuporteSlugNovoRoute: SuporteSlugNovoRoute,
   SuporteChamadoIdRoute: SuporteChamadoIdRoute,
   SuporteSlugIndexRoute: SuporteSlugIndexRoute,
+  ApiPublicHooksProcessEmailQueueRoute: ApiPublicHooksProcessEmailQueueRoute,
   SuporteSlugKbArticleRoute: SuporteSlugKbArticleRoute,
 }
 export const routeTree = rootRouteImport
