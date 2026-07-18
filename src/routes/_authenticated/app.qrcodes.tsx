@@ -211,6 +211,7 @@ type StoredState = {
   primaryColor: string; accentColor: string; backgroundColor: string; textColor: string;
   showBrand: boolean; bgImageUrl: string | null; bgZoom: number; bgOffsetX: number; bgOffsetY: number; bgOverlay: number;
   qrScale?: number;
+  qrColor?: string;
 };
 const storageKey = (estId: string) => `fidelize-promos-v1-${estId}`;
 function loadVariations(estId: string): SavedVariation[] {
@@ -244,6 +245,7 @@ function QRCodes() {
   const [ctaFooter, setCtaFooter] = useState("Escaneie e participe agora");
   const [rewardTextOverride, setRewardTextOverride] = useState("");
   const [primaryColor, setPrimaryColor] = useState<string>(SEGMENT_DEFAULTS.espetinhos.primary);
+  const [qrColor, setQrColor] = useState<string>("#111827");
   const [accentColor, setAccentColor] = useState<string>(SEGMENT_DEFAULTS.espetinhos.accent);
   const [backgroundColor, setBackgroundColor] = useState<string>(SEGMENT_DEFAULTS.espetinhos.bg);
   const [textColor, setTextColor] = useState<string>("#111827");
@@ -279,11 +281,11 @@ function QRCodes() {
   // QR generation
   useEffect(() => {
     if (!publicUrl) return;
-    QRCode.toDataURL(publicUrl, { width: 1200, margin: 1, errorCorrectionLevel: "H", color: { dark: primaryColor, light: "#ffffff" } }).then(setQrDataUrl);
-  }, [publicUrl, primaryColor]);
+    QRCode.toDataURL(publicUrl, { width: 1200, margin: 1, errorCorrectionLevel: "H", color: { dark: qrColor, light: "#ffffff" } }).then(setQrDataUrl);
+  }, [publicUrl, qrColor]);
 
   // Scannability: QR dark modules vs white module background
-  const qrContrast = useMemo(() => contrastRatio(primaryColor, "#ffffff"), [primaryColor]);
+  const qrContrast = useMemo(() => contrastRatio(qrColor, "#ffffff"), [qrColor]);
   const qrOk = qrContrast >= 4.5;
   const qrWarn = qrContrast < 4.5 && qrContrast >= 3.0;
   const qrBad = qrContrast < 3.0;
@@ -292,23 +294,23 @@ function QRCodes() {
   const cardVsBgContrast = useMemo(() => contrastRatio("#ffffff", backgroundColor), [backgroundColor]);
   const cardBlend = !bgImageUrl && cardVsBgContrast < 1.3;
 
-  // Auto-fix: darken primary color progressively until it reaches WCAG 4.5:1 vs white
+  // Auto-fix: darken QR color progressively until it reaches WCAG 4.5:1 vs white
   function autoFixQrContrast() {
-    const { r, g, b } = hexToRgb(primaryColor);
+    const { r, g, b } = hexToRgb(qrColor);
     const toHex = (r: number, g: number, b: number) =>
       "#" + [r, g, b].map(v => Math.max(0, Math.min(255, v)).toString(16).padStart(2, "0")).join("");
     let cur = { r, g, b };
     for (let i = 0; i < 24; i++) {
       const hex = toHex(cur.r, cur.g, cur.b);
       if (contrastRatio(hex, "#ffffff") >= 4.5) {
-        setPrimaryColor(hex);
-        toast.success("Cor ajustada para máxima legibilidade do QR");
+        setQrColor(hex);
+        toast.success("Cor do QR ajustada para máxima legibilidade");
         return;
       }
       cur = { r: Math.round(cur.r * 0.88), g: Math.round(cur.g * 0.88), b: Math.round(cur.b * 0.88) };
     }
-    setPrimaryColor("#111827");
-    toast.success("Cor ajustada para máxima legibilidade do QR");
+    setQrColor("#111827");
+    toast.success("Cor do QR ajustada para máxima legibilidade");
   }
 
 
@@ -330,9 +332,9 @@ function QRCodes() {
     logoUrl: est?.logo_url, qrDataUrl, publicUrl,
     benefits: ["Cartão sempre no celular", "Nenhum aplicativo necessário", "Recompensas exclusivas", "Cadastro em segundos"],
     contactLine, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay,
-    showCropMarks, showSafeArea, qrScale,
+    showCropMarks, showSafeArea, qrScale, qrColor,
     ...overrides,
-  }), [format, segment, title, subtitle, ctaNearQR, ctaFooter, rewardText, primaryColor, accentColor, backgroundColor, textColor, showBrand, est, qrDataUrl, publicUrl, contactLine, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay, showCropMarks, showSafeArea, qrScale]);
+  }), [format, segment, title, subtitle, ctaNearQR, ctaFooter, rewardText, primaryColor, accentColor, backgroundColor, textColor, showBrand, est, qrDataUrl, publicUrl, contactLine, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay, showCropMarks, showSafeArea, qrScale, qrColor]);
 
   const config = buildConfig();
   const dims = FORMATS[format];
@@ -468,7 +470,7 @@ function QRCodes() {
 
   // ---------- Variations ----------
   function currentState(): StoredState {
-    return { format, segment, title, subtitle, ctaNearQR, ctaFooter, rewardTextOverride, primaryColor, accentColor, backgroundColor, textColor, showBrand, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay, qrScale };
+    return { format, segment, title, subtitle, ctaNearQR, ctaFooter, rewardTextOverride, primaryColor, accentColor, backgroundColor, textColor, showBrand, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay, qrScale, qrColor };
   }
   function applyState(s: StoredState) {
     setFormat(s.format); setSegment(s.segment); setTitle(s.title); setSubtitle(s.subtitle);
@@ -476,6 +478,7 @@ function QRCodes() {
     setPrimaryColor(s.primaryColor); setAccentColor(s.accentColor); setBackgroundColor(s.backgroundColor); setTextColor(s.textColor);
     setShowBrand(s.showBrand); setBgImageUrl(s.bgImageUrl); setBgZoom(s.bgZoom); setBgOffsetX(s.bgOffsetX); setBgOffsetY(s.bgOffsetY); setBgOverlay(s.bgOverlay);
     if (typeof s.qrScale === "number") { setQrAuto(false); setQrScale(s.qrScale); }
+    if (typeof s.qrColor === "string") setQrColor(s.qrColor);
   }
   function saveVariation() {
     if (!est?.id) return;
@@ -523,11 +526,13 @@ function QRCodes() {
     try {
       for (const v of variations) {
         // regenerate QR with variation's primary
-        const qr = await QRCode.toDataURL(publicUrl, { width: 1200, margin: 1, errorCorrectionLevel: "H", color: { dark: v.state.primaryColor, light: "#ffffff" } });
+        const qrHex = v.state.qrColor ?? v.state.primaryColor;
+        const qr = await QRCode.toDataURL(publicUrl, { width: 1200, margin: 1, errorCorrectionLevel: "H", color: { dark: qrHex, light: "#ffffff" } });
         const cfg: PromoConfig = {
           ...v.state, rewardText: v.state.rewardTextOverride.trim() || rewardText,
           establishmentName: est?.name ?? "", logoUrl: est?.logo_url, qrDataUrl: qr, publicUrl,
           benefits: config.benefits, contactLine, showCropMarks: true, showSafeArea: false,
+          qrColor: qrHex,
         };
         const node = await renderBatch(cfg);
         const dataUrl = await capture(node, "png");
@@ -709,10 +714,15 @@ function QRCodes() {
                     <Button size="sm" variant="outline" onClick={() => applySegmentPreset(segment, "texts")} className="h-7 text-xs">Só textos</Button>
                   </div>
                 </div>
-                <ColorField label="Cor principal (afeta contraste do QR)" value={primaryColor} onChange={setPrimaryColor} />
+                <ColorField label="Cor principal" value={primaryColor} onChange={setPrimaryColor} />
                 <ColorField label="Cor secundária" value={accentColor} onChange={setAccentColor} />
                 <ColorField label="Fundo" value={backgroundColor} onChange={setBackgroundColor} />
                 <ColorField label="Textos" value={textColor} onChange={setTextColor} />
+                <div className="rounded-lg border p-3 space-y-2">
+                  <ColorField label="Cor do QR Code" value={qrColor} onChange={setQrColor} />
+                  <p className="text-[11px] text-muted-foreground">Só afeta os módulos do QR. Use uma cor bem escura para máxima leitura da câmera.</p>
+                  <Button size="sm" variant="outline" onClick={() => setQrColor(primaryColor)} className="h-7 text-xs w-full">Usar cor principal</Button>
+                </div>
               </TabsContent>
 
               <TabsContent value="bg" className="space-y-4 pt-4">
