@@ -121,12 +121,36 @@ function Clientes() {
   const [editing, setEditing] = useState<CustomerRow | null>(null);
   const [creating, setCreating] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<CustomerRow | null>(null);
+  const [importing, setImporting] = useState(false);
+
+  // Bulk selection (per page; ids only)
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkAction, setBulkAction] = useState<"block" | "unblock" | "delete" | null>(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
+
+  function toggleOne(id: string, on: boolean) {
+    setSelected(prev => {
+      const n = new Set(prev);
+      if (on) n.add(id); else n.delete(id);
+      return n;
+    });
+  }
+  function togglePage(on: boolean) {
+    setSelected(prev => {
+      const n = new Set(prev);
+      rows.forEach(r => { if (on) n.add(r.id); else n.delete(r.id); });
+      return n;
+    });
+  }
+  const pageSelectedCount = rows.filter(r => selected.has(r.id)).length;
+  const allPageSelected = rows.length > 0 && pageSelectedCount === rows.length;
 
   function applySearch() { setPage(1); setSearchTerm(q.trim()); }
   function resetFilters() {
     setQ(""); setSearchTerm(""); setStatus("all"); setCampaignFilter("all");
     setSort("last_visit"); setDir("desc"); setPage(1);
   }
+
 
   const activeFilters = useMemo(() => {
     const f: string[] = [];
