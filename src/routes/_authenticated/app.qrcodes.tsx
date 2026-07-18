@@ -474,7 +474,7 @@ function QRCodes() {
 
   // ---------- Variations ----------
   function currentState(): StoredState {
-    return { format, segment, title, subtitle, ctaNearQR, ctaFooter, rewardTextOverride, primaryColor, accentColor, backgroundColor, textColor, showBrand, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay, qrScale, qrColor, cornerStyle };
+    return { format, segment, title, subtitle, ctaNearQR, ctaFooter, rewardTextOverride, primaryColor, accentColor, backgroundColor, textColor, showBrand, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay, qrScale, qrColor, cornerStyle, cornerRadiusPct };
   }
   function applyState(s: StoredState) {
     setFormat(s.format); setSegment(s.segment); setTitle(s.title); setSubtitle(s.subtitle);
@@ -484,6 +484,7 @@ function QRCodes() {
     if (typeof s.qrScale === "number") { setQrAuto(false); setQrScale(s.qrScale); }
     if (typeof s.qrColor === "string") setQrColor(s.qrColor);
     if (s.cornerStyle === "sharp" || s.cornerStyle === "rounded") setCornerStyle(s.cornerStyle);
+    if (typeof s.cornerRadiusPct === "number") setCornerRadiusPct(s.cornerRadiusPct);
   }
   function saveVariation() {
     if (!est?.id) return;
