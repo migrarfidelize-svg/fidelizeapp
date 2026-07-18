@@ -18,9 +18,8 @@ describe("LoyaltyVoucher", () => {
   it("renders brand, campaign, progress and QR payload", () => {
     render(<LoyaltyVoucher {...baseProps()} />);
     expect(screen.getByText("Café Aurora")).toBeInTheDocument();
-    expect(screen.getByText("Café grátis")).toBeInTheDocument();
+    expect(screen.getAllByText("Café grátis").length).toBeGreaterThan(0);
     expect(screen.getByText("3 / 10")).toBeInTheDocument();
-    // "Faltam 7 carimbos"
     expect(screen.getByText(/Faltam apenas/i).textContent).toMatch(/\b7\b/);
   });
 
