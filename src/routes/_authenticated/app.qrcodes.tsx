@@ -213,6 +213,7 @@ type StoredState = {
   qrScale?: number;
   qrColor?: string;
   cornerStyle?: "sharp" | "rounded";
+  cornerRadiusPct?: number;
 };
 const storageKey = (estId: string) => `fidelize-promos-v1-${estId}`;
 function loadVariations(estId: string): SavedVariation[] {
@@ -263,6 +264,7 @@ function QRCodes() {
   const [qrScale, setQrScale] = useState<number>(AUTO_QR_SCALE.story);
   const [qrAuto, setQrAuto] = useState(true);
   const [cornerStyle, setCornerStyle] = useState<"sharp" | "rounded">("sharp");
+  const [cornerRadiusPct, setCornerRadiusPct] = useState<number>(0);
   useEffect(() => { if (qrAuto) setQrScale(AUTO_QR_SCALE[format]); }, [format, qrAuto]);
   const [exporting, setExporting] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
@@ -334,9 +336,9 @@ function QRCodes() {
     logoUrl: est?.logo_url, qrDataUrl, publicUrl,
     benefits: ["Cartão sempre no celular", "Nenhum aplicativo necessário", "Recompensas exclusivas", "Cadastro em segundos"],
     contactLine, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay,
-    showCropMarks, showSafeArea, qrScale, qrColor, cornerStyle,
+    showCropMarks, showSafeArea, qrScale, qrColor, cornerStyle, cornerRadiusPct,
     ...overrides,
-  }), [format, segment, title, subtitle, ctaNearQR, ctaFooter, rewardText, primaryColor, accentColor, backgroundColor, textColor, showBrand, est, qrDataUrl, publicUrl, contactLine, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay, showCropMarks, showSafeArea, qrScale, qrColor, cornerStyle]);
+  }), [format, segment, title, subtitle, ctaNearQR, ctaFooter, rewardText, primaryColor, accentColor, backgroundColor, textColor, showBrand, est, qrDataUrl, publicUrl, contactLine, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay, showCropMarks, showSafeArea, qrScale, qrColor, cornerStyle, cornerRadiusPct]);
 
   const config = buildConfig();
   const dims = FORMATS[format];
@@ -472,7 +474,7 @@ function QRCodes() {
 
   // ---------- Variations ----------
   function currentState(): StoredState {
-    return { format, segment, title, subtitle, ctaNearQR, ctaFooter, rewardTextOverride, primaryColor, accentColor, backgroundColor, textColor, showBrand, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay, qrScale, qrColor, cornerStyle };
+    return { format, segment, title, subtitle, ctaNearQR, ctaFooter, rewardTextOverride, primaryColor, accentColor, backgroundColor, textColor, showBrand, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay, qrScale, qrColor, cornerStyle, cornerRadiusPct };
   }
   function applyState(s: StoredState) {
     setFormat(s.format); setSegment(s.segment); setTitle(s.title); setSubtitle(s.subtitle);
@@ -482,6 +484,7 @@ function QRCodes() {
     if (typeof s.qrScale === "number") { setQrAuto(false); setQrScale(s.qrScale); }
     if (typeof s.qrColor === "string") setQrColor(s.qrColor);
     if (s.cornerStyle === "sharp" || s.cornerStyle === "rounded") setCornerStyle(s.cornerStyle);
+    if (typeof s.cornerRadiusPct === "number") setCornerRadiusPct(s.cornerRadiusPct);
   }
   function saveVariation() {
     if (!est?.id) return;
@@ -777,14 +780,23 @@ function QRCodes() {
                   <p className="text-[11px] text-muted-foreground">Aumenta ou reduz o QR mantendo a área de respiro. A auto-escala escolhe o melhor tamanho por formato para leitura fácil à distância.</p>
                 </div>
 
-                <div className="rounded-lg border p-3 space-y-2">
+                <div className="rounded-lg border p-3 space-y-3">
                   <div className="text-xs font-medium">Formato dos cantos</div>
                   <div className="grid grid-cols-2 gap-2">
-                    <Button size="sm" variant={cornerStyle === "sharp" ? "default" : "outline"} onClick={() => setCornerStyle("sharp")} className="h-8 text-xs">Quadrado</Button>
-                    <Button size="sm" variant={cornerStyle === "rounded" ? "default" : "outline"} onClick={() => setCornerStyle("rounded")} className="h-8 text-xs">Arredondado</Button>
+                    <Button size="sm" variant={cornerRadiusPct === 0 ? "default" : "outline"} onClick={() => { setCornerStyle("sharp"); setCornerRadiusPct(0); }} className="h-8 text-xs">Quadrado</Button>
+                    <Button size="sm" variant={cornerRadiusPct > 0 ? "default" : "outline"} onClick={() => { setCornerStyle("rounded"); if (cornerRadiusPct === 0) setCornerRadiusPct(6); }} className="h-8 text-xs">Arredondado</Button>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">Deixa o material com cantos retos ou suavemente arredondados. Nos formatos de impressão, o arredondamento aparece dentro da linha de corte.</p>
+                  <SliderField
+                    label={`Raio dos cantos (${cornerRadiusPct}%)`}
+                    value={cornerRadiusPct}
+                    min={0}
+                    max={30}
+                    step={1}
+                    onChange={(v) => { setCornerRadiusPct(v); setCornerStyle(v > 0 ? "rounded" : "sharp"); }}
+                  />
+                  <p className="text-[11px] text-muted-foreground">0% = quadrado, 30% = super arredondado. Nos formatos de impressão, o arredondamento aparece dentro da linha de corte.</p>
                 </div>
+
 
                 <Row label="Mostrar guias de área segura" hint="Só na prévia — mostra até onde o conteúdo pode chegar">
                   <Switch checked={showSafeArea} onCheckedChange={setShowSafeArea} />
