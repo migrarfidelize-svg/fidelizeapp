@@ -526,11 +526,13 @@ function QRCodes() {
     try {
       for (const v of variations) {
         // regenerate QR with variation's primary
-        const qr = await QRCode.toDataURL(publicUrl, { width: 1200, margin: 1, errorCorrectionLevel: "H", color: { dark: v.state.primaryColor, light: "#ffffff" } });
+        const qrHex = v.state.qrColor ?? v.state.primaryColor;
+        const qr = await QRCode.toDataURL(publicUrl, { width: 1200, margin: 1, errorCorrectionLevel: "H", color: { dark: qrHex, light: "#ffffff" } });
         const cfg: PromoConfig = {
           ...v.state, rewardText: v.state.rewardTextOverride.trim() || rewardText,
           establishmentName: est?.name ?? "", logoUrl: est?.logo_url, qrDataUrl: qr, publicUrl,
           benefits: config.benefits, contactLine, showCropMarks: true, showSafeArea: false,
+          qrColor: qrHex,
         };
         const node = await renderBatch(cfg);
         const dataUrl = await capture(node, "png");
