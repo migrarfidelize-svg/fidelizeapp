@@ -41,6 +41,7 @@ function extractToken(raw: string): string | null {
 function Carimbar() {
   const getEsts = useServerFn(getMyEstablishments);
   const search = useServerFn(searchCustomer);
+  const listAll = useServerFn(listCustomers);
   const addStampFn = useServerFn(addStamp);
   const undoFn = useServerFn(undoLastStamp);
   const getCard = useServerFn(getCardByToken);
