@@ -98,7 +98,7 @@ function AgentInbox() {
         </div>
 
         <div>
-          {selected ? <TicketDetail id={selected} onChange={() => qc.invalidateQueries({ queryKey: ["hd-tickets"] })} /> : (
+          {selected ? <TicketDetail id={selected} establishmentId={est.id} onChange={() => qc.invalidateQueries({ queryKey: ["hd-tickets"] })} /> : (
             <div className="rounded-2xl border bg-card grid place-items-center h-[70vh] text-muted-foreground text-sm">Selecione um chamado</div>
           )}
         </div>
