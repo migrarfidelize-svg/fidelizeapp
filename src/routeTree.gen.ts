@@ -30,7 +30,6 @@ import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as SuporteChamadoIdRouteImport } from './routes/suporte.chamado.$id'
 import { Route as SuporteSlugNovoRouteImport } from './routes/suporte.$slug.novo'
-import { Route as AuthenticatedSuporteIdRouteImport } from './routes/_authenticated/suporte.$id'
 import { Route as AuthenticatedAppSuporteRouteImport } from './routes/_authenticated/app.suporte'
 import { Route as AuthenticatedAppQrcodesRouteImport } from './routes/_authenticated/app.qrcodes'
 import { Route as AuthenticatedAppPagamentosRouteImport } from './routes/_authenticated/app.pagamentos'
@@ -56,6 +55,7 @@ import { Route as AuthenticatedAdminPlanosIndexRouteImport } from './routes/_aut
 import { Route as SuporteSlugKbArticleRouteImport } from './routes/suporte.$slug.kb.$article'
 import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api/public/webhooks/mercadopago'
 import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/api/public/hooks/process-email-queue'
+import { Route as AuthenticatedSuporteTicketIdRouteImport } from './routes/_authenticated/suporte.ticket.$id'
 import { Route as AuthenticatedAdminSuporteIdRouteImport } from './routes/_authenticated/admin.suporte.$id'
 import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authenticated/admin.empresa.$id'
 
@@ -163,11 +163,6 @@ const SuporteSlugNovoRoute = SuporteSlugNovoRouteImport.update({
   id: '/suporte/$slug/novo',
   path: '/suporte/$slug/novo',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedSuporteIdRoute = AuthenticatedSuporteIdRouteImport.update({
-  id: '/suporte/$id',
-  path: '/suporte/$id',
-  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAppSuporteRoute = AuthenticatedAppSuporteRouteImport.update({
   id: '/suporte',
@@ -314,6 +309,12 @@ const ApiPublicHooksProcessEmailQueueRoute =
     path: '/api/public/hooks/process-email-queue',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedSuporteTicketIdRoute =
+  AuthenticatedSuporteTicketIdRouteImport.update({
+    id: '/suporte/ticket/$id',
+    path: '/suporte/ticket/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminSuporteIdRoute =
   AuthenticatedAdminSuporteIdRouteImport.update({
     id: '/suporte/$id',
@@ -361,7 +362,6 @@ export interface FileRoutesByFullPath {
   '/app/pagamentos': typeof AuthenticatedAppPagamentosRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
-  '/suporte/$id': typeof AuthenticatedSuporteIdRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -370,6 +370,7 @@ export interface FileRoutesByFullPath {
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
+  '/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
@@ -409,7 +410,6 @@ export interface FileRoutesByTo {
   '/app/pagamentos': typeof AuthenticatedAppPagamentosRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
-  '/suporte/$id': typeof AuthenticatedSuporteIdRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -418,6 +418,7 @@ export interface FileRoutesByTo {
   '/suporte/$slug': typeof SuporteSlugIndexRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
+  '/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
@@ -461,7 +462,6 @@ export interface FileRoutesById {
   '/_authenticated/app/pagamentos': typeof AuthenticatedAppPagamentosRoute
   '/_authenticated/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/_authenticated/app/suporte': typeof AuthenticatedAppSuporteRoute
-  '/_authenticated/suporte/$id': typeof AuthenticatedSuporteIdRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -470,6 +470,7 @@ export interface FileRoutesById {
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
   '/_authenticated/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/_authenticated/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
+  '/_authenticated/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
@@ -513,7 +514,6 @@ export interface FileRouteTypes {
     | '/app/pagamentos'
     | '/app/qrcodes'
     | '/app/suporte'
-    | '/suporte/$id'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/admin/'
@@ -522,6 +522,7 @@ export interface FileRouteTypes {
     | '/suporte/$slug/'
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
+    | '/suporte/ticket/$id'
     | '/api/public/hooks/process-email-queue'
     | '/api/public/webhooks/mercadopago'
     | '/suporte/$slug/kb/$article'
@@ -561,7 +562,6 @@ export interface FileRouteTypes {
     | '/app/pagamentos'
     | '/app/qrcodes'
     | '/app/suporte'
-    | '/suporte/$id'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/admin'
@@ -570,6 +570,7 @@ export interface FileRouteTypes {
     | '/suporte/$slug'
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
+    | '/suporte/ticket/$id'
     | '/api/public/hooks/process-email-queue'
     | '/api/public/webhooks/mercadopago'
     | '/suporte/$slug/kb/$article'
@@ -612,7 +613,6 @@ export interface FileRouteTypes {
     | '/_authenticated/app/pagamentos'
     | '/_authenticated/app/qrcodes'
     | '/_authenticated/app/suporte'
-    | '/_authenticated/suporte/$id'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/_authenticated/admin/'
@@ -621,6 +621,7 @@ export interface FileRouteTypes {
     | '/suporte/$slug/'
     | '/_authenticated/admin/empresa/$id'
     | '/_authenticated/admin/suporte/$id'
+    | '/_authenticated/suporte/ticket/$id'
     | '/api/public/hooks/process-email-queue'
     | '/api/public/webhooks/mercadopago'
     | '/suporte/$slug/kb/$article'
@@ -798,13 +799,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuporteSlugNovoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/suporte/$id': {
-      id: '/_authenticated/suporte/$id'
-      path: '/suporte/$id'
-      fullPath: '/suporte/$id'
-      preLoaderRoute: typeof AuthenticatedSuporteIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/app/suporte': {
       id: '/_authenticated/app/suporte'
       path: '/suporte'
@@ -980,6 +974,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessEmailQueueRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/suporte/ticket/$id': {
+      id: '/_authenticated/suporte/ticket/$id'
+      path: '/suporte/ticket/$id'
+      fullPath: '/suporte/ticket/$id'
+      preLoaderRoute: typeof AuthenticatedSuporteTicketIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/suporte/$id': {
       id: '/_authenticated/admin/suporte/$id'
       path: '/suporte/$id'
@@ -1070,15 +1071,15 @@ const AuthenticatedAppRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
-  AuthenticatedSuporteIdRoute: typeof AuthenticatedSuporteIdRoute
   AuthenticatedSuporteIndexRoute: typeof AuthenticatedSuporteIndexRoute
+  AuthenticatedSuporteTicketIdRoute: typeof AuthenticatedSuporteTicketIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
-  AuthenticatedSuporteIdRoute: AuthenticatedSuporteIdRoute,
   AuthenticatedSuporteIndexRoute: AuthenticatedSuporteIndexRoute,
+  AuthenticatedSuporteTicketIdRoute: AuthenticatedSuporteTicketIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
