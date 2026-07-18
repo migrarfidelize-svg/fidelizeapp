@@ -261,8 +261,31 @@ function QRCodes() {
   function onBgUpload(file: File) {
     if (file.size > 8 * 1024 * 1024) { toast.error("Imagem muito grande (máx 8MB)"); return; }
     const reader = new FileReader();
-    reader.onload = () => { setBgImageUrl(reader.result as string); toast.success("Imagem de fundo aplicada"); };
+    reader.onload = async () => {
+      const url = reader.result as string;
+      setBgImageUrl(url);
+      try {
+        const palette = await extractPalette(url);
+        setPrimaryColor(palette.primary);
+        setAccentColor(palette.accent);
+        setBackgroundColor(palette.bg);
+        setTextColor(palette.text);
+        setBgOverlay(palette.overlaySuggestion);
+        toast.success("Imagem aplicada — cores ajustadas automaticamente");
+      } catch {
+        toast.success("Imagem de fundo aplicada");
+      }
+    };
     reader.readAsDataURL(file);
+  }
+
+  async function reExtractPalette() {
+    if (!bgImageUrl) { toast.info("Envie uma imagem de fundo primeiro"); return; }
+    try {
+      const p = await extractPalette(bgImageUrl);
+      setPrimaryColor(p.primary); setAccentColor(p.accent); setBackgroundColor(p.bg); setTextColor(p.text); setBgOverlay(p.overlaySuggestion);
+      toast.success("Cores reajustadas a partir da imagem");
+    } catch { toast.error("Não foi possível analisar a imagem"); }
   }
 
   const fileBase = `${est?.slug ?? "fidelize"}-${format}`;
