@@ -113,10 +113,12 @@ export const submitArticleFeedback = createServerFn({ method: "POST" })
       helpful: data.helpful,
       comment: data.comment ?? null,
     });
-    const col = data.helpful ? "helpful_yes" : "helpful_no";
-    const { data: cur } = await supabaseAdmin.from("help_articles").select(col).eq("id", data.articleId).maybeSingle();
-    if (cur) {
-      await supabaseAdmin.from("help_articles").update({ [col]: ((cur as any)[col] ?? 0) + 1 }).eq("id", data.articleId);
+    if (data.helpful) {
+      const { data: cur } = await supabaseAdmin.from("help_articles").select("helpful_yes").eq("id", data.articleId).maybeSingle();
+      if (cur) await supabaseAdmin.from("help_articles").update({ helpful_yes: (cur.helpful_yes ?? 0) + 1 }).eq("id", data.articleId);
+    } else {
+      const { data: cur } = await supabaseAdmin.from("help_articles").select("helpful_no").eq("id", data.articleId).maybeSingle();
+      if (cur) await supabaseAdmin.from("help_articles").update({ helpful_no: (cur.helpful_no ?? 0) + 1 }).eq("id", data.articleId);
     }
     return { ok: true };
   });
