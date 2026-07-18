@@ -88,8 +88,9 @@ export const PromoPoster = forwardRef<HTMLDivElement, { config: PromoConfig }>(f
   const bgOy = config.bgOffsetY ?? 0;
   const bgOverlay = config.bgOverlay ?? 0.35;
   const cornerStyle = config.cornerStyle ?? "sharp";
-  // Apply radius on trim area (so print bleed still fills to edges); for digital (bleed=0) it's the same as outer.
-  const radius = cornerStyle === "rounded" ? Math.round(Math.min(trimW, trimH) * 0.06) : 0;
+  const defaultPct = cornerStyle === "rounded" ? 6 : 0;
+  const radiusPct = Math.max(0, Math.min(30, config.cornerRadiusPct ?? defaultPct));
+  const radius = Math.round(Math.min(trimW, trimH) * (radiusPct / 100));
 
   return (
     <div
