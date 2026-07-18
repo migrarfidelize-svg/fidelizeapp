@@ -403,6 +403,48 @@ export type Database = {
           },
         ]
       }
+      email_logs: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          duration_ms: number | null
+          error: string | null
+          establishment_id: string | null
+          id: string
+          resend_id: string | null
+          status: string
+          subject: string
+          template: string | null
+          to_email: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          establishment_id?: string | null
+          id?: string
+          resend_id?: string | null
+          status: string
+          subject: string
+          template?: string | null
+          to_email: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          establishment_id?: string | null
+          id?: string
+          resend_id?: string | null
+          status?: string
+          subject?: string
+          template?: string | null
+          to_email?: string
+        }
+        Relationships: []
+      }
       establishment_members: {
         Row: {
           active: boolean
@@ -1218,6 +1260,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      system_email_settings: {
+        Row: {
+          created_at: string
+          id: string
+          reply_to: string | null
+          resend_api_key: string
+          sender_email: string
+          sender_name: string
+          singleton: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reply_to?: string | null
+          resend_api_key: string
+          sender_email: string
+          sender_name: string
+          singleton?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reply_to?: string | null
+          resend_api_key?: string
+          sender_email?: string
+          sender_name?: string
+          singleton?: boolean
+          updated_at?: string
+        }
+        Relationships: []
       }
       team_invites: {
         Row: {
