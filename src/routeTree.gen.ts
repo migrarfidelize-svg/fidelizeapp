@@ -21,6 +21,7 @@ import { Route as CTokenRouteImport } from './routes/c.$token'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAppQrcodesRouteImport } from './routes/_authenticated/app.qrcodes'
 import { Route as AuthenticatedAppEquipeRouteImport } from './routes/_authenticated/app.equipe'
 import { Route as AuthenticatedAppConfigRouteImport } from './routes/_authenticated/app.config'
@@ -87,6 +88,11 @@ const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedAppQrcodesRoute = AuthenticatedAppQrcodesRouteImport.update({
   id: '/qrcodes',
   path: '/qrcodes',
@@ -128,7 +134,7 @@ export interface FileRoutesByFullPath {
   '/precos': typeof PrecosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
-  '/admin': typeof AuthenticatedAdminRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/c/$token': typeof CTokenRoute
   '/l/$slug': typeof LSlugRoute
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/app/config': typeof AuthenticatedAppConfigRoute
   '/app/equipe': typeof AuthenticatedAppEquipeRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
   '/app/': typeof AuthenticatedAppIndexRoute
 }
 export interface FileRoutesByTo {
@@ -147,7 +154,6 @@ export interface FileRoutesByTo {
   '/precos': typeof PrecosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
-  '/admin': typeof AuthenticatedAdminRoute
   '/c/$token': typeof CTokenRoute
   '/l/$slug': typeof LSlugRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
@@ -156,6 +162,7 @@ export interface FileRoutesByTo {
   '/app/config': typeof AuthenticatedAppConfigRoute
   '/app/equipe': typeof AuthenticatedAppEquipeRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
   '/app': typeof AuthenticatedAppIndexRoute
 }
 export interface FileRoutesById {
@@ -167,7 +174,7 @@ export interface FileRoutesById {
   '/precos': typeof PrecosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/c/$token': typeof CTokenRoute
   '/l/$slug': typeof LSlugRoute
@@ -177,6 +184,7 @@ export interface FileRoutesById {
   '/_authenticated/app/config': typeof AuthenticatedAppConfigRoute
   '/_authenticated/app/equipe': typeof AuthenticatedAppEquipeRoute
   '/_authenticated/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
 }
 export interface FileRouteTypes {
@@ -198,6 +206,7 @@ export interface FileRouteTypes {
     | '/app/config'
     | '/app/equipe'
     | '/app/qrcodes'
+    | '/admin/'
     | '/app/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -207,7 +216,6 @@ export interface FileRouteTypes {
     | '/precos'
     | '/privacidade'
     | '/termos'
-    | '/admin'
     | '/c/$token'
     | '/l/$slug'
     | '/app/campanhas'
@@ -216,6 +224,7 @@ export interface FileRouteTypes {
     | '/app/config'
     | '/app/equipe'
     | '/app/qrcodes'
+    | '/admin'
     | '/app'
   id:
     | '__root__'
@@ -236,6 +245,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/config'
     | '/_authenticated/app/equipe'
     | '/_authenticated/app/qrcodes'
+    | '/_authenticated/admin/'
     | '/_authenticated/app/'
   fileRoutesById: FileRoutesById
 }
@@ -337,6 +347,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppIndexRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/app/qrcodes': {
       id: '/_authenticated/app/qrcodes'
       path: '/qrcodes'
@@ -382,6 +399,17 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
 interface AuthenticatedAppRouteChildren {
   AuthenticatedAppCampanhasRoute: typeof AuthenticatedAppCampanhasRoute
   AuthenticatedAppCarimbarRoute: typeof AuthenticatedAppCarimbarRoute
@@ -406,12 +434,12 @@ const AuthenticatedAppRouteWithChildren =
   AuthenticatedAppRoute._addFileChildren(AuthenticatedAppRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
 }
 
