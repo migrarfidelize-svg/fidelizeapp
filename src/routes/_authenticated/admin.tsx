@@ -48,34 +48,104 @@ function AdminLayout() {
     );
   }
 
-  const nav = [
-    { to: "/admin", label: "Visão geral", icon: LayoutDashboard, exact: true },
-    { to: "/admin/empresas", label: "Empresas", icon: Building2, exact: false },
-    { to: "/admin/assinaturas", label: "Assinaturas", icon: CreditCard, exact: false },
-    { to: "/admin/financeiro", label: "Financeiro", icon: DollarSign, exact: false },
-    { to: "/admin/pagamentos", label: "Mercado Pago", icon: CreditCard, exact: false },
-    { to: "/admin/planos", label: "Planos", icon: Package, exact: false },
-    { to: "/admin/alertas", label: "Alertas", icon: Bell, exact: false },
-    { to: "/admin/auditoria", label: "Auditoria", icon: FileClock, exact: false },
-    { to: "/admin/suporte", label: "Suporte", icon: LifeBuoy, exact: false },
-    { to: "/admin/equipe", label: "Equipe", icon: UsersRound, exact: false },
-    { to: "/admin/emails", label: "E-mail", icon: Mail, exact: true },
-    { to: "/admin/email-templates", label: "Templates", icon: FileText, exact: false },
-    { to: "/admin/email-fila", label: "Fila de envio", icon: ListChecks, exact: false },
-    { to: "/admin/config", label: "Configurações", icon: Settings, exact: false },
-  ] as const;
+  type NavItem = { to: string; label: string; icon: any; exact?: boolean };
+  const overview: NavItem = { to: "/admin", label: "Visão geral", icon: LayoutDashboard, exact: true };
+  const groups: { key: string; label: string; icon: any; items: NavItem[] }[] = [
+    {
+      key: "empresas",
+      label: "Empresas",
+      icon: Building2,
+      items: [
+        { to: "/admin/empresas", label: "Empresas", icon: Building2 },
+        { to: "/admin/equipe", label: "Equipe", icon: UsersRound },
+      ],
+    },
+    {
+      key: "financeiro",
+      label: "Financeiro",
+      icon: Wallet,
+      items: [
+        { to: "/admin/financeiro", label: "Financeiro", icon: DollarSign },
+        { to: "/admin/assinaturas", label: "Assinaturas", icon: CreditCard },
+        { to: "/admin/planos", label: "Planos", icon: Package },
+        { to: "/admin/pagamentos", label: "Mercado Pago", icon: CreditCard },
+      ],
+    },
+    {
+      key: "operacao",
+      label: "Operação",
+      icon: Megaphone,
+      items: [
+        { to: "/admin/alertas", label: "Alertas", icon: Bell },
+        { to: "/admin/auditoria", label: "Auditoria", icon: FileClock },
+        { to: "/admin/suporte", label: "Suporte", icon: LifeBuoy },
+      ],
+    },
+    {
+      key: "comunicacao",
+      label: "Comunicação",
+      icon: Mail,
+      items: [
+        { to: "/admin/emails", label: "E-mail", icon: Mail, exact: true },
+        { to: "/admin/email-templates", label: "Templates", icon: FileText },
+        { to: "/admin/email-fila", label: "Fila de envio", icon: ListChecks },
+      ],
+    },
+    {
+      key: "sistema",
+      label: "Sistema",
+      icon: Cog,
+      items: [{ to: "/admin/config", label: "Configurações", icon: Settings }],
+    },
+  ];
+
+  const isItemActive = (n: NavItem) => (n.exact ? pathname === n.to : pathname.startsWith(n.to));
+  const activeGroup = groups.find((g) => g.items.some(isItemActive))?.key ?? null;
+  const [openKey, setOpenKey] = useState<string | null>(activeGroup);
+  const currentOpen = openKey ?? activeGroup;
+
+  const mobileNav: NavItem[] = [overview, ...groups.flatMap((g) => g.items)];
 
   return (
     <div className="min-h-screen bg-muted/30 flex">
       <aside className="hidden md:flex w-64 shrink-0 flex-col border-r bg-card">
         <div className="p-5 border-b flex items-center gap-2"><Logo /><span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-primary-soft text-primary">Admin</span></div>
-        <nav className="flex-1 p-3 space-y-1">
-          {nav.map((n) => {
-            const active = n.exact ? pathname === n.to : pathname.startsWith(n.to);
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+          {(() => {
+            const active = isItemActive(overview);
             return (
-              <Link key={n.to} to={n.to} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${active ? "bg-primary-soft text-primary" : "text-muted-foreground hover:bg-muted"}`}>
-                <n.icon className="h-4 w-4" /> {n.label}
+              <Link to={overview.to} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${active ? "bg-primary-soft text-primary" : "text-muted-foreground hover:bg-muted"}`}>
+                <overview.icon className="h-4 w-4" /> {overview.label}
               </Link>
+            );
+          })()}
+          {groups.map((g) => {
+            const isOpen = currentOpen === g.key;
+            const hasActive = g.items.some(isItemActive);
+            return (
+              <div key={g.key} className="pt-1">
+                <button
+                  type="button"
+                  onClick={() => setOpenKey(isOpen ? null : g.key)}
+                  className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${hasActive ? "text-foreground" : "text-muted-foreground hover:bg-muted"}`}
+                >
+                  <g.icon className="h-4 w-4" />
+                  <span className="flex-1 text-left">{g.label}</span>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+                </button>
+                {isOpen && (
+                  <div className="mt-1 ml-3 pl-3 border-l space-y-1">
+                    {g.items.map((n) => {
+                      const active = isItemActive(n);
+                      return (
+                        <Link key={n.to} to={n.to} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${active ? "bg-primary-soft text-primary font-medium" : "text-muted-foreground hover:bg-muted"}`}>
+                          <n.icon className="h-4 w-4" /> {n.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>
@@ -89,9 +159,9 @@ function AdminLayout() {
           <Link to="/app" className="text-xs text-muted-foreground"><ArrowLeft className="h-4 w-4" /></Link>
         </header>
         <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto"><Outlet /></main>
-        <nav className="md:hidden grid grid-cols-5 border-t bg-card">
-          {nav.map((n) => {
-            const active = n.exact ? pathname === n.to : pathname.startsWith(n.to);
+        <nav className="md:hidden grid grid-cols-5 border-t bg-card overflow-x-auto">
+          {mobileNav.map((n) => {
+            const active = isItemActive(n);
             return (
               <Link key={n.to} to={n.to} className={`flex flex-col items-center gap-1 py-2 text-[10px] ${active ? "text-primary" : "text-muted-foreground"}`}>
                 <n.icon className="h-4 w-4" /> {n.label}
