@@ -6,12 +6,14 @@ import {
   getMyEstablishments, getEstablishmentCampaigns,
   listCustomersAdvanced, getCustomerStats, getCustomerDetail,
   createCustomerRow, updateCustomerRow, setCustomerBlocked, deleteCustomerRow,
-  addStamp,
+  addStamp, bulkSetBlocked, bulkDeleteCustomers, importCustomersCsv, getCustomerAudit,
 } from "@/lib/loyalty.functions";
+import { parseCsv, CUSTOMER_CSV_TEMPLATE } from "@/lib/csv";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
@@ -23,9 +25,9 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { formatPhone, formatDate } from "@/lib/format";
 import {
-  Users, Search, Plus, Download, Filter, MoreHorizontal, ShieldOff, ShieldCheck,
+  Users, Search, Plus, Download, Upload, Filter, MoreHorizontal, ShieldOff, ShieldCheck,
   Trash2, Pencil, ExternalLink, Stamp as StampIcon, MessageCircle, Copy, Gift,
-  TrendingUp, UserPlus, MailCheck, Ban,
+  TrendingUp, UserPlus, MailCheck, Ban, History, FileWarning, CheckCircle2,
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
@@ -33,6 +35,7 @@ export const Route = createFileRoute("/_authenticated/app/clientes")({
   head: () => ({ meta: [{ title: "Clientes — Fidelize" }] }),
   component: Clientes,
 });
+
 
 type CustomerRow = {
   id: string; name: string; phone: string; email: string | null; code: string;
