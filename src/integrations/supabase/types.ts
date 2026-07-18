@@ -1372,6 +1372,192 @@ export type Database = {
           },
         ]
       }
+      support_messages: {
+        Row: {
+          attachments: Json
+          created_at: string
+          id: string
+          is_internal: boolean
+          message: string
+          read_at: string | null
+          sender_name: string | null
+          sender_type: Database["public"]["Enums"]["support_author_type"]
+          sender_user_id: string | null
+          ticket_id: string
+        }
+        Insert: {
+          attachments?: Json
+          created_at?: string
+          id?: string
+          is_internal?: boolean
+          message: string
+          read_at?: string | null
+          sender_name?: string | null
+          sender_type: Database["public"]["Enums"]["support_author_type"]
+          sender_user_id?: string | null
+          ticket_id: string
+        }
+        Update: {
+          attachments?: Json
+          created_at?: string
+          id?: string
+          is_internal?: boolean
+          message?: string
+          read_at?: string | null
+          sender_name?: string | null
+          sender_type?: Database["public"]["Enums"]["support_author_type"]
+          sender_user_id?: string | null
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_quick_replies: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          shortcut: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          shortcut: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          shortcut?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      support_status_history: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          from_status: Database["public"]["Enums"]["support_status"] | null
+          id: string
+          reason: string | null
+          ticket_id: string
+          to_status: Database["public"]["Enums"]["support_status"]
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["support_status"] | null
+          id?: string
+          reason?: string | null
+          ticket_id: string
+          to_status: Database["public"]["Enums"]["support_status"]
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["support_status"] | null
+          id?: string
+          reason?: string | null
+          ticket_id?: string
+          to_status?: Database["public"]["Enums"]["support_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_status_history_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          assigned_admin_id: string | null
+          category: Database["public"]["Enums"]["support_category"]
+          closed_at: string | null
+          created_at: string
+          establishment_id: string | null
+          first_response_at: string | null
+          has_unread_admin: boolean
+          has_unread_customer: boolean
+          id: string
+          priority: Database["public"]["Enums"]["support_priority"]
+          protocol: string
+          requester_email: string
+          requester_name: string | null
+          requester_user_id: string
+          resolved_at: string | null
+          status: Database["public"]["Enums"]["support_status"]
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_admin_id?: string | null
+          category?: Database["public"]["Enums"]["support_category"]
+          closed_at?: string | null
+          created_at?: string
+          establishment_id?: string | null
+          first_response_at?: string | null
+          has_unread_admin?: boolean
+          has_unread_customer?: boolean
+          id?: string
+          priority?: Database["public"]["Enums"]["support_priority"]
+          protocol?: string
+          requester_email: string
+          requester_name?: string | null
+          requester_user_id: string
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["support_status"]
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_admin_id?: string | null
+          category?: Database["public"]["Enums"]["support_category"]
+          closed_at?: string | null
+          created_at?: string
+          establishment_id?: string | null
+          first_response_at?: string | null
+          has_unread_admin?: boolean
+          has_unread_customer?: boolean
+          id?: string
+          priority?: Database["public"]["Enums"]["support_priority"]
+          protocol?: string
+          requester_email?: string
+          requester_name?: string | null
+          requester_user_id?: string
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["support_status"]
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       system_email_settings: {
         Row: {
           created_at: string
@@ -1732,6 +1918,26 @@ export type Database = {
       member_role: "owner" | "manager" | "staff"
       plan_tier: "free" | "starter" | "pro" | "enterprise"
       platform_role: "super_admin"
+      support_author_type: "customer" | "admin" | "system"
+      support_category:
+        | "duvidas"
+        | "tecnico"
+        | "carimbos"
+        | "clientes"
+        | "qrcode"
+        | "campanhas"
+        | "pagamentos"
+        | "conta"
+        | "sugestao"
+        | "outro"
+      support_priority: "low" | "normal" | "high" | "urgent"
+      support_status:
+        | "open"
+        | "in_progress"
+        | "waiting_customer"
+        | "answered"
+        | "resolved"
+        | "closed"
       ticket_author_type: "customer" | "agent" | "system"
       ticket_channel: "form" | "email" | "chat" | "agent"
       ticket_priority: "low" | "normal" | "high" | "urgent"
@@ -1868,6 +2074,28 @@ export const Constants = {
       member_role: ["owner", "manager", "staff"],
       plan_tier: ["free", "starter", "pro", "enterprise"],
       platform_role: ["super_admin"],
+      support_author_type: ["customer", "admin", "system"],
+      support_category: [
+        "duvidas",
+        "tecnico",
+        "carimbos",
+        "clientes",
+        "qrcode",
+        "campanhas",
+        "pagamentos",
+        "conta",
+        "sugestao",
+        "outro",
+      ],
+      support_priority: ["low", "normal", "high", "urgent"],
+      support_status: [
+        "open",
+        "in_progress",
+        "waiting_customer",
+        "answered",
+        "resolved",
+        "closed",
+      ],
       ticket_author_type: ["customer", "agent", "system"],
       ticket_channel: ["form", "email", "chat", "agent"],
       ticket_priority: ["low", "normal", "high", "urgent"],
