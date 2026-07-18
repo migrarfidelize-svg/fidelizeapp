@@ -171,9 +171,9 @@ function Onboarding() {
             <div className="mt-2 flex items-center gap-4">
               <div className="h-20 w-20 shrink-0 rounded-2xl border bg-muted/40 grid place-items-center overflow-hidden">
                 {f.logo_url ? (
-                  <img src={f.logo_url} alt="Logo" className="h-full w-full object-cover" />
+                  <img key={logoRev} src={f.logo_url} alt="Logo" className="h-full w-full object-cover" />
                 ) : (
-                  <span className="text-xs text-muted-foreground text-center px-1">Sem logo</span>
+                  <span className="text-xs font-display font-bold text-muted-foreground">{(f.name || "?").trim().split(/\s+/).slice(0,2).map(w=>w[0]).join("").toUpperCase().slice(0,2) || "?"}</span>
                 )}
               </div>
               <div className="flex-1 space-y-2">
