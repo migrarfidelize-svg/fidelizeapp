@@ -867,7 +867,7 @@ function CustomerFormDialog({
 
 // ---------- Audit timeline ----------
 type AuditEntry = {
-  id: string; action: string; entity_type: string; entity_id: string;
+  id: string; action: string; entity_type: string | null; entity_id: string | null;
   metadata: unknown; user_id: string | null; user_name: string | null; created_at: string;
 };
 
