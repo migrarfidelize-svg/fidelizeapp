@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Copy, Download, Share2, FileImage, FileText, Printer, Palette, Settings2, Sparkles, Loader2, Image as ImageIcon, Save, Trash2, CheckCircle2, AlertTriangle, Layers } from "lucide-react";
+import { Copy, Download, Share2, FileImage, FileText, Printer, Palette, Settings2, Sparkles, Loader2, Image as ImageIcon, Save, Trash2, CheckCircle2, AlertTriangle, Layers, Undo2, Redo2, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import QRCode from "qrcode";
 import { toPng, toJpeg } from "html-to-image";
