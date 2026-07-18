@@ -245,6 +245,7 @@ function QRCodes() {
   const [ctaFooter, setCtaFooter] = useState("Escaneie e participe agora");
   const [rewardTextOverride, setRewardTextOverride] = useState("");
   const [primaryColor, setPrimaryColor] = useState<string>(SEGMENT_DEFAULTS.espetinhos.primary);
+  const [qrColor, setQrColor] = useState<string>("#111827");
   const [accentColor, setAccentColor] = useState<string>(SEGMENT_DEFAULTS.espetinhos.accent);
   const [backgroundColor, setBackgroundColor] = useState<string>(SEGMENT_DEFAULTS.espetinhos.bg);
   const [textColor, setTextColor] = useState<string>("#111827");
