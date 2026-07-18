@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
+import { getAdminStatus } from "@/lib/admin.functions";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Users, Stamp, QrCode, Settings, LogOut, Sparkles, ChevronDown, UsersRound } from "lucide-react";
