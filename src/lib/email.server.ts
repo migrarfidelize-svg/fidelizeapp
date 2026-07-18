@@ -276,7 +276,7 @@ export async function enqueueEmail(params: {
     html: params.html,
     text: params.text ?? null,
     template: params.template ?? null,
-    variables: params.variables ?? {},
+    variables: (params.variables ?? {}) as any,
     status: "pending",
     attempts: 0,
     next_attempt_at: next,
