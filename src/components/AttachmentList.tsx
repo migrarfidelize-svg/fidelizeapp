@@ -5,14 +5,17 @@ import { Paperclip, Loader2 } from "lucide-react";
 
 export type AttachmentRef = { path: string; name: string; mime?: string; size?: number };
 
-export function AttachmentList({ items }: { items: AttachmentRef[] }) {
-  const sign = useServerFn(getAttachmentUrl);
+type Signer = (args: { path: string }) => Promise<{ url: string }>;
+
+export function AttachmentList({ items, signer }: { items: AttachmentRef[]; signer?: Signer }) {
+  const defaultSign = useServerFn(getAttachmentUrl);
+  const sign: Signer = signer ?? ((args) => defaultSign({ data: args }));
   const [busy, setBusy] = useState<string | null>(null);
   if (!items?.length) return null;
   async function open(path: string) {
     setBusy(path);
     try {
-      const { url } = await sign({ data: { path } });
+      const { url } = await sign({ path });
       window.open(url, "_blank", "noopener");
     } finally { setBusy(null); }
   }

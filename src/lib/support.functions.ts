@@ -367,3 +367,65 @@ export const deleteSupportQuickReply = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// ============ Attachments (support tickets) ============
+const SUPPORT_BUCKET = "ticket-attachments";
+
+async function assertSupportAccess(ticketId: string, userId: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: t } = await supabaseAdmin.from("support_tickets")
+    .select("id, requester_user_id").eq("id", ticketId).maybeSingle();
+  if (!t) throw new Error("Chamado não encontrado");
+  if (t.requester_user_id === userId) return;
+  const { data: admin } = await supabaseAdmin.from("app_roles")
+    .select("role").eq("user_id", userId).eq("role", "super_admin").maybeSingle();
+  if (!admin) throw new Error("Sem acesso a este chamado");
+}
+
+export const uploadSupportAttachment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    ticket_id: z.string().uuid().optional().nullable(),
+    name: z.string().min(1).max(200),
+    mime: z.string().max(120),
+    base64: z.string().min(1).max(15_000_000),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    if (data.ticket_id) await assertSupportAccess(data.ticket_id, context.userId);
+    const buf = Buffer.from(data.base64, "base64");
+    if (buf.byteLength > 10 * 1024 * 1024) throw new Error("Arquivo excede 10MB");
+    const safeName = data.name.replace(/[^\w.\-]+/g, "_").slice(-100);
+    const folder = data.ticket_id
+      ? `support/${data.ticket_id}`
+      : `support/_drafts/${context.userId}`;
+    const path = `${folder}/${crypto.randomUUID()}-${safeName}`;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.storage.from(SUPPORT_BUCKET).upload(path, buf, {
+      contentType: data.mime || "application/octet-stream",
+      upsert: false,
+    });
+    if (error) throw new Error(error.message);
+    return { path, name: data.name, mime: data.mime, size: buf.byteLength };
+  });
+
+export const getSupportAttachmentUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ path: z.string().min(1).max(400) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const parts = data.path.split("/");
+    if (parts[0] !== "support") throw new Error("Caminho inválido");
+    if (parts[1] === "_drafts") {
+      if (parts[2] !== context.userId) {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data: admin } = await supabaseAdmin.from("app_roles")
+          .select("role").eq("user_id", context.userId).eq("role", "super_admin").maybeSingle();
+        if (!admin) throw new Error("Sem acesso");
+      }
+    } else {
+      await assertSupportAccess(parts[1], context.userId);
+    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: signed, error } = await supabaseAdmin.storage.from(SUPPORT_BUCKET).createSignedUrl(data.path, 300);
+    if (error) throw new Error(error.message);
+    return { url: signed.signedUrl };
+  });

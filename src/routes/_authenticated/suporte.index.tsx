@@ -3,8 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { listMySupportTickets, createSupportTicket } from "@/lib/support.functions";
-import { uploadTicketAttachment } from "@/lib/helpdesk.functions";
+import { listMySupportTickets, createSupportTicket, uploadSupportAttachment } from "@/lib/support.functions";
 import { AttachmentPicker, type Attachment } from "@/components/AttachmentPicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -122,7 +121,7 @@ function SupportInbox() {
 function NewTicketDialog() {
   const qc = useQueryClient();
   const createFn = useServerFn(createSupportTicket);
-  const uploadFn = useServerFn(uploadTicketAttachment);
+  const uploadFn = useServerFn(uploadSupportAttachment);
   const [open, setOpen] = useState(false);
   const [subject, setSubject] = useState("");
   const [category, setCategory] = useState<string>("duvidas");
@@ -188,7 +187,7 @@ function NewTicketDialog() {
           </div>
           <div>
             <Label>Anexos (opcional, máx. 5)</Label>
-            <AttachmentPicker value={atts} onChange={setAtts} upload={(a) => uploadFn({ data: a })} />
+            <AttachmentPicker value={atts} onChange={setAtts} upload={(a) => uploadFn({ data: { ...a, ticket_id: null } })} />
           </div>
         </div>
         <DialogFooter>

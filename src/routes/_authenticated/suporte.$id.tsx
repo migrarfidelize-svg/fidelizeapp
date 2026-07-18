@@ -3,8 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getMySupportTicket, replyMySupportTicket } from "@/lib/support.functions";
-import { uploadTicketAttachment } from "@/lib/helpdesk.functions";
+import { getMySupportTicket, replyMySupportTicket, uploadSupportAttachment, getSupportAttachmentUrl } from "@/lib/support.functions";
 import { AttachmentPicker, type Attachment } from "@/components/AttachmentPicker";
 import { AttachmentList, type AttachmentRef } from "@/components/AttachmentList";
 import { Button } from "@/components/ui/button";
@@ -32,7 +31,8 @@ function Ticket() {
   const qc = useQueryClient();
   const getFn = useServerFn(getMySupportTicket);
   const replyFn = useServerFn(replyMySupportTicket);
-  const uploadFn = useServerFn(uploadTicketAttachment);
+  const uploadFn = useServerFn(uploadSupportAttachment);
+  const signFn = useServerFn(getSupportAttachmentUrl);
   const [reply, setReply] = useState("");
   const [atts, setAtts] = useState<Attachment[]>([]);
   const [busy, setBusy] = useState(false);
@@ -115,7 +115,7 @@ function Ticket() {
                     {mine ? "Você" : (m.sender_name ?? "Equipe de suporte")} · {new Date(m.created_at).toLocaleString("pt-BR")}
                   </div>
                   <div className="whitespace-pre-wrap text-sm">{m.message}</div>
-                  <AttachmentList items={(m.attachments as unknown as AttachmentRef[]) ?? []} />
+                  <AttachmentList items={(m.attachments as unknown as AttachmentRef[]) ?? []} signer={(a) => signFn({ data: a })} />
                 </div>
               </div>
             );
@@ -129,7 +129,7 @@ function Ticket() {
               <Textarea value={reply} onChange={(e) => setReply(e.target.value)} rows={3}
                 placeholder="Escreva sua resposta…" maxLength={5000} />
               <div className="flex items-center justify-between gap-2 flex-wrap">
-                <AttachmentPicker value={atts} onChange={setAtts} upload={(a) => uploadFn({ data: a })} />
+                <AttachmentPicker value={atts} onChange={setAtts} upload={(a) => uploadFn({ data: { ...a, ticket_id: id } })} />
                 <Button onClick={send} disabled={busy || !reply.trim()}>
                   <Send className="h-4 w-4 mr-1" />{busy ? "Enviando…" : "Enviar resposta"}
                 </Button>

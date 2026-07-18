@@ -3,8 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { adminGetSupportTicket, adminReplySupportTicket, adminUpdateSupportTicket, listSupportQuickReplies } from "@/lib/support.functions";
-import { uploadTicketAttachment } from "@/lib/helpdesk.functions";
+import { adminGetSupportTicket, adminReplySupportTicket, adminUpdateSupportTicket, listSupportQuickReplies, uploadSupportAttachment, getSupportAttachmentUrl } from "@/lib/support.functions";
 import { AttachmentPicker, type Attachment } from "@/components/AttachmentPicker";
 import { AttachmentList, type AttachmentRef } from "@/components/AttachmentList";
 import { Button } from "@/components/ui/button";
@@ -33,7 +32,8 @@ function AdminTicket() {
   const getFn = useServerFn(adminGetSupportTicket);
   const replyFn = useServerFn(adminReplySupportTicket);
   const updFn = useServerFn(adminUpdateSupportTicket);
-  const uploadFn = useServerFn(uploadTicketAttachment);
+  const uploadFn = useServerFn(uploadSupportAttachment);
+  const signFn = useServerFn(getSupportAttachmentUrl);
   const qrFn = useServerFn(listSupportQuickReplies);
 
   const [reply, setReply] = useState("");
@@ -129,7 +129,7 @@ function AdminTicket() {
                     {m.is_internal && <span className="text-yellow-800 font-medium">· Nota interna</span>}
                   </div>
                   <div className="whitespace-pre-wrap text-sm">{m.message}</div>
-                  <AttachmentList items={(m.attachments as unknown as AttachmentRef[]) ?? []} />
+                  <AttachmentList items={(m.attachments as unknown as AttachmentRef[]) ?? []} signer={(a) => signFn({ data: a })} />
                 </div>
               </div>
             );
@@ -157,7 +157,7 @@ function AdminTicket() {
               <Textarea value={reply} onChange={(e) => setReply(e.target.value)} rows={4}
                 placeholder={internal ? "Anotação interna para a equipe…" : "Escreva a resposta ao cliente…"} maxLength={10000} />
               <div className="flex items-center justify-between gap-2 flex-wrap">
-                <AttachmentPicker value={atts} onChange={setAtts} upload={(a) => uploadFn({ data: a })} />
+                <AttachmentPicker value={atts} onChange={setAtts} upload={(a) => uploadFn({ data: { ...a, ticket_id: id } })} />
                 <Button onClick={send} disabled={busy || !reply.trim()}>
                   <Send className="h-4 w-4 mr-1" />{busy ? "Enviando…" : internal ? "Salvar nota" : "Responder cliente"}
                 </Button>
