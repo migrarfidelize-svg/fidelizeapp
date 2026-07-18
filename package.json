@@ -57,6 +57,7 @@
     "jspdf-autotable": "^5.0.8",
     "lucide-react": "^0.575.0",
     "motion": "^12.42.2",
+    "qr-scanner": "^1.4.2",
     "qrcode": "^1.5.4",
     "react": "^19.2.0",
     "react-day-picker": "^9.14.0",
