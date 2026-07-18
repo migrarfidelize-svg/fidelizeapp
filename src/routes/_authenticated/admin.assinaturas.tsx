@@ -18,6 +18,8 @@ function AdminAssinaturas() {
   const getOverview = useServerFn(adminGetOverview);
   const { data } = useQuery({ queryKey: ["admin-overview"], queryFn: () => getOverview() });
   if (!data) return <div className="text-muted-foreground">Carregando…</div>;
+  const d = data;
+
 
   const total = data.estTotal || 1;
   const planRows = Object.entries(data.planCounts).map(([tier, count]) => {
