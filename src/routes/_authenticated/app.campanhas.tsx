@@ -141,6 +141,8 @@ function CampanhasPage() {
         stamp_icon: form.stamp_icon,
         stamp_validity_days: form.stamp_validity_days ? Number(form.stamp_validity_days) : null,
         reward_validity_days: form.reward_validity_days ? Number(form.reward_validity_days) : null,
+        primary_color: form.use_custom_colors ? form.primary_color : null,
+        accent_color: form.use_custom_colors ? form.accent_color : null,
       };
       if (editing) {
         await update({ data: { id: editing.id, ...payload } });
