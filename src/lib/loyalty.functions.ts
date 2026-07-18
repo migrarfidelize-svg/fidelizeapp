@@ -401,6 +401,8 @@ export const createCustomerRow = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
+    // Plan limit check
+    await enforceLimit(supabase, data.establishment_id, "customers", 1);
     // dedupe by phone
     const { data: dup } = await supabase.from("customers").select("id").eq("establishment_id", data.establishment_id).eq("phone", data.phone).maybeSingle();
     if (dup) throw new Error("Já existe um cliente com este telefone.");
