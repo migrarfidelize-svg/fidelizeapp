@@ -355,3 +355,122 @@ export const adminListAuditLogs = createServerFn({ method: "POST" })
     }));
   });
 
+
+// ─────────────── Financial ───────────────
+export const adminGetFinancial = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    await assertSuperAdmin(supabase, userId);
+
+    const now = new Date();
+    const in30 = new Date(now.getTime() + 30 * 86400_000).toISOString();
+    const last12start = new Date(now.getFullYear(), now.getMonth() - 11, 1).toISOString();
+
+    const [
+      { data: plans },
+      { data: ests },
+      { data: subs },
+      { data: events12 },
+    ] = await Promise.all([
+      supabase.from("plans").select("tier, name, price_monthly, price_yearly, currency"),
+      supabase.from("establishments").select("id, name, slug, plan, active, created_at").is("archived_at", null),
+      supabase.from("subscriptions").select("id, establishment_id, tier, status, provider, current_period_start, current_period_end, cancel_at_period_end, trial_ends_at, created_at"),
+      supabase.from("subscription_events").select("id, establishment_id, event_type, from_plan, to_plan, created_at").gte("created_at", last12start).order("created_at", { ascending: false }),
+    ]);
+
+    const priceMap = new Map<string, number>((plans ?? []).map((p: any) => [p.tier, Number(p.price_monthly ?? 0)]));
+    const planNames = new Map<string, string>((plans ?? []).map((p: any) => [p.tier, p.name]));
+    const estMap = new Map<string, any>((ests ?? []).map((e: any) => [e.id, e]));
+
+    // MRR per plan (based on establishment plan tier, only active)
+    const revenueByPlan: Record<string, { count: number; mrr: number; name: string }> = {};
+    let mrr = 0;
+    let activePaying = 0;
+    (ests ?? []).forEach((e: any) => {
+      const price = priceMap.get(e.plan) ?? 0;
+      const key = e.plan;
+      if (!revenueByPlan[key]) revenueByPlan[key] = { count: 0, mrr: 0, name: planNames.get(key) ?? key };
+      if (e.active) {
+        revenueByPlan[key].count += 1;
+        revenueByPlan[key].mrr += price;
+        mrr += price;
+        if (price > 0) activePaying += 1;
+      }
+    });
+
+    // Revenue series: last 12 months new subscriptions (upgrade + reactivate + plan_change to higher counted as expansion)
+    const monthKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const months: { month: string; mrrNew: number; churn: number; net: number }[] = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push({ month: monthKey(d), mrrNew: 0, churn: 0, net: 0 });
+    }
+    (events12 ?? []).forEach((ev: any) => {
+      const k = monthKey(new Date(ev.created_at));
+      const row = months.find(m => m.month === k);
+      if (!row) return;
+      const toPrice = priceMap.get(ev.to_plan) ?? 0;
+      const fromPrice = priceMap.get(ev.from_plan) ?? 0;
+      if (ev.event_type === "upgrade" || ev.event_type === "reactivate") row.mrrNew += Math.max(0, toPrice - fromPrice);
+      else if (ev.event_type === "downgrade") row.churn += Math.max(0, fromPrice - toPrice);
+      else if (ev.event_type === "cancel") row.churn += fromPrice;
+    });
+    months.forEach(m => { m.net = m.mrrNew - m.churn; });
+
+    // Upcoming renewals (next 30 days) from subscriptions
+    const upcoming = (subs ?? [])
+      .filter((s: any) => s.status === "active" && s.current_period_end && s.current_period_end <= in30 && s.current_period_end >= now.toISOString())
+      .map((s: any) => {
+        const est = estMap.get(s.establishment_id);
+        return {
+          id: s.id,
+          establishment_id: s.establishment_id,
+          establishment_name: est?.name ?? "—",
+          establishment_slug: est?.slug ?? "",
+          tier: s.tier,
+          amount: priceMap.get(s.tier) ?? 0,
+          current_period_end: s.current_period_end,
+          cancel_at_period_end: !!s.cancel_at_period_end,
+          provider: s.provider,
+        };
+      })
+      .sort((a, b) => a.current_period_end.localeCompare(b.current_period_end));
+
+    // Top revenue establishments (by plan price, active)
+    const topRevenue = (ests ?? [])
+      .filter((e: any) => e.active)
+      .map((e: any) => ({ id: e.id, name: e.name, slug: e.slug, plan: e.plan, mrr: priceMap.get(e.plan) ?? 0 }))
+      .sort((a: any, b: any) => b.mrr - a.mrr)
+      .slice(0, 10);
+
+    // Trial subscriptions ending soon
+    const trials = (subs ?? [])
+      .filter((s: any) => s.trial_ends_at && s.status !== "canceled")
+      .map((s: any) => {
+        const est = estMap.get(s.establishment_id);
+        return {
+          id: s.id,
+          establishment_name: est?.name ?? "—",
+          establishment_slug: est?.slug ?? "",
+          tier: s.tier,
+          trial_ends_at: s.trial_ends_at,
+        };
+      })
+      .sort((a, b) => a.trial_ends_at.localeCompare(b.trial_ends_at))
+      .slice(0, 10);
+
+    const totalEst = ests?.length ?? 0;
+    const activeEst = (ests ?? []).filter((e: any) => e.active).length;
+    const arpu = activePaying > 0 ? mrr / activePaying : 0;
+
+    // Churn rate 30d: cancels / active start-of-window
+    const cutoff30 = new Date(now.getTime() - 30 * 86400_000).toISOString();
+    const cancels30 = (events12 ?? []).filter((e: any) => e.event_type === "cancel" && e.created_at >= cutoff30).length;
+    const churnRate = activeEst > 0 ? (cancels30 / activeEst) * 100 : 0;
+
+    return {
+      mrr, arr: mrr * 12, arpu, activePaying, totalEst, activeEst,
+      revenueByPlan, months, upcoming, topRevenue, trials, churnRate, cancels30,
+    };
+  });
