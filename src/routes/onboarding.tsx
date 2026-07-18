@@ -13,6 +13,8 @@ import { StampCard } from "@/components/StampCard";
 import { toast } from "sonner";
 import { Upload, X, Loader2 } from "lucide-react";
 import { LogoCropper } from "@/components/LogoCropper";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { STAMP_ICON_OPTIONS, getStampIcon, stampIconLabel } from "@/lib/stampIcons";
 
 export const Route = createFileRoute("/onboarding")({
   ssr: false,
@@ -26,6 +28,18 @@ export const Route = createFileRoute("/onboarding")({
 
 function slugify(v: string) {
   return v.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
+}
+
+function IconRow({ value }: { value: string }) {
+  const Icon = getStampIcon(value);
+  return (
+    <span className="inline-flex items-center gap-2">
+      <span className="grid h-6 w-6 place-items-center rounded-md bg-primary/10 text-primary">
+        <Icon className="h-3.5 w-3.5" />
+      </span>
+      <span>{stampIconLabel(value)}</span>
+    </span>
+  );
 }
 
 const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 10; // 10 anos
@@ -46,6 +60,7 @@ function Onboarding() {
     name: "", slug: "", description: "", primary_color: "#5B21B6", accent_color: "#F97066",
     logo_url: "" as string,
     campaign_name: "Cartão Fidelidade", stamps_required: 10, reward_title: "", reward_description: "",
+    stamp_icon: "coffee",
   });
 
   function set<K extends keyof typeof f>(k: K, v: (typeof f)[K]) {
@@ -209,6 +224,25 @@ function Onboarding() {
                 <Input type="number" min={2} max={50} value={f.stamps_required} onChange={(e) => set("stamps_required", Number(e.target.value))} />
               </div>
               <div>
+                <Label>Ícone do carimbo</Label>
+                <Select value={f.stamp_icon} onValueChange={(v) => set("stamp_icon", v)}>
+                  <SelectTrigger>
+                    <SelectValue asChild>
+                      <IconRow value={f.stamp_icon} />
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    {STAMP_ICON_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        <IconRow value={opt.value} />
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-1">
+              <div>
                 <Label>Recompensa (título)</Label>
                 <Input value={f.reward_title} onChange={(e) => set("reward_title", e.target.value)} required maxLength={120} placeholder="Um café grátis" />
               </div>
@@ -237,6 +271,7 @@ function Onboarding() {
               reward={f.reward_title || "Sua recompensa aqui"}
               primary={f.primary_color}
               accent={f.accent_color}
+              icon={f.stamp_icon}
             />
           </div>
         </div>
