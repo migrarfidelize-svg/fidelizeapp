@@ -12,6 +12,7 @@ import {
   listAuditLogs, archiveEstablishment, restoreEstablishment, deleteEstablishment,
   exportEstablishmentData,
 } from "@/lib/settings.functions";
+import { getAdminStatus } from "@/lib/admin.functions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -44,8 +45,18 @@ export const Route = createFileRoute("/_authenticated/app/config")({
 
 function ConfigPage() {
   const getEsts = useServerFn(getMyEstablishments);
+  const getAdmin = useServerFn(getAdminStatus);
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
+  const { data: adminStatus, isLoading: adminLoading } = useQuery({ queryKey: ["admin-status"], queryFn: () => getAdmin() });
   const est = memberships?.[0]?.establishment as { id: string; name: string; slug: string } | undefined;
+  if (adminLoading) return <div className="text-muted-foreground">Verificando permissões…</div>;
+  if (!adminStatus?.isAdmin) return (
+    <div className="rounded-xl border bg-card p-8 text-center">
+      <Shield className="mx-auto h-10 w-10 text-muted-foreground" />
+      <h1 className="mt-4 font-display text-xl font-bold">Acesso restrito</h1>
+      <p className="mt-2 text-sm text-muted-foreground">Apenas administradores da plataforma podem acessar Configurações.</p>
+    </div>
+  );
   if (!est) return <div className="text-muted-foreground">Carregando estabelecimento…</div>;
   return <ConfigInner establishmentId={est.id} />;
 }
