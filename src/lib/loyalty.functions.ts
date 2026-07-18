@@ -807,6 +807,7 @@ export const getEstablishmentCampaigns = createServerFn({ method: "POST" })
   });
 
 // ---------- Campaign CRUD ----------
+const hexColor = z.string().trim().regex(/^#[0-9a-fA-F]{6}$/, "Cor inválida").nullable().optional().or(z.literal("")).transform(v => (v ? v : null));
 const campaignInput = z.object({
   name: z.string().trim().min(2, "Nome muito curto.").max(80, "Nome muito longo."),
   reward_title: z.string().trim().min(2, "Descreva a recompensa.").max(120),
@@ -816,6 +817,8 @@ const campaignInput = z.object({
   stamp_icon: z.enum(["star", "heart", "check", "coffee"]).default("star"),
   stamp_validity_days: z.number().int().min(0).max(3650).nullable().optional(),
   reward_validity_days: z.number().int().min(0).max(3650).nullable().optional(),
+  primary_color: hexColor,
+  accent_color: hexColor,
 });
 
 export const createCampaign = createServerFn({ method: "POST" })
