@@ -66,8 +66,20 @@ function CustomerCard() {
           );
         })}
 
+        <Card className="mb-4">
+          <CardContent className="p-5 flex flex-col items-center text-center">
+            <div className="flex items-center gap-2 text-sm font-semibold"><QrCode className="h-4 w-4" /> Seu QR Code</div>
+            <div className="text-xs text-muted-foreground mt-1">Mostre esta tela ao atendente para carimbar</div>
+            {qrDataUrl ? (
+              <img src={qrDataUrl} alt="QR do cartão" className="mt-4 w-56 h-56 rounded-lg border" />
+            ) : <div className="mt-4 w-56 h-56 rounded-lg bg-muted animate-pulse" />}
+            <div className="mt-3 text-xs text-muted-foreground">Código: <span className="font-mono">{d.customer.code}</span></div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardContent className="p-5">
+
             <div className="flex items-center gap-2 text-sm font-semibold"><Clock className="h-4 w-4" /> Histórico recente</div>
             <div className="mt-3 divide-y">
               {d.stamps.length === 0 && <div className="py-4 text-sm text-muted-foreground">Nenhum carimbo ainda. Peça um na sua próxima visita!</div>}
