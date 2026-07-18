@@ -60,6 +60,7 @@ export interface PromoConfig {
   showCropMarks?: boolean;
   showSafeArea?: boolean;
   qrScale?: number;
+  qrColor?: string;
 }
 
 function withAlpha(hex: string, a: number) {
