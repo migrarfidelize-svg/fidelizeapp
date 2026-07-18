@@ -66,7 +66,7 @@ export const adminGetOverview = createServerFn({ method: "GET" })
       supabase.from("establishments").select("id, name, slug, plan, active, created_at").order("created_at", { ascending: false }).limit(6),
     ]);
 
-    const planCounts: Record<string, number> = { free: 0, starter: 0, pro: 0, business: 0 };
+    const planCounts: Record<string, number> = { free: 0, starter: 0, pro: 0, enterprise: 0 };
     (byPlan ?? []).forEach((r: { plan: string }) => { planCounts[r.plan] = (planCounts[r.plan] ?? 0) + 1; });
 
     const map = new Map<string, number>();
@@ -105,7 +105,7 @@ export const adminListEstablishments = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({
     query: z.string().trim().max(80).optional(),
     status: z.enum(["all", "active", "blocked"]).default("all"),
-    plan: z.enum(["all", "free", "starter", "pro", "business"]).default("all"),
+    plan: z.enum(["all", "free", "starter", "pro", "enterprise"]).default("all"),
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -164,7 +164,7 @@ export const adminSetEstablishmentPlan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
     establishment_id: z.string().uuid(),
-    plan: z.enum(["free", "starter", "pro", "business"]),
+    plan: z.enum(["free", "starter", "pro", "enterprise"]),
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
