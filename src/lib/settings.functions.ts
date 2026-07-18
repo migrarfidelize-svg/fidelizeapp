@@ -166,6 +166,36 @@ export const listTeam = createServerFn({ method: "POST" })
     };
   });
 
+async function sendInviteEmail(opts: {
+  supabase: any; supabaseAdmin: any;
+  establishment_id: string; email: string; role: string; token: string; inviter_id: string;
+}) {
+  try {
+    const { sendTemplateEmail } = await import("./email.server");
+    const { data: est } = await opts.supabaseAdmin.from("establishments")
+      .select("name").eq("id", opts.establishment_id).maybeSingle();
+    const { data: prof } = await opts.supabaseAdmin.from("profiles")
+      .select("full_name").eq("id", opts.inviter_id).maybeSingle();
+    const origin = (process.env.APP_URL || process.env.VITE_APP_URL || "").replace(/\/$/, "")
+      || "https://id-preview--6fbe0482-baab-4f96-abc8-c1c72bc2e46e.lovable.app";
+    const inviteUrl = `${origin}/invite/${opts.token}`;
+    await sendTemplateEmail({
+      to: opts.email,
+      template: "team_invite",
+      variables: {
+        inviter_name: prof?.full_name ?? "Um administrador",
+        establishment_name: est?.name ?? "sua empresa",
+        role: opts.role === "manager" ? "Gerente" : "Atendente",
+        invite_url: inviteUrl,
+      },
+      actor_id: opts.inviter_id,
+      establishment_id: opts.establishment_id,
+    });
+  } catch {
+    // sendOrEnqueue já enfileira; nunca deve quebrar o convite
+  }
+}
+
 export const inviteTeamMember = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
@@ -184,6 +214,8 @@ export const inviteTeamMember = createServerFn({ method: "POST" })
     }).select("*").single();
     if (error) throw new Error(error.message);
     await audit(supabase, data.establishment_id, userId, "team.invited", "team_invite", inv.id, { email: data.email, role: data.role });
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await sendInviteEmail({ supabase, supabaseAdmin, establishment_id: data.establishment_id, email: data.email.toLowerCase(), role: data.role, token, inviter_id: userId });
     return { invite: inv, token };
   });
 
@@ -214,6 +246,8 @@ export const resendInvite = createServerFn({ method: "POST" })
       .select("*").single();
     if (error) throw new Error(error.message);
     await audit(supabase, data.establishment_id, userId, "team.invite_resent", "team_invite", data.invite_id, {});
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await sendInviteEmail({ supabase, supabaseAdmin, establishment_id: data.establishment_id, email: inv.email, role: inv.role, token, inviter_id: userId });
     return { invite: inv, token };
   });
 
