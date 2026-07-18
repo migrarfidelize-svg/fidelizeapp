@@ -26,7 +26,9 @@ function CustomerTicket() {
   const fetchTicket = useServerFn(getMyTicket);
   const reply = useServerFn(replyToMyTicket);
   const rate = useServerFn(rateTicket);
+  const upload = useServerFn(uploadTicketAttachment);
   const [body, setBody] = useState("");
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [rating, setRating] = useState<number>(0);
 
   useEffect(() => { supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user)); }, []);
