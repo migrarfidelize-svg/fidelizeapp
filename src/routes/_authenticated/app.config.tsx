@@ -12,6 +12,7 @@ import {
   listAuditLogs, archiveEstablishment, restoreEstablishment, deleteEstablishment,
   exportEstablishmentData,
 } from "@/lib/settings.functions";
+import { getAdminStatus } from "@/lib/admin.functions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
