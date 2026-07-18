@@ -509,21 +509,35 @@ function CustomerDrawer({
   establishmentSlug?: string;
   onDataChanged: () => void;
 }) {
+  const qc = useQueryClient();
   const detailFn = useServerFn(getCustomerDetail);
   const stampFn = useServerFn(addStamp);
+  const auditFn = useServerFn(getCustomerAudit);
   const { data, isFetching, refetch } = useQuery({
     enabled: !!customerId,
     queryKey: ["customer-detail", customerId],
     queryFn: () => detailFn({ data: { customer_id: customerId! } }),
   });
+  const { data: auditData, refetch: refetchAudit } = useQuery({
+    enabled: !!customerId,
+    queryKey: ["customer-audit", customerId],
+    queryFn: () => auditFn({ data: { customer_id: customerId! } }),
+  });
   const stampMut = useMutation({
     mutationFn: (cardId: string) => stampFn({ data: { card_id: cardId } }),
-    onSuccess: (r) => {
+    onSuccess: async (r) => {
       toast.success(r.completed ? "🎉 Recompensa desbloqueada!" : `Carimbo adicionado (${r.stamps}/${r.required})`);
-      void refetch(); onDataChanged();
+      await refetch();
+      await refetchAudit();
+      qc.invalidateQueries({ queryKey: ["customers-adv"] });
+      onDataChanged();
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
+    onError: (e) => {
+      const msg = e instanceof Error && e.message ? e.message : "Erro ao carimbar";
+      toast.error(msg, { description: "Verifique permissões, PIN e status do cartão." });
+    },
   });
+
 
   const customer = data?.customer as CustomerRow | undefined;
   const cards = (data?.cards ?? []) as any[];
