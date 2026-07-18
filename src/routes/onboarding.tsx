@@ -30,6 +30,18 @@ function slugify(v: string) {
   return v.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
 }
 
+function IconRow({ value }: { value: string }) {
+  const Icon = getStampIcon(value);
+  return (
+    <span className="inline-flex items-center gap-2">
+      <span className="grid h-6 w-6 place-items-center rounded-md bg-primary/10 text-primary">
+        <Icon className="h-3.5 w-3.5" />
+      </span>
+      <span>{stampIconLabel(value)}</span>
+    </span>
+  );
+}
+
 const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 10; // 10 anos
 
 function Onboarding() {
