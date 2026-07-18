@@ -68,7 +68,7 @@ function Onboarding() {
     if (fileRef.current) fileRef.current.value = "";
   }
 
-  async function uploadCropped(blob: Blob) {
+  async function uploadCropped(blob: Blob, _shape: "circle" | "rounded" | "square") {
     setUploading(true);
     try {
       const { data: userData } = await supabase.auth.getUser();
