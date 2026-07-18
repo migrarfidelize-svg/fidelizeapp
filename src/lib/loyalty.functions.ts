@@ -139,13 +139,27 @@ export const addStamp = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({
     card_id: z.string().uuid(),
     note: z.string().max(200).optional(),
+    pin: z.string().regex(/^\d{4,6}$/).optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: card, error } = await supabase.from("loyalty_cards").select("*, campaigns(*)").eq("id", data.card_id).maybeSingle();
     if (error) throw new Error(error.message);
     if (!card) throw new Error("Cartão não encontrado");
-    // Membership check via RLS on select above already gates it.
+    // PIN gate (if enabled in settings)
+    const { data: settings } = await supabase.from("establishment_settings").select("security").eq("establishment_id", card.establishment_id).maybeSingle();
+    const requirePin = (settings as any)?.security?.require_pin_to_stamp === true;
+    if (requirePin) {
+      if (!data.pin) throw new Error("PIN obrigatório para carimbar");
+      const { data: member } = await supabase.from("establishment_members").select("pin_hash").eq("establishment_id", card.establishment_id).eq("user_id", userId).maybeSingle();
+      if (!member?.pin_hash) throw new Error("Você ainda não definiu seu PIN em Configurações › Segurança");
+      const { scryptSync, timingSafeEqual } = await import("crypto");
+      const [salt, hash] = String(member.pin_hash).split("$");
+      const derived = scryptSync(data.pin, salt, 32);
+      const okPin = derived.length === Buffer.from(hash, "hex").length && timingSafeEqual(derived, Buffer.from(hash, "hex"));
+      if (!okPin) throw new Error("PIN incorreto");
+    }
+
 
     // Rate limit: no stamp in last 10s
     const { data: last } = await supabase.from("stamps").select("created_at").eq("card_id", card.id).is("reverted_at", null).order("created_at", { ascending: false }).limit(1).maybeSingle();
