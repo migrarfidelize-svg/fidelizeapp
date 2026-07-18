@@ -157,7 +157,7 @@ function AdminTicket() {
               <Textarea value={reply} onChange={(e) => setReply(e.target.value)} rows={4}
                 placeholder={internal ? "Anotação interna para a equipe…" : "Escreva a resposta ao cliente…"} maxLength={10000} />
               <div className="flex items-center justify-between gap-2 flex-wrap">
-                <AttachmentPicker value={atts} onChange={setAtts} upload={(a) => uploadFn({ data: a })} />
+                <AttachmentPicker value={atts} onChange={setAtts} upload={(a) => uploadFn({ data: { ...a, ticket_id: id } })} />
                 <Button onClick={send} disabled={busy || !reply.trim()}>
                   <Send className="h-4 w-4 mr-1" />{busy ? "Enviando…" : internal ? "Salvar nota" : "Responder cliente"}
                 </Button>
