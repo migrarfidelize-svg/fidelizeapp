@@ -60,7 +60,7 @@ type FormState = {
   reward_description: string;
   rules: string;
   stamps_required: number;
-  stamp_icon: "star" | "heart" | "check" | "coffee";
+  stamp_icon: string;
   stamp_validity_days: string;
   reward_validity_days: string;
   use_custom_colors: boolean;
