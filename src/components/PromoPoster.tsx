@@ -180,8 +180,9 @@ export const PromoPoster = forwardRef<HTMLDivElement, { config: PromoConfig }>(f
   );
 });
 
-function QRCard({ s, config, big }: { s: (n: number) => number; config: PromoConfig; big?: boolean }) {
-  const size = big ? s(460) : s(360);
+function QRCard({ s, config, scale = 1 }: { s: (n: number) => number; config: PromoConfig; scale?: number }) {
+  const base = 460;
+  const size = Math.round(s(base) * Math.max(0.5, Math.min(1.6, scale)));
   return (
     <div style={{
       background: "#fff",
