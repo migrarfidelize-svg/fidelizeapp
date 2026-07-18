@@ -18,6 +18,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SuporteMeusRouteImport } from './routes/suporte.meus'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
+import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as CTokenRouteImport } from './routes/c.$token'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -83,6 +84,11 @@ const SuporteMeusRoute = SuporteMeusRouteImport.update({
 const LSlugRoute = LSlugRouteImport.update({
   id: '/l/$slug',
   path: '/l/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InviteTokenRoute = InviteTokenRouteImport.update({
+  id: '/invite/$token',
+  path: '/invite/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CTokenRoute = CTokenRouteImport.update({
@@ -214,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/c/$token': typeof CTokenRoute
+  '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
   '/suporte/meus': typeof SuporteMeusRoute
   '/admin/alertas': typeof AuthenticatedAdminAlertasRoute
@@ -244,6 +251,7 @@ export interface FileRoutesByTo {
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
   '/c/$token': typeof CTokenRoute
+  '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
   '/suporte/meus': typeof SuporteMeusRoute
   '/admin/alertas': typeof AuthenticatedAdminAlertasRoute
@@ -278,6 +286,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/c/$token': typeof CTokenRoute
+  '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
   '/suporte/meus': typeof SuporteMeusRoute
   '/_authenticated/admin/alertas': typeof AuthenticatedAdminAlertasRoute
@@ -312,6 +321,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/app'
     | '/c/$token'
+    | '/invite/$token'
     | '/l/$slug'
     | '/suporte/meus'
     | '/admin/alertas'
@@ -342,6 +352,7 @@ export interface FileRouteTypes {
     | '/privacidade'
     | '/termos'
     | '/c/$token'
+    | '/invite/$token'
     | '/l/$slug'
     | '/suporte/meus'
     | '/admin/alertas'
@@ -375,6 +386,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/app'
     | '/c/$token'
+    | '/invite/$token'
     | '/l/$slug'
     | '/suporte/meus'
     | '/_authenticated/admin/alertas'
@@ -407,6 +419,7 @@ export interface RootRouteChildren {
   PrivacidadeRoute: typeof PrivacidadeRoute
   TermosRoute: typeof TermosRoute
   CTokenRoute: typeof CTokenRoute
+  InviteTokenRoute: typeof InviteTokenRoute
   LSlugRoute: typeof LSlugRoute
   SuporteMeusRoute: typeof SuporteMeusRoute
   SuporteSlugNovoRoute: typeof SuporteSlugNovoRoute
@@ -478,6 +491,13 @@ declare module '@tanstack/react-router' {
       path: '/l/$slug'
       fullPath: '/l/$slug'
       preLoaderRoute: typeof LSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invite/$token': {
+      id: '/invite/$token'
+      path: '/invite/$token'
+      fullPath: '/invite/$token'
+      preLoaderRoute: typeof InviteTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/c/$token': {
@@ -707,6 +727,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacidadeRoute: PrivacidadeRoute,
   TermosRoute: TermosRoute,
   CTokenRoute: CTokenRoute,
+  InviteTokenRoute: InviteTokenRoute,
   LSlugRoute: LSlugRoute,
   SuporteMeusRoute: SuporteMeusRoute,
   SuporteSlugNovoRoute: SuporteSlugNovoRoute,
