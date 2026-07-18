@@ -606,12 +606,14 @@ function CustomerDrawer({
             </div>
 
             <Tabs defaultValue="cards">
-              <TabsList className="grid grid-cols-4 w-full">
+              <TabsList className="grid grid-cols-5 w-full">
                 <TabsTrigger value="cards">Cartões</TabsTrigger>
                 <TabsTrigger value="history">Histórico</TabsTrigger>
                 <TabsTrigger value="rewards">Recompensas</TabsTrigger>
+                <TabsTrigger value="audit">Auditoria</TabsTrigger>
                 <TabsTrigger value="info">Detalhes</TabsTrigger>
               </TabsList>
+
 
               <TabsContent value="cards" className="space-y-3 mt-3">
                 {cards.length === 0 && <div className="text-sm text-muted-foreground text-center py-6">Nenhum cartão ativo.</div>}
