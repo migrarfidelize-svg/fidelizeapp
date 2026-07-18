@@ -369,16 +369,16 @@ export const getCustomerDetail = createServerFn({ method: "POST" })
     const { data: cards } = await supabase.from("loyalty_cards").select("*, campaigns(id, name, stamps_required, reward_title, stamp_icon, active)").eq("customer_id", customer.id);
     const cardIds = (cards ?? []).map((c: { id: string }) => c.id);
     const [stamps, rewards, consents] = await Promise.all([
-      cardIds.length ? supabase.from("stamps").select("id, card_id, created_at, cycle, reverted_at, added_by").in("card_id", cardIds).order("created_at", { ascending: false }).limit(50) : Promise.resolve({ data: [] as unknown[] }),
-      cardIds.length ? supabase.from("rewards").select("*").in("card_id", cardIds).order("unlocked_at", { ascending: false }) : Promise.resolve({ data: [] as unknown[] }),
+      cardIds.length ? supabase.from("stamps").select("id, card_id, created_at, cycle, reverted_at, added_by").in("card_id", cardIds).order("created_at", { ascending: false }).limit(50) : Promise.resolve({ data: [] as any[] }),
+      cardIds.length ? supabase.from("rewards").select("*").in("card_id", cardIds).order("unlocked_at", { ascending: false }) : Promise.resolve({ data: [] as any[] }),
       supabase.from("consents").select("*").eq("customer_id", customer.id).order("created_at", { ascending: false }),
     ]);
     return {
       customer,
       cards: cards ?? [],
-      stamps: (stamps.data as unknown[]) ?? [],
-      rewards: (rewards.data as unknown[]) ?? [],
-      consents: (consents.data as unknown[]) ?? [],
+      stamps: (stamps.data ?? []) as any[],
+      rewards: (rewards.data ?? []) as any[],
+      consents: (consents.data ?? []) as any[],
     };
   });
 
