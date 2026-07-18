@@ -1,14 +1,16 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { getCardByToken } from "@/lib/loyalty.functions";
 import { LoyaltyVoucher } from "@/components/LoyaltyVoucher";
 import { formatDate } from "@/lib/format";
 import { Clock } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const opts = (token: string) => queryOptions({
   queryKey: ["card", token],
   queryFn: () => getCardByToken({ data: { token } }),
-  refetchInterval: 15_000,
+  refetchInterval: 30_000,
   refetchOnWindowFocus: true,
 });
 
@@ -31,11 +33,34 @@ export const Route = createFileRoute("/c/$token")({
 function CustomerCard() {
   const { token } = Route.useParams();
   const { data } = useSuspenseQuery(opts(token));
+  const qc = useQueryClient();
   const d = data!;
   const est = d.establishment!;
+  const customerId = d.customer.id;
+  const cardIds = d.cards.map((c) => c.id);
+  // QR payload MUST match the token the staff scanner extracts (see extractToken in app.carimbar.tsx: /\/c\/([A-Za-z0-9_-]{20,80})/)
   const qrValue = typeof window !== "undefined" ? `${window.location.origin}/c/${token}` : `/c/${token}`;
   const cards = d.cards;
   const multi = cards.length > 1;
+
+  // Realtime: refresh voucher instantly when staff adds a stamp / unlocks a reward.
+  useEffect(() => {
+    if (!customerId) return;
+    const invalidate = () => qc.invalidateQueries({ queryKey: ["card", token] });
+    const channel = supabase
+      .channel(`card-${token}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "loyalty_cards", filter: `customer_id=eq.${customerId}` }, invalidate)
+      .on("postgres_changes", { event: "*", schema: "public", table: "customers", filter: `id=eq.${customerId}` }, invalidate);
+    if (cardIds.length) {
+      const filter = `card_id=in.(${cardIds.join(",")})`;
+      channel
+        .on("postgres_changes", { event: "*", schema: "public", table: "stamps", filter }, invalidate)
+        .on("postgres_changes", { event: "*", schema: "public", table: "rewards", filter }, invalidate);
+    }
+    channel.subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [token, customerId, cardIds.join(","), qc]);
+
 
   return (
     <div
