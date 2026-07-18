@@ -171,27 +171,37 @@ export const addStamp = createServerFn({ method: "POST" })
     const newStamps = card.stamps + 1;
     const completed = newStamps >= campaign.stamps_required;
 
-    await supabase.from("stamps").insert({
+    const { error: insErr } = await supabase.from("stamps").insert({
       card_id: card.id, establishment_id: card.establishment_id, added_by: userId, cycle: card.cycle,
     });
+    if (insErr) throw new Error("Não foi possível registrar o carimbo: " + insErr.message);
 
     if (completed) {
       const expires = campaign.reward_validity_days ? new Date(Date.now() + campaign.reward_validity_days * 86400_000).toISOString() : null;
-      await supabase.from("rewards").insert({
+      const { error: rErr } = await supabase.from("rewards").insert({
         card_id: card.id, campaign_id: campaign.id, establishment_id: card.establishment_id,
         cycle: card.cycle, expires_at: expires,
       });
-      await supabase.from("loyalty_cards").update({ stamps: 0, cycle: card.cycle + 1 }).eq("id", card.id);
+      if (rErr) throw new Error("Falha ao criar recompensa: " + rErr.message);
+      const { data: upd, error: uErr } = await supabase.from("loyalty_cards")
+        .update({ stamps: 0, cycle: card.cycle + 1 }).eq("id", card.id).select("id");
+      if (uErr) throw new Error("Falha ao atualizar cartão: " + uErr.message);
+      if (!upd || upd.length === 0) throw new Error("Cartão não atualizado (sem permissão ou não encontrado).");
     } else {
-      await supabase.from("loyalty_cards").update({ stamps: newStamps }).eq("id", card.id);
+      const { data: upd, error: uErr } = await supabase.from("loyalty_cards")
+        .update({ stamps: newStamps }).eq("id", card.id).select("id, stamps");
+      if (uErr) throw new Error("Falha ao atualizar cartão: " + uErr.message);
+      if (!upd || upd.length === 0) throw new Error("Cartão não atualizado (sem permissão ou não encontrado).");
     }
+    const { data: cust } = await supabase.from("customers").select("visits_count").eq("id", card.customer_id).single();
     await supabase.from("customers").update({
       last_visit_at: new Date().toISOString(),
-      visits_count: (await supabase.from("customers").select("visits_count").eq("id", card.customer_id).single()).data!.visits_count + 1,
+      visits_count: (cust?.visits_count ?? 0) + 1,
     }).eq("id", card.customer_id);
 
-    await auditLog(card.establishment_id, userId, "stamp_added", "loyalty_card", card.id, { completed });
+    await auditLog(card.establishment_id, userId, "stamp_added", "loyalty_card", card.id, { completed, new_stamps: completed ? 0 : newStamps });
     return { completed, stamps: completed ? 0 : newStamps, required: campaign.stamps_required, cycle: completed ? card.cycle + 1 : card.cycle };
+
   });
 
 export const undoLastStamp = createServerFn({ method: "POST" })
@@ -202,9 +212,12 @@ export const undoLastStamp = createServerFn({ method: "POST" })
     const { data: last } = await supabase.from("stamps").select("*").eq("card_id", data.card_id).is("reverted_at", null).order("created_at", { ascending: false }).limit(1).maybeSingle();
     if (!last) throw new Error("Nenhum carimbo para desfazer");
     if (Date.now() - new Date(last.created_at).getTime() > 60_000) throw new Error("Prazo para desfazer expirou (60s)");
-    await supabase.from("stamps").update({ reverted_at: new Date().toISOString(), reverted_by: userId }).eq("id", last.id);
+    const { data: updSt, error: sErr } = await supabase.from("stamps").update({ reverted_at: new Date().toISOString(), reverted_by: userId }).eq("id", last.id).select("id");
+    if (sErr) throw new Error(sErr.message);
+    if (!updSt || updSt.length === 0) throw new Error("Sem permissão para desfazer este carimbo.");
     const { data: card } = await supabase.from("loyalty_cards").select("*").eq("id", data.card_id).single();
-    await supabase.from("loyalty_cards").update({ stamps: Math.max(0, card!.stamps - 1) }).eq("id", data.card_id);
+    const { error: cErr } = await supabase.from("loyalty_cards").update({ stamps: Math.max(0, card!.stamps - 1) }).eq("id", data.card_id);
+    if (cErr) throw new Error(cErr.message);
     await auditLog(card!.establishment_id, userId, "stamp_undone", "loyalty_card", data.card_id, {});
     return { ok: true };
   });
