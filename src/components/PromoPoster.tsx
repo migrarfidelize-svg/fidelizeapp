@@ -59,6 +59,7 @@ export interface PromoConfig {
   bgOverlay?: number;
   showCropMarks?: boolean;
   showSafeArea?: boolean;
+  qrScale?: number;
 }
 
 function withAlpha(hex: string, a: number) {
@@ -154,7 +155,7 @@ export const PromoPoster = forwardRef<HTMLDivElement, { config: PromoConfig }>(f
 
           {/* CENTER — QR always in the middle */}
           <div style={{ margin: "auto 0", display: "flex", flexDirection: "column", alignItems: "center", gap: s(18) }}>
-            <QRCard s={s} config={config} big />
+            <QRCard s={s} config={config} scale={config.qrScale ?? 1} />
           </div>
 
           {/* Reward + footer stacked at the bottom */}
@@ -179,8 +180,9 @@ export const PromoPoster = forwardRef<HTMLDivElement, { config: PromoConfig }>(f
   );
 });
 
-function QRCard({ s, config, big }: { s: (n: number) => number; config: PromoConfig; big?: boolean }) {
-  const size = big ? s(460) : s(360);
+function QRCard({ s, config, scale = 1 }: { s: (n: number) => number; config: PromoConfig; scale?: number }) {
+  const base = 460;
+  const size = Math.round(s(base) * Math.max(0.5, Math.min(1.6, scale)));
   return (
     <div style={{
       background: "#fff",

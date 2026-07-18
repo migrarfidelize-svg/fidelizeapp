@@ -210,6 +210,7 @@ type StoredState = {
   ctaNearQR: string; ctaFooter: string; rewardTextOverride: string;
   primaryColor: string; accentColor: string; backgroundColor: string; textColor: string;
   showBrand: boolean; bgImageUrl: string | null; bgZoom: number; bgOffsetX: number; bgOffsetY: number; bgOverlay: number;
+  qrScale?: number;
 };
 const storageKey = (estId: string) => `fidelize-promos-v1-${estId}`;
 function loadVariations(estId: string): SavedVariation[] {
@@ -254,6 +255,11 @@ function QRCodes() {
   const [bgOffsetX, setBgOffsetX] = useState(0);
   const [bgOffsetY, setBgOffsetY] = useState(0);
   const [bgOverlay, setBgOverlay] = useState(0.35);
+  // QR size: 1.0 baseline; auto picks a good default per format
+  const AUTO_QR_SCALE: Record<PromoFormat, number> = { story: 1.05, feed: 0.95, counter: 1.15 };
+  const [qrScale, setQrScale] = useState<number>(AUTO_QR_SCALE.story);
+  const [qrAuto, setQrAuto] = useState(true);
+  useEffect(() => { if (qrAuto) setQrScale(AUTO_QR_SCALE[format]); }, [format, qrAuto]);
   const [exporting, setExporting] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -276,11 +282,35 @@ function QRCodes() {
     QRCode.toDataURL(publicUrl, { width: 1200, margin: 1, errorCorrectionLevel: "H", color: { dark: primaryColor, light: "#ffffff" } }).then(setQrDataUrl);
   }, [publicUrl, primaryColor]);
 
-  // Scannability check
+  // Scannability: QR dark modules vs white module background
   const qrContrast = useMemo(() => contrastRatio(primaryColor, "#ffffff"), [primaryColor]);
-  const qrOk = qrContrast >= 4.0;
-  const qrWarn = qrContrast < 4.0 && qrContrast >= 2.8;
-  const qrBad = qrContrast < 2.8;
+  const qrOk = qrContrast >= 4.5;
+  const qrWarn = qrContrast < 4.5 && qrContrast >= 3.0;
+  const qrBad = qrContrast < 3.0;
+
+  // Contrast between QR white card and poster background (so it doesn't blend in)
+  const cardVsBgContrast = useMemo(() => contrastRatio("#ffffff", backgroundColor), [backgroundColor]);
+  const cardBlend = !bgImageUrl && cardVsBgContrast < 1.3;
+
+  // Auto-fix: darken primary color progressively until it reaches WCAG 4.5:1 vs white
+  function autoFixQrContrast() {
+    const { r, g, b } = hexToRgb(primaryColor);
+    const toHex = (r: number, g: number, b: number) =>
+      "#" + [r, g, b].map(v => Math.max(0, Math.min(255, v)).toString(16).padStart(2, "0")).join("");
+    let cur = { r, g, b };
+    for (let i = 0; i < 24; i++) {
+      const hex = toHex(cur.r, cur.g, cur.b);
+      if (contrastRatio(hex, "#ffffff") >= 4.5) {
+        setPrimaryColor(hex);
+        toast.success("Cor ajustada para máxima legibilidade do QR");
+        return;
+      }
+      cur = { r: Math.round(cur.r * 0.88), g: Math.round(cur.g * 0.88), b: Math.round(cur.b * 0.88) };
+    }
+    setPrimaryColor("#111827");
+    toast.success("Cor ajustada para máxima legibilidade do QR");
+  }
+
 
   const rewardText = useMemo(() => {
     if (rewardTextOverride.trim()) return rewardTextOverride.trim();
@@ -300,9 +330,9 @@ function QRCodes() {
     logoUrl: est?.logo_url, qrDataUrl, publicUrl,
     benefits: ["Cartão sempre no celular", "Nenhum aplicativo necessário", "Recompensas exclusivas", "Cadastro em segundos"],
     contactLine, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay,
-    showCropMarks, showSafeArea,
+    showCropMarks, showSafeArea, qrScale,
     ...overrides,
-  }), [format, segment, title, subtitle, ctaNearQR, ctaFooter, rewardText, primaryColor, accentColor, backgroundColor, textColor, showBrand, est, qrDataUrl, publicUrl, contactLine, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay, showCropMarks, showSafeArea]);
+  }), [format, segment, title, subtitle, ctaNearQR, ctaFooter, rewardText, primaryColor, accentColor, backgroundColor, textColor, showBrand, est, qrDataUrl, publicUrl, contactLine, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay, showCropMarks, showSafeArea, qrScale]);
 
   const config = buildConfig();
   const dims = FORMATS[format];
@@ -438,13 +468,14 @@ function QRCodes() {
 
   // ---------- Variations ----------
   function currentState(): StoredState {
-    return { format, segment, title, subtitle, ctaNearQR, ctaFooter, rewardTextOverride, primaryColor, accentColor, backgroundColor, textColor, showBrand, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay };
+    return { format, segment, title, subtitle, ctaNearQR, ctaFooter, rewardTextOverride, primaryColor, accentColor, backgroundColor, textColor, showBrand, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay, qrScale };
   }
   function applyState(s: StoredState) {
     setFormat(s.format); setSegment(s.segment); setTitle(s.title); setSubtitle(s.subtitle);
     setCtaNearQR(s.ctaNearQR); setCtaFooter(s.ctaFooter); setRewardTextOverride(s.rewardTextOverride);
     setPrimaryColor(s.primaryColor); setAccentColor(s.accentColor); setBackgroundColor(s.backgroundColor); setTextColor(s.textColor);
     setShowBrand(s.showBrand); setBgImageUrl(s.bgImageUrl); setBgZoom(s.bgZoom); setBgOffsetX(s.bgOffsetX); setBgOffsetY(s.bgOffsetY); setBgOverlay(s.bgOverlay);
+    if (typeof s.qrScale === "number") { setQrAuto(false); setQrScale(s.qrScale); }
   }
   function saveVariation() {
     if (!est?.id) return;
@@ -612,15 +643,24 @@ function QRCodes() {
       </div>
 
       {/* Scannability banner */}
-      <div className={`rounded-lg border p-3 flex items-center gap-3 text-sm ${qrOk ? "border-emerald-200 bg-emerald-50 text-emerald-900" : qrWarn ? "border-amber-200 bg-amber-50 text-amber-900" : "border-red-200 bg-red-50 text-red-900"}`}>
-        {qrOk ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
-        <div className="flex-1">
-          <strong>Escaneabilidade: </strong>
-          {qrOk && <>Ótima ({qrContrast.toFixed(1)}:1 contraste com o fundo branco). Respiro de segurança OK.</>}
-          {qrWarn && <>Aceitável ({qrContrast.toFixed(1)}:1). Teste a leitura em impressão pequena.</>}
-          {qrBad && <>Baixa ({qrContrast.toFixed(1)}:1) — escureça a cor principal para garantir leitura.</>}
+      <div className={`rounded-lg border p-3 flex items-start gap-3 text-sm ${qrOk && !cardBlend ? "border-emerald-200 bg-emerald-50 text-emerald-900" : qrWarn || cardBlend ? "border-amber-200 bg-amber-50 text-amber-900" : "border-red-200 bg-red-50 text-red-900"}`}>
+        {qrOk && !cardBlend ? <CheckCircle2 className="h-4 w-4 mt-0.5" /> : <AlertTriangle className="h-4 w-4 mt-0.5" />}
+        <div className="flex-1 space-y-1">
+          <div>
+            <strong>Escaneabilidade: </strong>
+            {qrOk && <>Ótima ({qrContrast.toFixed(1)}:1 de contraste do QR). </>}
+            {qrWarn && <>Aceitável ({qrContrast.toFixed(1)}:1) — no limite para impressão pequena. </>}
+            {qrBad && <>Baixa ({qrContrast.toFixed(1)}:1) — leitura pode falhar. </>}
+            {cardBlend && <>O cartão branco do QR está se misturando com o fundo ({cardVsBgContrast.toFixed(2)}:1) — escureça o fundo ou aumente a camada de proteção.</>}
+          </div>
+          {(qrWarn || qrBad) && (
+            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={autoFixQrContrast}>
+              <Wand2 className="mr-1 h-3 w-3" />Corrigir automaticamente
+            </Button>
+          )}
         </div>
       </div>
+
 
       <div className="grid lg:grid-cols-[380px_1fr] gap-6">
         {/* EDITOR */}
@@ -709,6 +749,21 @@ function QRCodes() {
               </TabsContent>
 
               <TabsContent value="advanced" className="space-y-4 pt-4">
+                <div className="rounded-lg border p-3 space-y-3">
+                  <Row label="Tamanho do QR — auto por formato" hint={`Sugerido: Story ${AUTO_QR_SCALE.story}×, Feed ${AUTO_QR_SCALE.feed}×, Balcão ${AUTO_QR_SCALE.counter}×`}>
+                    <Switch checked={qrAuto} onCheckedChange={(v) => { setQrAuto(v); if (v) setQrScale(AUTO_QR_SCALE[format]); }} />
+                  </Row>
+                  <SliderField
+                    label={`Escala do QR (${qrScale.toFixed(2)}×)${qrAuto ? " · auto" : ""}`}
+                    value={qrScale}
+                    min={0.6}
+                    max={1.5}
+                    step={0.05}
+                    onChange={(v) => { setQrAuto(false); setQrScale(v); }}
+                  />
+                  <p className="text-[11px] text-muted-foreground">Aumenta ou reduz o QR mantendo a área de respiro. A auto-escala escolhe o melhor tamanho por formato para leitura fácil à distância.</p>
+                </div>
+
                 <Row label="Mostrar guias de área segura" hint="Só na prévia — mostra até onde o conteúdo pode chegar">
                   <Switch checked={showSafeArea} onCheckedChange={setShowSafeArea} />
                 </Row>
