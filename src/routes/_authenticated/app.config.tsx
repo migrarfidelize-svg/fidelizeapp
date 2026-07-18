@@ -694,10 +694,9 @@ function PerigoTab({ establishmentId, est }: { establishmentId: string; est: any
   const restore = useServerFn(restoreEstablishment);
   const del = useServerFn(deleteEstablishment);
   const exportAll = useServerFn(exportEstablishmentData);
-  const [confirm, setConfirm] = useState("");
+  const [confirmSlug, setConfirmSlug] = useState("");
 
   async function onArchive() {
-    if (!confirm("Arquivar a empresa? A página pública ficará fora do ar.".includes("?") ? "Arquivar a empresa?" : "")) return;
     if (!window.confirm("Arquivar? Página pública sairá do ar.")) return;
     await archive({ data: { establishment_id: establishmentId } });
     toast.success("Empresa arquivada"); qc.invalidateQueries({ queryKey: ["est-full", establishmentId] });
@@ -714,10 +713,11 @@ function PerigoTab({ establishmentId, est }: { establishmentId: string; est: any
     toast.success("Exportação concluída");
   }
   async function onDelete() {
-    try { await del({ data: { establishment_id: establishmentId, confirm_slug: confirm } });
+    try { await del({ data: { establishment_id: establishmentId, confirm_slug: confirmSlug } });
       toast.success("Empresa excluída"); window.location.href = "/";
     } catch (e: any) { toast.error(e.message); }
   }
+
 
   return (
     <div className="space-y-4">
