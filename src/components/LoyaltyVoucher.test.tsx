@@ -21,7 +21,7 @@ describe("LoyaltyVoucher", () => {
     expect(screen.getByText("Café grátis")).toBeInTheDocument();
     expect(screen.getByText("3 / 10")).toBeInTheDocument();
     // "Faltam 7 carimbos"
-    expect(screen.getByText(/Faltam/i).textContent).toMatch(/7/);
+    expect(screen.getByText(/Faltam apenas/i).textContent).toMatch(/\b7\b/);
   });
 
   it("updates progress and status text when stamps change", () => {
@@ -30,7 +30,7 @@ describe("LoyaltyVoucher", () => {
 
     rerender(<LoyaltyVoucher {...baseProps({ stamps: 7 })} />);
     expect(screen.getByText("7 / 10")).toBeInTheDocument();
-    expect(screen.getByText(/Faltam/i).textContent).toMatch(/3/);
+    expect(screen.getByText(/Faltam apenas/i).textContent).toMatch(/\b3\b/);
   });
 
   it("shows reward-available UI when goal is reached", () => {
