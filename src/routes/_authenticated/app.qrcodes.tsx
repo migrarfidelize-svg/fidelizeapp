@@ -641,15 +641,24 @@ function QRCodes() {
       </div>
 
       {/* Scannability banner */}
-      <div className={`rounded-lg border p-3 flex items-center gap-3 text-sm ${qrOk ? "border-emerald-200 bg-emerald-50 text-emerald-900" : qrWarn ? "border-amber-200 bg-amber-50 text-amber-900" : "border-red-200 bg-red-50 text-red-900"}`}>
-        {qrOk ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
-        <div className="flex-1">
-          <strong>Escaneabilidade: </strong>
-          {qrOk && <>Ótima ({qrContrast.toFixed(1)}:1 contraste com o fundo branco). Respiro de segurança OK.</>}
-          {qrWarn && <>Aceitável ({qrContrast.toFixed(1)}:1). Teste a leitura em impressão pequena.</>}
-          {qrBad && <>Baixa ({qrContrast.toFixed(1)}:1) — escureça a cor principal para garantir leitura.</>}
+      <div className={`rounded-lg border p-3 flex items-start gap-3 text-sm ${qrOk && !cardBlend ? "border-emerald-200 bg-emerald-50 text-emerald-900" : qrWarn || cardBlend ? "border-amber-200 bg-amber-50 text-amber-900" : "border-red-200 bg-red-50 text-red-900"}`}>
+        {qrOk && !cardBlend ? <CheckCircle2 className="h-4 w-4 mt-0.5" /> : <AlertTriangle className="h-4 w-4 mt-0.5" />}
+        <div className="flex-1 space-y-1">
+          <div>
+            <strong>Escaneabilidade: </strong>
+            {qrOk && <>Ótima ({qrContrast.toFixed(1)}:1 de contraste do QR). </>}
+            {qrWarn && <>Aceitável ({qrContrast.toFixed(1)}:1) — no limite para impressão pequena. </>}
+            {qrBad && <>Baixa ({qrContrast.toFixed(1)}:1) — leitura pode falhar. </>}
+            {cardBlend && <>O cartão branco do QR está se misturando com o fundo ({cardVsBgContrast.toFixed(2)}:1) — escureça o fundo ou aumente a camada de proteção.</>}
+          </div>
+          {(qrWarn || qrBad) && (
+            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={autoFixQrContrast}>
+              <Wand2 className="mr-1 h-3 w-3" />Corrigir automaticamente
+            </Button>
+          )}
         </div>
       </div>
+
 
       <div className="grid lg:grid-cols-[380px_1fr] gap-6">
         {/* EDITOR */}
