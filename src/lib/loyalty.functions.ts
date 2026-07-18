@@ -862,6 +862,8 @@ export const updateCampaign = createServerFn({ method: "POST" })
       stamp_icon: rest.stamp_icon,
       stamp_validity_days: rest.stamp_validity_days ?? null,
       reward_validity_days: rest.reward_validity_days ?? null,
+      primary_color: rest.primary_color ?? null,
+      accent_color: rest.accent_color ?? null,
     }).eq("id", id);
     if (error) throw new Error(error.message);
     await auditLog(cur.establishment_id, userId, "campaign_updated", "campaign", id, { name: rest.name });
