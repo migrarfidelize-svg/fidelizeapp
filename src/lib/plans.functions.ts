@@ -194,7 +194,7 @@ export const changeEstablishmentPlan = createServerFn({ method: "POST" })
 
     // 1) Update establishment plan (trigger tg_establishment_subscription_events logs a subscription_events row automatically with actor_id = auth.uid())
     const { error: updErr } = await supabase.from("establishments")
-      .update({ plan: toTier }).eq("id", data.establishment_id);
+      .update({ plan: toTier as any }).eq("id", data.establishment_id);
     if (updErr) throw new Error(updErr.message);
 
     // 2) Upsert current subscription row (subscriptions table). RLS only exposes SELECT to members, so we use the admin client after ownership was verified above.
