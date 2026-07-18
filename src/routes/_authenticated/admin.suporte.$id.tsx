@@ -32,7 +32,8 @@ function AdminTicket() {
   const getFn = useServerFn(adminGetSupportTicket);
   const replyFn = useServerFn(adminReplySupportTicket);
   const updFn = useServerFn(adminUpdateSupportTicket);
-  const uploadFn = useServerFn(uploadTicketAttachment);
+  const uploadFn = useServerFn(uploadSupportAttachment);
+  const signFn = useServerFn(getSupportAttachmentUrl);
   const qrFn = useServerFn(listSupportQuickReplies);
 
   const [reply, setReply] = useState("");
