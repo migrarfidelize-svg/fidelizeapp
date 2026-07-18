@@ -1,0 +1,151 @@
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { createEstablishment, getMyEstablishments } from "@/lib/loyalty.functions";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Logo } from "@/components/Logo";
+import { StampCard } from "@/components/StampCard";
+import { toast } from "sonner";
+
+export const Route = createFileRoute("/onboarding")({
+  ssr: false,
+  beforeLoad: async () => {
+    const { data } = await supabase.auth.getUser();
+    if (!data.user) throw redirect({ to: "/auth" });
+  },
+  head: () => ({ meta: [{ title: "Configurar minha empresa — Fidelize" }] }),
+  component: Onboarding,
+});
+
+function slugify(v: string) {
+  return v.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
+}
+
+function Onboarding() {
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const create = useServerFn(createEstablishment);
+  const getEsts = useServerFn(getMyEstablishments);
+
+  const [loading, setLoading] = useState(false);
+  const [f, setF] = useState({
+    name: "", slug: "", description: "", primary_color: "#5B21B6", accent_color: "#F97066",
+    campaign_name: "Cartão Fidelidade", stamps_required: 10, reward_title: "", reward_description: "",
+  });
+
+  function set<K extends keyof typeof f>(k: K, v: (typeof f)[K]) {
+    setF((s) => ({ ...s, [k]: v, ...(k === "name" && !s.slug ? { slug: slugify(v as string) } : {}) }));
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await create({ data: f });
+      await qc.invalidateQueries();
+      await getEsts();
+      toast.success("Empresa criada!");
+      navigate({ to: "/app" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro");
+    } finally { setLoading(false); }
+  }
+
+  return (
+    <div className="min-h-screen bg-muted/30">
+      <header className="border-b bg-card">
+        <div className="mx-auto max-w-5xl p-4"><Logo /></div>
+      </header>
+      <div className="mx-auto max-w-5xl p-4 md:p-8 grid gap-8 md:grid-cols-[1fr_360px]">
+        <form onSubmit={submit} className="space-y-6 rounded-3xl border bg-card p-6 md:p-8">
+          <div>
+            <h1 className="font-display text-2xl font-bold">Vamos configurar seu cartão fidelidade</h1>
+            <p className="text-sm text-muted-foreground mt-1">Leva 2 minutos. Você pode ajustar tudo depois.</p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <Label>Nome da empresa</Label>
+              <Input value={f.name} onChange={(e) => set("name", e.target.value)} required minLength={2} maxLength={80} placeholder="Ex: Café do Centro" />
+            </div>
+            <div>
+              <Label>Endereço público</Label>
+              <div className="flex items-center gap-1">
+                <span className="text-sm text-muted-foreground">fidelize.app/l/</span>
+                <Input value={f.slug} onChange={(e) => set("slug", slugify(e.target.value))} required minLength={3} placeholder="cafe-do-centro" />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <Label>Descrição (opcional)</Label>
+            <Textarea value={f.description} onChange={(e) => set("description", e.target.value)} maxLength={500} rows={2} placeholder="Uma frase sobre o seu negócio" />
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <Label>Cor principal</Label>
+              <div className="flex gap-2 items-center">
+                <input type="color" value={f.primary_color} onChange={(e) => set("primary_color", e.target.value)} className="h-10 w-14 rounded border" />
+                <Input value={f.primary_color} onChange={(e) => set("primary_color", e.target.value)} />
+              </div>
+            </div>
+            <div>
+              <Label>Cor de destaque</Label>
+              <div className="flex gap-2 items-center">
+                <input type="color" value={f.accent_color} onChange={(e) => set("accent_color", e.target.value)} className="h-10 w-14 rounded border" />
+                <Input value={f.accent_color} onChange={(e) => set("accent_color", e.target.value)} />
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t pt-6 space-y-4">
+            <h2 className="font-display text-lg font-semibold">Primeira campanha</h2>
+            <div>
+              <Label>Nome da campanha</Label>
+              <Input value={f.campaign_name} onChange={(e) => set("campaign_name", e.target.value)} maxLength={80} />
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label>Carimbos necessários</Label>
+                <Input type="number" min={2} max={50} value={f.stamps_required} onChange={(e) => set("stamps_required", Number(e.target.value))} />
+              </div>
+              <div>
+                <Label>Recompensa (título)</Label>
+                <Input value={f.reward_title} onChange={(e) => set("reward_title", e.target.value)} required maxLength={120} placeholder="Um café grátis" />
+              </div>
+            </div>
+            <div>
+              <Label>Recompensa (detalhes)</Label>
+              <Textarea value={f.reward_description} onChange={(e) => set("reward_description", e.target.value)} maxLength={500} rows={2} placeholder="Ex: válido de segunda a sexta, exceto especiais" />
+            </div>
+          </div>
+
+          <Button type="submit" disabled={loading} className="w-full gradient-brand text-primary-foreground" size="lg">
+            {loading ? "Criando…" : "Criar minha empresa"}
+          </Button>
+        </form>
+
+        <div className="hidden md:block">
+          <div className="sticky top-8">
+            <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Prévia</div>
+            <StampCard
+              brandName={f.name || "Sua empresa"}
+              customerName="Cliente exemplo"
+              stamps={Math.min(3, f.stamps_required)}
+              required={f.stamps_required}
+              reward={f.reward_title || "Sua recompensa aqui"}
+              primary={f.primary_color}
+              accent={f.accent_color}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
