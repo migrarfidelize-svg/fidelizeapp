@@ -128,13 +128,7 @@ function MerchantPlansPage() {
                     className={p.is_featured ? "gradient-brand text-primary-foreground w-full" : "w-full"}
                     variant={p.is_featured ? "default" : "outline"}
                     disabled={isCurrent || !activeEst}
-                    onClick={async () => {
-                      try {
-                        await change({ data: { establishment_id: activeEst!.id, plan_slug: p.slug } });
-                        toast.success(`Plano alterado para ${p.name}.`);
-                        qc.invalidateQueries();
-                      } catch (e: any) { toast.error(e.message); }
-                    }}
+                    onClick={() => askChange(p)}
                   >
                     {isCurrent ? "Plano atual" : (p.button_text ?? `Assinar ${p.name}`)}
                   </Button>
@@ -144,6 +138,42 @@ function MerchantPlansPage() {
           })}
         </div>
       )}
+
+      <AlertDialog open={!!pending} onOpenChange={(o) => !o && setPending(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              {pending?.kind === "upgrade" && <ArrowUp className="h-5 w-5 text-primary" />}
+              {pending?.kind === "downgrade" && <ArrowDown className="h-5 w-5 text-destructive" />}
+              {pending?.kind === "upgrade" ? "Confirmar upgrade"
+                : pending?.kind === "downgrade" ? "Confirmar downgrade"
+                : "Confirmar mudança de plano"}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm">
+                <div>
+                  Você está prestes a mudar de <strong>{usage?.plan?.name ?? currentTier}</strong> para <strong>{pending?.name}</strong>.
+                </div>
+                <div className="rounded-lg border p-3 bg-muted/40">
+                  <div className="flex justify-between"><span className="text-muted-foreground">Valor mensal</span><span className="font-semibold">{pending ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(pending.price) : "—"}</span></div>
+                </div>
+                {pending?.kind === "downgrade" && (
+                  <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-destructive">
+                    Ao fazer downgrade você poderá perder acesso a recursos e ficar acima dos limites do novo plano. Recursos além do limite ficarão inacessíveis até serem removidos.
+                  </div>
+                )}
+                <div className="text-xs text-muted-foreground">A alteração é registrada em histórico de assinaturas e auditoria.</div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={saving}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmChange} disabled={saving}>
+              {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Aplicando…</> : "Confirmar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
