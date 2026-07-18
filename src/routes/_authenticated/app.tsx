@@ -41,6 +41,7 @@ function AppLayout() {
     { to: "/app/equipe", label: "Equipe", icon: UsersRound, exact: false },
     
     { to: "/app/kb", label: "Base", icon: BookOpen, exact: false },
+    { to: "/app/planos", label: "Planos", icon: Package, exact: false },
     { to: "/suporte", label: "Fale com a Fidelize", icon: LifeBuoy, exact: false },
   ] as const;
 
