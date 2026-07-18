@@ -119,7 +119,7 @@ export const getCardByToken = createServerFn({ method: "GET" })
     const { data: cards } = await supabaseAdmin
       .from("loyalty_cards").select("*, campaigns(*)").eq("customer_id", customer.id);
     const { data: recentStamps } = await supabaseAdmin
-      .from("stamps").select("id, created_at, cycle, reverted_at").in("card_id", (cards ?? []).map(c => c.id)).order("created_at", { ascending: false }).limit(20);
+      .from("stamps").select("id, card_id, created_at, cycle, reverted_at").in("card_id", (cards ?? []).map(c => c.id)).order("created_at", { ascending: false }).limit(20);
     const { data: rewards } = await supabaseAdmin
       .from("rewards").select("*").in("card_id", (cards ?? []).map(c => c.id)).order("unlocked_at", { ascending: false });
     return { customer, establishment: est, cards: cards ?? [], stamps: recentStamps ?? [], rewards: rewards ?? [] };
