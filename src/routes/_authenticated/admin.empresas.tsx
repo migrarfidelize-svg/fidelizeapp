@@ -138,7 +138,10 @@ function AdminEmpresas() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild><Button size="icon" variant="ghost"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem asChild><Link to="/admin/empresa/$id" params={{ id: e.id }}><BarChart3 className="mr-2 h-4 w-4" />Ver detalhes</Link></DropdownMenuItem>
                     <DropdownMenuItem asChild><Link to="/l/$slug" params={{ slug: e.slug }} target="_blank"><ExternalLink className="mr-2 h-4 w-4" />Ver página pública</Link></DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => flagFailure.mutate(e.id)}><AlertTriangle className="mr-2 h-4 w-4" />Reportar falha de pagamento</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     {e.active
                       ? <DropdownMenuItem onClick={() => toggleActive.mutate({ id: e.id, active: false })}><Ban className="mr-2 h-4 w-4" />Bloquear</DropdownMenuItem>
