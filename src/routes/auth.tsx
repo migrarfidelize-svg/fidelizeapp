@@ -47,8 +47,20 @@ function AuthPage() {
         toast.success("Conta criada! Vamos configurar seu cartão.");
         navigate({ to: "/onboarding" });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        let { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          const msg = (error.message || "").toLowerCase();
+          const code = (error as { code?: string }).code ?? "";
+          if (msg.includes("not confirmed") || msg.includes("email not confirmed") || code === "email_not_confirmed") {
+            const { confirmEmailByAddress } = await import("@/lib/auth-confirm.functions");
+            const res = await confirmEmailByAddress({ data: { email } });
+            if (res.ok) {
+              const retry = await supabase.auth.signInWithPassword({ email, password });
+              error = retry.error;
+            }
+          }
+          if (error) throw error;
+        }
         toast.success("Bem-vindo de volta!");
         navigate({ to: "/app" });
       }
