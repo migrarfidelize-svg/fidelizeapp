@@ -2,7 +2,9 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { ZoomIn, ZoomOut, RotateCcw, Circle, Square, Squircle } from "lucide-react";
+
+export type LogoShape = "circle" | "rounded" | "square";
 
 interface Props {
   file: File | null;
@@ -10,12 +12,12 @@ interface Props {
   onOpenChange: (o: boolean) => void;
   /** Output size in px (square). Default 512. */
   outputSize?: number;
-  onCropped: (blob: Blob) => void;
+  onCropped: (blob: Blob, shape: LogoShape) => void;
 }
 
 /**
- * Cropper simples: canvas quadrado com pan (arrastar) e zoom (slider/roda).
- * Sempre gera um PNG quadrado no tamanho `outputSize`, ideal para logos.
+ * Cropper: canvas quadrado com pan/zoom e escolha de formato (círculo, arredondado, quadrado).
+ * O formato é embutido no PNG (cantos transparentes) para ser exibido igual em qualquer lugar.
  */
 export function LogoCropper({ file, open, onOpenChange, outputSize = 512, onCropped }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -25,6 +27,7 @@ export function LogoCropper({ file, open, onOpenChange, outputSize = 512, onCrop
   const [dragging, setDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0, ox: 0, oy: 0 });
   const [ready, setReady] = useState(false);
+  const [shape, setShape] = useState<LogoShape>("circle");
   const VIEW = 320; // preview canvas size (px)
 
   // Load image when file changes
@@ -34,7 +37,6 @@ export function LogoCropper({ file, open, onOpenChange, outputSize = 512, onCrop
     const img = new Image();
     img.onload = () => {
       imgRef.current = img;
-      // Fit-cover baseline: min zoom so the image covers the crop area
       const base = Math.max(VIEW / img.width, VIEW / img.height);
       setZoom(base);
       setOffset({ x: 0, y: 0 });
@@ -52,7 +54,6 @@ export function LogoCropper({ file, open, onOpenChange, outputSize = 512, onCrop
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.clearRect(0, 0, VIEW, VIEW);
-    // Checkerboard background so PNG transparency is visible
     ctx.fillStyle = "#f4f4f5";
     ctx.fillRect(0, 0, VIEW, VIEW);
     ctx.fillStyle = "#e4e4e7";
@@ -100,6 +101,24 @@ export function LogoCropper({ file, open, onOpenChange, outputSize = 512, onCrop
     setOffset({ x: 0, y: 0 });
   }
 
+  function pathForShape(ctx: CanvasRenderingContext2D, size: number, s: LogoShape) {
+    ctx.beginPath();
+    if (s === "circle") {
+      ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+    } else if (s === "square") {
+      ctx.rect(0, 0, size, size);
+    } else {
+      const r = size * 0.18;
+      const w = size, h = size;
+      ctx.moveTo(r, 0);
+      ctx.arcTo(w, 0, w, h, r);
+      ctx.arcTo(w, h, 0, h, r);
+      ctx.arcTo(0, h, 0, 0, r);
+      ctx.arcTo(0, 0, w, 0, r);
+      ctx.closePath();
+    }
+  }
+
   async function confirm() {
     const img = imgRef.current;
     if (!img) return;
@@ -107,6 +126,9 @@ export function LogoCropper({ file, open, onOpenChange, outputSize = 512, onCrop
     out.width = outputSize; out.height = outputSize;
     const ctx = out.getContext("2d");
     if (!ctx) return;
+    // Clip to shape so corners become transparent in the PNG
+    pathForShape(ctx, outputSize, shape);
+    ctx.clip();
     const scale = outputSize / VIEW;
     const w = img.width * zoom * scale;
     const h = img.height * zoom * scale;
@@ -115,17 +137,19 @@ export function LogoCropper({ file, open, onOpenChange, outputSize = 512, onCrop
     ctx.imageSmoothingQuality = "high";
     ctx.drawImage(img, dx, dy, w, h);
     const blob: Blob | null = await new Promise((res) => out.toBlob((b) => res(b), "image/png", 0.95));
-    if (blob) { onCropped(blob); onOpenChange(false); }
+    if (blob) { onCropped(blob, shape); onOpenChange(false); }
   }
 
   const min = minZoom();
+  const previewShapeClass =
+    shape === "circle" ? "rounded-full" : shape === "rounded" ? "rounded-[18%]" : "rounded-none";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Ajustar logo</DialogTitle>
-          <DialogDescription>Arraste para posicionar e use o zoom para enquadrar. O logo ficará quadrado.</DialogDescription>
+          <DialogDescription>Arraste para posicionar, use o zoom para enquadrar e escolha o formato.</DialogDescription>
         </DialogHeader>
         <div className="flex justify-center">
           <canvas
@@ -137,9 +161,20 @@ export function LogoCropper({ file, open, onOpenChange, outputSize = 512, onCrop
             onPointerUp={onUp}
             onPointerCancel={onUp}
             onWheel={onWheel}
-            className="rounded-full border touch-none cursor-grab active:cursor-grabbing"
+            className={`border touch-none cursor-grab active:cursor-grabbing ${previewShapeClass}`}
             style={{ width: VIEW, height: VIEW }}
           />
+        </div>
+        <div className="flex items-center justify-center gap-2">
+          <Button type="button" size="sm" variant={shape === "circle" ? "default" : "outline"} onClick={() => setShape("circle")}>
+            <Circle className="h-4 w-4 mr-1" /> Círculo
+          </Button>
+          <Button type="button" size="sm" variant={shape === "rounded" ? "default" : "outline"} onClick={() => setShape("rounded")}>
+            <Squircle className="h-4 w-4 mr-1" /> Arredondado
+          </Button>
+          <Button type="button" size="sm" variant={shape === "square" ? "default" : "outline"} onClick={() => setShape("square")}>
+            <Square className="h-4 w-4 mr-1" /> Quadrado
+          </Button>
         </div>
         <div className="flex items-center gap-3">
           <ZoomOut className="h-4 w-4 text-muted-foreground" />
