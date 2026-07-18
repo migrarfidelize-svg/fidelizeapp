@@ -439,6 +439,21 @@ function CampaignDialog({
               />
             )}
           </div>
+          {est && (
+            <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border bg-background/70 p-3">
+              <div className="min-w-0 text-xs">
+                <div className="font-medium">Logo do estabelecimento</div>
+                <div className="text-muted-foreground">
+                  {est.logo_url ? "Aparece no cartão do cliente." : "Sem logo. Envie para dar identidade ao cartão."}
+                </div>
+              </div>
+              <LogoUploadButton
+                establishmentId={est.id}
+                currentLogoUrl={est.logo_url}
+                invalidateKeys={[["campaigns", est.id]]}
+              />
+            </div>
+          )}
           <p className="text-xs text-muted-foreground">Assim seu cartão aparece para o cliente.</p>
         </div>
       </div>
