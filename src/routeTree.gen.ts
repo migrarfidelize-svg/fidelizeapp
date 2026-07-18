@@ -36,6 +36,7 @@ import { Route as AuthenticatedAppCarimbarRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppCampanhasRouteImport } from './routes/_authenticated/app.campanhas'
 import { Route as AuthenticatedAdminEquipeRouteImport } from './routes/_authenticated/admin.equipe'
 import { Route as AuthenticatedAdminEmpresasRouteImport } from './routes/_authenticated/admin.empresas'
+import { Route as AuthenticatedAdminEmailsRouteImport } from './routes/_authenticated/admin.emails'
 import { Route as AuthenticatedAdminConfigRouteImport } from './routes/_authenticated/admin.config'
 import { Route as AuthenticatedAdminAuditoriaRouteImport } from './routes/_authenticated/admin.auditoria'
 import { Route as AuthenticatedAdminAssinaturasRouteImport } from './routes/_authenticated/admin.assinaturas'
@@ -182,6 +183,12 @@ const AuthenticatedAdminEmpresasRoute =
     path: '/empresas',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminEmailsRoute =
+  AuthenticatedAdminEmailsRouteImport.update({
+    id: '/emails',
+    path: '/emails',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminConfigRoute =
   AuthenticatedAdminConfigRouteImport.update({
     id: '/config',
@@ -235,6 +242,7 @@ export interface FileRoutesByFullPath {
   '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
   '/admin/config': typeof AuthenticatedAdminConfigRoute
+  '/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/admin/empresas': typeof AuthenticatedAdminEmpresasRoute
   '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
@@ -267,6 +275,7 @@ export interface FileRoutesByTo {
   '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
   '/admin/config': typeof AuthenticatedAdminConfigRoute
+  '/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/admin/empresas': typeof AuthenticatedAdminEmpresasRoute
   '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
@@ -303,6 +312,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/_authenticated/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
   '/_authenticated/admin/config': typeof AuthenticatedAdminConfigRoute
+  '/_authenticated/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/_authenticated/admin/empresas': typeof AuthenticatedAdminEmpresasRoute
   '/_authenticated/admin/equipe': typeof AuthenticatedAdminEquipeRoute
   '/_authenticated/app/campanhas': typeof AuthenticatedAppCampanhasRoute
@@ -339,6 +349,7 @@ export interface FileRouteTypes {
     | '/admin/assinaturas'
     | '/admin/auditoria'
     | '/admin/config'
+    | '/admin/emails'
     | '/admin/empresas'
     | '/admin/equipe'
     | '/app/campanhas'
@@ -371,6 +382,7 @@ export interface FileRouteTypes {
     | '/admin/assinaturas'
     | '/admin/auditoria'
     | '/admin/config'
+    | '/admin/emails'
     | '/admin/empresas'
     | '/admin/equipe'
     | '/app/campanhas'
@@ -406,6 +418,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/assinaturas'
     | '/_authenticated/admin/auditoria'
     | '/_authenticated/admin/config'
+    | '/_authenticated/admin/emails'
     | '/_authenticated/admin/empresas'
     | '/_authenticated/admin/equipe'
     | '/_authenticated/app/campanhas'
@@ -633,6 +646,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminEmpresasRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/emails': {
+      id: '/_authenticated/admin/emails'
+      path: '/emails'
+      fullPath: '/admin/emails'
+      preLoaderRoute: typeof AuthenticatedAdminEmailsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/config': {
       id: '/_authenticated/admin/config'
       path: '/config'
@@ -683,6 +703,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminAssinaturasRoute: typeof AuthenticatedAdminAssinaturasRoute
   AuthenticatedAdminAuditoriaRoute: typeof AuthenticatedAdminAuditoriaRoute
   AuthenticatedAdminConfigRoute: typeof AuthenticatedAdminConfigRoute
+  AuthenticatedAdminEmailsRoute: typeof AuthenticatedAdminEmailsRoute
   AuthenticatedAdminEmpresasRoute: typeof AuthenticatedAdminEmpresasRoute
   AuthenticatedAdminEquipeRoute: typeof AuthenticatedAdminEquipeRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
@@ -694,6 +715,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminAssinaturasRoute: AuthenticatedAdminAssinaturasRoute,
   AuthenticatedAdminAuditoriaRoute: AuthenticatedAdminAuditoriaRoute,
   AuthenticatedAdminConfigRoute: AuthenticatedAdminConfigRoute,
+  AuthenticatedAdminEmailsRoute: AuthenticatedAdminEmailsRoute,
   AuthenticatedAdminEmpresasRoute: AuthenticatedAdminEmpresasRoute,
   AuthenticatedAdminEquipeRoute: AuthenticatedAdminEquipeRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
