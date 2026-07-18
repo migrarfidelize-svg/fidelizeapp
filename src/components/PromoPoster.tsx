@@ -155,7 +155,7 @@ export const PromoPoster = forwardRef<HTMLDivElement, { config: PromoConfig }>(f
 
           {/* CENTER — QR always in the middle */}
           <div style={{ margin: "auto 0", display: "flex", flexDirection: "column", alignItems: "center", gap: s(18) }}>
-            <QRCard s={s} config={config} big />
+            <QRCard s={s} config={config} scale={config.qrScale ?? 1} />
           </div>
 
           {/* Reward + footer stacked at the bottom */}
