@@ -32,11 +32,13 @@ function NewTicket() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const create = useServerFn(createTicket);
+  const uploadDraft = useServerFn(uploadDraftAttachment);
   const [session, setSession] = useState<{ email: string } | null | undefined>(undefined);
   const [subject, setSubject] = useState(search.assunto);
   const [body, setBody] = useState("");
   const [name, setName] = useState("");
   const [priority, setPriority] = useState<"low"|"normal"|"high"|"urgent">("normal");
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
