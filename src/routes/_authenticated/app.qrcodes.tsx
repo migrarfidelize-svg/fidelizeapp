@@ -780,14 +780,23 @@ function QRCodes() {
                   <p className="text-[11px] text-muted-foreground">Aumenta ou reduz o QR mantendo a área de respiro. A auto-escala escolhe o melhor tamanho por formato para leitura fácil à distância.</p>
                 </div>
 
-                <div className="rounded-lg border p-3 space-y-2">
+                <div className="rounded-lg border p-3 space-y-3">
                   <div className="text-xs font-medium">Formato dos cantos</div>
                   <div className="grid grid-cols-2 gap-2">
-                    <Button size="sm" variant={cornerStyle === "sharp" ? "default" : "outline"} onClick={() => setCornerStyle("sharp")} className="h-8 text-xs">Quadrado</Button>
-                    <Button size="sm" variant={cornerStyle === "rounded" ? "default" : "outline"} onClick={() => setCornerStyle("rounded")} className="h-8 text-xs">Arredondado</Button>
+                    <Button size="sm" variant={cornerRadiusPct === 0 ? "default" : "outline"} onClick={() => { setCornerStyle("sharp"); setCornerRadiusPct(0); }} className="h-8 text-xs">Quadrado</Button>
+                    <Button size="sm" variant={cornerRadiusPct > 0 ? "default" : "outline"} onClick={() => { setCornerStyle("rounded"); if (cornerRadiusPct === 0) setCornerRadiusPct(6); }} className="h-8 text-xs">Arredondado</Button>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">Deixa o material com cantos retos ou suavemente arredondados. Nos formatos de impressão, o arredondamento aparece dentro da linha de corte.</p>
+                  <SliderField
+                    label={`Raio dos cantos (${cornerRadiusPct}%)`}
+                    value={cornerRadiusPct}
+                    min={0}
+                    max={30}
+                    step={1}
+                    onChange={(v) => { setCornerRadiusPct(v); setCornerStyle(v > 0 ? "rounded" : "sharp"); }}
+                  />
+                  <p className="text-[11px] text-muted-foreground">0% = quadrado, 30% = super arredondado. Nos formatos de impressão, o arredondamento aparece dentro da linha de corte.</p>
                 </div>
+
 
                 <Row label="Mostrar guias de área segura" hint="Só na prévia — mostra até onde o conteúdo pode chegar">
                   <Switch checked={showSafeArea} onCheckedChange={setShowSafeArea} />
