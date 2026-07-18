@@ -569,6 +569,15 @@ function QRCodes() {
                     <SelectContent>{(Object.keys(SEGMENT_LABEL) as Segment[]).map((k) => <SelectItem key={k} value={k}>{SEGMENT_LABEL[k]}</SelectItem>)}</SelectContent>
                   </Select>
                 </Field>
+                <div className="rounded-lg border bg-primary-soft/40 p-3 space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-medium"><Wand2 className="h-3.5 w-3.5 text-primary" />Preset do segmento</div>
+                  <p className="text-[11px] text-muted-foreground">Aplica paleta + textos sugeridos para <strong>{SEGMENT_LABEL[segment]}</strong>. Depois é só ajustar o que quiser.</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    <Button size="sm" onClick={() => applySegmentPreset(segment, "all")} className="gradient-brand text-primary-foreground h-7 text-xs"><Sparkles className="mr-1 h-3 w-3" />Aplicar tudo</Button>
+                    <Button size="sm" variant="outline" onClick={() => applySegmentPreset(segment, "colors")} className="h-7 text-xs">Só cores</Button>
+                    <Button size="sm" variant="outline" onClick={() => applySegmentPreset(segment, "texts")} className="h-7 text-xs">Só textos</Button>
+                  </div>
+                </div>
                 <ColorField label="Cor principal (afeta contraste do QR)" value={primaryColor} onChange={setPrimaryColor} />
                 <ColorField label="Cor secundária" value={accentColor} onChange={setAccentColor} />
                 <ColorField label="Fundo" value={backgroundColor} onChange={setBackgroundColor} />
