@@ -135,6 +135,74 @@ function contrastRatio(a: string, b: string) {
   return (hi + 0.05) / (lo + 0.05);
 }
 
+// ============ Palette extraction from background image ============
+type Palette = { primary: string; accent: string; bg: string; text: string; overlaySuggestion: number };
+function extractPalette(url: string): Promise<Palette> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      try {
+        const W = 80, H = 80;
+        const c = document.createElement("canvas");
+        c.width = W; c.height = H;
+        const ctx = c.getContext("2d");
+        if (!ctx) return reject(new Error("canvas indisponível"));
+        ctx.drawImage(img, 0, 0, W, H);
+        const data = ctx.getImageData(0, 0, W, H).data;
+        const bins = new Map<string, { r: number; g: number; b: number; n: number }>();
+        let sr = 0, sg = 0, sb = 0, sn = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          if (data[i + 3] < 128) continue;
+          const r = data[i], g = data[i + 1], b = data[i + 2];
+          sr += r; sg += g; sb += b; sn++;
+          const k = `${r >> 4},${g >> 4},${b >> 4}`;
+          const cur = bins.get(k);
+          if (cur) { cur.r += r; cur.g += g; cur.b += b; cur.n += 1; }
+          else bins.set(k, { r, g, b, n: 1 });
+        }
+        if (sn === 0) return reject(new Error("imagem vazia"));
+        const arr = [...bins.values()].map(o => ({ r: (o.r / o.n) | 0, g: (o.g / o.n) | 0, b: (o.b / o.n) | 0, n: o.n }));
+        arr.sort((a, b) => b.n - a.n);
+        const avg = { r: (sr / sn) | 0, g: (sg / sn) | 0, b: (sb / sn) | 0 };
+        // Primary = most saturated among top bins; darken for good QR contrast
+        const sat = (c: { r: number; g: number; b: number }) => {
+          const mx = Math.max(c.r, c.g, c.b), mn = Math.min(c.r, c.g, c.b);
+          return mx === 0 ? 0 : (mx - mn) / mx;
+        };
+        const top = arr.slice(0, 10);
+        const primaryRaw = [...top].sort((a, b) => sat(b) - sat(a))[0] ?? arr[0];
+        // Accent = most different (weighted) from primary among top bins
+        const dist2 = (a: any, b: any) => (a.r - b.r) ** 2 + (a.g - b.g) ** 2 + (a.b - b.b) ** 2;
+        let accent = top.find((c) => c !== primaryRaw) ?? primaryRaw;
+        for (const c of top) if (c !== primaryRaw && dist2(c, primaryRaw) > dist2(accent, primaryRaw)) accent = c;
+        const toHex = (r: number, g: number, b: number) => "#" + [r, g, b].map(v => Math.max(0, Math.min(255, v)).toString(16).padStart(2, "0")).join("");
+        const shade = (c: { r: number; g: number; b: number }, k: number) => ({ r: (c.r * k) | 0, g: (c.g * k) | 0, b: (c.b * k) | 0 });
+        const primary = ((): string => {
+          // ensure contrast >= 4.0 vs white
+          let k = 1;
+          for (let i = 0; i < 6; i++) {
+            const c = shade(primaryRaw, k);
+            const hex = toHex(c.r, c.g, c.b);
+            if (contrastRatio(hex, "#ffffff") >= 4.2) return hex;
+            k -= 0.15;
+          }
+          return toHex(0x1f, 0x29, 0x37);
+        })();
+        const bgLum = (0.2126 * avg.r + 0.7152 * avg.g + 0.0722 * avg.b) / 255;
+        const text = bgLum > 0.55 ? "#0f172a" : "#ffffff";
+        const bgHex = text === "#ffffff" ? "#0b0f1a" : "#ffffff"; // used behind the overlay to lighten/darken
+        const overlaySuggestion = bgLum > 0.7 ? 0.15 : bgLum > 0.45 ? 0.35 : 0.55;
+        return resolve({ primary, accent: toHex(accent.r, accent.g, accent.b), bg: bgHex, text, overlaySuggestion });
+      } catch (e) { reject(e as Error); }
+    };
+    img.onerror = () => reject(new Error("falha ao carregar imagem"));
+    img.src = url;
+  });
+}
+
+
+
 // ============ Variations (localStorage) ============
 type SavedVariation = { id: string; name: string; savedAt: number; state: StoredState };
 type StoredState = {
@@ -167,7 +235,7 @@ function QRCodes() {
   const publicUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/l/${est.slug}` : "";
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
 
-  const [format, setFormat] = useState<PromoFormat>("poster");
+  const [format, setFormat] = useState<PromoFormat>("story");
   const [segment, setSegment] = useState<Segment>("espetinhos");
   const [title, setTitle] = useState("Ganhe recompensas a cada visita!");
   const [subtitle, setSubtitle] = useState("Escaneie o QR Code, crie seu cartão fidelidade digital e comece a acumular carimbos. É rápido, gratuito e não precisa baixar aplicativo.");
@@ -261,8 +329,31 @@ function QRCodes() {
   function onBgUpload(file: File) {
     if (file.size > 8 * 1024 * 1024) { toast.error("Imagem muito grande (máx 8MB)"); return; }
     const reader = new FileReader();
-    reader.onload = () => { setBgImageUrl(reader.result as string); toast.success("Imagem de fundo aplicada"); };
+    reader.onload = async () => {
+      const url = reader.result as string;
+      setBgImageUrl(url);
+      try {
+        const palette = await extractPalette(url);
+        setPrimaryColor(palette.primary);
+        setAccentColor(palette.accent);
+        setBackgroundColor(palette.bg);
+        setTextColor(palette.text);
+        setBgOverlay(palette.overlaySuggestion);
+        toast.success("Imagem aplicada — cores ajustadas automaticamente");
+      } catch {
+        toast.success("Imagem de fundo aplicada");
+      }
+    };
     reader.readAsDataURL(file);
+  }
+
+  async function reExtractPalette() {
+    if (!bgImageUrl) { toast.info("Envie uma imagem de fundo primeiro"); return; }
+    try {
+      const p = await extractPalette(bgImageUrl);
+      setPrimaryColor(p.primary); setAccentColor(p.accent); setBackgroundColor(p.bg); setTextColor(p.text); setBgOverlay(p.overlaySuggestion);
+      toast.success("Cores reajustadas a partir da imagem");
+    } catch { toast.error("Não foi possível analisar a imagem"); }
   }
 
   const fileBase = `${est?.slug ?? "fidelize"}-${format}`;
@@ -605,11 +696,14 @@ function QRCodes() {
                 </div>
                 {bgImageUrl && (
                   <>
+                    <Button size="sm" variant="outline" onClick={reExtractPalette} className="w-full">
+                      <Wand2 className="mr-2 h-3.5 w-3.5" />Reajustar cores pela imagem
+                    </Button>
                     <SliderField label={`Zoom (${bgZoom.toFixed(2)}×)`} value={bgZoom} min={1} max={3} step={0.05} onChange={setBgZoom} />
                     <SliderField label={`Horizontal (${bgOffsetX})`} value={bgOffsetX} min={-40} max={40} step={1} onChange={setBgOffsetX} />
                     <SliderField label={`Vertical (${bgOffsetY})`} value={bgOffsetY} min={-40} max={40} step={1} onChange={setBgOffsetY} />
                     <SliderField label={`Camada de proteção (${Math.round(bgOverlay * 100)}%)`} value={bgOverlay} min={0} max={0.85} step={0.05} onChange={setBgOverlay} />
-                    <p className="text-[11px] text-muted-foreground">A camada de proteção clareia o fundo para manter a leitura dos textos e do QR.</p>
+                    <p className="text-[11px] text-muted-foreground">Ao enviar uma foto, as cores (principal, secundária, textos) são ajustadas automaticamente para manter contraste com o fundo. Use o botão acima para reaplicar.</p>
                   </>
                 )}
               </TabsContent>
