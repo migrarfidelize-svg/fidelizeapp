@@ -864,3 +864,254 @@ function CustomerFormDialog({
     </Dialog>
   );
 }
+
+// ---------- Audit timeline ----------
+type AuditEntry = {
+  id: string; action: string; entity_type: string; entity_id: string;
+  metadata: unknown; user_id: string | null; user_name: string | null; created_at: string;
+};
+
+const ACTION_LABEL: Record<string, { label: string; icon: React.ReactNode; className?: string }> = {
+  customer_created: { label: "Cliente cadastrado", icon: <UserPlus className="h-4 w-4" />, className: "text-primary" },
+  customer_updated: { label: "Dados alterados", icon: <Pencil className="h-4 w-4" /> },
+  customer_blocked: { label: "Cliente bloqueado", icon: <ShieldOff className="h-4 w-4" />, className: "text-destructive" },
+  customer_unblocked: { label: "Cliente desbloqueado", icon: <ShieldCheck className="h-4 w-4" />, className: "text-success" },
+  customer_deleted: { label: "Cliente excluído", icon: <Trash2 className="h-4 w-4" />, className: "text-destructive" },
+  stamp_added: { label: "Carimbo adicionado", icon: <StampIcon className="h-4 w-4" />, className: "text-primary" },
+  stamp_undone: { label: "Carimbo estornado", icon: <StampIcon className="h-4 w-4" />, className: "text-muted-foreground" },
+  reward_redeemed: { label: "Recompensa entregue", icon: <Gift className="h-4 w-4" />, className: "text-success" },
+};
+
+function AuditTimeline({ entries }: { entries: AuditEntry[] }) {
+  if (entries.length === 0) {
+    return (
+      <div className="text-sm text-muted-foreground text-center py-6">
+        <History className="mx-auto h-6 w-6 mb-2 opacity-50" />
+        Nenhuma ação registrada ainda.
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-2">
+      {entries.map((e) => {
+        const cfg = ACTION_LABEL[e.action] ?? { label: e.action, icon: <History className="h-4 w-4" /> };
+        const meta = (e.metadata ?? {}) as Record<string, unknown>;
+        const parts: string[] = [];
+        if (meta.completed) parts.push("Recompensa liberada");
+        if (typeof meta.new_stamps === "number") parts.push(`${meta.new_stamps} carimbos`);
+        if (meta.bulk) parts.push("ação em lote");
+        if (meta.reason) parts.push(String(meta.reason));
+        return (
+          <div key={e.id} className="rounded-xl border p-3 flex items-start gap-3 text-sm">
+            <div className={`mt-0.5 ${cfg.className ?? ""}`}>{cfg.icon}</div>
+            <div className="flex-1 min-w-0">
+              <div className="font-medium">{cfg.label}</div>
+              <div className="text-xs text-muted-foreground">
+                {e.user_name || "Sistema"} · {formatDate(e.created_at)}
+                {parts.length > 0 && ` · ${parts.join(" · ")}`}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ---------- CSV import dialog ----------
+type ImportResult = {
+  dry_run: boolean; inserted: number;
+  summary: { total: number; valid: number; errors: number; duplicates_in_file: number; duplicates_in_db: number };
+  preview: {
+    errors: { line: number; error: string; raw: Record<string, string> }[];
+    duplicates_in_file: { line: number; error: string; raw: Record<string, string> }[];
+    duplicates_in_db: { line: number; error: string; raw: Record<string, string> }[];
+    sample: Record<string, unknown>[];
+  };
+};
+
+function ImportCsvDialog({
+  open, onClose, establishmentId, campaigns, onImported,
+}: {
+  open: boolean; onClose: () => void; establishmentId?: string;
+  campaigns: Array<{ id: string; name: string }>; onImported: () => void;
+}) {
+  const [file, setFile] = useState<File | null>(null);
+  const [rows, setRows] = useState<Record<string, string>[]>([]);
+  const [preview, setPreview] = useState<ImportResult | null>(null);
+  const [campaignId, setCampaignId] = useState<string>("none");
+  const [busy, setBusy] = useState(false);
+  const importFn = useServerFn(importCustomersCsv);
+
+  function reset() {
+    setFile(null); setRows([]); setPreview(null); setCampaignId("none");
+  }
+
+  async function handleFile(f: File) {
+    setFile(f);
+    setPreview(null);
+    const text = await f.text();
+    const parsed = parseCsv(text);
+    if (!parsed.headers.includes("name") || !parsed.headers.includes("phone")) {
+      toast.error("O CSV precisa ter pelo menos as colunas: name, phone");
+      return;
+    }
+    setRows(parsed.rows);
+  }
+
+  async function runPreview() {
+    if (!establishmentId || rows.length === 0) return;
+    setBusy(true);
+    try {
+      const r = await importFn({ data: { establishment_id: establishmentId, rows, dry_run: true } });
+      setPreview(r);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao validar");
+    } finally { setBusy(false); }
+  }
+
+  async function runImport() {
+    if (!establishmentId || rows.length === 0) return;
+    setBusy(true);
+    try {
+      const r = await importFn({ data: {
+        establishment_id: establishmentId, rows, dry_run: false,
+        campaign_id: campaignId === "none" ? undefined : campaignId,
+      }});
+      toast.success(`${r.inserted} cliente(s) importado(s)`);
+      onImported(); reset(); onClose();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao importar");
+    } finally { setBusy(false); }
+  }
+
+  function downloadTemplate() {
+    const blob = new Blob(["\ufeff" + CUSTOMER_CSV_TEMPLATE], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "modelo-clientes.csv"; a.click(); URL.revokeObjectURL(url);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) { reset(); onClose(); } }}>
+      <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Importar clientes por CSV</DialogTitle>
+          <DialogDescription>
+            Colunas suportadas: <code className="text-xs">name, phone, email, birthdate, notes, marketing_opt_in</code>.
+            Telefones duplicados no arquivo ou já existentes na base serão ignorados.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-2 items-center">
+            <Input type="file" accept=".csv,text/csv" onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
+            <Button size="sm" variant="ghost" onClick={downloadTemplate}>Baixar modelo</Button>
+          </div>
+
+          {file && rows.length > 0 && (
+            <div className="text-xs text-muted-foreground">
+              Arquivo: <strong>{file.name}</strong> · {rows.length} linha(s) detectada(s)
+            </div>
+          )}
+
+          {rows.length > 0 && !preview && (
+            <Button onClick={runPreview} disabled={busy} variant="outline">
+              {busy ? "Validando…" : "Validar arquivo"}
+            </Button>
+          )}
+
+          {preview && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
+                <SummaryTile label="Total" value={preview.summary.total} />
+                <SummaryTile label="Válidas" value={preview.summary.valid} accent="text-success" />
+                <SummaryTile label="Erros" value={preview.summary.errors} accent="text-destructive" />
+                <SummaryTile label="Duplicadas" value={preview.summary.duplicates_in_file + preview.summary.duplicates_in_db} accent="text-warning" />
+              </div>
+
+              {preview.preview.errors.length > 0 && (
+                <ErrorsBlock title="Erros de validação" items={preview.preview.errors} />
+              )}
+              {preview.preview.duplicates_in_file.length > 0 && (
+                <ErrorsBlock title="Duplicadas no arquivo" items={preview.preview.duplicates_in_file} />
+              )}
+              {preview.preview.duplicates_in_db.length > 0 && (
+                <ErrorsBlock title="Já cadastradas na base" items={preview.preview.duplicates_in_db} />
+              )}
+
+              {preview.summary.valid > 0 && preview.preview.sample.length > 0 && (
+                <div className="rounded-lg border p-3">
+                  <div className="text-xs font-medium mb-2 flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-success" />
+                    Prévia (primeiros {preview.preview.sample.length})
+                  </div>
+                  <div className="space-y-1 text-xs">
+                    {preview.preview.sample.map((s, i) => (
+                      <div key={i} className="flex justify-between border-b py-1 last:border-0">
+                        <span className="truncate">{String(s.name)}</span>
+                        <span className="text-muted-foreground">{formatPhone(String(s.phone))}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {campaigns.length > 0 && (
+                <div>
+                  <Label>Vincular a uma campanha (opcional)</Label>
+                  <Select value={campaignId} onValueChange={setCampaignId}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Não vincular</SelectItem>
+                      {campaigns.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => { reset(); onClose(); }} disabled={busy}>Cancelar</Button>
+          {preview && (
+            <Button onClick={runImport} disabled={busy || preview.summary.valid === 0} className="gradient-brand text-primary-foreground">
+              {busy ? "Importando…" : `Importar ${preview.summary.valid} cliente(s)`}
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function SummaryTile({ label, value, accent }: { label: string; value: number; accent?: string }) {
+  return (
+    <div className="rounded-lg border bg-muted/30 p-2">
+      <div className={`text-xl font-display font-bold ${accent ?? ""}`}>{value}</div>
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+    </div>
+  );
+}
+
+function ErrorsBlock({ title, items }: { title: string; items: { line: number; error: string; raw: Record<string, string> }[] }) {
+  return (
+    <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+      <div className="text-xs font-medium mb-2 flex items-center gap-2">
+        <FileWarning className="h-4 w-4 text-destructive" />
+        {title} ({items.length})
+      </div>
+      <div className="max-h-40 overflow-y-auto space-y-1 text-xs">
+        {items.map((e, i) => (
+          <div key={i} className="border-b border-destructive/20 py-1 last:border-0">
+            <span className="font-mono text-destructive">L{e.line}</span> · {e.error}
+            <div className="text-muted-foreground truncate">
+              {[e.raw.name, e.raw.phone, e.raw.email].filter(Boolean).join(" · ")}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
