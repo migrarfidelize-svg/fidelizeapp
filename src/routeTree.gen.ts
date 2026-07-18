@@ -46,6 +46,8 @@ import { Route as AuthenticatedAdminAlertasRouteImport } from './routes/_authent
 import { Route as SuporteSlugKbArticleRouteImport } from './routes/suporte.$slug.kb.$article'
 import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/api/public/hooks/process-email-queue'
 import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authenticated/admin.empresa.$id'
+import { Route as AuthenticatedAdminEmailsTemplatesRouteImport } from './routes/_authenticated/admin.emails.templates'
+import { Route as AuthenticatedAdminEmailsFilaRouteImport } from './routes/_authenticated/admin.emails.fila'
 
 const TermosRoute = TermosRouteImport.update({
   id: '/termos',
@@ -243,6 +245,18 @@ const AuthenticatedAdminEmpresaIdRoute =
     path: '/empresa/$id',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminEmailsTemplatesRoute =
+  AuthenticatedAdminEmailsTemplatesRouteImport.update({
+    id: '/templates',
+    path: '/templates',
+    getParentRoute: () => AuthenticatedAdminEmailsRoute,
+  } as any)
+const AuthenticatedAdminEmailsFilaRoute =
+  AuthenticatedAdminEmailsFilaRouteImport.update({
+    id: '/fila',
+    path: '/fila',
+    getParentRoute: () => AuthenticatedAdminEmailsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -263,7 +277,7 @@ export interface FileRoutesByFullPath {
   '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
   '/admin/config': typeof AuthenticatedAdminConfigRoute
-  '/admin/emails': typeof AuthenticatedAdminEmailsRoute
+  '/admin/emails': typeof AuthenticatedAdminEmailsRouteWithChildren
   '/admin/empresas': typeof AuthenticatedAdminEmpresasRoute
   '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
@@ -278,6 +292,8 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/app/': typeof AuthenticatedAppIndexRoute
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
+  '/admin/emails/fila': typeof AuthenticatedAdminEmailsFilaRoute
+  '/admin/emails/templates': typeof AuthenticatedAdminEmailsTemplatesRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
@@ -299,7 +315,7 @@ export interface FileRoutesByTo {
   '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
   '/admin/config': typeof AuthenticatedAdminConfigRoute
-  '/admin/emails': typeof AuthenticatedAdminEmailsRoute
+  '/admin/emails': typeof AuthenticatedAdminEmailsRouteWithChildren
   '/admin/empresas': typeof AuthenticatedAdminEmpresasRoute
   '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
@@ -314,6 +330,8 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/app': typeof AuthenticatedAppIndexRoute
   '/suporte/$slug': typeof SuporteSlugIndexRoute
+  '/admin/emails/fila': typeof AuthenticatedAdminEmailsFilaRoute
+  '/admin/emails/templates': typeof AuthenticatedAdminEmailsTemplatesRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
@@ -339,7 +357,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/_authenticated/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
   '/_authenticated/admin/config': typeof AuthenticatedAdminConfigRoute
-  '/_authenticated/admin/emails': typeof AuthenticatedAdminEmailsRoute
+  '/_authenticated/admin/emails': typeof AuthenticatedAdminEmailsRouteWithChildren
   '/_authenticated/admin/empresas': typeof AuthenticatedAdminEmpresasRoute
   '/_authenticated/admin/equipe': typeof AuthenticatedAdminEquipeRoute
   '/_authenticated/app/campanhas': typeof AuthenticatedAppCampanhasRoute
@@ -354,6 +372,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
+  '/_authenticated/admin/emails/fila': typeof AuthenticatedAdminEmailsFilaRoute
+  '/_authenticated/admin/emails/templates': typeof AuthenticatedAdminEmailsTemplatesRoute
   '/_authenticated/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
@@ -394,6 +414,8 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/app/'
     | '/suporte/$slug/'
+    | '/admin/emails/fila'
+    | '/admin/emails/templates'
     | '/admin/empresa/$id'
     | '/api/public/hooks/process-email-queue'
     | '/suporte/$slug/kb/$article'
@@ -430,6 +452,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/app'
     | '/suporte/$slug'
+    | '/admin/emails/fila'
+    | '/admin/emails/templates'
     | '/admin/empresa/$id'
     | '/api/public/hooks/process-email-queue'
     | '/suporte/$slug/kb/$article'
@@ -469,6 +493,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/_authenticated/app/'
     | '/suporte/$slug/'
+    | '/_authenticated/admin/emails/fila'
+    | '/_authenticated/admin/emails/templates'
     | '/_authenticated/admin/empresa/$id'
     | '/api/public/hooks/process-email-queue'
     | '/suporte/$slug/kb/$article'
@@ -754,15 +780,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminEmpresaIdRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/emails/templates': {
+      id: '/_authenticated/admin/emails/templates'
+      path: '/templates'
+      fullPath: '/admin/emails/templates'
+      preLoaderRoute: typeof AuthenticatedAdminEmailsTemplatesRouteImport
+      parentRoute: typeof AuthenticatedAdminEmailsRoute
+    }
+    '/_authenticated/admin/emails/fila': {
+      id: '/_authenticated/admin/emails/fila'
+      path: '/fila'
+      fullPath: '/admin/emails/fila'
+      preLoaderRoute: typeof AuthenticatedAdminEmailsFilaRouteImport
+      parentRoute: typeof AuthenticatedAdminEmailsRoute
+    }
   }
 }
+
+interface AuthenticatedAdminEmailsRouteChildren {
+  AuthenticatedAdminEmailsFilaRoute: typeof AuthenticatedAdminEmailsFilaRoute
+  AuthenticatedAdminEmailsTemplatesRoute: typeof AuthenticatedAdminEmailsTemplatesRoute
+}
+
+const AuthenticatedAdminEmailsRouteChildren: AuthenticatedAdminEmailsRouteChildren =
+  {
+    AuthenticatedAdminEmailsFilaRoute: AuthenticatedAdminEmailsFilaRoute,
+    AuthenticatedAdminEmailsTemplatesRoute:
+      AuthenticatedAdminEmailsTemplatesRoute,
+  }
+
+const AuthenticatedAdminEmailsRouteWithChildren =
+  AuthenticatedAdminEmailsRoute._addFileChildren(
+    AuthenticatedAdminEmailsRouteChildren,
+  )
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminAlertasRoute: typeof AuthenticatedAdminAlertasRoute
   AuthenticatedAdminAssinaturasRoute: typeof AuthenticatedAdminAssinaturasRoute
   AuthenticatedAdminAuditoriaRoute: typeof AuthenticatedAdminAuditoriaRoute
   AuthenticatedAdminConfigRoute: typeof AuthenticatedAdminConfigRoute
-  AuthenticatedAdminEmailsRoute: typeof AuthenticatedAdminEmailsRoute
+  AuthenticatedAdminEmailsRoute: typeof AuthenticatedAdminEmailsRouteWithChildren
   AuthenticatedAdminEmpresasRoute: typeof AuthenticatedAdminEmpresasRoute
   AuthenticatedAdminEquipeRoute: typeof AuthenticatedAdminEquipeRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
@@ -774,7 +831,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminAssinaturasRoute: AuthenticatedAdminAssinaturasRoute,
   AuthenticatedAdminAuditoriaRoute: AuthenticatedAdminAuditoriaRoute,
   AuthenticatedAdminConfigRoute: AuthenticatedAdminConfigRoute,
-  AuthenticatedAdminEmailsRoute: AuthenticatedAdminEmailsRoute,
+  AuthenticatedAdminEmailsRoute: AuthenticatedAdminEmailsRouteWithChildren,
   AuthenticatedAdminEmpresasRoute: AuthenticatedAdminEmpresasRoute,
   AuthenticatedAdminEquipeRoute: AuthenticatedAdminEquipeRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,

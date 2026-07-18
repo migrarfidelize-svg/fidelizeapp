@@ -11,7 +11,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { RefreshCw, PlayCircle, Trash2, ListChecks } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/admin/emails/fila")({
+export const Route = createFileRoute("/_authenticated/admin/email-fila")({
   head: () => ({ meta: [{ title: "Fila de e-mails — Fidelize" }] }),
   component: QueuePage,
 });
