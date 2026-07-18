@@ -120,8 +120,7 @@ function CampanhasPage() {
       reward_description: c.reward_description ?? "",
       rules: c.rules ?? "",
       stamps_required: c.stamps_required,
-      stamp_icon: (["star", "heart", "check", "coffee"] as const).includes(c.stamp_icon as never)
-        ? (c.stamp_icon as FormState["stamp_icon"]) : "star",
+      stamp_icon: c.stamp_icon || "star",
       stamp_validity_days: c.stamp_validity_days?.toString() ?? "",
       reward_validity_days: c.reward_validity_days?.toString() ?? "",
       use_custom_colors: !!(c.primary_color || c.accent_color),
