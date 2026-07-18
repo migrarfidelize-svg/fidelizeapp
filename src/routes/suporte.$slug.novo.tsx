@@ -2,7 +2,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import { createTicket, getHelpCenter } from "@/lib/helpdesk.functions";
+import { createTicket, getHelpCenter, uploadDraftAttachment } from "@/lib/helpdesk.functions";
+import { AttachmentPicker, type Attachment } from "@/components/AttachmentPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,11 +32,13 @@ function NewTicket() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const create = useServerFn(createTicket);
+  const uploadDraft = useServerFn(uploadDraftAttachment);
   const [session, setSession] = useState<{ email: string } | null | undefined>(undefined);
   const [subject, setSubject] = useState(search.assunto);
   const [body, setBody] = useState("");
   const [name, setName] = useState("");
   const [priority, setPriority] = useState<"low"|"normal"|"high"|"urgent">("normal");
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -49,7 +52,7 @@ function NewTicket() {
     if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
     setSubmitting(true);
     try {
-      const t = await create({ data: { establishment_slug: params.slug, subject, body, priority, channel: "form", name: name || undefined } });
+      const t = await create({ data: { establishment_slug: params.slug, subject, body, priority, channel: "form", name: name || undefined, attachments } });
       toast.success(`Chamado #${t.number} aberto!`);
       navigate({ to: "/suporte/chamado/$id", params: { id: t.id } });
     } catch (e) {
@@ -101,6 +104,14 @@ function NewTicket() {
               <Label>Descrição *</Label>
               <Textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="Conte com detalhes o que aconteceu…" rows={8} maxLength={5000} />
               <div className="text-xs text-muted-foreground mt-1">{body.length}/5000</div>
+            </div>
+            <div>
+              <Label>Anexos</Label>
+              <AttachmentPicker
+                value={attachments}
+                onChange={setAttachments}
+                upload={(args) => uploadDraft({ data: args })}
+              />
             </div>
             <Button onClick={submit} disabled={submitting} size="lg" className="w-full">{submitting ? "Enviando…" : "Enviar chamado"}</Button>
           </div>

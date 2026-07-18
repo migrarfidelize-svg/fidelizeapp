@@ -2,7 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { getMyTicket, replyToMyTicket, rateTicket } from "@/lib/helpdesk.functions";
+import { getMyTicket, replyToMyTicket, rateTicket, uploadTicketAttachment } from "@/lib/helpdesk.functions";
+import { AttachmentPicker, type Attachment } from "@/components/AttachmentPicker";
+import { AttachmentList, type AttachmentRef } from "@/components/AttachmentList";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,7 +26,9 @@ function CustomerTicket() {
   const fetchTicket = useServerFn(getMyTicket);
   const reply = useServerFn(replyToMyTicket);
   const rate = useServerFn(rateTicket);
+  const upload = useServerFn(uploadTicketAttachment);
   const [body, setBody] = useState("");
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [rating, setRating] = useState<number>(0);
 
   useEffect(() => { supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user)); }, []);
@@ -36,10 +40,10 @@ function CustomerTicket() {
   const { ticket, messages } = data;
 
   async function send() {
-    if (body.trim().length < 1) return;
+    if (body.trim().length < 1 && attachments.length === 0) return;
     try {
-      await reply({ data: { ticket_id: id, body } });
-      setBody("");
+      await reply({ data: { ticket_id: id, body: body.trim() || "(anexo)", attachments } });
+      setBody(""); setAttachments([]);
       qc.invalidateQueries({ queryKey: ["my-ticket", id] });
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
@@ -67,14 +71,16 @@ function CustomerTicket() {
             <div key={m.id} className={`p-4 rounded-xl border ${m.author_type === "customer" ? "bg-primary-soft/40 ml-8" : "bg-card mr-8"}`}>
               <div className="text-xs text-muted-foreground mb-1">{m.author_type === "customer" ? "Você" : (m.author_name ?? "Suporte")} · {new Date(m.created_at).toLocaleString("pt-BR")}</div>
               <div className="text-sm whitespace-pre-wrap">{m.body}</div>
+              <AttachmentList items={(m.attachments as AttachmentRef[] | null) ?? []} />
             </div>
           ))}
         </div>
 
         {ticket.status !== "closed" && (
-          <div className="mt-6 rounded-2xl border bg-card p-4">
+          <div className="mt-6 rounded-2xl border bg-card p-4 space-y-3">
             <Textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="Escreva sua resposta…" rows={4} />
-            <div className="mt-2 flex justify-end"><Button onClick={send} disabled={!body.trim()}>Enviar</Button></div>
+            <AttachmentPicker value={attachments} onChange={setAttachments} upload={(args) => upload({ data: { ticket_id: id, ...args } })} />
+            <div className="flex justify-end"><Button onClick={send} disabled={!body.trim() && attachments.length === 0}>Enviar</Button></div>
           </div>
         )}
 

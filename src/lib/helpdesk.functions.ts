@@ -97,6 +97,15 @@ export const submitArticleFeedback = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// ---------- Attachments schema ----------
+const attachmentSchema = z.object({
+  path: z.string().min(1).max(300),
+  name: z.string().min(1).max(200),
+  mime: z.string().max(120),
+  size: z.number().int().min(0).max(10 * 1024 * 1024),
+});
+type AttachmentMeta = z.infer<typeof attachmentSchema>;
+
 // ---------- Tickets: customer side ----------
 export const createTicket = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -107,6 +116,7 @@ export const createTicket = createServerFn({ method: "POST" })
     priority: z.enum(["low","normal","high","urgent"]).default("normal"),
     channel: z.enum(["form","email","chat"]).default("form"),
     name: z.string().trim().min(2).max(80).optional(),
+    attachments: z.array(attachmentSchema).max(5).default([]),
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -131,6 +141,7 @@ export const createTicket = createServerFn({ method: "POST" })
       author_name: data.name ?? email,
       body: data.body,
       internal: false,
+      attachments: data.attachments as unknown as never,
     });
     return ticket;
   });
@@ -163,12 +174,15 @@ export const replyToMyTicket = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({
     ticket_id: z.string().uuid(),
     body: z.string().trim().min(1).max(5000),
+    attachments: z.array(attachmentSchema).max(5).default([]),
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: ticket } = await context.supabase.from("tickets").select("id, requester_user_id").eq("id", data.ticket_id).maybeSingle();
     if (!ticket || ticket.requester_user_id !== context.userId) throw new Error("Não autorizado");
     const { error } = await context.supabase.from("ticket_messages").insert({
-      ticket_id: data.ticket_id, author_type: "customer", author_user_id: context.userId, body: data.body, internal: false,
+      ticket_id: data.ticket_id, author_type: "customer", author_user_id: context.userId,
+      body: data.body, internal: false,
+      attachments: data.attachments as unknown as never,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -229,6 +243,7 @@ export const agentReply = createServerFn({ method: "POST" })
     ticket_id: z.string().uuid(),
     body: z.string().trim().min(1).max(10000),
     internal: z.boolean().default(false),
+    attachments: z.array(attachmentSchema).max(5).default([]),
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("ticket_messages").insert({
@@ -237,6 +252,7 @@ export const agentReply = createServerFn({ method: "POST" })
       author_user_id: context.userId,
       body: data.body,
       internal: data.internal,
+      attachments: data.attachments as unknown as never,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -397,3 +413,125 @@ export const ensureHelpdeskAgent = createServerFn({ method: "POST" })
     // Owners/managers implicitly are hd agents via is_helpdesk_agent(). This is a no-op for now.
     return { ok: true, establishment_id: data.establishment_id };
   });
+
+// ---------- Attachments: upload + signed URL ----------
+const ATTACHMENT_BUCKET = "ticket-attachments";
+
+async function assertTicketAccess(ticketId: string, userId: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: t } = await supabaseAdmin.from("tickets").select("id, establishment_id, requester_user_id").eq("id", ticketId).maybeSingle();
+  if (!t) throw new Error("Chamado não encontrado");
+  if (t.requester_user_id === userId) return t;
+  const { data: agent } = await supabaseAdmin.rpc("is_helpdesk_agent", { _user: userId, _est: t.establishment_id });
+  if (agent === true) return t;
+  throw new Error("Sem acesso a este chamado");
+}
+
+export const uploadTicketAttachment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    ticket_id: z.string().uuid(),
+    name: z.string().min(1).max(200),
+    mime: z.string().max(120),
+    base64: z.string().min(1).max(15_000_000), // ~10MB binary after decoding
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertTicketAccess(data.ticket_id, context.userId);
+    const buf = Buffer.from(data.base64, "base64");
+    if (buf.byteLength > 10 * 1024 * 1024) throw new Error("Arquivo excede 10MB");
+    const safeName = data.name.replace(/[^\w.\-]+/g, "_").slice(-100);
+    const path = `${data.ticket_id}/${crypto.randomUUID()}-${safeName}`;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.storage.from(ATTACHMENT_BUCKET).upload(path, buf, {
+      contentType: data.mime || "application/octet-stream",
+      upsert: false,
+    });
+    if (error) throw new Error(error.message);
+    return { path, name: data.name, mime: data.mime, size: buf.byteLength };
+  });
+
+// Used before creating a ticket (no ticket_id yet): scoped to authenticated user's temp folder.
+export const uploadDraftAttachment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    name: z.string().min(1).max(200),
+    mime: z.string().max(120),
+    base64: z.string().min(1).max(15_000_000),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const buf = Buffer.from(data.base64, "base64");
+    if (buf.byteLength > 10 * 1024 * 1024) throw new Error("Arquivo excede 10MB");
+    const safeName = data.name.replace(/[^\w.\-]+/g, "_").slice(-100);
+    const path = `_drafts/${context.userId}/${crypto.randomUUID()}-${safeName}`;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.storage.from(ATTACHMENT_BUCKET).upload(path, buf, {
+      contentType: data.mime || "application/octet-stream", upsert: false,
+    });
+    if (error) throw new Error(error.message);
+    return { path, name: data.name, mime: data.mime, size: buf.byteLength };
+  });
+
+export const getAttachmentUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ path: z.string().min(1).max(300) }).parse(d))
+  .handler(async ({ data, context }) => {
+    // Path format: {ticket_id}/{uuid}-name  or  _drafts/{userId}/{uuid}-name
+    const seg = data.path.split("/")[0];
+    if (seg === "_drafts") {
+      const userSeg = data.path.split("/")[1];
+      if (userSeg !== context.userId) throw new Error("Sem acesso");
+    } else {
+      await assertTicketAccess(seg, context.userId);
+    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: signed, error } = await supabaseAdmin.storage.from(ATTACHMENT_BUCKET).createSignedUrl(data.path, 300);
+    if (error) throw new Error(error.message);
+    return { url: signed.signedUrl };
+  });
+
+// ---------- Quick replies (agent macros) ----------
+export const listQuickReplies = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ establishment_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: rows } = await context.supabase.from("ticket_quick_replies")
+      .select("id, title, body, shortcut, created_at").eq("establishment_id", data.establishment_id)
+      .order("title");
+    return rows ?? [];
+  });
+
+export const saveQuickReply = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    id: z.string().uuid().optional(),
+    establishment_id: z.string().uuid(),
+    title: z.string().trim().min(2).max(80),
+    body: z.string().trim().min(1).max(4000),
+    shortcut: z.string().trim().max(20).optional(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const payload = {
+      establishment_id: data.establishment_id,
+      title: data.title,
+      body: data.body,
+      shortcut: data.shortcut ?? "",
+    };
+    if (data.id) {
+      const { error } = await context.supabase.from("ticket_quick_replies").update(payload).eq("id", data.id);
+      if (error) throw new Error(error.message);
+      return { id: data.id };
+    }
+    const { data: row, error } = await context.supabase.from("ticket_quick_replies").insert(payload).select("id").single();
+    if (error) throw new Error(error.message);
+    return { id: row.id };
+  });
+
+export const deleteQuickReply = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("ticket_quick_replies").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
