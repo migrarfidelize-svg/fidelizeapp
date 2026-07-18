@@ -334,7 +334,7 @@ function CampaignDialog({
   form: FormState;
   setForm: (f: FormState) => void;
   editing: CampaignRow | null;
-  est: { name: string; logo_url: string | null; primary_color: string; accent_color: string } | undefined;
+  est: { id: string; name: string; logo_url: string | null; primary_color: string; accent_color: string } | undefined;
   saving: boolean;
   onSubmit: () => void;
 }) {
