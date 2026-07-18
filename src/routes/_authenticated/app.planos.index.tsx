@@ -42,6 +42,7 @@ function MerchantPlansPage() {
 
   const [pending, setPending] = useState<null | { slug: string; name: string; tier: string; price: number; kind: "upgrade" | "downgrade" | "plan_change" }>(null);
   const [saving, setSaving] = useState(false);
+  const [payFor, setPayFor] = useState<null | { slug: string; name: string; price_monthly: number; tier: string }>(null);
 
   function askChange(p: any) {
     if (!activeEst || !currentTier) return;
@@ -49,7 +50,13 @@ function MerchantPlansPage() {
     const kind: "upgrade" | "downgrade" | "plan_change" =
       (PLAN_RANK[p.tier] ?? 0) > (PLAN_RANK[currentTier] ?? 0) ? "upgrade"
       : (PLAN_RANK[p.tier] ?? 0) < (PLAN_RANK[currentTier] ?? 0) ? "downgrade" : "plan_change";
-    setPending({ slug: p.slug, name: p.name, tier: p.tier, price: Number(p.price_monthly ?? 0), kind });
+    const price = Number(p.price_monthly ?? 0);
+    // Plano pago em upgrade/change → paga via Mercado Pago; downgrade ou plano grátis → alteração direta
+    if (price > 0 && kind !== "downgrade") {
+      setPayFor({ slug: p.slug, name: p.name, price_monthly: price, tier: p.tier });
+    } else {
+      setPending({ slug: p.slug, name: p.name, tier: p.tier, price, kind });
+    }
   }
 
   async function confirmChange() {
