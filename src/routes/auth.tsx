@@ -1,0 +1,109 @@
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
+import { useState } from "react";
+import { z } from "zod";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Logo } from "@/components/Logo";
+import { toast } from "sonner";
+
+const searchSchema = z.object({ mode: z.enum(["signin", "signup"]).default("signin") });
+
+export const Route = createFileRoute("/auth")({
+  validateSearch: searchSchema,
+  ssr: false,
+  beforeLoad: async () => {
+    const { data } = await supabase.auth.getSession();
+    if (data.session) throw redirect({ to: "/app" });
+  },
+  head: () => ({ meta: [{ title: "Entrar — Fidelize" }] }),
+  component: AuthPage,
+});
+
+function AuthPage() {
+  const { mode } = Route.useSearch();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+
+  const isSignup = mode === "signup";
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      if (isSignup) {
+        const { error } = await supabase.auth.signUp({
+          email, password,
+          options: {
+            data: { full_name: name },
+            emailRedirectTo: window.location.origin + "/app",
+          },
+        });
+        if (error) throw error;
+        toast.success("Conta criada! Vamos configurar seu cartão.");
+        navigate({ to: "/onboarding" });
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        toast.success("Bem-vindo de volta!");
+        navigate({ to: "/app" });
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao autenticar");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="min-h-screen grid md:grid-cols-2">
+      <div className="hidden md:flex flex-col justify-between p-10 gradient-brand text-primary-foreground">
+        <Link to="/"><Logo className="text-primary-foreground" /></Link>
+        <div>
+          <h1 className="font-display text-4xl font-bold leading-tight">Transforme visitantes em clientes fiéis.</h1>
+          <p className="mt-4 opacity-80">Cartão fidelidade digital, QR Code e painel de análise no mesmo lugar.</p>
+        </div>
+        <div className="text-xs opacity-60">© {new Date().getFullYear()} Fidelize</div>
+      </div>
+      <div className="flex items-center justify-center p-6">
+        <div className="w-full max-w-sm">
+          <div className="md:hidden mb-8"><Link to="/"><Logo /></Link></div>
+          <h2 className="font-display text-2xl font-bold">{isSignup ? "Crie sua conta" : "Entre na sua conta"}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{isSignup ? "Comece grátis. Sem cartão de crédito." : "Bem-vindo de volta ao Fidelize."}</p>
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+            {isSignup && (
+              <div>
+                <Label htmlFor="name">Seu nome</Label>
+                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required minLength={2} />
+              </div>
+            )}
+            <div>
+              <Label htmlFor="email">E-mail</Label>
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+            </div>
+            <div>
+              <Label htmlFor="password">Senha</Label>
+              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete={isSignup ? "new-password" : "current-password"} />
+            </div>
+            <Button type="submit" disabled={loading} className="w-full gradient-brand text-primary-foreground">
+              {loading ? "Aguarde…" : isSignup ? "Criar conta" : "Entrar"}
+            </Button>
+          </form>
+
+          <div className="mt-6 text-center text-sm text-muted-foreground">
+            {isSignup ? (
+              <>Já tem conta? <Link to="/auth" search={{ mode: "signin" }} className="font-medium text-primary hover:underline">Entrar</Link></>
+            ) : (
+              <>Novo por aqui? <Link to="/auth" search={{ mode: "signup" }} className="font-medium text-primary hover:underline">Criar conta grátis</Link></>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
