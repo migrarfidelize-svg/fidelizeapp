@@ -142,14 +142,8 @@ function KbManager() {
   );
 }
 
-async function openEdit(a: Article, set: (d: ArticleDraft) => void) {
-  // Fetch full row via a lightweight refetch: reuse admin function's data (already includes basics; body loaded on demand via saveArticle round trip is unnecessary).
-  // Here we fetch the article via the public API since it returns body_html for published; for draft we open with title only. Simpler: rely on client shape.
-  set({ id: a.id, title: a.title, slug: a.slug, excerpt: "", body_html: "<p>Carregando…</p>", category_id: a.category_id, published: a.published, tags: [] });
-  try {
-    const r = await fetch(`/__kb_load__?id=${a.id}`);
-    if (r.ok) { const j = await r.json() as ArticleDraft; set({ ...j, id: a.id }); }
-  } catch { /* ignore */ }
+function openEdit(a: Article, set: (d: ArticleDraft) => void) {
+  set({ id: a.id, title: a.title, slug: a.slug, excerpt: a.excerpt ?? "", body_html: a.body_html, category_id: a.category_id, published: a.published, tags: a.tags ?? [] });
 }
 
 function ArticleForm({ draft, setDraft, categories }: { draft: ArticleDraft; setDraft: (d: ArticleDraft) => void; categories: Array<{ id: string; name: string }> }) {
