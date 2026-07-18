@@ -493,3 +493,15 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
     </div>
   );
 }
+
+function StampIconOptionRow({ value }: { value: string }) {
+  const Icon = getStampIcon(value);
+  return (
+    <span className="inline-flex items-center gap-2">
+      <span className="grid h-6 w-6 place-items-center rounded-md bg-primary/10 text-primary">
+        <Icon className="h-3.5 w-3.5" />
+      </span>
+      <span>{stampIconLabel(value)}</span>
+    </span>
+  );
+}
