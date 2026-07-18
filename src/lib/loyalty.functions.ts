@@ -129,7 +129,8 @@ export const getCardByToken = createServerFn({ method: "GET" })
 async function auditLog(estId: string, userId: string, action: string, entity: string, entityId: string, meta: Record<string, unknown> = {}) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   await supabaseAdmin.from("audit_logs").insert({
-    establishment_id: estId, user_id: userId, action, entity_type: entity, entity_id: entityId, metadata: meta,
+    establishment_id: estId, user_id: userId, action, entity_type: entity, entity_id: entityId,
+    metadata: meta as never,
   });
 }
 
