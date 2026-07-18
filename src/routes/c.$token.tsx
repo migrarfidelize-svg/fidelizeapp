@@ -1,10 +1,13 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import QRCode from "qrcode";
 import { getCardByToken } from "@/lib/loyalty.functions";
 import { StampCard } from "@/components/StampCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDate } from "@/lib/format";
-import { Gift, Clock } from "lucide-react";
+import { Gift, Clock, QrCode } from "lucide-react";
+
 
 const opts = (token: string) => queryOptions({
   queryKey: ["card", token],
@@ -30,8 +33,15 @@ function CustomerCard() {
   const d = data!;
   const est = d.establishment!;
   const bg = `linear-gradient(135deg, ${est.primary_color} 0%, ${est.accent_color} 130%)`;
+  const [qrDataUrl, setQrDataUrl] = useState<string>("");
+  useEffect(() => {
+    const url = `${window.location.origin}/c/${token}`;
+    QRCode.toDataURL(url, { width: 512, margin: 1, errorCorrectionLevel: "M", color: { dark: "#111111", light: "#ffffff" } })
+      .then(setQrDataUrl).catch(() => {});
+  }, [token]);
 
   return (
+
     <div className="min-h-screen bg-muted/30 pb-16">
       <div className="h-40" style={{ background: bg }} />
       <div className="mx-auto max-w-xl px-4 -mt-24">
@@ -56,8 +66,20 @@ function CustomerCard() {
           );
         })}
 
+        <Card className="mb-4">
+          <CardContent className="p-5 flex flex-col items-center text-center">
+            <div className="flex items-center gap-2 text-sm font-semibold"><QrCode className="h-4 w-4" /> Seu QR Code</div>
+            <div className="text-xs text-muted-foreground mt-1">Mostre esta tela ao atendente para carimbar</div>
+            {qrDataUrl ? (
+              <img src={qrDataUrl} alt="QR do cartão" className="mt-4 w-56 h-56 rounded-lg border" />
+            ) : <div className="mt-4 w-56 h-56 rounded-lg bg-muted animate-pulse" />}
+            <div className="mt-3 text-xs text-muted-foreground">Código: <span className="font-mono">{d.customer.code}</span></div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardContent className="p-5">
+
             <div className="flex items-center gap-2 text-sm font-semibold"><Clock className="h-4 w-4" /> Histórico recente</div>
             <div className="mt-3 divide-y">
               {d.stamps.length === 0 && <div className="py-4 text-sm text-muted-foreground">Nenhum carimbo ainda. Peça um na sua próxima visita!</div>}
