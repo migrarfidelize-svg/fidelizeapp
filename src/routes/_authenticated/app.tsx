@@ -24,6 +24,51 @@ function AppLayout() {
   const { data: adminStatus } = useQuery({ queryKey: ["admin-status"], queryFn: () => getAdmin() });
   const pathname = useRouterState({ select: (r) => r.location.pathname });
 
+  // Unread support replies from Fidelize admin
+  const { data: unreadSupport = 0 } = useQuery({
+    queryKey: ["support-unread"],
+    queryFn: async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) return 0;
+      const { count } = await supabase
+        .from("support_tickets")
+        .select("id", { count: "exact", head: true })
+        .eq("requester_user_id", u.user.id)
+        .eq("has_unread_customer", true);
+      return count ?? 0;
+    },
+    refetchOnWindowFocus: true,
+  });
+
+  useEffect(() => {
+    let userId: string | null = null;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    (async () => {
+      const { data: u } = await supabase.auth.getUser();
+      userId = u.user?.id ?? null;
+      if (!userId) return;
+      channel = supabase
+        .channel("support-customer-notify")
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "support_tickets", filter: `requester_user_id=eq.${userId}` },
+          (payload) => {
+            const n = payload.new as { has_unread_customer?: boolean; protocol?: string; subject?: string };
+            if (n.has_unread_customer) {
+              toast.message("Nova resposta do suporte", {
+                description: `${n.protocol ?? ""} — ${n.subject ?? ""}`.trim(),
+                action: { label: "Ver", onClick: () => navigate({ to: "/suporte" }) },
+              });
+              queryClient.invalidateQueries({ queryKey: ["support-unread"] });
+              queryClient.invalidateQueries({ queryKey: ["my-support-tickets"] });
+            }
+          },
+        )
+        .subscribe();
+    })();
+    return () => { if (channel) supabase.removeChannel(channel); };
+  }, [navigate, queryClient]);
+
   const activeEst = memberships?.[0]?.establishment as { id: string; name: string; slug: string; logo_url: string | null } | undefined;
 
   if (isLoading) return <div className="grid min-h-screen place-items-center text-muted-foreground">Carregando…</div>;
