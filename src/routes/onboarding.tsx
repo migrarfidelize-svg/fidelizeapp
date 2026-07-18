@@ -226,6 +226,7 @@ function Onboarding() {
           <div className="sticky top-8">
             <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Prévia</div>
             <StampCard
+              key={logoRev}
               brandName={f.name || "Sua empresa"}
               logoUrl={f.logo_url || undefined}
               customerName="Cliente exemplo"
