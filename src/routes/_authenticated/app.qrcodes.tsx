@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getMyEstablishments, getEstablishmentCampaigns } from "@/lib/loyalty.functions";
@@ -10,8 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Copy, Download, Share2, FileImage, FileText, Printer, Palette, Settings2, Sparkles, Loader2 } from "lucide-react";
+import { Copy, Download, Share2, FileImage, FileText, Printer, Palette, Settings2, Sparkles, Loader2, Image as ImageIcon, Save, Trash2, CheckCircle2, AlertTriangle, Layers } from "lucide-react";
 import { toast } from "sonner";
 import QRCode from "qrcode";
 import { toPng, toJpeg } from "html-to-image";
@@ -36,6 +37,43 @@ const SEGMENT_DEFAULTS: Record<Segment, { primary: string; accent: string; bg: s
   outro: { primary: "#7c3aed", accent: "#f472b6", bg: "#faf5ff" },
 };
 
+// ============ WCAG contrast helpers ============
+function hexToRgb(hex: string) {
+  const h = hex.replace("#", "");
+  const f = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
+  const n = parseInt(f, 16);
+  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+}
+function luminance(hex: string) {
+  const { r, g, b } = hexToRgb(hex);
+  const norm = [r, g, b].map((v) => {
+    const x = v / 255;
+    return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * norm[0] + 0.7152 * norm[1] + 0.0722 * norm[2];
+}
+function contrastRatio(a: string, b: string) {
+  const l1 = luminance(a), l2 = luminance(b);
+  const [hi, lo] = l1 > l2 ? [l1, l2] : [l2, l1];
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+// ============ Variations (localStorage) ============
+type SavedVariation = { id: string; name: string; savedAt: number; state: StoredState };
+type StoredState = {
+  format: PromoFormat; segment: Segment; title: string; subtitle: string;
+  ctaNearQR: string; ctaFooter: string; rewardTextOverride: string;
+  primaryColor: string; accentColor: string; backgroundColor: string; textColor: string;
+  showBrand: boolean; bgImageUrl: string | null; bgZoom: number; bgOffsetX: number; bgOffsetY: number; bgOverlay: number;
+};
+const storageKey = (estId: string) => `fidelize-promos-v1-${estId}`;
+function loadVariations(estId: string): SavedVariation[] {
+  try { return JSON.parse(localStorage.getItem(storageKey(estId)) ?? "[]"); } catch { return []; }
+}
+function saveVariations(estId: string, list: SavedVariation[]) {
+  localStorage.setItem(storageKey(estId), JSON.stringify(list));
+}
+
 function QRCodes() {
   const getEsts = useServerFn(getMyEstablishments);
   const getCampaigns = useServerFn(getEstablishmentCampaigns);
@@ -49,7 +87,6 @@ function QRCodes() {
   });
 
   const activeCampaign = campaigns?.find((c) => c.active) ?? campaigns?.[0];
-
   const publicUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/l/${est.slug}` : "";
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
 
@@ -60,15 +97,27 @@ function QRCodes() {
   const [ctaNearQR, setCtaNearQR] = useState("Aponte a câmera e participe");
   const [ctaFooter, setCtaFooter] = useState("Escaneie e participe agora");
   const [rewardTextOverride, setRewardTextOverride] = useState("");
-  const [primaryColor, setPrimaryColor] = useState<string>(est?.primary_color ?? SEGMENT_DEFAULTS.espetinhos.primary);
-  const [accentColor, setAccentColor] = useState<string>(est?.accent_color ?? SEGMENT_DEFAULTS.espetinhos.accent);
+  const [primaryColor, setPrimaryColor] = useState<string>(SEGMENT_DEFAULTS.espetinhos.primary);
+  const [accentColor, setAccentColor] = useState<string>(SEGMENT_DEFAULTS.espetinhos.accent);
   const [backgroundColor, setBackgroundColor] = useState<string>(SEGMENT_DEFAULTS.espetinhos.bg);
   const [textColor, setTextColor] = useState<string>("#111827");
   const [showBrand, setShowBrand] = useState(true);
+  const [showSafeArea, setShowSafeArea] = useState(false);
+  const [showCropMarks, setShowCropMarks] = useState(true);
+  const [bgImageUrl, setBgImageUrl] = useState<string | null>(null);
+  const [bgZoom, setBgZoom] = useState(1);
+  const [bgOffsetX, setBgOffsetX] = useState(0);
+  const [bgOffsetY, setBgOffsetY] = useState(0);
+  const [bgOverlay, setBgOverlay] = useState(0.35);
   const [exporting, setExporting] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Adopt establishment brand colors once loaded
+  const [variations, setVariations] = useState<SavedVariation[]>([]);
+  const [variationName, setVariationName] = useState("");
+
+  useEffect(() => { if (est?.id) setVariations(loadVariations(est.id)); }, [est?.id]);
+
   useEffect(() => {
     if (est) {
       if (est.primary_color) setPrimaryColor(est.primary_color);
@@ -76,16 +125,17 @@ function QRCodes() {
     }
   }, [est?.id]);
 
-  // Generate QR data URL — recolour to primary
+  // QR generation
   useEffect(() => {
     if (!publicUrl) return;
-    QRCode.toDataURL(publicUrl, {
-      width: 1200,
-      margin: 1,
-      errorCorrectionLevel: "H",
-      color: { dark: primaryColor, light: "#ffffff" },
-    }).then(setQrDataUrl);
+    QRCode.toDataURL(publicUrl, { width: 1200, margin: 1, errorCorrectionLevel: "H", color: { dark: primaryColor, light: "#ffffff" } }).then(setQrDataUrl);
   }, [publicUrl, primaryColor]);
+
+  // Scannability check
+  const qrContrast = useMemo(() => contrastRatio(primaryColor, "#ffffff"), [primaryColor]);
+  const qrOk = qrContrast >= 4.0;
+  const qrWarn = qrContrast < 4.0 && qrContrast >= 2.8;
+  const qrBad = qrContrast < 2.8;
 
   const rewardText = useMemo(() => {
     if (rewardTextOverride.trim()) return rewardTextOverride.trim();
@@ -98,40 +148,31 @@ function QRCodes() {
     return [est.instagram && `@${est.instagram.replace("@", "")}`, est.whatsapp, est.address].filter(Boolean).join(" · ") || undefined;
   }, [est]);
 
-  const config: PromoConfig = {
-    format,
-    segment,
-    title,
-    subtitle,
-    ctaNearQR,
-    ctaFooter,
-    rewardText,
-    primaryColor,
-    accentColor,
-    backgroundColor,
-    textColor,
-    showBrand,
+  const buildConfig = useCallback((overrides: Partial<PromoConfig> = {}): PromoConfig => ({
+    format, segment, title, subtitle, ctaNearQR, ctaFooter, rewardText,
+    primaryColor, accentColor, backgroundColor, textColor, showBrand,
     establishmentName: est?.name ?? "Seu estabelecimento",
-    logoUrl: est?.logo_url,
-    qrDataUrl,
-    publicUrl,
+    logoUrl: est?.logo_url, qrDataUrl, publicUrl,
     benefits: ["Cartão sempre no celular", "Nenhum aplicativo necessário", "Recompensas exclusivas", "Cadastro em segundos"],
-    contactLine,
-  };
+    contactLine, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay,
+    showCropMarks, showSafeArea,
+    ...overrides,
+  }), [format, segment, title, subtitle, ctaNearQR, ctaFooter, rewardText, primaryColor, accentColor, backgroundColor, textColor, showBrand, est, qrDataUrl, publicUrl, contactLine, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay, showCropMarks, showSafeArea]);
 
+  const config = buildConfig();
   const dims = FORMATS[format];
 
-  // Fit-preview scale
+  // Fit preview
   const [previewScale, setPreviewScale] = useState(0.35);
   const previewWrapRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     function fit() {
       if (!previewWrapRef.current) return;
       const rect = previewWrapRef.current.getBoundingClientRect();
-      const pad = 24;
+      const pad = 32;
       const sx = (rect.width - pad) / dims.w;
       const sy = (rect.height - pad) / dims.h;
-      setPreviewScale(Math.max(0.08, Math.min(sx, sy)));
+      setPreviewScale(Math.max(0.06, Math.min(sx, sy)));
     }
     fit();
     const ro = new ResizeObserver(fit);
@@ -140,60 +181,169 @@ function QRCodes() {
     return () => { ro.disconnect(); window.removeEventListener("resize", fit); };
   }, [dims.w, dims.h]);
 
-  async function withCapture(cb: (dataUrl: string) => Promise<void> | void, type: "png" | "jpeg" = "png") {
-    if (!posterRef.current) return;
-    try {
-      setExporting(true);
-      const opts = { pixelRatio: 1, cacheBust: true, backgroundColor: type === "jpeg" ? "#ffffff" : undefined };
-      const dataUrl = type === "png" ? await toPng(posterRef.current, opts) : await toJpeg(posterRef.current, { ...opts, quality: 0.95 });
-      await cb(dataUrl);
-    } catch (e: any) {
-      toast.error("Falha ao gerar arte: " + (e?.message ?? "erro"));
-    } finally {
-      setExporting(false);
-    }
+  function onBgUpload(file: File) {
+    if (file.size > 8 * 1024 * 1024) { toast.error("Imagem muito grande (máx 8MB)"); return; }
+    const reader = new FileReader();
+    reader.onload = () => { setBgImageUrl(reader.result as string); toast.success("Imagem de fundo aplicada"); };
+    reader.readAsDataURL(file);
   }
 
   const fileBase = `${est?.slug ?? "fidelize"}-${format}`;
-
   function downloadDataUrl(dataUrl: string, filename: string) {
     const a = document.createElement("a");
     a.href = dataUrl; a.download = filename; a.click();
   }
 
-  async function exportPNG() { await withCapture((d) => downloadDataUrl(d, `${fileBase}.png`), "png"); }
-  async function exportJPG() { await withCapture((d) => downloadDataUrl(d, `${fileBase}.jpg`), "jpeg"); }
+  async function capture(node: HTMLElement, type: "png" | "jpeg" = "png") {
+    const opts: any = { pixelRatio: 1, cacheBust: true, backgroundColor: type === "jpeg" ? "#ffffff" : undefined };
+    return type === "png" ? await toPng(node, opts) : await toJpeg(node, { ...opts, quality: 0.95 });
+  }
+
+  async function preflight(): Promise<boolean> {
+    if (!qrDataUrl) { toast.error("QR ainda não foi gerado"); return false; }
+    if (qrBad) {
+      const ok = confirm("A cor do QR tem contraste muito baixo com o fundo branco (leitura pode falhar). Continuar mesmo assim?");
+      if (!ok) return false;
+    } else if (qrWarn) {
+      toast.warning("Contraste do QR está no limite — teste a leitura antes de imprimir em grande escala.");
+    }
+    return true;
+  }
+
+  async function exportPNG() {
+    if (!posterRef.current || !(await preflight())) return;
+    setExporting(true);
+    try { downloadDataUrl(await capture(posterRef.current, "png"), `${fileBase}.png`); }
+    catch (e: any) { toast.error("Falha: " + e?.message); }
+    finally { setExporting(false); }
+  }
+  async function exportJPG() {
+    if (!posterRef.current || !(await preflight())) return;
+    setExporting(true);
+    try { downloadDataUrl(await capture(posterRef.current, "jpeg"), `${fileBase}.jpg`); }
+    catch (e: any) { toast.error("Falha: " + e?.message); }
+    finally { setExporting(false); }
+  }
   async function exportPDF() {
-    await withCapture(async (d) => {
-      const pdf = new jsPDF({ orientation: dims.w > dims.h ? "landscape" : "portrait", unit: "px", format: [dims.w, dims.h] });
-      pdf.addImage(d, "PNG", 0, 0, dims.w, dims.h);
+    if (!posterRef.current || !(await preflight())) return;
+    setExporting(true);
+    try {
+      const dataUrl = await capture(posterRef.current, "png");
+      // Use physical mm when available (true-scale print), else pixels
+      const pdf = dims.mm
+        ? new jsPDF({ orientation: dims.mm.w > dims.mm.h ? "landscape" : "portrait", unit: "mm", format: [dims.mm.w, dims.mm.h] })
+        : new jsPDF({ orientation: dims.w > dims.h ? "landscape" : "portrait", unit: "px", format: [dims.w, dims.h] });
+      const w = dims.mm ? dims.mm.w : dims.w;
+      const h = dims.mm ? dims.mm.h : dims.h;
+      pdf.addImage(dataUrl, "PNG", 0, 0, w, h);
       pdf.save(`${fileBase}.pdf`);
-    }, "png");
+      if (dims.mm) toast.success(`PDF exportado em ${dims.mm.w}×${dims.mm.h}mm (com sangria)`);
+    } catch (e: any) { toast.error("Falha: " + e?.message); }
+    finally { setExporting(false); }
   }
   async function printArt() {
-    await withCapture(async (d) => {
+    if (!posterRef.current || !(await preflight())) return;
+    setExporting(true);
+    try {
+      const d = await capture(posterRef.current, "png");
       const w = window.open("", "_blank");
       if (!w) return;
       w.document.write(`<html><head><title>Imprimir</title><style>@page{margin:0}body{margin:0;display:flex;justify-content:center;align-items:center}img{max-width:100%;max-height:100vh}</style></head><body><img src="${d}" onload="setTimeout(()=>window.print(),300)"/></body></html>`);
       w.document.close();
-    }, "png");
+    } finally { setExporting(false); }
   }
   async function shareArt() {
-    await withCapture(async (d) => {
+    if (!posterRef.current || !(await preflight())) return;
+    setExporting(true);
+    try {
+      const d = await capture(posterRef.current, "png");
       const blob = await (await fetch(d)).blob();
       const file = new File([blob], `${fileBase}.png`, { type: "image/png" });
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: est?.name, text: title });
       } else {
         downloadDataUrl(d, `${fileBase}.png`);
-        toast.info("Seu navegador não suporta compartilhamento direto. Baixamos o arquivo.");
+        toast.info("Compartilhamento indisponível — baixamos o arquivo.");
       }
-    }, "png");
+    } finally { setExporting(false); }
   }
 
-  function applySegmentPalette(seg: Segment) {
-    const p = SEGMENT_DEFAULTS[seg];
-    setPrimaryColor(p.primary); setAccentColor(p.accent); setBackgroundColor(p.bg);
+  // ---------- Variations ----------
+  function currentState(): StoredState {
+    return { format, segment, title, subtitle, ctaNearQR, ctaFooter, rewardTextOverride, primaryColor, accentColor, backgroundColor, textColor, showBrand, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay };
+  }
+  function applyState(s: StoredState) {
+    setFormat(s.format); setSegment(s.segment); setTitle(s.title); setSubtitle(s.subtitle);
+    setCtaNearQR(s.ctaNearQR); setCtaFooter(s.ctaFooter); setRewardTextOverride(s.rewardTextOverride);
+    setPrimaryColor(s.primaryColor); setAccentColor(s.accentColor); setBackgroundColor(s.backgroundColor); setTextColor(s.textColor);
+    setShowBrand(s.showBrand); setBgImageUrl(s.bgImageUrl); setBgZoom(s.bgZoom); setBgOffsetX(s.bgOffsetX); setBgOffsetY(s.bgOffsetY); setBgOverlay(s.bgOverlay);
+  }
+  function saveVariation() {
+    if (!est?.id) return;
+    const name = variationName.trim() || `Variação ${variations.length + 1}`;
+    const v: SavedVariation = { id: crypto.randomUUID(), name, savedAt: Date.now(), state: currentState() };
+    const next = [v, ...variations];
+    setVariations(next); saveVariations(est.id, next); setVariationName("");
+    toast.success(`"${name}" salva`);
+  }
+  function loadVariation(id: string) {
+    const v = variations.find((x) => x.id === id); if (!v) return;
+    applyState(v.state); toast.success(`"${v.name}" carregada`);
+  }
+  function deleteVariation(id: string) {
+    if (!est?.id) return;
+    const next = variations.filter((x) => x.id !== id);
+    setVariations(next); saveVariations(est.id, next);
+  }
+  function renameVariation(id: string) {
+    if (!est?.id) return;
+    const v = variations.find((x) => x.id === id); if (!v) return;
+    const newName = prompt("Novo nome:", v.name)?.trim();
+    if (!newName) return;
+    const next = variations.map((x) => x.id === id ? { ...x, name: newName } : x);
+    setVariations(next); saveVariations(est.id, next);
+  }
+
+  // Export ALL variations as PDFs — renders each hidden and captures
+  const [batchNode, setBatchNode] = useState<PromoConfig | null>(null);
+  const batchRef = useRef<HTMLDivElement>(null);
+  const batchResolveRef = useRef<((n: HTMLElement) => void) | null>(null);
+  useEffect(() => {
+    if (batchNode && batchRef.current && batchResolveRef.current) {
+      // wait a tick for images/QR to paint
+      const el = batchRef.current;
+      setTimeout(() => batchResolveRef.current?.(el), 400);
+    }
+  }, [batchNode]);
+  function renderBatch(cfg: PromoConfig): Promise<HTMLElement> {
+    return new Promise((resolve) => { batchResolveRef.current = resolve; setBatchNode(cfg); });
+  }
+  async function exportAllVariations() {
+    if (!variations.length) { toast.info("Nenhuma variação salva"); return; }
+    setExporting(true);
+    try {
+      for (const v of variations) {
+        // regenerate QR with variation's primary
+        const qr = await QRCode.toDataURL(publicUrl, { width: 1200, margin: 1, errorCorrectionLevel: "H", color: { dark: v.state.primaryColor, light: "#ffffff" } });
+        const cfg: PromoConfig = {
+          ...v.state, rewardText: v.state.rewardTextOverride.trim() || rewardText,
+          establishmentName: est?.name ?? "", logoUrl: est?.logo_url, qrDataUrl: qr, publicUrl,
+          benefits: config.benefits, contactLine, showCropMarks: true, showSafeArea: false,
+        };
+        const node = await renderBatch(cfg);
+        const dataUrl = await capture(node, "png");
+        const d = FORMATS[cfg.format];
+        const pdf = d.mm
+          ? new jsPDF({ orientation: d.mm.w > d.mm.h ? "landscape" : "portrait", unit: "mm", format: [d.mm.w, d.mm.h] })
+          : new jsPDF({ orientation: d.w > d.h ? "landscape" : "portrait", unit: "px", format: [d.w, d.h] });
+        const w = d.mm ? d.mm.w : d.w;
+        const h = d.mm ? d.mm.h : d.h;
+        pdf.addImage(dataUrl, "PNG", 0, 0, w, h);
+        pdf.save(`${est?.slug ?? "fidelize"}-${v.name.replace(/[^a-z0-9-]+/gi, "_")}.pdf`);
+      }
+      toast.success(`${variations.length} variação(ões) exportadas`);
+    } catch (e: any) { toast.error("Falha em lote: " + e?.message); }
+    finally { setBatchNode(null); setExporting(false); }
   }
 
   if (!est) return <div className="text-muted-foreground">Carregando…</div>;
@@ -203,21 +353,31 @@ function QRCodes() {
       <div>
         <div className="text-xs uppercase tracking-widest text-muted-foreground">Divulgação</div>
         <h1 className="font-display text-3xl font-bold">Divulgue seu programa de fidelidade</h1>
-        <p className="text-sm text-muted-foreground mt-1 max-w-2xl">Crie materiais personalizados com seu QR Code e facilite a entrada de novos clientes no seu programa.</p>
+        <p className="text-sm text-muted-foreground mt-1 max-w-2xl">Crie materiais personalizados com QR Code — com sangria para impressão, validação de leitura e variações salvas.</p>
       </div>
 
       {/* Format picker */}
       <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
-        {(Object.keys(FORMATS) as PromoFormat[]).map((k) => (
-          <button
-            key={k}
-            onClick={() => setFormat(k)}
-            className={`shrink-0 rounded-xl border px-4 py-3 text-left transition ${format === k ? "border-primary bg-primary-soft text-primary" : "border-border hover:border-primary/40"}`}
-          >
-            <div className="text-sm font-semibold">{FORMATS[k].label}</div>
-            <div className="text-[11px] text-muted-foreground">{FORMATS[k].w}×{FORMATS[k].h}px · {FORMATS[k].description}</div>
-          </button>
-        ))}
+        {(Object.keys(FORMATS) as PromoFormat[]).map((k) => {
+          const f = FORMATS[k];
+          return (
+            <button key={k} onClick={() => setFormat(k)} className={`shrink-0 rounded-xl border px-4 py-3 text-left transition ${format === k ? "border-primary bg-primary-soft text-primary" : "border-border hover:border-primary/40"}`}>
+              <div className="text-sm font-semibold flex items-center gap-2">{f.label}{f.print && <span className="text-[10px] rounded bg-primary/10 text-primary px-1.5 py-0.5 font-medium">PRINT</span>}</div>
+              <div className="text-[11px] text-muted-foreground">{f.mm ? `${f.mm.w}×${f.mm.h}mm · ` : `${f.w}×${f.h}px · `}{f.description}</div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Scannability banner */}
+      <div className={`rounded-lg border p-3 flex items-center gap-3 text-sm ${qrOk ? "border-emerald-200 bg-emerald-50 text-emerald-900" : qrWarn ? "border-amber-200 bg-amber-50 text-amber-900" : "border-red-200 bg-red-50 text-red-900"}`}>
+        {qrOk ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+        <div className="flex-1">
+          <strong>Escaneabilidade: </strong>
+          {qrOk && <>Ótima ({qrContrast.toFixed(1)}:1 contraste com o fundo branco). Respiro de segurança OK.</>}
+          {qrWarn && <>Aceitável ({qrContrast.toFixed(1)}:1). Teste a leitura em impressão pequena.</>}
+          {qrBad && <>Baixa ({qrContrast.toFixed(1)}:1) — escureça a cor principal para garantir leitura.</>}
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-[380px_1fr] gap-6">
@@ -225,77 +385,93 @@ function QRCodes() {
         <Card>
           <CardContent className="p-5">
             <Tabs defaultValue="content">
-              <TabsList className="grid grid-cols-3">
-                <TabsTrigger value="content"><Sparkles className="mr-1 h-3 w-3" /> Conteúdo</TabsTrigger>
-                <TabsTrigger value="style"><Palette className="mr-1 h-3 w-3" /> Estilo</TabsTrigger>
-                <TabsTrigger value="advanced"><Settings2 className="mr-1 h-3 w-3" /> Avançado</TabsTrigger>
+              <TabsList className="grid grid-cols-4">
+                <TabsTrigger value="content"><Sparkles className="mr-1 h-3 w-3" />Conteúdo</TabsTrigger>
+                <TabsTrigger value="style"><Palette className="mr-1 h-3 w-3" />Estilo</TabsTrigger>
+                <TabsTrigger value="bg"><ImageIcon className="mr-1 h-3 w-3" />Fundo</TabsTrigger>
+                <TabsTrigger value="advanced"><Settings2 className="mr-1 h-3 w-3" />Mais</TabsTrigger>
               </TabsList>
 
               <TabsContent value="content" className="space-y-4 pt-4">
                 {campaigns && campaigns.length > 0 && (
-                  <div>
-                    <Label className="text-xs">Campanha</Label>
-                    <div className="mt-1 text-sm text-muted-foreground">
-                      {activeCampaign ? <><strong className="text-foreground">{activeCampaign.name}</strong> · {activeCampaign.stamps_required} carimbos → {activeCampaign.reward_title}</> : "Nenhuma campanha ativa"}
-                    </div>
+                  <div className="text-xs text-muted-foreground">
+                    Campanha: {activeCampaign ? <><strong className="text-foreground">{activeCampaign.name}</strong> · {activeCampaign.stamps_required} carimbos → {activeCampaign.reward_title}</> : "nenhuma ativa"}
                   </div>
                 )}
-                <div>
-                  <Label htmlFor="title" className="text-xs">Título</Label>
-                  <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={60} />
-                </div>
-                <div>
-                  <Label htmlFor="subtitle" className="text-xs">Subtítulo</Label>
-                  <Textarea id="subtitle" value={subtitle} onChange={(e) => setSubtitle(e.target.value)} rows={3} maxLength={220} />
-                </div>
-                <div>
-                  <Label htmlFor="reward" className="text-xs">Texto da recompensa <span className="text-muted-foreground">(deixe vazio para usar da campanha)</span></Label>
-                  <Textarea id="reward" value={rewardTextOverride} onChange={(e) => setRewardTextOverride(e.target.value)} rows={2} placeholder={rewardText} />
-                </div>
+                <Field label="Título"><Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={60} /></Field>
+                <Field label="Subtítulo"><Textarea value={subtitle} onChange={(e) => setSubtitle(e.target.value)} rows={3} maxLength={220} /></Field>
+                <Field label="Recompensa (opcional — usa da campanha)"><Textarea value={rewardTextOverride} onChange={(e) => setRewardTextOverride(e.target.value)} rows={2} placeholder={rewardText} /></Field>
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label htmlFor="near" className="text-xs">Chamada perto do QR</Label>
-                    <Input id="near" value={ctaNearQR} onChange={(e) => setCtaNearQR(e.target.value)} maxLength={40} />
-                  </div>
-                  <div>
-                    <Label htmlFor="foot" className="text-xs">CTA do rodapé</Label>
-                    <Input id="foot" value={ctaFooter} onChange={(e) => setCtaFooter(e.target.value)} maxLength={40} />
-                  </div>
+                  <Field label="Perto do QR"><Input value={ctaNearQR} onChange={(e) => setCtaNearQR(e.target.value)} maxLength={40} /></Field>
+                  <Field label="CTA rodapé"><Input value={ctaFooter} onChange={(e) => setCtaFooter(e.target.value)} maxLength={40} /></Field>
                 </div>
               </TabsContent>
 
               <TabsContent value="style" className="space-y-4 pt-4">
-                <div>
-                  <Label className="text-xs">Segmento</Label>
-                  <Select value={segment} onValueChange={(v) => { setSegment(v as Segment); applySegmentPalette(v as Segment); }}>
-                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <Field label="Segmento">
+                  <Select value={segment} onValueChange={(v) => {
+                    setSegment(v as Segment);
+                    const p = SEGMENT_DEFAULTS[v as Segment];
+                    setPrimaryColor(p.primary); setAccentColor(p.accent); setBackgroundColor(p.bg);
+                  }}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>{(Object.keys(SEGMENT_LABEL) as Segment[]).map((k) => <SelectItem key={k} value={k}>{SEGMENT_LABEL[k]}</SelectItem>)}</SelectContent>
                   </Select>
-                  <p className="text-[11px] text-muted-foreground mt-1">Adiciona elementos gráficos discretos e sugere paleta.</p>
-                </div>
-                <ColorField label="Cor principal" value={primaryColor} onChange={setPrimaryColor} />
+                </Field>
+                <ColorField label="Cor principal (afeta contraste do QR)" value={primaryColor} onChange={setPrimaryColor} />
                 <ColorField label="Cor secundária" value={accentColor} onChange={setAccentColor} />
                 <ColorField label="Fundo" value={backgroundColor} onChange={setBackgroundColor} />
-                <ColorField label="Cor dos textos" value={textColor} onChange={setTextColor} />
+                <ColorField label="Textos" value={textColor} onChange={setTextColor} />
+              </TabsContent>
+
+              <TabsContent value="bg" className="space-y-4 pt-4">
+                <div className="rounded-lg border-dashed border-2 p-4 text-center">
+                  {bgImageUrl ? (
+                    <>
+                      <img src={bgImageUrl} alt="" className="mx-auto max-h-32 rounded-md object-cover" />
+                      <div className="mt-3 flex justify-center gap-2">
+                        <Button size="sm" variant="outline" onClick={() => fileInputRef.current?.click()}>Trocar</Button>
+                        <Button size="sm" variant="ghost" onClick={() => setBgImageUrl(null)}>Remover</Button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="mx-auto h-8 w-8 text-muted-foreground" />
+                      <p className="text-xs text-muted-foreground mt-2">Fundo personalizado (JPG/PNG, máx 8MB)</p>
+                      <Button size="sm" variant="outline" className="mt-3" onClick={() => fileInputRef.current?.click()}>Escolher imagem</Button>
+                    </>
+                  )}
+                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && onBgUpload(e.target.files[0])} />
+                </div>
+                {bgImageUrl && (
+                  <>
+                    <SliderField label={`Zoom (${bgZoom.toFixed(2)}×)`} value={bgZoom} min={1} max={3} step={0.05} onChange={setBgZoom} />
+                    <SliderField label={`Horizontal (${bgOffsetX})`} value={bgOffsetX} min={-40} max={40} step={1} onChange={setBgOffsetX} />
+                    <SliderField label={`Vertical (${bgOffsetY})`} value={bgOffsetY} min={-40} max={40} step={1} onChange={setBgOffsetY} />
+                    <SliderField label={`Camada de proteção (${Math.round(bgOverlay * 100)}%)`} value={bgOverlay} min={0} max={0.85} step={0.05} onChange={setBgOverlay} />
+                    <p className="text-[11px] text-muted-foreground">A camada de proteção clareia o fundo para manter a leitura dos textos e do QR.</p>
+                  </>
+                )}
               </TabsContent>
 
               <TabsContent value="advanced" className="space-y-4 pt-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="brand" className="text-xs">Mostrar "Powered by Fidelize"</Label>
-                    <p className="text-[11px] text-muted-foreground">Discreta marca no rodapé.</p>
-                  </div>
-                  <Switch id="brand" checked={showBrand} onCheckedChange={setShowBrand} />
-                </div>
-                <div>
-                  <Label className="text-xs">Link público</Label>
-                  <div className="mt-1 flex gap-2">
+                <Row label="Mostrar guias de área segura" hint="Só na prévia — mostra até onde o conteúdo pode chegar">
+                  <Switch checked={showSafeArea} onCheckedChange={setShowSafeArea} />
+                </Row>
+                <Row label="Marcas de corte (crop marks)" hint="Aparece só nos formatos de impressão">
+                  <Switch checked={showCropMarks} onCheckedChange={setShowCropMarks} />
+                </Row>
+                <Row label='Mostrar "Powered by Fidelize"' hint="Discreta no rodapé">
+                  <Switch checked={showBrand} onCheckedChange={setShowBrand} />
+                </Row>
+                <Field label="Link público">
+                  <div className="flex gap-2">
                     <code className="flex-1 rounded-md bg-muted px-3 py-2 text-xs break-all">{publicUrl}</code>
                     <Button size="icon" variant="outline" onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success("Copiado"); }}><Copy className="h-4 w-4" /></Button>
                   </div>
-                </div>
+                </Field>
                 <div className="rounded-md border border-dashed p-3 text-xs text-muted-foreground">
-                  O QR Code é gerado em alta resolução com correção de erros H (30%), garantindo leitura mesmo com a cor da sua marca.
+                  PDFs de impressão saem em <strong>mm reais</strong> com <strong>3mm de sangria</strong> e área segura. Ideal para gráficas.
                 </div>
               </TabsContent>
             </Tabs>
@@ -314,16 +490,16 @@ function QRCodes() {
                 </div>
               </div>
               <div className="absolute top-3 right-3 rounded-md bg-background/80 backdrop-blur px-2 py-1 text-[11px] text-muted-foreground border">
-                {dims.w} × {dims.h}px
+                {dims.mm ? `${dims.mm.w}×${dims.mm.h}mm` : `${dims.w}×${dims.h}px`}
+                {dims.bleed > 0 && <> · sangria 3mm</>}
               </div>
             </div>
             <div className="p-4 border-t flex flex-wrap gap-2">
               <Button onClick={exportPNG} disabled={exporting} className="gradient-brand text-primary-foreground">
-                {exporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileImage className="mr-2 h-4 w-4" />}
-                Baixar PNG
+                {exporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileImage className="mr-2 h-4 w-4" />}PNG
               </Button>
               <Button onClick={exportJPG} disabled={exporting} variant="outline"><FileImage className="mr-2 h-4 w-4" />JPG</Button>
-              <Button onClick={exportPDF} disabled={exporting} variant="outline"><FileText className="mr-2 h-4 w-4" />PDF</Button>
+              <Button onClick={exportPDF} disabled={exporting} variant="outline"><FileText className="mr-2 h-4 w-4" />PDF{dims.mm ? " (mm)" : ""}</Button>
               <Button onClick={printArt} disabled={exporting} variant="outline"><Printer className="mr-2 h-4 w-4" />Imprimir</Button>
               <Button onClick={shareArt} disabled={exporting} variant="outline"><Share2 className="mr-2 h-4 w-4" />Compartilhar</Button>
               <Button onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success("Link copiado"); }} variant="ghost"><Copy className="mr-2 h-4 w-4" />Copiar link</Button>
@@ -332,13 +508,72 @@ function QRCodes() {
         </Card>
       </div>
 
-      <div className="text-xs text-muted-foreground flex items-center gap-2">
-        <Download className="h-3 w-3" /> Dica: para Instagram Story use o formato <strong className="text-foreground">Story</strong>; para o feed, <strong className="text-foreground">Feed</strong>; para imprimir e colar, <strong className="text-foreground">Cartaz A4</strong>.
-      </div>
+      {/* VARIATIONS */}
+      <Card>
+        <CardContent className="p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Layers className="h-4 w-4 text-primary" />
+            <h2 className="font-semibold">Minhas variações</h2>
+            <span className="text-xs text-muted-foreground">— salve versões do editor e alterne rapidamente</span>
+          </div>
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Input placeholder="Nome (ex: Campanha de verão)" value={variationName} onChange={(e) => setVariationName(e.target.value)} className="max-w-xs" />
+            <Button onClick={saveVariation} className="gradient-brand text-primary-foreground"><Save className="mr-2 h-4 w-4" />Salvar atual</Button>
+            <Button onClick={exportAllVariations} disabled={exporting || !variations.length} variant="outline">
+              {exporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+              Exportar todas em PDF
+            </Button>
+          </div>
+          {variations.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Nenhuma variação salva ainda.</p>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {variations.map((v) => (
+                <div key={v.id} className="rounded-lg border p-3 flex flex-col gap-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-medium truncate">{v.name}</div>
+                      <div className="text-[11px] text-muted-foreground">{FORMATS[v.state.format].label} · {new Date(v.savedAt).toLocaleString("pt-BR")}</div>
+                    </div>
+                    <div className="flex gap-1 shrink-0">
+                      <div className="h-6 w-6 rounded" style={{ background: v.state.primaryColor, border: "1px solid rgba(0,0,0,0.1)" }} />
+                      <div className="h-6 w-6 rounded" style={{ background: v.state.accentColor, border: "1px solid rgba(0,0,0,0.1)" }} />
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground line-clamp-2">{v.state.title}</div>
+                  <div className="flex gap-1 mt-1">
+                    <Button size="sm" variant="outline" className="flex-1" onClick={() => loadVariation(v.id)}>Carregar</Button>
+                    <Button size="sm" variant="ghost" onClick={() => renameVariation(v.id)}>Renomear</Button>
+                    <Button size="sm" variant="ghost" onClick={() => deleteVariation(v.id)}><Trash2 className="h-3 w-3 text-red-500" /></Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Hidden batch render node */}
+      {batchNode && (
+        <div style={{ position: "fixed", left: -99999, top: 0 }} aria-hidden>
+          <PromoPoster ref={batchRef} config={batchNode} />
+        </div>
+      )}
     </div>
   );
 }
 
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div><Label className="text-xs">{label}</Label><div className="mt-1">{children}</div></div>;
+}
+function Row({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div><Label className="text-xs">{label}</Label>{hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}</div>
+      {children}
+    </div>
+  );
+}
 function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div>
@@ -347,6 +582,14 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
         <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="h-9 w-12 rounded-md border cursor-pointer" />
         <Input value={value} onChange={(e) => onChange(e.target.value)} className="font-mono text-xs" />
       </div>
+    </div>
+  );
+}
+function SliderField({ label, value, min, max, step, onChange }: { label: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void }) {
+  return (
+    <div>
+      <Label className="text-xs">{label}</Label>
+      <Slider className="mt-2" value={[value]} min={min} max={max} step={step} onValueChange={(v) => onChange(v[0])} />
     </div>
   );
 }
