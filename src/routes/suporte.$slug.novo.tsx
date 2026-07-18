@@ -105,6 +105,14 @@ function NewTicket() {
               <Textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="Conte com detalhes o que aconteceu…" rows={8} maxLength={5000} />
               <div className="text-xs text-muted-foreground mt-1">{body.length}/5000</div>
             </div>
+            <div>
+              <Label>Anexos</Label>
+              <AttachmentPicker
+                value={attachments}
+                onChange={setAttachments}
+                upload={(args) => uploadDraft({ data: args })}
+              />
+            </div>
             <Button onClick={submit} disabled={submitting} size="lg" className="w-full">{submitting ? "Enviando…" : "Enviar chamado"}</Button>
           </div>
         )}
