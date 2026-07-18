@@ -1,6 +1,8 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { useEffect } from "react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { getAdminStatus } from "@/lib/admin.functions";
@@ -21,6 +23,51 @@ function AppLayout() {
   const { data: memberships, isLoading } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
   const { data: adminStatus } = useQuery({ queryKey: ["admin-status"], queryFn: () => getAdmin() });
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+
+  // Unread support replies from Fidelize admin
+  const { data: unreadSupport = 0 } = useQuery({
+    queryKey: ["support-unread"],
+    queryFn: async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) return 0;
+      const { count } = await supabase
+        .from("support_tickets")
+        .select("id", { count: "exact", head: true })
+        .eq("requester_user_id", u.user.id)
+        .eq("has_unread_customer", true);
+      return count ?? 0;
+    },
+    refetchOnWindowFocus: true,
+  });
+
+  useEffect(() => {
+    let userId: string | null = null;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    (async () => {
+      const { data: u } = await supabase.auth.getUser();
+      userId = u.user?.id ?? null;
+      if (!userId) return;
+      channel = supabase
+        .channel("support-customer-notify")
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "support_tickets", filter: `requester_user_id=eq.${userId}` },
+          (payload) => {
+            const n = payload.new as { has_unread_customer?: boolean; protocol?: string; subject?: string };
+            if (n.has_unread_customer) {
+              toast.message("Nova resposta do suporte", {
+                description: `${n.protocol ?? ""} — ${n.subject ?? ""}`.trim(),
+                action: { label: "Ver", onClick: () => navigate({ to: "/suporte" }) },
+              });
+              queryClient.invalidateQueries({ queryKey: ["support-unread"] });
+              queryClient.invalidateQueries({ queryKey: ["my-support-tickets"] });
+            }
+          },
+        )
+        .subscribe();
+    })();
+    return () => { if (channel) supabase.removeChannel(channel); };
+  }, [navigate, queryClient]);
 
   const activeEst = memberships?.[0]?.establishment as { id: string; name: string; slug: string; logo_url: string | null } | undefined;
 
@@ -60,9 +107,16 @@ function AppLayout() {
         <nav className="flex-1 p-3 space-y-1">
           {nav.map((n) => {
             const active = n.exact ? pathname === n.to : pathname.startsWith(n.to);
+            const badge = n.to === "/suporte" && unreadSupport > 0 ? unreadSupport : 0;
             return (
               <Link key={n.to} to={n.to} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${active ? "bg-primary-soft text-primary" : "text-muted-foreground hover:bg-muted"}`}>
-                <n.icon className="h-4 w-4" /> {n.label}
+                <n.icon className="h-4 w-4" />
+                <span className="flex-1">{n.label}</span>
+                {badge > 0 && (
+                  <span className="ml-auto inline-flex min-w-[20px] h-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground">
+                    {badge > 9 ? "9+" : badge}
+                  </span>
+                )}
               </Link>
             );
           })}
