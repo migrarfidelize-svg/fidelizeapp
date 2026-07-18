@@ -245,6 +245,38 @@ export const searchCustomer = createServerFn({ method: "POST" })
     return customers ?? [];
   });
 
+export const listCustomers = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    establishment_id: z.string().uuid(),
+    query: z.string().trim().max(80).optional().default(""),
+    page: z.number().int().min(1).default(1),
+    page_size: z.number().int().min(1).max(100).default(20),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const from = (data.page - 1) * data.page_size;
+    const to = from + data.page_size - 1;
+    let query = supabase.from("customers")
+      .select("id, name, phone, code, email, visits_count, last_visit_at", { count: "exact" })
+      .eq("establishment_id", data.establishment_id);
+    const q = data.query.trim();
+    if (q) {
+      const isPhone = /^\d+$/.test(q);
+      const filter = isPhone
+        ? `phone.ilike.%${q}%,code.ilike.%${q}%`
+        : `name.ilike.%${q}%,phone.ilike.%${q}%,code.ilike.%${q}%,email.ilike.%${q}%`;
+      query = query.or(filter);
+    }
+    const { data: customers, error, count } = await query
+      .order("last_visit_at", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false })
+      .range(from, to);
+    if (error) throw new Error(error.message);
+    return { customers: customers ?? [], total: count ?? 0, page: data.page, page_size: data.page_size };
+  });
+
+
 export const getCustomerTokenByCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
