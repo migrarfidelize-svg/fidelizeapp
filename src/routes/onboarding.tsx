@@ -12,6 +12,7 @@ import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
 import { toast } from "sonner";
 import { Upload, X, Loader2 } from "lucide-react";
+import { LogoCropper } from "@/components/LogoCropper";
 
 export const Route = createFileRoute("/onboarding")({
   ssr: false,
