@@ -62,6 +62,7 @@ export interface PromoConfig {
   qrScale?: number;
   qrColor?: string;
   cornerStyle?: "sharp" | "rounded";
+  cornerRadiusPct?: number;
 }
 
 function withAlpha(hex: string, a: number) {
