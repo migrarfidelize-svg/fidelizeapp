@@ -119,23 +119,25 @@ function Metric({ label, value, icon: Icon, accent }: { label: string; value: st
   );
 }
 
-function TicketDetail({ id, onChange }: { id: string; onChange: () => void }) {
+function TicketDetail({ id, establishmentId, onChange }: { id: string; establishmentId: string; onChange: () => void }) {
   const qc = useQueryClient();
   const fetchTicket = useServerFn(getTicket);
   const reply = useServerFn(agentReply);
   const update = useServerFn(updateTicket);
+  const upload = useServerFn(uploadTicketAttachment);
   const [body, setBody] = useState("");
   const [internal, setInternal] = useState(false);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const { data } = useQuery({ queryKey: ["hd-ticket", id], queryFn: () => fetchTicket({ data: { id } }), refetchInterval: 15000 });
 
   if (!data) return <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">Carregando…</div>;
   const { ticket, messages } = data;
 
   async function send() {
-    if (!body.trim()) return;
+    if (!body.trim() && attachments.length === 0) return;
     try {
-      await reply({ data: { ticket_id: id, body, internal } });
-      setBody("");
+      await reply({ data: { ticket_id: id, body: body.trim() || "(anexo)", internal, attachments } });
+      setBody(""); setAttachments([]);
       qc.invalidateQueries({ queryKey: ["hd-ticket", id] });
       onChange();
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
@@ -185,19 +187,94 @@ function TicketDetail({ id, onChange }: { id: string; onChange: () => void }) {
               {m.internal && <Badge variant="secondary" className="text-[10px]"><Lock className="h-2.5 w-2.5 mr-1" />Interno</Badge>}
             </div>
             <div className="text-sm whitespace-pre-wrap">{m.body}</div>
+            <AttachmentList items={((m as { attachments?: AttachmentRef[] | null }).attachments) ?? []} />
           </div>
         ))}
       </div>
 
-      <div className="border-t p-3">
+      <div className="border-t p-3 space-y-2">
+        <QuickReplies establishmentId={establishmentId} onPick={(t) => setBody((b) => b ? `${b}\n${t}` : t)} />
         <Textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder={internal ? "Nota interna (não visível para o cliente)…" : "Escreva sua resposta…"} rows={3} />
-        <div className="flex items-center justify-between mt-2">
+        <AttachmentPicker value={attachments} onChange={setAttachments} upload={(args) => upload({ data: { ticket_id: id, ...args } })} />
+        <div className="flex items-center justify-between">
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
             <input type="checkbox" checked={internal} onChange={(e) => setInternal(e.target.checked)} /> Nota interna
           </label>
-          <Button onClick={send} disabled={!body.trim()}><Send className="h-4 w-4 mr-2" />Enviar</Button>
+          <Button onClick={send} disabled={!body.trim() && attachments.length === 0}><Send className="h-4 w-4 mr-2" />Enviar</Button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function QuickReplies({ establishmentId, onPick }: { establishmentId: string; onPick: (body: string) => void }) {
+  const qc = useQueryClient();
+  const listFn = useServerFn(listQuickReplies);
+  const saveFn = useServerFn(saveQuickReply);
+  const delFn = useServerFn(deleteQuickReply);
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [shortcut, setShortcut] = useState("");
+  const { data: replies } = useQuery({
+    queryKey: ["hd-quick", establishmentId],
+    queryFn: () => listFn({ data: { establishment_id: establishmentId } }),
+  });
+
+  async function save() {
+    if (!title.trim() || !body.trim()) { toast.error("Preencha título e mensagem"); return; }
+    try {
+      await saveFn({ data: { establishment_id: establishmentId, title: title.trim(), body: body.trim(), shortcut: shortcut.trim() || undefined } });
+      setTitle(""); setBody(""); setShortcut("");
+      qc.invalidateQueries({ queryKey: ["hd-quick", establishmentId] });
+      toast.success("Resposta rápida salva");
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
+  }
+  async function remove(id: string) {
+    if (!confirm("Excluir esta resposta rápida?")) return;
+    await delFn({ data: { id } });
+    qc.invalidateQueries({ queryKey: ["hd-quick", establishmentId] });
+  }
+
+  return (
+    <div className="flex flex-wrap gap-1.5 items-center">
+      <Zap className="h-3.5 w-3.5 text-muted-foreground" />
+      {replies?.length ? replies.slice(0, 6).map(r => (
+        <button key={r.id} type="button" onClick={() => onPick(r.body)} title={r.body}
+          className="text-xs px-2 py-1 rounded-full border bg-muted hover:bg-primary-soft/50">
+          {r.title}
+        </button>
+      )) : <span className="text-xs text-muted-foreground">Sem respostas rápidas</span>}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs"><Plus className="h-3 w-3 mr-1" />Gerenciar</Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>Respostas rápidas</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-2 max-h-56 overflow-y-auto">
+              {replies?.map(r => (
+                <div key={r.id} className="flex items-start justify-between gap-2 rounded-lg border p-2">
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium">{r.title}</div>
+                    <div className="text-xs text-muted-foreground line-clamp-2">{r.body}</div>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => remove(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                </div>
+              ))}
+              {!replies?.length && <div className="text-xs text-muted-foreground">Nenhuma cadastrada ainda.</div>}
+            </div>
+            <div className="border-t pt-3 space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <div><Label className="text-xs">Título</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Boas-vindas" /></div>
+                <div><Label className="text-xs">Atalho (opcional)</Label><Input value={shortcut} onChange={(e) => setShortcut(e.target.value)} placeholder="/oi" /></div>
+              </div>
+              <div><Label className="text-xs">Mensagem</Label><Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={4} placeholder="Olá! Obrigado pelo contato…" /></div>
+            </div>
+          </div>
+          <DialogFooter><Button onClick={save}>Salvar</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
