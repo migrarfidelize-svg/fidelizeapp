@@ -253,7 +253,7 @@ function TemplateEditor({ id, onClose }: { id?: string; onClose: () => void }) {
                 <Button size="sm" variant="secondary" onClick={onPreview} className="gap-1"><Eye className="h-3 w-3" />Atualizar prévia</Button>
                 {previewSubject && <div className="text-xs bg-muted rounded px-2 py-1"><strong>Assunto:</strong> {previewSubject}</div>}
                 <div className="rounded border bg-white overflow-hidden">
-                  <iframe title="preview" className="w-full h-[360px] bg-white" srcDoc={previewHtml || `<div style="padding:20px;color:#94a3b8;font-family:sans-serif">Clique em "Atualizar prévia"</div>`} />
+                  <iframe title="pré-visualização" className="w-full h-[360px] bg-white" srcDoc={previewHtml || `<div style="padding:20px;color:#94a3b8;font-family:sans-serif">Clique em "Atualizar prévia"</div>`} />
                 </div>
               </div>
 
