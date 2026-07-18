@@ -28,22 +28,42 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
 
   const isSignup = mode === "signup";
+
+  function formatWhatsapp(v: string) {
+    const d = v.replace(/\D/g, "").slice(0, 11);
+    if (d.length <= 2) return d.length ? `(${d}` : "";
+    if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+    if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+    return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     try {
       if (isSignup) {
-        const { error } = await supabase.auth.signUp({
+        const digits = whatsapp.replace(/\D/g, "");
+        if (digits.length < 10) {
+          toast.error("Informe um WhatsApp válido com DDD.");
+          setLoading(false);
+          return;
+        }
+        const { data: signUpData, error } = await supabase.auth.signUp({
           email, password,
           options: {
-            data: { full_name: name },
+            data: { full_name: name, phone: whatsapp, whatsapp },
             emailRedirectTo: window.location.origin + "/app",
           },
         });
         if (error) throw error;
+        // Best-effort persist on profile
+        const uid = signUpData.user?.id;
+        if (uid) {
+          await supabase.from("profiles").upsert({ id: uid, full_name: name, phone: whatsapp }, { onConflict: "id" });
+        }
         toast.success("Conta criada! Vamos configurar seu cartão.");
         navigate({ to: "/onboarding" });
       } else {
