@@ -121,7 +121,7 @@ function SupportInbox() {
 function NewTicketDialog() {
   const qc = useQueryClient();
   const createFn = useServerFn(createSupportTicket);
-  const uploadFn = useServerFn(uploadTicketAttachment);
+  const uploadFn = useServerFn(uploadSupportAttachment);
   const [open, setOpen] = useState(false);
   const [subject, setSubject] = useState("");
   const [category, setCategory] = useState<string>("duvidas");
