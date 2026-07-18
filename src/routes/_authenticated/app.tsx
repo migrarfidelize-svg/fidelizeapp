@@ -40,8 +40,6 @@ function AppLayout() {
     { to: "/app/qrcodes", label: "QR Codes", icon: QrCode, exact: false },
     { to: "/app/suporte", label: "Suporte", icon: LifeBuoy, exact: false },
     { to: "/app/kb", label: "Base", icon: BookOpen, exact: false },
-    { to: "/app/equipe", label: "Equipe", icon: UsersRound, exact: false },
-    { to: "/app/config", label: "Configurações", icon: Settings, exact: false },
   ] as const;
 
   async function signOut() {
