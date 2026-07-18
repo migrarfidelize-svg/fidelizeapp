@@ -61,7 +61,9 @@ function Carimbar() {
 
   // Search state
   const [q, setQ] = useState("");
-  const [results, setResults] = useState<Awaited<ReturnType<typeof searchCustomer>>>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
 
   // Card / dialog state
   const [cardData, setCardData] = useState<CardData | null>(null);
@@ -71,14 +73,20 @@ function Carimbar() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [scanError, setScanError] = useState<string>("");
 
-  async function doSearch() {
-    if (!est || q.trim().length < 1) return;
-    try {
-      const r = await search({ data: { establishment_id: est.id, query: q } });
-      setResults(r);
-      if (r.length === 0) toast.info("Nenhum cliente encontrado");
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
+  const { data: listData, isFetching: listFetching } = useQuery({
+    enabled: !!est,
+    queryKey: ["carimbar-customers", est?.id, searchTerm, page],
+    queryFn: () => listAll({ data: { establishment_id: est!.id, query: searchTerm, page, page_size: pageSize } }),
+  });
+  const results = listData?.customers ?? [];
+  const total = listData?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  function doSearch() {
+    setPage(1);
+    setSearchTerm(q.trim());
   }
+
 
   async function loadByToken(token: string, opts?: { openDialog?: boolean }) {
     setBusy(true);
