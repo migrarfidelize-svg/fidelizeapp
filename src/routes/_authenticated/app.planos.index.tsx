@@ -38,6 +38,38 @@ function MerchantPlansPage() {
   });
 
   const currentTier = usage?.plan?.tier;
+  const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, enterprise: 3 };
+
+  const [pending, setPending] = useState<null | { slug: string; name: string; tier: string; price: number; kind: "upgrade" | "downgrade" | "plan_change" }>(null);
+  const [saving, setSaving] = useState(false);
+
+  function askChange(p: any) {
+    if (!activeEst || !currentTier) return;
+    if (p.tier === currentTier) return;
+    const kind: "upgrade" | "downgrade" | "plan_change" =
+      (PLAN_RANK[p.tier] ?? 0) > (PLAN_RANK[currentTier] ?? 0) ? "upgrade"
+      : (PLAN_RANK[p.tier] ?? 0) < (PLAN_RANK[currentTier] ?? 0) ? "downgrade" : "plan_change";
+    setPending({ slug: p.slug, name: p.name, tier: p.tier, price: Number(p.price_monthly ?? 0), kind });
+  }
+
+  async function confirmChange() {
+    if (!pending || !activeEst) return;
+    setSaving(true);
+    try {
+      const res: any = await change({ data: { establishment_id: activeEst.id, plan_slug: pending.slug } });
+      toast.success(
+        res.kind === "upgrade" ? `Upgrade concluído! Bem-vindo ao ${pending.name}.`
+        : res.kind === "downgrade" ? `Downgrade aplicado para ${pending.name}.`
+        : `Plano alterado para ${pending.name}.`
+      );
+      setPending(null);
+      qc.invalidateQueries();
+    } catch (e: any) {
+      toast.error(e.message ?? "Falha ao alterar plano.");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <div className="space-y-6">
