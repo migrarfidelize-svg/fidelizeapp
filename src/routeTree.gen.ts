@@ -47,6 +47,7 @@ import { Route as AuthenticatedAdminConfigRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminAuditoriaRouteImport } from './routes/_authenticated/admin.auditoria'
 import { Route as AuthenticatedAdminAssinaturasRouteImport } from './routes/_authenticated/admin.assinaturas'
 import { Route as AuthenticatedAdminAlertasRouteImport } from './routes/_authenticated/admin.alertas'
+import { Route as AuthenticatedAdminSuporteIndexRouteImport } from './routes/_authenticated/admin.suporte.index'
 import { Route as SuporteSlugKbArticleRouteImport } from './routes/suporte.$slug.kb.$article'
 import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/api/public/hooks/process-email-queue'
 import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authenticated/admin.empresa.$id'
@@ -253,6 +254,12 @@ const AuthenticatedAdminAlertasRoute =
     path: '/alertas',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminSuporteIndexRoute =
+  AuthenticatedAdminSuporteIndexRouteImport.update({
+    id: '/suporte/',
+    path: '/suporte/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const SuporteSlugKbArticleRoute = SuporteSlugKbArticleRouteImport.update({
   id: '/suporte/$slug/kb/$article',
   path: '/suporte/$slug/kb/$article',
@@ -312,6 +319,7 @@ export interface FileRoutesByFullPath {
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
+  '/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -352,6 +360,7 @@ export interface FileRoutesByTo {
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
+  '/admin/suporte': typeof AuthenticatedAdminSuporteIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -396,6 +405,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
+  '/_authenticated/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -440,6 +450,7 @@ export interface FileRouteTypes {
     | '/admin/empresa/$id'
     | '/api/public/hooks/process-email-queue'
     | '/suporte/$slug/kb/$article'
+    | '/admin/suporte/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -480,6 +491,7 @@ export interface FileRouteTypes {
     | '/admin/empresa/$id'
     | '/api/public/hooks/process-email-queue'
     | '/suporte/$slug/kb/$article'
+    | '/admin/suporte'
   id:
     | '__root__'
     | '/'
@@ -523,6 +535,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/empresa/$id'
     | '/api/public/hooks/process-email-queue'
     | '/suporte/$slug/kb/$article'
+    | '/_authenticated/admin/suporte/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -812,6 +825,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAlertasRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/suporte/': {
+      id: '/_authenticated/admin/suporte/'
+      path: '/suporte'
+      fullPath: '/admin/suporte/'
+      preLoaderRoute: typeof AuthenticatedAdminSuporteIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/suporte/$slug/kb/$article': {
       id: '/suporte/$slug/kb/$article'
       path: '/suporte/$slug/kb/$article'
@@ -848,6 +868,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminEquipeRoute: typeof AuthenticatedAdminEquipeRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminEmpresaIdRoute: typeof AuthenticatedAdminEmpresaIdRoute
+  AuthenticatedAdminSuporteIndexRoute: typeof AuthenticatedAdminSuporteIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
@@ -862,6 +883,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminEquipeRoute: AuthenticatedAdminEquipeRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminEmpresaIdRoute: AuthenticatedAdminEmpresaIdRoute,
+  AuthenticatedAdminSuporteIndexRoute: AuthenticatedAdminSuporteIndexRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =
