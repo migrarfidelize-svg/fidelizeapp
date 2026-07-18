@@ -366,30 +366,17 @@ function CampaignDialog({
             <div className="space-y-1.5">
               <Label>Ícone do carimbo</Label>
               <Select value={form.stamp_icon} onValueChange={(v) => setForm({ ...form, stamp_icon: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="star">Estrela</SelectItem>
-                  <SelectItem value="heart">Coração</SelectItem>
-                  <SelectItem value="check">Check</SelectItem>
-                  <SelectItem value="coffee">Café</SelectItem>
-                  <SelectItem value="scissors">Tesoura</SelectItem>
-                  <SelectItem value="pizza">Pizza</SelectItem>
-                  <SelectItem value="icecream">Sorvete</SelectItem>
-                  <SelectItem value="bag">Sacola</SelectItem>
-                  <SelectItem value="wrench">Chave inglesa</SelectItem>
-                  <SelectItem value="sparkles">Brilho</SelectItem>
-                  <SelectItem value="gift">Presente</SelectItem>
-                  <SelectItem value="beer">Cerveja</SelectItem>
-                  <SelectItem value="wine">Vinho</SelectItem>
-                  <SelectItem value="cookie">Biscoito</SelectItem>
-                  <SelectItem value="cake">Bolo</SelectItem>
-                  <SelectItem value="croissant">Croissant</SelectItem>
-                  <SelectItem value="utensils">Talheres</SelectItem>
-                  <SelectItem value="car">Carro</SelectItem>
-                  <SelectItem value="dumbbell">Halter</SelectItem>
-                  <SelectItem value="flower">Flor</SelectItem>
-                  <SelectItem value="dog">Pet</SelectItem>
-                  <SelectItem value="leaf">Folha</SelectItem>
+                <SelectTrigger>
+                  <SelectValue asChild>
+                    <StampIconOptionRow value={form.stamp_icon} />
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="max-h-72">
+                  {STAMP_ICON_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      <StampIconOptionRow value={opt.value} />
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
