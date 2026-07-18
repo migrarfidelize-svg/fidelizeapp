@@ -1,10 +1,13 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import QRCode from "qrcode";
 import { getCardByToken } from "@/lib/loyalty.functions";
 import { StampCard } from "@/components/StampCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDate } from "@/lib/format";
-import { Gift, Clock } from "lucide-react";
+import { Gift, Clock, QrCode } from "lucide-react";
+
 
 const opts = (token: string) => queryOptions({
   queryKey: ["card", token],
