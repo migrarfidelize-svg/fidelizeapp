@@ -129,7 +129,7 @@ function Ticket() {
               <Textarea value={reply} onChange={(e) => setReply(e.target.value)} rows={3}
                 placeholder="Escreva sua resposta…" maxLength={5000} />
               <div className="flex items-center justify-between gap-2 flex-wrap">
-                <AttachmentPicker value={atts} onChange={setAtts} upload={(a) => uploadFn({ data: a })} />
+                <AttachmentPicker value={atts} onChange={setAtts} upload={(a) => uploadFn({ data: { ...a, ticket_id: id } })} />
                 <Button onClick={send} disabled={busy || !reply.trim()}>
                   <Send className="h-4 w-4 mr-1" />{busy ? "Enviando…" : "Enviar resposta"}
                 </Button>
