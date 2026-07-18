@@ -40,10 +40,10 @@ function CustomerTicket() {
   const { ticket, messages } = data;
 
   async function send() {
-    if (body.trim().length < 1) return;
+    if (body.trim().length < 1 && attachments.length === 0) return;
     try {
-      await reply({ data: { ticket_id: id, body } });
-      setBody("");
+      await reply({ data: { ticket_id: id, body: body.trim() || "(anexo)", attachments } });
+      setBody(""); setAttachments([]);
       qc.invalidateQueries({ queryKey: ["my-ticket", id] });
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
