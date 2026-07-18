@@ -6,7 +6,7 @@ import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { getAdminStatus } from "@/lib/admin.functions";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Stamp, QrCode, Settings, LogOut, Sparkles, ChevronDown, UsersRound, Shield, LifeBuoy, BookOpen } from "lucide-react";
+import { LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield, LifeBuoy, BookOpen } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
 export const Route = createFileRoute("/_authenticated/app")({
@@ -38,6 +38,7 @@ function AppLayout() {
     { to: "/app/clientes", label: "Clientes", icon: Users, exact: false },
     { to: "/app/campanhas", label: "Campanhas", icon: Sparkles, exact: false },
     { to: "/app/qrcodes", label: "QR Codes", icon: QrCode, exact: false },
+    { to: "/app/equipe", label: "Equipe", icon: UsersRound, exact: false },
     { to: "/app/suporte", label: "Suporte", icon: LifeBuoy, exact: false },
     { to: "/app/kb", label: "Base", icon: BookOpen, exact: false },
   ] as const;
