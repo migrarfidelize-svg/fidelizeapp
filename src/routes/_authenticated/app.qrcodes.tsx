@@ -714,10 +714,15 @@ function QRCodes() {
                     <Button size="sm" variant="outline" onClick={() => applySegmentPreset(segment, "texts")} className="h-7 text-xs">Só textos</Button>
                   </div>
                 </div>
-                <ColorField label="Cor principal (afeta contraste do QR)" value={primaryColor} onChange={setPrimaryColor} />
+                <ColorField label="Cor principal" value={primaryColor} onChange={setPrimaryColor} />
                 <ColorField label="Cor secundária" value={accentColor} onChange={setAccentColor} />
                 <ColorField label="Fundo" value={backgroundColor} onChange={setBackgroundColor} />
                 <ColorField label="Textos" value={textColor} onChange={setTextColor} />
+                <div className="rounded-lg border p-3 space-y-2">
+                  <ColorField label="Cor do QR Code" value={qrColor} onChange={setQrColor} />
+                  <p className="text-[11px] text-muted-foreground">Só afeta os módulos do QR. Use uma cor bem escura para máxima leitura da câmera.</p>
+                  <Button size="sm" variant="outline" onClick={() => setQrColor(primaryColor)} className="h-7 text-xs w-full">Usar cor principal</Button>
+                </div>
               </TabsContent>
 
               <TabsContent value="bg" className="space-y-4 pt-4">
