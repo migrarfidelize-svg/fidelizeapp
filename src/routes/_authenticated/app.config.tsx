@@ -264,7 +264,7 @@ function fmtRelative(iso: string | null | undefined) {
   return `há ${Math.floor(d / 365)} anos`;
 }
 
-function EquipeTab({ establishmentId }: { establishmentId: string }) {
+export function EquipeTab({ establishmentId }: { establishmentId: string }) {
   const qc = useQueryClient();
   const list = useServerFn(listTeam);
   const invite = useServerFn(inviteTeamMember);
