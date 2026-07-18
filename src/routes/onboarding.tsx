@@ -13,6 +13,8 @@ import { StampCard } from "@/components/StampCard";
 import { toast } from "sonner";
 import { Upload, X, Loader2 } from "lucide-react";
 import { LogoCropper } from "@/components/LogoCropper";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { STAMP_ICON_OPTIONS, getStampIcon, stampIconLabel } from "@/lib/stampIcons";
 
 export const Route = createFileRoute("/onboarding")({
   ssr: false,
