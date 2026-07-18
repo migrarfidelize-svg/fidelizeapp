@@ -128,11 +128,13 @@ export type Database = {
       }
       campaigns: {
         Row: {
+          accent_color: string | null
           active: boolean
           created_at: string
           establishment_id: string
           id: string
           name: string
+          primary_color: string | null
           reward_description: string | null
           reward_title: string
           reward_validity_days: number | null
@@ -144,11 +146,13 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accent_color?: string | null
           active?: boolean
           created_at?: string
           establishment_id: string
           id?: string
           name: string
+          primary_color?: string | null
           reward_description?: string | null
           reward_title: string
           reward_validity_days?: number | null
@@ -160,11 +164,13 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accent_color?: string | null
           active?: boolean
           created_at?: string
           establishment_id?: string
           id?: string
           name?: string
+          primary_color?: string | null
           reward_description?: string | null
           reward_title?: string
           reward_validity_days?: number | null

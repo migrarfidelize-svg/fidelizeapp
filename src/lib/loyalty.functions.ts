@@ -778,7 +778,7 @@ export const getEstablishmentCampaigns = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const { data: rows, error } = await supabase.from("campaigns")
-      .select("id, name, type, reward_title, reward_description, rules, stamps_required, stamp_icon, stamp_validity_days, reward_validity_days, active, created_at")
+      .select("id, name, type, reward_title, reward_description, rules, stamps_required, stamp_icon, stamp_validity_days, reward_validity_days, primary_color, accent_color, active, created_at")
       .eq("establishment_id", data.establishment_id)
       .order("active", { ascending: false })
       .order("created_at", { ascending: true });
@@ -807,6 +807,7 @@ export const getEstablishmentCampaigns = createServerFn({ method: "POST" })
   });
 
 // ---------- Campaign CRUD ----------
+const hexColor = z.string().trim().regex(/^#[0-9a-fA-F]{6}$/, "Cor inválida").nullable().optional().or(z.literal("")).transform(v => (v ? v : null));
 const campaignInput = z.object({
   name: z.string().trim().min(2, "Nome muito curto.").max(80, "Nome muito longo."),
   reward_title: z.string().trim().min(2, "Descreva a recompensa.").max(120),
@@ -816,6 +817,8 @@ const campaignInput = z.object({
   stamp_icon: z.enum(["star", "heart", "check", "coffee"]).default("star"),
   stamp_validity_days: z.number().int().min(0).max(3650).nullable().optional(),
   reward_validity_days: z.number().int().min(0).max(3650).nullable().optional(),
+  primary_color: hexColor,
+  accent_color: hexColor,
 });
 
 export const createCampaign = createServerFn({ method: "POST" })
@@ -834,6 +837,8 @@ export const createCampaign = createServerFn({ method: "POST" })
       stamp_icon: rest.stamp_icon,
       stamp_validity_days: rest.stamp_validity_days ?? null,
       reward_validity_days: rest.reward_validity_days ?? null,
+      primary_color: rest.primary_color ?? null,
+      accent_color: rest.accent_color ?? null,
     }).select("id").single();
     if (error) throw new Error(error.message);
     await auditLog(establishment_id, userId, "campaign_created", "campaign", row.id, { name: rest.name });
@@ -857,6 +862,8 @@ export const updateCampaign = createServerFn({ method: "POST" })
       stamp_icon: rest.stamp_icon,
       stamp_validity_days: rest.stamp_validity_days ?? null,
       reward_validity_days: rest.reward_validity_days ?? null,
+      primary_color: rest.primary_color ?? null,
+      accent_color: rest.accent_color ?? null,
     }).eq("id", id);
     if (error) throw new Error(error.message);
     await auditLog(cur.establishment_id, userId, "campaign_updated", "campaign", id, { name: rest.name });

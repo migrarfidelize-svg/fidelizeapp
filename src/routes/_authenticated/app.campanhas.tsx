@@ -45,6 +45,8 @@ type CampaignRow = {
   stamp_icon: string;
   stamp_validity_days: number | null;
   reward_validity_days: number | null;
+  primary_color: string | null;
+  accent_color: string | null;
   active: boolean;
   cards_count: number;
   rewards_unlocked: number;
@@ -60,6 +62,9 @@ type FormState = {
   stamp_icon: "star" | "heart" | "check" | "coffee";
   stamp_validity_days: string;
   reward_validity_days: string;
+  use_custom_colors: boolean;
+  primary_color: string;
+  accent_color: string;
 };
 
 const emptyForm: FormState = {
@@ -71,6 +76,9 @@ const emptyForm: FormState = {
   stamp_icon: "star",
   stamp_validity_days: "",
   reward_validity_days: "60",
+  use_custom_colors: false,
+  primary_color: "#5B21B6",
+  accent_color: "#F97066",
 };
 
 function CampanhasPage() {
@@ -115,6 +123,9 @@ function CampanhasPage() {
         ? (c.stamp_icon as FormState["stamp_icon"]) : "star",
       stamp_validity_days: c.stamp_validity_days?.toString() ?? "",
       reward_validity_days: c.reward_validity_days?.toString() ?? "",
+      use_custom_colors: !!(c.primary_color || c.accent_color),
+      primary_color: c.primary_color ?? est?.primary_color ?? "#5B21B6",
+      accent_color: c.accent_color ?? est?.accent_color ?? "#F97066",
     });
     setOpen(true);
   }
@@ -130,6 +141,8 @@ function CampanhasPage() {
         stamp_icon: form.stamp_icon,
         stamp_validity_days: form.stamp_validity_days ? Number(form.stamp_validity_days) : null,
         reward_validity_days: form.reward_validity_days ? Number(form.reward_validity_days) : null,
+        primary_color: form.use_custom_colors ? form.primary_color : null,
+        accent_color: form.use_custom_colors ? form.accent_color : null,
       };
       if (editing) {
         await update({ data: { id: editing.id, ...payload } });
@@ -233,8 +246,8 @@ function CampanhasPage() {
                       stamps={0}
                       required={c.stamps_required}
                       reward={c.reward_title}
-                      primary={est.primary_color}
-                      accent={est.accent_color}
+                      primary={c.primary_color ?? est.primary_color}
+                      accent={c.accent_color ?? est.accent_color}
                       icon={c.stamp_icon}
                     />
                   </div>
@@ -379,6 +392,35 @@ function CampaignDialog({
             <Label>Regras e condições</Label>
             <Textarea rows={3} value={form.rules} onChange={e => setForm({ ...form, rules: e.target.value })} placeholder="Ex.: Não cumulativo com outras promoções. Válido em qualquer unidade." />
           </div>
+
+          <div className="space-y-3 rounded-xl border p-3 bg-muted/20">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <Label className="text-sm">Cores do cartão desta campanha</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Personalize o fundo do cartão só para esta campanha. Desative para usar as cores padrão do estabelecimento.
+                </p>
+              </div>
+              <Switch
+                checked={form.use_custom_colors}
+                onCheckedChange={(v) => setForm({ ...form, use_custom_colors: v })}
+              />
+            </div>
+            {form.use_custom_colors && (
+              <div className="grid grid-cols-2 gap-3">
+                <ColorField
+                  label="Cor principal"
+                  value={form.primary_color}
+                  onChange={(v) => setForm({ ...form, primary_color: v })}
+                />
+                <ColorField
+                  label="Cor de destaque"
+                  value={form.accent_color}
+                  onChange={(v) => setForm({ ...form, accent_color: v })}
+                />
+              </div>
+            )}
+          </div>
         </div>
         <div className="space-y-2">
           <Label className="text-xs uppercase tracking-widest text-muted-foreground">Prévia</Label>
@@ -390,8 +432,8 @@ function CampaignDialog({
                 stamps={0}
                 required={Math.min(50, Math.max(2, Number(form.stamps_required) || 10))}
                 reward={form.reward_title || "Sua recompensa"}
-                primary={est.primary_color}
-                accent={est.accent_color}
+                primary={form.use_custom_colors ? form.primary_color : est.primary_color}
+                accent={form.use_custom_colors ? form.accent_color : est.accent_color}
                 icon={form.stamp_icon}
               />
             )}
@@ -403,5 +445,30 @@ function CampaignDialog({
         <Button onClick={onSubmit} disabled={saving}>{saving ? "Salvando…" : editing ? "Salvar alterações" : "Criar campanha"}</Button>
       </DialogFooter>
     </DialogContent>
+  );
+}
+
+function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  const safe = /^#[0-9a-fA-F]{6}$/.test(value) ? value : "#5B21B6";
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs">{label}</Label>
+      <div className="flex items-center gap-2">
+        <input
+          type="color"
+          value={safe}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-10 w-12 shrink-0 cursor-pointer rounded-md border bg-background p-1"
+          aria-label={label}
+        />
+        <Input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="#5B21B6"
+          className="font-mono uppercase"
+          maxLength={7}
+        />
+      </div>
+    </div>
   );
 }

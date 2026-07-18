@@ -129,7 +129,7 @@ type CardRow = {
   stamps: number;
   cycle: number;
   updated_at?: string | null;
-  campaigns: { name: string; stamps_required: number; reward_title: string; stamp_icon: string | null } | null;
+  campaigns: { name: string; stamps_required: number; reward_title: string; stamp_icon: string | null; primary_color?: string | null; accent_color?: string | null } | null;
 };
 
 function VoucherFor({
@@ -157,8 +157,8 @@ function VoucherFor({
       stamps={card.stamps}
       required={campaign.stamps_required}
       reward={campaign.reward_title}
-      primary={est.primary_color}
-      accent={est.accent_color}
+      primary={campaign.primary_color || est.primary_color}
+      accent={campaign.accent_color || est.accent_color}
       icon={campaign.stamp_icon ?? "star"}
       lastStampAt={lastStampAt}
       expiresAt={pending?.expires_at ?? null}
