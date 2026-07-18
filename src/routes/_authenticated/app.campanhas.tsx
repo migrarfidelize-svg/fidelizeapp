@@ -246,8 +246,8 @@ function CampanhasPage() {
                       stamps={0}
                       required={c.stamps_required}
                       reward={c.reward_title}
-                      primary={est.primary_color}
-                      accent={est.accent_color}
+                      primary={c.primary_color ?? est.primary_color}
+                      accent={c.accent_color ?? est.accent_color}
                       icon={c.stamp_icon}
                     />
                   </div>
