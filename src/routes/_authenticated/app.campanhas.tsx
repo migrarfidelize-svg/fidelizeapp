@@ -45,6 +45,8 @@ type CampaignRow = {
   stamp_icon: string;
   stamp_validity_days: number | null;
   reward_validity_days: number | null;
+  primary_color: string | null;
+  accent_color: string | null;
   active: boolean;
   cards_count: number;
   rewards_unlocked: number;
@@ -60,6 +62,9 @@ type FormState = {
   stamp_icon: "star" | "heart" | "check" | "coffee";
   stamp_validity_days: string;
   reward_validity_days: string;
+  use_custom_colors: boolean;
+  primary_color: string;
+  accent_color: string;
 };
 
 const emptyForm: FormState = {
@@ -71,6 +76,9 @@ const emptyForm: FormState = {
   stamp_icon: "star",
   stamp_validity_days: "",
   reward_validity_days: "60",
+  use_custom_colors: false,
+  primary_color: "#5B21B6",
+  accent_color: "#F97066",
 };
 
 function CampanhasPage() {
