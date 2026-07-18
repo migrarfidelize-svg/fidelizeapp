@@ -28,6 +28,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { StampCard } from "@/components/StampCard";
 import { Plus, Pencil, Trash2, Pause, Play, Sparkles, Users, Gift, CheckCircle2 } from "lucide-react";
+import { LogoUploadButton } from "@/components/LogoUploadButton";
 
 export const Route = createFileRoute("/_authenticated/app/campanhas")({
   head: () => ({ meta: [{ title: "Campanhas — Fidelize" }] }),
