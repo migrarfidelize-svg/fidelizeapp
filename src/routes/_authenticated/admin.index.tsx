@@ -5,7 +5,7 @@ import { adminGetOverview } from "@/lib/admin.functions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Building2, Users, Stamp, Gift, TrendingUp, Ban, CheckCircle2, DollarSign } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { formatBRL, formatDate } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   component: AdminOverview,
@@ -22,7 +22,7 @@ function AdminOverview() {
     { label: "Empresas", value: data.estTotal, icon: Building2, color: "text-primary" },
     { label: "Ativas", value: data.estActive, icon: CheckCircle2, color: "text-success" },
     { label: "Bloqueadas", value: data.estBlocked, icon: Ban, color: "text-destructive" },
-    { label: "MRR estimado", value: formatCurrency(data.mrr), icon: DollarSign, color: "text-accent", isText: true },
+    { label: "MRR estimado", value: formatBRL(data.mrr), icon: DollarSign, color: "text-accent", isText: true },
     { label: "Clientes", value: data.customersTotal, icon: Users, color: "text-primary" },
     { label: "Carimbos", value: data.stampsTotal, icon: Stamp, color: "text-accent" },
     { label: "Recompensas", value: data.rewardsTotal, icon: Gift, color: "text-success" },
