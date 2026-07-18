@@ -243,6 +243,7 @@ export const agentReply = createServerFn({ method: "POST" })
     ticket_id: z.string().uuid(),
     body: z.string().trim().min(1).max(10000),
     internal: z.boolean().default(false),
+    attachments: z.array(attachmentSchema).max(5).default([]),
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("ticket_messages").insert({
@@ -251,6 +252,7 @@ export const agentReply = createServerFn({ method: "POST" })
       author_user_id: context.userId,
       body: data.body,
       internal: data.internal,
+      attachments: data.attachments as unknown as never,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
