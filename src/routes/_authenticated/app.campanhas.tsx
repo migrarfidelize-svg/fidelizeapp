@@ -29,6 +29,7 @@ import { Switch } from "@/components/ui/switch";
 import { StampCard } from "@/components/StampCard";
 import { Plus, Pencil, Trash2, Pause, Play, Sparkles, Users, Gift, CheckCircle2 } from "lucide-react";
 import { LogoUploadButton } from "@/components/LogoUploadButton";
+import { STAMP_ICON_OPTIONS, getStampIcon, stampIconLabel } from "@/lib/stampIcons";
 
 export const Route = createFileRoute("/_authenticated/app/campanhas")({
   head: () => ({ meta: [{ title: "Campanhas — Fidelize" }] }),
