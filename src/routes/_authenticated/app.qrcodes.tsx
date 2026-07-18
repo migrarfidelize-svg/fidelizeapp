@@ -213,6 +213,7 @@ type StoredState = {
   qrScale?: number;
   qrColor?: string;
   cornerStyle?: "sharp" | "rounded";
+  cornerRadiusPct?: number;
 };
 const storageKey = (estId: string) => `fidelize-promos-v1-${estId}`;
 function loadVariations(estId: string): SavedVariation[] {
