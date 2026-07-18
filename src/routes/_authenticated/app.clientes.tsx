@@ -688,7 +688,12 @@ function CustomerDrawer({
                 )}
               </TabsContent>
 
+              <TabsContent value="audit" className="mt-3">
+                <AuditTimeline entries={auditData ?? []} />
+              </TabsContent>
+
               <TabsContent value="info" className="mt-3 space-y-3 text-sm">
+
                 <InfoLine label="Nascimento" value={customer.birthdate ? formatDate(customer.birthdate) : "—"} />
                 <InfoLine label="Cadastro" value={formatDate(customer.created_at)} />
                 <InfoLine label="Última visita" value={formatDate(customer.last_visit_at)} />
