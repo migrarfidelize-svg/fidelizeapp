@@ -226,8 +226,16 @@ function Carimbar() {
                 </div>
                 <Button onClick={doSearch}>Buscar</Button>
               </div>
-              {results.length > 0 && (
-                <div className="mt-4 divide-y">
+              <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+                <div>
+                  {listFetching ? "Carregando…" : `${total} cliente${total === 1 ? "" : "s"}${searchTerm ? ` para "${searchTerm}"` : ""}`}
+                </div>
+                {searchTerm && (
+                  <button onClick={() => { setQ(""); setSearchTerm(""); setPage(1); }} className="hover:text-foreground underline">Limpar filtro</button>
+                )}
+              </div>
+              {results.length > 0 ? (
+                <div className="mt-2 divide-y">
                   {results.map((c) => (
                     <div key={c.id} className="flex items-center justify-between py-3">
                       <div className="flex items-center gap-3">
@@ -239,17 +247,27 @@ function Carimbar() {
                           <div className="text-xs text-muted-foreground">{formatPhone(c.phone)} · código {c.code}</div>
                         </div>
                       </div>
-                      <Button size="sm" variant="outline" onClick={async () => {
-                        // Look up token by code via search endpoint? We'll query via getCardByToken can't accept code. Use customer code endpoint: fallback — use registerOrLogin flow not applicable. Best: fetch access_token via a targeted server call. Reuse: since the search returns id but not token, do a fresh RPC via getCardByToken by fetching from search that includes access. Simpler: prompt to use the code as token isn't safe; instead use search results id -> read customer row via admin server fn. Existing addStamp needs card_id; simpler path here: fetch by code using getCardByToken alternative. We'll trigger loadByCustomerId.
-                        // Fallback: reuse code prompt if not available.
-                        await loadByCustomerCode(c.code);
-                      }}>
+                      <Button size="sm" variant="outline" onClick={() => loadByCustomerCode(c.code)}>
                         <User className="h-4 w-4 mr-1" /> Abrir cartão
                       </Button>
                     </div>
                   ))}
                 </div>
+              ) : (
+                !listFetching && (
+                  <div className="mt-6 text-center text-sm text-muted-foreground py-8">
+                    {searchTerm ? "Nenhum cliente encontrado para essa busca." : "Nenhum cliente cadastrado ainda."}
+                  </div>
+                )
               )}
+              {totalPages > 1 && (
+                <div className="mt-4 flex items-center justify-between gap-2">
+                  <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1 || listFetching}>Anterior</Button>
+                  <div className="text-xs text-muted-foreground">Página {page} de {totalPages}</div>
+                  <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages || listFetching}>Próxima</Button>
+                </div>
+              )}
+
               {cardData && (
                 <div className="mt-6 border-t pt-5 space-y-4">
                   <div className="flex items-center justify-between">
