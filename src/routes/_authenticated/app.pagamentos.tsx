@@ -54,14 +54,18 @@ function PaymentsPage() {
   const total = data?.total ?? 0;
 
   function exportCsv() {
-    exportToCsv("pagamentos.csv", rows.map(r => ({
-      data: new Date(r.created_at).toLocaleString("pt-BR"),
-      valor: r.amount,
-      metodo: methodLabel[r.method] ?? r.method,
-      status: statusLabel[r.status] ?? r.status,
-      plano: r.plan_slug ?? "",
-      mp_payment_id: r.mp_payment_id ?? "",
-    })));
+    downloadCSV(
+      "pagamentos.csv",
+      ["Data", "Valor", "Método", "Status", "Plano", "ID Mercado Pago"],
+      rows.map(r => [
+        new Date(r.created_at).toLocaleString("pt-BR"),
+        Number(r.amount).toFixed(2),
+        methodLabel[r.method] ?? r.method,
+        statusLabel[r.status] ?? r.status,
+        r.plan_slug ?? "",
+        r.mp_payment_id ?? "",
+      ]),
+    );
   }
 
   return (
