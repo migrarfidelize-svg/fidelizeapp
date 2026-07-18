@@ -135,6 +135,71 @@ function contrastRatio(a: string, b: string) {
   return (hi + 0.05) / (lo + 0.05);
 }
 
+// ============ Palette extraction from background image ============
+type Palette = { primary: string; accent: string; bg: string; text: string; overlaySuggestion: number };
+function extractPalette(url: string): Promise<Palette> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      try {
+        const W = 80, H = 80;
+        const c = document.createElement("canvas");
+        c.width = W; c.height = H;
+        const ctx = c.getContext("2d");
+        if (!ctx) return reject(new Error("canvas indisponível"));
+        ctx.drawImage(img, 0, 0, W, H);
+        const data = ctx.getImageData(0, 0, W, H).data;
+        const bins = new Map<string, { r: number; g: number; b: number; n: number }>();
+        let sr = 0, sg = 0, sb = 0, sn = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          if (data[i + 3] < 128) continue;
+          const r = data[i], g = data[i + 1], b = data[i + 2];
+          sr += r; sg += g; sb += b; sn++;
+          const k = `${r >> 4},${g >> 4},${b >> 4}`;
+          const cur = bins.get(k);
+          if (cur) { cur.r += r; cur.g += g; cur.b += b; cur.n += 1; }
+          else bins.set(k, { r, g, b, n: 1 });
+        }
+        if (sn === 0) return reject(new Error("imagem vazia"));
+        const arr = [...bins.values()].map(o => ({ r: (o.r / o.n) | 0, g: (o.g / o.n) | 0, b: (o.b / o.n) | 0, n: o.n }));
+        arr.sort((a, b) => b.n - a.n);
+        const avg = { r: (sr / sn) | 0, g: (sg / sn) | 0, b: (sb / sn) | 0 };
+        // Primary = most saturated among top bins; darken for good QR contrast
+        const sat = (c: { r: number; g: number; b: number }) => {
+          const mx = Math.max(c.r, c.g, c.b), mn = Math.min(c.r, c.g, c.b);
+          return mx === 0 ? 0 : (mx - mn) / mx;
+        };
+        const top = arr.slice(0, 10);
+        const primaryRaw = [...top].sort((a, b) => sat(b) - sat(a))[0] ?? arr[0];
+        // Accent = most different (weighted) from primary among top bins
+        const dist2 = (a: any, b: any) => (a.r - b.r) ** 2 + (a.g - b.g) ** 2 + (a.b - b.b) ** 2;
+        let accent = top.find((c) => c !== primaryRaw) ?? primaryRaw;
+        for (const c of top) if (c !== primaryRaw && dist2(c, primaryRaw) > dist2(accent, primaryRaw)) accent = c;
+        const toHex = (r: number, g: number, b: number) => "#" + [r, g, b].map(v => Math.max(0, Math.min(255, v)).toString(16).padStart(2, "0")).join("");
+        const shade = (c: { r: number; g: number; b: number }, k: number) => ({ r: (c.r * k) | 0, g: (c.g * k) | 0, b: (c.b * k) | 0 });
+        const primary = ((): string => {
+          // ensure contrast >= 4.0 vs white
+          let k = 1;
+          for (let i = 0; i < 6; i++) {
+            const c = shade(primaryRaw, k);
+            const hex = toHex(c.r, c.g, c.b);
+            if (contrastRatio(hex, "#ffffff") >= 4.2) return hex;
+            k -= 0.15;
+          }
+          return toHex(0x1f, 0x29, 0x37);
+        })();
+        const bgLum = (0.2126 * avg.r + 0.7152 * avg.g + 0.0722 * avg.b) / 255;
+        const text = bgLum > 0.55 ? "#0f172a" : "#ffffff";
+        const bgHex = text === "#ffffff" ? "#0b0f1a" : "#ffffff"; // used behind the overlay to lighten/darken
+        const overlaySuggestion = bgLum > 0.7 ? 0.15 : bgLum > 0.45 ? 0.35 : 0.55;
+        return resolve({ primary, accent: toHex(accent.r, accent.g, accent.b), bg: bgHex, text, overlaySuggestion });
+      } catch (e) { reject(e as Error); }
+    };
+    img.onerror = () => reject(new Error("falha ao carregar imagem"));
+    img.src = url;
+  });
+
 // ============ Variations (localStorage) ============
 type SavedVariation = { id: string; name: string; savedAt: number; state: StoredState };
 type StoredState = {
