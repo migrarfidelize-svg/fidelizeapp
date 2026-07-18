@@ -271,12 +271,12 @@ export const adminUpdateSupportTicket = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     await requireSuperAdmin(context.supabase, context.userId);
-    const patch: Record<string, unknown> = {};
+    const patch: Partial<{ status: typeof data.status; priority: typeof data.priority; assigned_admin_id: string | null; category: typeof data.category }> = {};
     if (data.status !== undefined) patch.status = data.status;
     if (data.priority !== undefined) patch.priority = data.priority;
     if (data.assigned_admin_id !== undefined) patch.assigned_admin_id = data.assigned_admin_id;
     if (data.category !== undefined) patch.category = data.category;
-    const { error } = await context.supabase.from("support_tickets").update(patch).eq("id", data.ticket_id);
+    const { error } = await context.supabase.from("support_tickets").update(patch as never).eq("id", data.ticket_id);
     if (error) throw new Error(error.message);
 
     // se resolveu ou fechou, notificar cliente
