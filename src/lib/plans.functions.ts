@@ -190,20 +190,22 @@ export const adminToggleFeature = createServerFn({ method: "POST" })
     enabled: z.boolean(),
     limit_value: z.number().int().min(0).nullable().optional(),
   }).parse(d))
-
   .handler(async ({ data, context }) => {
     await assertSuperAdmin(context.supabase, context.userId);
+    const payload: any = {
+      plan_id: data.plan_id,
+      feature_key: data.feature_key,
+      feature_name: data.feature_name,
+      enabled: data.enabled,
+    };
+    if (data.limit_value !== undefined) payload.limit_value = data.limit_value;
     const { data: upsert, error } = await context.supabase.from("plan_features")
-      .upsert({
-        plan_id: data.plan_id,
-        feature_key: data.feature_key,
-        feature_name: data.feature_name,
-        enabled: data.enabled,
-      }, { onConflict: "plan_id,feature_key" })
+      .upsert(payload, { onConflict: "plan_id,feature_key" })
       .select("*").single();
     if (error) throw new Error(error.message);
     return upsert;
   });
+
 
 // ---------- Merchant: change plan for their own establishment ----------
 export const changeEstablishmentPlan = createServerFn({ method: "POST" })
