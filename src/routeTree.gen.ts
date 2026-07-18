@@ -28,6 +28,7 @@ import { Route as AuthenticatedAppConfigRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated/app.clientes'
 import { Route as AuthenticatedAppCarimbarRouteImport } from './routes/_authenticated/app.carimbar'
 import { Route as AuthenticatedAppCampanhasRouteImport } from './routes/_authenticated/app.campanhas'
+import { Route as AuthenticatedAdminEmpresasRouteImport } from './routes/_authenticated/admin.empresas'
 
 const TermosRoute = TermosRouteImport.update({
   id: '/termos',
@@ -126,6 +127,12 @@ const AuthenticatedAppCampanhasRoute =
     path: '/campanhas',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAdminEmpresasRoute =
+  AuthenticatedAdminEmpresasRouteImport.update({
+    id: '/empresas',
+    path: '/empresas',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/c/$token': typeof CTokenRoute
   '/l/$slug': typeof LSlugRoute
+  '/admin/empresas': typeof AuthenticatedAdminEmpresasRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
@@ -156,6 +164,7 @@ export interface FileRoutesByTo {
   '/termos': typeof TermosRoute
   '/c/$token': typeof CTokenRoute
   '/l/$slug': typeof LSlugRoute
+  '/admin/empresas': typeof AuthenticatedAdminEmpresasRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
@@ -178,6 +187,7 @@ export interface FileRoutesById {
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/c/$token': typeof CTokenRoute
   '/l/$slug': typeof LSlugRoute
+  '/_authenticated/admin/empresas': typeof AuthenticatedAdminEmpresasRoute
   '/_authenticated/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/_authenticated/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/_authenticated/app/clientes': typeof AuthenticatedAppClientesRoute
@@ -200,6 +210,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/c/$token'
     | '/l/$slug'
+    | '/admin/empresas'
     | '/app/campanhas'
     | '/app/carimbar'
     | '/app/clientes'
@@ -218,6 +229,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/c/$token'
     | '/l/$slug'
+    | '/admin/empresas'
     | '/app/campanhas'
     | '/app/carimbar'
     | '/app/clientes'
@@ -239,6 +251,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app'
     | '/c/$token'
     | '/l/$slug'
+    | '/_authenticated/admin/empresas'
     | '/_authenticated/app/campanhas'
     | '/_authenticated/app/carimbar'
     | '/_authenticated/app/clientes'
@@ -396,14 +409,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppCampanhasRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/admin/empresas': {
+      id: '/_authenticated/admin/empresas'
+      path: '/empresas'
+      fullPath: '/admin/empresas'
+      preLoaderRoute: typeof AuthenticatedAdminEmpresasRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminEmpresasRoute: typeof AuthenticatedAdminEmpresasRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminEmpresasRoute: AuthenticatedAdminEmpresasRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
 
