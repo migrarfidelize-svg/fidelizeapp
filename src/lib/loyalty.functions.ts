@@ -312,3 +312,17 @@ export const getDashboardData = createServerFn({ method: "POST" })
       topCustomers: topCustomers ?? [],
     };
   });
+
+export const getEstablishmentCampaigns = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ establishment_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: rows, error } = await context.supabase.from("campaigns")
+      .select("id, name, reward_title, reward_description, stamps_required, stamp_icon, active")
+      .eq("establishment_id", data.establishment_id)
+      .order("active", { ascending: false })
+      .order("created_at", { ascending: true });
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
