@@ -47,6 +47,7 @@ import { Route as AuthenticatedAdminConfigRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminAuditoriaRouteImport } from './routes/_authenticated/admin.auditoria'
 import { Route as AuthenticatedAdminAssinaturasRouteImport } from './routes/_authenticated/admin.assinaturas'
 import { Route as AuthenticatedAdminAlertasRouteImport } from './routes/_authenticated/admin.alertas'
+import { Route as AuthenticatedAppPlanosIndexRouteImport } from './routes/_authenticated/app.planos.index'
 import { Route as AuthenticatedAdminSuporteIndexRouteImport } from './routes/_authenticated/admin.suporte.index'
 import { Route as AuthenticatedAdminPlanosIndexRouteImport } from './routes/_authenticated/admin.planos.index'
 import { Route as SuporteSlugKbArticleRouteImport } from './routes/suporte.$slug.kb.$article'
@@ -256,6 +257,12 @@ const AuthenticatedAdminAlertasRoute =
     path: '/alertas',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAppPlanosIndexRoute =
+  AuthenticatedAppPlanosIndexRouteImport.update({
+    id: '/planos/',
+    path: '/planos/',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAdminSuporteIndexRoute =
   AuthenticatedAdminSuporteIndexRouteImport.update({
     id: '/suporte/',
@@ -336,6 +343,7 @@ export interface FileRoutesByFullPath {
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
   '/admin/planos/': typeof AuthenticatedAdminPlanosIndexRoute
   '/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
+  '/app/planos/': typeof AuthenticatedAppPlanosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -379,6 +387,7 @@ export interface FileRoutesByTo {
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
   '/admin/planos': typeof AuthenticatedAdminPlanosIndexRoute
   '/admin/suporte': typeof AuthenticatedAdminSuporteIndexRoute
+  '/app/planos': typeof AuthenticatedAppPlanosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -426,6 +435,7 @@ export interface FileRoutesById {
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
   '/_authenticated/admin/planos/': typeof AuthenticatedAdminPlanosIndexRoute
   '/_authenticated/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
+  '/_authenticated/app/planos/': typeof AuthenticatedAppPlanosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -473,6 +483,7 @@ export interface FileRouteTypes {
     | '/suporte/$slug/kb/$article'
     | '/admin/planos/'
     | '/admin/suporte/'
+    | '/app/planos/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -516,6 +527,7 @@ export interface FileRouteTypes {
     | '/suporte/$slug/kb/$article'
     | '/admin/planos'
     | '/admin/suporte'
+    | '/app/planos'
   id:
     | '__root__'
     | '/'
@@ -562,6 +574,7 @@ export interface FileRouteTypes {
     | '/suporte/$slug/kb/$article'
     | '/_authenticated/admin/planos/'
     | '/_authenticated/admin/suporte/'
+    | '/_authenticated/app/planos/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -851,6 +864,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAlertasRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/app/planos/': {
+      id: '/_authenticated/app/planos/'
+      path: '/planos'
+      fullPath: '/app/planos/'
+      preLoaderRoute: typeof AuthenticatedAppPlanosIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/admin/suporte/': {
       id: '/_authenticated/admin/suporte/'
       path: '/suporte'
@@ -942,6 +962,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppQrcodesRoute: typeof AuthenticatedAppQrcodesRoute
   AuthenticatedAppSuporteRoute: typeof AuthenticatedAppSuporteRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
+  AuthenticatedAppPlanosIndexRoute: typeof AuthenticatedAppPlanosIndexRoute
 }
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
@@ -953,6 +974,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppQrcodesRoute: AuthenticatedAppQrcodesRoute,
   AuthenticatedAppSuporteRoute: AuthenticatedAppSuporteRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
+  AuthenticatedAppPlanosIndexRoute: AuthenticatedAppPlanosIndexRoute,
 }
 
 const AuthenticatedAppRouteWithChildren =
