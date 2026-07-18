@@ -42,6 +42,7 @@ function AppLayout() {
     
     { to: "/app/kb", label: "Base", icon: BookOpen, exact: false },
     { to: "/app/planos", label: "Planos", icon: Package, exact: false },
+    { to: "/app/pagamentos", label: "Pagamentos", icon: Receipt, exact: false },
     { to: "/suporte", label: "Fale com a Fidelize", icon: LifeBuoy, exact: false },
   ] as const;
 
