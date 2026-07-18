@@ -528,7 +528,7 @@ export const importCustomersCsv = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
     establishment_id: z.string().uuid(),
-    rows: z.array(z.record(z.any())).min(1).max(2000),
+    rows: z.array(z.record(z.string())).min(1).max(2000),
     dry_run: z.boolean().default(false),
     campaign_id: z.string().uuid().optional().nullable(),
   }).parse(d))
@@ -536,7 +536,7 @@ export const importCustomersCsv = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     // Validate + normalize
     type Ok = { line: number; row: z.infer<typeof csvRowSchema> };
-    type Err = { line: number; error: string; raw: Record<string, unknown> };
+    type Err = { line: number; error: string; raw: Record<string, string> };
     const valid: Ok[] = [];
     const errors: Err[] = [];
     const seenPhones = new Set<string>();
@@ -565,7 +565,7 @@ export const importCustomersCsv = createServerFn({ method: "POST" })
     }
     const toInsert = valid.filter(v => !existingPhones.has(v.row.phone));
     const dupsInDb = valid.filter(v => existingPhones.has(v.row.phone))
-      .map(v => ({ line: v.line, error: "Telefone já cadastrado", raw: v.row as unknown as Record<string, unknown> }));
+      .map(v => ({ line: v.line, error: "Telefone já cadastrado", raw: Object.fromEntries(Object.entries(v.row).map(([k,val])=>[k,String(val ?? "")])) }));
 
     const summary = {
       total: data.rows.length,
