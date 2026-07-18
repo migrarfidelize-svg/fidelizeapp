@@ -52,7 +52,7 @@ function NewTicket() {
     if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
     setSubmitting(true);
     try {
-      const t = await create({ data: { establishment_slug: params.slug, subject, body, priority, channel: "form", name: name || undefined } });
+      const t = await create({ data: { establishment_slug: params.slug, subject, body, priority, channel: "form", name: name || undefined, attachments } });
       toast.success(`Chamado #${t.number} aberto!`);
       navigate({ to: "/suporte/chamado/$id", params: { id: t.id } });
     } catch (e) {
