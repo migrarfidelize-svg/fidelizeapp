@@ -31,12 +31,12 @@ function AppLayout() {
 
   const nav = [
     { to: "/app", label: "Painel", icon: LayoutDashboard, exact: true },
-    { to: "/app/carimbar", label: "Carimbar", icon: Stamp },
-    { to: "/app/clientes", label: "Clientes", icon: Users },
-    { to: "/app/campanhas", label: "Campanhas", icon: Sparkles },
-    { to: "/app/qrcodes", label: "QR Codes", icon: QrCode },
-    { to: "/app/equipe", label: "Equipe", icon: UsersRound },
-    { to: "/app/config", label: "Configurações", icon: Settings },
+    { to: "/app/carimbar", label: "Carimbar", icon: Stamp, exact: false },
+    { to: "/app/clientes", label: "Clientes", icon: Users, exact: false },
+    { to: "/app/campanhas", label: "Campanhas", icon: Sparkles, exact: false },
+    { to: "/app/qrcodes", label: "QR Codes", icon: QrCode, exact: false },
+    { to: "/app/equipe", label: "Equipe", icon: UsersRound, exact: false },
+    { to: "/app/config", label: "Configurações", icon: Settings, exact: false },
   ] as const;
 
   async function signOut() {
