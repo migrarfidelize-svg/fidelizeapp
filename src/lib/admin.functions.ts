@@ -185,7 +185,173 @@ export const adminDeleteEstablishment = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertSuperAdmin(supabase, userId);
+    const { data: est } = await supabase.from("establishments").select("name, plan, slug").eq("id", data.establishment_id).maybeSingle();
+    // Log BEFORE delete because cascade wipes audit rows tied to establishment
+    await supabase.from("audit_logs").insert({
+      establishment_id: null, user_id: userId,
+      action: "admin_delete_establishment", entity_type: "establishment", entity_id: data.establishment_id,
+      metadata: { name: est?.name, slug: est?.slug, plan: est?.plan } as never,
+    });
     const { error } = await supabase.from("establishments").delete().eq("id", data.establishment_id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// ─────────────── Detail view ───────────────
+export const adminGetEstablishmentDetail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ establishment_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertSuperAdmin(supabase, userId);
+    const since = new Date(Date.now() - 30 * 86400_000).toISOString();
+
+    const [
+      { data: est },
+      { count: customersTotal },
+      { count: customersNew },
+      { count: stampsTotal },
+      { count: stamps30 },
+      { count: rewards30 },
+      { data: recentStamps },
+      { data: campaigns },
+      { data: members },
+    ] = await Promise.all([
+      supabase.from("establishments").select("id, name, slug, plan, active, phone, email, created_at, created_by").eq("id", data.establishment_id).maybeSingle(),
+      supabase.from("customers").select("*", { count: "exact", head: true }).eq("establishment_id", data.establishment_id),
+      supabase.from("customers").select("*", { count: "exact", head: true }).eq("establishment_id", data.establishment_id).gte("created_at", since),
+      supabase.from("stamps").select("*", { count: "exact", head: true }).eq("establishment_id", data.establishment_id).is("reverted_at", null),
+      supabase.from("stamps").select("*", { count: "exact", head: true }).eq("establishment_id", data.establishment_id).is("reverted_at", null).gte("created_at", since),
+      supabase.from("rewards").select("*", { count: "exact", head: true }).eq("establishment_id", data.establishment_id).not("redeemed_at", "is", null).gte("redeemed_at", since),
+      supabase.from("stamps").select("created_at").eq("establishment_id", data.establishment_id).is("reverted_at", null).gte("created_at", since),
+      supabase.from("campaigns").select("id, name, stamps_required, active").eq("establishment_id", data.establishment_id),
+      supabase.from("establishment_members").select("user_id, role, active").eq("establishment_id", data.establishment_id),
+    ]);
+
+    if (!est) throw new Error("Estabelecimento não encontrado");
+
+    const map = new Map<string, number>();
+    (recentStamps ?? []).forEach((s: { created_at: string }) => {
+      const d = new Date(s.created_at).toISOString().slice(0, 10);
+      map.set(d, (map.get(d) ?? 0) + 1);
+    });
+    const series: { day: string; carimbos: number }[] = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 86400_000).toISOString().slice(0, 10);
+      series.push({ day: d.slice(5), carimbos: map.get(d) ?? 0 });
+    }
+
+    const [{ data: events }, { data: audits }] = await Promise.all([
+      supabase.from("subscription_events").select("id, event_type, from_plan, to_plan, message, created_at, acknowledged_at").eq("establishment_id", data.establishment_id).order("created_at", { ascending: false }).limit(30),
+      supabase.from("audit_logs").select("id, action, entity_type, entity_id, metadata, created_at, user_id").or(`establishment_id.eq.${data.establishment_id},entity_id.eq.${data.establishment_id}`).order("created_at", { ascending: false }).limit(30),
+    ]);
+
+    return {
+      establishment: est,
+      metrics: {
+        customersTotal: customersTotal ?? 0,
+        customersNew30: customersNew ?? 0,
+        stampsTotal: stampsTotal ?? 0,
+        stamps30: stamps30 ?? 0,
+        rewards30: rewards30 ?? 0,
+      },
+      series,
+      campaigns: campaigns ?? [],
+      members: members ?? [],
+      events: events ?? [],
+      audits: audits ?? [],
+    };
+  });
+
+// ─────────────── Alerts / events ───────────────
+export const adminListSubscriptionEvents = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ onlyUnack: z.boolean().default(false), limit: z.number().int().min(1).max(200).default(50) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertSuperAdmin(supabase, userId);
+    let q = supabase.from("subscription_events")
+      .select("id, establishment_id, event_type, from_plan, to_plan, message, created_at, acknowledged_at, actor_id")
+      .order("created_at", { ascending: false })
+      .limit(data.limit);
+    if (data.onlyUnack) q = q.is("acknowledged_at", null);
+    const { data: evs, error } = await q;
+    if (error) throw new Error(error.message);
+    const ids = Array.from(new Set((evs ?? []).map(e => e.establishment_id)));
+    const { data: ests } = ids.length
+      ? await supabase.from("establishments").select("id, name, slug").in("id", ids)
+      : { data: [] as any[] };
+    const nameMap = new Map<string, { name: string; slug: string }>();
+    (ests ?? []).forEach((e: any) => nameMap.set(e.id, { name: e.name, slug: e.slug }));
+    return (evs ?? []).map(e => ({ ...e, establishment: nameMap.get(e.establishment_id) ?? null }));
+  });
+
+export const adminAckSubscriptionEvent = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ event_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertSuperAdmin(supabase, userId);
+    const { error } = await supabase.from("subscription_events")
+      .update({ acknowledged_at: new Date().toISOString(), acknowledged_by: userId })
+      .eq("id", data.event_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const adminReportPaymentFailure = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    establishment_id: z.string().uuid(),
+    message: z.string().trim().max(300).optional(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertSuperAdmin(supabase, userId);
+    const { data: est } = await supabase.from("establishments").select("plan").eq("id", data.establishment_id).maybeSingle();
+    const { error } = await supabase.from("subscription_events").insert({
+      establishment_id: data.establishment_id,
+      event_type: "payment_failed",
+      from_plan: est?.plan ?? null,
+      to_plan: est?.plan ?? null,
+      actor_id: userId,
+      message: data.message ?? "Falha de pagamento reportada",
+    });
+    if (error) throw new Error(error.message);
+    await supabase.from("audit_logs").insert({
+      establishment_id: data.establishment_id, user_id: userId,
+      action: "admin_report_payment_failure", entity_type: "establishment", entity_id: data.establishment_id,
+      metadata: { message: data.message ?? null } as never,
+    });
+    return { ok: true };
+  });
+
+export const adminListAuditLogs = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ limit: z.number().int().min(1).max(200).default(80) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertSuperAdmin(supabase, userId);
+    const { data: logs, error } = await supabase.from("audit_logs")
+      .select("id, action, entity_type, entity_id, establishment_id, user_id, metadata, created_at")
+      .like("action", "admin_%")
+      .order("created_at", { ascending: false })
+      .limit(data.limit);
+    if (error) throw new Error(error.message);
+    const userIds = Array.from(new Set((logs ?? []).map(l => l.user_id).filter(Boolean))) as string[];
+    const estIds = Array.from(new Set((logs ?? []).flatMap(l => [l.establishment_id, l.entity_id]).filter(Boolean))) as string[];
+    const [{ data: profs }, { data: ests }] = await Promise.all([
+      userIds.length ? supabase.from("profiles").select("id, full_name").in("id", userIds) : Promise.resolve({ data: [] as any[] }),
+      estIds.length ? supabase.from("establishments").select("id, name, slug").in("id", estIds) : Promise.resolve({ data: [] as any[] }),
+    ]);
+    const pm = new Map<string, string>();
+    (profs ?? []).forEach((p: any) => pm.set(p.id, p.full_name));
+    const em = new Map<string, { name: string; slug: string }>();
+    (ests ?? []).forEach((e: any) => em.set(e.id, { name: e.name, slug: e.slug }));
+    return (logs ?? []).map(l => ({
+      ...l,
+      actor_name: l.user_id ? pm.get(l.user_id) ?? null : null,
+      establishment: em.get(l.establishment_id ?? l.entity_id ?? "") ?? null,
+    }));
+  });
+

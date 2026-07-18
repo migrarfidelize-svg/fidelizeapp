@@ -29,7 +29,10 @@ import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppCarimbarRouteImport } from './routes/_authenticated/app.carimbar'
 import { Route as AuthenticatedAppCampanhasRouteImport } from './routes/_authenticated/app.campanhas'
 import { Route as AuthenticatedAdminEmpresasRouteImport } from './routes/_authenticated/admin.empresas'
+import { Route as AuthenticatedAdminAuditoriaRouteImport } from './routes/_authenticated/admin.auditoria'
 import { Route as AuthenticatedAdminAssinaturasRouteImport } from './routes/_authenticated/admin.assinaturas'
+import { Route as AuthenticatedAdminAlertasRouteImport } from './routes/_authenticated/admin.alertas'
+import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authenticated/admin.empresa.$id'
 
 const TermosRoute = TermosRouteImport.update({
   id: '/termos',
@@ -134,10 +137,28 @@ const AuthenticatedAdminEmpresasRoute =
     path: '/empresas',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminAuditoriaRoute =
+  AuthenticatedAdminAuditoriaRouteImport.update({
+    id: '/auditoria',
+    path: '/auditoria',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminAssinaturasRoute =
   AuthenticatedAdminAssinaturasRouteImport.update({
     id: '/assinaturas',
     path: '/assinaturas',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminAlertasRoute =
+  AuthenticatedAdminAlertasRouteImport.update({
+    id: '/alertas',
+    path: '/alertas',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminEmpresaIdRoute =
+  AuthenticatedAdminEmpresaIdRouteImport.update({
+    id: '/empresa/$id',
+    path: '/empresa/$id',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 
@@ -152,7 +173,9 @@ export interface FileRoutesByFullPath {
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/c/$token': typeof CTokenRoute
   '/l/$slug': typeof LSlugRoute
+  '/admin/alertas': typeof AuthenticatedAdminAlertasRoute
   '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
+  '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
   '/admin/empresas': typeof AuthenticatedAdminEmpresasRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
@@ -162,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/app/': typeof AuthenticatedAppIndexRoute
+  '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -172,7 +196,9 @@ export interface FileRoutesByTo {
   '/termos': typeof TermosRoute
   '/c/$token': typeof CTokenRoute
   '/l/$slug': typeof LSlugRoute
+  '/admin/alertas': typeof AuthenticatedAdminAlertasRoute
   '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
+  '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
   '/admin/empresas': typeof AuthenticatedAdminEmpresasRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
@@ -182,6 +208,7 @@ export interface FileRoutesByTo {
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/app': typeof AuthenticatedAppIndexRoute
+  '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -196,7 +223,9 @@ export interface FileRoutesById {
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/c/$token': typeof CTokenRoute
   '/l/$slug': typeof LSlugRoute
+  '/_authenticated/admin/alertas': typeof AuthenticatedAdminAlertasRoute
   '/_authenticated/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
+  '/_authenticated/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
   '/_authenticated/admin/empresas': typeof AuthenticatedAdminEmpresasRoute
   '/_authenticated/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/_authenticated/app/carimbar': typeof AuthenticatedAppCarimbarRoute
@@ -206,6 +235,7 @@ export interface FileRoutesById {
   '/_authenticated/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
+  '/_authenticated/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -220,7 +250,9 @@ export interface FileRouteTypes {
     | '/app'
     | '/c/$token'
     | '/l/$slug'
+    | '/admin/alertas'
     | '/admin/assinaturas'
+    | '/admin/auditoria'
     | '/admin/empresas'
     | '/app/campanhas'
     | '/app/carimbar'
@@ -230,6 +262,7 @@ export interface FileRouteTypes {
     | '/app/qrcodes'
     | '/admin/'
     | '/app/'
+    | '/admin/empresa/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -240,7 +273,9 @@ export interface FileRouteTypes {
     | '/termos'
     | '/c/$token'
     | '/l/$slug'
+    | '/admin/alertas'
     | '/admin/assinaturas'
+    | '/admin/auditoria'
     | '/admin/empresas'
     | '/app/campanhas'
     | '/app/carimbar'
@@ -250,6 +285,7 @@ export interface FileRouteTypes {
     | '/app/qrcodes'
     | '/admin'
     | '/app'
+    | '/admin/empresa/$id'
   id:
     | '__root__'
     | '/'
@@ -263,7 +299,9 @@ export interface FileRouteTypes {
     | '/_authenticated/app'
     | '/c/$token'
     | '/l/$slug'
+    | '/_authenticated/admin/alertas'
     | '/_authenticated/admin/assinaturas'
+    | '/_authenticated/admin/auditoria'
     | '/_authenticated/admin/empresas'
     | '/_authenticated/app/campanhas'
     | '/_authenticated/app/carimbar'
@@ -273,6 +311,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/qrcodes'
     | '/_authenticated/admin/'
     | '/_authenticated/app/'
+    | '/_authenticated/admin/empresa/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -429,6 +468,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminEmpresasRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/auditoria': {
+      id: '/_authenticated/admin/auditoria'
+      path: '/auditoria'
+      fullPath: '/admin/auditoria'
+      preLoaderRoute: typeof AuthenticatedAdminAuditoriaRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/assinaturas': {
       id: '/_authenticated/admin/assinaturas'
       path: '/assinaturas'
@@ -436,19 +482,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAssinaturasRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/alertas': {
+      id: '/_authenticated/admin/alertas'
+      path: '/alertas'
+      fullPath: '/admin/alertas'
+      preLoaderRoute: typeof AuthenticatedAdminAlertasRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/empresa/$id': {
+      id: '/_authenticated/admin/empresa/$id'
+      path: '/empresa/$id'
+      fullPath: '/admin/empresa/$id'
+      preLoaderRoute: typeof AuthenticatedAdminEmpresaIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminAlertasRoute: typeof AuthenticatedAdminAlertasRoute
   AuthenticatedAdminAssinaturasRoute: typeof AuthenticatedAdminAssinaturasRoute
+  AuthenticatedAdminAuditoriaRoute: typeof AuthenticatedAdminAuditoriaRoute
   AuthenticatedAdminEmpresasRoute: typeof AuthenticatedAdminEmpresasRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminEmpresaIdRoute: typeof AuthenticatedAdminEmpresaIdRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminAlertasRoute: AuthenticatedAdminAlertasRoute,
   AuthenticatedAdminAssinaturasRoute: AuthenticatedAdminAssinaturasRoute,
+  AuthenticatedAdminAuditoriaRoute: AuthenticatedAdminAuditoriaRoute,
   AuthenticatedAdminEmpresasRoute: AuthenticatedAdminEmpresasRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedAdminEmpresaIdRoute: AuthenticatedAdminEmpresaIdRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =

@@ -5,7 +5,7 @@ import { getAdminStatus, bootstrapSuperAdmin } from "@/lib/admin.functions";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft } from "lucide-react";
+import { Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -51,6 +51,8 @@ function AdminLayout() {
     { to: "/admin", label: "Visão geral", icon: LayoutDashboard, exact: true },
     { to: "/admin/empresas", label: "Empresas", icon: Building2, exact: false },
     { to: "/admin/assinaturas", label: "Assinaturas", icon: CreditCard, exact: false },
+    { to: "/admin/alertas", label: "Alertas", icon: Bell, exact: false },
+    { to: "/admin/auditoria", label: "Auditoria", icon: FileClock, exact: false },
   ] as const;
 
   return (
@@ -77,7 +79,7 @@ function AdminLayout() {
           <Link to="/app" className="text-xs text-muted-foreground"><ArrowLeft className="h-4 w-4" /></Link>
         </header>
         <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto"><Outlet /></main>
-        <nav className="md:hidden grid grid-cols-3 border-t bg-card">
+        <nav className="md:hidden grid grid-cols-5 border-t bg-card">
           {nav.map((n) => {
             const active = n.exact ? pathname === n.to : pathname.startsWith(n.to);
             return (
