@@ -141,7 +141,7 @@ export const listTeam = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertRole(supabase, userId, data.establishment_id, "staff");
     const { data: members } = await supabase.from("establishment_members")
-      .select("id, user_id, role, active, invited_email, display_name, pin_hash, created_at")
+      .select("id, user_id, role, active, invited_email, display_name, pin_hash, last_pin_used_at, created_at")
       .eq("establishment_id", data.establishment_id)
       .order("created_at", { ascending: true });
     // load profile names
