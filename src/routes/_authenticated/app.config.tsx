@@ -215,113 +215,460 @@ function CartaoTab({ establishmentId, settings }: { establishmentId: string; set
 // ============================================================
 // EQUIPE
 // ============================================================
+type TeamMember = {
+  id: string; user_id: string | null; role: "staff" | "manager" | "owner";
+  active: boolean; invited_email: string | null; display_name: string | null;
+  has_pin: boolean; last_pin_used_at: string | null; created_at: string;
+  profile: { full_name: string | null; avatar_url: string | null } | null;
+};
+type TeamInvite = {
+  id: string; email: string; role: "staff" | "manager"; token?: string;
+  expires_at: string; created_at: string;
+};
+
+const ROLE_META: Record<string, { label: string; icon: any; tone: string; description: string }> = {
+  owner:   { label: "Proprietário", icon: Crown,      tone: "bg-amber-500/15 text-amber-700 dark:text-amber-400",   description: "Acesso total, cobrança e exclusão." },
+  manager: { label: "Gerente",      icon: Briefcase,  tone: "bg-primary/15 text-primary",                            description: "Configura empresa, campanhas e equipe." },
+  staff:   { label: "Atendente",    icon: UserCog,    tone: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400", description: "Carimba clientes e resgata recompensas." },
+};
+
+function initials(name: string | null | undefined, fallback = "?") {
+  const s = (name ?? "").trim();
+  if (!s) return fallback;
+  const parts = s.split(/\s+/);
+  return (parts.length === 1 ? parts[0].slice(0, 2) : parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+function fmtDate(iso: string | null | undefined) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+}
+function fmtRelative(iso: string | null | undefined) {
+  if (!iso) return "nunca";
+  const diff = Date.now() - new Date(iso).getTime();
+  const d = Math.floor(diff / 86400000);
+  if (d < 1) return "hoje";
+  if (d === 1) return "ontem";
+  if (d < 30) return `há ${d} dias`;
+  if (d < 365) return `há ${Math.floor(d / 30)} meses`;
+  return `há ${Math.floor(d / 365)} anos`;
+}
+
 function EquipeTab({ establishmentId }: { establishmentId: string }) {
   const qc = useQueryClient();
   const list = useServerFn(listTeam);
   const invite = useServerFn(inviteTeamMember);
   const revoke = useServerFn(revokeInvite);
+  const resend = useServerFn(resendInvite);
   const upd = useServerFn(updateMember);
   const rem = useServerFn(removeMember);
-  const { data } = useQuery({ queryKey: ["team", establishmentId], queryFn: () => list({ data: { establishment_id: establishmentId } }) });
-  const [email, setEmail] = useState(""); const [role, setRole] = useState<"staff" | "manager">("staff");
-  const [lastLink, setLastLink] = useState<string | null>(null);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["team", establishmentId],
+    queryFn: () => list({ data: { establishment_id: establishmentId } }),
+  });
+
+  const members = (data?.members ?? []) as TeamMember[];
+  const invites = (data?.invites ?? []) as TeamInvite[];
+
+  const [q, setQ] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"all" | "owner" | "manager" | "staff">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<"staff" | "manager">("staff");
+  const [inviteNote, setInviteNote] = useState("");
+  const [issuedLink, setIssuedLink] = useState<string | null>(null);
+  const [renameId, setRenameId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+
+  const stats = useMemo(() => {
+    const total = members.length;
+    const active = members.filter((m) => m.active).length;
+    const managers = members.filter((m) => m.role === "owner" || m.role === "manager").length;
+    const withPin = members.filter((m) => m.has_pin).length;
+    return { total, active, managers, withPin, pending: invites.length };
+  }, [members, invites]);
+
+  const filtered = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    return members.filter((m) => {
+      if (roleFilter !== "all" && m.role !== roleFilter) return false;
+      if (statusFilter === "active" && !m.active) return false;
+      if (statusFilter === "inactive" && m.active) return false;
+      if (!term) return true;
+      const name = (m.display_name ?? m.profile?.full_name ?? m.invited_email ?? "").toLowerCase();
+      return name.includes(term) || (m.invited_email ?? "").toLowerCase().includes(term);
+    });
+  }, [members, q, roleFilter, statusFilter]);
+
+  function inviteUrl(token: string) {
+    return `${window.location.origin}/invite/${token}`;
+  }
+
+  async function copyLink(url: string) {
+    try { await navigator.clipboard.writeText(url); toast.success("Link copiado"); }
+    catch { toast.error("Não foi possível copiar"); }
+  }
 
   async function onInvite() {
-    if (!email) return;
+    const email = inviteEmail.trim().toLowerCase();
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) return toast.error("Informe um e-mail válido");
     try {
-      const res = await invite({ data: { establishment_id: establishmentId, email, role } });
-      const url = `${window.location.origin}/invite/${res.token}`;
-      setLastLink(url);
-      toast.success("Convite criado. Envie o link ao funcionário.");
-      setEmail(""); qc.invalidateQueries({ queryKey: ["team", establishmentId] });
+      const res = await invite({ data: { establishment_id: establishmentId, email, role: inviteRole } });
+      const url = inviteUrl(res.token);
+      setIssuedLink(url);
+      setInviteEmail("");
+      qc.invalidateQueries({ queryKey: ["team", establishmentId] });
+      toast.success("Convite gerado");
     } catch (e: any) { toast.error(e.message); }
   }
-  async function onRevoke(id: string) { await revoke({ data: { establishment_id: establishmentId, invite_id: id } }); qc.invalidateQueries({ queryKey: ["team", establishmentId] }); }
-  async function onRoleChange(memberId: string, r: "staff" | "manager" | "owner") {
-    try { await upd({ data: { establishment_id: establishmentId, member_id: memberId, role: r } }); qc.invalidateQueries({ queryKey: ["team", establishmentId] }); toast.success("Função atualizada"); }
+  async function onResend(id: string) {
+    try {
+      const res = await resend({ data: { establishment_id: establishmentId, invite_id: id } });
+      const url = inviteUrl(res.token);
+      setIssuedLink(url);
+      qc.invalidateQueries({ queryKey: ["team", establishmentId] });
+      toast.success("Novo link gerado — o anterior foi invalidado.");
+    } catch (e: any) { toast.error(e.message); }
+  }
+  async function onRevoke(id: string) {
+    try { await revoke({ data: { establishment_id: establishmentId, invite_id: id } });
+      qc.invalidateQueries({ queryKey: ["team", establishmentId] }); toast.success("Convite revogado"); }
     catch (e: any) { toast.error(e.message); }
   }
-  async function onToggleActive(memberId: string, active: boolean) {
-    await upd({ data: { establishment_id: establishmentId, member_id: memberId, active } });
-    qc.invalidateQueries({ queryKey: ["team", establishmentId] });
+  async function onRoleChange(id: string, role: "staff" | "manager" | "owner") {
+    try { await upd({ data: { establishment_id: establishmentId, member_id: id, role } });
+      qc.invalidateQueries({ queryKey: ["team", establishmentId] }); toast.success("Função atualizada"); }
+    catch (e: any) { toast.error(e.message); }
   }
-  async function onRemove(memberId: string) {
-    if (!confirm("Remover este funcionário?")) return;
-    try { await rem({ data: { establishment_id: establishmentId, member_id: memberId } }); qc.invalidateQueries({ queryKey: ["team", establishmentId] }); toast.success("Removido"); }
+  async function onToggleActive(id: string, active: boolean) {
+    try { await upd({ data: { establishment_id: establishmentId, member_id: id, active } });
+      qc.invalidateQueries({ queryKey: ["team", establishmentId] });
+      toast.success(active ? "Membro ativado" : "Membro pausado"); }
+    catch (e: any) { toast.error(e.message); }
+  }
+  async function onRename(id: string) {
+    const display_name = renameValue.trim() || null;
+    try { await upd({ data: { establishment_id: establishmentId, member_id: id, display_name } });
+      qc.invalidateQueries({ queryKey: ["team", establishmentId] });
+      setRenameId(null); setRenameValue(""); toast.success("Nome de exibição atualizado"); }
+    catch (e: any) { toast.error(e.message); }
+  }
+  async function onRemove(id: string) {
+    try { await rem({ data: { establishment_id: establishmentId, member_id: id } });
+      qc.invalidateQueries({ queryKey: ["team", establishmentId] }); toast.success("Membro removido"); }
     catch (e: any) { toast.error(e.message); }
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      {/* Header + actions */}
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-xs uppercase tracking-widest text-muted-foreground">Colaboradores</div>
+          <h2 className="font-display text-2xl font-bold">Equipe</h2>
+          <p className="text-sm text-muted-foreground">Convide funcionários, defina funções e controle o acesso à operação.</p>
+        </div>
+        <Dialog open={inviteOpen} onOpenChange={(v) => { setInviteOpen(v); if (!v) setIssuedLink(null); }}>
+          <DialogTrigger asChild>
+            <Button className="gap-2"><UserPlus className="h-4 w-4" />Convidar funcionário</Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Convidar para a equipe</DialogTitle>
+              <DialogDescription>Envie o link gerado por WhatsApp, e-mail ou copie e cole onde quiser.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label>E-mail do funcionário</Label>
+                <Input type="email" placeholder="atendente@empresa.com" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Função</Label>
+                <Select value={inviteRole} onValueChange={(v: any) => setInviteRole(v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="staff">Atendente — carimba clientes</SelectItem>
+                    <SelectItem value="manager">Gerente — configura e edita</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">{ROLE_META[inviteRole].description}</p>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Mensagem (opcional)</Label>
+                <Textarea rows={2} placeholder="Olá! Aceite o convite para começar a operar o cartão fidelidade." value={inviteNote} onChange={(e) => setInviteNote(e.target.value)} />
+              </div>
+              {issuedLink && (
+                <div className="rounded-xl border bg-emerald-500/5 p-3 space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                    <CheckCircle2 className="h-4 w-4" /> Link pronto para envio
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Input readOnly value={issuedLink} className="font-mono text-xs" />
+                    <Button size="icon" variant="secondary" onClick={() => copyLink(issuedLink)}><Copy className="h-4 w-4" /></Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button asChild size="sm" variant="outline" className="gap-1">
+                      <a
+                        href={`https://wa.me/?text=${encodeURIComponent((inviteNote ? inviteNote + "\n\n" : "") + issuedLink)}`}
+                        target="_blank" rel="noreferrer"
+                      >
+                        <Send className="h-3.5 w-3.5" />Enviar por WhatsApp
+                      </a>
+                    </Button>
+                    <Button asChild size="sm" variant="outline" className="gap-1">
+                      <a href={`mailto:?subject=${encodeURIComponent("Convite para a equipe")}&body=${encodeURIComponent((inviteNote ? inviteNote + "\n\n" : "") + issuedLink)}`}>
+                        <Mail className="h-3.5 w-3.5" />Enviar por e-mail
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setInviteOpen(false)}>Fechar</Button>
+              <Button onClick={onInvite} className="gap-2"><UserPlus className="h-4 w-4" />Gerar convite</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Stats */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <TeamStat icon={<Users className="h-4 w-4" />} label="Membros" value={stats.total} />
+        <TeamStat icon={<CheckCircle2 className="h-4 w-4" />} label="Ativos" value={stats.active} tone="text-emerald-600" />
+        <TeamStat icon={<Briefcase className="h-4 w-4" />} label="Gestão" value={stats.managers} />
+        <TeamStat icon={<ShieldCheck className="h-4 w-4" />} label="Com PIN" value={stats.withPin} />
+        <TeamStat icon={<Clock className="h-4 w-4" />} label="Convites pendentes" value={stats.pending} tone="text-amber-600" />
+      </div>
+
+      {/* Pending invites */}
+      {invites.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base">Convites pendentes</CardTitle>
+                <CardDescription>Links ainda não aceitos pelos funcionários.</CardDescription>
+              </div>
+              <Badge variant="secondary" className="gap-1"><Clock className="h-3 w-3" />{invites.length}</Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {invites.map((i) => {
+              const expired = new Date(i.expires_at) < new Date();
+              return (
+                <div key={i.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground">
+                      <Mail className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="truncate font-medium">{i.email}</div>
+                      <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-2">
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${ROLE_META[i.role].tone}`}>
+                          {ROLE_META[i.role].label}
+                        </span>
+                        <span>· {expired ? "expirado" : `expira ${fmtDate(i.expires_at)}`}</span>
+                        <span>· criado {fmtRelative(i.created_at)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button size="sm" variant="outline" className="gap-1" onClick={() => onResend(i.id)}>
+                      <RefreshCcw className="h-3.5 w-3.5" />Gerar novo link
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive">Revogar</Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Revogar convite?</AlertDialogTitle>
+                          <AlertDialogDescription>O link enviado deixará de funcionar imediatamente.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => onRevoke(i.id)}>Revogar</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Members */}
       <Card>
-        <CardHeader><CardTitle>Convidar funcionário</CardTitle><CardDescription>Envie o link gerado pelo WhatsApp ou e-mail.</CardDescription></CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid md:grid-cols-[1fr_180px_auto] gap-3">
-            <Input placeholder="funcionario@exemplo.com" value={email} onChange={e => setEmail(e.target.value)} />
-            <Select value={role} onValueChange={(v: any) => setRole(v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="staff">Atendente (carimba)</SelectItem>
-                <SelectItem value="manager">Gerente (edita)</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button onClick={onInvite}>Gerar convite</Button>
+        <CardHeader className="pb-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <CardTitle className="text-base">Membros da equipe</CardTitle>
+              <CardDescription>Controle função, atividade e permissões de cada colaborador.</CardDescription>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nome ou e-mail" className="pl-8 w-[220px]" />
+              </div>
+              <Select value={roleFilter} onValueChange={(v: any) => setRoleFilter(v)}>
+                <SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as funções</SelectItem>
+                  <SelectItem value="owner">Proprietário</SelectItem>
+                  <SelectItem value="manager">Gerente</SelectItem>
+                  <SelectItem value="staff">Atendente</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+                <SelectTrigger className="w-[130px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="active">Ativos</SelectItem>
+                  <SelectItem value="inactive">Pausados</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          {lastLink && (
-            <div className="rounded-lg border p-3 flex items-center gap-2 bg-muted/40">
-              <Input readOnly value={lastLink} className="font-mono text-xs" />
-              <Button size="icon" variant="ghost" onClick={() => { navigator.clipboard.writeText(lastLink); toast.success("Copiado"); }}><Copy className="h-4 w-4" /></Button>
+        </CardHeader>
+        <CardContent className="p-0">
+          {isLoading ? (
+            <div className="p-8 text-center text-sm text-muted-foreground">Carregando equipe…</div>
+          ) : filtered.length === 0 ? (
+            <div className="p-10 text-center text-sm text-muted-foreground">
+              Nenhum membro encontrado.
+            </div>
+          ) : (
+            <div className="divide-y">
+              {filtered.map((m) => {
+                const displayName = m.display_name ?? m.profile?.full_name ?? m.invited_email ?? "Sem nome";
+                const meta = ROLE_META[m.role] ?? ROLE_META.staff;
+                const RoleIcon = meta.icon;
+                return (
+                  <div key={m.id} className="flex flex-wrap items-center gap-3 p-4 hover:bg-muted/30">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <div className="relative">
+                        <div className="grid h-11 w-11 place-items-center rounded-full bg-primary/10 font-display font-bold text-primary">
+                          {initials(displayName)}
+                        </div>
+                        <span className={`absolute -bottom-0.5 -right-0.5 grid h-4 w-4 place-items-center rounded-full border-2 border-background ${m.active ? "bg-emerald-500" : "bg-muted-foreground/50"}`}>
+                          {m.active ? <CheckCircle2 className="h-2.5 w-2.5 text-white" /> : <PauseCircle className="h-2.5 w-2.5 text-white" />}
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="truncate font-medium">{displayName}</span>
+                          {m.has_pin && <Badge variant="secondary" className="gap-1"><ShieldCheck className="h-3 w-3" />PIN</Badge>}
+                          {!m.user_id && <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3" />aguardando</Badge>}
+                        </div>
+                        <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                          {m.invited_email && <span className="truncate">{m.invited_email}</span>}
+                          <span>· entrou {fmtRelative(m.created_at)}</span>
+                          {m.has_pin && <span>· PIN usado {fmtRelative(m.last_pin_used_at)}</span>}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Select
+                        value={m.role}
+                        onValueChange={(v: any) => onRoleChange(m.id, v)}
+                        disabled={m.role === "owner"}
+                      >
+                        <SelectTrigger className="w-[170px]">
+                          <span className="inline-flex items-center gap-2">
+                            <span className={`grid h-5 w-5 place-items-center rounded-md ${meta.tone}`}>
+                              <RoleIcon className="h-3 w-3" />
+                            </span>
+                            <SelectValue />
+                          </span>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="staff">Atendente</SelectItem>
+                          <SelectItem value="manager">Gerente</SelectItem>
+                          <SelectItem value="owner">Proprietário</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <div className="flex items-center gap-1.5 rounded-md border px-2 py-1">
+                        <Switch checked={m.active} onCheckedChange={(v) => onToggleActive(m.id, v)} disabled={m.role === "owner"} />
+                        <span className="text-xs text-muted-foreground">{m.active ? "Ativo" : "Pausado"}</span>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-52">
+                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => { setRenameId(m.id); setRenameValue(m.display_name ?? ""); }}>
+                            <UserCog className="h-4 w-4 mr-2" />Renomear na equipe
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onToggleActive(m.id, !m.active)} disabled={m.role === "owner"}>
+                            {m.active ? <><UserX className="h-4 w-4 mr-2" />Pausar acesso</> : <><UserCheck className="h-4 w-4 mr-2" />Reativar acesso</>}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          {m.role !== "owner" && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={(e) => e.preventDefault()}>
+                                  <Trash2 className="h-4 w-4 mr-2" />Remover da equipe
+                                </DropdownMenuItem>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Remover {displayName}?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    O acesso à empresa será revogado imediatamente. Você pode convidá-lo novamente depois.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => onRemove(m.id)}>Remover</AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader><CardTitle>Convites pendentes</CardTitle></CardHeader>
-        <CardContent>
-          {!data?.invites?.length && <div className="text-sm text-muted-foreground">Nenhum convite pendente.</div>}
-          <div className="space-y-2">
-            {data?.invites?.map((i: any) => (
-              <div key={i.id} className="flex items-center justify-between rounded-lg border p-3">
-                <div>
-                  <div className="font-medium">{i.email}</div>
-                  <div className="text-xs text-muted-foreground">Função: {i.role} · expira em {new Date(i.expires_at).toLocaleDateString("pt-BR")}</div>
-                </div>
-                <Button size="sm" variant="ghost" onClick={() => onRevoke(i.id)}>Revogar</Button>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader><CardTitle>Membros da equipe</CardTitle></CardHeader>
-        <CardContent className="space-y-2">
-          {data?.members?.map((m: any) => (
-            <div key={m.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3">
-              <div>
-                <div className="font-medium">{m.profile?.full_name ?? m.invited_email ?? "Membro"} {m.has_pin && <Badge variant="secondary" className="ml-2">PIN</Badge>}</div>
-                <div className="text-xs text-muted-foreground">Desde {new Date(m.created_at).toLocaleDateString("pt-BR")}</div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Select value={m.role} onValueChange={(v: any) => onRoleChange(m.id, v)} disabled={m.role === "owner"}>
-                  <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="staff">Atendente</SelectItem>
-                    <SelectItem value="manager">Gerente</SelectItem>
-                    <SelectItem value="owner">Proprietário</SelectItem>
-                  </SelectContent>
-                </Select>
-                <div className="flex items-center gap-2"><Switch checked={m.active} onCheckedChange={(v) => onToggleActive(m.id, v)} /><span className="text-xs">Ativo</span></div>
-                {m.role !== "owner" && <Button size="icon" variant="ghost" onClick={() => onRemove(m.id)}><Trash2 className="h-4 w-4" /></Button>}
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+      {/* Rename dialog */}
+      <Dialog open={!!renameId} onOpenChange={(v) => { if (!v) { setRenameId(null); setRenameValue(""); } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Nome de exibição</DialogTitle>
+            <DialogDescription>Aparece na equipe e no histórico. Deixe vazio para usar o nome do perfil.</DialogDescription>
+          </DialogHeader>
+          <Input value={renameValue} onChange={(e) => setRenameValue(e.target.value)} placeholder="Ex.: Ana — Balcão" />
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setRenameId(null)}>Cancelar</Button>
+            <Button onClick={() => renameId && onRename(renameId)}>Salvar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
+function TeamStat({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: number; tone?: string }) {
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">{icon}{label}</div>
+        <div className={`text-2xl font-bold mt-1 ${tone ?? ""}`}>{value}</div>
+      </CardContent>
+    </Card>
+  );
+}
+
 
 // ============================================================
 // SEGURANÇA
