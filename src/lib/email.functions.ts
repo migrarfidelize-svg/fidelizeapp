@@ -77,7 +77,12 @@ export const saveEmailSettings = createServerFn({ method: "POST" })
     if (fetchErr) throw new Error(fetchErr.message);
 
     if (existing) {
-      const patch: Record<string, unknown> = {
+      const patch: {
+        sender_email: string;
+        sender_name: string;
+        reply_to: string | null;
+        resend_api_key?: string;
+      } = {
         sender_email: data.sender_email,
         sender_name: data.sender_name,
         reply_to: data.reply_to ?? null,
