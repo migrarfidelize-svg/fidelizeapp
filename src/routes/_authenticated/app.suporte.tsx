@@ -3,14 +3,18 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
-import { listTickets, getTicket, agentReply, updateTicket, helpdeskDashboard } from "@/lib/helpdesk.functions";
+import { listTickets, getTicket, agentReply, updateTicket, helpdeskDashboard, listQuickReplies, saveQuickReply, deleteQuickReply, uploadTicketAttachment } from "@/lib/helpdesk.functions";
+import { AttachmentPicker, type Attachment } from "@/components/AttachmentPicker";
+import { AttachmentList, type AttachmentRef } from "@/components/AttachmentList";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Ticket, Clock, CheckCircle2, Star, Send, Lock } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Ticket, Clock, CheckCircle2, Star, Send, Lock, Zap, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/app/suporte")({
