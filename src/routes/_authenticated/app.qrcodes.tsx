@@ -777,6 +777,15 @@ function QRCodes() {
                   <p className="text-[11px] text-muted-foreground">Aumenta ou reduz o QR mantendo a área de respiro. A auto-escala escolhe o melhor tamanho por formato para leitura fácil à distância.</p>
                 </div>
 
+                <div className="rounded-lg border p-3 space-y-2">
+                  <div className="text-xs font-medium">Formato dos cantos</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button size="sm" variant={cornerStyle === "sharp" ? "default" : "outline"} onClick={() => setCornerStyle("sharp")} className="h-8 text-xs">Quadrado</Button>
+                    <Button size="sm" variant={cornerStyle === "rounded" ? "default" : "outline"} onClick={() => setCornerStyle("rounded")} className="h-8 text-xs">Arredondado</Button>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">Deixa o material com cantos retos ou suavemente arredondados. Nos formatos de impressão, o arredondamento aparece dentro da linha de corte.</p>
+                </div>
+
                 <Row label="Mostrar guias de área segura" hint="Só na prévia — mostra até onde o conteúdo pode chegar">
                   <Switch checked={showSafeArea} onCheckedChange={setShowSafeArea} />
                 </Row>
