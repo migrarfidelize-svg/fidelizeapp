@@ -71,14 +71,16 @@ function CustomerTicket() {
             <div key={m.id} className={`p-4 rounded-xl border ${m.author_type === "customer" ? "bg-primary-soft/40 ml-8" : "bg-card mr-8"}`}>
               <div className="text-xs text-muted-foreground mb-1">{m.author_type === "customer" ? "Você" : (m.author_name ?? "Suporte")} · {new Date(m.created_at).toLocaleString("pt-BR")}</div>
               <div className="text-sm whitespace-pre-wrap">{m.body}</div>
+              <AttachmentList items={(m.attachments as AttachmentRef[] | null) ?? []} />
             </div>
           ))}
         </div>
 
         {ticket.status !== "closed" && (
-          <div className="mt-6 rounded-2xl border bg-card p-4">
+          <div className="mt-6 rounded-2xl border bg-card p-4 space-y-3">
             <Textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="Escreva sua resposta…" rows={4} />
-            <div className="mt-2 flex justify-end"><Button onClick={send} disabled={!body.trim()}>Enviar</Button></div>
+            <AttachmentPicker value={attachments} onChange={setAttachments} upload={(args) => upload({ data: { ticket_id: id, ...args } })} />
+            <div className="flex justify-end"><Button onClick={send} disabled={!body.trim() && attachments.length === 0}>Enviar</Button></div>
           </div>
         )}
 
