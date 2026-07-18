@@ -51,6 +51,7 @@ function AdminLayout() {
     { to: "/admin", label: "Visão geral", icon: LayoutDashboard, exact: true },
     { to: "/admin/empresas", label: "Empresas", icon: Building2, exact: false },
     { to: "/admin/assinaturas", label: "Assinaturas", icon: CreditCard, exact: false },
+    { to: "/admin/planos", label: "Planos", icon: Package, exact: false },
     { to: "/admin/alertas", label: "Alertas", icon: Bell, exact: false },
     { to: "/admin/auditoria", label: "Auditoria", icon: FileClock, exact: false },
     { to: "/admin/suporte", label: "Suporte", icon: LifeBuoy, exact: false },
