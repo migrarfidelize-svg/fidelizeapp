@@ -26,8 +26,15 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
-  Building2, Palette, Shield, Bell, Users, ScrollText, AlertTriangle, Lock, CreditCard, Wrench, Copy, RefreshCcw, Trash2, Download, KeyRound,
+  Building2, Palette, Shield, Bell, Users, ScrollText, AlertTriangle, Lock, CreditCard, Wrench, Copy, RefreshCcw, Trash2, Download, KeyRound, Search, Mail, ShieldCheck, UserCheck, UserX, Send, Clock, MoreHorizontal, UserPlus, CheckCircle2, PauseCircle, Crown, Briefcase, UserCog,
 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 
 export const Route = createFileRoute("/_authenticated/app/config")({
