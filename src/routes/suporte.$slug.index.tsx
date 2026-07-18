@@ -83,8 +83,8 @@ function HelpCenterHub() {
       <section className="max-w-5xl mx-auto px-4 pb-16">
         {categories.length > 0 && (
           <div className="grid gap-4 md:grid-cols-3">
-            {categories.map((c) => {
-              const catArts = articles.filter(a => a.category_id === c.id);
+            {categories.map((c: { id: string; name: string; description: string | null }) => {
+              const catArts = articles.filter((a: { category_id: string | null }) => a.category_id === c.id);
               return (
                 <div key={c.id} className="rounded-2xl bg-card border p-5 shadow-sm">
                   <div className="flex items-center gap-2 mb-3">
@@ -93,7 +93,7 @@ function HelpCenterHub() {
                   </div>
                   {c.description && <p className="text-xs text-muted-foreground mb-3">{c.description}</p>}
                   <ul className="space-y-1.5">
-                    {catArts.slice(0, 5).map(a => (
+                    {catArts.slice(0, 5).map((a: { id: string; slug: string; title: string }) => (
                       <li key={a.id}>
                         <Link to="/suporte/$slug/kb/$article" params={{ slug: params.slug, article: a.slug }} className="text-sm text-muted-foreground hover:text-primary flex items-center justify-between group">
                           <span className="truncate">{a.title}</span>
@@ -109,7 +109,7 @@ function HelpCenterHub() {
         )}
         {categories.length === 0 && articles.length > 0 && (
           <div className="grid gap-3 md:grid-cols-2">
-            {articles.slice(0, 10).map(a => (
+            {articles.slice(0, 10).map((a: { id: string; slug: string; title: string; excerpt: string | null }) => (
               <Link key={a.id} to="/suporte/$slug/kb/$article" params={{ slug: params.slug, article: a.slug }} className="p-4 rounded-xl border bg-card hover:border-primary transition">
                 <div className="font-medium text-sm">{a.title}</div>
                 {a.excerpt && <div className="text-xs text-muted-foreground line-clamp-2 mt-1">{a.excerpt}</div>}
