@@ -264,6 +264,7 @@ function QRCodes() {
   const [qrScale, setQrScale] = useState<number>(AUTO_QR_SCALE.story);
   const [qrAuto, setQrAuto] = useState(true);
   const [cornerStyle, setCornerStyle] = useState<"sharp" | "rounded">("sharp");
+  const [cornerRadiusPct, setCornerRadiusPct] = useState<number>(0);
   useEffect(() => { if (qrAuto) setQrScale(AUTO_QR_SCALE[format]); }, [format, qrAuto]);
   const [exporting, setExporting] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
