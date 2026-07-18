@@ -177,7 +177,7 @@ export const PromoPoster = forwardRef<HTMLDivElement, { config: PromoConfig }>(f
             </div>
             <div style={{ fontSize: s(26), fontWeight: 800, color: primaryColor }}>{config.ctaFooter}</div>
             {config.contactLine && <div style={{ fontSize: s(18), opacity: 0.75 }}>{config.contactLine}</div>}
-            {config.showBrand && <div style={{ fontSize: s(14), opacity: 0.55 }}>Powered by <strong>Fidelize</strong></div>}
+            {config.showBrand && <div style={{ fontSize: s(14), opacity: 0.55 }}>Feito com <strong>Fidelize</strong></div>}
           </div>
         </div>
 
