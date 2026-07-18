@@ -15,15 +15,15 @@ function EquipePage() {
   const getAdmin = useServerFn(getAdminStatus);
   const { data: memberships } = useQuery({
     queryKey: ["my-establishments"],
-    queryFn: () => getEsts({ data: {} }),
+    queryFn: () => getEsts(),
   });
   const { data: admin, isLoading: adminLoading } = useQuery({
     queryKey: ["admin-status"],
-    queryFn: () => getAdmin({ data: {} }),
+    queryFn: () => getAdmin(),
   });
 
   if (adminLoading) return <div className="text-muted-foreground">Carregando…</div>;
-  if (!admin?.is_super_admin) {
+  if (!admin?.isAdmin) {
     return (
       <div className="max-w-md mx-auto mt-16 p-6 rounded-xl border bg-card text-center space-y-2">
         <h2 className="text-lg font-semibold">Acesso restrito</h2>
