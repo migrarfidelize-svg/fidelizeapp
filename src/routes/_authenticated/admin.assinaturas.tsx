@@ -21,21 +21,21 @@ function AdminAssinaturas() {
   const d = data;
 
 
-  const total = data.estTotal || 1;
-  const planRows = Object.entries(data.planCounts).map(([tier, count]) => {
-    const pct = data.estTotal ? Math.round((count / data.estTotal) * 100) : 0;
+  const total = d.estTotal || 1;
+  const planRows = Object.entries(d.planCounts).map(([tier, count]) => {
+    const pct = d.estTotal ? Math.round((count / d.estTotal) * 100) : 0;
     return [PLAN_LABEL[tier] ?? tier, count, `${pct}%`];
   });
 
   function exportCSV() {
     downloadCSV(`fidelize-assinaturas-${new Date().toISOString().slice(0,10)}.csv`,
       ["Métrica","Valor"],
-      [["MRR estimado", formatBRL(data.mrr)], ["Empresas totais", data.estTotal], ["Ativas", data.estActive], ["Bloqueadas", data.estBlocked], ["Pagantes", data.estTotal - (data.planCounts.free ?? 0)], ["Clientes", data.customersTotal], ["Carimbos", data.stampsTotal], ["Recompensas resgatadas", data.rewardsRedeemed], ...planRows.map(r => [`Plano ${r[0]}`, `${r[1]} (${r[2]})`])]);
+      [["MRR estimado", formatBRL(d.mrr)], ["Empresas totais", d.estTotal], ["Ativas", d.estActive], ["Bloqueadas", d.estBlocked], ["Pagantes", d.estTotal - (d.planCounts.free ?? 0)], ["Clientes", d.customersTotal], ["Carimbos", d.stampsTotal], ["Recompensas resgatadas", d.rewardsRedeemed], ...planRows.map(r => [`Plano ${r[0]}`, `${r[1]} (${r[2]})`])]);
   }
   function exportPDF() {
     downloadPDF(`fidelize-assinaturas-${new Date().toISOString().slice(0,10)}.pdf`, "Assinaturas & Métricas — Fidelize",
       ["Plano","Empresas","Participação"], planRows,
-      `MRR estimado: ${formatBRL(data.mrr)} · ${data.estTotal} empresas · gerado em ${new Date().toLocaleString("pt-BR")}`);
+      `MRR estimado: ${formatBRL(d.mrr)} · ${d.estTotal} empresas · gerado em ${new Date().toLocaleString("pt-BR")}`);
   }
 
   return (
@@ -53,17 +53,17 @@ function AdminAssinaturas() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-wider text-muted-foreground">MRR estimado</div><div className="mt-2 font-display text-3xl font-bold">{formatBRL(data.mrr)}</div></CardContent></Card>
-        <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-wider text-muted-foreground">Empresas pagantes</div><div className="mt-2 font-display text-3xl font-bold">{(data.estTotal - (data.planCounts.free ?? 0)).toLocaleString("pt-BR")}</div></CardContent></Card>
-        <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-wider text-muted-foreground">Conversão pagos</div><div className="mt-2 font-display text-3xl font-bold">{Math.round(((data.estTotal - (data.planCounts.free ?? 0)) / total) * 100)}%</div></CardContent></Card>
+        <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-wider text-muted-foreground">MRR estimado</div><div className="mt-2 font-display text-3xl font-bold">{formatBRL(d.mrr)}</div></CardContent></Card>
+        <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-wider text-muted-foreground">Empresas pagantes</div><div className="mt-2 font-display text-3xl font-bold">{(d.estTotal - (d.planCounts.free ?? 0)).toLocaleString("pt-BR")}</div></CardContent></Card>
+        <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-wider text-muted-foreground">Conversão pagos</div><div className="mt-2 font-display text-3xl font-bold">{Math.round(((d.estTotal - (d.planCounts.free ?? 0)) / total) * 100)}%</div></CardContent></Card>
       </div>
 
       <Card>
         <CardContent className="p-6">
           <h3 className="font-display font-semibold">Distribuição por plano</h3>
           <div className="mt-4 space-y-4">
-            {Object.entries(data.planCounts).map(([tier, count]) => {
-              const pct = data.estTotal ? Math.round((count / data.estTotal) * 100) : 0;
+            {Object.entries(d.planCounts).map(([tier, count]) => {
+              const pct = d.estTotal ? Math.round((count / d.estTotal) * 100) : 0;
               return (
                 <div key={tier}>
                   <div className="flex items-center justify-between text-sm">
