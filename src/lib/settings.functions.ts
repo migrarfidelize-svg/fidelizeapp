@@ -101,16 +101,18 @@ export const updateSettingsSection = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertRole(supabase, userId, data.establishment_id, "manager");
-    // upsert-read current, merge, write
     const { data: current } = await supabase.from("establishment_settings").select("*").eq("establishment_id", data.establishment_id).maybeSingle();
-    const merged = { ...(current?.[data.section] ?? {}), ...data.patch };
+    const currentSection = (current as any)?.[data.section] ?? {};
+    const merged = { ...currentSection, ...data.patch };
+    const payload: any = { [data.section]: merged };
     if (!current) {
-      const { error } = await supabase.from("establishment_settings").insert({ establishment_id: data.establishment_id, [data.section]: merged });
+      const { error } = await (supabase.from("establishment_settings") as any).insert({ establishment_id: data.establishment_id, ...payload });
       if (error) throw new Error(error.message);
     } else {
-      const { error } = await supabase.from("establishment_settings").update({ [data.section]: merged }).eq("establishment_id", data.establishment_id);
+      const { error } = await (supabase.from("establishment_settings") as any).update(payload).eq("establishment_id", data.establishment_id);
       if (error) throw new Error(error.message);
     }
+
     await audit(supabase, data.establishment_id, userId, `settings.${data.section}.updated`, "establishment_settings", data.establishment_id, { keys: Object.keys(data.patch) });
     return { ok: true };
   });
