@@ -30,6 +30,7 @@ import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as SuporteChamadoIdRouteImport } from './routes/suporte.chamado.$id'
 import { Route as SuporteSlugNovoRouteImport } from './routes/suporte.$slug.novo'
+import { Route as AuthenticatedSuporteIdRouteImport } from './routes/_authenticated/suporte.$id'
 import { Route as AuthenticatedAppSuporteRouteImport } from './routes/_authenticated/app.suporte'
 import { Route as AuthenticatedAppQrcodesRouteImport } from './routes/_authenticated/app.qrcodes'
 import { Route as AuthenticatedAppKbRouteImport } from './routes/_authenticated/app.kb'
@@ -154,6 +155,11 @@ const SuporteSlugNovoRoute = SuporteSlugNovoRouteImport.update({
   id: '/suporte/$slug/novo',
   path: '/suporte/$slug/novo',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedSuporteIdRoute = AuthenticatedSuporteIdRouteImport.update({
+  id: '/suporte/$id',
+  path: '/suporte/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAppSuporteRoute = AuthenticatedAppSuporteRouteImport.update({
   id: '/suporte',
@@ -296,6 +302,7 @@ export interface FileRoutesByFullPath {
   '/app/kb': typeof AuthenticatedAppKbRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
+  '/suporte/$id': typeof AuthenticatedSuporteIdRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -335,6 +342,7 @@ export interface FileRoutesByTo {
   '/app/kb': typeof AuthenticatedAppKbRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
+  '/suporte/$id': typeof AuthenticatedSuporteIdRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -378,6 +386,7 @@ export interface FileRoutesById {
   '/_authenticated/app/kb': typeof AuthenticatedAppKbRoute
   '/_authenticated/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/_authenticated/app/suporte': typeof AuthenticatedAppSuporteRoute
+  '/_authenticated/suporte/$id': typeof AuthenticatedSuporteIdRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -421,6 +430,7 @@ export interface FileRouteTypes {
     | '/app/kb'
     | '/app/qrcodes'
     | '/app/suporte'
+    | '/suporte/$id'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/admin/'
@@ -460,6 +470,7 @@ export interface FileRouteTypes {
     | '/app/kb'
     | '/app/qrcodes'
     | '/app/suporte'
+    | '/suporte/$id'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/admin'
@@ -502,6 +513,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/kb'
     | '/_authenticated/app/qrcodes'
     | '/_authenticated/app/suporte'
+    | '/_authenticated/suporte/$id'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/_authenticated/admin/'
@@ -680,6 +692,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/suporte/$slug/novo'
       preLoaderRoute: typeof SuporteSlugNovoRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/suporte/$id': {
+      id: '/_authenticated/suporte/$id'
+      path: '/suporte/$id'
+      fullPath: '/suporte/$id'
+      preLoaderRoute: typeof AuthenticatedSuporteIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/app/suporte': {
       id: '/_authenticated/app/suporte'
@@ -876,12 +895,14 @@ const AuthenticatedAppRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
+  AuthenticatedSuporteIdRoute: typeof AuthenticatedSuporteIdRoute
   AuthenticatedSuporteIndexRoute: typeof AuthenticatedSuporteIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
+  AuthenticatedSuporteIdRoute: AuthenticatedSuporteIdRoute,
   AuthenticatedSuporteIndexRoute: AuthenticatedSuporteIndexRoute,
 }
 
