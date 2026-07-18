@@ -5,7 +5,7 @@ import { getAdminStatus, bootstrapSuperAdmin } from "@/lib/admin.functions";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft } from "lucide-react";
+import { Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -51,6 +51,8 @@ function AdminLayout() {
     { to: "/admin", label: "Visão geral", icon: LayoutDashboard, exact: true },
     { to: "/admin/empresas", label: "Empresas", icon: Building2, exact: false },
     { to: "/admin/assinaturas", label: "Assinaturas", icon: CreditCard, exact: false },
+    { to: "/admin/alertas", label: "Alertas", icon: Bell, exact: false },
+    { to: "/admin/auditoria", label: "Auditoria", icon: FileClock, exact: false },
   ] as const;
 
   return (
