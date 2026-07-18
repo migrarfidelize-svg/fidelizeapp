@@ -423,14 +423,88 @@ function QRCodes() {
     finally { setBatchNode(null); setExporting(false); }
   }
 
+  // ---------- History (undo/redo) ----------
+  const HISTORY_LIMIT = 60;
+  const historyRef = useRef<{ past: string[]; future: string[]; lastSig: string }>({ past: [], future: [], lastSig: "" });
+  const isApplyingRef = useRef(false);
+  const [historyTick, setHistoryTick] = useState(0);
+  const stateSig = JSON.stringify(currentState());
+  useEffect(() => {
+    if (isApplyingRef.current) { isApplyingRef.current = false; historyRef.current.lastSig = stateSig; return; }
+    if (historyRef.current.lastSig === stateSig) return;
+    const t = setTimeout(() => {
+      const h = historyRef.current;
+      if (h.lastSig && h.lastSig !== stateSig) {
+        h.past.push(h.lastSig);
+        if (h.past.length > HISTORY_LIMIT) h.past.shift();
+        h.future = [];
+      }
+      h.lastSig = stateSig;
+      setHistoryTick((x) => x + 1);
+    }, 350);
+    return () => clearTimeout(t);
+  }, [stateSig]);
+  const canUndo = historyRef.current.past.length > 0;
+  const canRedo = historyRef.current.future.length > 0;
+  function undo() {
+    const h = historyRef.current;
+    const prev = h.past.pop(); if (!prev) return;
+    h.future.push(h.lastSig); h.lastSig = prev;
+    isApplyingRef.current = true;
+    applyState(JSON.parse(prev)); setHistoryTick((x) => x + 1);
+  }
+  function redo() {
+    const h = historyRef.current;
+    const next = h.future.pop(); if (!next) return;
+    h.past.push(h.lastSig); h.lastSig = next;
+    isApplyingRef.current = true;
+    applyState(JSON.parse(next)); setHistoryTick((x) => x + 1);
+  }
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const mod = e.ctrlKey || e.metaKey;
+      if (!mod) return;
+      const target = e.target as HTMLElement | null;
+      // still allow shortcuts even in inputs — designers expect it
+      if (e.key.toLowerCase() === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
+      else if ((e.key.toLowerCase() === "z" && e.shiftKey) || e.key.toLowerCase() === "y") { e.preventDefault(); redo(); }
+      void target;
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // ---------- Segment presets ----------
+  function applySegmentPreset(seg: Segment, mode: "all" | "colors" | "texts" = "all") {
+    const p = SEGMENT_PRESETS[seg];
+    setSegment(seg);
+    if (mode === "all" || mode === "colors") {
+      setPrimaryColor(p.primary); setAccentColor(p.accent); setBackgroundColor(p.bg); setTextColor(p.text);
+    }
+    if (mode === "all" || mode === "texts") {
+      setTitle(p.title); setSubtitle(p.subtitle); setCtaNearQR(p.ctaNearQR); setCtaFooter(p.ctaFooter);
+      const n = activeCampaign?.stamps_required ?? 10;
+      const r = activeCampaign?.reward_title?.toLowerCase() ?? "uma recompensa exclusiva";
+      setRewardTextOverride(p.rewardHint.replace("{n}", String(n)).replace("{reward}", r));
+    }
+    toast.success(`Preset "${SEGMENT_LABEL[seg]}" aplicado`);
+  }
+
   if (!est) return <div className="text-muted-foreground">Carregando…</div>;
 
   return (
     <div className="space-y-6">
-      <div>
-        <div className="text-xs uppercase tracking-widest text-muted-foreground">Divulgação</div>
-        <h1 className="font-display text-3xl font-bold">Divulgue seu programa de fidelidade</h1>
-        <p className="text-sm text-muted-foreground mt-1 max-w-2xl">Crie materiais personalizados com QR Code — com sangria para impressão, validação de leitura e variações salvas.</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="text-xs uppercase tracking-widest text-muted-foreground">Divulgação</div>
+          <h1 className="font-display text-3xl font-bold">Divulgue seu programa de fidelidade</h1>
+          <p className="text-sm text-muted-foreground mt-1 max-w-2xl">Crie materiais personalizados com QR Code — com sangria para impressão, validação de leitura e variações salvas.</p>
+        </div>
+        <div className="flex items-center gap-1 rounded-lg border bg-card p-1">
+          <Button size="sm" variant="ghost" onClick={undo} disabled={!canUndo} title="Desfazer (Ctrl+Z)"><Undo2 className="h-4 w-4" /></Button>
+          <Button size="sm" variant="ghost" onClick={redo} disabled={!canRedo} title="Refazer (Ctrl+Shift+Z)"><Redo2 className="h-4 w-4" /></Button>
+          <span className="text-[11px] text-muted-foreground px-2">{historyRef.current.past.length} passos</span>
+        </div>
       </div>
 
       {/* Format picker */}
