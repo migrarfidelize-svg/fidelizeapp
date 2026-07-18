@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
-import { getAdminStatus } from "@/lib/settings.functions";
+import { getAdminStatus } from "@/lib/admin.functions";
 import { EquipeTab } from "./app.config";
 
 export const Route = createFileRoute("/_authenticated/app/equipe")({
