@@ -216,6 +216,7 @@ function Onboarding() {
             <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Prévia</div>
             <StampCard
               brandName={f.name || "Sua empresa"}
+              logoUrl={f.logo_url || undefined}
               customerName="Cliente exemplo"
               stamps={Math.min(3, f.stamps_required)}
               required={f.stamps_required}
