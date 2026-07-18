@@ -61,12 +61,36 @@ function AdminEmpresas() {
     onError: (e: any) => toast.error(e.message ?? "Falha"),
   });
 
+  const reportFail = useServerFn(adminReportPaymentFailure);
+  const flagFailure = useMutation({
+    mutationFn: (id: string) => reportFail({ data: { establishment_id: id, message: "Falha de pagamento reportada manualmente" } }),
+    onSuccess: () => { toast.success("Falha de pagamento registrada"); qc.invalidateQueries({ queryKey: ["admin-alerts"] }); },
+    onError: (e: any) => toast.error(e.message ?? "Falha"),
+  });
+
+  function exportCSV() {
+    const rows = (data ?? []).map(e => [e.name, e.slug, PLAN_LABEL[e.plan] ?? e.plan, e.active ? "Ativa" : "Bloqueada", e.owner_name ?? "", e.email ?? "", e.phone ?? "", e.customers, e.stamps, formatDate(e.created_at)]);
+    downloadCSV(`fidelize-empresas-${new Date().toISOString().slice(0,10)}.csv`,
+      ["Nome","Slug","Plano","Status","Responsável","Email","Telefone","Clientes","Carimbos","Cadastro"], rows);
+  }
+  function exportPDF() {
+    const rows = (data ?? []).map(e => [e.name, PLAN_LABEL[e.plan] ?? e.plan, e.active ? "Ativa" : "Bloqueada", e.owner_name ?? "-", e.customers, e.stamps, formatDate(e.created_at)]);
+    downloadPDF(`fidelize-empresas-${new Date().toISOString().slice(0,10)}.pdf`, "Empresas — Fidelize",
+      ["Nome","Plano","Status","Responsável","Clientes","Carimbos","Cadastro"], rows, `Gerado em ${new Date().toLocaleString("pt-BR")} · ${(data ?? []).length} empresas`);
+  }
+
   return (
     <div className="space-y-6">
-      <div>
-        <div className="text-xs uppercase tracking-widest text-muted-foreground">Administração</div>
-        <h1 className="font-display text-3xl font-bold">Empresas</h1>
-        <p className="text-sm text-muted-foreground mt-1">Gerencie estabelecimentos, planos e acesso.</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <div className="text-xs uppercase tracking-widest text-muted-foreground">Administração</div>
+          <h1 className="font-display text-3xl font-bold">Empresas</h1>
+          <p className="text-sm text-muted-foreground mt-1">Gerencie estabelecimentos, planos e acesso.</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={exportCSV}><Download className="mr-2 h-4 w-4" />CSV</Button>
+          <Button variant="outline" size="sm" onClick={exportPDF}><Download className="mr-2 h-4 w-4" />PDF</Button>
+        </div>
       </div>
 
       <Card>
