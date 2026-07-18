@@ -17,7 +17,9 @@ function AppLayout() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const getEsts = useServerFn(getMyEstablishments);
+  const getAdmin = useServerFn(getAdminStatus);
   const { data: memberships, isLoading } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
+  const { data: adminStatus } = useQuery({ queryKey: ["admin-status"], queryFn: () => getAdmin() });
   const pathname = useRouterState({ select: (r) => r.location.pathname });
 
   const activeEst = memberships?.[0]?.establishment as { id: string; name: string; slug: string; logo_url: string | null } | undefined;
