@@ -38,7 +38,7 @@ export function LoyaltyVoucher({
   primary = "#5B21B6", accent = "#F97066", icon = "star",
   lastStampAt, expiresAt, rewardAvailable = false,
 }: VoucherProps) {
-  const Icon = ICONS[icon] ?? Star;
+  const Icon = getStampIcon(icon);
   const filled = Math.min(stamps, required);
   const missing = Math.max(0, required - stamps);
   const progress = required > 0 ? Math.min(100, (filled / required) * 100) : 0;
