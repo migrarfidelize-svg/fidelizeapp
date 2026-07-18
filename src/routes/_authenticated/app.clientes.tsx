@@ -171,7 +171,10 @@ function Clientes() {
           <h1 className="font-display text-3xl font-bold">Clientes</h1>
           <p className="text-sm text-muted-foreground mt-1">Gerencie sua base, acompanhe visitas e cartões fidelidade.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" onClick={() => setImporting(true)}>
+            <Upload className="h-4 w-4 mr-2" /> Importar CSV
+          </Button>
           <Button variant="outline" onClick={() => downloadCsv(rows)} disabled={rows.length === 0}>
             <Download className="h-4 w-4 mr-2" /> Exportar CSV
           </Button>
@@ -180,6 +183,7 @@ function Clientes() {
           </Button>
         </div>
       </div>
+
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
