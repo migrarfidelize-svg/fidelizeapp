@@ -114,6 +114,22 @@ function AuthPage() {
                 <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required minLength={2} />
               </div>
             )}
+            {isSignup && (
+              <div>
+                <Label htmlFor="whatsapp">WhatsApp</Label>
+                <Input
+                  id="whatsapp"
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  placeholder="(11) 91234-5678"
+                  value={whatsapp}
+                  onChange={(e) => setWhatsapp(formatWhatsapp(e.target.value))}
+                  required
+                />
+                <p className="mt-1 text-xs text-muted-foreground">Usaremos para avisos importantes e suporte.</p>
+              </div>
+            )}
             <div>
               <Label htmlFor="email">E-mail</Label>
               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
