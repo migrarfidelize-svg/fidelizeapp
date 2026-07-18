@@ -88,7 +88,7 @@ function AdminHelp() {
                 </div>
                 <ArticleDialog categories={categories} article={a} />
                 <DeleteArticle id={a.id} />
-              </Card></CardContent>
+              </CardContent></Card>
             ))}
             {articles.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">Nenhum artigo.</p>}
           </div>
@@ -105,7 +105,7 @@ function AdminHelp() {
                 </div>
                 <CategoryDialog category={c} />
                 <DeleteCategory id={c.id} />
-              </Card></CardContent>
+              </CardContent></Card>
             ))}
           </div>
         </TabsContent>
