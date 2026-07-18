@@ -31,7 +31,8 @@ function Ticket() {
   const qc = useQueryClient();
   const getFn = useServerFn(getMySupportTicket);
   const replyFn = useServerFn(replyMySupportTicket);
-  const uploadFn = useServerFn(uploadTicketAttachment);
+  const uploadFn = useServerFn(uploadSupportAttachment);
+  const signFn = useServerFn(getSupportAttachmentUrl);
   const [reply, setReply] = useState("");
   const [atts, setAtts] = useState<Attachment[]>([]);
   const [busy, setBusy] = useState(false);
