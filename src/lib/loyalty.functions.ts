@@ -370,12 +370,119 @@ export const getEstablishmentCampaigns = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ establishment_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: rows, error } = await context.supabase.from("campaigns")
-      .select("id, name, reward_title, reward_description, stamps_required, stamp_icon, active")
+    const { supabase } = context;
+    const { data: rows, error } = await supabase.from("campaigns")
+      .select("id, name, type, reward_title, reward_description, rules, stamps_required, stamp_icon, stamp_validity_days, reward_validity_days, active, created_at")
       .eq("establishment_id", data.establishment_id)
       .order("active", { ascending: false })
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
-    return rows ?? [];
+    const ids = (rows ?? []).map(r => r.id);
+    if (ids.length === 0) return [];
+    const [{ data: cards }, { data: rewards }] = await Promise.all([
+      supabase.from("loyalty_cards").select("id, campaign_id").in("campaign_id", ids),
+      supabase.from("rewards").select("id, campaign_id, redeemed_at").in("campaign_id", ids),
+    ]);
+    const cardCount = new Map<string, number>();
+    (cards ?? []).forEach(c => cardCount.set(c.campaign_id, (cardCount.get(c.campaign_id) ?? 0) + 1));
+    const rewardCount = new Map<string, { unlocked: number; redeemed: number }>();
+    (rewards ?? []).forEach(r => {
+      const cur = rewardCount.get(r.campaign_id) ?? { unlocked: 0, redeemed: 0 };
+      cur.unlocked += 1;
+      if (r.redeemed_at) cur.redeemed += 1;
+      rewardCount.set(r.campaign_id, cur);
+    });
+    return (rows ?? []).map(r => ({
+      ...r,
+      cards_count: cardCount.get(r.id) ?? 0,
+      rewards_unlocked: rewardCount.get(r.id)?.unlocked ?? 0,
+      rewards_redeemed: rewardCount.get(r.id)?.redeemed ?? 0,
+    }));
   });
+
+// ---------- Campaign CRUD ----------
+const campaignInput = z.object({
+  name: z.string().trim().min(2, "Nome muito curto.").max(80, "Nome muito longo."),
+  reward_title: z.string().trim().min(2, "Descreva a recompensa.").max(120),
+  reward_description: z.string().max(500).optional().or(z.literal("")).transform(v => v || undefined),
+  rules: z.string().max(1000).optional().or(z.literal("")).transform(v => v || undefined),
+  stamps_required: z.number().int().min(2, "Mínimo de 2 carimbos.").max(50, "Máximo de 50 carimbos."),
+  stamp_icon: z.enum(["star", "heart", "check", "coffee"]).default("star"),
+  stamp_validity_days: z.number().int().min(0).max(3650).nullable().optional(),
+  reward_validity_days: z.number().int().min(0).max(3650).nullable().optional(),
+});
+
+export const createCampaign = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ establishment_id: z.string().uuid() }).and(campaignInput).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { establishment_id, ...rest } = data;
+    const { data: row, error } = await supabase.from("campaigns").insert({
+      establishment_id,
+      name: rest.name,
+      reward_title: rest.reward_title,
+      reward_description: rest.reward_description,
+      rules: rest.rules,
+      stamps_required: rest.stamps_required,
+      stamp_icon: rest.stamp_icon,
+      stamp_validity_days: rest.stamp_validity_days ?? null,
+      reward_validity_days: rest.reward_validity_days ?? null,
+    }).select("id").single();
+    if (error) throw new Error(error.message);
+    await auditLog(establishment_id, userId, "campaign_created", "campaign", row.id, { name: rest.name });
+    return row;
+  });
+
+export const updateCampaign = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).and(campaignInput).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { id, ...rest } = data;
+    const { data: cur } = await supabase.from("campaigns").select("establishment_id").eq("id", id).maybeSingle();
+    if (!cur) throw new Error("Campanha não encontrada");
+    const { error } = await supabase.from("campaigns").update({
+      name: rest.name,
+      reward_title: rest.reward_title,
+      reward_description: rest.reward_description,
+      rules: rest.rules,
+      stamps_required: rest.stamps_required,
+      stamp_icon: rest.stamp_icon,
+      stamp_validity_days: rest.stamp_validity_days ?? null,
+      reward_validity_days: rest.reward_validity_days ?? null,
+    }).eq("id", id);
+    if (error) throw new Error(error.message);
+    await auditLog(cur.establishment_id, userId, "campaign_updated", "campaign", id, { name: rest.name });
+    return { ok: true };
+  });
+
+export const toggleCampaign = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid(), active: z.boolean() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: cur } = await supabase.from("campaigns").select("establishment_id").eq("id", data.id).maybeSingle();
+    if (!cur) throw new Error("Campanha não encontrada");
+    const { error } = await supabase.from("campaigns").update({ active: data.active }).eq("id", data.id);
+    if (error) throw new Error(error.message);
+    await auditLog(cur.establishment_id, userId, data.active ? "campaign_activated" : "campaign_paused", "campaign", data.id, {});
+    return { ok: true };
+  });
+
+export const deleteCampaign = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: cur } = await supabase.from("campaigns").select("establishment_id").eq("id", data.id).maybeSingle();
+    if (!cur) throw new Error("Campanha não encontrada");
+    const { count } = await supabase.from("loyalty_cards").select("id", { count: "exact", head: true }).eq("campaign_id", data.id);
+    if ((count ?? 0) > 0) throw new Error("Esta campanha já possui cartões emitidos. Pause-a em vez de excluir.");
+    const { error } = await supabase.from("campaigns").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    await auditLog(cur.establishment_id, userId, "campaign_deleted", "campaign", data.id, {});
+    return { ok: true };
+  });
+
 
