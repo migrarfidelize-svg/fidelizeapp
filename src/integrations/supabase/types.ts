@@ -355,6 +355,195 @@ export type Database = {
         }
         Relationships: []
       }
+      helpdesk_members: {
+        Row: {
+          active: boolean
+          created_at: string
+          establishment_id: string
+          id: string
+          role: Database["public"]["Enums"]["helpdesk_role"]
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          establishment_id: string
+          id?: string
+          role?: Database["public"]["Enums"]["helpdesk_role"]
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          establishment_id?: string
+          id?: string
+          role?: Database["public"]["Enums"]["helpdesk_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "helpdesk_members_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kb_articles: {
+        Row: {
+          author_id: string | null
+          body_html: string
+          body_text: string
+          category_id: string | null
+          created_at: string
+          establishment_id: string
+          excerpt: string | null
+          helpful_count: number
+          id: string
+          not_helpful_count: number
+          published: boolean
+          search_tsv: unknown
+          slug: string
+          tags: string[]
+          title: string
+          updated_at: string
+          views: number
+        }
+        Insert: {
+          author_id?: string | null
+          body_html?: string
+          body_text?: string
+          category_id?: string | null
+          created_at?: string
+          establishment_id: string
+          excerpt?: string | null
+          helpful_count?: number
+          id?: string
+          not_helpful_count?: number
+          published?: boolean
+          search_tsv?: unknown
+          slug: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+          views?: number
+        }
+        Update: {
+          author_id?: string | null
+          body_html?: string
+          body_text?: string
+          category_id?: string | null
+          created_at?: string
+          establishment_id?: string
+          excerpt?: string | null
+          helpful_count?: number
+          id?: string
+          not_helpful_count?: number
+          published?: boolean
+          search_tsv?: unknown
+          slug?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          views?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kb_articles_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "kb_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kb_articles_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kb_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          establishment_id: string
+          icon: string | null
+          id: string
+          name: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          establishment_id: string
+          icon?: string | null
+          id?: string
+          name: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          establishment_id?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kb_categories_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kb_feedback: {
+        Row: {
+          article_id: string
+          comment: string | null
+          created_at: string
+          helpful: boolean
+          id: string
+          visitor_hash: string | null
+        }
+        Insert: {
+          article_id: string
+          comment?: string | null
+          created_at?: string
+          helpful: boolean
+          id?: string
+          visitor_hash?: string | null
+        }
+        Update: {
+          article_id?: string
+          comment?: string | null
+          created_at?: string
+          helpful?: boolean
+          id?: string
+          visitor_hash?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kb_feedback_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "kb_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loyalty_cards: {
         Row: {
           campaign_id: string
@@ -629,6 +818,162 @@ export type Database = {
           },
         ]
       }
+      ticket_messages: {
+        Row: {
+          attachments: Json
+          author_name: string | null
+          author_type: Database["public"]["Enums"]["ticket_author_type"]
+          author_user_id: string | null
+          body: string
+          created_at: string
+          id: string
+          internal: boolean
+          ticket_id: string
+        }
+        Insert: {
+          attachments?: Json
+          author_name?: string | null
+          author_type: Database["public"]["Enums"]["ticket_author_type"]
+          author_user_id?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          internal?: boolean
+          ticket_id: string
+        }
+        Update: {
+          attachments?: Json
+          author_name?: string | null
+          author_type?: Database["public"]["Enums"]["ticket_author_type"]
+          author_user_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          internal?: boolean
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_quick_replies: {
+        Row: {
+          body: string
+          created_at: string
+          establishment_id: string
+          id: string
+          shortcut: string
+          title: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          establishment_id: string
+          id?: string
+          shortcut: string
+          title: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          establishment_id?: string
+          id?: string
+          shortcut?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_quick_replies_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          assigned_to: string | null
+          channel: Database["public"]["Enums"]["ticket_channel"]
+          created_at: string
+          csat: number | null
+          csat_comment: string | null
+          due_first_response_at: string | null
+          due_resolution_at: string | null
+          establishment_id: string
+          first_response_at: string | null
+          id: string
+          number: number
+          priority: Database["public"]["Enums"]["ticket_priority"]
+          requester_email: string
+          requester_name: string | null
+          requester_user_id: string | null
+          solved_at: string | null
+          status: Database["public"]["Enums"]["ticket_status"]
+          subject: string
+          tags: string[]
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          channel?: Database["public"]["Enums"]["ticket_channel"]
+          created_at?: string
+          csat?: number | null
+          csat_comment?: string | null
+          due_first_response_at?: string | null
+          due_resolution_at?: string | null
+          establishment_id: string
+          first_response_at?: string | null
+          id?: string
+          number?: number
+          priority?: Database["public"]["Enums"]["ticket_priority"]
+          requester_email: string
+          requester_name?: string | null
+          requester_user_id?: string | null
+          solved_at?: string | null
+          status?: Database["public"]["Enums"]["ticket_status"]
+          subject: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          channel?: Database["public"]["Enums"]["ticket_channel"]
+          created_at?: string
+          csat?: number | null
+          csat_comment?: string | null
+          due_first_response_at?: string | null
+          due_resolution_at?: string | null
+          establishment_id?: string
+          first_response_at?: string | null
+          id?: string
+          number?: number
+          priority?: Database["public"]["Enums"]["ticket_priority"]
+          requester_email?: string
+          requester_name?: string | null
+          requester_user_id?: string | null
+          solved_at?: string | null
+          status?: Database["public"]["Enums"]["ticket_status"]
+          subject?: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -646,13 +991,26 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_helpdesk_admin: {
+        Args: { _est: string; _user: string }
+        Returns: boolean
+      }
+      is_helpdesk_agent: {
+        Args: { _est: string; _user: string }
+        Returns: boolean
+      }
       is_super_admin: { Args: { _user: string }; Returns: boolean }
     }
     Enums: {
       campaign_type: "stamps" | "points"
+      helpdesk_role: "hd_admin" | "hd_agent"
       member_role: "owner" | "manager" | "staff"
       plan_tier: "free" | "starter" | "pro" | "enterprise"
       platform_role: "super_admin"
+      ticket_author_type: "customer" | "agent" | "system"
+      ticket_channel: "form" | "email" | "chat" | "agent"
+      ticket_priority: "low" | "normal" | "high" | "urgent"
+      ticket_status: "open" | "pending" | "on_hold" | "solved" | "closed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -781,9 +1139,14 @@ export const Constants = {
   public: {
     Enums: {
       campaign_type: ["stamps", "points"],
+      helpdesk_role: ["hd_admin", "hd_agent"],
       member_role: ["owner", "manager", "staff"],
       plan_tier: ["free", "starter", "pro", "enterprise"],
       platform_role: ["super_admin"],
+      ticket_author_type: ["customer", "agent", "system"],
+      ticket_channel: ["form", "email", "chat", "agent"],
+      ticket_priority: ["low", "normal", "high", "urgent"],
+      ticket_status: ["open", "pending", "on_hold", "solved", "closed"],
     },
   },
 } as const
