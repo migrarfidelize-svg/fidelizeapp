@@ -141,7 +141,7 @@ export const listTeam = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertRole(supabase, userId, data.establishment_id, "staff");
     const { data: members } = await supabase.from("establishment_members")
-      .select("id, user_id, role, active, invited_email, display_name, pin_hash, created_at")
+      .select("id, user_id, role, active, invited_email, display_name, pin_hash, last_pin_used_at, created_at")
       .eq("establishment_id", data.establishment_id)
       .order("created_at", { ascending: true });
     // load profile names
@@ -198,6 +198,23 @@ export const revokeInvite = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     await audit(supabase, data.establishment_id, userId, "team.invite_revoked", "team_invite", data.invite_id, {});
     return { ok: true };
+  });
+
+export const resendInvite = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ establishment_id: z.string().uuid(), invite_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertRole(supabase, userId, data.establishment_id, "manager");
+    const token = randomBytes(24).toString("hex");
+    const expires_at = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString();
+    const { data: inv, error } = await supabase.from("team_invites")
+      .update({ token, expires_at, revoked_at: null })
+      .eq("id", data.invite_id).eq("establishment_id", data.establishment_id)
+      .select("*").single();
+    if (error) throw new Error(error.message);
+    await audit(supabase, data.establishment_id, userId, "team.invite_resent", "team_invite", data.invite_id, {});
+    return { invite: inv, token };
   });
 
 export const acceptInvite = createServerFn({ method: "POST" })

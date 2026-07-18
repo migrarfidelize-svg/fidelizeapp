@@ -1,12 +1,5 @@
-import { Coffee, Scissors, Pizza, Star, IceCream, ShoppingBag, Wrench, Sparkles, Gift, Heart, Check, Beer, Cookie, Utensils, Car, Dumbbell, Flower2, Cake, Croissant, Wine, Dog, Leaf } from "lucide-react";
-
-const ICONS: Record<string, typeof Coffee> = {
-  coffee: Coffee, scissors: Scissors, pizza: Pizza, star: Star,
-  icecream: IceCream, bag: ShoppingBag, wrench: Wrench, sparkles: Sparkles, gift: Gift,
-  heart: Heart, check: Check, beer: Beer, cookie: Cookie, utensils: Utensils,
-  car: Car, dumbbell: Dumbbell, flower: Flower2, cake: Cake, croissant: Croissant,
-  wine: Wine, dog: Dog, leaf: Leaf,
-};
+import { Gift } from "lucide-react";
+import { getStampIcon } from "@/lib/stampIcons";
 
 function initialsOf(name: string): string {
   const parts = (name || "").trim().split(/\s+/).filter(Boolean);
@@ -29,7 +22,7 @@ interface Props {
 }
 
 export function StampCard({ brandName, logoUrl, customerName, stamps, required, reward, primary = "#5B21B6", accent = "#F97066", icon = "coffee", code }: Props) {
-  const Icon = ICONS[icon] ?? Coffee;
+  const Icon = getStampIcon(icon);
   const cells = Array.from({ length: required }, (_, i) => i < stamps);
   const missing = Math.max(0, required - stamps);
   return (
