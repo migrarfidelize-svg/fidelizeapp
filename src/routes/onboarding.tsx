@@ -271,6 +271,7 @@ function Onboarding() {
               reward={f.reward_title || "Sua recompensa aqui"}
               primary={f.primary_color}
               accent={f.accent_color}
+              icon={f.stamp_icon}
             />
           </div>
         </div>
