@@ -243,6 +243,7 @@ export const createEstablishment = createServerFn({ method: "POST" })
     whatsapp: z.string().max(20).optional(),
     primary_color: z.string().max(20).default("#5B21B6"),
     accent_color: z.string().max(20).default("#F97066"),
+    logo_url: z.string().url().max(500).optional().or(z.literal("")).transform((v) => v || undefined),
     campaign_name: z.string().trim().min(2).max(80).default("Cartão Fidelidade"),
     stamps_required: z.number().int().min(2).max(50).default(10),
     reward_title: z.string().trim().min(2).max(120),
@@ -252,7 +253,7 @@ export const createEstablishment = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: est, error } = await supabase.from("establishments").insert({
       slug: data.slug, name: data.name, description: data.description, address: data.address, phone: data.phone, whatsapp: data.whatsapp,
-      primary_color: data.primary_color, accent_color: data.accent_color, created_by: userId,
+      primary_color: data.primary_color, accent_color: data.accent_color, logo_url: data.logo_url, created_by: userId,
     }).select("*").single();
     if (error) {
       if (error.code === "23505") throw new Error("Este endereço já está em uso, escolha outro.");

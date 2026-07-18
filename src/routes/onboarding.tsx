@@ -1,5 +1,5 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
 import { toast } from "sonner";
+import { Upload, X, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/onboarding")({
   ssr: false,
@@ -26,6 +27,8 @@ function slugify(v: string) {
   return v.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
 }
 
+const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 10; // 10 anos
+
 function Onboarding() {
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -33,8 +36,11 @@ function Onboarding() {
   const getEsts = useServerFn(getMyEstablishments);
 
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [f, setF] = useState({
     name: "", slug: "", description: "", primary_color: "#5B21B6", accent_color: "#F97066",
+    logo_url: "" as string,
     campaign_name: "Cartão Fidelidade", stamps_required: 10, reward_title: "", reward_description: "",
   });
 
@@ -42,11 +48,56 @@ function Onboarding() {
     setF((s) => ({ ...s, [k]: v, ...(k === "name" && !s.slug ? { slug: slugify(v as string) } : {}) }));
   }
 
+  async function onPickLogo(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!/^image\/(png|jpe?g|webp|svg\+xml)$/.test(file.type)) {
+      toast.error("Envie uma imagem PNG, JPG, WEBP ou SVG.");
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      toast.error("Logo muito grande (máx. 3 MB).");
+      return;
+    }
+    setUploading(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData.user?.id;
+      if (!uid) throw new Error("Sessão expirada");
+      const ext = (file.name.split(".").pop() || "png").toLowerCase();
+      const path = `${uid}/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("logos").upload(path, file, {
+        cacheControl: "31536000", upsert: false, contentType: file.type,
+      });
+      if (upErr) throw upErr;
+      const { data: signed, error: sErr } = await supabase.storage.from("logos").createSignedUrl(path, SIGNED_URL_TTL);
+      if (sErr || !signed?.signedUrl) throw sErr || new Error("Falha ao gerar link");
+      set("logo_url", signed.signedUrl);
+      toast.success("Logo enviado!");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao enviar logo");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  function removeLogo() {
+    set("logo_url", "");
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    const cleanSlug = slugify(f.slug);
+    if (cleanSlug.length < 3) {
+      toast.error("O endereço público precisa ter pelo menos 3 caracteres (letras, números ou hífens).");
+      return;
+    }
+    if (f.name.trim().length < 2) { toast.error("Informe o nome da empresa."); return; }
+    if (f.reward_title.trim().length < 2) { toast.error("Descreva a recompensa da campanha."); return; }
     setLoading(true);
     try {
-      await create({ data: f });
+      await create({ data: { ...f, slug: cleanSlug } });
       await qc.invalidateQueries();
       await getEsts();
       toast.success("Empresa criada!");
@@ -104,6 +155,35 @@ function Onboarding() {
             </div>
           </div>
 
+          <div>
+            <Label>Logo do seu negócio (opcional)</Label>
+            <div className="mt-2 flex items-center gap-4">
+              <div className="h-20 w-20 shrink-0 rounded-2xl border bg-muted/40 grid place-items-center overflow-hidden">
+                {f.logo_url ? (
+                  <img src={f.logo_url} alt="Logo" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-xs text-muted-foreground text-center px-1">Sem logo</span>
+                )}
+              </div>
+              <div className="flex-1 space-y-2">
+                <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden" onChange={onPickLogo} />
+                <div className="flex gap-2 flex-wrap">
+                  <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => fileRef.current?.click()}>
+                    {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+                    {f.logo_url ? "Trocar logo" : "Enviar logo"}
+                  </Button>
+                  {f.logo_url && (
+                    <Button type="button" variant="ghost" size="sm" onClick={removeLogo}>
+                      <X className="h-4 w-4 mr-1" /> Remover
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">PNG, JPG, WEBP ou SVG. Até 3 MB. Ideal: quadrado.</p>
+              </div>
+            </div>
+          </div>
+
+
           <div className="border-t pt-6 space-y-4">
             <h2 className="font-display text-lg font-semibold">Primeira campanha</h2>
             <div>
@@ -136,6 +216,7 @@ function Onboarding() {
             <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Prévia</div>
             <StampCard
               brandName={f.name || "Sua empresa"}
+              logoUrl={f.logo_url || undefined}
               customerName="Cliente exemplo"
               stamps={Math.min(3, f.stamps_required)}
               required={f.stamps_required}
