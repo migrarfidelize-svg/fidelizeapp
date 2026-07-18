@@ -189,7 +189,7 @@ function Onboarding() {
                     </Button>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground">PNG, JPG, WEBP ou SVG. Até 3 MB. Ideal: quadrado.</p>
+                <p className="text-xs text-muted-foreground">PNG, JPG, WEBP ou SVG. Até 5 MB. Você recorta antes de enviar.</p>
               </div>
             </div>
           </div>
