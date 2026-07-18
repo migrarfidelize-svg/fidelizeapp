@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { enforceLimit } from "@/lib/plans.functions";
 import type { Database } from "@/integrations/supabase/types";
 
 function publicClient() {
@@ -400,6 +401,8 @@ export const createCustomerRow = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
+    // Plan limit check
+    await enforceLimit(supabase, data.establishment_id, "customers", 1);
     // dedupe by phone
     const { data: dup } = await supabase.from("customers").select("id").eq("establishment_id", data.establishment_id).eq("phone", data.phone).maybeSingle();
     if (dup) throw new Error("Já existe um cliente com este telefone.");
@@ -584,6 +587,9 @@ export const importCustomersCsv = createServerFn({ method: "POST" })
     if (data.dry_run || toInsert.length === 0) {
       return { dry_run: true, summary, preview, inserted: 0 };
     }
+
+    // Plan limit check for real import
+    await enforceLimit(supabase, data.establishment_id, "customers", toInsert.length);
 
     // Insert in chunks
     let inserted = 0;
@@ -829,6 +835,7 @@ export const createCampaign = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { establishment_id, ...rest } = data;
+    await enforceLimit(supabase, establishment_id, "campaigns", 1);
     const { data: row, error } = await supabase.from("campaigns").insert({
       establishment_id,
       name: rest.name,

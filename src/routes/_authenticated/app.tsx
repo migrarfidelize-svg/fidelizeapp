@@ -6,7 +6,7 @@ import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { getAdminStatus } from "@/lib/admin.functions";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield, LifeBuoy, BookOpen } from "lucide-react";
+import { LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield, LifeBuoy, BookOpen, Package } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
 export const Route = createFileRoute("/_authenticated/app")({
@@ -41,6 +41,7 @@ function AppLayout() {
     { to: "/app/equipe", label: "Equipe", icon: UsersRound, exact: false },
     
     { to: "/app/kb", label: "Base", icon: BookOpen, exact: false },
+    { to: "/app/planos", label: "Planos", icon: Package, exact: false },
     { to: "/suporte", label: "Fale com a Fidelize", icon: LifeBuoy, exact: false },
   ] as const;
 
