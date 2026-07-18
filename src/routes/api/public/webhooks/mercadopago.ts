@@ -203,8 +203,8 @@ async function activatePlan(establishmentId: string, planSlug: string, mpPayment
       subject: `Pagamento aprovado — Plano ${plan.name}`,
       html: `<p>Olá!</p><p>Recebemos seu pagamento e o plano <strong>${plan.name}</strong> já está ativo em <strong>${est.name}</strong>.</p><p>Próxima cobrança: ${nextMonth.toLocaleDateString("pt-BR")}</p><p>Obrigado por usar a Fidelize!</p>`,
       status: "queued",
-      metadata: { kind: "payment_approved", establishment_id: establishmentId, plan_slug: planSlug, mp_payment_id: mpPaymentId } as any,
-    });
+      metadata: { kind: "payment_approved", establishment_id: establishmentId, plan_slug: planSlug, mp_payment_id: mpPaymentId } as never,
+    } as never);
   }
 }
 
