@@ -6,12 +6,14 @@ import {
   getMyEstablishments, getEstablishmentCampaigns,
   listCustomersAdvanced, getCustomerStats, getCustomerDetail,
   createCustomerRow, updateCustomerRow, setCustomerBlocked, deleteCustomerRow,
-  addStamp,
+  addStamp, bulkSetBlocked, bulkDeleteCustomers, importCustomersCsv, getCustomerAudit,
 } from "@/lib/loyalty.functions";
+import { parseCsv, CUSTOMER_CSV_TEMPLATE } from "@/lib/csv";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
@@ -23,9 +25,9 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { formatPhone, formatDate } from "@/lib/format";
 import {
-  Users, Search, Plus, Download, Filter, MoreHorizontal, ShieldOff, ShieldCheck,
+  Users, Search, Plus, Download, Upload, Filter, MoreHorizontal, ShieldOff, ShieldCheck,
   Trash2, Pencil, ExternalLink, Stamp as StampIcon, MessageCircle, Copy, Gift,
-  TrendingUp, UserPlus, MailCheck, Ban,
+  TrendingUp, UserPlus, MailCheck, Ban, History, FileWarning, CheckCircle2,
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
@@ -33,6 +35,7 @@ export const Route = createFileRoute("/_authenticated/app/clientes")({
   head: () => ({ meta: [{ title: "Clientes — Fidelize" }] }),
   component: Clientes,
 });
+
 
 type CustomerRow = {
   id: string; name: string; phone: string; email: string | null; code: string;
@@ -118,12 +121,36 @@ function Clientes() {
   const [editing, setEditing] = useState<CustomerRow | null>(null);
   const [creating, setCreating] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<CustomerRow | null>(null);
+  const [importing, setImporting] = useState(false);
+
+  // Bulk selection (per page; ids only)
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkAction, setBulkAction] = useState<"block" | "unblock" | "delete" | null>(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
+
+  function toggleOne(id: string, on: boolean) {
+    setSelected(prev => {
+      const n = new Set(prev);
+      if (on) n.add(id); else n.delete(id);
+      return n;
+    });
+  }
+  function togglePage(on: boolean) {
+    setSelected(prev => {
+      const n = new Set(prev);
+      rows.forEach(r => { if (on) n.add(r.id); else n.delete(r.id); });
+      return n;
+    });
+  }
+  const pageSelectedCount = rows.filter(r => selected.has(r.id)).length;
+  const allPageSelected = rows.length > 0 && pageSelectedCount === rows.length;
 
   function applySearch() { setPage(1); setSearchTerm(q.trim()); }
   function resetFilters() {
     setQ(""); setSearchTerm(""); setStatus("all"); setCampaignFilter("all");
     setSort("last_visit"); setDir("desc"); setPage(1);
   }
+
 
   const activeFilters = useMemo(() => {
     const f: string[] = [];
@@ -144,7 +171,10 @@ function Clientes() {
           <h1 className="font-display text-3xl font-bold">Clientes</h1>
           <p className="text-sm text-muted-foreground mt-1">Gerencie sua base, acompanhe visitas e cartões fidelidade.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" onClick={() => setImporting(true)}>
+            <Upload className="h-4 w-4 mr-2" /> Importar CSV
+          </Button>
           <Button variant="outline" onClick={() => downloadCsv(rows)} disabled={rows.length === 0}>
             <Download className="h-4 w-4 mr-2" /> Exportar CSV
           </Button>
@@ -153,6 +183,7 @@ function Clientes() {
           </Button>
         </div>
       </div>
+
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -223,6 +254,27 @@ function Clientes() {
         </CardContent>
       </Card>
 
+      {/* Bulk action bar */}
+      {selected.size > 0 && (
+        <div className="sticky top-0 z-10 flex flex-wrap items-center gap-3 rounded-xl border bg-primary-soft/60 backdrop-blur px-4 py-2">
+          <div className="text-sm font-medium">
+            {selected.size} selecionado{selected.size === 1 ? "" : "s"}
+          </div>
+          <div className="ml-auto flex gap-2">
+            <Button size="sm" variant="outline" onClick={() => setBulkAction("unblock")}>
+              <ShieldCheck className="h-4 w-4 mr-1" />Desbloquear
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setBulkAction("block")}>
+              <ShieldOff className="h-4 w-4 mr-1" />Bloquear
+            </Button>
+            <Button size="sm" variant="destructive" onClick={() => setBulkAction("delete")}>
+              <Trash2 className="h-4 w-4 mr-1" />Excluir
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>Limpar</Button>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       <Card>
         <CardContent className="p-0">
@@ -234,51 +286,67 @@ function Clientes() {
                 : "Ainda sem clientes. Compartilhe seu QR Code para começar."}
             </div>
           ) : (
-            <div className="divide-y">
-              {rows.map((c) => (
-                <div key={c.id} className="flex items-center gap-3 p-4 hover:bg-muted/30 transition-colors">
-                  <button onClick={() => setOpenId(c.id)} className="flex items-center gap-3 flex-1 text-left min-w-0">
-                    <div className="grid h-11 w-11 place-items-center rounded-full bg-primary-soft text-primary font-semibold text-sm shrink-0">
-                      {initialsOf(c.name)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <div className="font-medium truncate">{c.name}</div>
-                        {c.blocked && <Badge variant="destructive" className="text-[10px]">Bloqueado</Badge>}
-                        {c.marketing_opt_in && <Badge variant="secondary" className="text-[10px]">Opt-in</Badge>}
+            <>
+              <div className="flex items-center gap-3 px-4 py-2 border-b bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground">
+                <Checkbox
+                  checked={allPageSelected}
+                  onCheckedChange={(v) => togglePage(!!v)}
+                  aria-label="Selecionar página"
+                />
+                <span>Selecionar página ({pageSelectedCount}/{rows.length})</span>
+              </div>
+              <div className="divide-y">
+                {rows.map((c) => (
+                  <div key={c.id} className="flex items-center gap-3 p-4 hover:bg-muted/30 transition-colors">
+                    <Checkbox
+                      checked={selected.has(c.id)}
+                      onCheckedChange={(v) => toggleOne(c.id, !!v)}
+                      aria-label={`Selecionar ${c.name}`}
+                    />
+                    <button onClick={() => setOpenId(c.id)} className="flex items-center gap-3 flex-1 text-left min-w-0">
+                      <div className="grid h-11 w-11 place-items-center rounded-full bg-primary-soft text-primary font-semibold text-sm shrink-0">
+                        {initialsOf(c.name)}
                       </div>
-                      <div className="text-xs text-muted-foreground truncate">
-                        {formatPhone(c.phone)}{c.email ? ` · ${c.email}` : ""} · código {c.code}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <div className="font-medium truncate">{c.name}</div>
+                          {c.blocked && <Badge variant="destructive" className="text-[10px]">Bloqueado</Badge>}
+                          {c.marketing_opt_in && <Badge variant="secondary" className="text-[10px]">Opt-in</Badge>}
+                        </div>
+                        <div className="text-xs text-muted-foreground truncate">
+                          {formatPhone(c.phone)}{c.email ? ` · ${c.email}` : ""} · código {c.code}
+                        </div>
                       </div>
+                    </button>
+                    <div className="hidden sm:block text-right shrink-0">
+                      <div className="text-sm font-semibold">{c.visits_count} visita{c.visits_count === 1 ? "" : "s"}</div>
+                      <div className="text-xs text-muted-foreground">Última: {formatDate(c.last_visit_at)}</div>
                     </div>
-                  </button>
-                  <div className="hidden sm:block text-right shrink-0">
-                    <div className="text-sm font-semibold">{c.visits_count} visita{c.visits_count === 1 ? "" : "s"}</div>
-                    <div className="text-xs text-muted-foreground">Última: {formatDate(c.last_visit_at)}</div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="shrink-0"><MoreHorizontal className="h-4 w-4" /></Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setOpenId(c.id)}>Abrir ficha</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setEditing(c)}><Pencil className="h-4 w-4 mr-2" />Editar</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => window.open(`https://wa.me/55${c.phone}`, "_blank")}>
+                          <MessageCircle className="h-4 w-4 mr-2" />WhatsApp
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <BlockToggleItem c={c} onDone={() => { qc.invalidateQueries({ queryKey: ["customers-adv"] }); qc.invalidateQueries({ queryKey: ["customer-stats"] }); }} />
+                        <DropdownMenuItem className="text-destructive" onClick={() => setConfirmDelete(c)}>
+                          <Trash2 className="h-4 w-4 mr-2" />Excluir
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="shrink-0"><MoreHorizontal className="h-4 w-4" /></Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setOpenId(c.id)}>Abrir ficha</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setEditing(c)}><Pencil className="h-4 w-4 mr-2" />Editar</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => window.open(`https://wa.me/55${c.phone}`, "_blank")}>
-                        <MessageCircle className="h-4 w-4 mr-2" />WhatsApp
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <BlockToggleItem c={c} onDone={() => { qc.invalidateQueries({ queryKey: ["customers-adv"] }); qc.invalidateQueries({ queryKey: ["customer-stats"] }); }} />
-                      <DropdownMenuItem className="text-destructive" onClick={() => setConfirmDelete(c)}>
-                        <Trash2 className="h-4 w-4 mr-2" />Excluir
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
+
 
       {/* Footer / pagination */}
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -336,9 +404,72 @@ function Clientes() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Bulk confirm */}
+      <AlertDialog open={!!bulkAction} onOpenChange={(o) => !o && setBulkAction(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {bulkAction === "delete"
+                ? `Excluir ${selected.size} cliente${selected.size === 1 ? "" : "s"}?`
+                : bulkAction === "block"
+                ? `Bloquear ${selected.size} cliente${selected.size === 1 ? "" : "s"}?`
+                : `Desbloquear ${selected.size} cliente${selected.size === 1 ? "" : "s"}?`}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {bulkAction === "delete"
+                ? "Ação permanente: remove cartões, carimbos e recompensas de todos os selecionados. Requer perfil gestor."
+                : bulkAction === "block"
+                ? "Clientes bloqueados não poderão receber carimbos até serem desbloqueados."
+                : "Os clientes voltarão a poder receber carimbos normalmente."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkBusy}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={bulkBusy}
+              className={bulkAction === "delete" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+              onClick={async () => {
+                if (!est || !bulkAction) return;
+                setBulkBusy(true);
+                try {
+                  const ids = Array.from(selected);
+                  if (bulkAction === "delete") {
+                    const r = await bulkDeleteCustomers({ data: { establishment_id: est.id, customer_ids: ids } });
+                    toast.success(`${r.affected} cliente(s) excluído(s)`);
+                  } else {
+                    const r = await bulkSetBlocked({ data: { establishment_id: est.id, customer_ids: ids, blocked: bulkAction === "block" } });
+                    toast.success(`${r.affected} cliente(s) atualizado(s)`);
+                  }
+                  setSelected(new Set());
+                  setBulkAction(null);
+                  void refetch();
+                  qc.invalidateQueries({ queryKey: ["customer-stats"] });
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : "Erro na ação em lote");
+                } finally {
+                  setBulkBusy(false);
+                }
+              }}
+            >
+              {bulkBusy ? "Processando…" : "Confirmar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Import CSV */}
+      <ImportCsvDialog
+        open={importing}
+        onClose={() => setImporting(false)}
+        establishmentId={est?.id}
+        campaigns={campaigns ?? []}
+        onImported={() => { void refetch(); qc.invalidateQueries({ queryKey: ["customer-stats"] }); }}
+      />
     </div>
   );
 }
+
 
 function StatCard({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: number; accent?: string }) {
   return (
@@ -378,21 +509,35 @@ function CustomerDrawer({
   establishmentSlug?: string;
   onDataChanged: () => void;
 }) {
+  const qc = useQueryClient();
   const detailFn = useServerFn(getCustomerDetail);
   const stampFn = useServerFn(addStamp);
+  const auditFn = useServerFn(getCustomerAudit);
   const { data, isFetching, refetch } = useQuery({
     enabled: !!customerId,
     queryKey: ["customer-detail", customerId],
     queryFn: () => detailFn({ data: { customer_id: customerId! } }),
   });
+  const { data: auditData, refetch: refetchAudit } = useQuery({
+    enabled: !!customerId,
+    queryKey: ["customer-audit", customerId],
+    queryFn: () => auditFn({ data: { customer_id: customerId! } }),
+  });
   const stampMut = useMutation({
     mutationFn: (cardId: string) => stampFn({ data: { card_id: cardId } }),
-    onSuccess: (r) => {
+    onSuccess: async (r) => {
       toast.success(r.completed ? "🎉 Recompensa desbloqueada!" : `Carimbo adicionado (${r.stamps}/${r.required})`);
-      void refetch(); onDataChanged();
+      await refetch();
+      await refetchAudit();
+      qc.invalidateQueries({ queryKey: ["customers-adv"] });
+      onDataChanged();
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
+    onError: (e) => {
+      const msg = e instanceof Error && e.message ? e.message : "Erro ao carimbar";
+      toast.error(msg, { description: "Verifique permissões, PIN e status do cartão." });
+    },
   });
+
 
   const customer = data?.customer as CustomerRow | undefined;
   const cards = (data?.cards ?? []) as any[];
@@ -461,12 +606,14 @@ function CustomerDrawer({
             </div>
 
             <Tabs defaultValue="cards">
-              <TabsList className="grid grid-cols-4 w-full">
+              <TabsList className="grid grid-cols-5 w-full">
                 <TabsTrigger value="cards">Cartões</TabsTrigger>
                 <TabsTrigger value="history">Histórico</TabsTrigger>
                 <TabsTrigger value="rewards">Recompensas</TabsTrigger>
+                <TabsTrigger value="audit">Auditoria</TabsTrigger>
                 <TabsTrigger value="info">Detalhes</TabsTrigger>
               </TabsList>
+
 
               <TabsContent value="cards" className="space-y-3 mt-3">
                 {cards.length === 0 && <div className="text-sm text-muted-foreground text-center py-6">Nenhum cartão ativo.</div>}
@@ -541,7 +688,12 @@ function CustomerDrawer({
                 )}
               </TabsContent>
 
+              <TabsContent value="audit" className="mt-3">
+                <AuditTimeline entries={auditData ?? []} />
+              </TabsContent>
+
               <TabsContent value="info" className="mt-3 space-y-3 text-sm">
+
                 <InfoLine label="Nascimento" value={customer.birthdate ? formatDate(customer.birthdate) : "—"} />
                 <InfoLine label="Cadastro" value={formatDate(customer.created_at)} />
                 <InfoLine label="Última visita" value={formatDate(customer.last_visit_at)} />
@@ -710,5 +862,256 @@ function CustomerFormDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+// ---------- Audit timeline ----------
+type AuditEntry = {
+  id: string; action: string; entity_type: string | null; entity_id: string | null;
+  metadata: unknown; user_id: string | null; user_name: string | null; created_at: string;
+};
+
+const ACTION_LABEL: Record<string, { label: string; icon: React.ReactNode; className?: string }> = {
+  customer_created: { label: "Cliente cadastrado", icon: <UserPlus className="h-4 w-4" />, className: "text-primary" },
+  customer_updated: { label: "Dados alterados", icon: <Pencil className="h-4 w-4" /> },
+  customer_blocked: { label: "Cliente bloqueado", icon: <ShieldOff className="h-4 w-4" />, className: "text-destructive" },
+  customer_unblocked: { label: "Cliente desbloqueado", icon: <ShieldCheck className="h-4 w-4" />, className: "text-success" },
+  customer_deleted: { label: "Cliente excluído", icon: <Trash2 className="h-4 w-4" />, className: "text-destructive" },
+  stamp_added: { label: "Carimbo adicionado", icon: <StampIcon className="h-4 w-4" />, className: "text-primary" },
+  stamp_undone: { label: "Carimbo estornado", icon: <StampIcon className="h-4 w-4" />, className: "text-muted-foreground" },
+  reward_redeemed: { label: "Recompensa entregue", icon: <Gift className="h-4 w-4" />, className: "text-success" },
+};
+
+function AuditTimeline({ entries }: { entries: AuditEntry[] }) {
+  if (entries.length === 0) {
+    return (
+      <div className="text-sm text-muted-foreground text-center py-6">
+        <History className="mx-auto h-6 w-6 mb-2 opacity-50" />
+        Nenhuma ação registrada ainda.
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-2">
+      {entries.map((e) => {
+        const cfg = ACTION_LABEL[e.action] ?? { label: e.action, icon: <History className="h-4 w-4" /> };
+        const meta = (e.metadata ?? {}) as Record<string, unknown>;
+        const parts: string[] = [];
+        if (meta.completed) parts.push("Recompensa liberada");
+        if (typeof meta.new_stamps === "number") parts.push(`${meta.new_stamps} carimbos`);
+        if (meta.bulk) parts.push("ação em lote");
+        if (meta.reason) parts.push(String(meta.reason));
+        return (
+          <div key={e.id} className="rounded-xl border p-3 flex items-start gap-3 text-sm">
+            <div className={`mt-0.5 ${cfg.className ?? ""}`}>{cfg.icon}</div>
+            <div className="flex-1 min-w-0">
+              <div className="font-medium">{cfg.label}</div>
+              <div className="text-xs text-muted-foreground">
+                {e.user_name || "Sistema"} · {formatDate(e.created_at)}
+                {parts.length > 0 && ` · ${parts.join(" · ")}`}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ---------- CSV import dialog ----------
+type ImportResult = {
+  dry_run: boolean; inserted: number;
+  summary: { total: number; valid: number; errors: number; duplicates_in_file: number; duplicates_in_db: number };
+  preview: {
+    errors: { line: number; error: string; raw: Record<string, string> }[];
+    duplicates_in_file: { line: number; error: string; raw: Record<string, string> }[];
+    duplicates_in_db: { line: number; error: string; raw: Record<string, string> }[];
+    sample: Record<string, unknown>[];
+  };
+};
+
+function ImportCsvDialog({
+  open, onClose, establishmentId, campaigns, onImported,
+}: {
+  open: boolean; onClose: () => void; establishmentId?: string;
+  campaigns: Array<{ id: string; name: string }>; onImported: () => void;
+}) {
+  const [file, setFile] = useState<File | null>(null);
+  const [rows, setRows] = useState<Record<string, string>[]>([]);
+  const [preview, setPreview] = useState<ImportResult | null>(null);
+  const [campaignId, setCampaignId] = useState<string>("none");
+  const [busy, setBusy] = useState(false);
+  const importFn = useServerFn(importCustomersCsv);
+
+  function reset() {
+    setFile(null); setRows([]); setPreview(null); setCampaignId("none");
+  }
+
+  async function handleFile(f: File) {
+    setFile(f);
+    setPreview(null);
+    const text = await f.text();
+    const parsed = parseCsv(text);
+    if (!parsed.headers.includes("name") || !parsed.headers.includes("phone")) {
+      toast.error("O CSV precisa ter pelo menos as colunas: name, phone");
+      return;
+    }
+    setRows(parsed.rows);
+  }
+
+  async function runPreview() {
+    if (!establishmentId || rows.length === 0) return;
+    setBusy(true);
+    try {
+      const r = await importFn({ data: { establishment_id: establishmentId, rows, dry_run: true } });
+      setPreview(r);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao validar");
+    } finally { setBusy(false); }
+  }
+
+  async function runImport() {
+    if (!establishmentId || rows.length === 0) return;
+    setBusy(true);
+    try {
+      const r = await importFn({ data: {
+        establishment_id: establishmentId, rows, dry_run: false,
+        campaign_id: campaignId === "none" ? undefined : campaignId,
+      }});
+      toast.success(`${r.inserted} cliente(s) importado(s)`);
+      onImported(); reset(); onClose();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao importar");
+    } finally { setBusy(false); }
+  }
+
+  function downloadTemplate() {
+    const blob = new Blob(["\ufeff" + CUSTOMER_CSV_TEMPLATE], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "modelo-clientes.csv"; a.click(); URL.revokeObjectURL(url);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) { reset(); onClose(); } }}>
+      <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Importar clientes por CSV</DialogTitle>
+          <DialogDescription>
+            Colunas suportadas: <code className="text-xs">name, phone, email, birthdate, notes, marketing_opt_in</code>.
+            Telefones duplicados no arquivo ou já existentes na base serão ignorados.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-2 items-center">
+            <Input type="file" accept=".csv,text/csv" onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
+            <Button size="sm" variant="ghost" onClick={downloadTemplate}>Baixar modelo</Button>
+          </div>
+
+          {file && rows.length > 0 && (
+            <div className="text-xs text-muted-foreground">
+              Arquivo: <strong>{file.name}</strong> · {rows.length} linha(s) detectada(s)
+            </div>
+          )}
+
+          {rows.length > 0 && !preview && (
+            <Button onClick={runPreview} disabled={busy} variant="outline">
+              {busy ? "Validando…" : "Validar arquivo"}
+            </Button>
+          )}
+
+          {preview && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
+                <SummaryTile label="Total" value={preview.summary.total} />
+                <SummaryTile label="Válidas" value={preview.summary.valid} accent="text-success" />
+                <SummaryTile label="Erros" value={preview.summary.errors} accent="text-destructive" />
+                <SummaryTile label="Duplicadas" value={preview.summary.duplicates_in_file + preview.summary.duplicates_in_db} accent="text-warning" />
+              </div>
+
+              {preview.preview.errors.length > 0 && (
+                <ErrorsBlock title="Erros de validação" items={preview.preview.errors} />
+              )}
+              {preview.preview.duplicates_in_file.length > 0 && (
+                <ErrorsBlock title="Duplicadas no arquivo" items={preview.preview.duplicates_in_file} />
+              )}
+              {preview.preview.duplicates_in_db.length > 0 && (
+                <ErrorsBlock title="Já cadastradas na base" items={preview.preview.duplicates_in_db} />
+              )}
+
+              {preview.summary.valid > 0 && preview.preview.sample.length > 0 && (
+                <div className="rounded-lg border p-3">
+                  <div className="text-xs font-medium mb-2 flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-success" />
+                    Prévia (primeiros {preview.preview.sample.length})
+                  </div>
+                  <div className="space-y-1 text-xs">
+                    {preview.preview.sample.map((s, i) => (
+                      <div key={i} className="flex justify-between border-b py-1 last:border-0">
+                        <span className="truncate">{String(s.name)}</span>
+                        <span className="text-muted-foreground">{formatPhone(String(s.phone))}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {campaigns.length > 0 && (
+                <div>
+                  <Label>Vincular a uma campanha (opcional)</Label>
+                  <Select value={campaignId} onValueChange={setCampaignId}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Não vincular</SelectItem>
+                      {campaigns.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => { reset(); onClose(); }} disabled={busy}>Cancelar</Button>
+          {preview && (
+            <Button onClick={runImport} disabled={busy || preview.summary.valid === 0} className="gradient-brand text-primary-foreground">
+              {busy ? "Importando…" : `Importar ${preview.summary.valid} cliente(s)`}
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function SummaryTile({ label, value, accent }: { label: string; value: number; accent?: string }) {
+  return (
+    <div className="rounded-lg border bg-muted/30 p-2">
+      <div className={`text-xl font-display font-bold ${accent ?? ""}`}>{value}</div>
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+    </div>
+  );
+}
+
+function ErrorsBlock({ title, items }: { title: string; items: { line: number; error: string; raw: Record<string, string> }[] }) {
+  return (
+    <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+      <div className="text-xs font-medium mb-2 flex items-center gap-2">
+        <FileWarning className="h-4 w-4 text-destructive" />
+        {title} ({items.length})
+      </div>
+      <div className="max-h-40 overflow-y-auto space-y-1 text-xs">
+        {items.map((e, i) => (
+          <div key={i} className="border-b border-destructive/20 py-1 last:border-0">
+            <span className="font-mono text-destructive">L{e.line}</span> · {e.error}
+            <div className="text-muted-foreground truncate">
+              {[e.raw.name, e.raw.phone, e.raw.email].filter(Boolean).join(" · ")}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

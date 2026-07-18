@@ -464,6 +464,190 @@ export const deleteCustomerRow = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// ---------- Bulk actions ----------
+export const bulkSetBlocked = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    establishment_id: z.string().uuid(),
+    customer_ids: z.array(z.string().uuid()).min(1).max(500),
+    blocked: z.boolean(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: upd, error } = await supabase.from("customers")
+      .update({ blocked: data.blocked })
+      .eq("establishment_id", data.establishment_id)
+      .in("id", data.customer_ids)
+      .select("id");
+    if (error) throw new Error(error.message);
+    const affected = upd?.length ?? 0;
+    if (affected === 0) throw new Error("Nenhum cliente atualizado (sem permissão).");
+    for (const row of upd ?? []) {
+      await auditLog(data.establishment_id, userId, data.blocked ? "customer_blocked" : "customer_unblocked", "customer", row.id, { bulk: true });
+    }
+    return { affected };
+  });
+
+export const bulkDeleteCustomers = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    establishment_id: z.string().uuid(),
+    customer_ids: z.array(z.string().uuid()).min(1).max(500),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: rows, error } = await supabase.from("customers")
+      .delete()
+      .eq("establishment_id", data.establishment_id)
+      .in("id", data.customer_ids)
+      .select("id, name");
+    if (error) throw new Error("Sem permissão ou erro ao excluir: " + error.message);
+    const affected = rows?.length ?? 0;
+    if (affected === 0) throw new Error("Nenhum cliente excluído.");
+    for (const r of rows ?? []) {
+      await auditLog(data.establishment_id, userId, "customer_deleted", "customer", r.id, { bulk: true, name: r.name });
+    }
+    return { affected };
+  });
+
+// ---------- CSV import ----------
+const csvRowSchema = z.object({
+  name: z.string().trim().min(2, "Nome muito curto").max(80),
+  phone: z.string().trim().transform(s => s.replace(/\D/g, "")).pipe(z.string().regex(/^\d{10,11}$/, "Telefone inválido")),
+  email: z.string().trim().email("E-mail inválido").max(120).optional().or(z.literal("")).transform(v => v || null),
+  birthdate: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/, "Data no formato AAAA-MM-DD").optional().or(z.literal("")).transform(v => v || null),
+  notes: z.string().max(1000).optional().or(z.literal("")).transform(v => v || null),
+  marketing_opt_in: z.union([z.boolean(), z.string()]).optional().transform(v => {
+    if (typeof v === "boolean") return v;
+    if (!v) return false;
+    return ["1", "true", "sim", "yes", "s", "y"].includes(String(v).trim().toLowerCase());
+  }),
+});
+
+export const importCustomersCsv = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    establishment_id: z.string().uuid(),
+    rows: z.array(z.record(z.string())).min(1).max(2000),
+    dry_run: z.boolean().default(false),
+    campaign_id: z.string().uuid().optional().nullable(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    // Validate + normalize
+    type Ok = { line: number; row: z.infer<typeof csvRowSchema> };
+    type Err = { line: number; error: string; raw: Record<string, string> };
+    const valid: Ok[] = [];
+    const errors: Err[] = [];
+    const seenPhones = new Set<string>();
+    const duplicatesInFile: Err[] = [];
+    data.rows.forEach((raw, idx) => {
+      const parsed = csvRowSchema.safeParse(raw);
+      if (!parsed.success) {
+        errors.push({ line: idx + 2, error: parsed.error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join("; "), raw });
+        return;
+      }
+      if (seenPhones.has(parsed.data.phone)) {
+        duplicatesInFile.push({ line: idx + 2, error: "Telefone duplicado no arquivo", raw });
+        return;
+      }
+      seenPhones.add(parsed.data.phone);
+      valid.push({ line: idx + 2, row: parsed.data });
+    });
+
+    // Check DB dedupe
+    const phones = valid.map(v => v.row.phone);
+    let existingPhones = new Set<string>();
+    if (phones.length) {
+      const { data: existing } = await supabase.from("customers")
+        .select("phone").eq("establishment_id", data.establishment_id).in("phone", phones);
+      existingPhones = new Set((existing ?? []).map(e => e.phone));
+    }
+    const toInsert = valid.filter(v => !existingPhones.has(v.row.phone));
+    const dupsInDb = valid.filter(v => existingPhones.has(v.row.phone))
+      .map(v => ({ line: v.line, error: "Telefone já cadastrado", raw: Object.fromEntries(Object.entries(v.row).map(([k,val])=>[k,String(val ?? "")])) }));
+
+    const summary = {
+      total: data.rows.length,
+      valid: toInsert.length,
+      errors: errors.length,
+      duplicates_in_file: duplicatesInFile.length,
+      duplicates_in_db: dupsInDb.length,
+    };
+    const preview = {
+      errors: errors.slice(0, 50),
+      duplicates_in_file: duplicatesInFile.slice(0, 50),
+      duplicates_in_db: dupsInDb.slice(0, 50),
+      sample: toInsert.slice(0, 10).map(v => v.row),
+    };
+
+    if (data.dry_run || toInsert.length === 0) {
+      return { dry_run: true, summary, preview, inserted: 0 };
+    }
+
+    // Insert in chunks
+    let inserted = 0;
+    const chunkSize = 100;
+    for (let i = 0; i < toInsert.length; i += chunkSize) {
+      const chunk = toInsert.slice(i, i + chunkSize);
+      const payload = chunk.map(v => ({
+        establishment_id: data.establishment_id,
+        name: v.row.name, phone: v.row.phone, email: v.row.email,
+        birthdate: v.row.birthdate, notes: v.row.notes,
+        marketing_opt_in: v.row.marketing_opt_in ?? false,
+        code: Math.random().toString(36).slice(2, 8).toUpperCase(),
+        access_token: crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, ""),
+      }));
+      const { data: ins, error } = await supabase.from("customers").insert(payload).select("id");
+      if (error) throw new Error("Falha ao inserir: " + error.message);
+      inserted += ins?.length ?? 0;
+      if (data.campaign_id && ins?.length) {
+        const cardPayload = ins.map(r => ({
+          customer_id: r.id, campaign_id: data.campaign_id!,
+          establishment_id: data.establishment_id, stamps: 0, cycle: 1,
+        }));
+        await supabase.from("loyalty_cards").insert(cardPayload);
+      }
+    }
+    await auditLog(data.establishment_id, userId, "customers_imported", "customer", data.establishment_id, { inserted, ...summary });
+    return { dry_run: false, summary, preview, inserted };
+  });
+
+// ---------- Customer audit trail ----------
+export const getCustomerAudit = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ customer_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: cust } = await supabase.from("customers").select("id, establishment_id").eq("id", data.customer_id).maybeSingle();
+    if (!cust) throw new Error("Cliente não encontrado");
+    const { data: cards } = await supabase.from("loyalty_cards").select("id").eq("customer_id", data.customer_id);
+    const cardIds = (cards ?? []).map(c => c.id);
+    const orFilter = cardIds.length
+      ? `and(entity_type.eq.customer,entity_id.eq.${data.customer_id}),and(entity_type.eq.loyalty_card,entity_id.in.(${cardIds.join(",")}))`
+      : `and(entity_type.eq.customer,entity_id.eq.${data.customer_id})`;
+    const { data: logs, error } = await supabase.from("audit_logs")
+      .select("id, action, entity_type, entity_id, metadata, user_id, created_at")
+      .eq("establishment_id", cust.establishment_id)
+      .or(orFilter)
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) throw new Error(error.message);
+    const userIds = Array.from(new Set((logs ?? []).map(l => l.user_id).filter(Boolean))) as string[];
+    let usersMap = new Map<string, string>();
+    if (userIds.length) {
+      const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", userIds);
+      usersMap = new Map((profs ?? []).map(p => [p.id, p.full_name ?? ""]));
+    }
+    return (logs ?? []).map(l => ({
+      ...l,
+      user_name: (l.user_id && usersMap.get(l.user_id)) || null,
+    }));
+  });
+
+
+
+
 
 
 
