@@ -92,6 +92,17 @@ function AdminLayout() {
       ],
     },
     {
+      key: "comunicacao",
+      label: "Comunicação",
+      icon: Mail,
+      items: [
+        { to: "/admin/emails", label: "E-mail", icon: Mail, exact: true },
+        { to: "/admin/email-templates", label: "Templates", icon: FileText },
+        { to: "/admin/email-fila", label: "Fila de envio", icon: ListChecks },
+        { to: "/admin/ajuda", label: "Central de Ajuda", icon: BookOpen },
+      ],
+    },
+    {
       key: "sistema",
       label: "Sistema",
       icon: Cog,
