@@ -1,14 +1,16 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { getCardByToken } from "@/lib/loyalty.functions";
 import { LoyaltyVoucher } from "@/components/LoyaltyVoucher";
 import { formatDate } from "@/lib/format";
 import { Clock } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const opts = (token: string) => queryOptions({
   queryKey: ["card", token],
   queryFn: () => getCardByToken({ data: { token } }),
-  refetchInterval: 15_000,
+  refetchInterval: 30_000,
   refetchOnWindowFocus: true,
 });
 
