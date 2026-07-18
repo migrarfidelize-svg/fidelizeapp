@@ -184,7 +184,7 @@ export const changeEstablishmentPlan = createServerFn({ method: "POST" })
     const fromTier: string = est.plan;
     const toTier: string = newPlan.tier;
     if (fromTier === toTier) {
-      return { ok: true, unchanged: true, tier: toTier, kind: "same" as const };
+      return { ok: true, unchanged: true, tier: toTier as any, kind: "same" as const };
     }
 
     const fromRank = PLAN_RANK[fromTier] ?? 0;
@@ -208,7 +208,7 @@ export const changeEstablishmentPlan = createServerFn({ method: "POST" })
     if (existingSub) {
       await supabaseAdmin.from("subscriptions").update({
         plan_id: newPlan.id,
-        tier: toTier,
+        tier: toTier as any,
         status: "active",
         provider: "manual",
         current_period_start: now.toISOString(),
@@ -220,7 +220,7 @@ export const changeEstablishmentPlan = createServerFn({ method: "POST" })
       await supabaseAdmin.from("subscriptions").insert({
         establishment_id: data.establishment_id,
         plan_id: newPlan.id,
-        tier: toTier,
+        tier: toTier as any,
         status: "active",
         provider: "manual",
         current_period_start: now.toISOString(),
@@ -251,7 +251,7 @@ export const changeEstablishmentPlan = createServerFn({ method: "POST" })
       metadata: { from_plan: fromTier, to_plan: toTier, plan_id: newPlan.id, plan_name: newPlan.name } as never,
     });
 
-    return { ok: true, tier: toTier, kind, from: fromTier, to: toTier, plan_name: newPlan.name };
+    return { ok: true, tier: toTier as any, kind, from: fromTier, to: toTier, plan_name: newPlan.name };
   });
 
 // ---------- Feature gating (backend) ----------
