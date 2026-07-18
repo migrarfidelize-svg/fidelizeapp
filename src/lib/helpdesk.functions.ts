@@ -512,9 +512,9 @@ export const saveQuickReply = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const payload = {
       establishment_id: data.establishment_id,
-      title: data.title, body: data.body,
-      shortcut: data.shortcut || null,
-      created_by: context.userId,
+      title: data.title,
+      body: data.body,
+      shortcut: data.shortcut ?? "",
     };
     if (data.id) {
       const { error } = await context.supabase.from("ticket_quick_replies").update(payload).eq("id", data.id);
