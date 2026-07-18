@@ -281,11 +281,35 @@ function QRCodes() {
     QRCode.toDataURL(publicUrl, { width: 1200, margin: 1, errorCorrectionLevel: "H", color: { dark: primaryColor, light: "#ffffff" } }).then(setQrDataUrl);
   }, [publicUrl, primaryColor]);
 
-  // Scannability check
+  // Scannability: QR dark modules vs white module background
   const qrContrast = useMemo(() => contrastRatio(primaryColor, "#ffffff"), [primaryColor]);
-  const qrOk = qrContrast >= 4.0;
-  const qrWarn = qrContrast < 4.0 && qrContrast >= 2.8;
-  const qrBad = qrContrast < 2.8;
+  const qrOk = qrContrast >= 4.5;
+  const qrWarn = qrContrast < 4.5 && qrContrast >= 3.0;
+  const qrBad = qrContrast < 3.0;
+
+  // Contrast between QR white card and poster background (so it doesn't blend in)
+  const cardVsBgContrast = useMemo(() => contrastRatio("#ffffff", backgroundColor), [backgroundColor]);
+  const cardBlend = !bgImageUrl && cardVsBgContrast < 1.3;
+
+  // Auto-fix: darken primary color progressively until it reaches WCAG 4.5:1 vs white
+  function autoFixQrContrast() {
+    const { r, g, b } = hexToRgb(primaryColor);
+    const toHex = (r: number, g: number, b: number) =>
+      "#" + [r, g, b].map(v => Math.max(0, Math.min(255, v)).toString(16).padStart(2, "0")).join("");
+    let cur = { r, g, b };
+    for (let i = 0; i < 24; i++) {
+      const hex = toHex(cur.r, cur.g, cur.b);
+      if (contrastRatio(hex, "#ffffff") >= 4.5) {
+        setPrimaryColor(hex);
+        toast.success("Cor ajustada para máxima legibilidade do QR");
+        return;
+      }
+      cur = { r: Math.round(cur.r * 0.88), g: Math.round(cur.g * 0.88), b: Math.round(cur.b * 0.88) };
+    }
+    setPrimaryColor("#111827");
+    toast.success("Cor ajustada para máxima legibilidade do QR");
+  }
+
 
   const rewardText = useMemo(() => {
     if (rewardTextOverride.trim()) return rewardTextOverride.trim();
