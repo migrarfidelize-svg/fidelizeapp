@@ -3,7 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { adminGetOverview } from "@/lib/admin.functions";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
 import { formatBRL } from "@/lib/format";
+import { downloadCSV, downloadPDF } from "@/lib/export";
 
 export const Route = createFileRoute("/_authenticated/admin/assinaturas")({
   component: AdminAssinaturas,
@@ -17,13 +20,34 @@ function AdminAssinaturas() {
   if (!data) return <div className="text-muted-foreground">Carregando…</div>;
 
   const total = data.estTotal || 1;
+  const planRows = Object.entries(data.planCounts).map(([tier, count]) => {
+    const pct = data.estTotal ? Math.round((count / data.estTotal) * 100) : 0;
+    return [PLAN_LABEL[tier] ?? tier, count, `${pct}%`];
+  });
+
+  function exportCSV() {
+    downloadCSV(`fidelize-assinaturas-${new Date().toISOString().slice(0,10)}.csv`,
+      ["Métrica","Valor"],
+      [["MRR estimado", formatBRL(data.mrr)], ["Empresas totais", data.estTotal], ["Ativas", data.estActive], ["Bloqueadas", data.estBlocked], ["Pagantes", data.estTotal - (data.planCounts.free ?? 0)], ["Clientes", data.customersTotal], ["Carimbos", data.stampsTotal], ["Recompensas resgatadas", data.rewardsRedeemed], ...planRows.map(r => [`Plano ${r[0]}`, `${r[1]} (${r[2]})`])]);
+  }
+  function exportPDF() {
+    downloadPDF(`fidelize-assinaturas-${new Date().toISOString().slice(0,10)}.pdf`, "Assinaturas & Métricas — Fidelize",
+      ["Plano","Empresas","Participação"], planRows,
+      `MRR estimado: ${formatBRL(data.mrr)} · ${data.estTotal} empresas · gerado em ${new Date().toLocaleString("pt-BR")}`);
+  }
 
   return (
     <div className="space-y-6">
-      <div>
-        <div className="text-xs uppercase tracking-widest text-muted-foreground">Administração</div>
-        <h1 className="font-display text-3xl font-bold">Assinaturas</h1>
-        <p className="text-sm text-muted-foreground mt-1">Distribuição de planos e receita recorrente.</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <div className="text-xs uppercase tracking-widest text-muted-foreground">Administração</div>
+          <h1 className="font-display text-3xl font-bold">Assinaturas</h1>
+          <p className="text-sm text-muted-foreground mt-1">Distribuição de planos e receita recorrente.</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={exportCSV}><Download className="mr-2 h-4 w-4" />CSV</Button>
+          <Button variant="outline" size="sm" onClick={exportPDF}><Download className="mr-2 h-4 w-4" />PDF</Button>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
