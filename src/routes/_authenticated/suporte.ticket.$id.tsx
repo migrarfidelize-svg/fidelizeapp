@@ -27,7 +27,7 @@ const STATUS: Record<string, { label: string; color: string }> = {
 };
 
 function Ticket() {
-  const { id } = useParams({ from: "/_authenticated/suporte/$id" });
+  const { id } = useParams({ from: "/_authenticated/suporte/ticket/$id" });
   const qc = useQueryClient();
   const getFn = useServerFn(getMySupportTicket);
   const replyFn = useServerFn(replyMySupportTicket);
