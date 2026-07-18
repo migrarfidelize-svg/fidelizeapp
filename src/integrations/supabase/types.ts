@@ -1043,6 +1043,51 @@ export type Database = {
           },
         ]
       }
+      payment_logs: {
+        Row: {
+          action: string | null
+          created_at: string
+          error: string | null
+          event_type: string
+          headers: Json | null
+          id: string
+          live_mode: boolean | null
+          mp_id: string | null
+          mp_resource: string | null
+          payload: Json | null
+          processed: boolean
+          signature_valid: boolean
+        }
+        Insert: {
+          action?: string | null
+          created_at?: string
+          error?: string | null
+          event_type: string
+          headers?: Json | null
+          id?: string
+          live_mode?: boolean | null
+          mp_id?: string | null
+          mp_resource?: string | null
+          payload?: Json | null
+          processed?: boolean
+          signature_valid?: boolean
+        }
+        Update: {
+          action?: string | null
+          created_at?: string
+          error?: string | null
+          event_type?: string
+          headers?: Json | null
+          id?: string
+          live_mode?: boolean | null
+          mp_id?: string | null
+          mp_resource?: string | null
+          payload?: Json | null
+          processed?: boolean
+          signature_valid?: boolean
+        }
+        Relationships: []
+      }
       payment_provider_credentials: {
         Row: {
           active: boolean
@@ -1083,6 +1128,160 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_settings: {
+        Row: {
+          created_at: string
+          environment: string
+          id: string
+          last_test_message: string | null
+          last_test_status: string | null
+          last_tested_at: string | null
+          public_key: string | null
+          updated_at: string
+          webhook_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          environment?: string
+          id?: string
+          last_test_message?: string | null
+          last_test_status?: string | null
+          last_tested_at?: string | null
+          public_key?: string | null
+          updated_at?: string
+          webhook_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          environment?: string
+          id?: string
+          last_test_message?: string | null
+          last_test_status?: string | null
+          last_tested_at?: string | null
+          public_key?: string | null
+          updated_at?: string
+          webhook_url?: string | null
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          boleto_url: string | null
+          card_brand: string | null
+          card_last4: string | null
+          created_at: string
+          currency: string
+          establishment_id: string
+          id: string
+          idempotency_key: string | null
+          installments: number | null
+          method: string
+          mp_order_id: string | null
+          mp_payment_id: string | null
+          mp_preference_id: string | null
+          payer_doc: string | null
+          payer_email: string | null
+          pix_copy_paste: string | null
+          pix_expires_at: string | null
+          pix_qr_code: string | null
+          pix_qr_code_base64: string | null
+          plan_id: string | null
+          plan_slug: string | null
+          raw: Json | null
+          receipt_url: string | null
+          status: string
+          status_detail: string | null
+          subscription_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          boleto_url?: string | null
+          card_brand?: string | null
+          card_last4?: string | null
+          created_at?: string
+          currency?: string
+          establishment_id: string
+          id?: string
+          idempotency_key?: string | null
+          installments?: number | null
+          method: string
+          mp_order_id?: string | null
+          mp_payment_id?: string | null
+          mp_preference_id?: string | null
+          payer_doc?: string | null
+          payer_email?: string | null
+          pix_copy_paste?: string | null
+          pix_expires_at?: string | null
+          pix_qr_code?: string | null
+          pix_qr_code_base64?: string | null
+          plan_id?: string | null
+          plan_slug?: string | null
+          raw?: Json | null
+          receipt_url?: string | null
+          status?: string
+          status_detail?: string | null
+          subscription_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          boleto_url?: string | null
+          card_brand?: string | null
+          card_last4?: string | null
+          created_at?: string
+          currency?: string
+          establishment_id?: string
+          id?: string
+          idempotency_key?: string | null
+          installments?: number | null
+          method?: string
+          mp_order_id?: string | null
+          mp_payment_id?: string | null
+          mp_preference_id?: string | null
+          payer_doc?: string | null
+          payer_email?: string | null
+          pix_copy_paste?: string | null
+          pix_expires_at?: string | null
+          pix_qr_code?: string | null
+          pix_qr_code_base64?: string | null
+          plan_id?: string | null
+          plan_slug?: string | null
+          raw?: Json | null
+          receipt_url?: string | null
+          status?: string
+          status_detail?: string | null
+          subscription_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
             referencedColumns: ["id"]
           },
         ]
@@ -1407,6 +1606,7 @@ export type Database = {
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean
+          cancelled_at: string | null
           created_at: string
           current_period_end: string | null
           current_period_start: string | null
@@ -1414,6 +1614,11 @@ export type Database = {
           external_id: string | null
           id: string
           metadata: Json
+          mp_customer_id: string | null
+          mp_last_payment_id: string | null
+          mp_subscription_id: string | null
+          next_billing_date: string | null
+          payment_method: string | null
           plan_id: string | null
           provider: string | null
           status: string
@@ -1423,6 +1628,7 @@ export type Database = {
         }
         Insert: {
           cancel_at_period_end?: boolean
+          cancelled_at?: string | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
@@ -1430,6 +1636,11 @@ export type Database = {
           external_id?: string | null
           id?: string
           metadata?: Json
+          mp_customer_id?: string | null
+          mp_last_payment_id?: string | null
+          mp_subscription_id?: string | null
+          next_billing_date?: string | null
+          payment_method?: string | null
           plan_id?: string | null
           provider?: string | null
           status?: string
@@ -1439,6 +1650,7 @@ export type Database = {
         }
         Update: {
           cancel_at_period_end?: boolean
+          cancelled_at?: string | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
@@ -1446,6 +1658,11 @@ export type Database = {
           external_id?: string | null
           id?: string
           metadata?: Json
+          mp_customer_id?: string | null
+          mp_last_payment_id?: string | null
+          mp_subscription_id?: string | null
+          next_billing_date?: string | null
+          payment_method?: string | null
           plan_id?: string | null
           provider?: string | null
           status?: string
