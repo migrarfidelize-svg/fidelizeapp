@@ -25,10 +25,12 @@ import { Route as AuthNovaSenhaRouteImport } from './routes/auth.nova-senha'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as SuporteSlugIndexRouteImport } from './routes/suporte.$slug.index'
+import { Route as AuthenticatedSuporteIndexRouteImport } from './routes/_authenticated/suporte.index'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as SuporteChamadoIdRouteImport } from './routes/suporte.chamado.$id'
 import { Route as SuporteSlugNovoRouteImport } from './routes/suporte.$slug.novo'
+import { Route as AuthenticatedSuporteIdRouteImport } from './routes/_authenticated/suporte.$id'
 import { Route as AuthenticatedAppSuporteRouteImport } from './routes/_authenticated/app.suporte'
 import { Route as AuthenticatedAppQrcodesRouteImport } from './routes/_authenticated/app.qrcodes'
 import { Route as AuthenticatedAppKbRouteImport } from './routes/_authenticated/app.kb'
@@ -45,8 +47,10 @@ import { Route as AuthenticatedAdminConfigRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminAuditoriaRouteImport } from './routes/_authenticated/admin.auditoria'
 import { Route as AuthenticatedAdminAssinaturasRouteImport } from './routes/_authenticated/admin.assinaturas'
 import { Route as AuthenticatedAdminAlertasRouteImport } from './routes/_authenticated/admin.alertas'
+import { Route as AuthenticatedAdminSuporteIndexRouteImport } from './routes/_authenticated/admin.suporte.index'
 import { Route as SuporteSlugKbArticleRouteImport } from './routes/suporte.$slug.kb.$article'
 import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/api/public/hooks/process-email-queue'
+import { Route as AuthenticatedAdminSuporteIdRouteImport } from './routes/_authenticated/admin.suporte.$id'
 import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authenticated/admin.empresa.$id'
 
 const TermosRoute = TermosRouteImport.update({
@@ -128,6 +132,12 @@ const SuporteSlugIndexRoute = SuporteSlugIndexRouteImport.update({
   path: '/suporte/$slug/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSuporteIndexRoute =
+  AuthenticatedSuporteIndexRouteImport.update({
+    id: '/suporte/',
+    path: '/suporte/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -147,6 +157,11 @@ const SuporteSlugNovoRoute = SuporteSlugNovoRouteImport.update({
   id: '/suporte/$slug/novo',
   path: '/suporte/$slug/novo',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedSuporteIdRoute = AuthenticatedSuporteIdRouteImport.update({
+  id: '/suporte/$id',
+  path: '/suporte/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAppSuporteRoute = AuthenticatedAppSuporteRouteImport.update({
   id: '/suporte',
@@ -240,6 +255,12 @@ const AuthenticatedAdminAlertasRoute =
     path: '/alertas',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminSuporteIndexRoute =
+  AuthenticatedAdminSuporteIndexRouteImport.update({
+    id: '/suporte/',
+    path: '/suporte/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const SuporteSlugKbArticleRoute = SuporteSlugKbArticleRouteImport.update({
   id: '/suporte/$slug/kb/$article',
   path: '/suporte/$slug/kb/$article',
@@ -250,6 +271,12 @@ const ApiPublicHooksProcessEmailQueueRoute =
     id: '/api/public/hooks/process-email-queue',
     path: '/api/public/hooks/process-email-queue',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedAdminSuporteIdRoute =
+  AuthenticatedAdminSuporteIdRouteImport.update({
+    id: '/suporte/$id',
+    path: '/suporte/$id',
+    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminEmpresaIdRoute =
   AuthenticatedAdminEmpresaIdRouteImport.update({
@@ -289,14 +316,18 @@ export interface FileRoutesByFullPath {
   '/app/kb': typeof AuthenticatedAppKbRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
+  '/suporte/$id': typeof AuthenticatedSuporteIdRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/app/': typeof AuthenticatedAppIndexRoute
+  '/suporte/': typeof AuthenticatedSuporteIndexRoute
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
+  '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
+  '/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -327,14 +358,18 @@ export interface FileRoutesByTo {
   '/app/kb': typeof AuthenticatedAppKbRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
+  '/suporte/$id': typeof AuthenticatedSuporteIdRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/app': typeof AuthenticatedAppIndexRoute
+  '/suporte': typeof AuthenticatedSuporteIndexRoute
   '/suporte/$slug': typeof SuporteSlugIndexRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
+  '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
+  '/admin/suporte': typeof AuthenticatedAdminSuporteIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -369,14 +404,18 @@ export interface FileRoutesById {
   '/_authenticated/app/kb': typeof AuthenticatedAppKbRoute
   '/_authenticated/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/_authenticated/app/suporte': typeof AuthenticatedAppSuporteRoute
+  '/_authenticated/suporte/$id': typeof AuthenticatedSuporteIdRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
+  '/_authenticated/suporte/': typeof AuthenticatedSuporteIndexRoute
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
   '/_authenticated/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
+  '/_authenticated/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
+  '/_authenticated/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -411,14 +450,18 @@ export interface FileRouteTypes {
     | '/app/kb'
     | '/app/qrcodes'
     | '/app/suporte'
+    | '/suporte/$id'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/admin/'
     | '/app/'
+    | '/suporte/'
     | '/suporte/$slug/'
     | '/admin/empresa/$id'
+    | '/admin/suporte/$id'
     | '/api/public/hooks/process-email-queue'
     | '/suporte/$slug/kb/$article'
+    | '/admin/suporte/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -449,14 +492,18 @@ export interface FileRouteTypes {
     | '/app/kb'
     | '/app/qrcodes'
     | '/app/suporte'
+    | '/suporte/$id'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/admin'
     | '/app'
+    | '/suporte'
     | '/suporte/$slug'
     | '/admin/empresa/$id'
+    | '/admin/suporte/$id'
     | '/api/public/hooks/process-email-queue'
     | '/suporte/$slug/kb/$article'
+    | '/admin/suporte'
   id:
     | '__root__'
     | '/'
@@ -490,14 +537,18 @@ export interface FileRouteTypes {
     | '/_authenticated/app/kb'
     | '/_authenticated/app/qrcodes'
     | '/_authenticated/app/suporte'
+    | '/_authenticated/suporte/$id'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/_authenticated/admin/'
     | '/_authenticated/app/'
+    | '/_authenticated/suporte/'
     | '/suporte/$slug/'
     | '/_authenticated/admin/empresa/$id'
+    | '/_authenticated/admin/suporte/$id'
     | '/api/public/hooks/process-email-queue'
     | '/suporte/$slug/kb/$article'
+    | '/_authenticated/admin/suporte/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -633,6 +684,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuporteSlugIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/suporte/': {
+      id: '/_authenticated/suporte/'
+      path: '/suporte'
+      fullPath: '/suporte/'
+      preLoaderRoute: typeof AuthenticatedSuporteIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/app/': {
       id: '/_authenticated/app/'
       path: '/'
@@ -660,6 +718,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/suporte/$slug/novo'
       preLoaderRoute: typeof SuporteSlugNovoRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/suporte/$id': {
+      id: '/_authenticated/suporte/$id'
+      path: '/suporte/$id'
+      fullPath: '/suporte/$id'
+      preLoaderRoute: typeof AuthenticatedSuporteIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/app/suporte': {
       id: '/_authenticated/app/suporte'
@@ -773,6 +838,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAlertasRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/suporte/': {
+      id: '/_authenticated/admin/suporte/'
+      path: '/suporte'
+      fullPath: '/admin/suporte/'
+      preLoaderRoute: typeof AuthenticatedAdminSuporteIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/suporte/$slug/kb/$article': {
       id: '/suporte/$slug/kb/$article'
       path: '/suporte/$slug/kb/$article'
@@ -786,6 +858,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/hooks/process-email-queue'
       preLoaderRoute: typeof ApiPublicHooksProcessEmailQueueRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin/suporte/$id': {
+      id: '/_authenticated/admin/suporte/$id'
+      path: '/suporte/$id'
+      fullPath: '/admin/suporte/$id'
+      preLoaderRoute: typeof AuthenticatedAdminSuporteIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/empresa/$id': {
       id: '/_authenticated/admin/empresa/$id'
@@ -809,6 +888,8 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminEquipeRoute: typeof AuthenticatedAdminEquipeRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminEmpresaIdRoute: typeof AuthenticatedAdminEmpresaIdRoute
+  AuthenticatedAdminSuporteIdRoute: typeof AuthenticatedAdminSuporteIdRoute
+  AuthenticatedAdminSuporteIndexRoute: typeof AuthenticatedAdminSuporteIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
@@ -823,6 +904,8 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminEquipeRoute: AuthenticatedAdminEquipeRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminEmpresaIdRoute: AuthenticatedAdminEmpresaIdRoute,
+  AuthenticatedAdminSuporteIdRoute: AuthenticatedAdminSuporteIdRoute,
+  AuthenticatedAdminSuporteIndexRoute: AuthenticatedAdminSuporteIndexRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =
@@ -856,11 +939,15 @@ const AuthenticatedAppRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
+  AuthenticatedSuporteIdRoute: typeof AuthenticatedSuporteIdRoute
+  AuthenticatedSuporteIndexRoute: typeof AuthenticatedSuporteIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
+  AuthenticatedSuporteIdRoute: AuthenticatedSuporteIdRoute,
+  AuthenticatedSuporteIndexRoute: AuthenticatedSuporteIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

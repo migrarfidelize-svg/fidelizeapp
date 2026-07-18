@@ -39,8 +39,9 @@ function AppLayout() {
     { to: "/app/campanhas", label: "Campanhas", icon: Sparkles, exact: false },
     { to: "/app/qrcodes", label: "QR Codes", icon: QrCode, exact: false },
     { to: "/app/equipe", label: "Equipe", icon: UsersRound, exact: false },
-    { to: "/app/suporte", label: "Suporte", icon: LifeBuoy, exact: false },
+    { to: "/app/suporte", label: "Suporte a Clientes", icon: LifeBuoy, exact: false },
     { to: "/app/kb", label: "Base", icon: BookOpen, exact: false },
+    { to: "/suporte", label: "Fale com a Fidelize", icon: LifeBuoy, exact: false },
   ] as const;
 
   async function signOut() {
