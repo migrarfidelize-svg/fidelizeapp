@@ -53,6 +53,7 @@ function AdminLayout() {
     { to: "/admin/assinaturas", label: "Assinaturas", icon: CreditCard, exact: false },
     { to: "/admin/alertas", label: "Alertas", icon: Bell, exact: false },
     { to: "/admin/auditoria", label: "Auditoria", icon: FileClock, exact: false },
+    { to: "/admin/suporte", label: "Suporte", icon: LifeBuoy, exact: false },
     { to: "/admin/equipe", label: "Equipe", icon: UsersRound, exact: false },
     { to: "/admin/emails", label: "E-mail", icon: Mail, exact: true },
     { to: "/admin/email-templates", label: "Templates", icon: FileText, exact: false },
