@@ -687,6 +687,22 @@ function QRCodes() {
               </TabsList>
 
               <TabsContent value="content" className="space-y-4 pt-4">
+                {est && (
+                  <div className="flex items-center gap-3 rounded-lg border p-3 bg-muted/20">
+                    {est.logo_url ? (
+                      <img src={est.logo_url} alt="Logo" className="h-12 w-12 rounded-md object-cover border" />
+                    ) : (
+                      <div className="h-12 w-12 rounded-md border border-dashed grid place-items-center text-[10px] text-muted-foreground text-center">sem logo</div>
+                    )}
+                    <div className="flex-1 min-w-0 text-xs">
+                      <div className="font-medium">Logo da marca</div>
+                      <div className="text-muted-foreground">
+                        {est.logo_url ? "Usado no material de divulgação." : "Envie para reforçar sua identidade nos posters."}
+                      </div>
+                    </div>
+                    <LogoUploadButton establishmentId={est.id} currentLogoUrl={est.logo_url} />
+                  </div>
+                )}
                 {campaigns && campaigns.length > 0 && (
                   <div className="text-xs text-muted-foreground">
                     Campanha: {activeCampaign ? <><strong className="text-foreground">{activeCampaign.name}</strong> · {activeCampaign.stamps_required} carimbos → {activeCampaign.reward_title}</> : "nenhuma ativa"}
