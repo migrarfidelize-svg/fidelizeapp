@@ -254,6 +254,11 @@ function QRCodes() {
   const [bgOffsetX, setBgOffsetX] = useState(0);
   const [bgOffsetY, setBgOffsetY] = useState(0);
   const [bgOverlay, setBgOverlay] = useState(0.35);
+  // QR size: 1.0 baseline; auto picks a good default per format
+  const AUTO_QR_SCALE: Record<PromoFormat, number> = { story: 1.05, feed: 0.95, counter: 1.15 };
+  const [qrScale, setQrScale] = useState<number>(AUTO_QR_SCALE.story);
+  const [qrAuto, setQrAuto] = useState(true);
+  useEffect(() => { if (qrAuto) setQrScale(AUTO_QR_SCALE[format]); }, [format, qrAuto]);
   const [exporting, setExporting] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
