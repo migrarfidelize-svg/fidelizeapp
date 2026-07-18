@@ -37,7 +37,7 @@ export function StampCard({ brandName, logoUrl, customerName, stamps, required, 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {logoUrl ? (
-            <img src={logoUrl} alt="" className="h-10 w-10 rounded-full object-cover ring-2 ring-white/40 bg-white/20" />
+            <img src={logoUrl} alt="" className="h-10 w-10 object-contain" />
           ) : (
             <div className="grid h-10 w-10 place-items-center rounded-full bg-white/20 backdrop-blur ring-2 ring-white/30 font-display font-bold text-sm">
               {initialsOf(brandName)}
