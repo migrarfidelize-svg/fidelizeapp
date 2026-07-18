@@ -129,7 +129,7 @@ export const PromoPoster = forwardRef<HTMLDivElement, { config: PromoConfig }>(f
       />
 
       {/* Trim area */}
-      <div style={{ position: "absolute", top: dims.bleed, left: dims.bleed, width: trimW, height: trimH }}>
+      <div style={{ position: "absolute", top: dims.bleed, left: dims.bleed, width: trimW, height: trimH, overflow: "hidden", borderRadius: dims.bleed > 0 ? radius : 0 }}>
         {/* Decorative segment icons */}
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
           <Icon size={s(320)} strokeWidth={1.2} style={{ position: "absolute", top: -s(60), right: -s(60), color: primaryColor, opacity: config.bgImageUrl ? 0.05 : 0.08 }} />
