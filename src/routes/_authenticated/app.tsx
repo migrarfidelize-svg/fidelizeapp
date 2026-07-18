@@ -73,6 +73,9 @@ function AppLayout() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuItem asChild><Link to="/l/$slug" params={{ slug: activeEst!.slug }}>Ver página pública</Link></DropdownMenuItem>
+              {adminStatus?.isAdmin && (
+                <DropdownMenuItem asChild><Link to="/admin"><Shield className="mr-2 h-4 w-4" />Painel do administrador</Link></DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={signOut}><LogOut className="mr-2 h-4 w-4" />Sair</DropdownMenuItem>
             </DropdownMenuContent>
