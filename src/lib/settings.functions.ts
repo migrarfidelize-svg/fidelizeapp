@@ -89,6 +89,22 @@ export const updateEstablishmentProfile = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// ---------- Update establishment logo (quick action) ----------
+export const updateEstablishmentLogo = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    establishment_id: z.string().uuid(),
+    logo_url: z.string().min(1).max(2000).nullable(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertRole(supabase, userId, data.establishment_id, "manager");
+    const { error } = await supabase.from("establishments").update({ logo_url: data.logo_url }).eq("id", data.establishment_id);
+    if (error) throw new Error(error.message);
+    await audit(supabase, data.establishment_id, userId, "establishment.logo_updated", "establishment", data.establishment_id, {});
+    return { ok: true };
+  });
+
 // ---------- Update settings section ----------
 const sectionSchema = z.enum(["privacy", "notifications", "appearance", "card", "security", "billing_prefs"]);
 export const updateSettingsSection = createServerFn({ method: "POST" })

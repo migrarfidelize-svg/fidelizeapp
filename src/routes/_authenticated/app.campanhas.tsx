@@ -28,6 +28,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { StampCard } from "@/components/StampCard";
 import { Plus, Pencil, Trash2, Pause, Play, Sparkles, Users, Gift, CheckCircle2 } from "lucide-react";
+import { LogoUploadButton } from "@/components/LogoUploadButton";
 
 export const Route = createFileRoute("/_authenticated/app/campanhas")({
   head: () => ({ meta: [{ title: "Campanhas — Fidelize" }] }),
@@ -333,7 +334,7 @@ function CampaignDialog({
   form: FormState;
   setForm: (f: FormState) => void;
   editing: CampaignRow | null;
-  est: { name: string; logo_url: string | null; primary_color: string; accent_color: string } | undefined;
+  est: { id: string; name: string; logo_url: string | null; primary_color: string; accent_color: string } | undefined;
   saving: boolean;
   onSubmit: () => void;
 }) {
@@ -438,6 +439,21 @@ function CampaignDialog({
               />
             )}
           </div>
+          {est && (
+            <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border bg-background/70 p-3">
+              <div className="min-w-0 text-xs">
+                <div className="font-medium">Logo do estabelecimento</div>
+                <div className="text-muted-foreground">
+                  {est.logo_url ? "Aparece no cartão do cliente." : "Sem logo. Envie para dar identidade ao cartão."}
+                </div>
+              </div>
+              <LogoUploadButton
+                establishmentId={est.id}
+                currentLogoUrl={est.logo_url}
+                invalidateKeys={[["campaigns", est.id]]}
+              />
+            </div>
+          )}
           <p className="text-xs text-muted-foreground">Assim seu cartão aparece para o cliente.</p>
         </div>
       </div>
