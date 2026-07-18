@@ -52,6 +52,7 @@ import { Route as AuthenticatedAdminConfigRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminAuditoriaRouteImport } from './routes/_authenticated/admin.auditoria'
 import { Route as AuthenticatedAdminAssinaturasRouteImport } from './routes/_authenticated/admin.assinaturas'
 import { Route as AuthenticatedAdminAlertasRouteImport } from './routes/_authenticated/admin.alertas'
+import { Route as AuthenticatedAdminAjudaRouteImport } from './routes/_authenticated/admin.ajuda'
 import { Route as AuthenticatedAppPlanosIndexRouteImport } from './routes/_authenticated/app.planos.index'
 import { Route as AuthenticatedAdminSuporteIndexRouteImport } from './routes/_authenticated/admin.suporte.index'
 import { Route as AuthenticatedAdminPlanosIndexRouteImport } from './routes/_authenticated/admin.planos.index'
@@ -292,6 +293,11 @@ const AuthenticatedAdminAlertasRoute =
     path: '/alertas',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminAjudaRoute = AuthenticatedAdminAjudaRouteImport.update({
+  id: '/ajuda',
+  path: '/ajuda',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedAppPlanosIndexRoute =
   AuthenticatedAppPlanosIndexRouteImport.update({
     id: '/planos/',
@@ -362,6 +368,7 @@ export interface FileRoutesByFullPath {
   '/l/$slug': typeof LSlugRoute
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda/': typeof AjudaIndexRoute
+  '/admin/ajuda': typeof AuthenticatedAdminAjudaRoute
   '/admin/alertas': typeof AuthenticatedAdminAlertasRoute
   '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
@@ -413,6 +420,7 @@ export interface FileRoutesByTo {
   '/l/$slug': typeof LSlugRoute
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda': typeof AjudaIndexRoute
+  '/admin/ajuda': typeof AuthenticatedAdminAjudaRoute
   '/admin/alertas': typeof AuthenticatedAdminAlertasRoute
   '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
@@ -468,6 +476,7 @@ export interface FileRoutesById {
   '/l/$slug': typeof LSlugRoute
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda/': typeof AjudaIndexRoute
+  '/_authenticated/admin/ajuda': typeof AuthenticatedAdminAjudaRoute
   '/_authenticated/admin/alertas': typeof AuthenticatedAdminAlertasRoute
   '/_authenticated/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/_authenticated/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
@@ -523,6 +532,7 @@ export interface FileRouteTypes {
     | '/l/$slug'
     | '/suporte/meus'
     | '/ajuda/'
+    | '/admin/ajuda'
     | '/admin/alertas'
     | '/admin/assinaturas'
     | '/admin/auditoria'
@@ -574,6 +584,7 @@ export interface FileRouteTypes {
     | '/l/$slug'
     | '/suporte/meus'
     | '/ajuda'
+    | '/admin/ajuda'
     | '/admin/alertas'
     | '/admin/assinaturas'
     | '/admin/auditoria'
@@ -628,6 +639,7 @@ export interface FileRouteTypes {
     | '/l/$slug'
     | '/suporte/meus'
     | '/ajuda/'
+    | '/_authenticated/admin/ajuda'
     | '/_authenticated/admin/alertas'
     | '/_authenticated/admin/assinaturas'
     | '/_authenticated/admin/auditoria'
@@ -992,6 +1004,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAlertasRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/ajuda': {
+      id: '/_authenticated/admin/ajuda'
+      path: '/ajuda'
+      fullPath: '/admin/ajuda'
+      preLoaderRoute: typeof AuthenticatedAdminAjudaRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/app/planos/': {
       id: '/_authenticated/app/planos/'
       path: '/planos'
@@ -1059,6 +1078,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminAjudaRoute: typeof AuthenticatedAdminAjudaRoute
   AuthenticatedAdminAlertasRoute: typeof AuthenticatedAdminAlertasRoute
   AuthenticatedAdminAssinaturasRoute: typeof AuthenticatedAdminAssinaturasRoute
   AuthenticatedAdminAuditoriaRoute: typeof AuthenticatedAdminAuditoriaRoute
@@ -1078,6 +1098,7 @@ interface AuthenticatedAdminRouteChildren {
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminAjudaRoute: AuthenticatedAdminAjudaRoute,
   AuthenticatedAdminAlertasRoute: AuthenticatedAdminAlertasRoute,
   AuthenticatedAdminAssinaturasRoute: AuthenticatedAdminAssinaturasRoute,
   AuthenticatedAdminAuditoriaRoute: AuthenticatedAdminAuditoriaRoute,
