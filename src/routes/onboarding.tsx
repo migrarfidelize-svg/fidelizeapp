@@ -212,6 +212,25 @@ function Onboarding() {
                 <Input type="number" min={2} max={50} value={f.stamps_required} onChange={(e) => set("stamps_required", Number(e.target.value))} />
               </div>
               <div>
+                <Label>Ícone do carimbo</Label>
+                <Select value={f.stamp_icon} onValueChange={(v) => set("stamp_icon", v)}>
+                  <SelectTrigger>
+                    <SelectValue asChild>
+                      <IconRow value={f.stamp_icon} />
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    {STAMP_ICON_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        <IconRow value={opt.value} />
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-1">
+              <div>
                 <Label>Recompensa (título)</Label>
                 <Input value={f.reward_title} onChange={(e) => set("reward_title", e.target.value)} required maxLength={120} placeholder="Um café grátis" />
               </div>
