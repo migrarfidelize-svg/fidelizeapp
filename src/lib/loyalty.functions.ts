@@ -245,6 +245,23 @@ export const searchCustomer = createServerFn({ method: "POST" })
     return customers ?? [];
   });
 
+export const getCustomerTokenByCode = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    establishment_id: z.string().uuid(),
+    code: z.string().trim().min(3).max(20),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: row } = await supabase.from("customers")
+      .select("access_token")
+      .eq("establishment_id", data.establishment_id)
+      .eq("code", data.code)
+      .maybeSingle();
+    return row?.access_token ?? null;
+  });
+
+
 // ---------- Onboarding ----------
 const SLUG_RESERVED = new Set(["app", "admin", "auth", "onboarding", "api", "l", "c", "precos", "termos", "privacidade", "404", "bloqueado"]);
 
