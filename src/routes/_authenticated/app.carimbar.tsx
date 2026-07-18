@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getMyEstablishments, searchCustomer, addStamp, undoLastStamp, getCardByToken, redeemReward } from "@/lib/loyalty.functions";
+import { getMyEstablishments, searchCustomer, addStamp, undoLastStamp, getCardByToken, redeemReward, listCustomers } from "@/lib/loyalty.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
