@@ -137,7 +137,7 @@ function TicketDetail({ id, onChange }: { id: string; onChange: () => void }) {
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
 
-  async function change(patch: Parameters<typeof update>[0]["data"]) {
+  async function change(patch: { ticket_id: string; status?: "open"|"pending"|"on_hold"|"solved"|"closed"; priority?: "low"|"normal"|"high"|"urgent"; assigned_to?: string | null; tags?: string[] }) {
     try { await update({ data: patch }); qc.invalidateQueries({ queryKey: ["hd-ticket", id] }); onChange(); toast.success("Atualizado"); }
     catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
