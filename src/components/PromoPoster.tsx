@@ -86,6 +86,9 @@ export const PromoPoster = forwardRef<HTMLDivElement, { config: PromoConfig }>(f
   const bgOx = config.bgOffsetX ?? 0;
   const bgOy = config.bgOffsetY ?? 0;
   const bgOverlay = config.bgOverlay ?? 0.35;
+  const cornerStyle = config.cornerStyle ?? "sharp";
+  // Apply radius on trim area (so print bleed still fills to edges); for digital (bleed=0) it's the same as outer.
+  const radius = cornerStyle === "rounded" ? Math.round(Math.min(trimW, trimH) * 0.06) : 0;
 
   return (
     <div
@@ -94,9 +97,13 @@ export const PromoPoster = forwardRef<HTMLDivElement, { config: PromoConfig }>(f
         width: dims.w, height: dims.h,
         position: "relative", overflow: "hidden",
         fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-        background: backgroundColor,
+        background: dims.bleed > 0 ? backgroundColor : "transparent",
+        borderRadius: dims.bleed > 0 ? 0 : radius,
       }}
     >
+      {/* Corner-rounded canvas (for digital exports the whole poster gets rounded) */}
+      <div style={{ position: "absolute", inset: 0, background: backgroundColor, borderRadius: dims.bleed > 0 ? 0 : radius }} />
+
       {/* Custom background image */}
       {config.bgImageUrl && (
         <div
