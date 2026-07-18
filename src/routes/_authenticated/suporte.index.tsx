@@ -187,7 +187,7 @@ function NewTicketDialog() {
           </div>
           <div>
             <Label>Anexos (opcional, máx. 5)</Label>
-            <AttachmentPicker value={atts} onChange={setAtts} upload={(a) => uploadFn({ data: a })} />
+            <AttachmentPicker value={atts} onChange={setAtts} upload={(a) => uploadFn({ data: { ...a, ticket_id: null } })} />
           </div>
         </div>
         <DialogFooter>
