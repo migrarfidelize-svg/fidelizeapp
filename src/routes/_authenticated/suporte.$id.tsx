@@ -115,7 +115,7 @@ function Ticket() {
                     {mine ? "Você" : (m.sender_name ?? "Equipe de suporte")} · {new Date(m.created_at).toLocaleString("pt-BR")}
                   </div>
                   <div className="whitespace-pre-wrap text-sm">{m.message}</div>
-                  <AttachmentList items={(m.attachments as unknown as AttachmentRef[]) ?? []} />
+                  <AttachmentList items={(m.attachments as unknown as AttachmentRef[]) ?? []} signer={(a) => signFn({ data: a })} />
                 </div>
               </div>
             );
