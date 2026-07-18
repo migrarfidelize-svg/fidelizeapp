@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listActivePlans, changeEstablishmentPlan, getMyPlanUsage } from "@/lib/plans.functions";
@@ -7,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Star, Check, Loader2, Users, Sparkles, UserCog } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Star, Check, Loader2, Users, Sparkles, UserCog, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/app/planos/")({
@@ -36,6 +38,38 @@ function MerchantPlansPage() {
   });
 
   const currentTier = usage?.plan?.tier;
+  const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, enterprise: 3 };
+
+  const [pending, setPending] = useState<null | { slug: string; name: string; tier: string; price: number; kind: "upgrade" | "downgrade" | "plan_change" }>(null);
+  const [saving, setSaving] = useState(false);
+
+  function askChange(p: any) {
+    if (!activeEst || !currentTier) return;
+    if (p.tier === currentTier) return;
+    const kind: "upgrade" | "downgrade" | "plan_change" =
+      (PLAN_RANK[p.tier] ?? 0) > (PLAN_RANK[currentTier] ?? 0) ? "upgrade"
+      : (PLAN_RANK[p.tier] ?? 0) < (PLAN_RANK[currentTier] ?? 0) ? "downgrade" : "plan_change";
+    setPending({ slug: p.slug, name: p.name, tier: p.tier, price: Number(p.price_monthly ?? 0), kind });
+  }
+
+  async function confirmChange() {
+    if (!pending || !activeEst) return;
+    setSaving(true);
+    try {
+      const res: any = await change({ data: { establishment_id: activeEst.id, plan_slug: pending.slug } });
+      toast.success(
+        res.kind === "upgrade" ? `Upgrade concluído! Bem-vindo ao ${pending.name}.`
+        : res.kind === "downgrade" ? `Downgrade aplicado para ${pending.name}.`
+        : `Plano alterado para ${pending.name}.`
+      );
+      setPending(null);
+      qc.invalidateQueries();
+    } catch (e: any) {
+      toast.error(e.message ?? "Falha ao alterar plano.");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -94,13 +128,7 @@ function MerchantPlansPage() {
                     className={p.is_featured ? "gradient-brand text-primary-foreground w-full" : "w-full"}
                     variant={p.is_featured ? "default" : "outline"}
                     disabled={isCurrent || !activeEst}
-                    onClick={async () => {
-                      try {
-                        await change({ data: { establishment_id: activeEst!.id, plan_slug: p.slug } });
-                        toast.success(`Plano alterado para ${p.name}.`);
-                        qc.invalidateQueries();
-                      } catch (e: any) { toast.error(e.message); }
-                    }}
+                    onClick={() => askChange(p)}
                   >
                     {isCurrent ? "Plano atual" : (p.button_text ?? `Assinar ${p.name}`)}
                   </Button>
@@ -110,6 +138,42 @@ function MerchantPlansPage() {
           })}
         </div>
       )}
+
+      <AlertDialog open={!!pending} onOpenChange={(o) => !o && setPending(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              {pending?.kind === "upgrade" && <ArrowUp className="h-5 w-5 text-primary" />}
+              {pending?.kind === "downgrade" && <ArrowDown className="h-5 w-5 text-destructive" />}
+              {pending?.kind === "upgrade" ? "Confirmar upgrade"
+                : pending?.kind === "downgrade" ? "Confirmar downgrade"
+                : "Confirmar mudança de plano"}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm">
+                <div>
+                  Você está prestes a mudar de <strong>{usage?.plan?.name ?? currentTier}</strong> para <strong>{pending?.name}</strong>.
+                </div>
+                <div className="rounded-lg border p-3 bg-muted/40">
+                  <div className="flex justify-between"><span className="text-muted-foreground">Valor mensal</span><span className="font-semibold">{pending ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(pending.price) : "—"}</span></div>
+                </div>
+                {pending?.kind === "downgrade" && (
+                  <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-destructive">
+                    Ao fazer downgrade você poderá perder acesso a recursos e ficar acima dos limites do novo plano. Recursos além do limite ficarão inacessíveis até serem removidos.
+                  </div>
+                )}
+                <div className="text-xs text-muted-foreground">A alteração é registrada em histórico de assinaturas e auditoria.</div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={saving}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmChange} disabled={saving}>
+              {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Aplicando…</> : "Confirmar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

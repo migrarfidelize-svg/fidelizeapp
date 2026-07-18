@@ -155,7 +155,9 @@ export const adminToggleFeature = createServerFn({ method: "POST" })
     return upsert;
   });
 
-// ---------- Merchant: change plan for their own establishment ----------
+// ---------- Merchant: change plan (upgrade / downgrade) ----------
+const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, enterprise: 3 };
+
 export const changeEstablishmentPlan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
@@ -163,18 +165,137 @@ export const changeEstablishmentPlan = createServerFn({ method: "POST" })
     plan_slug: z.string().min(1),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase } = context;
-    // check ownership
+    const { supabase, userId } = context;
+
+    // Only owner can change billing plans
     const { data: role } = await supabase.from("establishment_members")
-      .select("role").eq("establishment_id", data.establishment_id).eq("user_id", context.userId).maybeSingle();
-    if (!role || !["owner", "manager"].includes(role.role)) throw new Error("Sem permissão para alterar o plano.");
-    const { data: plan } = await supabase.from("plans").select("id, tier, slug, is_active").eq("slug", data.plan_slug).maybeSingle();
-    if (!plan || !plan.is_active) throw new Error("Plano indisponível.");
-    const { error } = await supabase.from("establishments")
-      .update({ plan: plan.tier }).eq("id", data.establishment_id);
-    if (error) throw new Error(error.message);
-    return { ok: true, tier: plan.tier };
+      .select("role").eq("establishment_id", data.establishment_id).eq("user_id", userId).maybeSingle();
+    if (!role || role.role !== "owner") throw new Error("Apenas o dono da empresa pode alterar o plano.");
+
+    const { data: est } = await supabase.from("establishments")
+      .select("id, name, plan").eq("id", data.establishment_id).maybeSingle();
+    if (!est) throw new Error("Empresa não encontrada.");
+
+    const { data: newPlan } = await supabase.from("plans")
+      .select("id, tier, slug, name, price_monthly, is_active, archived_at")
+      .eq("slug", data.plan_slug).maybeSingle();
+    if (!newPlan || !newPlan.is_active || newPlan.archived_at) throw new Error("Plano indisponível.");
+
+    const fromTier: string = est.plan;
+    const toTier: string = newPlan.tier;
+    if (fromTier === toTier) {
+      return { ok: true, unchanged: true, tier: toTier as any, kind: "same" as const };
+    }
+
+    const fromRank = PLAN_RANK[fromTier] ?? 0;
+    const toRank = PLAN_RANK[toTier] ?? 0;
+    const kind: "upgrade" | "downgrade" | "plan_change" =
+      toRank > fromRank ? "upgrade" : toRank < fromRank ? "downgrade" : "plan_change";
+
+    // 1) Update establishment plan (trigger tg_establishment_subscription_events logs a subscription_events row automatically with actor_id = auth.uid())
+    const { error: updErr } = await supabase.from("establishments")
+      .update({ plan: toTier as any }).eq("id", data.establishment_id);
+    if (updErr) throw new Error(updErr.message);
+
+    // 2) Upsert current subscription row (subscriptions table). RLS only exposes SELECT to members, so we use the admin client after ownership was verified above.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const now = new Date();
+    const periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
+
+    const { data: existingSub } = await supabaseAdmin.from("subscriptions")
+      .select("id").eq("establishment_id", data.establishment_id).maybeSingle();
+
+    if (existingSub) {
+      await supabaseAdmin.from("subscriptions").update({
+        plan_id: newPlan.id,
+        tier: toTier as any,
+        status: "active",
+        provider: "manual",
+        current_period_start: now.toISOString(),
+        current_period_end: periodEnd.toISOString(),
+        cancel_at_period_end: false,
+        metadata: { last_change_by: userId, last_change_kind: kind, last_change_at: now.toISOString() } as never,
+      }).eq("id", existingSub.id);
+    } else {
+      await supabaseAdmin.from("subscriptions").insert({
+        establishment_id: data.establishment_id,
+        plan_id: newPlan.id,
+        tier: toTier as any,
+        status: "active",
+        provider: "manual",
+        current_period_start: now.toISOString(),
+        current_period_end: periodEnd.toISOString(),
+        cancel_at_period_end: false,
+        metadata: { created_by: userId, created_kind: kind } as never,
+      });
+    }
+
+    // 3) Enrich the subscription_events row the trigger just wrote (add human message + actor for audit clarity).
+    // Trigger message is generic; we replace with an intent-rich one when possible.
+    const nice = `${kind === "upgrade" ? "Upgrade" : kind === "downgrade" ? "Downgrade" : "Alteração"} de plano: ${fromTier} → ${toTier} realizado pelo dono da empresa.`;
+    await supabaseAdmin.from("subscription_events")
+      .update({ message: nice, actor_id: userId })
+      .eq("establishment_id", data.establishment_id)
+      .eq("from_plan", fromTier)
+      .eq("to_plan", toTier)
+      .is("acknowledged_at", null)
+      .gte("created_at", new Date(now.getTime() - 60_000).toISOString());
+
+    // 4) Audit log
+    await supabase.from("audit_logs").insert({
+      establishment_id: data.establishment_id,
+      user_id: userId,
+      action: kind === "upgrade" ? "plan_upgrade" : kind === "downgrade" ? "plan_downgrade" : "plan_change",
+      entity_type: "subscription",
+      entity_id: data.establishment_id,
+      metadata: { from_plan: fromTier, to_plan: toTier, plan_id: newPlan.id, plan_name: newPlan.name } as never,
+    });
+
+    return { ok: true, tier: toTier as any, kind, from: fromTier, to: toTier, plan_name: newPlan.name };
   });
+
+// ---------- Feature gating (backend) ----------
+export async function hasFeature(supabase: any, establishmentId: string, featureKey: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc("has_plan_feature", { _est: establishmentId, _feature: featureKey });
+  if (error) return false;
+  return !!data;
+}
+
+const FEATURE_LABELS: Record<string, string> = {
+  customer_import: "Importação de clientes (CSV)",
+  customer_export: "Exportação de clientes",
+  csv_pdf_export: "Exportação CSV / PDF",
+  auto_campaigns: "Campanhas automáticas",
+  advanced_reports: "Relatórios avançados",
+  api: "Acesso à API",
+  webhooks: "Webhooks",
+  custom_branding: "Personalização de marca",
+  custom_stamp_icons: "Ícones de carimbo personalizados",
+  multi_units: "Múltiplas unidades",
+  email_marketing: "E-mail marketing",
+  whatsapp_notifications: "Notificações via WhatsApp",
+};
+
+export async function assertFeature(supabase: any, establishmentId: string, featureKey: string) {
+  const ok = await hasFeature(supabase, establishmentId, featureKey);
+  if (!ok) {
+    const label = FEATURE_LABELS[featureKey] ?? featureKey;
+    throw new Error(`Recurso indisponível no seu plano: ${label}. Faça upgrade em /app/planos para liberar.`);
+  }
+}
+
+// Client-callable feature check (used to hide/disable UI)
+export const checkMyFeature = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    establishment_id: z.string().uuid(),
+    feature_key: z.string().min(1).max(60),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const ok = await hasFeature(context.supabase, data.establishment_id, data.feature_key);
+    return { allowed: ok, feature_key: data.feature_key };
+  });
+
 
 // ---------- Usage vs limits ----------
 export const getMyPlanUsage = createServerFn({ method: "POST" })

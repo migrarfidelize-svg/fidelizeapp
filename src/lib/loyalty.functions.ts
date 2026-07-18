@@ -537,6 +537,8 @@ export const importCustomersCsv = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    const { assertFeature } = await import("./plans.functions");
+    await assertFeature(supabase, data.establishment_id, "customer_import");
     // Validate + normalize
     type Ok = { line: number; row: z.infer<typeof csvRowSchema> };
     type Err = { line: number; error: string; raw: Record<string, string> };
