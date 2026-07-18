@@ -254,6 +254,27 @@ function Clientes() {
         </CardContent>
       </Card>
 
+      {/* Bulk action bar */}
+      {selected.size > 0 && (
+        <div className="sticky top-0 z-10 flex flex-wrap items-center gap-3 rounded-xl border bg-primary-soft/60 backdrop-blur px-4 py-2">
+          <div className="text-sm font-medium">
+            {selected.size} selecionado{selected.size === 1 ? "" : "s"}
+          </div>
+          <div className="ml-auto flex gap-2">
+            <Button size="sm" variant="outline" onClick={() => setBulkAction("unblock")}>
+              <ShieldCheck className="h-4 w-4 mr-1" />Desbloquear
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setBulkAction("block")}>
+              <ShieldOff className="h-4 w-4 mr-1" />Bloquear
+            </Button>
+            <Button size="sm" variant="destructive" onClick={() => setBulkAction("delete")}>
+              <Trash2 className="h-4 w-4 mr-1" />Excluir
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>Limpar</Button>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       <Card>
         <CardContent className="p-0">
@@ -265,51 +286,67 @@ function Clientes() {
                 : "Ainda sem clientes. Compartilhe seu QR Code para começar."}
             </div>
           ) : (
-            <div className="divide-y">
-              {rows.map((c) => (
-                <div key={c.id} className="flex items-center gap-3 p-4 hover:bg-muted/30 transition-colors">
-                  <button onClick={() => setOpenId(c.id)} className="flex items-center gap-3 flex-1 text-left min-w-0">
-                    <div className="grid h-11 w-11 place-items-center rounded-full bg-primary-soft text-primary font-semibold text-sm shrink-0">
-                      {initialsOf(c.name)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <div className="font-medium truncate">{c.name}</div>
-                        {c.blocked && <Badge variant="destructive" className="text-[10px]">Bloqueado</Badge>}
-                        {c.marketing_opt_in && <Badge variant="secondary" className="text-[10px]">Opt-in</Badge>}
+            <>
+              <div className="flex items-center gap-3 px-4 py-2 border-b bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground">
+                <Checkbox
+                  checked={allPageSelected}
+                  onCheckedChange={(v) => togglePage(!!v)}
+                  aria-label="Selecionar página"
+                />
+                <span>Selecionar página ({pageSelectedCount}/{rows.length})</span>
+              </div>
+              <div className="divide-y">
+                {rows.map((c) => (
+                  <div key={c.id} className="flex items-center gap-3 p-4 hover:bg-muted/30 transition-colors">
+                    <Checkbox
+                      checked={selected.has(c.id)}
+                      onCheckedChange={(v) => toggleOne(c.id, !!v)}
+                      aria-label={`Selecionar ${c.name}`}
+                    />
+                    <button onClick={() => setOpenId(c.id)} className="flex items-center gap-3 flex-1 text-left min-w-0">
+                      <div className="grid h-11 w-11 place-items-center rounded-full bg-primary-soft text-primary font-semibold text-sm shrink-0">
+                        {initialsOf(c.name)}
                       </div>
-                      <div className="text-xs text-muted-foreground truncate">
-                        {formatPhone(c.phone)}{c.email ? ` · ${c.email}` : ""} · código {c.code}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <div className="font-medium truncate">{c.name}</div>
+                          {c.blocked && <Badge variant="destructive" className="text-[10px]">Bloqueado</Badge>}
+                          {c.marketing_opt_in && <Badge variant="secondary" className="text-[10px]">Opt-in</Badge>}
+                        </div>
+                        <div className="text-xs text-muted-foreground truncate">
+                          {formatPhone(c.phone)}{c.email ? ` · ${c.email}` : ""} · código {c.code}
+                        </div>
                       </div>
+                    </button>
+                    <div className="hidden sm:block text-right shrink-0">
+                      <div className="text-sm font-semibold">{c.visits_count} visita{c.visits_count === 1 ? "" : "s"}</div>
+                      <div className="text-xs text-muted-foreground">Última: {formatDate(c.last_visit_at)}</div>
                     </div>
-                  </button>
-                  <div className="hidden sm:block text-right shrink-0">
-                    <div className="text-sm font-semibold">{c.visits_count} visita{c.visits_count === 1 ? "" : "s"}</div>
-                    <div className="text-xs text-muted-foreground">Última: {formatDate(c.last_visit_at)}</div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="shrink-0"><MoreHorizontal className="h-4 w-4" /></Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setOpenId(c.id)}>Abrir ficha</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setEditing(c)}><Pencil className="h-4 w-4 mr-2" />Editar</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => window.open(`https://wa.me/55${c.phone}`, "_blank")}>
+                          <MessageCircle className="h-4 w-4 mr-2" />WhatsApp
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <BlockToggleItem c={c} onDone={() => { qc.invalidateQueries({ queryKey: ["customers-adv"] }); qc.invalidateQueries({ queryKey: ["customer-stats"] }); }} />
+                        <DropdownMenuItem className="text-destructive" onClick={() => setConfirmDelete(c)}>
+                          <Trash2 className="h-4 w-4 mr-2" />Excluir
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="shrink-0"><MoreHorizontal className="h-4 w-4" /></Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setOpenId(c.id)}>Abrir ficha</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setEditing(c)}><Pencil className="h-4 w-4 mr-2" />Editar</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => window.open(`https://wa.me/55${c.phone}`, "_blank")}>
-                        <MessageCircle className="h-4 w-4 mr-2" />WhatsApp
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <BlockToggleItem c={c} onDone={() => { qc.invalidateQueries({ queryKey: ["customers-adv"] }); qc.invalidateQueries({ queryKey: ["customer-stats"] }); }} />
-                      <DropdownMenuItem className="text-destructive" onClick={() => setConfirmDelete(c)}>
-                        <Trash2 className="h-4 w-4 mr-2" />Excluir
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
+
 
       {/* Footer / pagination */}
       <div className="flex flex-wrap items-center justify-between gap-3">
