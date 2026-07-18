@@ -16,6 +16,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AjudaIndexRouteImport } from './routes/ajuda.index'
 import { Route as SuporteMeusRouteImport } from './routes/suporte.meus'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
@@ -91,6 +92,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AjudaIndexRoute = AjudaIndexRouteImport.update({
+  id: '/ajuda/',
+  path: '/ajuda/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SuporteMeusRoute = SuporteMeusRouteImport.update({
@@ -343,6 +349,7 @@ export interface FileRoutesByFullPath {
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
   '/suporte/meus': typeof SuporteMeusRoute
+  '/ajuda/': typeof AjudaIndexRoute
   '/admin/alertas': typeof AuthenticatedAdminAlertasRoute
   '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
@@ -391,6 +398,7 @@ export interface FileRoutesByTo {
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
   '/suporte/meus': typeof SuporteMeusRoute
+  '/ajuda': typeof AjudaIndexRoute
   '/admin/alertas': typeof AuthenticatedAdminAlertasRoute
   '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
@@ -443,6 +451,7 @@ export interface FileRoutesById {
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
   '/suporte/meus': typeof SuporteMeusRoute
+  '/ajuda/': typeof AjudaIndexRoute
   '/_authenticated/admin/alertas': typeof AuthenticatedAdminAlertasRoute
   '/_authenticated/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/_authenticated/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
@@ -495,6 +504,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/l/$slug'
     | '/suporte/meus'
+    | '/ajuda/'
     | '/admin/alertas'
     | '/admin/assinaturas'
     | '/admin/auditoria'
@@ -543,6 +553,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/l/$slug'
     | '/suporte/meus'
+    | '/ajuda'
     | '/admin/alertas'
     | '/admin/assinaturas'
     | '/admin/auditoria'
@@ -594,6 +605,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/l/$slug'
     | '/suporte/meus'
+    | '/ajuda/'
     | '/_authenticated/admin/alertas'
     | '/_authenticated/admin/assinaturas'
     | '/_authenticated/admin/auditoria'
@@ -642,6 +654,7 @@ export interface RootRouteChildren {
   InviteTokenRoute: typeof InviteTokenRoute
   LSlugRoute: typeof LSlugRoute
   SuporteMeusRoute: typeof SuporteMeusRoute
+  AjudaIndexRoute: typeof AjudaIndexRoute
   SuporteSlugNovoRoute: typeof SuporteSlugNovoRoute
   SuporteChamadoIdRoute: typeof SuporteChamadoIdRoute
   SuporteSlugIndexRoute: typeof SuporteSlugIndexRoute
@@ -699,6 +712,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ajuda/': {
+      id: '/ajuda/'
+      path: '/ajuda'
+      fullPath: '/ajuda/'
+      preLoaderRoute: typeof AjudaIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/suporte/meus': {
@@ -1109,6 +1129,7 @@ const rootRouteChildren: RootRouteChildren = {
   InviteTokenRoute: InviteTokenRoute,
   LSlugRoute: LSlugRoute,
   SuporteMeusRoute: SuporteMeusRoute,
+  AjudaIndexRoute: AjudaIndexRoute,
   SuporteSlugNovoRoute: SuporteSlugNovoRoute,
   SuporteChamadoIdRoute: SuporteChamadoIdRoute,
   SuporteSlugIndexRoute: SuporteSlugIndexRoute,
