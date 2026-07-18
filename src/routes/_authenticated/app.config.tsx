@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import {
   getEstablishmentFull, updateEstablishmentProfile, updateSettingsSection,
-  listTeam, inviteTeamMember, revokeInvite, updateMember, removeMember,
+  listTeam, inviteTeamMember, revokeInvite, resendInvite, updateMember, removeMember,
   setMyPin, removeMyPin, changePassword,
   listTemplates, saveTemplate,
   listDataRequests, createDataRequest, processDataRequest,
