@@ -61,6 +61,7 @@ export interface PromoConfig {
   showSafeArea?: boolean;
   qrScale?: number;
   qrColor?: string;
+  cornerStyle?: "sharp" | "rounded";
 }
 
 function withAlpha(hex: string, a: number) {
@@ -85,6 +86,9 @@ export const PromoPoster = forwardRef<HTMLDivElement, { config: PromoConfig }>(f
   const bgOx = config.bgOffsetX ?? 0;
   const bgOy = config.bgOffsetY ?? 0;
   const bgOverlay = config.bgOverlay ?? 0.35;
+  const cornerStyle = config.cornerStyle ?? "sharp";
+  // Apply radius on trim area (so print bleed still fills to edges); for digital (bleed=0) it's the same as outer.
+  const radius = cornerStyle === "rounded" ? Math.round(Math.min(trimW, trimH) * 0.06) : 0;
 
   return (
     <div
@@ -93,9 +97,13 @@ export const PromoPoster = forwardRef<HTMLDivElement, { config: PromoConfig }>(f
         width: dims.w, height: dims.h,
         position: "relative", overflow: "hidden",
         fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-        background: backgroundColor,
+        background: dims.bleed > 0 ? backgroundColor : "transparent",
+        borderRadius: dims.bleed > 0 ? 0 : radius,
       }}
     >
+      {/* Corner-rounded canvas (for digital exports the whole poster gets rounded) */}
+      <div style={{ position: "absolute", inset: 0, background: backgroundColor, borderRadius: dims.bleed > 0 ? 0 : radius }} />
+
       {/* Custom background image */}
       {config.bgImageUrl && (
         <div
@@ -121,7 +129,7 @@ export const PromoPoster = forwardRef<HTMLDivElement, { config: PromoConfig }>(f
       />
 
       {/* Trim area */}
-      <div style={{ position: "absolute", top: dims.bleed, left: dims.bleed, width: trimW, height: trimH }}>
+      <div style={{ position: "absolute", top: dims.bleed, left: dims.bleed, width: trimW, height: trimH, overflow: "hidden", borderRadius: dims.bleed > 0 ? radius : 0 }}>
         {/* Decorative segment icons */}
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
           <Icon size={s(320)} strokeWidth={1.2} style={{ position: "absolute", top: -s(60), right: -s(60), color: primaryColor, opacity: config.bgImageUrl ? 0.05 : 0.08 }} />
