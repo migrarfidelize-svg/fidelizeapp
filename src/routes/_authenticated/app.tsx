@@ -3,9 +3,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
+import { getAdminStatus } from "@/lib/admin.functions";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Stamp, QrCode, Settings, LogOut, Sparkles, ChevronDown, UsersRound } from "lucide-react";
+import { LayoutDashboard, Users, Stamp, QrCode, Settings, LogOut, Sparkles, ChevronDown, UsersRound, Shield } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
 export const Route = createFileRoute("/_authenticated/app")({
@@ -16,7 +17,9 @@ function AppLayout() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const getEsts = useServerFn(getMyEstablishments);
+  const getAdmin = useServerFn(getAdminStatus);
   const { data: memberships, isLoading } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
+  const { data: adminStatus } = useQuery({ queryKey: ["admin-status"], queryFn: () => getAdmin() });
   const pathname = useRouterState({ select: (r) => r.location.pathname });
 
   const activeEst = memberships?.[0]?.establishment as { id: string; name: string; slug: string; logo_url: string | null } | undefined;
@@ -70,6 +73,9 @@ function AppLayout() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuItem asChild><Link to="/l/$slug" params={{ slug: activeEst!.slug }}>Ver página pública</Link></DropdownMenuItem>
+              {adminStatus?.isAdmin && (
+                <DropdownMenuItem asChild><Link to="/admin"><Shield className="mr-2 h-4 w-4" />Painel do administrador</Link></DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={signOut}><LogOut className="mr-2 h-4 w-4" />Sair</DropdownMenuItem>
             </DropdownMenuContent>

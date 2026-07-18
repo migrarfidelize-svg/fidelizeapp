@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["platform_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["platform_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["platform_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -575,11 +596,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_super_admin: { Args: { _user: string }; Returns: boolean }
     }
     Enums: {
       campaign_type: "stamps" | "points"
       member_role: "owner" | "manager" | "staff"
       plan_tier: "free" | "starter" | "pro" | "enterprise"
+      platform_role: "super_admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -710,6 +733,7 @@ export const Constants = {
       campaign_type: ["stamps", "points"],
       member_role: ["owner", "manager", "staff"],
       plan_tier: ["free", "starter", "pro", "enterprise"],
+      platform_role: ["super_admin"],
     },
   },
 } as const
