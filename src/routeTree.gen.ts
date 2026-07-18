@@ -30,6 +30,7 @@ import { Route as SuporteSlugNovoRouteImport } from './routes/suporte.$slug.novo
 import { Route as AuthenticatedAppSuporteRouteImport } from './routes/_authenticated/app.suporte'
 import { Route as AuthenticatedAppQrcodesRouteImport } from './routes/_authenticated/app.qrcodes'
 import { Route as AuthenticatedAppKbRouteImport } from './routes/_authenticated/app.kb'
+import { Route as AuthenticatedAppEquipeRouteImport } from './routes/_authenticated/app.equipe'
 import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated/app.clientes'
 import { Route as AuthenticatedAppCarimbarRouteImport } from './routes/_authenticated/app.carimbar'
 import { Route as AuthenticatedAppCampanhasRouteImport } from './routes/_authenticated/app.campanhas'
@@ -146,6 +147,11 @@ const AuthenticatedAppKbRoute = AuthenticatedAppKbRouteImport.update({
   path: '/kb',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppEquipeRoute = AuthenticatedAppEquipeRouteImport.update({
+  id: '/equipe',
+  path: '/equipe',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAppClientesRoute =
   AuthenticatedAppClientesRouteImport.update({
     id: '/clientes',
@@ -234,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
+  '/app/equipe': typeof AuthenticatedAppEquipeRoute
   '/app/kb': typeof AuthenticatedAppKbRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
@@ -265,6 +272,7 @@ export interface FileRoutesByTo {
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
+  '/app/equipe': typeof AuthenticatedAppEquipeRoute
   '/app/kb': typeof AuthenticatedAppKbRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
@@ -300,6 +308,7 @@ export interface FileRoutesById {
   '/_authenticated/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/_authenticated/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/_authenticated/app/clientes': typeof AuthenticatedAppClientesRoute
+  '/_authenticated/app/equipe': typeof AuthenticatedAppEquipeRoute
   '/_authenticated/app/kb': typeof AuthenticatedAppKbRoute
   '/_authenticated/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/_authenticated/app/suporte': typeof AuthenticatedAppSuporteRoute
@@ -335,6 +344,7 @@ export interface FileRouteTypes {
     | '/app/campanhas'
     | '/app/carimbar'
     | '/app/clientes'
+    | '/app/equipe'
     | '/app/kb'
     | '/app/qrcodes'
     | '/app/suporte'
@@ -366,6 +376,7 @@ export interface FileRouteTypes {
     | '/app/campanhas'
     | '/app/carimbar'
     | '/app/clientes'
+    | '/app/equipe'
     | '/app/kb'
     | '/app/qrcodes'
     | '/app/suporte'
@@ -400,6 +411,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/campanhas'
     | '/_authenticated/app/carimbar'
     | '/_authenticated/app/clientes'
+    | '/_authenticated/app/equipe'
     | '/_authenticated/app/kb'
     | '/_authenticated/app/qrcodes'
     | '/_authenticated/app/suporte'
@@ -579,6 +591,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppKbRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/equipe': {
+      id: '/_authenticated/app/equipe'
+      path: '/equipe'
+      fullPath: '/app/equipe'
+      preLoaderRoute: typeof AuthenticatedAppEquipeRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/app/clientes': {
       id: '/_authenticated/app/clientes'
       path: '/clientes'
@@ -688,6 +707,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppCampanhasRoute: typeof AuthenticatedAppCampanhasRoute
   AuthenticatedAppCarimbarRoute: typeof AuthenticatedAppCarimbarRoute
   AuthenticatedAppClientesRoute: typeof AuthenticatedAppClientesRoute
+  AuthenticatedAppEquipeRoute: typeof AuthenticatedAppEquipeRoute
   AuthenticatedAppKbRoute: typeof AuthenticatedAppKbRoute
   AuthenticatedAppQrcodesRoute: typeof AuthenticatedAppQrcodesRoute
   AuthenticatedAppSuporteRoute: typeof AuthenticatedAppSuporteRoute
@@ -698,6 +718,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppCampanhasRoute: AuthenticatedAppCampanhasRoute,
   AuthenticatedAppCarimbarRoute: AuthenticatedAppCarimbarRoute,
   AuthenticatedAppClientesRoute: AuthenticatedAppClientesRoute,
+  AuthenticatedAppEquipeRoute: AuthenticatedAppEquipeRoute,
   AuthenticatedAppKbRoute: AuthenticatedAppKbRoute,
   AuthenticatedAppQrcodesRoute: AuthenticatedAppQrcodesRoute,
   AuthenticatedAppSuporteRoute: AuthenticatedAppSuporteRoute,
