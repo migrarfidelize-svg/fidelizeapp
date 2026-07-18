@@ -747,6 +747,21 @@ function QRCodes() {
               </TabsContent>
 
               <TabsContent value="advanced" className="space-y-4 pt-4">
+                <div className="rounded-lg border p-3 space-y-3">
+                  <Row label="Tamanho do QR — auto por formato" hint={`Sugerido: Story ${AUTO_QR_SCALE.story}×, Feed ${AUTO_QR_SCALE.feed}×, Balcão ${AUTO_QR_SCALE.counter}×`}>
+                    <Switch checked={qrAuto} onCheckedChange={(v) => { setQrAuto(v); if (v) setQrScale(AUTO_QR_SCALE[format]); }} />
+                  </Row>
+                  <SliderField
+                    label={`Escala do QR (${qrScale.toFixed(2)}×)${qrAuto ? " · auto" : ""}`}
+                    value={qrScale}
+                    min={0.6}
+                    max={1.5}
+                    step={0.05}
+                    onChange={(v) => { setQrAuto(false); setQrScale(v); }}
+                  />
+                  <p className="text-[11px] text-muted-foreground">Aumenta ou reduz o QR mantendo a área de respiro. A auto-escala escolhe o melhor tamanho por formato para leitura fácil à distância.</p>
+                </div>
+
                 <Row label="Mostrar guias de área segura" hint="Só na prévia — mostra até onde o conteúdo pode chegar">
                   <Switch checked={showSafeArea} onCheckedChange={setShowSafeArea} />
                 </Row>
