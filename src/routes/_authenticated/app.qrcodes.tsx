@@ -696,11 +696,14 @@ function QRCodes() {
                 </div>
                 {bgImageUrl && (
                   <>
+                    <Button size="sm" variant="outline" onClick={reExtractPalette} className="w-full">
+                      <Wand2 className="mr-2 h-3.5 w-3.5" />Reajustar cores pela imagem
+                    </Button>
                     <SliderField label={`Zoom (${bgZoom.toFixed(2)}×)`} value={bgZoom} min={1} max={3} step={0.05} onChange={setBgZoom} />
                     <SliderField label={`Horizontal (${bgOffsetX})`} value={bgOffsetX} min={-40} max={40} step={1} onChange={setBgOffsetX} />
                     <SliderField label={`Vertical (${bgOffsetY})`} value={bgOffsetY} min={-40} max={40} step={1} onChange={setBgOffsetY} />
                     <SliderField label={`Camada de proteção (${Math.round(bgOverlay * 100)}%)`} value={bgOverlay} min={0} max={0.85} step={0.05} onChange={setBgOverlay} />
-                    <p className="text-[11px] text-muted-foreground">A camada de proteção clareia o fundo para manter a leitura dos textos e do QR.</p>
+                    <p className="text-[11px] text-muted-foreground">Ao enviar uma foto, as cores (principal, secundária, textos) são ajustadas automaticamente para manter contraste com o fundo. Use o botão acima para reaplicar.</p>
                   </>
                 )}
               </TabsContent>
