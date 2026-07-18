@@ -210,6 +210,7 @@ type StoredState = {
   ctaNearQR: string; ctaFooter: string; rewardTextOverride: string;
   primaryColor: string; accentColor: string; backgroundColor: string; textColor: string;
   showBrand: boolean; bgImageUrl: string | null; bgZoom: number; bgOffsetX: number; bgOffsetY: number; bgOverlay: number;
+  qrScale?: number;
 };
 const storageKey = (estId: string) => `fidelize-promos-v1-${estId}`;
 function loadVariations(estId: string): SavedVariation[] {
