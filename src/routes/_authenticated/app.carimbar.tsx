@@ -66,12 +66,22 @@ function Carimbar() {
   async function handleStamp(cardId: string) {
     setBusy(true);
     try {
-      const r = await addStampFn({ data: { card_id: cardId } });
+      let r;
+      try {
+        r = await addStampFn({ data: { card_id: cardId } });
+      } catch (err: any) {
+        if (/PIN/.test(err?.message ?? "")) {
+          const pin = window.prompt("Digite seu PIN de carimbo (4-6 dígitos):") ?? "";
+          if (!/^\d{4,6}$/.test(pin)) { toast.error("PIN inválido"); return; }
+          r = await addStampFn({ data: { card_id: cardId, pin } });
+        } else { throw err; }
+      }
       toast.success(r.completed ? "🎉 Recompensa desbloqueada!" : `Carimbo adicionado (${r.stamps}/${r.required})`);
       if (selectedToken) await loadByToken(selectedToken);
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
     finally { setBusy(false); }
   }
+
 
   async function handleUndo(cardId: string) {
     setBusy(true);
