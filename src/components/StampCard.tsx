@@ -5,6 +5,13 @@ const ICONS: Record<string, typeof Coffee> = {
   icecream: IceCream, bag: ShoppingBag, wrench: Wrench, sparkles: Sparkles, gift: Gift,
 };
 
+function initialsOf(name: string): string {
+  const parts = (name || "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 interface Props {
   brandName: string;
   logoUrl?: string | null;
@@ -30,10 +37,10 @@ export function StampCard({ brandName, logoUrl, customerName, stamps, required, 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {logoUrl ? (
-            <img src={logoUrl} alt="" className="h-10 w-10 rounded-full object-cover ring-2 ring-white/40" />
+            <img src={logoUrl} alt="" className="h-10 w-10 rounded-full object-cover ring-2 ring-white/40 bg-white/20" />
           ) : (
-            <div className="grid h-10 w-10 place-items-center rounded-full bg-white/20 backdrop-blur">
-              <Sparkles className="h-5 w-5" />
+            <div className="grid h-10 w-10 place-items-center rounded-full bg-white/20 backdrop-blur ring-2 ring-white/30 font-display font-bold text-sm">
+              {initialsOf(brandName)}
             </div>
           )}
           <div>

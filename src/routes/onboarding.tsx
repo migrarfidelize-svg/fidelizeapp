@@ -12,6 +12,7 @@ import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
 import { toast } from "sonner";
 import { Upload, X, Loader2 } from "lucide-react";
+import { LogoCropper } from "@/components/LogoCropper";
 
 export const Route = createFileRoute("/onboarding")({
   ssr: false,
@@ -38,6 +39,9 @@ function Onboarding() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [cropOpen, setCropOpen] = useState(false);
+  const [rawFile, setRawFile] = useState<File | null>(null);
+  const [logoRev, setLogoRev] = useState(0); // força reload da <img> quando trocamos o logo
   const [f, setF] = useState({
     name: "", slug: "", description: "", primary_color: "#5B21B6", accent_color: "#F97066",
     logo_url: "" as string,
@@ -55,35 +59,42 @@ function Onboarding() {
       toast.error("Envie uma imagem PNG, JPG, WEBP ou SVG.");
       return;
     }
-    if (file.size > 3 * 1024 * 1024) {
-      toast.error("Logo muito grande (máx. 3 MB).");
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Imagem muito grande (máx. 5 MB).");
       return;
     }
+    setRawFile(file);
+    setCropOpen(true);
+    if (fileRef.current) fileRef.current.value = "";
+  }
+
+  async function uploadCropped(blob: Blob) {
     setUploading(true);
     try {
       const { data: userData } = await supabase.auth.getUser();
       const uid = userData.user?.id;
       if (!uid) throw new Error("Sessão expirada");
-      const ext = (file.name.split(".").pop() || "png").toLowerCase();
-      const path = `${uid}/${crypto.randomUUID()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("logos").upload(path, file, {
-        cacheControl: "31536000", upsert: false, contentType: file.type,
+      const path = `${uid}/${crypto.randomUUID()}.png`;
+      const { error: upErr } = await supabase.storage.from("logos").upload(path, blob, {
+        cacheControl: "31536000", upsert: false, contentType: "image/png",
       });
       if (upErr) throw upErr;
       const { data: signed, error: sErr } = await supabase.storage.from("logos").createSignedUrl(path, SIGNED_URL_TTL);
       if (sErr || !signed?.signedUrl) throw sErr || new Error("Falha ao gerar link");
       set("logo_url", signed.signedUrl);
-      toast.success("Logo enviado!");
+      setLogoRev((r) => r + 1);
+      toast.success("Logo atualizado!");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao enviar logo");
     } finally {
       setUploading(false);
-      if (fileRef.current) fileRef.current.value = "";
+      setRawFile(null);
     }
   }
 
   function removeLogo() {
     set("logo_url", "");
+    setLogoRev((r) => r + 1);
   }
 
   async function submit(e: React.FormEvent) {
@@ -160,9 +171,9 @@ function Onboarding() {
             <div className="mt-2 flex items-center gap-4">
               <div className="h-20 w-20 shrink-0 rounded-2xl border bg-muted/40 grid place-items-center overflow-hidden">
                 {f.logo_url ? (
-                  <img src={f.logo_url} alt="Logo" className="h-full w-full object-cover" />
+                  <img key={logoRev} src={f.logo_url} alt="Logo" className="h-full w-full object-cover" />
                 ) : (
-                  <span className="text-xs text-muted-foreground text-center px-1">Sem logo</span>
+                  <span className="text-xs font-display font-bold text-muted-foreground">{(f.name || "?").trim().split(/\s+/).slice(0,2).map(w=>w[0]).join("").toUpperCase().slice(0,2) || "?"}</span>
                 )}
               </div>
               <div className="flex-1 space-y-2">
@@ -178,7 +189,7 @@ function Onboarding() {
                     </Button>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground">PNG, JPG, WEBP ou SVG. Até 3 MB. Ideal: quadrado.</p>
+                <p className="text-xs text-muted-foreground">PNG, JPG, WEBP ou SVG. Até 5 MB. Você recorta antes de enviar.</p>
               </div>
             </div>
           </div>
@@ -215,6 +226,7 @@ function Onboarding() {
           <div className="sticky top-8">
             <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Prévia</div>
             <StampCard
+              key={logoRev}
               brandName={f.name || "Sua empresa"}
               logoUrl={f.logo_url || undefined}
               customerName="Cliente exemplo"
@@ -227,6 +239,12 @@ function Onboarding() {
           </div>
         </div>
       </div>
+      <LogoCropper
+        file={rawFile}
+        open={cropOpen}
+        onOpenChange={(o) => { setCropOpen(o); if (!o) setRawFile(null); }}
+        onCropped={uploadCropped}
+      />
     </div>
   );
 }
