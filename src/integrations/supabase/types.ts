@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_keys: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          establishment_id: string
+          id: string
+          key_hash: string
+          last_used_at: string | null
+          name: string
+          prefix: string
+          revoked_at: string | null
+          scopes: string[]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          establishment_id: string
+          id?: string
+          key_hash: string
+          last_used_at?: string | null
+          name: string
+          prefix: string
+          revoked_at?: string | null
+          scopes?: string[]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          establishment_id?: string
+          id?: string
+          key_hash?: string
+          last_used_at?: string | null
+          name?: string
+          prefix?: string
+          revoked_at?: string | null
+          scopes?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_roles: {
         Row: {
           created_at: string
@@ -183,6 +230,54 @@ export type Database = {
           },
         ]
       }
+      coupons: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          discount_amount: number | null
+          discount_pct: number | null
+          id: string
+          max_uses: number | null
+          plan_tier: Database["public"]["Enums"]["plan_tier"] | null
+          uses: number
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          discount_amount?: number | null
+          discount_pct?: number | null
+          id?: string
+          max_uses?: number | null
+          plan_tier?: Database["public"]["Enums"]["plan_tier"] | null
+          uses?: number
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          discount_amount?: number | null
+          discount_pct?: number | null
+          id?: string
+          max_uses?: number | null
+          plan_tier?: Database["public"]["Enums"]["plan_tier"] | null
+          uses?: number
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           access_token: string
@@ -245,31 +340,97 @@ export type Database = {
           },
         ]
       }
+      data_requests: {
+        Row: {
+          created_at: string
+          customer_id: string | null
+          customer_phone: string | null
+          establishment_id: string
+          id: string
+          kind: string
+          processed_at: string | null
+          reason: string | null
+          requested_by: string | null
+          result_url: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id?: string | null
+          customer_phone?: string | null
+          establishment_id: string
+          id?: string
+          kind: string
+          processed_at?: string | null
+          reason?: string | null
+          requested_by?: string | null
+          result_url?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string | null
+          customer_phone?: string | null
+          establishment_id?: string
+          id?: string
+          kind?: string
+          processed_at?: string | null
+          reason?: string | null
+          requested_by?: string | null
+          result_url?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_requests_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "data_requests_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       establishment_members: {
         Row: {
           active: boolean
           created_at: string
+          display_name: string | null
           establishment_id: string
           id: string
           invited_email: string | null
+          last_pin_used_at: string | null
+          pin_hash: string | null
           role: Database["public"]["Enums"]["member_role"]
           user_id: string
         }
         Insert: {
           active?: boolean
           created_at?: string
+          display_name?: string | null
           establishment_id: string
           id?: string
           invited_email?: string | null
+          last_pin_used_at?: string | null
+          pin_hash?: string | null
           role?: Database["public"]["Enums"]["member_role"]
           user_id: string
         }
         Update: {
           active?: boolean
           created_at?: string
+          display_name?: string | null
           establishment_id?: string
           id?: string
           invited_email?: string | null
+          last_pin_used_at?: string | null
+          pin_hash?: string | null
           role?: Database["public"]["Enums"]["member_role"]
           user_id?: string
         }
@@ -283,18 +444,68 @@ export type Database = {
           },
         ]
       }
+      establishment_settings: {
+        Row: {
+          appearance: Json
+          billing_prefs: Json
+          card: Json
+          created_at: string
+          establishment_id: string
+          notifications: Json
+          privacy: Json
+          security: Json
+          updated_at: string
+        }
+        Insert: {
+          appearance?: Json
+          billing_prefs?: Json
+          card?: Json
+          created_at?: string
+          establishment_id: string
+          notifications?: Json
+          privacy?: Json
+          security?: Json
+          updated_at?: string
+        }
+        Update: {
+          appearance?: Json
+          billing_prefs?: Json
+          card?: Json
+          created_at?: string
+          establishment_id?: string
+          notifications?: Json
+          privacy?: Json
+          security?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "establishment_settings_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: true
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       establishments: {
         Row: {
           accent_color: string
           active: boolean
           address: string | null
+          archived_at: string | null
           average_ticket: number | null
           business_hours: string | null
+          cep: string | null
+          city: string | null
+          cnpj: string | null
           cover_url: string | null
           created_at: string
           created_by: string | null
           description: string | null
           email: string | null
+          facebook: string | null
+          google_maps_url: string | null
           id: string
           instagram: string | null
           logo_url: string | null
@@ -302,22 +513,34 @@ export type Database = {
           phone: string | null
           plan: Database["public"]["Enums"]["plan_tier"]
           primary_color: string
+          razao_social: string | null
+          segment: string | null
           slug: string
+          state: string | null
           theme: string
+          tiktok: string | null
+          timezone: string
           updated_at: string
+          website: string | null
           whatsapp: string | null
         }
         Insert: {
           accent_color?: string
           active?: boolean
           address?: string | null
+          archived_at?: string | null
           average_ticket?: number | null
           business_hours?: string | null
+          cep?: string | null
+          city?: string | null
+          cnpj?: string | null
           cover_url?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           email?: string | null
+          facebook?: string | null
+          google_maps_url?: string | null
           id?: string
           instagram?: string | null
           logo_url?: string | null
@@ -325,22 +548,34 @@ export type Database = {
           phone?: string | null
           plan?: Database["public"]["Enums"]["plan_tier"]
           primary_color?: string
+          razao_social?: string | null
+          segment?: string | null
           slug: string
+          state?: string | null
           theme?: string
+          tiktok?: string | null
+          timezone?: string
           updated_at?: string
+          website?: string | null
           whatsapp?: string | null
         }
         Update: {
           accent_color?: string
           active?: boolean
           address?: string | null
+          archived_at?: string | null
           average_ticket?: number | null
           business_hours?: string | null
+          cep?: string | null
+          city?: string | null
+          cnpj?: string | null
           cover_url?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           email?: string | null
+          facebook?: string | null
+          google_maps_url?: string | null
           id?: string
           instagram?: string | null
           logo_url?: string | null
@@ -348,9 +583,15 @@ export type Database = {
           phone?: string | null
           plan?: Database["public"]["Enums"]["plan_tier"]
           primary_color?: string
+          razao_social?: string | null
+          segment?: string | null
           slug?: string
+          state?: string | null
           theme?: string
+          tiktok?: string | null
+          timezone?: string
           updated_at?: string
+          website?: string | null
           whatsapp?: string | null
         }
         Relationships: []
@@ -599,6 +840,94 @@ export type Database = {
           },
         ]
       }
+      notification_templates: {
+        Row: {
+          active: boolean
+          body: string
+          channel: string
+          created_at: string
+          establishment_id: string
+          event: string
+          id: string
+          subject: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          body?: string
+          channel?: string
+          created_at?: string
+          establishment_id: string
+          event: string
+          id?: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          body?: string
+          channel?: string
+          created_at?: string
+          establishment_id?: string
+          event?: string
+          id?: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_templates_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_provider_credentials: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          credentials_ciphertext: string | null
+          environment: string
+          establishment_id: string
+          id: string
+          provider: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          credentials_ciphertext?: string | null
+          environment?: string
+          establishment_id: string
+          id?: string
+          provider: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          credentials_ciphertext?: string | null
+          environment?: string
+          establishment_id?: string
+          id?: string
+          provider?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_provider_credentials_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plans: {
         Row: {
           created_at: string
@@ -818,6 +1147,122 @@ export type Database = {
           },
         ]
       }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          establishment_id: string
+          external_id: string | null
+          id: string
+          metadata: Json
+          plan_id: string | null
+          provider: string | null
+          status: string
+          tier: Database["public"]["Enums"]["plan_tier"]
+          trial_ends_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          establishment_id: string
+          external_id?: string | null
+          id?: string
+          metadata?: Json
+          plan_id?: string | null
+          provider?: string | null
+          status?: string
+          tier?: Database["public"]["Enums"]["plan_tier"]
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          establishment_id?: string
+          external_id?: string | null
+          id?: string
+          metadata?: Json
+          plan_id?: string | null
+          provider?: string | null
+          status?: string
+          tier?: Database["public"]["Enums"]["plan_tier"]
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: true
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          email: string
+          establishment_id: string
+          expires_at: string
+          id: string
+          invited_by: string | null
+          revoked_at: string | null
+          role: Database["public"]["Enums"]["member_role"]
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email: string
+          establishment_id: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          revoked_at?: string | null
+          role?: Database["public"]["Enums"]["member_role"]
+          token: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email?: string
+          establishment_id?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          revoked_at?: string | null
+          role?: Database["public"]["Enums"]["member_role"]
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_invites_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ticket_messages: {
         Row: {
           attachments: Json
@@ -967,6 +1412,94 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "tickets_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhook_deliveries: {
+        Row: {
+          attempted_at: string
+          event: string
+          id: string
+          ok: boolean
+          payload: Json | null
+          response: string | null
+          status_code: number | null
+          webhook_id: string
+        }
+        Insert: {
+          attempted_at?: string
+          event: string
+          id?: string
+          ok?: boolean
+          payload?: Json | null
+          response?: string | null
+          status_code?: number | null
+          webhook_id: string
+        }
+        Update: {
+          attempted_at?: string
+          event?: string
+          id?: string
+          ok?: boolean
+          payload?: Json | null
+          response?: string | null
+          status_code?: number | null
+          webhook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_deliveries_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "webhooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhooks: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          establishment_id: string
+          events: string[]
+          id: string
+          name: string
+          secret: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          establishment_id: string
+          events?: string[]
+          id?: string
+          name: string
+          secret: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          establishment_id?: string
+          events?: string[]
+          id?: string
+          name?: string
+          secret?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhooks_establishment_id_fkey"
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "establishments"
