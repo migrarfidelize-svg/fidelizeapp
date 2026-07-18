@@ -184,17 +184,18 @@ export const PromoPoster = forwardRef<HTMLDivElement, { config: PromoConfig }>(f
 function QRCard({ s, config, scale = 1 }: { s: (n: number) => number; config: PromoConfig; scale?: number }) {
   const base = 460;
   const size = Math.round(s(base) * Math.max(0.5, Math.min(1.6, scale)));
+  const qrColor = config.qrColor ?? config.primaryColor;
   return (
     <div style={{
       background: "#fff",
       padding: s(28),
       borderRadius: s(32),
-      boxShadow: `0 ${s(20)}px ${s(60)}px ${withAlpha(config.primaryColor, 0.3)}`,
-      border: `${s(4)}px solid ${config.primaryColor}`,
+      boxShadow: `0 ${s(20)}px ${s(60)}px ${withAlpha(qrColor, 0.3)}`,
+      border: `${s(4)}px solid ${qrColor}`,
       textAlign: "center",
     }}>
       {config.qrDataUrl && <img src={config.qrDataUrl} alt="QR" style={{ width: size, height: size, display: "block" }} />}
-      <div style={{ marginTop: s(14), fontSize: s(20), fontWeight: 700, color: config.primaryColor }}>{config.ctaNearQR}</div>
+      <div style={{ marginTop: s(14), fontSize: s(20), fontWeight: 700, color: qrColor }}>{config.ctaNearQR}</div>
     </div>
   );
 }
