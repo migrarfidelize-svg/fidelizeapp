@@ -468,13 +468,14 @@ function QRCodes() {
 
   // ---------- Variations ----------
   function currentState(): StoredState {
-    return { format, segment, title, subtitle, ctaNearQR, ctaFooter, rewardTextOverride, primaryColor, accentColor, backgroundColor, textColor, showBrand, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay };
+    return { format, segment, title, subtitle, ctaNearQR, ctaFooter, rewardTextOverride, primaryColor, accentColor, backgroundColor, textColor, showBrand, bgImageUrl, bgZoom, bgOffsetX, bgOffsetY, bgOverlay, qrScale };
   }
   function applyState(s: StoredState) {
     setFormat(s.format); setSegment(s.segment); setTitle(s.title); setSubtitle(s.subtitle);
     setCtaNearQR(s.ctaNearQR); setCtaFooter(s.ctaFooter); setRewardTextOverride(s.rewardTextOverride);
     setPrimaryColor(s.primaryColor); setAccentColor(s.accentColor); setBackgroundColor(s.backgroundColor); setTextColor(s.textColor);
     setShowBrand(s.showBrand); setBgImageUrl(s.bgImageUrl); setBgZoom(s.bgZoom); setBgOffsetX(s.bgOffsetX); setBgOffsetY(s.bgOffsetY); setBgOverlay(s.bgOverlay);
+    if (typeof s.qrScale === "number") { setQrAuto(false); setQrScale(s.qrScale); }
   }
   function saveVariation() {
     if (!est?.id) return;
