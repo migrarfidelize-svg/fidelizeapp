@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loader2, ExternalLink, Download, CreditCard, QrCode, FileText } from "lucide-react";
-import { exportToCsv } from "@/lib/export";
+import { downloadCSV } from "@/lib/export";
 
 export const Route = createFileRoute("/_authenticated/app/pagamentos")({
   component: PaymentsPage,
