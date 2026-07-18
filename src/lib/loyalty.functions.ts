@@ -694,6 +694,7 @@ const establishmentSchema = z.object({
   stamps_required: z.number({ invalid_type_error: "Número de carimbos inválido." }).int().min(2, "Mínimo de 2 carimbos.").max(50, "Máximo de 50 carimbos.").default(10),
   reward_title: z.string({ required_error: "Descreva a recompensa da campanha." }).trim().min(2, "Descreva a recompensa com pelo menos 2 caracteres.").max(120, "A recompensa pode ter no máximo 120 caracteres."),
   reward_description: z.string().max(500, "Os detalhes da recompensa podem ter no máximo 500 caracteres.").optional(),
+  stamp_icon: z.string().trim().min(1).max(32).default("star"),
 });
 
 function parseEstablishmentInput(d: unknown) {
