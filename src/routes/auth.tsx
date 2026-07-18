@@ -135,7 +135,10 @@ function AuthPage() {
               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
             </div>
             <div>
-              <Label htmlFor="password">Senha</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Senha</Label>
+                {!isSignup && <Link to="/auth/recuperar" className="text-xs text-primary hover:underline">Esqueci minha senha</Link>}
+              </div>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete={isSignup ? "new-password" : "current-password"} />
             </div>
             <Button type="submit" disabled={loading} className="w-full gradient-brand text-primary-foreground">
