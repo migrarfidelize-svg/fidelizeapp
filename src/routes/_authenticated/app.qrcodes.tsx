@@ -24,18 +24,95 @@ export const Route = createFileRoute("/_authenticated/app/qrcodes")({
   component: QRCodes,
 });
 
-const SEGMENT_DEFAULTS: Record<Segment, { primary: string; accent: string; bg: string }> = {
-  espetinhos: { primary: "#c1121f", accent: "#f77f00", bg: "#fff8f0" },
-  cafeteria: { primary: "#6f4e37", accent: "#c19a6b", bg: "#fdf6ec" },
-  barbearia: { primary: "#1f2937", accent: "#d4a017", bg: "#f5f3ef" },
-  petshop: { primary: "#2563eb", accent: "#f59e0b", bg: "#eff6ff" },
-  lavajato: { primary: "#0284c7", accent: "#38bdf8", bg: "#f0f9ff" },
-  salao: { primary: "#be185d", accent: "#f472b6", bg: "#fdf2f8" },
-  restaurante: { primary: "#b91c1c", accent: "#f59e0b", bg: "#fff7ed" },
-  oficina: { primary: "#1f2937", accent: "#f97316", bg: "#f3f4f6" },
-  loja: { primary: "#7c3aed", accent: "#22d3ee", bg: "#f5f3ff" },
-  outro: { primary: "#7c3aed", accent: "#f472b6", bg: "#faf5ff" },
+type SegmentPreset = {
+  primary: string; accent: string; bg: string; text: string;
+  title: string; subtitle: string; ctaNearQR: string; ctaFooter: string; rewardHint: string;
 };
+const SEGMENT_PRESETS: Record<Segment, SegmentPreset> = {
+  espetinhos: {
+    primary: "#c1121f", accent: "#f77f00", bg: "#fff8f0", text: "#1a0a05",
+    title: "Seu próximo espetinho pode ser grátis!",
+    subtitle: "Escaneie o QR Code, crie seu cartão digital e acumule carimbos a cada pedido. Sem app, sem burocracia.",
+    ctaNearQR: "Aponte a câmera e participe",
+    ctaFooter: "Peça, carimbe, ganhe.",
+    rewardHint: "Complete {n} carimbos e ganhe {reward}.",
+  },
+  cafeteria: {
+    primary: "#6f4e37", accent: "#c19a6b", bg: "#fdf6ec", text: "#1c1208",
+    title: "Cada café te leva mais perto de um grátis.",
+    subtitle: "Cadastre-se em segundos e comece a colecionar carimbos digitais a cada visita.",
+    ctaNearQR: "Aponte a câmera do celular",
+    ctaFooter: "Beba, colecione, ganhe.",
+    rewardHint: "A cada {n} cafés, o próximo é por nossa conta.",
+  },
+  barbearia: {
+    primary: "#1f2937", accent: "#d4a017", bg: "#f5f3ef", text: "#0f172a",
+    title: "Estilo que rende recompensa.",
+    subtitle: "Escaneie, crie seu cartão fidelidade e ganhe cortes exclusivos a cada visita.",
+    ctaNearQR: "Escaneie para entrar",
+    ctaFooter: "Corte, marque, ganhe.",
+    rewardHint: "Complete {n} cortes e ganhe {reward}.",
+  },
+  petshop: {
+    primary: "#2563eb", accent: "#f59e0b", bg: "#eff6ff", text: "#0f172a",
+    title: "Mais mimos pro seu pet a cada visita.",
+    subtitle: "Cadastre-se e acumule carimbos em banhos, tosas e produtos.",
+    ctaNearQR: "Aponte a câmera",
+    ctaFooter: "Cuide, colecione, ganhe.",
+    rewardHint: "A cada {n} visitas, ganhe {reward}.",
+  },
+  lavajato: {
+    primary: "#0284c7", accent: "#38bdf8", bg: "#f0f9ff", text: "#0c1e2b",
+    title: "Lave, junte carimbos, ganhe um grátis.",
+    subtitle: "Cartão fidelidade digital sem baixar nada. Rápido, fácil e sempre no seu celular.",
+    ctaNearQR: "Escaneie e participe",
+    ctaFooter: "Brilho recompensado.",
+    rewardHint: "Complete {n} lavagens e ganhe {reward}.",
+  },
+  salao: {
+    primary: "#be185d", accent: "#f472b6", bg: "#fdf2f8", text: "#2a0a1c",
+    title: "Beleza que vira recompensa.",
+    subtitle: "Escaneie o QR Code, monte seu cartão fidelidade e ganhe serviços exclusivos.",
+    ctaNearQR: "Aponte a câmera",
+    ctaFooter: "Cuide-se, colecione, ganhe.",
+    rewardHint: "A cada {n} visitas, ganhe {reward}.",
+  },
+  restaurante: {
+    primary: "#b91c1c", accent: "#f59e0b", bg: "#fff7ed", text: "#1a0a05",
+    title: "Comer aqui tem recompensa.",
+    subtitle: "Cadastre-se e ganhe carimbos a cada pedido. Sem baixar aplicativo.",
+    ctaNearQR: "Aponte a câmera do celular",
+    ctaFooter: "Peça, carimbe, ganhe.",
+    rewardHint: "A cada {n} pedidos, ganhe {reward}.",
+  },
+  oficina: {
+    primary: "#1f2937", accent: "#f97316", bg: "#f3f4f6", text: "#0f172a",
+    title: "Cuide do seu carro e ganhe por isso.",
+    subtitle: "Cartão fidelidade digital para clientes fiéis. Escaneie e comece agora.",
+    ctaNearQR: "Escaneie para participar",
+    ctaFooter: "Manutenção que compensa.",
+    rewardHint: "A cada {n} serviços, ganhe {reward}.",
+  },
+  loja: {
+    primary: "#7c3aed", accent: "#22d3ee", bg: "#f5f3ff", text: "#1a0f2e",
+    title: "Compre, colecione, ganhe.",
+    subtitle: "Escaneie o QR Code e monte seu cartão fidelidade em segundos.",
+    ctaNearQR: "Aponte a câmera",
+    ctaFooter: "Sua fidelidade vale prêmio.",
+    rewardHint: "A cada {n} compras, ganhe {reward}.",
+  },
+  outro: {
+    primary: "#7c3aed", accent: "#f472b6", bg: "#faf5ff", text: "#1a0f2e",
+    title: "Ganhe recompensas a cada visita!",
+    subtitle: "Escaneie o QR Code, crie seu cartão fidelidade digital e comece a acumular carimbos.",
+    ctaNearQR: "Aponte a câmera e participe",
+    ctaFooter: "Escaneie e participe agora",
+    rewardHint: "Complete {n} carimbos e ganhe {reward}.",
+  },
+};
+const SEGMENT_DEFAULTS: Record<Segment, { primary: string; accent: string; bg: string }> = Object.fromEntries(
+  (Object.keys(SEGMENT_PRESETS) as Segment[]).map((k) => [k, { primary: SEGMENT_PRESETS[k].primary, accent: SEGMENT_PRESETS[k].accent, bg: SEGMENT_PRESETS[k].bg }])
+) as Record<Segment, { primary: string; accent: string; bg: string }>;
 
 // ============ WCAG contrast helpers ============
 function hexToRgb(hex: string) {
