@@ -182,6 +182,13 @@ function MerchantPlansPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <PaymentDialog
+        open={!!payFor}
+        onOpenChange={(o) => !o && setPayFor(null)}
+        plan={payFor}
+        establishmentId={activeEst?.id ?? ""}
+      />
     </div>
   );
 }
