@@ -40,7 +40,9 @@ function extractToken(raw: string): string | null {
 
 function Carimbar() {
   const getEsts = useServerFn(getMyEstablishments);
+  void searchCustomer; // legacy import kept for type reference
   const search = useServerFn(searchCustomer);
+  void search;
   const listAll = useServerFn(listCustomers);
   const addStampFn = useServerFn(addStamp);
   const undoFn = useServerFn(undoLastStamp);
