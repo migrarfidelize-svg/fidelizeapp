@@ -15,7 +15,8 @@ const attachmentSchema = z.object({
   size: z.number().int().min(0).max(10 * 1024 * 1024),
 });
 
-async function requireSuperAdmin(supabase: ReturnType<typeof requireSupabaseAuth> extends never ? never : any, userId: string) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function requireSuperAdmin(supabase: any, userId: string) {
   const { data } = await supabase.from("app_roles").select("role").eq("user_id", userId).eq("role", "super_admin").maybeSingle();
   if (!data) throw new Error("Não autorizado");
 }
