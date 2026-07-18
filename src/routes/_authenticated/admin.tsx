@@ -53,6 +53,8 @@ function AdminLayout() {
     { to: "/admin/assinaturas", label: "Assinaturas", icon: CreditCard, exact: false },
     { to: "/admin/alertas", label: "Alertas", icon: Bell, exact: false },
     { to: "/admin/auditoria", label: "Auditoria", icon: FileClock, exact: false },
+    { to: "/app/equipe", label: "Equipe", icon: UsersRound, exact: false },
+    { to: "/app/config", label: "Configurações", icon: Settings, exact: false },
   ] as const;
 
   return (
