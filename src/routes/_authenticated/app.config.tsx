@@ -736,9 +736,10 @@ function PerigoTab({ establishmentId, est }: { establishmentId: string; est: any
         <CardHeader><CardTitle className="text-destructive">Excluir permanentemente</CardTitle><CardDescription>Todos os clientes, carimbos e recompensas serão apagados. Ação irreversível.</CardDescription></CardHeader>
         <CardContent className="space-y-2">
           <Label>Digite o slug <span className="font-mono bg-muted px-1 rounded">{est.slug}</span> para confirmar</Label>
-          <Input value={confirm} onChange={e => setConfirm(e.target.value)} />
+          <Input value={confirmSlug} onChange={e => setConfirmSlug(e.target.value)} />
           <Dialog>
-            <DialogTrigger asChild><Button variant="destructive" disabled={confirm !== est.slug}><Trash2 className="h-4 w-4 mr-1" />Excluir</Button></DialogTrigger>
+            <DialogTrigger asChild><Button variant="destructive" disabled={confirmSlug !== est.slug}><Trash2 className="h-4 w-4 mr-1" />Excluir</Button></DialogTrigger>
+
             <DialogContent>
               <DialogHeader><DialogTitle>Excluir empresa</DialogTitle><DialogDescription>Última confirmação. Após confirmar não há como voltar.</DialogDescription></DialogHeader>
               <DialogFooter><Button variant="destructive" onClick={onDelete}>Excluir agora</Button></DialogFooter>
