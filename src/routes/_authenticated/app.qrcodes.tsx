@@ -167,7 +167,7 @@ function QRCodes() {
   const publicUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/l/${est.slug}` : "";
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
 
-  const [format, setFormat] = useState<PromoFormat>("poster");
+  const [format, setFormat] = useState<PromoFormat>("story");
   const [segment, setSegment] = useState<Segment>("espetinhos");
   const [title, setTitle] = useState("Ganhe recompensas a cada visita!");
   const [subtitle, setSubtitle] = useState("Escaneie o QR Code, crie seu cartão fidelidade digital e comece a acumular carimbos. É rápido, gratuito e não precisa baixar aplicativo.");
