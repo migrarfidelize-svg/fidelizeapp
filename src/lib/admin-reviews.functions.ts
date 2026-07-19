@@ -101,7 +101,7 @@ export const adminReviewsList = createServerFn({ method: "GET" })
     q?: string;
     ratingMax?: number;
     ratingMin?: number;
-    status?: "any" | "published" | "under_review" | "resolved" | "hidden";
+    status?: "any" | "new" | "analyzing" | "contacting" | "resolved" | "archived" | "hidden";
     establishmentId?: string | null;
     page?: number;
     pageSize?: number;
