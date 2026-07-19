@@ -63,7 +63,7 @@ async function processPaymentEvent(paymentId: string) {
       mp_payment_id: String(mp.id),
       amount: mp.transaction_amount ?? 0,
       currency: mp.currency_id ?? "BRL",
-      method: mp.payment_type_id === "credit_card" ? "credit_card" : mp.payment_type_id === "ticket" ? "boleto" : "pix",
+      method: mapMpMethod(mp.payment_type_id),
       status: newStatus,
       status_detail: mp.status_detail ?? null,
       payer_email: mp.payer?.email ?? null,
