@@ -238,7 +238,10 @@ function QRCodes() {
   });
 
   const activeCampaign = campaigns?.find((c) => c.active) ?? campaigns?.[0];
-  const publicUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/l/${est.slug}` : "";
+  type QrTarget = "linktree" | "review";
+  const [qrTarget, setQrTarget] = useState<QrTarget>("linktree");
+  const targetPath = qrTarget === "review" ? "avaliar" : "l";
+  const publicUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/${targetPath}/${est.slug}` : "";
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
 
   const [format, setFormat] = useState<PromoFormat>("story");
@@ -639,6 +642,29 @@ function QRCodes() {
           <Button size="sm" variant="ghost" onClick={undo} disabled={!canUndo} title="Desfazer (Ctrl+Z)"><Undo2 className="h-4 w-4" /></Button>
           <Button size="sm" variant="ghost" onClick={redo} disabled={!canRedo} title="Refazer (Ctrl+Shift+Z)"><Redo2 className="h-4 w-4" /></Button>
           <span className="text-[11px] text-muted-foreground px-2">{historyRef.current.past.length} passos</span>
+        </div>
+      </div>
+
+      {/* Destination picker */}
+      <div className="rounded-xl border p-3 bg-muted/20 space-y-2">
+        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Destino do QR Code</div>
+        <div className="grid sm:grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setQrTarget("linktree")}
+            className={`rounded-lg border px-3 py-2.5 text-left transition ${qrTarget === "linktree" ? "border-primary bg-primary-soft text-primary" : "border-border hover:border-primary/40"}`}
+          >
+            <div className="text-sm font-semibold">Cartão fidelidade</div>
+            <div className="text-[11px] text-muted-foreground truncate">/l/{est?.slug ?? "sua-empresa"}</div>
+          </button>
+          <button
+            type="button"
+            onClick={() => setQrTarget("review")}
+            className={`rounded-lg border px-3 py-2.5 text-left transition ${qrTarget === "review" ? "border-primary bg-primary-soft text-primary" : "border-border hover:border-primary/40"}`}
+          >
+            <div className="text-sm font-semibold">Avaliar atendimento</div>
+            <div className="text-[11px] text-muted-foreground truncate">/avaliar/{est?.slug ?? "sua-empresa"}</div>
+          </button>
         </div>
       </div>
 

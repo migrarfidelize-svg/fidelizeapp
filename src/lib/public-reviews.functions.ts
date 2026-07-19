@@ -182,7 +182,7 @@ export const submitPublicReview = createServerFn({ method: "POST" })
         source: data.source ?? "linktree",
         anonymous: isAnon,
         device_hash: deviceHash,
-        status: "new",
+        status: data.rating <= 2 ? "analyzing" : "new",
       })
       .select("id")
       .single();
@@ -206,6 +206,16 @@ export const submitPublicReview = createServerFn({ method: "POST" })
       event_type: "submitted",
       meta: { rating: data.rating, source: data.source ?? "linktree" },
     });
+
+    // Low-rating alert (≤ 2 stars) — surfaces at top of inbox and enables merchant notifications
+    if (data.rating <= 2) {
+      await supabaseAdmin.from("review_events").insert({
+        review_form_id: form.id,
+        review_id: inserted.id,
+        event_type: "low_rating_alert",
+        meta: { rating: data.rating, has_contact: !isAnon && !!(data.customer_phone || data.customer_email) },
+      });
+    }
 
     const shouldOfferGoogle =
       form.redirect_to_google_enabled &&
