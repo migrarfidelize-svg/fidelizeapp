@@ -426,7 +426,11 @@ export const updatePublicReview = createServerFn({ method: "POST" })
       internal_note: z.string().trim().max(2000).optional(),
     }).parse(d))
   .handler(async ({ data, context }) => {
-    const patch: Record<string, unknown> = {};
+    const patch: {
+      status?: "new" | "analyzing" | "contacting" | "resolved" | "archived";
+      resolved_at?: string;
+      internal_note?: string;
+    } = {};
     if (data.status) {
       patch.status = data.status;
       if (data.status === "resolved") patch.resolved_at = new Date().toISOString();
