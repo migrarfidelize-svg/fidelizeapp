@@ -31,7 +31,7 @@ export const getHelpCenter = createServerFn({ method: "GET" })
       .eq("active", true)
       .maybeSingle();
     if (error) throw new Error(error.message);
-    if (!est) return null;
+    if (!est) throw new Error("Central de ajuda não encontrada.");
     const [{ data: cats }, { data: articles }] = await Promise.all([
       s.from("kb_categories").select("id, name, slug, description, icon, sort_order").eq("establishment_id", est.id).order("sort_order"),
       s.from("kb_articles").select("id, slug, title, excerpt, category_id, views, helpful_count, tags").eq("establishment_id", est.id).eq("published", true).order("views", { ascending: false }),
