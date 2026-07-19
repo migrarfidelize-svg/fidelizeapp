@@ -48,6 +48,24 @@ function AdminPlansPage() {
   // Features whose changes are business-critical → require confirmation
   const SENSITIVE_FEATURES = new Set(["public_reviews"]);
 
+  // Reconcile / repair feature-access modal
+  const reconcileFn = useServerFn(adminReconcileFeatureAccess);
+  const [reconcileFeature, setReconcileFeature] = useState<string | null>(null);
+  const [reconcileDryRun, setReconcileDryRun] = useState(true);
+  const [reconcileResult, setReconcileResult] = useState<any | null>(null);
+  const [reconciling, setReconciling] = useState(false);
+  async function runReconcile() {
+    if (!reconcileFeature) return;
+    setReconciling(true);
+    try {
+      const res = await reconcileFn({ data: { feature_key: reconcileFeature, dry_run: reconcileDryRun } });
+      setReconcileResult(res);
+      toast.success(reconcileDryRun ? "Diagnóstico concluído." : `Repair aplicado: ${res.repaired_rows} plano(s) sincronizado(s).`);
+      qc.invalidateQueries({ queryKey: ["admin-plans"] });
+    } catch (e: any) { toast.error(e.message); }
+    finally { setReconciling(false); }
+  }
+
   async function applyToggle(v: boolean, p: any, f: any) {
     try {
       await toggle({ data: { plan_id: p.id, feature_key: f.feature_key, feature_name: f.feature_name, enabled: v } });
@@ -58,10 +76,16 @@ function AdminPlansPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl font-bold">Planos e Preços</h1>
-        <p className="text-sm text-muted-foreground">Gerencie os planos disponíveis para as empresas da plataforma.</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="font-display text-3xl font-bold">Planos e Preços</h1>
+          <p className="text-sm text-muted-foreground">Gerencie os planos disponíveis para as empresas da plataforma.</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => { setReconcileFeature("public_reviews"); setReconcileDryRun(true); setReconcileResult(null); }}>
+          <Wrench className="h-4 w-4 mr-1.5" /> Reconciliar caches de features
+        </Button>
       </div>
+
 
       {isLoading ? (
         <div className="grid place-items-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
