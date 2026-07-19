@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, ExternalLink, FileClock } from "lucide-react";
 import { downloadCSV, downloadPDF } from "@/lib/export";
+import { LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/admin/auditoria")({
   component: AdminAuditoria,
@@ -63,7 +64,7 @@ function AdminAuditoria() {
 
       <Card>
         <CardContent className="p-0">
-          {isLoading && <div className="p-6 text-sm text-muted-foreground">Carregando…</div>}
+          {isLoading && <div className="p-6"><LoadingSkeleton variant="table" rows={6} /></div>}
           {!isLoading && (data?.length ?? 0) === 0 && <div className="p-8 text-sm text-muted-foreground text-center">Sem registros.</div>}
           <div className="divide-y">
             {(data ?? []).map((l) => (

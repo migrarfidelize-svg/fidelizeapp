@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Send, Zap, Lock, EyeOff, Building2, User, Mail } from "lucide-react";
 import { toast } from "sonner";
+import { LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/admin/suporte/$id")({
   head: () => ({ meta: [{ title: "Ticket — Admin" }] }),
@@ -61,7 +62,7 @@ function AdminTicket() {
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [data?.messages.length]);
 
-  if (isLoading) return <div className="p-8 text-center text-muted-foreground">Carregando…</div>;
+  if (isLoading) return <div className="p-8"><LoadingSkeleton variant="page" /></div>;
   if (!data) return <div className="p-8 text-center">Ticket não encontrado. <Link to="/admin/suporte" className="text-primary underline">Voltar</Link></div>;
 
   const { ticket, messages, history, establishment } = data;

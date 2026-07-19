@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/Logo";
 import { Textarea } from "@/components/ui/textarea";
+import { LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/ajuda/$category/$article")({
   head: ({ params }) => ({
@@ -84,7 +85,7 @@ function ArticlePage() {
   });
 
   if (data === null) throw notFound();
-  if (!data) return <div className="p-8 text-muted-foreground">Carregando…</div>;
+  if (!data) return <div className="p-8"><LoadingSkeleton variant="page" /></div>;
 
   return (
     <div className="min-h-dvh bg-muted/30">

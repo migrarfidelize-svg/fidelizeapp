@@ -10,6 +10,7 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianG
 import { formatDate } from "@/lib/format";
 import { downloadCSV, downloadPDF } from "@/lib/export";
 import { toast } from "sonner";
+import { LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/admin/empresa/$id")({
   component: EmpresaDetail,
@@ -48,7 +49,7 @@ function EmpresaDetail() {
     onError: (e: any) => toast.error(e.message ?? "Falha"),
   });
 
-  if (isLoading || !data) return <div className="text-muted-foreground">Carregando…</div>;
+  if (isLoading || !data) return <LoadingSkeleton variant="page" />;
   const { establishment: e, metrics, series, events, audits, campaigns, members } = data;
 
   function exportCSV() {

@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { getAdminStatus } from "@/lib/admin.functions";
 import { EquipeTab } from "./admin.config";
+import { LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/admin/equipe")({
   head: () => ({ meta: [{ title: "Equipe — Fidelize" }] }),
@@ -22,7 +23,7 @@ function EquipePage() {
     queryFn: () => getAdmin(),
   });
 
-  if (adminLoading) return <div className="text-muted-foreground">Carregando…</div>;
+  if (adminLoading) return <LoadingSkeleton variant="page" />;
   if (!admin?.isAdmin) {
     return (
       <div className="max-w-md mx-auto mt-16 p-6 rounded-xl border bg-card text-center space-y-2">
@@ -33,7 +34,7 @@ function EquipePage() {
   }
 
   const est = memberships?.[0]?.establishment as { id: string; name: string } | undefined;
-  if (!est) return <div className="text-muted-foreground">Carregando estabelecimento…</div>;
+  if (!est) return <LoadingSkeleton variant="page" />;
 
   return (
     <div className="space-y-4">

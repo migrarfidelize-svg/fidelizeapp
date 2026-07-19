@@ -19,6 +19,7 @@ import { toPng, toJpeg } from "html-to-image";
 import { jsPDF } from "jspdf";
 import { PromoPoster, FORMATS, SEGMENT_LABEL, type PromoConfig, type PromoFormat, type Segment } from "@/components/PromoPoster";
 import { LogoUploadButton } from "@/components/LogoUploadButton";
+import { LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/app/qrcodes")({
   head: () => ({ meta: [{ title: "Divulgação — Fidelize" }] }),
@@ -624,7 +625,7 @@ function QRCodes() {
     toast.success(`Preset "${SEGMENT_LABEL[seg]}" aplicado`);
   }
 
-  if (!est) return <div className="text-muted-foreground">Carregando…</div>;
+  if (!est) return <LoadingSkeleton variant="page" />;
 
   return (
     <div className="space-y-6">

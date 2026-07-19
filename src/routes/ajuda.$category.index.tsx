@@ -6,6 +6,7 @@ import { ArrowLeft, BookOpen, Clock } from "lucide-react";
 import { getHelpCategoryBySlug } from "@/lib/help.functions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Logo } from "@/components/Logo";
+import { LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/ajuda/$category/")({
   head: ({ params }) => ({
@@ -30,7 +31,7 @@ function CategoryPage() {
   const { data } = useQuery({ queryKey: ["help-cat", category], queryFn: () => get({ data: { slug: category } }) });
 
   if (data === null) throw notFound();
-  if (!data) return <div className="p-8 text-muted-foreground">Carregando…</div>;
+  if (!data) return <div className="p-8"><LoadingSkeleton variant="card-grid" rows={6} /></div>;
 
   return (
     <div className="min-h-dvh bg-muted/30">

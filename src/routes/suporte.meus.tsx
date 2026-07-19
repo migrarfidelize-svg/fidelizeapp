@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Ticket } from "lucide-react";
+import { LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/suporte/meus")({
   head: () => ({ meta: [{ title: "Meus chamados" }] }),
@@ -28,7 +29,7 @@ function MyTickets() {
   useEffect(() => { supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user)); }, []);
   const { data, isLoading } = useQuery({ queryKey: ["my-tickets"], queryFn: () => fetchTickets(), enabled: authed === true });
 
-  if (authed === undefined) return <div className="p-8 text-center text-muted-foreground">Carregando…</div>;
+  if (authed === undefined) return <div className="p-8"><LoadingSkeleton variant="page" /></div>;
   if (authed === false) {
     return (
       <div className="min-h-dvh grid place-items-center px-4">
@@ -51,7 +52,7 @@ function MyTickets() {
       </header>
       <main className="max-w-3xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold">Meus chamados</h1>
-        {isLoading ? <div className="mt-8 text-center text-muted-foreground">Carregando…</div> : (
+        {isLoading ? <LoadingSkeleton variant="list" rows={4} className="mt-8" /> : (
           !data?.length ? (
             <div className="mt-8 text-center p-8 rounded-2xl border bg-card">
               <p className="text-muted-foreground">Você ainda não tem chamados.</p>

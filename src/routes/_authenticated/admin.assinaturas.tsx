@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { formatBRL } from "@/lib/format";
 import { downloadCSV, downloadPDF } from "@/lib/export";
+import { LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/admin/assinaturas")({
   component: AdminAssinaturas,
@@ -17,7 +18,7 @@ const PLAN_LABEL: Record<string, string> = { free: "Gratuito", starter: "Starter
 function AdminAssinaturas() {
   const getOverview = useServerFn(adminGetOverview);
   const { data } = useQuery({ queryKey: ["admin-overview"], queryFn: () => getOverview() });
-  if (!data) return <div className="text-muted-foreground">Carregando…</div>;
+  if (!data) return <LoadingSkeleton variant="page" />;
   const d = data;
 
 

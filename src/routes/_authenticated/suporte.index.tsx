@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { LifeBuoy, Plus, ArrowRight, Circle, CheckCircle2, Clock, MessageCircle, MailQuestion } from "lucide-react";
 import { toast } from "sonner";
+import { LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/suporte/")({
   head: () => ({ meta: [{ title: "Central de Suporte — Fidelize" }] }),
@@ -72,7 +73,7 @@ function SupportInbox() {
         <section>
           <h2 className="text-lg font-semibold mb-3">Meus tickets</h2>
           {isLoading ? (
-            <div className="text-sm text-muted-foreground py-8 text-center">Carregando…</div>
+            <LoadingSkeleton variant="list" rows={4} className="py-4" />
           ) : !tickets?.length ? (
             <div className="rounded-xl border border-dashed p-10 text-center text-sm text-muted-foreground">
               Você ainda não abriu nenhum ticket. Clique em <strong>Abrir novo ticket</strong> para começar.

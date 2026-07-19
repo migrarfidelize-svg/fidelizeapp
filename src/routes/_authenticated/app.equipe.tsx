@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserPlus, Copy, Send, Mail, CheckCircle2 } from "lucide-react";
+import { LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/app/equipe")({
   head: () => ({ meta: [{ title: "Equipe — Fidelize" }] }),
@@ -51,7 +52,7 @@ function EquipePage() {
     catch { toast.error("Não foi possível copiar"); }
   }
 
-  if (!est) return <div className="text-muted-foreground">Carregando…</div>;
+  if (!est) return <LoadingSkeleton variant="table" rows={5} />;
 
   return (
     <div className="max-w-2xl space-y-5">
