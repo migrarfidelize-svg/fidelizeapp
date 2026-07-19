@@ -1,4 +1,0 @@
--- 0005_functions.sql — SKELETON
--- Copiar as 18 funções (ver MIGRATION_GUIDE §1.2 e §8).
--- Todas SECURITY DEFINER devem ter SET search_path = public.
--- REVOKE ALL ... FROM PUBLIC, anon; GRANT EXECUTE TO authenticated; para funções sensíveis.

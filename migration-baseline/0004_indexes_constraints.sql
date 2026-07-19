@@ -1,2 +1,0 @@
--- 0004_indexes_constraints.sql — SKELETON
--- Preencher com bloco de CREATE INDEX / ALTER TABLE ADD CONSTRAINT do pg_dump.

@@ -1,4 +1,0 @@
--- 0003_tables.sql — SKELETON
--- Preencher com pg_dump --schema=public --schema-only --no-owner --no-privileges
--- Para cada CREATE TABLE, seguir com GRANTs + ENABLE RLS (ver MIGRATION_GUIDE §3).
--- 51 tabelas esperadas.
