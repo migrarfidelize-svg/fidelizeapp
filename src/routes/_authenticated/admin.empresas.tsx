@@ -121,8 +121,25 @@ function AdminEmpresas() {
 
       <Card>
         <CardContent className="p-0">
-          {isLoading && <div className="p-6 text-sm text-muted-foreground">Carregando…</div>}
-          {!isLoading && (data?.length ?? 0) === 0 && <div className="p-8 text-sm text-muted-foreground text-center">Nenhuma empresa encontrada.</div>}
+          {isLoading && <div className="p-6"><LoadingSkeleton variant="list" rows={5} /></div>}
+          {isError && !isLoading && (
+            <div className="p-6">
+              <ErrorState
+                title="Falha ao carregar empresas"
+                error={error}
+                onRetry={() => refetch()}
+              />
+            </div>
+          )}
+          {!isLoading && !isError && (data?.length ?? 0) === 0 && (
+            <div className="p-6">
+              <EmptyState
+                icon={Building2}
+                title="Nenhuma empresa encontrada"
+                description="Ajuste os filtros ou aguarde novos cadastros."
+              />
+            </div>
+          )}
           <div className="divide-y">
             {(data ?? []).map((e) => (
               <div key={e.id} className="flex items-center gap-4 p-4">
