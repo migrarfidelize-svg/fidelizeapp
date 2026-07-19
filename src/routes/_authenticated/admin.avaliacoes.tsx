@@ -386,8 +386,7 @@ function BlockedByPlan({ days }: { days: number }) {
   const [planTier, setPlanTier] = useState<string>("all");
   const [search, setSearch] = useState<string>("");
   const [searchDeb, setSearchDeb] = useState<string>("");
-
-
+  const [csvDelim, setCsvDelim] = useState<"," | ";">(",");
 
   const summary = useQuery({ queryKey: ["adm-gate-sum", days], queryFn: () => sumFn({ data: { days } }) });
   const list = useQuery({
@@ -406,23 +405,43 @@ function BlockedByPlan({ days }: { days: number }) {
   };
 
   function exportCsv() {
-    const rows = (list.data ?? []).map((r: any) => [
+    const data = list.data ?? [];
+    const rows = data.map((r: any) => [
       new Date(r.created_at).toISOString(),
       r.establishments?.name ?? "",
       r.establishments?.slug ?? "",
       r.plan_tier ?? "",
+      r.feature_key,
       FEATURE_LABELS[r.feature_key] ?? r.feature_key,
       r.action,
       r.user_name ?? "",
       r.user_email ?? "",
       r.context ? JSON.stringify(r.context) : "",
     ]);
+    const preamble = [
+      `Exportação: Bloqueios de plano — /admin/avaliações`,
+      `Gerado em: ${new Date().toISOString()}`,
+      `Período: últimos ${days} dias`,
+      `Filtro Recurso: ${feature === "all" ? "Todos" : (FEATURE_LABELS[feature] ?? feature)}`,
+      `Filtro Plano: ${planTier === "all" ? "Todos" : planTier}`,
+      `Filtro Busca (empresa): ${searchDeb || "—"}`,
+      `Separador: ${csvDelim === "," ? "vírgula (,)" : "ponto e vírgula (;)"}`,
+      `Total de eventos: ${data.length}`,
+    ];
+    const suffix = [
+      feature !== "all" ? feature : "todos",
+      planTier !== "all" ? planTier : "todos",
+      searchDeb ? searchDeb.replace(/[^a-z0-9]+/gi, "-").toLowerCase().slice(0, 24) : "sem-busca",
+      `${days}d`,
+    ].join("_");
     downloadCSV(
-      `bloqueios-plano-${new Date().toISOString().slice(0,10)}.csv`,
-      ["Data (ISO)", "Empresa", "Slug", "Plano", "Recurso", "Ação", "Usuário", "E-mail", "Contexto"],
+      `bloqueios-plano_${suffix}_${new Date().toISOString().slice(0,10)}.csv`,
+      ["Data (ISO)", "Empresa", "Slug", "Plano", "Recurso (chave)", "Recurso (nome)", "Ação", "Usuário", "E-mail", "Contexto"],
       rows,
+      { delimiter: csvDelim, preamble },
     );
   }
+
 
   return (
     <>
