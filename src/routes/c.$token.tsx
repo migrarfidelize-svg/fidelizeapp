@@ -25,7 +25,7 @@ export const Route = createFileRoute("/c/$token")({
   head: () => ({ meta: [{ title: "Meu cartão — Fidelize" }, { name: "robots", content: "noindex" }] }),
   component: CustomerCard,
   notFoundComponent: () => (
-    <div className="min-h-screen grid place-items-center p-6 text-center text-muted-foreground">
+    <div className="min-h-dvh grid place-items-center p-6 text-center text-muted-foreground">
       Cartão não encontrado.
     </div>
   ),
@@ -65,7 +65,7 @@ function CustomerCard() {
 
   return (
     <div
-      className="min-h-screen pb-16"
+      className="min-h-dvh pb-16"
       style={{
         background: `radial-gradient(1200px 500px at 50% -10%, ${est.primary_color}22, transparent 60%), hsl(var(--background))`,
       }}

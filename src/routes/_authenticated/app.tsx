@@ -124,8 +124,13 @@ function AppLayout() {
                 <n.icon className="h-4 w-4" />
                 <span className="flex-1">{n.label}</span>
                 {badge > 0 && (
-                  <span className="ml-auto inline-flex min-w-[20px] h-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground">
-                    {badge > 9 ? "9+" : badge}
+                  <span
+                    role="status"
+                    aria-live="polite"
+                    aria-label={`${badge} ${badge === 1 ? "nova mensagem de suporte" : "novas mensagens de suporte"}`}
+                    className="ml-auto inline-flex min-w-[20px] h-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground"
+                  >
+                    <span aria-hidden="true">{badge > 9 ? "9+" : badge}</span>
                   </span>
                 )}
               </Link>

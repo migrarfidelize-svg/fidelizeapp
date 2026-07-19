@@ -135,7 +135,7 @@ function Onboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-dvh bg-muted/30">
       <header className="border-b bg-card">
         <div className="mx-auto max-w-5xl p-4"><Logo /></div>
       </header>

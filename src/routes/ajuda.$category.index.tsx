@@ -33,7 +33,7 @@ function CategoryPage() {
   if (!data) return <div className="p-8 text-muted-foreground">Carregando…</div>;
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-dvh bg-muted/30">
       <header className="border-b bg-card">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/"><Logo /></Link>

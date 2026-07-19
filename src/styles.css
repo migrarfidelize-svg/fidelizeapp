@@ -149,7 +149,17 @@
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
   h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
+
+  /* Consistent, high-contrast focus indicator across buttons, links,
+     inputs and any element opting in via [tabindex]. Uses the ring
+     token which is already tuned for both light and dark themes. */
+  :where(a, button, [role="button"], [role="link"], [role="tab"], [role="menuitem"], [role="option"], input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
 }
+
 
 @utility gradient-brand {
   background-image: linear-gradient(135deg, var(--color-primary), color-mix(in oklab, var(--color-primary) 60%, var(--color-accent)));

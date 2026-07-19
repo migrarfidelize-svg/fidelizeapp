@@ -53,7 +53,7 @@ function CustomerTicket() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-dvh bg-muted/30">
       <header className="border-b bg-background">
         <div className="max-w-3xl mx-auto flex items-center justify-between px-4 py-4">
           <Link to="/suporte/meus" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Meus chamados</Link>

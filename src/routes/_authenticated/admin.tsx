@@ -20,11 +20,11 @@ function AdminLayout() {
   const { data, isLoading, refetch } = useQuery({ queryKey: ["admin-status"], queryFn: () => getStatus() });
   const pathname = useRouterState({ select: (r) => r.location.pathname });
 
-  if (isLoading) return <div className="grid min-h-screen place-items-center text-muted-foreground">Verificando permissões…</div>;
+  if (isLoading) return <div className="grid min-h-dvh place-items-center text-muted-foreground">Verificando permissões…</div>;
 
   if (!data?.isAdmin) {
     return (
-      <div className="min-h-screen grid place-items-center bg-muted/30 px-4">
+      <div className="min-h-dvh grid place-items-center bg-muted/30 px-4">
         <Card className="max-w-md w-full">
           <CardContent className="p-8 text-center space-y-4">
             <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-soft text-primary"><Shield className="h-7 w-7" /></div>
@@ -118,7 +118,7 @@ function AdminLayout() {
   const mobileNav: NavItem[] = [overview, ...groups.flatMap((g) => g.items)];
 
   return (
-    <div className="min-h-screen bg-muted/30 flex">
+    <div className="min-h-dvh bg-muted/30 flex">
       <aside className="hidden md:flex w-64 shrink-0 flex-col border-r bg-card">
         <div className="p-5 border-b flex items-center gap-2"><Logo /><span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-primary-soft text-primary">Admin</span></div>
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">

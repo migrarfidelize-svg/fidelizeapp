@@ -39,7 +39,7 @@ function InvitePage() {
   }
 
   return (
-    <div className="min-h-screen grid place-items-center p-4 bg-muted/30">
+    <div className="min-h-dvh grid place-items-center p-4 bg-muted/30">
       <Card className="max-w-md w-full">
         <CardHeader><CardTitle>Convite para equipe</CardTitle><CardDescription>Aceite para entrar no estabelecimento.</CardDescription></CardHeader>
         <CardContent className="space-y-3">

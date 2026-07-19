@@ -53,8 +53,9 @@ function RecoverPage() {
         ) : (
           <form onSubmit={onSubmit} className="rounded-2xl border bg-card p-6 space-y-4">
             <div className="space-y-1.5">
-              <Label>E-mail da conta</Label>
-              <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@empresa.com" />
+              <Label htmlFor="recover-email">E-mail da conta</Label>
+              <Input id="recover-email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@empresa.com" aria-describedby="recover-email-hint" />
+              <p id="recover-email-hint" className="text-xs text-muted-foreground">Enviaremos um link seguro para redefinir sua senha.</p>
             </div>
             <Button type="submit" disabled={loading || !email} className="w-full gradient-brand text-primary-foreground">
               {loading ? "Enviando…" : "Enviar link de recuperação"}
