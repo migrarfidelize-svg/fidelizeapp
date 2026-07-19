@@ -30,6 +30,33 @@ async function unregisterMatching() {
   } catch { /* noop */ }
 }
 
+async function clearPwaCaches() {
+  if (!("caches" in window)) return;
+  try {
+    const keys = await caches.keys();
+    await Promise.all(
+      keys
+        .filter((key) =>
+          key.startsWith("workbox-") ||
+          key === "html-navigations" ||
+          key === "static-assets" ||
+          key === "images" ||
+          key === "google-fonts"
+        )
+        .map((key) => caches.delete(key)),
+    );
+  } catch { /* noop */ }
+}
+
+function cleanupPwa() {
+  void unregisterMatching();
+  void clearPwaCaches();
+}
+
+function isVoucherPath(pathname: string): boolean {
+  return pathname.startsWith("/c/");
+}
+
 export function registerPWA() {
   if (typeof window === "undefined") return;
   if (!("serviceWorker" in navigator)) return;
@@ -39,9 +66,9 @@ export function registerPWA() {
   const host = window.location.hostname;
   const killSwitch = new URLSearchParams(window.location.search).get("sw") === "off";
 
-  if (!isProd || inIframe || isPreviewHost(host) || killSwitch) {
-    // Refuse and clean up any stale registration.
-    void unregisterMatching();
+  if (!isProd || inIframe || isPreviewHost(host) || killSwitch || !isVoucherPath(window.location.pathname)) {
+    // Refuse and clean up any stale registration/cache outside the customer voucher PWA.
+    cleanupPwa();
     return;
   }
 

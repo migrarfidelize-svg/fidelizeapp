@@ -94,16 +94,6 @@ function AdminLayout() {
         { to: "/admin/emails", label: "E-mail", icon: Mail, exact: true },
         { to: "/admin/email-templates", label: "Templates", icon: FileText },
         { to: "/admin/email-fila", label: "Fila de envio", icon: ListChecks },
-      ],
-    },
-    {
-      key: "comunicacao",
-      label: "Comunicação",
-      icon: Mail,
-      items: [
-        { to: "/admin/emails", label: "E-mail", icon: Mail, exact: true },
-        { to: "/admin/email-templates", label: "Templates", icon: FileText },
-        { to: "/admin/email-fila", label: "Fila de envio", icon: ListChecks },
         { to: "/admin/notificacoes", label: "Push", icon: Bell },
         { to: "/admin/ajuda", label: "Central de Ajuda", icon: BookOpen },
       ],
