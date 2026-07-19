@@ -114,13 +114,13 @@ function AppLayout() {
   return (
     <div className="min-h-screen bg-muted/30 flex">
       <aside className="hidden md:flex w-64 shrink-0 flex-col border-r bg-card">
-        <div className="p-5 border-b"><Logo /></div>
+        <div className="p-5 border-b" data-tour="sidebar-logo"><Logo /></div>
         <nav className="flex-1 p-3 space-y-1">
           {nav.map((n) => {
             const active = n.exact ? pathname === n.to : pathname.startsWith(n.to);
             const badge = n.to === "/suporte" && unreadSupport > 0 ? unreadSupport : 0;
             return (
-              <Link key={n.to} to={n.to} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${active ? "bg-primary-soft text-primary" : "text-muted-foreground hover:bg-muted"}`}>
+              <Link key={n.to} to={n.to} data-tour={`nav-${n.to}`} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${active ? "bg-primary-soft text-primary" : "text-muted-foreground hover:bg-muted"}`}>
                 <n.icon className="h-4 w-4" />
                 <span className="flex-1">{n.label}</span>
                 {badge > 0 && (
