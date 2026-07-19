@@ -60,6 +60,24 @@ function Dashboard() {
         ))}
       </div>
 
+      <div className="grid gap-4 lg:grid-cols-3">
+        <MoMCard label="Novos clientes este mês" current={data.mom.customers.current} previous={data.mom.customers.previous} />
+        <MoMCard label="Carimbos este mês" current={data.mom.stamps.current} previous={data.mom.stamps.previous} />
+        <MoMCard label="Recompensas resgatadas" current={data.mom.rewards.current} previous={data.mom.rewards.previous} />
+      </div>
+
+      <GoalsCard
+        establishmentId={est.id}
+        month={data.goalMonth}
+        goals={data.goals}
+        current={{
+          customers: data.mom.customers.current,
+          stamps: data.mom.stamps.current,
+          rewards: data.mom.rewards.current,
+        }}
+      />
+
+
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
@@ -98,5 +116,30 @@ function Dashboard() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function MoMCard({ label, current, previous }: { label: string; current: number; previous: number }) {
+  const delta = current - previous;
+  const pct = previous > 0 ? (delta / previous) * 100 : current > 0 ? 100 : 0;
+  const up = delta > 0, down = delta < 0;
+  const Icon = up ? ArrowUpRight : down ? ArrowDownRight : Minus;
+  const cls = up ? "text-success" : down ? "text-destructive" : "text-muted-foreground";
+  return (
+    <Card>
+      <CardContent className="p-5">
+        <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</div>
+        <div className="mt-2 flex items-baseline justify-between gap-3">
+          <div className="font-display text-3xl font-bold">{current.toLocaleString("pt-BR")}</div>
+          <div className={`flex items-center gap-1 text-sm font-medium ${cls}`}>
+            <Icon className="h-4 w-4" />
+            {previous === 0 && current === 0 ? "—" : `${pct >= 0 ? "+" : ""}${pct.toFixed(0)}%`}
+          </div>
+        </div>
+        <div className="mt-1 text-xs text-muted-foreground">
+          Mês anterior: {previous.toLocaleString("pt-BR")}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
