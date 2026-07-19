@@ -28,7 +28,7 @@ export const adminReviewsOverview = createServerFn({ method: "GET" })
     const total = rows?.length ?? 0;
     const avg = total ? (rows!.reduce((s, r) => s + r.rating, 0) / total) : 0;
     const dist = [1, 2, 3, 4, 5].map((n) => ({ n, count: rows?.filter((r) => r.rating === n).length ?? 0 }));
-    const lowPending = rows?.filter((r) => r.rating <= 2 && r.status === "under_review").length ?? 0;
+    const lowPending = rows?.filter((r) => r.rating <= 2 && (r.status === "new" || r.status === "analyzing" || r.status === "contacting")).length ?? 0;
     const hidden = rows?.filter((r) => r.public_hidden).length ?? 0;
 
     // Series by day
