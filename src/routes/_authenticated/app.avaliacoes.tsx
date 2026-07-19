@@ -690,6 +690,15 @@ function PublicInbox({ estId }: { estId: string }) {
                 {!r.anonymous && (r.customer_phone || r.customer_email) && (
                   <div className="text-xs text-muted-foreground">{r.customer_phone && <span>📞 {r.customer_phone}</span>}{r.customer_email && <span className="ml-3">✉️ {r.customer_email}</span>}</div>
                 )}
+                {r.merchant_reply && (
+                  <div className="mt-2 rounded-lg border-l-2 border-primary bg-muted/40 p-3">
+                    <div className="text-[11px] font-semibold uppercase tracking-wide text-primary">Sua resposta pública · {r.merchant_reply_at ? formatDate(r.merchant_reply_at) : ""}</div>
+                    <p className="mt-1 text-sm">{r.merchant_reply}</p>
+                  </div>
+                )}
+                <div className="flex justify-end pt-1">
+                  <MerchantReplyDialog reviewId={r.id} currentReply={r.merchant_reply} publicHidden={r.public_hidden} invalidateKeys={[["pr-inbox", estId], ["pr-alerts", estId]]} />
+                </div>
               </CardContent>
             </Card>
           ))}
