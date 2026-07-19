@@ -172,6 +172,7 @@ function AppLayout() {
           })}
         </nav>
       </div>
+      <GuidedTour steps={MERCHANT_TOUR_STEPS} storageKey={`fidelize_tour_v1_${activeEst?.id ?? "user"}`} />
     </div>
   );
 }
