@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock, UsersRound, Settings, Mail, FileText, ListChecks, LifeBuoy, Package, DollarSign, ChevronDown, Wallet, Megaphone, Cog, BookOpen, Menu } from "lucide-react";
+import { Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock, UsersRound, Settings, Mail, FileText, ListChecks, LifeBuoy, Package, DollarSign, ChevronDown, Wallet, Megaphone, Cog, BookOpen, Menu, Star } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -82,6 +82,7 @@ function AdminLayout() {
       icon: Megaphone,
       items: [
         { to: "/admin/alertas", label: "Alertas", icon: Bell },
+        { to: "/admin/avaliacoes", label: "Avaliações", icon: Star },
         { to: "/admin/auditoria", label: "Auditoria", icon: FileClock },
         { to: "/admin/suporte", label: "Suporte", icon: LifeBuoy },
       ],
