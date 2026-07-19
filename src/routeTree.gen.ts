@@ -22,6 +22,7 @@ import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as CTokenRouteImport } from './routes/c.$token'
+import { Route as AvaliacoesSlugRouteImport } from './routes/avaliacoes.$slug'
 import { Route as AuthRecuperarRouteImport } from './routes/auth.recuperar'
 import { Route as AuthNovaSenhaRouteImport } from './routes/auth.nova-senha'
 import { Route as AuthenticatedLgpdRouteImport } from './routes/_authenticated/lgpd'
@@ -134,6 +135,11 @@ const InviteTokenRoute = InviteTokenRouteImport.update({
 const CTokenRoute = CTokenRouteImport.update({
   id: '/c/$token',
   path: '/c/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AvaliacoesSlugRoute = AvaliacoesSlugRouteImport.update({
+  id: '/avaliacoes/$slug',
+  path: '/avaliacoes/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRecuperarRoute = AuthRecuperarRouteImport.update({
@@ -424,6 +430,7 @@ export interface FileRoutesByFullPath {
   '/lgpd': typeof AuthenticatedLgpdRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
+  '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
   '/c/$token': typeof CTokenRoute
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
@@ -485,6 +492,7 @@ export interface FileRoutesByTo {
   '/lgpd': typeof AuthenticatedLgpdRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
+  '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
   '/c/$token': typeof CTokenRoute
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
@@ -550,6 +558,7 @@ export interface FileRoutesById {
   '/_authenticated/lgpd': typeof AuthenticatedLgpdRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
+  '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
   '/c/$token': typeof CTokenRoute
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
@@ -615,6 +624,7 @@ export interface FileRouteTypes {
     | '/lgpd'
     | '/auth/nova-senha'
     | '/auth/recuperar'
+    | '/avaliacoes/$slug'
     | '/c/$token'
     | '/invite/$token'
     | '/l/$slug'
@@ -676,6 +686,7 @@ export interface FileRouteTypes {
     | '/lgpd'
     | '/auth/nova-senha'
     | '/auth/recuperar'
+    | '/avaliacoes/$slug'
     | '/c/$token'
     | '/invite/$token'
     | '/l/$slug'
@@ -740,6 +751,7 @@ export interface FileRouteTypes {
     | '/_authenticated/lgpd'
     | '/auth/nova-senha'
     | '/auth/recuperar'
+    | '/avaliacoes/$slug'
     | '/c/$token'
     | '/invite/$token'
     | '/l/$slug'
@@ -800,6 +812,7 @@ export interface RootRouteChildren {
   PrecosRoute: typeof PrecosRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   TermosRoute: typeof TermosRoute
+  AvaliacoesSlugRoute: typeof AvaliacoesSlugRoute
   CTokenRoute: typeof CTokenRoute
   InviteTokenRoute: typeof InviteTokenRoute
   LSlugRoute: typeof LSlugRoute
@@ -910,6 +923,13 @@ declare module '@tanstack/react-router' {
       path: '/c/$token'
       fullPath: '/c/$token'
       preLoaderRoute: typeof CTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/avaliacoes/$slug': {
+      id: '/avaliacoes/$slug'
+      path: '/avaliacoes/$slug'
+      fullPath: '/avaliacoes/$slug'
+      preLoaderRoute: typeof AvaliacoesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/recuperar': {
@@ -1377,6 +1397,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrecosRoute: PrecosRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   TermosRoute: TermosRoute,
+  AvaliacoesSlugRoute: AvaliacoesSlugRoute,
   CTokenRoute: CTokenRoute,
   InviteTokenRoute: InviteTokenRoute,
   LSlugRoute: LSlugRoute,

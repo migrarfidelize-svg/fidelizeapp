@@ -7,6 +7,7 @@ import { InstallAppButton } from "@/components/InstallAppButton";
 import { OfflineBanner, OfflineBadge, RequiresOnlineAlert } from "@/components/OfflineIndicator";
 import { PushOptIn } from "@/components/PushOptIn";
 import { ReferralBlock } from "@/components/ReferralBlock";
+import { RatingPrompt } from "@/components/RatingPrompt";
 import { formatDate } from "@/lib/format";
 import { Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
