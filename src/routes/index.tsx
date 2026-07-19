@@ -339,19 +339,12 @@ function Pricing() {
 }
 
 function FAQ() {
-  const qs = [
-    ["Meu cliente precisa baixar um app?", "Não. Tudo funciona direto pelo navegador do celular. Ele escaneia o QR Code, informa nome e telefone e já sai com o cartão pronto."],
-    ["Como impedir que o cliente carimbe sozinho?", "Somente sua equipe autenticada pode adicionar carimbos. Cada ação fica registrada com data, hora e nome do funcionário responsável."],
-    ["Posso cancelar quando quiser?", "Sim. Cancele a qualquer momento, sem multa. Seus dados ficam preservados caso queira voltar."],
-    ["Posso ter mais de uma campanha?", "Sim, a partir do plano Inicial. No Profissional você tem até 5 campanhas ativas simultaneamente."],
-    ["Funciona sem internet do cliente?", "No momento do carimbo, precisamos de internet. Mas a experiência é super leve — abre rapidinho em qualquer 3G."],
-  ];
   return (
     <section id="faq" className="border-y bg-muted/40 py-24">
       <div className="mx-auto max-w-3xl px-4">
         <h2 className="text-center font-display text-4xl font-bold">Dúvidas frequentes</h2>
         <Accordion type="single" collapsible className="mt-10">
-          {qs.map(([q, a]) => (
+          {FAQ_ITEMS.map(([q, a]) => (
             <AccordionItem key={q} value={q}>
               <AccordionTrigger className="text-left font-medium">{q}</AccordionTrigger>
               <AccordionContent className="text-muted-foreground">{a}</AccordionContent>
