@@ -430,3 +430,92 @@ export const adminUpdatePaymentSettings = createServerFn({ method: "POST" })
 function publicWebhookUrl(): string {
   return `${getPublicAppUrl()}/api/public/webhooks/mercadopago`;
 }
+
+// ----------- Admin: recommended webhook events -----------
+export const RECOMMENDED_MP_EVENTS: Array<{ key: string; label: string; required: boolean; description: string }> = [
+  { key: "payment", label: "Pagamentos (payment)", required: true, description: "Cobre PIX, cartão e boleto — indispensável para ativar planos após aprovação." },
+  { key: "merchant_order", label: "Ordens (merchant_order)", required: true, description: "Reconciliação de pedidos (útil para renovações e estornos parciais)." },
+  { key: "subscription_preapproval", label: "Assinaturas recorrentes (opcional)", required: false, description: "Só habilite quando migrar para preapproval/recorrência automática." },
+  { key: "chargebacks", label: "Chargebacks (opcional)", required: false, description: "Recebe eventos de contestação; recomendado ativar em produção." },
+];
+
+export const adminGetWebhookGuide = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Sem permissão.");
+    return { events: RECOMMENDED_MP_EVENTS, webhook_url: publicWebhookUrl() };
+  });
+
+// ----------- Admin: webhook delivery logs -----------
+export const adminListWebhookLogs = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    page: z.number().int().min(1).default(1),
+    page_size: z.number().int().min(1).max(100).default(50),
+    only_errors: z.boolean().default(false),
+    event_type: z.string().optional(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Sem permissão.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    let q = supabaseAdmin.from("payment_logs").select("*", { count: "exact" }).order("created_at", { ascending: false });
+    if (data.only_errors) q = q.not("error", "is", null);
+    if (data.event_type) q = q.eq("event_type", data.event_type);
+    const from = (data.page - 1) * data.page_size;
+    const to = from + data.page_size - 1;
+    const { data: rows, count } = await q.range(from, to);
+    return { rows: rows ?? [], total: count ?? 0, page: data.page, page_size: data.page_size };
+  });
+
+// ----------- Admin: validate webhook URL (handshake) -----------
+export const adminValidateWebhookUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Sem permissão.");
+    const url = publicWebhookUrl();
+    const started = Date.now();
+    const result: {
+      url: string; ok: boolean; status: number | null; latency_ms: number;
+      https: boolean; reachable: boolean; message: string; body_snippet?: string | null;
+    } = { url, ok: false, status: null, latency_ms: 0, https: url.startsWith("https://"), reachable: false, message: "" };
+
+    if (!result.https) {
+      result.message = "URL não é HTTPS. Mercado Pago exige HTTPS público (localhost não é aceito).";
+      return result;
+    }
+    try {
+      const res = await fetch(url, { method: "GET", headers: { "user-agent": "Fidelize-Webhook-Handshake/1.0" } });
+      const text = await res.text();
+      result.status = res.status;
+      result.reachable = true;
+      result.latency_ms = Date.now() - started;
+      result.body_snippet = text.slice(0, 200);
+      result.ok = res.status >= 200 && res.status < 300;
+      result.message = result.ok
+        ? `Endpoint respondeu ${res.status} em ${result.latency_ms}ms. Pronto para o Mercado Pago.`
+        : `Endpoint respondeu ${res.status}. Verifique se a rota está publicada.`;
+    } catch (e: any) {
+      result.latency_ms = Date.now() - started;
+      result.message = `Falha ao alcançar o endpoint: ${e?.message ?? String(e)}. Publique o app antes de validar o webhook em produção.`;
+    }
+
+    // Auditar handshake
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin.from("audit_logs").insert({
+        user_id: userId,
+        action: "mp_webhook_handshake",
+        entity_type: "payment_settings",
+        metadata: { url, ok: result.ok, status: result.status, latency_ms: result.latency_ms } as never,
+      } as never);
+    } catch { /* noop */ }
+
+    return result;
+  });
+
