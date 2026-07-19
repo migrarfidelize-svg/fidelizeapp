@@ -1,5 +1,5 @@
-# Skeleton — preencher com o project_id do DESTINO.
-# Nunca commitar valores sensíveis. Ver `.env.migration.example`.
+# Exemplo de config.toml para o DESTINO — copiar para supabase/config.toml em
+# um clone da CLI Supabase (não neste repositório, pois supabase/ é gerenciado).
 
 project_id = "REPLACE_WITH_DESTINATION_PROJECT_REF"
 
@@ -32,7 +32,7 @@ enable_signup = true
 [auth.email]
 enable_signup = true
 double_confirm_changes = true
-enable_confirmations = false  # ajuste conforme política
+enable_confirmations = false
 
 [auth.external.google]
 enabled = true

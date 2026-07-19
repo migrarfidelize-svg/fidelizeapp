@@ -1,0 +1,3 @@
+-- 0007_rls.sql — SKELETON
+-- Extrair via pg_policies e recriar cada policy com CREATE POLICY.
+-- Confirmar que as 51 tabelas têm RLS ativa.

@@ -1,0 +1,3 @@
+-- seed.sql — dados opcionais de demonstração
+-- Este arquivo é rodado pela CLI Supabase em `supabase db reset`.
+-- Deixar vazio em produção. Dados obrigatórios ficam em migrations/0011_seed_required_data.sql.
