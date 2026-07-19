@@ -22,6 +22,8 @@ function AdminLayout() {
   const bootstrap = useServerFn(bootstrapSuperAdmin);
   const { data, isLoading, refetch } = useQuery({ queryKey: ["admin-status"], queryFn: () => getStatus() });
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const [openKey, setOpenKey] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   if (isLoading) return <div className="grid min-h-dvh place-items-center text-muted-foreground">Verificando permissões…</div>;
 
@@ -116,10 +118,8 @@ function AdminLayout() {
 
   const isItemActive = (n: NavItem) => (n.exact ? pathname === n.to : pathname.startsWith(n.to));
   const activeGroup = groups.find((g) => g.items.some(isItemActive))?.key ?? null;
-  const [openKey, setOpenKey] = useState<string | null>(activeGroup);
   const currentOpen = openKey ?? activeGroup;
 
-  const [mobileOpen, setMobileOpen] = useState(false);
   const closeMobile = () => setMobileOpen(false);
 
   const renderSidebarBody = (onNavigate?: () => void) => (

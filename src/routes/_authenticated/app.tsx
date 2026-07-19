@@ -38,6 +38,7 @@ function AppLayout() {
   const { data: memberships, isLoading } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
   const { data: adminStatus } = useQuery({ queryKey: ["admin-status"], queryFn: () => getAdmin() });
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   // Unread support replies from Fidelize admin
   const { data: unreadSupport = 0 } = useQuery({
@@ -117,8 +118,6 @@ function AppLayout() {
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
   }
-
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   const renderNav = (onNavigate?: () => void) => (
     <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
