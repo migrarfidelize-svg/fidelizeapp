@@ -1,10 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-const SR_LOADING = (
-  <span className="sr-only">Carregando conteúdo, aguarde…</span>
-);
-
 interface LoadingSkeletonProps {
   variant?: "list" | "card-grid" | "table" | "form" | "page";
   rows?: number;
