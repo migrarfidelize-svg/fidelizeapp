@@ -113,6 +113,7 @@ function CustomerCard() {
               onRetry={() => qc.invalidateQueries({ queryKey: ["card", token] })}
             />
             <PushOptIn token={token} />
+            <RatingPrompt token={token} />
             <ReferralBlock
               token={token}
               cardId={cards[0]?.id}
