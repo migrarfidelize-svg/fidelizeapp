@@ -182,7 +182,7 @@ export const submitPublicReview = createServerFn({ method: "POST" })
         source: data.source ?? "linktree",
         anonymous: isAnon,
         device_hash: deviceHash,
-        status: "new",
+        status: data.rating <= 2 ? "analyzing" : "new",
       })
       .select("id")
       .single();
