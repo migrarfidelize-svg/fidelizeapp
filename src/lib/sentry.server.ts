@@ -15,7 +15,6 @@ function ensureInit() {
     dsn,
     environment: process.env.NODE_ENV || "production",
     tracesSampleRate: 0,
-    autoSessionTracking: false as unknown as never,
     defaultIntegrations: false,
   });
   initialized = true;
