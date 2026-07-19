@@ -488,22 +488,53 @@ function PublicQuestionsTab({ estId }: { estId: string }) {
   const qc = useQueryClient();
   const { data } = useQuery({ queryKey: ["mr-form", estId], queryFn: () => getFn({ data: { establishmentId: estId } }) });
 
+  const nextOrder = () => (data?.questions?.length ?? 0);
   const add = useMutation({
-    mutationFn: async () => upsertFn({ data: { establishmentId: estId, question: {
-      question: "Nova pergunta", question_type: "short", required: false, display_order: (data?.questions?.length ?? 0), active: true,
+    mutationFn: async (q?: { question: string; question_type: any; choices?: string[]; required?: boolean }) => upsertFn({ data: { establishmentId: estId, question: {
+      question: q?.question ?? "Nova pergunta",
+      question_type: q?.question_type ?? "short",
+      choices: q?.choices,
+      required: q?.required ?? false,
+      display_order: nextOrder(),
+      active: true,
     } } }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["mr-form", estId] }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["mr-form", estId] }); toast.success("Pergunta adicionada"); },
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const EXAMPLES: Array<{ label: string; q: { question: string; question_type: any; choices?: string[]; required?: boolean } }> = [
+    { label: "Você recomendaria a um amigo?", q: { question: "Você recomendaria nosso estabelecimento a um amigo?", question_type: "yes_no" } },
+    { label: "Tempo de espera", q: { question: "Como avalia o tempo de espera do atendimento?", question_type: "stars" } },
+    { label: "Qualidade do produto", q: { question: "Como avalia a qualidade do produto/serviço?", question_type: "stars" } },
+    { label: "Simpatia da equipe", q: { question: "A equipe foi simpática e atenciosa?", question_type: "yes_no" } },
+    { label: "Limpeza do local", q: { question: "Como avalia a limpeza e organização do local?", question_type: "stars" } },
+    { label: "O que podemos melhorar?", q: { question: "O que podemos melhorar no seu próximo atendimento?", question_type: "long" } },
+    { label: "Como nos conheceu?", q: { question: "Como nos conheceu?", question_type: "choice", choices: ["Indicação", "Redes sociais", "Google", "Passei em frente", "Outro"] } },
+    { label: "Voltará em breve?", q: { question: "Você pretende voltar em breve?", question_type: "yes_no" } },
+    { label: "NPS clássico (0–10)", q: { question: "De 0 a 10, o quanto você nos recomendaria?", question_type: "nps" } },
+    { label: "Motivo da visita", q: { question: "Qual foi o principal motivo da sua visita hoje?", question_type: "choice", choices: ["Rotina", "Ocasião especial", "Primeira vez", "Promoção", "Indicação"] } },
+  ];
+
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-2">
         <p className="text-sm text-muted-foreground">Perguntas extras que aparecem depois do cliente escolher a nota.</p>
-        <Button size="sm" onClick={() => add.mutate()}><Plus className="mr-1 h-3 w-3" />Nova pergunta</Button>
+        <Button size="sm" onClick={() => add.mutate(undefined)}><Plus className="mr-1 h-3 w-3" />Nova pergunta em branco</Button>
       </div>
+
+      <Card>
+        <CardHeader className="pb-2"><CardTitle className="text-sm">💡 Exemplos prontos — clique para adicionar</CardTitle></CardHeader>
+        <CardContent className="flex flex-wrap gap-2">
+          {EXAMPLES.map((ex) => (
+            <Button key={ex.label} size="sm" variant="outline" onClick={() => add.mutate(ex.q)} disabled={add.isPending}>
+              <Plus className="mr-1 h-3 w-3" />{ex.label}
+            </Button>
+          ))}
+        </CardContent>
+      </Card>
+
       {(data?.questions ?? []).length === 0 && (
-        <Card><CardContent className="p-6 text-center text-muted-foreground">Nenhuma pergunta extra.</CardContent></Card>
+        <Card><CardContent className="p-6 text-center text-muted-foreground">Nenhuma pergunta extra. Adicione uma acima ou escolha um exemplo.</CardContent></Card>
       )}
       {(data?.questions ?? []).map((q) => (
         <QuestionRow key={q.id} q={q} estId={estId} onChanged={() => qc.invalidateQueries({ queryKey: ["mr-form", estId] })} upsertFn={upsertFn} delFn={delFn} />
