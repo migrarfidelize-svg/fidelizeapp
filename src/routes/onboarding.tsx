@@ -124,10 +124,11 @@ function Onboarding() {
     setLoading(true);
     try {
       await create({ data: { ...f, slug: cleanSlug } });
-      await qc.invalidateQueries();
-      await getEsts();
+      qc.removeQueries({ queryKey: ["memberships"] });
+      const fresh = await getEsts();
+      qc.setQueryData(["memberships"], fresh);
       toast.success("Empresa criada!");
-      navigate({ to: "/app" });
+      navigate({ to: "/app/qrcodes" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro");
     } finally { setLoading(false); }
