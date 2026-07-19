@@ -284,6 +284,130 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_reviews: {
+        Row: {
+          anonymous: boolean
+          assigned_to: string | null
+          branch_id: string | null
+          comment: string | null
+          created_at: string
+          customer_email: string | null
+          customer_id: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          device_hash: string | null
+          employee_id: string | null
+          establishment_id: string
+          id: string
+          internal_note: string | null
+          ip_hash: string | null
+          order_reference: string | null
+          rating: number
+          resolved_at: string | null
+          review_form_id: string
+          source: Database["public"]["Enums"]["public_review_source"]
+          status: Database["public"]["Enums"]["public_review_status"]
+          submitted_at: string
+          ticket_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          anonymous?: boolean
+          assigned_to?: string | null
+          branch_id?: string | null
+          comment?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_id?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          device_hash?: string | null
+          employee_id?: string | null
+          establishment_id: string
+          id?: string
+          internal_note?: string | null
+          ip_hash?: string | null
+          order_reference?: string | null
+          rating: number
+          resolved_at?: string | null
+          review_form_id: string
+          source?: Database["public"]["Enums"]["public_review_source"]
+          status?: Database["public"]["Enums"]["public_review_status"]
+          submitted_at?: string
+          ticket_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          anonymous?: boolean
+          assigned_to?: string | null
+          branch_id?: string | null
+          comment?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_id?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          device_hash?: string | null
+          employee_id?: string | null
+          establishment_id?: string
+          id?: string
+          internal_note?: string | null
+          ip_hash?: string | null
+          order_reference?: string | null
+          rating?: number
+          resolved_at?: string | null
+          review_form_id?: string
+          source?: Database["public"]["Enums"]["public_review_source"]
+          status?: Database["public"]["Enums"]["public_review_status"]
+          submitted_at?: string
+          ticket_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_reviews_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_reviews_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_reviews_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_reviews_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_reviews_review_form_id_fkey"
+            columns: ["review_form_id"]
+            isOneToOne: false
+            referencedRelation: "review_forms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_reviews_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           access_token: string
@@ -1954,6 +2078,279 @@ export type Database = {
           },
         ]
       }
+      review_answers: {
+        Row: {
+          answer_boolean: boolean | null
+          answer_number: number | null
+          answer_text: string | null
+          created_at: string
+          id: string
+          question_id: string
+          review_id: string
+        }
+        Insert: {
+          answer_boolean?: boolean | null
+          answer_number?: number | null
+          answer_text?: string | null
+          created_at?: string
+          id?: string
+          question_id: string
+          review_id: string
+        }
+        Update: {
+          answer_boolean?: boolean | null
+          answer_number?: number | null
+          answer_text?: string | null
+          created_at?: string
+          id?: string
+          question_id?: string
+          review_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "review_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_answers_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "customer_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          meta: Json | null
+          review_form_id: string
+          review_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          meta?: Json | null
+          review_form_id: string
+          review_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          meta?: Json | null
+          review_form_id?: string
+          review_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_events_review_form_id_fkey"
+            columns: ["review_form_id"]
+            isOneToOne: false
+            referencedRelation: "review_forms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_events_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "customer_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_forms: {
+        Row: {
+          active: boolean
+          allow_multiple: boolean
+          anonymous_allowed: boolean
+          button_color: string
+          comment_required: boolean
+          consent_text: string | null
+          cooldown_hours: number
+          created_at: string
+          description: string | null
+          email_required: boolean
+          establishment_id: string
+          google_review_url: string | null
+          id: string
+          name_required: boolean
+          phone_required: boolean
+          question: string
+          redirect_to_google_enabled: boolean
+          show_average: boolean
+          show_review_count: boolean
+          star_color: string
+          submit_label: string
+          success_message: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          allow_multiple?: boolean
+          anonymous_allowed?: boolean
+          button_color?: string
+          comment_required?: boolean
+          consent_text?: string | null
+          cooldown_hours?: number
+          created_at?: string
+          description?: string | null
+          email_required?: boolean
+          establishment_id: string
+          google_review_url?: string | null
+          id?: string
+          name_required?: boolean
+          phone_required?: boolean
+          question?: string
+          redirect_to_google_enabled?: boolean
+          show_average?: boolean
+          show_review_count?: boolean
+          star_color?: string
+          submit_label?: string
+          success_message?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          allow_multiple?: boolean
+          anonymous_allowed?: boolean
+          button_color?: string
+          comment_required?: boolean
+          consent_text?: string | null
+          cooldown_hours?: number
+          created_at?: string
+          description?: string | null
+          email_required?: boolean
+          establishment_id?: string
+          google_review_url?: string | null
+          id?: string
+          name_required?: boolean
+          phone_required?: boolean
+          question?: string
+          redirect_to_google_enabled?: boolean
+          show_average?: boolean
+          show_review_count?: boolean
+          star_color?: string
+          submit_label?: string
+          success_message?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_forms_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: true
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_questions: {
+        Row: {
+          active: boolean
+          choices: Json | null
+          created_at: string
+          display_order: number
+          id: string
+          question: string
+          question_type: Database["public"]["Enums"]["public_review_qtype"]
+          required: boolean
+          review_form_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          choices?: Json | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          question: string
+          question_type?: Database["public"]["Enums"]["public_review_qtype"]
+          required?: boolean
+          review_form_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          choices?: Json | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          question?: string
+          question_type?: Database["public"]["Enums"]["public_review_qtype"]
+          required?: boolean
+          review_form_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_questions_review_form_id_fkey"
+            columns: ["review_form_id"]
+            isOneToOne: false
+            referencedRelation: "review_forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_rating_options: {
+        Row: {
+          comment_required: boolean
+          created_at: string
+          display_order: number
+          enabled: boolean
+          id: string
+          label: string
+          post_submit_action: Database["public"]["Enums"]["public_review_action"]
+          rating: number
+          review_form_id: string
+          selection_message: string | null
+          updated_at: string
+        }
+        Insert: {
+          comment_required?: boolean
+          created_at?: string
+          display_order?: number
+          enabled?: boolean
+          id?: string
+          label: string
+          post_submit_action?: Database["public"]["Enums"]["public_review_action"]
+          rating: number
+          review_form_id: string
+          selection_message?: string | null
+          updated_at?: string
+        }
+        Update: {
+          comment_required?: boolean
+          created_at?: string
+          display_order?: number
+          enabled?: boolean
+          id?: string
+          label?: string
+          post_submit_action?: Database["public"]["Enums"]["public_review_action"]
+          rating?: number
+          review_form_id?: string
+          selection_message?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_rating_options_review_form_id_fkey"
+            columns: ["review_form_id"]
+            isOneToOne: false
+            referencedRelation: "review_forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       review_settings: {
         Row: {
           ask_categories: boolean
@@ -2945,6 +3342,27 @@ export type Database = {
       member_role: "owner" | "manager" | "staff"
       plan_tier: "free" | "starter" | "pro" | "enterprise"
       platform_role: "super_admin"
+      public_review_action:
+        | "apologize"
+        | "ask_details"
+        | "thank"
+        | "invite_google"
+        | "invite_share"
+        | "none"
+      public_review_qtype:
+        | "stars"
+        | "nps"
+        | "yes_no"
+        | "choice"
+        | "short"
+        | "long"
+      public_review_source: "linktree" | "direct_url" | "qr" | "embed"
+      public_review_status:
+        | "new"
+        | "analyzing"
+        | "contacting"
+        | "resolved"
+        | "archived"
       support_author_type: "customer" | "admin" | "system"
       support_category:
         | "duvidas"
@@ -3102,6 +3520,30 @@ export const Constants = {
       member_role: ["owner", "manager", "staff"],
       plan_tier: ["free", "starter", "pro", "enterprise"],
       platform_role: ["super_admin"],
+      public_review_action: [
+        "apologize",
+        "ask_details",
+        "thank",
+        "invite_google",
+        "invite_share",
+        "none",
+      ],
+      public_review_qtype: [
+        "stars",
+        "nps",
+        "yes_no",
+        "choice",
+        "short",
+        "long",
+      ],
+      public_review_source: ["linktree", "direct_url", "qr", "embed"],
+      public_review_status: [
+        "new",
+        "analyzing",
+        "contacting",
+        "resolved",
+        "archived",
+      ],
       support_author_type: ["customer", "admin", "system"],
       support_category: [
         "duvidas",
