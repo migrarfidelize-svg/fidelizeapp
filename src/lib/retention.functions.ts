@@ -1,0 +1,277 @@
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { createClient } from "@supabase/supabase-js";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
+
+function publicClient() {
+  const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
+  return createClient<Database>(process.env.SUPABASE_URL!, key, {
+    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+    global: {
+      fetch: (input, init) => {
+        const h = new Headers(init?.headers);
+        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
+        h.set("apikey", key);
+        return fetch(input, { ...init, headers: h });
+      },
+    },
+  });
+}
+
+const DEFAULT_THRESHOLDS = { bronze: 0, prata: 10, ouro: 25, diamante: 50 } as const;
+
+// -------------------- Settings --------------------
+
+export const getRetentionSettings = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ establishment_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: row } = await context.supabase
+      .from("retention_settings")
+      .select("*")
+      .eq("establishment_id", data.establishment_id)
+      .maybeSingle();
+    return (
+      row ?? {
+        establishment_id: data.establishment_id,
+        birthday_enabled: true,
+        birthday_message:
+          "Feliz aniversário! Um mimo especial te espera na sua próxima visita.",
+        birthday_coupon_percent: 0,
+        reengagement_enabled: true,
+        reengagement_days: 30,
+        reengagement_message:
+          "Sentimos sua falta! Que tal voltar e acumular mais carimbos?",
+        tiers_enabled: true,
+        tier_thresholds: DEFAULT_THRESHOLDS,
+        referral_enabled: true,
+        referral_bonus_stamps: 1,
+      }
+    );
+  });
+
+export const saveRetentionSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        establishment_id: z.string().uuid(),
+        birthday_enabled: z.boolean(),
+        birthday_message: z.string().min(2).max(500),
+        birthday_coupon_percent: z.number().int().min(0).max(100),
+        reengagement_enabled: z.boolean(),
+        reengagement_days: z.number().int().min(7).max(365),
+        reengagement_message: z.string().min(2).max(500),
+        tiers_enabled: z.boolean(),
+        tier_thresholds: z.object({
+          bronze: z.number().int().min(0),
+          prata: z.number().int().min(1),
+          ouro: z.number().int().min(2),
+          diamante: z.number().int().min(3),
+        }),
+        referral_enabled: z.boolean(),
+        referral_bonus_stamps: z.number().int().min(0).max(5),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("retention_settings").upsert(
+      {
+        ...data,
+        tier_thresholds: data.tier_thresholds as unknown as Database["public"]["Tables"]["retention_settings"]["Row"]["tier_thresholds"],
+      },
+      { onConflict: "establishment_id" },
+    );
+    if (error) throw error;
+    return { ok: true };
+  });
+
+// -------------------- Referral --------------------
+
+/** Public: look up a referral code — used by the /r/:code landing. */
+export const lookupReferralCode = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) => z.object({ code: z.string().min(4).max(20) }).parse(d))
+  .handler(async ({ data }) => {
+    const s = publicClient();
+    const { data: row } = await s
+      .from("customers")
+      .select(
+        "id, name, referral_code, establishment_id, establishments!inner(id, slug, name, logo_url, primary_color)",
+      )
+      .eq("referral_code", data.code.toUpperCase())
+      .maybeSingle();
+    if (!row) return null;
+    return {
+      referrerName: row.name,
+      establishment: row.establishments,
+    };
+  });
+
+/** Apply a referral to an existing customer (from voucher). Awards bonus stamp both sides. */
+export const applyReferralByToken = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        token: z.string().min(20).max(80),
+        code: z.string().min(4).max(20),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const s = publicClient();
+    const { data: customer } = await s
+      .from("customers")
+      .select("id, establishment_id, referred_by, referral_code")
+      .eq("access_token", data.token)
+      .maybeSingle();
+    if (!customer) throw new Error("Cartão não encontrado.");
+    if (customer.referred_by) throw new Error("Você já usou um código de indicação.");
+    if (customer.referral_code?.toUpperCase() === data.code.toUpperCase()) {
+      throw new Error("Você não pode indicar a si mesmo.");
+    }
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: referrer } = await supabaseAdmin
+      .from("customers")
+      .select("id, establishment_id, name")
+      .eq("referral_code", data.code.toUpperCase())
+      .eq("establishment_id", customer.establishment_id)
+      .maybeSingle();
+    if (!referrer) throw new Error("Código inválido para este estabelecimento.");
+
+    const { data: settings } = await supabaseAdmin
+      .from("retention_settings")
+      .select("referral_enabled, referral_bonus_stamps")
+      .eq("establishment_id", customer.establishment_id)
+      .maybeSingle();
+    if (settings && settings.referral_enabled === false) {
+      throw new Error("Programa de indicação está desativado.");
+    }
+    const bonus = Math.max(0, Math.min(5, settings?.referral_bonus_stamps ?? 1));
+
+    // Link customer to referrer
+    await supabaseAdmin
+      .from("customers")
+      .update({ referred_by: referrer.id })
+      .eq("id", customer.id);
+
+    // Award bonus stamps on the "default" active campaign for each side (best-effort).
+    if (bonus > 0) {
+      await grantBonusStamps(customer.id, customer.establishment_id, bonus, "referral_reward");
+      await grantBonusStamps(referrer.id, customer.establishment_id, bonus, "referral_reward");
+    }
+
+    await supabaseAdmin.from("retention_events").insert([
+      {
+        establishment_id: customer.establishment_id,
+        customer_id: customer.id,
+        event_type: "referral_signup",
+        meta: { referrer_id: referrer.id, referrer_name: referrer.name },
+      },
+      {
+        establishment_id: customer.establishment_id,
+        customer_id: referrer.id,
+        event_type: "referral_reward",
+        meta: { bonus },
+      },
+    ]);
+
+    return { ok: true, referrer: referrer.name, bonus };
+  });
+
+async function grantBonusStamps(
+  customerId: string,
+  establishmentId: string,
+  count: number,
+  note: string,
+) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  // Pick an active campaign for this establishment.
+  const { data: campaign } = await supabaseAdmin
+    .from("campaigns")
+    .select("id, stamps_required")
+    .eq("establishment_id", establishmentId)
+    .eq("active", true)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!campaign) return;
+  // Ensure a loyalty_card exists.
+  const { data: existing } = await supabaseAdmin
+    .from("loyalty_cards")
+    .select("id, stamps, cycle")
+    .eq("customer_id", customerId)
+    .eq("campaign_id", campaign.id)
+    .maybeSingle();
+  let cardId = existing?.id;
+  if (!cardId) {
+    const { data: created } = await supabaseAdmin
+      .from("loyalty_cards")
+      .insert({ customer_id: customerId, campaign_id: campaign.id, stamps: 0, cycle: 1 })
+      .select("id")
+      .single();
+    cardId = created?.id;
+  }
+  if (!cardId) return;
+  for (let i = 0; i < count; i++) {
+    await supabaseAdmin.from("stamps").insert({
+      card_id: cardId,
+      note,
+    });
+  }
+}
+
+// -------------------- Merchant referral dashboard --------------------
+
+export const listReferralStats = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ establishment_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    // Top referrers = customers who appear most as referred_by
+    const { data: rows } = await context.supabase
+      .from("customers")
+      .select("id, name, referred_by")
+      .eq("establishment_id", data.establishment_id);
+    const counts = new Map<string, number>();
+    for (const r of rows ?? []) {
+      if (r.referred_by) counts.set(r.referred_by, (counts.get(r.referred_by) ?? 0) + 1);
+    }
+    const top = Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([id, count]) => ({
+        id,
+        name: rows?.find((x) => x.id === id)?.name ?? "—",
+        count,
+      }));
+    return {
+      totalReferred: (rows ?? []).filter((r) => r.referred_by).length,
+      totalCustomers: rows?.length ?? 0,
+      top,
+    };
+  });
+
+// -------------------- Retention events (customer timeline) --------------------
+
+export const listRetentionEvents = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        establishment_id: z.string().uuid(),
+        limit: z.number().int().min(1).max(500).optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: rows, error } = await context.supabase
+      .from("retention_events")
+      .select("id, event_type, from_value, to_value, meta, created_at, customer_id")
+      .eq("establishment_id", data.establishment_id)
+      .order("created_at", { ascending: false })
+      .limit(data.limit ?? 100);
+    if (error) throw error;
+    return rows;
+  });
