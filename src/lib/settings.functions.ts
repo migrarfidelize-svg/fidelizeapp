@@ -176,8 +176,8 @@ async function sendInviteEmail(opts: {
       .select("name").eq("id", opts.establishment_id).maybeSingle();
     const { data: prof } = await opts.supabaseAdmin.from("profiles")
       .select("full_name").eq("id", opts.inviter_id).maybeSingle();
-    const origin = (process.env.APP_URL || process.env.VITE_APP_URL || "").replace(/\/$/, "")
-      || "https://id-preview--6fbe0482-baab-4f96-abc8-c1c72bc2e46e.lovable.app";
+    const { getPublicAppUrl } = await import("@/lib/app-url");
+    const origin = getPublicAppUrl();
     const inviteUrl = `${origin}/invite/${opts.token}`;
     await sendTemplateEmail({
       to: opts.email,
