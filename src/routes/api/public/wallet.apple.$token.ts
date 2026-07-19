@@ -29,9 +29,6 @@ export const Route = createFileRoute("/api/public/wallet/apple/$token")({
           // creds missing — respond without leaking details to logs
           return new Response("Apple Wallet não configurado neste servidor.", { status: 503 });
         }
-        if (false) {
-          return new Response("Apple Wallet não configurado neste servidor.", { status: 503 });
-        }
         const token = params.token;
         if (!token || token.length < 10) return new Response("token inválido", { status: 400 });
 
@@ -42,7 +39,6 @@ export const Route = createFileRoute("/api/public/wallet/apple/$token")({
           .eq("access_token", token)
           .maybeSingle();
         if (error || !customer) {
-          console.warn("[pkpass] customer not found", { token: token.slice(0, 6), error: error?.message });
           return new Response("Cartão não encontrado.", { status: 404 });
         }
         const { data: est } = await sb
@@ -93,7 +89,6 @@ export const Route = createFileRoute("/api/public/wallet/apple/$token")({
 
         try {
           const zip = await buildSignedPkpass({ passJson, logoUrl: est.logo_url, creds });
-          console.log("[pkpass] signed", { customer: customer.code, bytes: zip.byteLength });
           return new Response(zip as BodyInit, {
             status: 200,
             headers: {
