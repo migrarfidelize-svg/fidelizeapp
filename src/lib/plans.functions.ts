@@ -462,16 +462,39 @@ export const adminReconcileFeatureAccess = createServerFn({ method: "POST" })
       .select("id, name, slug, plan, active");
     if (eErr) throw new Error(eErr.message);
 
-    const rows = (ests ?? []).map((e: any) => ({
-      id: e.id,
-      name: e.name,
-      slug: e.slug,
-      plan_tier: e.plan,
-      active: e.active,
-      feature_allowed: enabledByTier.get(e.plan) ?? false,
-    }));
+    const knownTiers = new Set((plans ?? []).map((p: any) => p.tier));
+    const missingPlanFeatureTiers = (plans ?? [])
+      .filter((p: any) => !(pf ?? []).some((x: any) => x.plan_id === p.id))
+      .map((p: any) => p.tier);
 
-    // 3. Broadcast a NOTIFY-like signal via realtime channel so merchant
+    // Divergence detection — surfaces cases the naïve mapping would silently
+    // fail closed on. Two categories:
+    //   • orphan_tier: establishment.plan does not match any row in `plans`.
+    //     Would be treated as blocked forever, even for paying tiers.
+    //   • missing_plan_feature_row: the tier exists but plan_features has no
+    //     row for this feature_key, so `has_plan_feature` returns false even
+    //     when the intent is "enabled". Repair inserts the row explicitly.
+    const rows = (ests ?? []).map((e: any) => {
+      const divergence =
+        !knownTiers.has(e.plan)
+          ? "orphan_tier"
+          : missingPlanFeatureTiers.includes(e.plan)
+            ? "missing_plan_feature_row"
+            : null;
+      return {
+        id: e.id,
+        name: e.name,
+        slug: e.slug,
+        plan_tier: e.plan,
+        active: e.active,
+        feature_allowed: enabledByTier.get(e.plan) ?? false,
+        divergence,
+      };
+    });
+
+    const divergences = rows.filter((r) => r.divergence);
+
+    // Broadcast a NOTIFY-like signal via realtime channel so merchant
     // clients invalidate their cache immediately (non-persistent).
     // Even in dry_run we broadcast, since it only refreshes reads.
     try {
@@ -513,6 +536,7 @@ export const adminReconcileFeatureAccess = createServerFn({ method: "POST" })
           feature_key: data.feature_key,
           plans_touched: repaired,
           establishments_scanned: rows.length,
+          divergences_before_repair: divergences.length,
         } as never,
       });
     }
@@ -522,6 +546,8 @@ export const adminReconcileFeatureAccess = createServerFn({ method: "POST" })
       dry_run: data.dry_run,
       plans_summary: Array.from(enabledByTier.entries()).map(([tier, enabled]) => ({ tier, enabled })),
       establishments: rows,
+      divergences,
+      divergence_count: divergences.length,
       total_allowed: rows.filter((r) => r.feature_allowed).length,
       total_blocked: rows.filter((r) => !r.feature_allowed).length,
       repaired_rows: repaired,
