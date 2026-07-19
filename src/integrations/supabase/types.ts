@@ -1954,6 +1954,154 @@ export type Database = {
           },
         ]
       }
+      review_settings: {
+        Row: {
+          ask_categories: boolean
+          ask_nps: boolean
+          auto_prompt: boolean
+          created_at: string
+          establishment_id: string
+          google_place_url: string | null
+          google_redirect_min_rating: number
+          id: string
+          prompt_message: string
+          prompt_title: string
+          public_page_enabled: boolean
+          thank_you_message: string
+          updated_at: string
+        }
+        Insert: {
+          ask_categories?: boolean
+          ask_nps?: boolean
+          auto_prompt?: boolean
+          created_at?: string
+          establishment_id: string
+          google_place_url?: string | null
+          google_redirect_min_rating?: number
+          id?: string
+          prompt_message?: string
+          prompt_title?: string
+          public_page_enabled?: boolean
+          thank_you_message?: string
+          updated_at?: string
+        }
+        Update: {
+          ask_categories?: boolean
+          ask_nps?: boolean
+          auto_prompt?: boolean
+          created_at?: string
+          establishment_id?: string
+          google_place_url?: string | null
+          google_redirect_min_rating?: number
+          id?: string
+          prompt_message?: string
+          prompt_title?: string
+          public_page_enabled?: boolean
+          thank_you_message?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_settings_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: true
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reviews: {
+        Row: {
+          card_id: string | null
+          categories: Json
+          comment: string | null
+          created_at: string
+          customer_id: string | null
+          customer_name: string | null
+          establishment_id: string
+          id: string
+          ip_hash: string | null
+          is_public: boolean
+          nps: number | null
+          rating: number
+          replied_at: string | null
+          replied_by: string | null
+          reply: string | null
+          source: string
+          stamp_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          card_id?: string | null
+          categories?: Json
+          comment?: string | null
+          created_at?: string
+          customer_id?: string | null
+          customer_name?: string | null
+          establishment_id: string
+          id?: string
+          ip_hash?: string | null
+          is_public?: boolean
+          nps?: number | null
+          rating: number
+          replied_at?: string | null
+          replied_by?: string | null
+          reply?: string | null
+          source?: string
+          stamp_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          card_id?: string | null
+          categories?: Json
+          comment?: string | null
+          created_at?: string
+          customer_id?: string | null
+          customer_name?: string | null
+          establishment_id?: string
+          id?: string
+          ip_hash?: string | null
+          is_public?: boolean
+          nps?: number | null
+          rating?: number
+          replied_at?: string | null
+          replied_by?: string | null
+          reply?: string | null
+          source?: string
+          stamp_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_stamp_id_fkey"
+            columns: ["stamp_id"]
+            isOneToOne: false
+            referencedRelation: "stamps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rewards: {
         Row: {
           campaign_id: string

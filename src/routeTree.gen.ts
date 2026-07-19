@@ -45,6 +45,7 @@ import { Route as AuthenticatedAppEquipeRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated/app.clientes'
 import { Route as AuthenticatedAppCarimbarRouteImport } from './routes/_authenticated/app.carimbar'
 import { Route as AuthenticatedAppCampanhasRouteImport } from './routes/_authenticated/app.campanhas'
+import { Route as AuthenticatedAppAvaliacoesRouteImport } from './routes/_authenticated/app.avaliacoes'
 import { Route as AuthenticatedAdminPagamentosRouteImport } from './routes/_authenticated/admin.pagamentos'
 import { Route as AuthenticatedAdminNotificacoesRouteImport } from './routes/_authenticated/admin.notificacoes'
 import { Route as AuthenticatedAdminFinanceiroRouteImport } from './routes/_authenticated/admin.financeiro'
@@ -257,6 +258,12 @@ const AuthenticatedAppCampanhasRoute =
     path: '/campanhas',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppAvaliacoesRoute =
+  AuthenticatedAppAvaliacoesRouteImport.update({
+    id: '/avaliacoes',
+    path: '/avaliacoes',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAdminPagamentosRoute =
   AuthenticatedAdminPagamentosRouteImport.update({
     id: '/pagamentos',
@@ -436,6 +443,7 @@ export interface FileRoutesByFullPath {
   '/admin/financeiro': typeof AuthenticatedAdminFinanceiroRoute
   '/admin/notificacoes': typeof AuthenticatedAdminNotificacoesRoute
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
+  '/app/avaliacoes': typeof AuthenticatedAppAvaliacoesRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
@@ -496,6 +504,7 @@ export interface FileRoutesByTo {
   '/admin/financeiro': typeof AuthenticatedAdminFinanceiroRoute
   '/admin/notificacoes': typeof AuthenticatedAdminNotificacoesRoute
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
+  '/app/avaliacoes': typeof AuthenticatedAppAvaliacoesRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
@@ -560,6 +569,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/financeiro': typeof AuthenticatedAdminFinanceiroRoute
   '/_authenticated/admin/notificacoes': typeof AuthenticatedAdminNotificacoesRoute
   '/_authenticated/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
+  '/_authenticated/app/avaliacoes': typeof AuthenticatedAppAvaliacoesRoute
   '/_authenticated/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/_authenticated/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/_authenticated/app/clientes': typeof AuthenticatedAppClientesRoute
@@ -624,6 +634,7 @@ export interface FileRouteTypes {
     | '/admin/financeiro'
     | '/admin/notificacoes'
     | '/admin/pagamentos'
+    | '/app/avaliacoes'
     | '/app/campanhas'
     | '/app/carimbar'
     | '/app/clientes'
@@ -684,6 +695,7 @@ export interface FileRouteTypes {
     | '/admin/financeiro'
     | '/admin/notificacoes'
     | '/admin/pagamentos'
+    | '/app/avaliacoes'
     | '/app/campanhas'
     | '/app/carimbar'
     | '/app/clientes'
@@ -747,6 +759,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/financeiro'
     | '/_authenticated/admin/notificacoes'
     | '/_authenticated/admin/pagamentos'
+    | '/_authenticated/app/avaliacoes'
     | '/_authenticated/app/campanhas'
     | '/_authenticated/app/carimbar'
     | '/_authenticated/app/clientes'
@@ -1060,6 +1073,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppCampanhasRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/avaliacoes': {
+      id: '/_authenticated/app/avaliacoes'
+      path: '/avaliacoes'
+      fullPath: '/app/avaliacoes'
+      preLoaderRoute: typeof AuthenticatedAppAvaliacoesRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/admin/pagamentos': {
       id: '/_authenticated/admin/pagamentos'
       path: '/pagamentos'
@@ -1284,6 +1304,7 @@ const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
 interface AuthenticatedAppRouteChildren {
+  AuthenticatedAppAvaliacoesRoute: typeof AuthenticatedAppAvaliacoesRoute
   AuthenticatedAppCampanhasRoute: typeof AuthenticatedAppCampanhasRoute
   AuthenticatedAppCarimbarRoute: typeof AuthenticatedAppCarimbarRoute
   AuthenticatedAppClientesRoute: typeof AuthenticatedAppClientesRoute
@@ -1299,6 +1320,7 @@ interface AuthenticatedAppRouteChildren {
 }
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
+  AuthenticatedAppAvaliacoesRoute: AuthenticatedAppAvaliacoesRoute,
   AuthenticatedAppCampanhasRoute: AuthenticatedAppCampanhasRoute,
   AuthenticatedAppCarimbarRoute: AuthenticatedAppCarimbarRoute,
   AuthenticatedAppClientesRoute: AuthenticatedAppClientesRoute,
