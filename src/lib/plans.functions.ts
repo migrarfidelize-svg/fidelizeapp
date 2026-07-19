@@ -192,6 +192,9 @@ export const changeEstablishmentPlan = createServerFn({ method: "POST" })
     const kind: "upgrade" | "downgrade" | "plan_change" =
       toRank > fromRank ? "upgrade" : toRank < fromRank ? "downgrade" : "plan_change";
 
+    // Snapshot feature availability BEFORE the change so we can detect unlocks after it.
+    const reviewsBefore = await hasFeature(supabase, data.establishment_id, "public_reviews");
+
     // 1) Update establishment plan (trigger tg_establishment_subscription_events logs a subscription_events row automatically with actor_id = auth.uid())
     const { error: updErr } = await supabase.from("establishments")
       .update({ plan: toTier as any }).eq("id", data.establishment_id);
