@@ -39,7 +39,7 @@ function ArticlePage() {
       <header className="border-b">
         <div className="max-w-3xl mx-auto flex items-center justify-between px-4 py-4">
           <Link to="/suporte/$slug" params={{ slug: params.slug }} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> {establishment.name}</Link>
-          <Link to="/suporte/$slug/novo" params={{ slug: params.slug }}><Button size="sm" variant="outline"><MessageCircle className="mr-2 h-3.5 w-3.5" />Abrir chamado</Button></Link>
+          <Link to="/suporte/$slug/novo" params={{ slug: params.slug }} search={{ assunto: "" }}><Button size="sm" variant="outline"><MessageCircle className="mr-2 h-3.5 w-3.5" />Abrir chamado</Button></Link>
         </div>
       </header>
       <main className="max-w-3xl mx-auto px-4 py-10">

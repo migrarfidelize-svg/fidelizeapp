@@ -74,7 +74,7 @@ function HelpCenterHub() {
           </div>
         )}
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Link to="/suporte/$slug/novo" params={params}><Button size="lg" className="rounded-full"><MessageCircle className="mr-2 h-4 w-4" />Abrir chamado</Button></Link>
+          <Link to="/suporte/$slug/novo" params={params} search={{ assunto: "" }}><Button size="lg" className="rounded-full"><MessageCircle className="mr-2 h-4 w-4" />Abrir chamado</Button></Link>
           <Link to="/suporte/meus"><Button size="lg" variant="outline" className="rounded-full">Ver meus chamados</Button></Link>
         </div>
       </section>
