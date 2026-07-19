@@ -11,8 +11,11 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { initSentryClient, captureClientError } from "../lib/sentry.client";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
+
+if (typeof window !== "undefined") initSentryClient();
 
 function NotFoundComponent() {
   return (
@@ -31,7 +34,7 @@ function NotFoundComponent() {
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
-  useEffect(() => { reportLovableError(error, { boundary: "root" }); }, [error]);
+  useEffect(() => { reportLovableError(error, { boundary: "root" }); captureClientError(error, { boundary: "root" }); }, [error]);
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">

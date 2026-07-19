@@ -753,13 +753,41 @@ export const getDashboardData = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const est = data.establishment_id;
-    const [{ count: customersCount }, { count: stampsCount }, { count: rewardsCount }, { count: redeemedCount }, { data: recentStamps }, { data: topCustomers }] = await Promise.all([
+    const now = new Date();
+    const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    const prevMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
+    const prevMonthEnd = new Date(monthStart.getTime() - 1);
+    const goalMonthKey = `${monthStart.getUTCFullYear()}-${String(monthStart.getUTCMonth() + 1).padStart(2, "0")}-01`;
+
+    const [
+      { count: customersCount },
+      { count: stampsCount },
+      { count: rewardsCount },
+      { count: redeemedCount },
+      { data: recentStamps },
+      { data: topCustomers },
+      { count: customersThisMonth },
+      { count: customersPrevMonth },
+      { count: stampsThisMonth },
+      { count: stampsPrevMonth },
+      { count: rewardsThisMonth },
+      { count: rewardsPrevMonth },
+      goalRes,
+    ] = await Promise.all([
       supabase.from("customers").select("*", { count: "exact", head: true }).eq("establishment_id", est),
       supabase.from("stamps").select("*", { count: "exact", head: true }).eq("establishment_id", est).is("reverted_at", null),
       supabase.from("rewards").select("*", { count: "exact", head: true }).eq("establishment_id", est),
       supabase.from("rewards").select("*", { count: "exact", head: true }).eq("establishment_id", est).not("redeemed_at", "is", null),
       supabase.from("stamps").select("id, created_at").eq("establishment_id", est).is("reverted_at", null).gte("created_at", new Date(Date.now() - 30 * 86400_000).toISOString()),
       supabase.from("customers").select("id, name, visits_count, last_visit_at").eq("establishment_id", est).order("visits_count", { ascending: false }).limit(5),
+      supabase.from("customers").select("*", { count: "exact", head: true }).eq("establishment_id", est).gte("created_at", monthStart.toISOString()),
+      supabase.from("customers").select("*", { count: "exact", head: true }).eq("establishment_id", est).gte("created_at", prevMonthStart.toISOString()).lte("created_at", prevMonthEnd.toISOString()),
+      supabase.from("stamps").select("*", { count: "exact", head: true }).eq("establishment_id", est).is("reverted_at", null).gte("created_at", monthStart.toISOString()),
+      supabase.from("stamps").select("*", { count: "exact", head: true }).eq("establishment_id", est).is("reverted_at", null).gte("created_at", prevMonthStart.toISOString()).lte("created_at", prevMonthEnd.toISOString()),
+      supabase.from("rewards").select("*", { count: "exact", head: true }).eq("establishment_id", est).not("redeemed_at", "is", null).gte("redeemed_at", monthStart.toISOString()),
+      supabase.from("rewards").select("*", { count: "exact", head: true }).eq("establishment_id", est).not("redeemed_at", "is", null).gte("redeemed_at", prevMonthStart.toISOString()).lte("redeemed_at", prevMonthEnd.toISOString()),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (supabase as any).from("establishment_goals").select("*").eq("establishment_id", est).eq("month", goalMonthKey).maybeSingle(),
     ]);
     // Build 30-day series
     const days: { day: string; carimbos: number }[] = [];
@@ -772,6 +800,9 @@ export const getDashboardData = createServerFn({ method: "POST" })
       const d = new Date(Date.now() - i * 86400_000).toISOString().slice(0, 10);
       days.push({ day: d.slice(5), carimbos: map.get(d) ?? 0 });
     }
+    const goals = (goalRes?.data as {
+      stamps_goal: number; customers_goal: number; rewards_goal: number; revenue_goal: number;
+    } | null) ?? { stamps_goal: 0, customers_goal: 0, rewards_goal: 0, revenue_goal: 0 };
     return {
       customersCount: customersCount ?? 0,
       stampsCount: stampsCount ?? 0,
@@ -779,6 +810,13 @@ export const getDashboardData = createServerFn({ method: "POST" })
       redeemedCount: redeemedCount ?? 0,
       series: days,
       topCustomers: topCustomers ?? [],
+      mom: {
+        customers: { current: customersThisMonth ?? 0, previous: customersPrevMonth ?? 0 },
+        stamps: { current: stampsThisMonth ?? 0, previous: stampsPrevMonth ?? 0 },
+        rewards: { current: rewardsThisMonth ?? 0, previous: rewardsPrevMonth ?? 0 },
+      },
+      goals,
+      goalMonth: goalMonthKey,
     };
   });
 
