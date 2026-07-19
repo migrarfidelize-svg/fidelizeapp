@@ -164,7 +164,7 @@ export const adminSetReviewHidden = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: r, error: e0 } = await supabaseAdmin
-      .from("customer_reviews").select("id, establishment_id").eq("id", data.reviewId).maybeSingle();
+      .from("customer_reviews").select("id, establishment_id, review_form_id").eq("id", data.reviewId).maybeSingle();
     if (e0) throw new Error(e0.message);
     if (!r) throw new Error("Avaliação não encontrada.");
 
@@ -175,22 +175,24 @@ export const adminSetReviewHidden = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     await supabaseAdmin.from("review_events").insert({
-      establishment_id: r.establishment_id,
+      review_form_id: r.review_form_id,
       review_id: data.reviewId,
       event_type: data.hidden ? "admin_hidden" : "admin_unhidden",
-      payload: { reason: data.reason ?? null, actor: userId },
+      meta: { reason: data.reason ?? null, actor: userId, establishment_id: r.establishment_id },
     });
 
     await supabaseAdmin.from("audit_logs").insert({
-      actor_id: userId,
+      user_id: userId,
+      establishment_id: r.establishment_id,
       action: data.hidden ? "review.hide" : "review.unhide",
-      target_type: "customer_review",
-      target_id: data.reviewId,
-      metadata: { establishment_id: r.establishment_id, reason: data.reason ?? null },
+      entity_type: "customer_review",
+      entity_id: data.reviewId,
+      metadata: { reason: data.reason ?? null },
     });
 
     return { ok: true };
   });
+
 
 export const adminDeleteReview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
