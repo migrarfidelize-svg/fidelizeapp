@@ -245,6 +245,7 @@ function QRCodes() {
   type QrTarget = "linktree" | "review";
   const [qrTarget, setQrTarget] = useState<QrTarget>("linktree");
   const { allowed: reviewsAllowed } = useMyFeature(est?.id, "public_reviews");
+  const logBlockedFn = useServerFn(logFeatureBlocked);
   useEffect(() => { if (!reviewsAllowed && qrTarget === "review") setQrTarget("linktree"); }, [reviewsAllowed, qrTarget]);
   const targetPath = qrTarget === "review" ? "avaliar" : "l";
   const publicUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/${targetPath}/${est.slug}` : "";
