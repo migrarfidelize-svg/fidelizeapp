@@ -18,12 +18,13 @@ export function Logo({ className = "" }: { className?: string }) {
           <path
             d="M 384 256 A 128 128 0 1 1 256 128"
             fill="none"
-            stroke="#ffffff"
+            stroke="url(#fz-logo-f-shine)"
             strokeWidth="28"
             strokeLinecap="round"
-            opacity="0.55"
+            opacity="0.75"
           />
-          <path d="M 236 108 L 268 128 L 236 148 Z" fill="#ffffff" opacity="0.85" />
+          <path d="M 236 108 L 268 128 L 236 148 Z" fill="url(#fz-logo-f-shine)" />
+
           <g fill="url(#fz-logo-f-shine)">
             <rect x="196" y="156" width="40" height="216" rx="12" />
             <rect x="196" y="156" width="140" height="40" rx="12" />
