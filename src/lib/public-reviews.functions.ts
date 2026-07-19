@@ -370,6 +370,7 @@ export const upsertReviewQuestion = createServerFn({ method: "POST" })
   .inputValidator((d: { establishmentId: string; question: z.infer<typeof questionUpsertSchema> }) =>
     z.object({ establishmentId: z.string().uuid(), question: questionUpsertSchema }).parse(d))
   .handler(async ({ data, context }) => {
+    await assertFeature(context.supabase, data.establishmentId, "public_reviews");
     const { data: form } = await context.supabase
       .from("review_forms")
       .select("id")
