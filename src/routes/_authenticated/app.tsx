@@ -11,7 +11,7 @@ import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { getAdminStatus } from "@/lib/admin.functions";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield, LifeBuoy, BookOpen, Package, Receipt, HeartHandshake, Bell } from "lucide-react";
+import { LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield, LifeBuoy, BookOpen, Package, Receipt, HeartHandshake, Bell, Star } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { GuidedTour, type TourStep } from "@/components/GuidedTour";
 import { ThemeToggle } from "@/components/ThemeToggle";
