@@ -416,7 +416,7 @@ export function EquipeTab({ establishmentId }: { establishmentId: string }) {
                   </div>
                   <div className="flex items-center gap-2">
                     <Input readOnly value={issuedLink} className="font-mono text-xs" />
-                    <Button size="icon" variant="secondary" onClick={() => copyLink(issuedLink)}><Copy className="h-4 w-4" /></Button>
+                    <Button size="icon" variant="secondary" aria-label="Copiar link" onClick={() => copyLink(issuedLink)}><Copy className="h-4 w-4" /></Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button asChild size="sm" variant="outline" className="gap-1">
@@ -608,7 +608,7 @@ export function EquipeTab({ establishmentId }: { establishmentId: string }) {
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /></Button>
+                          <Button size="icon" variant="ghost" aria-label="Mais ações"><MoreHorizontal className="h-4 w-4" /></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-52">
                           <DropdownMenuLabel>Ações</DropdownMenuLabel>

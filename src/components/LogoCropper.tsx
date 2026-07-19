@@ -180,7 +180,7 @@ export function LogoCropper({ file, open, onOpenChange, outputSize = 512, onCrop
           <ZoomOut className="h-4 w-4 text-muted-foreground" />
           <Slider min={min} max={Math.max(min * 4, 4)} step={0.01} value={[zoom]} onValueChange={([v]) => setZoom(v)} className="flex-1" />
           <ZoomIn className="h-4 w-4 text-muted-foreground" />
-          <Button type="button" size="icon" variant="ghost" onClick={reset} title="Redefinir">
+          <Button type="button" size="icon" variant="ghost" aria-label="Redefinir recorte" onClick={reset} title="Redefinir">
             <RotateCcw className="h-4 w-4" />
           </Button>
         </div>

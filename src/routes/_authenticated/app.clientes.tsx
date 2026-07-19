@@ -324,7 +324,7 @@ function Clientes() {
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="shrink-0"><MoreHorizontal className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" aria-label="Ações do cliente" className="shrink-0"><MoreHorizontal className="h-4 w-4" /></Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => setOpenId(c.id)}>Abrir ficha</DropdownMenuItem>

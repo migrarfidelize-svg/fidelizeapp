@@ -136,7 +136,7 @@ function AdminEmpresas() {
                   <div className="text-xs text-muted-foreground mt-0.5">{e.customers} clientes · {e.stamps} carimbos</div>
                 </div>
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild><Button size="icon" variant="ghost"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                  <DropdownMenuTrigger asChild><Button size="icon" variant="ghost" aria-label="Ações da empresa"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuItem asChild><Link to="/admin/empresa/$id" params={{ id: e.id }}><BarChart3 className="mr-2 h-4 w-4" />Ver detalhes</Link></DropdownMenuItem>
                     <DropdownMenuItem asChild><Link to="/l/$slug" params={{ slug: e.slug }} target="_blank"><ExternalLink className="mr-2 h-4 w-4" />Ver página pública</Link></DropdownMenuItem>

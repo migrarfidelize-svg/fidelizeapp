@@ -453,7 +453,7 @@ function QRCodes() {
       const d = await capture(posterRef.current, "png");
       const w = window.open("", "_blank");
       if (!w) return;
-      w.document.write(`<html><head><title>Imprimir</title><style>@page{margin:0}body{margin:0;display:flex;justify-content:center;align-items:center}img{max-width:100%;max-height:100vh}</style></head><body><img src="${d}" onload="setTimeout(()=>window.print(),300)"/></body></html>`);
+      w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"/><title>Imprimir material do QR Code</title><style>@page{margin:0}body{margin:0;display:flex;justify-content:center;align-items:center}img{max-width:100%;max-height:100vh}</style></head><body><img src="${d}" alt="Material promocional do QR Code" onload="setTimeout(()=>window.print(),300)"/></body></html>`);
       w.document.close();
     } finally { setExporting(false); }
   }
@@ -827,7 +827,7 @@ function QRCodes() {
                 <Field label="Link público">
                   <div className="flex gap-2">
                     <code className="flex-1 rounded-md bg-muted px-3 py-2 text-xs break-all">{publicUrl}</code>
-                    <Button size="icon" variant="outline" onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success("Copiado"); }}><Copy className="h-4 w-4" /></Button>
+                    <Button size="icon" variant="outline" aria-label="Copiar link público" onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success("Copiado"); }}><Copy className="h-4 w-4" /></Button>
                   </div>
                 </Field>
                 <div className="rounded-md border border-dashed p-3 text-xs text-muted-foreground">

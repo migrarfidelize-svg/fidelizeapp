@@ -156,7 +156,7 @@ function AppLayout() {
       <div className="flex-1 flex flex-col min-w-0">
         <header className="md:hidden flex items-center justify-between p-3 border-b bg-card">
           <Logo />
-          <Button size="icon" variant="ghost" onClick={signOut}><LogOut className="h-4 w-4" /></Button>
+          <Button size="icon" variant="ghost" aria-label="Sair" onClick={signOut}><LogOut className="h-4 w-4" /></Button>
         </header>
         <main className="flex-1 p-4 md:p-8 max-w-6xl w-full mx-auto">
           <Outlet />

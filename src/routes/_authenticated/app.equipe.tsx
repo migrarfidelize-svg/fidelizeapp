@@ -86,7 +86,7 @@ function EquipePage() {
               </div>
               <div className="flex items-center gap-2">
                 <Input readOnly value={issuedLink} className="font-mono text-xs" />
-                <Button size="icon" variant="secondary" onClick={() => copyLink(issuedLink)}><Copy className="h-4 w-4" /></Button>
+                <Button size="icon" variant="secondary" aria-label="Copiar link de convite" onClick={() => copyLink(issuedLink)}><Copy className="h-4 w-4" /></Button>
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button asChild size="sm" variant="outline" className="gap-1">
