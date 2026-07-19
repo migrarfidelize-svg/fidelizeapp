@@ -99,7 +99,7 @@ function CustomerCard() {
 
         {cards.length > 0 && (
           <div className="mt-3">
-            <InstallAppButton label={`Instalar ${est.name} como app`} autoPrompt />
+            <InstallAppButton label={`Instalar ${est.name} como app`} />
           </div>
         )}
 
