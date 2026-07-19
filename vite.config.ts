@@ -5,11 +5,72 @@
 //     React/TanStack dedupe, error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
   tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
     server: { entry: "server" },
   },
+  plugins: [
+    VitePWA({
+      strategies: "generateSW",
+      registerType: "autoUpdate",
+      injectRegister: null, // wrapper is the only registrar
+      devOptions: { enabled: false },
+      filename: "sw.js",
+      manifest: false, // we ship our own public/manifest.webmanifest
+      workbox: {
+        clientsClaim: true,
+        skipWaiting: true,
+        cleanupOutdatedCaches: true,
+        // Exclude OAuth callback from navigation fallback so it hits the network.
+        navigateFallback: "/",
+        navigateFallbackDenylist: [
+          /^\/~oauth/,
+          /^\/api\//,
+        ],
+        // Don't precache HTML — always fetch fresh via NetworkFirst below.
+        globPatterns: ["**/*.{js,css,woff,woff2,ico,png,svg,webp,avif}"],
+        runtimeCaching: [
+          {
+            // HTML navigations: always try network first, fall back to cache offline.
+            urlPattern: ({ request, url }) =>
+              request.mode === "navigate" && !url.pathname.startsWith("/~oauth") && !url.pathname.startsWith("/api/"),
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "html-navigations",
+              networkTimeoutSeconds: 3,
+              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 7 },
+            },
+          },
+          {
+            // Same-origin hashed static assets (Vite build output).
+            urlPattern: ({ sameOrigin, url }) =>
+              sameOrigin && /\.(?:js|css|woff2?|ttf|otf)$/.test(url.pathname),
+            handler: "CacheFirst",
+            options: {
+              cacheName: "static-assets",
+              expiration: { maxEntries: 120, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            },
+          },
+          {
+            // Icons and other same-origin images.
+            urlPattern: ({ sameOrigin, url }) =>
+              sameOrigin && /\.(?:png|jpg|jpeg|svg|webp|avif|ico|gif)$/.test(url.pathname),
+            handler: "CacheFirst",
+            options: {
+              cacheName: "images",
+              expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            },
+          },
+          {
+            // Google Fonts stylesheet + files.
+            urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\//,
+            handler: "StaleWhileRevalidate",
+            options: { cacheName: "google-fonts" },
+          },
+        ],
+      },
+    }),
+  ],
 });
