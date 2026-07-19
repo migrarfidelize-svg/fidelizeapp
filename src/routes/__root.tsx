@@ -38,12 +38,23 @@ function NotFoundComponent() {
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
-  useEffect(() => { reportLovableError(error, { boundary: "root" }); captureClientError(error, { boundary: "root" }); }, [error]);
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.error("[root errorComponent]", error);
+    reportLovableError(error, { boundary: "root" });
+    captureClientError(error, { boundary: "root" });
+  }, [error]);
+  const detail = (error && (error.message || String(error))) || "";
   return (
     <div className="flex min-h-dvh items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold">Ops, algo deu errado</h1>
         <p className="mt-2 text-sm text-muted-foreground">Tente novamente em alguns instantes.</p>
+        {detail ? (
+          <pre className="mt-3 max-h-40 overflow-auto rounded-md border bg-muted/40 px-3 py-2 text-left text-[11px] leading-snug text-muted-foreground whitespace-pre-wrap break-words">
+            {detail}
+          </pre>
+        ) : null}
         <div className="mt-6 flex justify-center gap-2">
           <button onClick={() => { router.invalidate(); reset(); }} className="rounded-md gradient-brand px-4 py-2 text-sm font-medium text-primary-foreground">Tentar novamente</button>
           <a href="/" className="rounded-md border px-4 py-2 text-sm font-medium">Início</a>
