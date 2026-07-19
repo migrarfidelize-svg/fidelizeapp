@@ -29,19 +29,39 @@ function isStandalone(): boolean {
   );
 }
 
+// iPadOS 13+ reports UA as Macintosh. Detect via touch + platform.
+function isIPadOSDesktopMode(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent;
+  const platform = (navigator as Navigator & { platform?: string }).platform || "";
+  const maxTouch = (navigator as Navigator & { maxTouchPoints?: number }).maxTouchPoints || 0;
+  return /Macintosh/.test(ua) && (maxTouch > 1 || platform === "MacIntel" && "ontouchend" in document);
+}
+
 function detectPlatform(): Platform {
   if (typeof navigator === "undefined") return "desktop";
   const ua = navigator.userAgent;
-  const isIPad = /iPad/.test(ua) || (/Macintosh/.test(ua) && "ontouchend" in document);
-  if (/iPhone|iPod/.test(ua) || isIPad) return "ios";
+  if (/iPhone|iPad|iPod/.test(ua) || isIPadOSDesktopMode()) return "ios";
   if (/Android/.test(ua)) return "android";
   return "desktop";
 }
 
+// True in-app browsers (Instagram, Facebook, LINE, WeChat, TikTok, WhatsApp preview) can't add to home screen.
+function isInAppBrowser(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent;
+  return /(FBAN|FBAV|Instagram|Line\/|MicroMessenger|BytedanceWebview|TikTok|WhatsApp|KAKAOTALK|Snapchat|Pinterest|WebView; )/i.test(ua);
+}
+
+// True Safari on iOS/iPadOS. Explicitly excludes in-app browsers and third-party iOS browsers
+// (Chrome CriOS, Firefox FxiOS, Edge EdgiOS, Opera OPiOS, DuckDuckGo DuckDuckGo/, Brave still uses CriOS).
 function isSafari(): boolean {
   if (typeof navigator === "undefined") return false;
   const ua = navigator.userAgent;
-  return /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+  if (isInAppBrowser()) return false;
+  if (/CriOS|FxiOS|EdgiOS|OPiOS|DuckDuckGo|YaBrowser|mercury/i.test(ua)) return false;
+  // AppleWebKit-based Safari on iOS reports "Version/x.x Safari/xxx".
+  return /Safari\//.test(ua) && /Version\//.test(ua);
 }
 
 function getSuppressUntil(): number {
