@@ -57,6 +57,7 @@ import { Route as AuthenticatedAdminEmailsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminEmailTemplatesRouteImport } from './routes/_authenticated/admin.email-templates'
 import { Route as AuthenticatedAdminEmailFilaRouteImport } from './routes/_authenticated/admin.email-fila'
 import { Route as AuthenticatedAdminConfigRouteImport } from './routes/_authenticated/admin.config'
+import { Route as AuthenticatedAdminAvaliacoesRouteImport } from './routes/_authenticated/admin.avaliacoes'
 import { Route as AuthenticatedAdminAuditoriaRouteImport } from './routes/_authenticated/admin.auditoria'
 import { Route as AuthenticatedAdminAssinaturasRouteImport } from './routes/_authenticated/admin.assinaturas'
 import { Route as AuthenticatedAdminAlertasRouteImport } from './routes/_authenticated/admin.alertas'
@@ -330,6 +331,12 @@ const AuthenticatedAdminConfigRoute =
     path: '/config',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminAvaliacoesRoute =
+  AuthenticatedAdminAvaliacoesRouteImport.update({
+    id: '/avaliacoes',
+    path: '/avaliacoes',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminAuditoriaRoute =
   AuthenticatedAdminAuditoriaRouteImport.update({
     id: '/auditoria',
@@ -448,6 +455,7 @@ export interface FileRoutesByFullPath {
   '/admin/alertas': typeof AuthenticatedAdminAlertasRoute
   '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
+  '/admin/avaliacoes': typeof AuthenticatedAdminAvaliacoesRoute
   '/admin/config': typeof AuthenticatedAdminConfigRoute
   '/admin/email-fila': typeof AuthenticatedAdminEmailFilaRoute
   '/admin/email-templates': typeof AuthenticatedAdminEmailTemplatesRoute
@@ -511,6 +519,7 @@ export interface FileRoutesByTo {
   '/admin/alertas': typeof AuthenticatedAdminAlertasRoute
   '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
+  '/admin/avaliacoes': typeof AuthenticatedAdminAvaliacoesRoute
   '/admin/config': typeof AuthenticatedAdminConfigRoute
   '/admin/email-fila': typeof AuthenticatedAdminEmailFilaRoute
   '/admin/email-templates': typeof AuthenticatedAdminEmailTemplatesRoute
@@ -578,6 +587,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/alertas': typeof AuthenticatedAdminAlertasRoute
   '/_authenticated/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/_authenticated/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
+  '/_authenticated/admin/avaliacoes': typeof AuthenticatedAdminAvaliacoesRoute
   '/_authenticated/admin/config': typeof AuthenticatedAdminConfigRoute
   '/_authenticated/admin/email-fila': typeof AuthenticatedAdminEmailFilaRoute
   '/_authenticated/admin/email-templates': typeof AuthenticatedAdminEmailTemplatesRoute
@@ -645,6 +655,7 @@ export interface FileRouteTypes {
     | '/admin/alertas'
     | '/admin/assinaturas'
     | '/admin/auditoria'
+    | '/admin/avaliacoes'
     | '/admin/config'
     | '/admin/email-fila'
     | '/admin/email-templates'
@@ -708,6 +719,7 @@ export interface FileRouteTypes {
     | '/admin/alertas'
     | '/admin/assinaturas'
     | '/admin/auditoria'
+    | '/admin/avaliacoes'
     | '/admin/config'
     | '/admin/email-fila'
     | '/admin/email-templates'
@@ -774,6 +786,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/alertas'
     | '/_authenticated/admin/assinaturas'
     | '/_authenticated/admin/auditoria'
+    | '/_authenticated/admin/avaliacoes'
     | '/_authenticated/admin/config'
     | '/_authenticated/admin/email-fila'
     | '/_authenticated/admin/email-templates'
@@ -1183,6 +1196,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminConfigRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/avaliacoes': {
+      id: '/_authenticated/admin/avaliacoes'
+      path: '/avaliacoes'
+      fullPath: '/admin/avaliacoes'
+      preLoaderRoute: typeof AuthenticatedAdminAvaliacoesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/auditoria': {
       id: '/_authenticated/admin/auditoria'
       path: '/auditoria'
@@ -1303,6 +1323,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminAlertasRoute: typeof AuthenticatedAdminAlertasRoute
   AuthenticatedAdminAssinaturasRoute: typeof AuthenticatedAdminAssinaturasRoute
   AuthenticatedAdminAuditoriaRoute: typeof AuthenticatedAdminAuditoriaRoute
+  AuthenticatedAdminAvaliacoesRoute: typeof AuthenticatedAdminAvaliacoesRoute
   AuthenticatedAdminConfigRoute: typeof AuthenticatedAdminConfigRoute
   AuthenticatedAdminEmailFilaRoute: typeof AuthenticatedAdminEmailFilaRoute
   AuthenticatedAdminEmailTemplatesRoute: typeof AuthenticatedAdminEmailTemplatesRoute
@@ -1324,6 +1345,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminAlertasRoute: AuthenticatedAdminAlertasRoute,
   AuthenticatedAdminAssinaturasRoute: AuthenticatedAdminAssinaturasRoute,
   AuthenticatedAdminAuditoriaRoute: AuthenticatedAdminAuditoriaRoute,
+  AuthenticatedAdminAvaliacoesRoute: AuthenticatedAdminAvaliacoesRoute,
   AuthenticatedAdminConfigRoute: AuthenticatedAdminConfigRoute,
   AuthenticatedAdminEmailFilaRoute: AuthenticatedAdminEmailFilaRoute,
   AuthenticatedAdminEmailTemplatesRoute: AuthenticatedAdminEmailTemplatesRoute,
