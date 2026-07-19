@@ -70,7 +70,7 @@ export const adminReviewsRanking = createServerFn({ method: "GET" })
     for (const r of rows ?? []) {
       const cur = map.get(r.establishment_id) ?? { count: 0, sum: 0, low: 0, lowPending: 0 };
       cur.count++; cur.sum += r.rating;
-      if (r.rating <= 2) { cur.low++; if (r.status === "under_review") cur.lowPending++; }
+      if (r.rating <= 2) { cur.low++; if (r.status === "new" || r.status === "analyzing" || r.status === "contacting") cur.lowPending++; }
       map.set(r.establishment_id, cur);
     }
 
