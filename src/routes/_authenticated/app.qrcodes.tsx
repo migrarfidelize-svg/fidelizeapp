@@ -238,7 +238,10 @@ function QRCodes() {
   });
 
   const activeCampaign = campaigns?.find((c) => c.active) ?? campaigns?.[0];
-  const publicUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/l/${est.slug}` : "";
+  type QrTarget = "linktree" | "review";
+  const [qrTarget, setQrTarget] = useState<QrTarget>("linktree");
+  const targetPath = qrTarget === "review" ? "avaliar" : "l";
+  const publicUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/${targetPath}/${est.slug}` : "";
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
 
   const [format, setFormat] = useState<PromoFormat>("story");
