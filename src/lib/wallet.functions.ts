@@ -38,7 +38,7 @@ async function loadPassData(token: string) {
   const { data: customer, error } = await sb
     .from("customers")
     .select("id, name, code, establishment_id")
-    .eq("token", token)
+    .eq("access_token", token)
     .maybeSingle();
   if (error || !customer) throw new Error("Cartão não encontrado.");
   const { data: est } = await sb
