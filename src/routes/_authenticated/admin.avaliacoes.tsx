@@ -383,15 +383,52 @@ function BlockedByPlan({ days }: { days: number }) {
   const listFn = useServerFn(adminListFeatureGateEvents);
   const sumFn = useServerFn(adminFeatureGateSummary);
   const [feature, setFeature] = useState<string>("public_reviews");
+  const [planTier, setPlanTier] = useState<string>("all");
+  const [search, setSearch] = useState<string>("");
+  const [searchDeb, setSearchDeb] = useState<string>("");
+
+  // debounce search
+  useState(() => { void searchDeb; return 0; });
+  // simple debounce with setTimeout
+  if (typeof window !== "undefined") {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    // handled via useEffect below
+  }
+
   const summary = useQuery({ queryKey: ["adm-gate-sum", days], queryFn: () => sumFn({ data: { days } }) });
   const list = useQuery({
-    queryKey: ["adm-gate-list", days, feature],
-    queryFn: () => listFn({ data: { days, feature_key: feature || undefined, limit: 200 } }),
+    queryKey: ["adm-gate-list", days, feature, planTier, searchDeb],
+    queryFn: () => listFn({ data: {
+      days,
+      feature_key: feature === "all" ? undefined : feature,
+      plan_tier: planTier === "all" ? undefined : planTier,
+      search: searchDeb || undefined,
+      limit: 500,
+    } }),
   });
 
   const FEATURE_LABELS: Record<string, string> = {
     public_reviews: "Avaliações públicas (QR + página)",
   };
+
+  function exportCsv() {
+    const rows = (list.data ?? []).map((r: any) => [
+      new Date(r.created_at).toISOString(),
+      r.establishments?.name ?? "",
+      r.establishments?.slug ?? "",
+      r.plan_tier ?? "",
+      FEATURE_LABELS[r.feature_key] ?? r.feature_key,
+      r.action,
+      r.user_name ?? "",
+      r.user_email ?? "",
+      r.context ? JSON.stringify(r.context) : "",
+    ]);
+    downloadCSV(
+      `bloqueios-plano-${new Date().toISOString().slice(0,10)}.csv`,
+      ["Data (ISO)", "Empresa", "Slug", "Plano", "Recurso", "Ação", "Usuário", "E-mail", "Contexto"],
+      rows,
+    );
+  }
 
   return (
     <>
@@ -417,58 +454,100 @@ function BlockedByPlan({ days }: { days: number }) {
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between gap-3">
-          <CardTitle className="text-base">Tentativas bloqueadas</CardTitle>
-          <Select value={feature} onValueChange={setFeature}>
-            <SelectTrigger className="w-64"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="public_reviews">Avaliações públicas</SelectItem>
-            </SelectContent>
-          </Select>
+        <CardHeader className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <CardTitle className="text-base">Tentativas bloqueadas</CardTitle>
+            <Button size="sm" variant="outline" onClick={exportCsv} disabled={!list.data || list.data.length === 0}>
+              <Download className="h-4 w-4 mr-1.5" /> Exportar CSV
+            </Button>
+          </div>
+          <div className="grid gap-2 md:grid-cols-3">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                placeholder="Buscar empresa (nome ou slug)…"
+                className="pl-8 pr-8"
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  // Manual debounce
+                  window.clearTimeout((window as any).__gateSearchT);
+                  (window as any).__gateSearchT = window.setTimeout(() => setSearchDeb(e.target.value), 350);
+                }}
+              />
+              {search && (
+                <button type="button" onClick={() => { setSearch(""); setSearchDeb(""); }} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+            <Select value={feature} onValueChange={setFeature}>
+              <SelectTrigger><SelectValue placeholder="Recurso" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os recursos</SelectItem>
+                <SelectItem value="public_reviews">Avaliações públicas</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={planTier} onValueChange={setPlanTier}>
+              <SelectTrigger><SelectValue placeholder="Plano" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os planos</SelectItem>
+                <SelectItem value="free">Free</SelectItem>
+                <SelectItem value="starter">Starter</SelectItem>
+                <SelectItem value="pro">Pro</SelectItem>
+                <SelectItem value="enterprise">Enterprise</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
           {list.isLoading && <p className="text-sm text-muted-foreground">Carregando…</p>}
           {list.data && list.data.length === 0 && (
-            <p className="text-sm text-muted-foreground">Nenhuma tentativa registrada.</p>
+            <p className="text-sm text-muted-foreground">Nenhuma tentativa registrada para os filtros atuais.</p>
           )}
           {list.data && list.data.length > 0 && (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-xs text-muted-foreground border-b">
-                    <th className="py-2 pr-3">Data</th>
-                    <th className="py-2 pr-3">Empresa</th>
-                    <th className="py-2 pr-3">Plano</th>
-                    <th className="py-2 pr-3">Usuário</th>
-                    <th className="py-2 pr-3">Ação</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {list.data.map((r: any) => (
-                    <tr key={r.id} className="border-b last:border-0">
-                      <td className="py-2 pr-3 whitespace-nowrap">{formatDate(r.created_at)}</td>
-                      <td className="py-2 pr-3">
-                        <div className="font-medium">{r.establishments?.name ?? "—"}</div>
-                        <div className="text-[11px] text-muted-foreground">/{r.establishments?.slug ?? "—"}</div>
-                      </td>
-                      <td className="py-2 pr-3"><Badge variant="outline">{r.plan_tier ?? "—"}</Badge></td>
-                      <td className="py-2 pr-3">
-                        <div>{r.user_name ?? "—"}</div>
-                        <div className="text-[11px] text-muted-foreground">{r.user_email ?? ""}</div>
-                      </td>
-                      <td className="py-2 pr-3">
-                        <div className="font-mono text-xs">{r.action}</div>
-                        {r.context && Object.keys(r.context).length > 0 && (
-                          <div className="text-[11px] text-muted-foreground truncate max-w-xs" title={JSON.stringify(r.context)}>
-                            {JSON.stringify(r.context)}
-                          </div>
-                        )}
-                      </td>
+            <>
+              <div className="text-xs text-muted-foreground mb-2">{list.data.length} evento(s) encontrado(s).</div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-xs text-muted-foreground border-b">
+                      <th className="py-2 pr-3">Data</th>
+                      <th className="py-2 pr-3">Empresa</th>
+                      <th className="py-2 pr-3">Plano</th>
+                      <th className="py-2 pr-3">Recurso</th>
+                      <th className="py-2 pr-3">Usuário</th>
+                      <th className="py-2 pr-3">Ação</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {list.data.map((r: any) => (
+                      <tr key={r.id} className="border-b last:border-0">
+                        <td className="py-2 pr-3 whitespace-nowrap">{formatDate(r.created_at)}</td>
+                        <td className="py-2 pr-3">
+                          <div className="font-medium">{r.establishments?.name ?? "—"}</div>
+                          <div className="text-[11px] text-muted-foreground">/{r.establishments?.slug ?? "—"}</div>
+                        </td>
+                        <td className="py-2 pr-3"><Badge variant="outline">{r.plan_tier ?? "—"}</Badge></td>
+                        <td className="py-2 pr-3 text-xs">{FEATURE_LABELS[r.feature_key] ?? r.feature_key}</td>
+                        <td className="py-2 pr-3">
+                          <div>{r.user_name ?? "—"}</div>
+                          <div className="text-[11px] text-muted-foreground">{r.user_email ?? ""}</div>
+                        </td>
+                        <td className="py-2 pr-3">
+                          <div className="font-mono text-xs">{r.action}</div>
+                          {r.context && Object.keys(r.context).length > 0 && (
+                            <div className="text-[11px] text-muted-foreground truncate max-w-xs" title={JSON.stringify(r.context)}>
+                              {JSON.stringify(r.context)}
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
