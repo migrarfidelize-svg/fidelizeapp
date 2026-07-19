@@ -6,6 +6,7 @@ import { LoyaltyVoucher } from "@/components/LoyaltyVoucher";
 import { InstallAppButton } from "@/components/InstallAppButton";
 import { OfflineBanner, OfflineBadge, RequiresOnlineAlert } from "@/components/OfflineIndicator";
 import { PushOptIn } from "@/components/PushOptIn";
+import { ReferralBlock } from "@/components/ReferralBlock";
 import { formatDate } from "@/lib/format";
 import { Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -111,6 +112,12 @@ function CustomerCard() {
               onRetry={() => qc.invalidateQueries({ queryKey: ["card", token] })}
             />
             <PushOptIn token={token} />
+            <ReferralBlock
+              token={token}
+              cardId={cards[0]?.id}
+              ownCode={(d.customer as { referral_code: string | null }).referral_code}
+              alreadyReferred={!!(d.customer as { referred_by: string | null }).referred_by}
+            />
           </div>
         )}
 
