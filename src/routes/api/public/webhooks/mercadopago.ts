@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createHmac, timingSafeEqual } from "crypto";
+import { verifyMercadoPagoSignature, mapMpStatusToPaymentStatus, mapMpMethod } from "@/lib/mercadopago-webhook";
 
 // Webhook oficial do Mercado Pago.
 // Ref: https://www.mercadopago.com.br/developers/pt/docs/your-integrations/notifications/webhooks
