@@ -19,9 +19,10 @@ import {
   getMerchantReviewForm, saveMerchantReviewForm, saveRatingOptions,
   upsertReviewQuestion, deleteReviewQuestion,
   listPublicReviewsInbox, updatePublicReview, getPublicReviewStats,
+  getReviewInsights,
 } from "@/lib/public-reviews.functions";
 import { formatDate } from "@/lib/format";
-import { Trash2, Plus, ExternalLink as ExtLink } from "lucide-react";
+import { Trash2, Plus, ExternalLink as ExtLink, AlertTriangle, TrendingDown, Search, CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app/avaliacoes")({
   head: () => ({ meta: [{ title: "Avaliações — Fidelize" }] }),
