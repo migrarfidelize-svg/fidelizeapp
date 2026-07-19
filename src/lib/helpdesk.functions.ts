@@ -75,7 +75,8 @@ export const getArticle = createServerFn({ method: "GET" })
     const { data: related } = await s.from("kb_articles")
       .select("id, slug, title").eq("establishment_id", est.id).eq("published", true).neq("id", article.id)
       .limit(4);
-    return { establishment: est, article, related: related ?? [] };
+    const { sanitizeRichHtml } = await import("@/lib/sanitize-html");
+    return { establishment: est, article: { ...article, body_html: sanitizeRichHtml(article.body_html) }, related: related ?? [] };
   });
 
 export const submitArticleFeedback = createServerFn({ method: "POST" })
@@ -307,14 +308,16 @@ export const saveArticle = createServerFn({ method: "POST" })
     published: z.boolean().default(false),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    const body_text = data.body_html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+    const { sanitizeRichHtml } = await import("@/lib/sanitize-html");
+    const clean_html = sanitizeRichHtml(data.body_html);
+    const body_text = clean_html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
     const payload = {
       establishment_id: data.establishment_id,
       category_id: data.category_id ?? null,
       title: data.title,
       slug: data.slug,
       excerpt: data.excerpt ?? null,
-      body_html: data.body_html,
+      body_html: clean_html,
       body_text,
       tags: data.tags,
       published: data.published,
