@@ -61,7 +61,7 @@ export const Route = createFileRoute("/api/public/cron/reengagement")({
                 kind: "reengagement",
                 channel: "push",
                 status: r.sent > 0 ? "sent" : "skipped",
-                meta: { sent: r.sent, days },
+                payload: { sent: r.sent, days },
               });
               totalSent += r.sent;
               totalProcessed++;

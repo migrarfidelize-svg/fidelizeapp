@@ -62,7 +62,7 @@ export const Route = createFileRoute("/api/public/cron/birthday")({
               kind: "birthday",
               channel: "push",
               status: r.sent > 0 ? "sent" : "skipped",
-              meta: { sent: r.sent },
+              payload: { sent: r.sent },
             });
             results.push({ customer_id: c.id, sent: r.sent });
           }
