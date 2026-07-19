@@ -11,7 +11,7 @@ import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { getAdminStatus } from "@/lib/admin.functions";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield, LifeBuoy, BookOpen, Package, Receipt, HeartHandshake, Bell } from "lucide-react";
+import { LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield, LifeBuoy, BookOpen, Package, Receipt, HeartHandshake, Bell, Star } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { GuidedTour, type TourStep } from "@/components/GuidedTour";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -102,6 +102,7 @@ function AppLayout() {
     { to: "/app/campanhas", label: "Campanhas", icon: Sparkles, exact: false },
     { to: "/app/qrcodes", label: "QR Codes", icon: QrCode, exact: false },
     { to: "/app/retencao", label: "Retenção", icon: HeartHandshake, exact: false },
+    { to: "/app/avaliacoes", label: "Avaliações", icon: Star, exact: false },
     { to: "/app/notificacoes", label: "Notificações", icon: Bell, exact: false },
     { to: "/app/equipe", label: "Equipe", icon: UsersRound, exact: false },
     

@@ -22,6 +22,7 @@ import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as CTokenRouteImport } from './routes/c.$token'
+import { Route as AvaliacoesSlugRouteImport } from './routes/avaliacoes.$slug'
 import { Route as AuthRecuperarRouteImport } from './routes/auth.recuperar'
 import { Route as AuthNovaSenhaRouteImport } from './routes/auth.nova-senha'
 import { Route as AuthenticatedLgpdRouteImport } from './routes/_authenticated/lgpd'
@@ -45,6 +46,7 @@ import { Route as AuthenticatedAppEquipeRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated/app.clientes'
 import { Route as AuthenticatedAppCarimbarRouteImport } from './routes/_authenticated/app.carimbar'
 import { Route as AuthenticatedAppCampanhasRouteImport } from './routes/_authenticated/app.campanhas'
+import { Route as AuthenticatedAppAvaliacoesRouteImport } from './routes/_authenticated/app.avaliacoes'
 import { Route as AuthenticatedAdminPagamentosRouteImport } from './routes/_authenticated/admin.pagamentos'
 import { Route as AuthenticatedAdminNotificacoesRouteImport } from './routes/_authenticated/admin.notificacoes'
 import { Route as AuthenticatedAdminFinanceiroRouteImport } from './routes/_authenticated/admin.financeiro'
@@ -133,6 +135,11 @@ const InviteTokenRoute = InviteTokenRouteImport.update({
 const CTokenRoute = CTokenRouteImport.update({
   id: '/c/$token',
   path: '/c/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AvaliacoesSlugRoute = AvaliacoesSlugRouteImport.update({
+  id: '/avaliacoes/$slug',
+  path: '/avaliacoes/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRecuperarRoute = AuthRecuperarRouteImport.update({
@@ -255,6 +262,12 @@ const AuthenticatedAppCampanhasRoute =
   AuthenticatedAppCampanhasRouteImport.update({
     id: '/campanhas',
     path: '/campanhas',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppAvaliacoesRoute =
+  AuthenticatedAppAvaliacoesRouteImport.update({
+    id: '/avaliacoes',
+    path: '/avaliacoes',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAdminPagamentosRoute =
@@ -417,6 +430,7 @@ export interface FileRoutesByFullPath {
   '/lgpd': typeof AuthenticatedLgpdRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
+  '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
   '/c/$token': typeof CTokenRoute
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
@@ -436,6 +450,7 @@ export interface FileRoutesByFullPath {
   '/admin/financeiro': typeof AuthenticatedAdminFinanceiroRoute
   '/admin/notificacoes': typeof AuthenticatedAdminNotificacoesRoute
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
+  '/app/avaliacoes': typeof AuthenticatedAppAvaliacoesRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
@@ -477,6 +492,7 @@ export interface FileRoutesByTo {
   '/lgpd': typeof AuthenticatedLgpdRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
+  '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
   '/c/$token': typeof CTokenRoute
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
@@ -496,6 +512,7 @@ export interface FileRoutesByTo {
   '/admin/financeiro': typeof AuthenticatedAdminFinanceiroRoute
   '/admin/notificacoes': typeof AuthenticatedAdminNotificacoesRoute
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
+  '/app/avaliacoes': typeof AuthenticatedAppAvaliacoesRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
@@ -541,6 +558,7 @@ export interface FileRoutesById {
   '/_authenticated/lgpd': typeof AuthenticatedLgpdRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
+  '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
   '/c/$token': typeof CTokenRoute
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
@@ -560,6 +578,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/financeiro': typeof AuthenticatedAdminFinanceiroRoute
   '/_authenticated/admin/notificacoes': typeof AuthenticatedAdminNotificacoesRoute
   '/_authenticated/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
+  '/_authenticated/app/avaliacoes': typeof AuthenticatedAppAvaliacoesRoute
   '/_authenticated/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/_authenticated/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/_authenticated/app/clientes': typeof AuthenticatedAppClientesRoute
@@ -605,6 +624,7 @@ export interface FileRouteTypes {
     | '/lgpd'
     | '/auth/nova-senha'
     | '/auth/recuperar'
+    | '/avaliacoes/$slug'
     | '/c/$token'
     | '/invite/$token'
     | '/l/$slug'
@@ -624,6 +644,7 @@ export interface FileRouteTypes {
     | '/admin/financeiro'
     | '/admin/notificacoes'
     | '/admin/pagamentos'
+    | '/app/avaliacoes'
     | '/app/campanhas'
     | '/app/carimbar'
     | '/app/clientes'
@@ -665,6 +686,7 @@ export interface FileRouteTypes {
     | '/lgpd'
     | '/auth/nova-senha'
     | '/auth/recuperar'
+    | '/avaliacoes/$slug'
     | '/c/$token'
     | '/invite/$token'
     | '/l/$slug'
@@ -684,6 +706,7 @@ export interface FileRouteTypes {
     | '/admin/financeiro'
     | '/admin/notificacoes'
     | '/admin/pagamentos'
+    | '/app/avaliacoes'
     | '/app/campanhas'
     | '/app/carimbar'
     | '/app/clientes'
@@ -728,6 +751,7 @@ export interface FileRouteTypes {
     | '/_authenticated/lgpd'
     | '/auth/nova-senha'
     | '/auth/recuperar'
+    | '/avaliacoes/$slug'
     | '/c/$token'
     | '/invite/$token'
     | '/l/$slug'
@@ -747,6 +771,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/financeiro'
     | '/_authenticated/admin/notificacoes'
     | '/_authenticated/admin/pagamentos'
+    | '/_authenticated/app/avaliacoes'
     | '/_authenticated/app/campanhas'
     | '/_authenticated/app/carimbar'
     | '/_authenticated/app/clientes'
@@ -787,6 +812,7 @@ export interface RootRouteChildren {
   PrecosRoute: typeof PrecosRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   TermosRoute: typeof TermosRoute
+  AvaliacoesSlugRoute: typeof AvaliacoesSlugRoute
   CTokenRoute: typeof CTokenRoute
   InviteTokenRoute: typeof InviteTokenRoute
   LSlugRoute: typeof LSlugRoute
@@ -897,6 +923,13 @@ declare module '@tanstack/react-router' {
       path: '/c/$token'
       fullPath: '/c/$token'
       preLoaderRoute: typeof CTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/avaliacoes/$slug': {
+      id: '/avaliacoes/$slug'
+      path: '/avaliacoes/$slug'
+      fullPath: '/avaliacoes/$slug'
+      preLoaderRoute: typeof AvaliacoesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/recuperar': {
@@ -1058,6 +1091,13 @@ declare module '@tanstack/react-router' {
       path: '/campanhas'
       fullPath: '/app/campanhas'
       preLoaderRoute: typeof AuthenticatedAppCampanhasRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/avaliacoes': {
+      id: '/_authenticated/app/avaliacoes'
+      path: '/avaliacoes'
+      fullPath: '/app/avaliacoes'
+      preLoaderRoute: typeof AuthenticatedAppAvaliacoesRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/admin/pagamentos': {
@@ -1284,6 +1324,7 @@ const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
 interface AuthenticatedAppRouteChildren {
+  AuthenticatedAppAvaliacoesRoute: typeof AuthenticatedAppAvaliacoesRoute
   AuthenticatedAppCampanhasRoute: typeof AuthenticatedAppCampanhasRoute
   AuthenticatedAppCarimbarRoute: typeof AuthenticatedAppCarimbarRoute
   AuthenticatedAppClientesRoute: typeof AuthenticatedAppClientesRoute
@@ -1299,6 +1340,7 @@ interface AuthenticatedAppRouteChildren {
 }
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
+  AuthenticatedAppAvaliacoesRoute: AuthenticatedAppAvaliacoesRoute,
   AuthenticatedAppCampanhasRoute: AuthenticatedAppCampanhasRoute,
   AuthenticatedAppCarimbarRoute: AuthenticatedAppCarimbarRoute,
   AuthenticatedAppClientesRoute: AuthenticatedAppClientesRoute,
@@ -1355,6 +1397,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrecosRoute: PrecosRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   TermosRoute: TermosRoute,
+  AvaliacoesSlugRoute: AvaliacoesSlugRoute,
   CTokenRoute: CTokenRoute,
   InviteTokenRoute: InviteTokenRoute,
   LSlugRoute: LSlugRoute,
