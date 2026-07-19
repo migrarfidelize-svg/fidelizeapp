@@ -115,79 +115,93 @@ function AppLayout() {
     navigate({ to: "/auth", replace: true });
   }
 
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const renderNav = (onNavigate?: () => void) => (
+    <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+      {nav.map((n) => {
+        const active = n.exact ? pathname === n.to : pathname.startsWith(n.to);
+        const badge = n.to === "/suporte" && unreadSupport > 0 ? unreadSupport : 0;
+        return (
+          <Link key={n.to} to={n.to} data-tour={`nav-${n.to}`} onClick={onNavigate} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${active ? "bg-primary-soft text-primary" : "text-muted-foreground hover:bg-muted"}`}>
+            <n.icon className="h-4 w-4" />
+            <span className="flex-1">{n.label}</span>
+            {badge > 0 && (
+              <span
+                role="status"
+                aria-live="polite"
+                aria-label={`${badge} ${badge === 1 ? "nova mensagem de suporte" : "novas mensagens de suporte"}`}
+                className="ml-auto inline-flex min-w-[20px] h-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground"
+              >
+                <span aria-hidden="true">{badge > 9 ? "9+" : badge}</span>
+              </span>
+            )}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+
+  const renderFooter = (onNavigate?: () => void) => (
+    <div className="p-3 border-t space-y-2">
+      <div className="flex items-center justify-between px-1">
+        <span className="text-xs text-muted-foreground">Tema</span>
+        <ThemeToggle />
+      </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="w-full justify-between">
+            <span className="truncate text-sm">{activeEst?.name}</span>
+            <ChevronDown className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuItem asChild><Link to="/l/$slug" params={{ slug: activeEst!.slug }} onClick={onNavigate}>Ver página pública</Link></DropdownMenuItem>
+          <DropdownMenuItem asChild><Link to="/lgpd" onClick={onNavigate}><Shield className="mr-2 h-4 w-4" />Meus Dados (LGPD)</Link></DropdownMenuItem>
+          {adminStatus?.isAdmin && (
+            <DropdownMenuItem asChild><Link to="/admin" onClick={onNavigate}><Shield className="mr-2 h-4 w-4" />Painel do administrador</Link></DropdownMenuItem>
+          )}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => { onNavigate?.(); signOut(); }}><LogOut className="mr-2 h-4 w-4" />Sair</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+
+  const closeMobile = () => setMobileOpen(false);
+
   return (
     <div className="min-h-screen bg-muted/30 flex">
       <aside className="hidden md:flex w-64 shrink-0 flex-col border-r bg-card">
         <div className="p-5 border-b" data-tour="sidebar-logo"><Logo /></div>
-        <nav className="flex-1 p-3 space-y-1">
-          {nav.map((n) => {
-            const active = n.exact ? pathname === n.to : pathname.startsWith(n.to);
-            const badge = n.to === "/suporte" && unreadSupport > 0 ? unreadSupport : 0;
-            return (
-              <Link key={n.to} to={n.to} data-tour={`nav-${n.to}`} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${active ? "bg-primary-soft text-primary" : "text-muted-foreground hover:bg-muted"}`}>
-                <n.icon className="h-4 w-4" />
-                <span className="flex-1">{n.label}</span>
-                {badge > 0 && (
-                  <span
-                    role="status"
-                    aria-live="polite"
-                    aria-label={`${badge} ${badge === 1 ? "nova mensagem de suporte" : "novas mensagens de suporte"}`}
-                    className="ml-auto inline-flex min-w-[20px] h-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground"
-                  >
-                    <span aria-hidden="true">{badge > 9 ? "9+" : badge}</span>
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="p-3 border-t space-y-2">
-          <div className="flex items-center justify-between px-1">
-            <span className="text-xs text-muted-foreground">Tema</span>
-            <ThemeToggle />
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="w-full justify-between">
-                <span className="truncate text-sm">{activeEst?.name}</span>
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem asChild><Link to="/l/$slug" params={{ slug: activeEst!.slug }}>Ver página pública</Link></DropdownMenuItem>
-              <DropdownMenuItem asChild><Link to="/lgpd"><Shield className="mr-2 h-4 w-4" />Meus Dados (LGPD)</Link></DropdownMenuItem>
-              {adminStatus?.isAdmin && (
-                <DropdownMenuItem asChild><Link to="/admin"><Shield className="mr-2 h-4 w-4" />Painel do administrador</Link></DropdownMenuItem>
-              )}
-              <DropdownMenuSeparator />
-
-              <DropdownMenuItem onClick={signOut}><LogOut className="mr-2 h-4 w-4" />Sair</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        {renderNav()}
+        {renderFooter()}
       </aside>
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="md:hidden flex items-center justify-between p-3 border-b bg-card">
-          <Logo />
+        <header className="md:hidden flex items-center justify-between p-3 border-b bg-card sticky top-0 z-30">
+          <div className="flex items-center gap-2">
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetTrigger asChild>
+                <Button size="icon" variant="ghost" aria-label="Abrir menu"><Menu className="h-5 w-5" /></Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 w-72 flex flex-col">
+                <VisuallyHidden><SheetTitle>Menu de navegação</SheetTitle></VisuallyHidden>
+                <div className="p-5 border-b"><Logo /></div>
+                {renderNav(closeMobile)}
+                {renderFooter(closeMobile)}
+              </SheetContent>
+            </Sheet>
+            <Logo />
+          </div>
           <div className="flex items-center gap-1">
             <ThemeToggle />
-            <Button size="icon" variant="ghost" aria-label="Sair" onClick={signOut}><LogOut className="h-4 w-4" /></Button>
           </div>
         </header>
         <main className="flex-1 p-4 md:p-8 max-w-6xl w-full mx-auto">
           <Outlet />
         </main>
-        <nav className="md:hidden grid grid-cols-5 border-t bg-card">
-          {nav.slice(0, 5).map((n) => {
-            const active = n.exact ? pathname === n.to : pathname.startsWith(n.to);
-            return (
-              <Link key={n.to} to={n.to} className={`flex flex-col items-center gap-1 py-2 text-[10px] ${active ? "text-primary" : "text-muted-foreground"}`}>
-                <n.icon className="h-4 w-4" /> {n.label}
-              </Link>
-            );
-          })}
-        </nav>
       </div>
+
       <GuidedTour steps={MERCHANT_TOUR_STEPS} storageKey={`fidelize_tour_v1_${activeEst?.id ?? "user"}`} />
     </div>
   );
