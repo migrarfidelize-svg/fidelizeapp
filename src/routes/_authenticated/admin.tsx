@@ -82,6 +82,7 @@ function AdminLayout() {
       icon: Megaphone,
       items: [
         { to: "/admin/alertas", label: "Alertas", icon: Bell },
+        { to: "/admin/avaliacoes", label: "Avaliações", icon: Star },
         { to: "/admin/auditoria", label: "Auditoria", icon: FileClock },
         { to: "/admin/suporte", label: "Suporte", icon: LifeBuoy },
       ],
