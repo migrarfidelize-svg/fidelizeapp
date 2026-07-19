@@ -4,14 +4,65 @@ import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { ArrowRight, QrCode, Smartphone, ShieldCheck, BarChart3, Sparkles, Coffee, Scissors, Pizza, ShoppingBag, Wrench, IceCream, Store, PawPrint, Check } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+
+const SITE_URL = "https://warm-hug-genie.lovable.app";
+const PAGE_TITLE = "Fidelize — Cartão fidelidade digital para clientes fiéis";
+const PAGE_DESC = "Crie cartões fidelidade digitais com QR Code, painel de análise em tempo real e campanhas que fazem seus clientes voltarem sempre. Comece grátis hoje.";
+
+const FAQ_ITEMS: Array<[string, string]> = [
+  ["Meu cliente precisa baixar um app?", "Não. Tudo funciona direto pelo navegador do celular. Ele escaneia o QR Code, informa nome e telefone e já sai com o cartão pronto."],
+  ["Como impedir que o cliente carimbe sozinho?", "Somente sua equipe autenticada pode adicionar carimbos. Cada ação fica registrada com data, hora e nome do funcionário responsável."],
+  ["Posso cancelar quando quiser?", "Sim. Cancele a qualquer momento, sem multa. Seus dados ficam preservados caso queira voltar."],
+  ["Posso ter mais de uma campanha?", "Sim, a partir do plano Inicial. No Profissional você tem até 5 campanhas ativas simultaneamente."],
+  ["Funciona sem internet do cliente?", "No momento do carimbo, precisamos de internet. Mas a experiência é super leve — abre rapidinho em qualquer 3G."],
+];
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Fidelize — Transforme visitantes em clientes fiéis" },
-      { name: "description", content: "Cartão fidelidade digital, QR Code e painel de análise. Seus clientes voltam mais vezes — sem app, sem cartão de papel." },
+      { title: PAGE_TITLE },
+      { name: "description", content: PAGE_DESC },
+      { name: "keywords", content: "cartão fidelidade digital, programa de fidelidade, QR Code, fidelização de clientes, PME, cafeteria, barbearia" },
+      { property: "og:title", content: PAGE_TITLE },
+      { property: "og:description", content: PAGE_DESC },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: `${SITE_URL}/` },
+      { property: "og:site_name", content: "Fidelize" },
+      { property: "og:locale", content: "pt_BR" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: PAGE_TITLE },
+      { name: "twitter:description", content: PAGE_DESC },
+    ],
+    links: [{ rel: "canonical", href: `${SITE_URL}/` }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            { "@type": "Organization", name: "Fidelize", url: SITE_URL, logo: `${SITE_URL}/favicon.ico` },
+            { "@type": "WebSite", name: "Fidelize", url: SITE_URL, inLanguage: "pt-BR" },
+            {
+              "@type": "SoftwareApplication",
+              name: "Fidelize",
+              applicationCategory: "BusinessApplication",
+              operatingSystem: "Web",
+              offers: { "@type": "Offer", price: "0", priceCurrency: "BRL" },
+            },
+            {
+              "@type": "FAQPage",
+              mainEntity: FAQ_ITEMS.map(([q, a]) => ({
+                "@type": "Question",
+                name: q,
+                acceptedAnswer: { "@type": "Answer", text: a },
+              })),
+            },
+          ],
+        }),
+      },
     ],
   }),
   component: Landing,
@@ -21,15 +72,17 @@ function Landing() {
   return (
     <div className="min-h-dvh bg-background text-foreground">
       <SiteHeader />
-      <Hero />
-      <Segments />
-      <HowItWorks />
-      <Benefits />
-      <Comparison />
-      <Examples />
-      <Pricing />
-      <FAQ />
-      <CTA />
+      <main>
+        <Hero />
+        <Segments />
+        <HowItWorks />
+        <Benefits />
+        <Comparison />
+        <Examples />
+        <Pricing />
+        <FAQ />
+        <CTA />
+      </main>
       <SiteFooter />
     </div>
   );
@@ -48,6 +101,7 @@ function SiteHeader() {
           <a href="#faq" className="hover:text-foreground">Dúvidas</a>
         </nav>
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           {session ? (
             <Button asChild><Link to="/app">Meu painel</Link></Button>
           ) : (
@@ -285,19 +339,12 @@ function Pricing() {
 }
 
 function FAQ() {
-  const qs = [
-    ["Meu cliente precisa baixar um app?", "Não. Tudo funciona direto pelo navegador do celular. Ele escaneia o QR Code, informa nome e telefone e já sai com o cartão pronto."],
-    ["Como impedir que o cliente carimbe sozinho?", "Somente sua equipe autenticada pode adicionar carimbos. Cada ação fica registrada com data, hora e nome do funcionário responsável."],
-    ["Posso cancelar quando quiser?", "Sim. Cancele a qualquer momento, sem multa. Seus dados ficam preservados caso queira voltar."],
-    ["Posso ter mais de uma campanha?", "Sim, a partir do plano Inicial. No Profissional você tem até 5 campanhas ativas simultaneamente."],
-    ["Funciona sem internet do cliente?", "No momento do carimbo, precisamos de internet. Mas a experiência é super leve — abre rapidinho em qualquer 3G."],
-  ];
   return (
     <section id="faq" className="border-y bg-muted/40 py-24">
       <div className="mx-auto max-w-3xl px-4">
         <h2 className="text-center font-display text-4xl font-bold">Dúvidas frequentes</h2>
         <Accordion type="single" collapsible className="mt-10">
-          {qs.map(([q, a]) => (
+          {FAQ_ITEMS.map(([q, a]) => (
             <AccordionItem key={q} value={q}>
               <AccordionTrigger className="text-left font-medium">{q}</AccordionTrigger>
               <AccordionContent className="text-muted-foreground">{a}</AccordionContent>
