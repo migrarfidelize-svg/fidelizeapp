@@ -274,6 +274,7 @@ const FEATURE_LABELS: Record<string, string> = {
   multi_units: "Múltiplas unidades",
   email_marketing: "E-mail marketing",
   whatsapp_notifications: "Notificações via WhatsApp",
+  public_reviews: "Avaliações públicas de atendimento (QR + página)",
 };
 
 export async function assertFeature(supabase: any, establishmentId: string, featureKey: string) {

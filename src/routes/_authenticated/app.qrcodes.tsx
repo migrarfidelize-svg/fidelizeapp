@@ -20,6 +20,9 @@ import { jsPDF } from "jspdf";
 import { PromoPoster, FORMATS, SEGMENT_LABEL, type PromoConfig, type PromoFormat, type Segment } from "@/components/PromoPoster";
 import { LogoUploadButton } from "@/components/LogoUploadButton";
 import { LoadingSkeleton } from "@/components/states";
+import { useMyFeature } from "@/hooks/useMyFeature";
+import { Link } from "@tanstack/react-router";
+import { Lock } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app/qrcodes")({
   head: () => ({ meta: [{ title: "Divulgação — Fidelize" }] }),
@@ -240,6 +243,8 @@ function QRCodes() {
   const activeCampaign = campaigns?.find((c) => c.active) ?? campaigns?.[0];
   type QrTarget = "linktree" | "review";
   const [qrTarget, setQrTarget] = useState<QrTarget>("linktree");
+  const { allowed: reviewsAllowed } = useMyFeature(est?.id, "public_reviews");
+  useEffect(() => { if (!reviewsAllowed && qrTarget === "review") setQrTarget("linktree"); }, [reviewsAllowed, qrTarget]);
   const targetPath = qrTarget === "review" ? "avaliar" : "l";
   const publicUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/${targetPath}/${est.slug}` : "";
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
@@ -659,11 +664,20 @@ function QRCodes() {
           </button>
           <button
             type="button"
-            onClick={() => setQrTarget("review")}
-            className={`rounded-lg border px-3 py-2.5 text-left transition ${qrTarget === "review" ? "border-primary bg-primary-soft text-primary" : "border-border hover:border-primary/40"}`}
+            onClick={() => {
+              if (!reviewsAllowed) { toast.error("Avaliações públicas não estão incluídas no seu plano. Faça upgrade em /app/planos."); return; }
+              setQrTarget("review");
+            }}
+            className={`relative rounded-lg border px-3 py-2.5 text-left transition ${qrTarget === "review" ? "border-primary bg-primary-soft text-primary" : "border-border hover:border-primary/40"} ${!reviewsAllowed ? "opacity-70" : ""}`}
+            title={!reviewsAllowed ? "Recurso exclusivo dos planos superiores" : undefined}
           >
-            <div className="text-sm font-semibold">Avaliar atendimento</div>
-            <div className="text-[11px] text-muted-foreground truncate">/avaliar/{est?.slug ?? "sua-empresa"}</div>
+            <div className="text-sm font-semibold flex items-center gap-1.5">
+              Avaliar atendimento
+              {!reviewsAllowed && <Lock className="h-3 w-3" />}
+            </div>
+            <div className="text-[11px] text-muted-foreground truncate">
+              {reviewsAllowed ? `/avaliar/${est?.slug ?? "sua-empresa"}` : <>Faça upgrade em <Link to="/app/planos" className="underline">Planos</Link></>}
+            </div>
           </button>
         </div>
       </div>

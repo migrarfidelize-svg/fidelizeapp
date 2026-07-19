@@ -23,7 +23,9 @@ import {
 } from "@/lib/public-reviews.functions";
 import { MerchantReplyDialog } from "@/components/MerchantReplyDialog";
 import { formatDate } from "@/lib/format";
-import { Trash2, Plus, ExternalLink as ExtLink, AlertTriangle, TrendingDown, Search, CheckCircle2 } from "lucide-react";
+import { Trash2, Plus, ExternalLink as ExtLink, AlertTriangle, TrendingDown, Search, CheckCircle2, Lock, Sparkles } from "lucide-react";
+import { useMyFeature } from "@/hooks/useMyFeature";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/app/avaliacoes")({
   head: () => ({ meta: [{ title: "Avaliações — Fidelize" }] }),
@@ -44,8 +46,38 @@ function Page() {
   const getEsts = useServerFn(getMyEstablishments);
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
   const est = memberships?.[0]?.establishment as { id: string; name: string; slug: string } | undefined;
+  const { allowed, isLoading: featLoading } = useMyFeature(est?.id, "public_reviews");
 
   if (!est) return <div className="p-8 text-muted-foreground">Carregando…</div>;
+
+  if (!featLoading && !allowed) {
+    return (
+      <div className="mx-auto max-w-2xl p-4 md:p-8">
+        <Card className="border-primary/30">
+          <CardContent className="p-8 text-center space-y-4">
+            <div className="mx-auto h-14 w-14 rounded-full bg-primary-soft grid place-items-center">
+              <Lock className="h-7 w-7 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">Avaliações de atendimento</h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Este recurso é opcional e não está incluído no seu plano atual. Faça upgrade para publicar um formulário de avaliação, gerar QR Code exclusivo, coletar feedback dos clientes e responder publicamente.
+              </p>
+            </div>
+            <ul className="text-sm text-left space-y-1 max-w-md mx-auto text-muted-foreground">
+              <li className="flex gap-2"><Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5" /> Página pública /avaliar/{est.slug}</li>
+              <li className="flex gap-2"><Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5" /> QR Code dedicado para balcão e recibos</li>
+              <li className="flex gap-2"><Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5" /> Inbox de respostas, alertas de nota baixa e insights por pergunta</li>
+              <li className="flex gap-2"><Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5" /> Resposta pública do lojista visível na página</li>
+            </ul>
+            <Button asChild size="lg" className="mt-2">
+              <Link to="/app/planos">Ver planos disponíveis</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-4 md:p-8">

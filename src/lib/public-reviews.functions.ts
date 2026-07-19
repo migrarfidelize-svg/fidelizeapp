@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createHash } from "crypto";
 import type { Database } from "@/integrations/supabase/types";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { assertFeature } from "@/lib/plans.functions";
 
 function publicClient() {
   const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
@@ -294,6 +295,7 @@ export const saveMerchantReviewForm = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: z.infer<typeof formSaveSchema>) => formSaveSchema.parse(d))
   .handler(async ({ data, context }) => {
+    await assertFeature(context.supabase, data.establishmentId, "public_reviews");
     const formId = await ensureForm(
       context.supabase as unknown as ReturnType<typeof publicClient>,
       data.establishmentId,
@@ -327,6 +329,7 @@ export const saveRatingOptions = createServerFn({ method: "POST" })
       options: z.array(optionSchema).min(1).max(5),
     }).parse(d))
   .handler(async ({ data, context }) => {
+    await assertFeature(context.supabase, data.establishmentId, "public_reviews");
     // authorize: options belong to form of that establishment
     const { data: form } = await context.supabase
       .from("review_forms")
@@ -367,6 +370,7 @@ export const upsertReviewQuestion = createServerFn({ method: "POST" })
   .inputValidator((d: { establishmentId: string; question: z.infer<typeof questionUpsertSchema> }) =>
     z.object({ establishmentId: z.string().uuid(), question: questionUpsertSchema }).parse(d))
   .handler(async ({ data, context }) => {
+    await assertFeature(context.supabase, data.establishmentId, "public_reviews");
     const { data: form } = await context.supabase
       .from("review_forms")
       .select("id")
