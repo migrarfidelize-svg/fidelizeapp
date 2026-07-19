@@ -3,6 +3,7 @@ import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-
 import { useEffect } from "react";
 import { getCardByToken } from "@/lib/loyalty.functions";
 import { LoyaltyVoucher } from "@/components/LoyaltyVoucher";
+import { WalletButtons } from "@/components/WalletButtons";
 import { formatDate } from "@/lib/format";
 import { Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -95,6 +96,8 @@ function CustomerCard() {
             Você ainda não tem cartões ativos neste estabelecimento.
           </div>
         )}
+
+        {cards.length > 0 && <WalletButtons token={token} />}
 
         {/* History */}
         <section className="mt-8 rounded-3xl border bg-card/70 p-5 backdrop-blur">
