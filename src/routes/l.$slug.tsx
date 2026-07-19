@@ -127,6 +127,9 @@ function PublicPage() {
             </div>
           )}
         </div>
+        <div className="mt-6">
+          <PublicRatingBlock slug={slug} source="linktree" />
+        </div>
         <div className="text-center mt-6 text-xs text-muted-foreground"><Link to="/">Crie o cartão fidelidade do seu negócio · Fidelize</Link></div>
       </div>
     </div>
