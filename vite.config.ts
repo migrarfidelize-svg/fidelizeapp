@@ -20,6 +20,7 @@ export default defineConfig({
       filename: "sw.js",
       manifest: false, // we ship our own public/manifest.webmanifest
       workbox: {
+        importScripts: ["/sw-push.js"],
         clientsClaim: true,
         skipWaiting: true,
         cleanupOutdatedCaches: true,
