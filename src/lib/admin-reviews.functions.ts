@@ -212,11 +212,12 @@ export const adminDeleteReview = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     await supabaseAdmin.from("audit_logs").insert({
-      actor_id: userId,
+      user_id: userId,
+      establishment_id: r.establishment_id,
       action: "review.delete",
-      target_type: "customer_review",
-      target_id: data.reviewId,
-      metadata: { establishment_id: r.establishment_id, reason: data.reason ?? null },
+      entity_type: "customer_review",
+      entity_id: data.reviewId,
+      metadata: { reason: data.reason ?? null },
     });
 
     return { ok: true };
