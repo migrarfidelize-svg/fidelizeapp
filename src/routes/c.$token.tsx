@@ -5,6 +5,7 @@ import { getCardByToken } from "@/lib/loyalty.functions";
 import { LoyaltyVoucher } from "@/components/LoyaltyVoucher";
 import { InstallAppButton } from "@/components/InstallAppButton";
 import { OfflineBanner, OfflineBadge, RequiresOnlineAlert } from "@/components/OfflineIndicator";
+import { PushOptIn } from "@/components/PushOptIn";
 import { formatDate } from "@/lib/format";
 import { Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -103,12 +104,13 @@ function CustomerCard() {
         )}
 
         {cards.length > 0 && (
-          <div className="mt-3 space-y-2">
+          <div className="mt-3 space-y-3">
             <InstallAppButton label={`Instalar ${est.name} como app`} />
             <RequiresOnlineAlert
               message="A instalação como app precisa carregar recursos da internet. Volte assim que estiver online."
               onRetry={() => qc.invalidateQueries({ queryKey: ["card", token] })}
             />
+            <PushOptIn token={token} />
           </div>
         )}
 
