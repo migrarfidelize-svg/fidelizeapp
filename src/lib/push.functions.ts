@@ -232,3 +232,175 @@ export const broadcastPush = createServerFn({ method: "POST" })
     }
     return { sent, failed, total: subs?.length ?? 0 };
   });
+
+// ============================================================
+// SUPER ADMIN
+// ============================================================
+
+async function assertSuperAdmin(ctx: { supabase: any; userId: string }) {
+  const { data } = await ctx.supabase.rpc("is_super_admin", { _user: ctx.userId });
+  if (!data) throw new Error("Acesso restrito ao super administrador.");
+}
+
+/** Global overview of push subscriptions and delivery stats. */
+export const adminPushOverview = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertSuperAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
+
+    const [subsAll, subsActive, logs30, ests] = await Promise.all([
+      supabaseAdmin.from("push_subscriptions").select("id", { count: "exact", head: true }),
+      supabaseAdmin
+        .from("push_subscriptions")
+        .select("id", { count: "exact", head: true })
+        .eq("active", true),
+      supabaseAdmin
+        .from("push_logs")
+        .select("id, status, establishment_id, created_at")
+        .gte("created_at", since),
+      supabaseAdmin.from("establishments").select("id, name").eq("active", true).order("name"),
+    ]);
+
+    const byEst = new Map<string, { est_id: string; sent: number; failed: number; expired: number }>();
+    for (const l of logs30.data ?? []) {
+      const k = l.establishment_id ?? "unknown";
+      const cur = byEst.get(k) ?? { est_id: k, sent: 0, failed: 0, expired: 0 };
+      if (l.status === "sent") cur.sent++;
+      else if (l.status === "expired") cur.expired++;
+      else cur.failed++;
+      byEst.set(k, cur);
+    }
+
+    // active subs per establishment
+    const { data: perEst } = await supabaseAdmin
+      .from("push_subscriptions")
+      .select("establishment_id")
+      .eq("active", true);
+    const subsPerEst = new Map<string, number>();
+    for (const r of perEst ?? []) {
+      const k = r.establishment_id ?? "unknown";
+      subsPerEst.set(k, (subsPerEst.get(k) ?? 0) + 1);
+    }
+
+    const estMap = new Map((ests.data ?? []).map((e) => [e.id, e.name] as const));
+    const breakdown = Array.from(new Set([...byEst.keys(), ...subsPerEst.keys()]))
+      .map((id) => ({
+        establishment_id: id,
+        establishment_name: estMap.get(id) ?? "—",
+        active_subs: subsPerEst.get(id) ?? 0,
+        sent: byEst.get(id)?.sent ?? 0,
+        failed: byEst.get(id)?.failed ?? 0,
+        expired: byEst.get(id)?.expired ?? 0,
+      }))
+      .sort((a, b) => b.active_subs - a.active_subs);
+
+    const totals = {
+      total_subs: subsAll.count ?? 0,
+      active_subs: subsActive.count ?? 0,
+      sent_30d: (logs30.data ?? []).filter((l) => l.status === "sent").length,
+      failed_30d: (logs30.data ?? []).filter((l) => l.status !== "sent").length,
+    };
+
+    return { totals, breakdown, establishments: ests.data ?? [] };
+  });
+
+/** Recent push logs across the platform, optionally scoped. */
+export const adminListPushLogs = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        establishment_id: z.string().uuid().optional(),
+        limit: z.number().int().min(1).max(500).optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    let q = supabaseAdmin
+      .from("push_logs")
+      .select(
+        "id, title, body, url, status, status_code, error, created_at, establishment_id, customer_id",
+      )
+      .order("created_at", { ascending: false })
+      .limit(data.limit ?? 150);
+    if (data.establishment_id) q = q.eq("establishment_id", data.establishment_id);
+    const { data: rows, error } = await q;
+    if (error) throw error;
+    // enrich with establishment names
+    const ids = Array.from(new Set((rows ?? []).map((r) => r.establishment_id).filter(Boolean))) as string[];
+    let names = new Map<string, string>();
+    if (ids.length) {
+      const { data: est } = await supabaseAdmin.from("establishments").select("id, name").in("id", ids);
+      names = new Map((est ?? []).map((e) => [e.id, e.name] as const));
+    }
+    return (rows ?? []).map((r) => ({
+      ...r,
+      establishment_name: r.establishment_id ? names.get(r.establishment_id) ?? "—" : "—",
+    }));
+  });
+
+/** Super admin broadcast: to all customers, or to a chosen set of establishments. */
+export const adminBroadcastPush = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        title: z.string().min(2).max(80),
+        body: z.string().max(200).optional(),
+        url: z.string().url().optional(),
+        establishment_ids: z.array(z.string().uuid()).optional(), // empty/undefined = all
+        respect_prefs: z.boolean().optional(), // default true
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    let q = supabaseAdmin
+      .from("push_subscriptions")
+      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, preferences")
+      .eq("active", true);
+    if (data.establishment_ids && data.establishment_ids.length > 0) {
+      q = q.in("establishment_id", data.establishment_ids);
+    }
+    const { data: subs } = await q;
+
+    const { sendPushToSub } = await import("@/lib/push.server");
+    const respect = data.respect_prefs !== false;
+    let sent = 0;
+    let failed = 0;
+    let skipped = 0;
+    for (const s of subs ?? []) {
+      const prefs = (s.preferences ?? {}) as Record<string, boolean>;
+      if (respect && prefs.campaign === false) {
+        skipped++;
+        continue;
+      }
+      const r = await sendPushToSub(s, {
+        title: data.title,
+        body: data.body,
+        url: data.url,
+        tag: "admin-broadcast",
+      });
+      await supabaseAdmin.from("push_logs").insert({
+        establishment_id: s.establishment_id,
+        subscription_id: s.id,
+        customer_id: s.customer_id,
+        title: data.title,
+        body: data.body ?? null,
+        url: data.url ?? null,
+        status: r.ok ? "sent" : r.status === 410 || r.status === 404 ? "expired" : "failed",
+        status_code: r.status ?? null,
+        error: r.error ?? null,
+      });
+      if (r.ok) sent++;
+      else failed++;
+    }
+    return { sent, failed, skipped, total: subs?.length ?? 0 };
+  });
