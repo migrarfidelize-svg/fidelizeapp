@@ -468,11 +468,20 @@ function BlockedByPlan({ days }: { days: number }) {
 
       <Card>
         <CardHeader className="space-y-3">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
             <CardTitle className="text-base">Tentativas bloqueadas</CardTitle>
-            <Button size="sm" variant="outline" onClick={exportCsv} disabled={!list.data || list.data.length === 0}>
-              <Download className="h-4 w-4 mr-1.5" /> Exportar CSV
-            </Button>
+            <div className="flex items-center gap-2">
+              <Select value={csvDelim} onValueChange={(v) => setCsvDelim(v as "," | ";")}>
+                <SelectTrigger className="w-[180px] h-8"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value=",">Separador: vírgula (,)</SelectItem>
+                  <SelectItem value=";">Separador: ponto e vírgula (;)</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button size="sm" variant="outline" onClick={exportCsv} disabled={!list.data || list.data.length === 0}>
+                <Download className="h-4 w-4 mr-1.5" /> Exportar CSV (filtros aplicados)
+              </Button>
+            </div>
           </div>
           <div className="grid gap-2 md:grid-cols-3">
             <div className="relative">
