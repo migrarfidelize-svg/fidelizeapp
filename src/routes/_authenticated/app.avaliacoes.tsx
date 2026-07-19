@@ -52,11 +52,19 @@ function Page() {
       </header>
 
       <Tabs defaultValue="feed" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="feed">Feed</TabsTrigger>
-          <TabsTrigger value="config">Configurações</TabsTrigger>
+        <TabsList className="flex-wrap">
+          <TabsTrigger value="feed">Voucher (pós-carimbo)</TabsTrigger>
+          <TabsTrigger value="public-inbox">Caixa (público)</TabsTrigger>
+          <TabsTrigger value="public-form">Formulário público</TabsTrigger>
+          <TabsTrigger value="public-ratings">Notas 1–5</TabsTrigger>
+          <TabsTrigger value="public-questions">Perguntas extras</TabsTrigger>
+          <TabsTrigger value="config">Config. voucher</TabsTrigger>
         </TabsList>
         <TabsContent value="feed"><Feed estId={est.id} /></TabsContent>
+        <TabsContent value="public-inbox"><PublicInbox estId={est.id} /></TabsContent>
+        <TabsContent value="public-form"><PublicFormTab estId={est.id} slug={est.slug} /></TabsContent>
+        <TabsContent value="public-ratings"><PublicRatingsTab estId={est.id} /></TabsContent>
+        <TabsContent value="public-questions"><PublicQuestionsTab estId={est.id} /></TabsContent>
         <TabsContent value="config"><Settings estId={est.id} /></TabsContent>
       </Tabs>
     </div>
