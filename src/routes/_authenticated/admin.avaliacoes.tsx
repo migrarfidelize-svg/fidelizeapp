@@ -387,13 +387,7 @@ function BlockedByPlan({ days }: { days: number }) {
   const [search, setSearch] = useState<string>("");
   const [searchDeb, setSearchDeb] = useState<string>("");
 
-  // debounce search
-  useState(() => { void searchDeb; return 0; });
-  // simple debounce with setTimeout
-  if (typeof window !== "undefined") {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    // handled via useEffect below
-  }
+
 
   const summary = useQuery({ queryKey: ["adm-gate-sum", days], queryFn: () => sumFn({ data: { days } }) });
   const list = useQuery({
