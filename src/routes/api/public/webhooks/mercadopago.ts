@@ -220,7 +220,7 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
           null;
         const action: string | null = body?.action ?? null;
 
-        const signatureValid = verifySignature({
+        const signatureValid = verifyMercadoPagoSignature({
           signatureHeader, requestId, dataId, secret,
         });
 
