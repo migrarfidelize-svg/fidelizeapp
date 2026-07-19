@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield, LifeBuoy, BookOpen, Package, Receipt } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { GuidedTour, type TourStep } from "@/components/GuidedTour";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const MERCHANT_TOUR_STEPS: TourStep[] = [
   { target: "[data-tour='sidebar-logo']", title: "Bem-vindo à Fidelize!", description: "Vamos dar um tour rápido pelas áreas essenciais da plataforma. Leva menos de 1 minuto.", placement: "center" },
