@@ -2,15 +2,27 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { adminGetPaymentSettings, adminUpdatePaymentSettings, adminTestMercadoPagoConnection } from "@/lib/mercadopago.functions";
+import {
+  adminGetPaymentSettings,
+  adminUpdatePaymentSettings,
+  adminTestMercadoPagoConnection,
+  adminGetWebhookGuide,
+  adminListWebhookLogs,
+  adminValidateWebhookUrl,
+} from "@/lib/mercadopago.functions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Copy, Loader2, CheckCircle2, XCircle, AlertCircle, ExternalLink } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Copy, Loader2, CheckCircle2, XCircle, AlertCircle, ExternalLink, RefreshCw, ShieldCheck, Radio } from "lucide-react";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/_authenticated/admin/pagamentos")({
   component: AdminPaymentsPage,
