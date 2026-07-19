@@ -4,18 +4,22 @@
       <stop offset="0" stop-color="#8B5CF6"/>
       <stop offset="1" stop-color="#6D28D9"/>
     </linearGradient>
+    <linearGradient id="fzs" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="1"/>
+      <stop offset="0.45" stop-color="#ffffff" stop-opacity="0.92"/>
+      <stop offset="1" stop-color="#E9D5FF" stop-opacity="0.85"/>
+    </linearGradient>
   </defs>
   <rect width="512" height="512" rx="112" ry="112" fill="url(#fzg)"/>
-  <!-- Return arc around the F (3/4 circle with arrowhead pointing to the F) -->
-  <g fill="none" stroke="#ffffff" stroke-width="28" stroke-linecap="round">
-    <path d="M 384 256 A 128 128 0 1 1 256 128" opacity="0.55"/>
-  </g>
-  <!-- Arrow head -->
-  <path d="M 236 108 L 268 128 L 236 148 Z" fill="#ffffff" opacity="0.85"/>
-  <!-- F letter -->
-  <g fill="#ffffff">
+  <path d="M 384 256 A 128 128 0 1 1 256 128" fill="none" stroke="url(#fzs)" stroke-width="28" stroke-linecap="round" opacity="0.75"/>
+  <path d="M 236 108 L 268 128 L 236 148 Z" fill="url(#fzs)"/>
+  <g fill="url(#fzs)">
     <rect x="196" y="156" width="40" height="216" rx="12"/>
     <rect x="196" y="156" width="140" height="40" rx="12"/>
     <rect x="196" y="244" width="104" height="36" rx="10"/>
+  </g>
+  <g fill="#ffffff" opacity="0.45" style="mix-blend-mode:overlay">
+    <rect x="200" y="160" width="14" height="208" rx="7"/>
+    <rect x="200" y="160" width="132" height="10" rx="5"/>
   </g>
 </svg>
