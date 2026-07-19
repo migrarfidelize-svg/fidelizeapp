@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { getCardByToken } from "@/lib/loyalty.functions";
 import { LoyaltyVoucher } from "@/components/LoyaltyVoucher";
 import { InstallAppButton } from "@/components/InstallAppButton";
+import { OfflineBanner, OfflineBadge, RequiresOnlineAlert } from "@/components/OfflineIndicator";
 import { formatDate } from "@/lib/format";
 import { Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,6 +36,7 @@ function CustomerCard() {
   const { token } = Route.useParams();
   const { data } = useSuspenseQuery(opts(token));
   const qc = useQueryClient();
+  
   const d = data!;
   const est = d.establishment!;
   const customerId = d.customer.id;
@@ -71,10 +73,13 @@ function CustomerCard() {
       }}
     >
       <div className="mx-auto max-w-xl px-3 pt-6 sm:px-6 sm:pt-10">
+        <OfflineBanner />
         {multi ? (
           <>
             <div className="mb-3 flex items-center justify-between px-2 text-xs text-muted-foreground">
-              <span className="font-semibold uppercase tracking-widest">Seus cartões</span>
+              <span className="flex items-center gap-2 font-semibold uppercase tracking-widest">
+                Seus cartões <OfflineBadge />
+              </span>
               <span>{cards.length} campanhas · deslize →</span>
             </div>
             <div className="-mx-3 flex snap-x snap-mandatory gap-4 overflow-x-auto px-3 pb-4 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -98,8 +103,12 @@ function CustomerCard() {
         )}
 
         {cards.length > 0 && (
-          <div className="mt-3">
+          <div className="mt-3 space-y-2">
             <InstallAppButton label={`Instalar ${est.name} como app`} />
+            <RequiresOnlineAlert
+              message="A instalação como app precisa carregar recursos da internet. Volte assim que estiver online."
+              onRetry={() => qc.invalidateQueries({ queryKey: ["card", token] })}
+            />
           </div>
         )}
 
