@@ -72,15 +72,17 @@ function Landing() {
   return (
     <div className="min-h-dvh bg-background text-foreground">
       <SiteHeader />
-      <Hero />
-      <Segments />
-      <HowItWorks />
-      <Benefits />
-      <Comparison />
-      <Examples />
-      <Pricing />
-      <FAQ />
-      <CTA />
+      <main>
+        <Hero />
+        <Segments />
+        <HowItWorks />
+        <Benefits />
+        <Comparison />
+        <Examples />
+        <Pricing />
+        <FAQ />
+        <CTA />
+      </main>
       <SiteFooter />
     </div>
   );
