@@ -300,9 +300,12 @@ function AdminPlansPage() {
 
             {reconcileResult && (
               <div className="rounded-lg border p-3 space-y-3">
-                <div className="flex gap-4 text-xs">
+                <div className="flex gap-4 text-xs flex-wrap">
                   <span><strong>{reconcileResult.total_allowed}</strong> com acesso</span>
                   <span><strong>{reconcileResult.total_blocked}</strong> bloqueados</span>
+                  <span className={reconcileResult.divergence_count > 0 ? "text-destructive font-semibold" : ""}>
+                    <strong>{reconcileResult.divergence_count}</strong> divergências
+                  </span>
                   {!reconcileResult.dry_run && <span><strong>{reconcileResult.repaired_rows}</strong> linhas sincronizadas</span>}
                 </div>
                 <div>
@@ -313,6 +316,26 @@ function AdminPlansPage() {
                     ))}
                   </div>
                 </div>
+
+                {reconcileResult.divergence_count > 0 && (
+                  <div className="rounded border border-destructive/40 bg-destructive/5 p-2">
+                    <div className="text-xs font-semibold text-destructive mb-1 flex items-center gap-1">
+                      <AlertTriangle className="h-3.5 w-3.5" /> {reconcileResult.divergence_count} empresa(s) afetada(s) por divergência
+                    </div>
+                    <ul className="text-xs space-y-0.5">
+                      {reconcileResult.divergences.slice(0, 10).map((d: any) => (
+                        <li key={d.id}>
+                          <strong>{d.name}</strong> <span className="text-muted-foreground">/{d.slug}</span> — tier <code>{d.plan_tier}</code> — <em>{d.divergence === "orphan_tier" ? "tier órfão (plano não existe em plans)" : "sem linha em plan_features (fail-closed)"}</em>
+                        </li>
+                      ))}
+                      {reconcileResult.divergences.length > 10 && <li className="text-muted-foreground">…e mais {reconcileResult.divergences.length - 10}</li>}
+                    </ul>
+                    <div className="text-xs mt-1 text-muted-foreground">
+                      {reconcileResult.dry_run ? "Aplicar repair vai inserir as linhas faltantes de plan_features e disparar refresh nos clientes online." : "Repair aplicado — verifique novamente rodando um novo diagnóstico."}
+                    </div>
+                  </div>
+                )}
+
                 <div className="max-h-64 overflow-auto rounded border">
                   <table className="w-full text-xs">
                     <thead className="bg-muted sticky top-0">
@@ -321,15 +344,17 @@ function AdminPlansPage() {
                         <th className="px-2 py-1">Plano</th>
                         <th className="px-2 py-1">Ativa</th>
                         <th className="px-2 py-1">Feature</th>
+                        <th className="px-2 py-1">Status</th>
                       </tr>
                     </thead>
                     <tbody>
                       {reconcileResult.establishments.map((e: any) => (
-                        <tr key={e.id} className="border-t">
+                        <tr key={e.id} className={`border-t ${e.divergence ? "bg-destructive/5" : ""}`}>
                           <td className="px-2 py-1">{e.name} <span className="text-muted-foreground">/{e.slug}</span></td>
                           <td className="px-2 py-1"><Badge variant="outline">{e.plan_tier}</Badge></td>
                           <td className="px-2 py-1">{e.active ? "sim" : "não"}</td>
                           <td className="px-2 py-1">{e.feature_allowed ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> : <XCircle className="h-3.5 w-3.5 text-destructive" />}</td>
+                          <td className="px-2 py-1 text-[10px] uppercase text-destructive">{e.divergence ?? ""}</td>
                         </tr>
                       ))}
                     </tbody>
