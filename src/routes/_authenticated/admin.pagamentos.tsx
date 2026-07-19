@@ -140,8 +140,6 @@ function AdminPaymentsPage() {
 
       <WebhookLogsCard />
 
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader><CardTitle className="text-base">Status da conexão</CardTitle></CardHeader>
