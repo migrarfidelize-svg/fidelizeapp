@@ -415,7 +415,7 @@ export const listPublicReviewsInbox = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     let q = context.supabase
       .from("customer_reviews")
-      .select("id, rating, comment, customer_name, customer_phone, customer_email, order_reference, source, status, anonymous, internal_note, ticket_id, submitted_at, created_at, resolved_at")
+      .select("id, rating, comment, customer_name, customer_phone, customer_email, order_reference, source, status, anonymous, internal_note, ticket_id, submitted_at, created_at, resolved_at, merchant_reply, merchant_reply_at, public_hidden")
       .eq("establishment_id", data.establishmentId)
       .order("created_at", { ascending: false })
       .limit(data.limit ?? 100);
@@ -425,6 +425,86 @@ export const listPublicReviewsInbox = createServerFn({ method: "GET" })
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
     return rows ?? [];
+  });
+
+// ============ MERCHANT: reply publicly to a review ============
+export const replyPublicReview = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string; reply: string }) =>
+    z.object({
+      id: z.string().uuid(),
+      reply: z.string().trim().min(2, "Resposta muito curta").max(1500, "Máx 1500 caracteres"),
+    }).parse(d))
+  .handler(async ({ data, context }) => {
+    const clean = data.reply.replace(/<[^>]*>/g, "").replace(/[\u0000-\u001F\u007F]/g, "").trim();
+    if (!clean) throw new Error("Resposta inválida.");
+    const { data: row, error: fetchErr } = await context.supabase
+      .from("customer_reviews")
+      .select("id, establishment_id, review_form_id, customer_email, customer_name, rating")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (fetchErr || !row) throw new Error("Avaliação não encontrada.");
+
+    const { error } = await context.supabase
+      .from("customer_reviews")
+      .update({
+        merchant_reply: clean,
+        merchant_reply_at: new Date().toISOString(),
+        merchant_reply_by: context.userId,
+      })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("review_events").insert({
+      review_form_id: row.review_form_id,
+      review_id: row.id,
+      event_type: "merchant_replied",
+      meta: { by: context.userId, has_email: !!row.customer_email },
+    });
+    return { ok: true, has_email: !!row.customer_email };
+  });
+
+// ============ MERCHANT: toggle public visibility of a review ============
+export const togglePublicReviewVisibility = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string; hidden: boolean }) =>
+    z.object({ id: z.string().uuid(), hidden: z.boolean() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("customer_reviews")
+      .update({ public_hidden: data.hidden })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// ============ PUBLIC: recent reviews to show on /avaliar/{slug} ============
+export const getPublicReviewsList = createServerFn({ method: "GET" })
+  .inputValidator((d: { slug: string; limit?: number }) =>
+    z.object({ slug: z.string().min(1).max(80), limit: z.number().int().min(1).max(30).optional() }).parse(d))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: est } = await supabaseAdmin
+      .from("establishments").select("id").eq("slug", data.slug).maybeSingle();
+    if (!est) return [];
+    const { data: rows } = await supabaseAdmin
+      .from("customer_reviews")
+      .select("id, rating, comment, customer_name, anonymous, created_at, merchant_reply, merchant_reply_at")
+      .eq("establishment_id", est.id)
+      .eq("public_hidden", false)
+      .or("merchant_reply.not.is.null,rating.gte.4")
+      .order("created_at", { ascending: false })
+      .limit(data.limit ?? 10);
+    return (rows ?? []).map((r) => ({
+      id: r.id,
+      rating: r.rating,
+      comment: r.comment,
+      author: r.anonymous ? "Anônimo" : (r.customer_name || "Cliente"),
+      created_at: r.created_at,
+      merchant_reply: r.merchant_reply,
+      merchant_reply_at: r.merchant_reply_at,
+    }));
   });
 
 export const updatePublicReview = createServerFn({ method: "POST" })

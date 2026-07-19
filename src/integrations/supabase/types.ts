@@ -301,7 +301,11 @@ export type Database = {
           id: string
           internal_note: string | null
           ip_hash: string | null
+          merchant_reply: string | null
+          merchant_reply_at: string | null
+          merchant_reply_by: string | null
           order_reference: string | null
+          public_hidden: boolean
           rating: number
           resolved_at: string | null
           review_form_id: string
@@ -327,7 +331,11 @@ export type Database = {
           id?: string
           internal_note?: string | null
           ip_hash?: string | null
+          merchant_reply?: string | null
+          merchant_reply_at?: string | null
+          merchant_reply_by?: string | null
           order_reference?: string | null
+          public_hidden?: boolean
           rating: number
           resolved_at?: string | null
           review_form_id: string
@@ -353,7 +361,11 @@ export type Database = {
           id?: string
           internal_note?: string | null
           ip_hash?: string | null
+          merchant_reply?: string | null
+          merchant_reply_at?: string | null
+          merchant_reply_by?: string | null
           order_reference?: string | null
+          public_hidden?: boolean
           rating?: number
           resolved_at?: string | null
           review_form_id?: string
@@ -390,6 +402,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_reviews_merchant_reply_by_fkey"
+            columns: ["merchant_reply_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
