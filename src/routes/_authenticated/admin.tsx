@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock, UsersRound, Settings, Mail, FileText, ListChecks, LifeBuoy, Package, DollarSign, ChevronDown, Wallet, Megaphone, Cog, BookOpen } from "lucide-react";
 import { toast } from "sonner";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminLayout,
@@ -160,14 +161,21 @@ function AdminLayout() {
             );
           })}
         </nav>
-        <div className="p-3 border-t">
+        <div className="p-3 border-t space-y-2">
+          <div className="flex items-center justify-between px-1">
+            <span className="text-xs text-muted-foreground">Tema</span>
+            <ThemeToggle />
+          </div>
           <Link to="/app" className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"><ArrowLeft className="h-3 w-3" /> Voltar ao painel do lojista</Link>
         </div>
       </aside>
       <div className="flex-1 flex flex-col min-w-0">
         <header className="md:hidden flex items-center justify-between p-3 border-b bg-card">
           <div className="flex items-center gap-2"><Logo /><span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-primary-soft text-primary">Admin</span></div>
-          <Link to="/app" className="text-xs text-muted-foreground"><ArrowLeft className="h-4 w-4" /></Link>
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            <Link to="/app" className="text-xs text-muted-foreground" aria-label="Voltar"><ArrowLeft className="h-4 w-4" /></Link>
+          </div>
         </header>
         <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto"><Outlet /></main>
         <nav className="md:hidden grid grid-cols-5 border-t bg-card overflow-x-auto">

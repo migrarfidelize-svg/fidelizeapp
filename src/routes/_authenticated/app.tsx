@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield, LifeBuoy, BookOpen, Package, Receipt } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { GuidedTour, type TourStep } from "@/components/GuidedTour";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const MERCHANT_TOUR_STEPS: TourStep[] = [
   { target: "[data-tour='sidebar-logo']", title: "Bem-vindo à Fidelize!", description: "Vamos dar um tour rápido pelas áreas essenciais da plataforma. Leva menos de 1 minuto.", placement: "center" },
@@ -137,7 +138,11 @@ function AppLayout() {
             );
           })}
         </nav>
-        <div className="p-3 border-t">
+        <div className="p-3 border-t space-y-2">
+          <div className="flex items-center justify-between px-1">
+            <span className="text-xs text-muted-foreground">Tema</span>
+            <ThemeToggle />
+          </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="w-full justify-between">
@@ -161,7 +166,10 @@ function AppLayout() {
       <div className="flex-1 flex flex-col min-w-0">
         <header className="md:hidden flex items-center justify-between p-3 border-b bg-card">
           <Logo />
-          <Button size="icon" variant="ghost" aria-label="Sair" onClick={signOut}><LogOut className="h-4 w-4" /></Button>
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            <Button size="icon" variant="ghost" aria-label="Sair" onClick={signOut}><LogOut className="h-4 w-4" /></Button>
+          </div>
         </header>
         <main className="flex-1 p-4 md:p-8 max-w-6xl w-full mx-auto">
           <Outlet />
