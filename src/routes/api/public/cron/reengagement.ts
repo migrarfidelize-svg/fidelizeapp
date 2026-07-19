@@ -41,7 +41,7 @@ export const Route = createFileRoute("/api/public/cron/reengagement")({
                 .from("retention_dispatches")
                 .select("id")
                 .eq("customer_id", c.id)
-                .eq("dispatch_type", "reengagement")
+                .eq("kind", "reengagement")
                 .gte("created_at", cutoffIso)
                 .maybeSingle();
               if (recent) continue;
@@ -58,7 +58,7 @@ export const Route = createFileRoute("/api/public/cron/reengagement")({
               await supabaseAdmin.from("retention_dispatches").insert({
                 establishment_id: s.establishment_id,
                 customer_id: c.id,
-                dispatch_type: "reengagement",
+                kind: "reengagement",
                 channel: "push",
                 status: r.sent > 0 ? "sent" : "skipped",
                 meta: { sent: r.sent, days },

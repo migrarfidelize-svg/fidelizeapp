@@ -59,7 +59,7 @@ export const Route = createFileRoute("/api/public/cron/birthday")({
             await supabaseAdmin.from("retention_dispatches").insert({
               establishment_id: c.establishment_id,
               customer_id: c.id,
-              dispatch_type: "birthday",
+              kind: "birthday",
               channel: "push",
               status: r.sent > 0 ? "sent" : "skipped",
               meta: { sent: r.sent },
