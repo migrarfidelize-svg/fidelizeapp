@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Star, Search, Eye, EyeOff, Trash2, ShieldAlert, TrendingDown, TrendingUp, MessageSquare } from "lucide-react";
+import { Star, Search, Eye, EyeOff, Trash2, ShieldAlert, TrendingDown, TrendingUp, MessageSquare, Lock } from "lucide-react";
 import {
   adminReviewsOverview,
   adminReviewsRanking,
@@ -13,6 +13,7 @@ import {
   adminDeleteReview,
   adminListEstablishmentsMini,
 } from "@/lib/admin-reviews.functions";
+import { adminListFeatureGateEvents, adminFeatureGateSummary } from "@/lib/feature-gate.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
