@@ -473,5 +473,93 @@ export const getPublicReviewStats = createServerFn({ method: "GET" })
       bySource[r.source ?? "linktree"] = (bySource[r.source ?? "linktree"] ?? 0) + 1;
     });
     const pending = list.filter((r) => r.status === "new").length;
-    return { count, avg, dist, bySource, pending };
+    const lowRatingOpen = list.filter((r) => r.rating <= 2 && r.status !== "resolved" && r.status !== "archived").length;
+    return { count, avg, dist, bySource, pending, lowRatingOpen };
+  });
+
+// ============ INSIGHTS: breakdown by question and rating option ============
+export const getReviewInsights = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { establishmentId: string; days?: number }) =>
+    z.object({ establishmentId: z.string().uuid(), days: z.number().int().min(1).max(365).optional() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const since = new Date(Date.now() - (data.days ?? 30) * 86400_000).toISOString();
+    const { data: form } = await context.supabase
+      .from("review_forms").select("id").eq("establishment_id", data.establishmentId).maybeSingle();
+    if (!form) return { byRatingOption: [], byQuestion: [], insights: [] };
+
+    const [{ data: opts }, { data: qs }, { data: reviews }] = await Promise.all([
+      context.supabase.from("review_rating_options").select("rating, label").eq("review_form_id", form.id),
+      context.supabase.from("review_questions").select("id, question, question_type, choices").eq("review_form_id", form.id),
+      context.supabase.from("customer_reviews").select("id, rating").eq("establishment_id", data.establishmentId).gte("created_at", since),
+    ]);
+    const reviewIds = (reviews ?? []).map((r) => r.id);
+    const reviewRating = new Map((reviews ?? []).map((r) => [r.id as string, r.rating as number]));
+
+    const distByRating: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    (reviews ?? []).forEach((r) => { distByRating[r.rating] = (distByRating[r.rating] ?? 0) + 1; });
+    const byRatingOption = (opts ?? []).sort((a, b) => a.rating - b.rating).map((o) => ({
+      rating: o.rating, label: o.label, count: distByRating[o.rating] ?? 0,
+    }));
+
+    let answers: Array<{ review_id: string; question_id: string; answer_text: string | null; answer_number: number | null; answer_boolean: boolean | null }> = [];
+    if (reviewIds.length) {
+      const { data: ans } = await context.supabase
+        .from("review_answers")
+        .select("review_id, question_id, answer_text, answer_number, answer_boolean")
+        .in("review_id", reviewIds);
+      answers = ans ?? [];
+    }
+    const byQuestion = (qs ?? []).map((q) => {
+      const my = answers.filter((a) => a.question_id === q.id);
+      const ratings = my.map((a) => reviewRating.get(a.review_id) ?? 0).filter((n) => n > 0);
+      const avgRating = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+      const lowCount = ratings.filter((r) => r <= 2).length;
+      let breakdown: Array<{ key: string; count: number; avgRating: number }> = [];
+      const avgOf = (arr: typeof my) => {
+        const rs = arr.map((a) => reviewRating.get(a.review_id) ?? 0).filter((v) => v > 0);
+        return rs.length ? rs.reduce((s, v) => s + v, 0) / rs.length : 0;
+      };
+      if (q.question_type === "yes_no") {
+        const y = my.filter((a) => a.answer_boolean === true);
+        const n = my.filter((a) => a.answer_boolean === false);
+        breakdown = [
+          { key: "Sim", count: y.length, avgRating: avgOf(y) },
+          { key: "Não", count: n.length, avgRating: avgOf(n) },
+        ];
+      } else if (q.question_type === "choice") {
+        const counts = new Map<string, { count: number; ratings: number[] }>();
+        my.forEach((a) => {
+          const k = a.answer_text ?? "—";
+          const bucket = counts.get(k) ?? { count: 0, ratings: [] };
+          bucket.count++;
+          const r = reviewRating.get(a.review_id) ?? 0;
+          if (r > 0) bucket.ratings.push(r);
+          counts.set(k, bucket);
+        });
+        breakdown = Array.from(counts.entries()).map(([key, v]) => ({
+          key, count: v.count,
+          avgRating: v.ratings.length ? v.ratings.reduce((s, x) => s + x, 0) / v.ratings.length : 0,
+        })).sort((a, b) => b.count - a.count);
+      } else if (q.question_type === "stars" || q.question_type === "nps") {
+        const nums = my.map((a) => a.answer_number ?? 0).filter((n) => n > 0);
+        const avgN = nums.length ? nums.reduce((s, v) => s + v, 0) / nums.length : 0;
+        breakdown = [{ key: q.question_type === "nps" ? "NPS médio" : "Média", count: nums.length, avgRating: avgN }];
+      }
+      return {
+        id: q.id, question: q.question, type: q.question_type,
+        responses: my.length, avgRating, lowCount, breakdown,
+      };
+    });
+
+    const insights = byQuestion
+      .filter((q) => q.responses >= 3 && q.avgRating > 0)
+      .sort((a, b) => a.avgRating - b.avgRating)
+      .slice(0, 3)
+      .map((q) => ({
+        question: q.question, avgRating: q.avgRating,
+        lowCount: q.lowCount, responses: q.responses,
+      }));
+
+    return { byRatingOption, byQuestion, insights };
   });
