@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { getCardByToken } from "@/lib/loyalty.functions";
 import { LoyaltyVoucher } from "@/components/LoyaltyVoucher";
 import { InstallAppButton } from "@/components/InstallAppButton";
-import { OfflineBanner, OfflineBadge, RequiresOnlineAlert, useOnline } from "@/components/OfflineIndicator";
+import { OfflineBanner, OfflineBadge, RequiresOnlineAlert } from "@/components/OfflineIndicator";
 import { formatDate } from "@/lib/format";
 import { Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,7 +36,7 @@ function CustomerCard() {
   const { token } = Route.useParams();
   const { data } = useSuspenseQuery(opts(token));
   const qc = useQueryClient();
-  const online = useOnline();
+  
   const d = data!;
   const est = d.establishment!;
   const customerId = d.customer.id;
