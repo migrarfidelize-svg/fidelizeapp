@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createHash } from "crypto";
 import type { Database } from "@/integrations/supabase/types";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { assertFeature } from "@/lib/plans.functions";
 
 function publicClient() {
   const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
