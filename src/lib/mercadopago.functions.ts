@@ -427,7 +427,6 @@ export const adminUpdatePaymentSettings = createServerFn({ method: "POST" })
   });
 
 function publicWebhookUrl(): string {
-  const base = process.env.PUBLIC_APP_URL
-    ?? "https://project--6fbe0482-baab-4f96-abc8-c1c72bc2e46e.lovable.app";
-  return `${base.replace(/\/+$/, "")}/api/public/webhooks/mercadopago`;
+  const { getPublicAppUrl } = require("@/lib/app-url") as typeof import("@/lib/app-url");
+  return `${getPublicAppUrl()}/api/public/webhooks/mercadopago`;
 }
