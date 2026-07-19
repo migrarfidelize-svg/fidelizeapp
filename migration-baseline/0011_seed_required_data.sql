@@ -1,0 +1,2 @@
+-- 0011_seed_required_data.sql
+-- Extrair `plans` e `plan_features` da ORIGEM (ver MIGRATION_GUIDE §3).
