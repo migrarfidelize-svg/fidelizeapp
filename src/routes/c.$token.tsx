@@ -3,7 +3,6 @@ import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-
 import { useEffect } from "react";
 import { getCardByToken } from "@/lib/loyalty.functions";
 import { LoyaltyVoucher } from "@/components/LoyaltyVoucher";
-import { WalletButtons } from "@/components/WalletButtons";
 import { InstallAppButton } from "@/components/InstallAppButton";
 import { formatDate } from "@/lib/format";
 import { Clock } from "lucide-react";
