@@ -60,6 +60,8 @@ import { Route as AuthenticatedAdminPlanosIndexRouteImport } from './routes/_aut
 import { Route as SuporteSlugKbArticleRouteImport } from './routes/suporte.$slug.kb.$article'
 import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api/public/webhooks/mercadopago'
 import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/api/public/hooks/process-email-queue'
+import { Route as ApiPublicCronReengagementRouteImport } from './routes/api/public/cron/reengagement'
+import { Route as ApiPublicCronBirthdayRouteImport } from './routes/api/public/cron/birthday'
 import { Route as AuthenticatedSuporteTicketIdRouteImport } from './routes/_authenticated/suporte.ticket.$id'
 import { Route as AuthenticatedAdminSuporteIdRouteImport } from './routes/_authenticated/admin.suporte.$id'
 import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authenticated/admin.empresa.$id'
@@ -340,6 +342,17 @@ const ApiPublicHooksProcessEmailQueueRoute =
     path: '/api/public/hooks/process-email-queue',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronReengagementRoute =
+  ApiPublicCronReengagementRouteImport.update({
+    id: '/api/public/cron/reengagement',
+    path: '/api/public/cron/reengagement',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCronBirthdayRoute = ApiPublicCronBirthdayRouteImport.update({
+  id: '/api/public/cron/birthday',
+  path: '/api/public/cron/birthday',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedSuporteTicketIdRoute =
   AuthenticatedSuporteTicketIdRouteImport.update({
     id: '/suporte/ticket/$id',
@@ -413,6 +426,8 @@ export interface FileRoutesByFullPath {
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
+  '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
+  '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
@@ -467,6 +482,8 @@ export interface FileRoutesByTo {
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
+  '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
+  '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
@@ -525,6 +542,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/_authenticated/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/_authenticated/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
+  '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
+  '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
@@ -583,6 +602,8 @@ export interface FileRouteTypes {
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
     | '/suporte/ticket/$id'
+    | '/api/public/cron/birthday'
+    | '/api/public/cron/reengagement'
     | '/api/public/hooks/process-email-queue'
     | '/api/public/webhooks/mercadopago'
     | '/suporte/$slug/kb/$article'
@@ -637,6 +658,8 @@ export interface FileRouteTypes {
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
     | '/suporte/ticket/$id'
+    | '/api/public/cron/birthday'
+    | '/api/public/cron/reengagement'
     | '/api/public/hooks/process-email-queue'
     | '/api/public/webhooks/mercadopago'
     | '/suporte/$slug/kb/$article'
@@ -694,6 +717,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/empresa/$id'
     | '/_authenticated/admin/suporte/$id'
     | '/_authenticated/suporte/ticket/$id'
+    | '/api/public/cron/birthday'
+    | '/api/public/cron/reengagement'
     | '/api/public/hooks/process-email-queue'
     | '/api/public/webhooks/mercadopago'
     | '/suporte/$slug/kb/$article'
@@ -721,6 +746,8 @@ export interface RootRouteChildren {
   SuporteChamadoIdRoute: typeof SuporteChamadoIdRoute
   AjudaCategoryIndexRoute: typeof AjudaCategoryIndexRoute
   SuporteSlugIndexRoute: typeof SuporteSlugIndexRoute
+  ApiPublicCronBirthdayRoute: typeof ApiPublicCronBirthdayRoute
+  ApiPublicCronReengagementRoute: typeof ApiPublicCronReengagementRoute
   ApiPublicHooksProcessEmailQueueRoute: typeof ApiPublicHooksProcessEmailQueueRoute
   ApiPublicWebhooksMercadopagoRoute: typeof ApiPublicWebhooksMercadopagoRoute
   SuporteSlugKbArticleRoute: typeof SuporteSlugKbArticleRoute
@@ -1086,6 +1113,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessEmailQueueRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/reengagement': {
+      id: '/api/public/cron/reengagement'
+      path: '/api/public/cron/reengagement'
+      fullPath: '/api/public/cron/reengagement'
+      preLoaderRoute: typeof ApiPublicCronReengagementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/birthday': {
+      id: '/api/public/cron/birthday'
+      path: '/api/public/cron/birthday'
+      fullPath: '/api/public/cron/birthday'
+      preLoaderRoute: typeof ApiPublicCronBirthdayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/suporte/ticket/$id': {
       id: '/_authenticated/suporte/ticket/$id'
       path: '/suporte/ticket/$id'
@@ -1238,6 +1279,8 @@ const rootRouteChildren: RootRouteChildren = {
   SuporteChamadoIdRoute: SuporteChamadoIdRoute,
   AjudaCategoryIndexRoute: AjudaCategoryIndexRoute,
   SuporteSlugIndexRoute: SuporteSlugIndexRoute,
+  ApiPublicCronBirthdayRoute: ApiPublicCronBirthdayRoute,
+  ApiPublicCronReengagementRoute: ApiPublicCronReengagementRoute,
   ApiPublicHooksProcessEmailQueueRoute: ApiPublicHooksProcessEmailQueueRoute,
   ApiPublicWebhooksMercadopagoRoute: ApiPublicWebhooksMercadopagoRoute,
   SuporteSlugKbArticleRoute: SuporteSlugKbArticleRoute,
