@@ -31,9 +31,29 @@ function AdminPlansPage() {
   const list = useServerFn(adminListPlans);
   const upd = useServerFn(adminUpdatePlan);
   const toggle = useServerFn(adminToggleFeature);
+  const impactFn = useServerFn(adminPlanFeatureImpact);
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["admin-plans"], queryFn: () => list() });
   const [editing, setEditing] = useState<any | null>(null);
+  const [confirmToggle, setConfirmToggle] = useState<null | {
+    plan_id: string; plan_name: string; feature_key: string; feature_name: string; next: boolean;
+  }>(null);
+  const impactQ = useQuery({
+    queryKey: ["plan-feature-impact", confirmToggle?.plan_id, confirmToggle?.feature_key],
+    queryFn: () => impactFn({ data: { plan_id: confirmToggle!.plan_id, feature_key: confirmToggle!.feature_key } }),
+    enabled: !!confirmToggle,
+  });
+  const [saving, setSaving] = useState(false);
+  // Features whose changes are business-critical → require confirmation
+  const SENSITIVE_FEATURES = new Set(["public_reviews"]);
+
+  async function applyToggle(v: boolean, p: any, f: any) {
+    try {
+      await toggle({ data: { plan_id: p.id, feature_key: f.feature_key, feature_name: f.feature_name, enabled: v } });
+      qc.invalidateQueries({ queryKey: ["admin-plans"] });
+      toast.success(`Recurso "${f.feature_name}" ${v ? "ativado" : "desativado"} em ${p.name}.`);
+    } catch (e: any) { toast.error(e.message); }
+  }
 
   return (
     <div className="space-y-6">
