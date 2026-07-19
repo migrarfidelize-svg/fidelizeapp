@@ -138,7 +138,11 @@ function AppLayout() {
             );
           })}
         </nav>
-        <div className="p-3 border-t">
+        <div className="p-3 border-t space-y-2">
+          <div className="flex items-center justify-between px-1">
+            <span className="text-xs text-muted-foreground">Tema</span>
+            <ThemeToggle />
+          </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="w-full justify-between">
