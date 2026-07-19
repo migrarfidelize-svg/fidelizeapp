@@ -428,6 +428,5 @@ export const adminUpdatePaymentSettings = createServerFn({ method: "POST" })
   });
 
 function publicWebhookUrl(): string {
-  const { getPublicAppUrl } = require("@/lib/app-url") as typeof import("@/lib/app-url");
   return `${getPublicAppUrl()}/api/public/webhooks/mercadopago`;
 }
