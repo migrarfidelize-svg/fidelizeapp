@@ -41,8 +41,8 @@ export function WalletButtons({ token }: { token: string }) {
       }
       return;
     }
-    // When creds are wired, this becomes /api/public/wallet/apple/<token>.pkpass
-    window.location.href = `/api/public/wallet/apple/${token}.pkpass`;
+    // Signed .pkpass endpoint
+    window.location.href = `/api/public/wallet/apple/${token}`;
   }
 
   async function handleGoogle() {

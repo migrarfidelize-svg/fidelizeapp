@@ -63,6 +63,7 @@ import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/ap
 import { Route as AuthenticatedSuporteTicketIdRouteImport } from './routes/_authenticated/suporte.ticket.$id'
 import { Route as AuthenticatedAdminSuporteIdRouteImport } from './routes/_authenticated/admin.suporte.$id'
 import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authenticated/admin.empresa.$id'
+import { Route as ApiPublicWalletAppleTokenRouteImport } from './routes/api/public/wallet.apple.$token'
 
 const TermosRoute = TermosRouteImport.update({
   id: '/termos',
@@ -357,6 +358,12 @@ const AuthenticatedAdminEmpresaIdRoute =
     path: '/empresa/$id',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const ApiPublicWalletAppleTokenRoute =
+  ApiPublicWalletAppleTokenRouteImport.update({
+    id: '/api/public/wallet/apple/$token',
+    path: '/api/public/wallet/apple/$token',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -412,6 +419,7 @@ export interface FileRoutesByFullPath {
   '/admin/planos/': typeof AuthenticatedAdminPlanosIndexRoute
   '/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
   '/app/planos/': typeof AuthenticatedAppPlanosIndexRoute
+  '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -465,6 +473,7 @@ export interface FileRoutesByTo {
   '/admin/planos': typeof AuthenticatedAdminPlanosIndexRoute
   '/admin/suporte': typeof AuthenticatedAdminSuporteIndexRoute
   '/app/planos': typeof AuthenticatedAppPlanosIndexRoute
+  '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -522,6 +531,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/planos/': typeof AuthenticatedAdminPlanosIndexRoute
   '/_authenticated/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
   '/_authenticated/app/planos/': typeof AuthenticatedAppPlanosIndexRoute
+  '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -579,6 +589,7 @@ export interface FileRouteTypes {
     | '/admin/planos/'
     | '/admin/suporte/'
     | '/app/planos/'
+    | '/api/public/wallet/apple/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -632,6 +643,7 @@ export interface FileRouteTypes {
     | '/admin/planos'
     | '/admin/suporte'
     | '/app/planos'
+    | '/api/public/wallet/apple/$token'
   id:
     | '__root__'
     | '/'
@@ -688,6 +700,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/planos/'
     | '/_authenticated/admin/suporte/'
     | '/_authenticated/app/planos/'
+    | '/api/public/wallet/apple/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -711,6 +724,7 @@ export interface RootRouteChildren {
   ApiPublicHooksProcessEmailQueueRoute: typeof ApiPublicHooksProcessEmailQueueRoute
   ApiPublicWebhooksMercadopagoRoute: typeof ApiPublicWebhooksMercadopagoRoute
   SuporteSlugKbArticleRoute: typeof SuporteSlugKbArticleRoute
+  ApiPublicWalletAppleTokenRoute: typeof ApiPublicWalletAppleTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1093,6 +1107,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminEmpresaIdRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/api/public/wallet/apple/$token': {
+      id: '/api/public/wallet/apple/$token'
+      path: '/api/public/wallet/apple/$token'
+      fullPath: '/api/public/wallet/apple/$token'
+      preLoaderRoute: typeof ApiPublicWalletAppleTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1220,6 +1241,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksProcessEmailQueueRoute: ApiPublicHooksProcessEmailQueueRoute,
   ApiPublicWebhooksMercadopagoRoute: ApiPublicWebhooksMercadopagoRoute,
   SuporteSlugKbArticleRoute: SuporteSlugKbArticleRoute,
+  ApiPublicWalletAppleTokenRoute: ApiPublicWalletAppleTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
