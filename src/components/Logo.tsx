@@ -8,6 +8,11 @@ export function Logo({ className = "" }: { className?: string }) {
               <stop offset="0" stopColor="#8B5CF6" />
               <stop offset="1" stopColor="#6D28D9" />
             </linearGradient>
+            <linearGradient id="fz-logo-f-shine" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#ffffff" stopOpacity="1" />
+              <stop offset="0.45" stopColor="#ffffff" stopOpacity="0.92" />
+              <stop offset="1" stopColor="#E9D5FF" stopOpacity="0.85" />
+            </linearGradient>
           </defs>
           <rect width="512" height="512" rx="112" ry="112" fill="url(#fz-logo-g)" />
           <path
@@ -19,11 +24,16 @@ export function Logo({ className = "" }: { className?: string }) {
             opacity="0.55"
           />
           <path d="M 236 108 L 268 128 L 236 148 Z" fill="#ffffff" opacity="0.85" />
-          <g fill="#ffffff">
+          <g fill="url(#fz-logo-f-shine)">
             <rect x="196" y="156" width="40" height="216" rx="12" />
             <rect x="196" y="156" width="140" height="40" rx="12" />
             <rect x="196" y="244" width="104" height="36" rx="10" />
           </g>
+          <g fill="#ffffff" opacity="0.45" style={{ mixBlendMode: "overlay" }}>
+            <rect x="200" y="160" width="14" height="208" rx="7" />
+            <rect x="200" y="160" width="132" height="10" rx="5" />
+          </g>
+
         </svg>
       </span>
       <span>Fidelize</span>
