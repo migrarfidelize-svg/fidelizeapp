@@ -556,6 +556,53 @@ export type Database = {
         }
         Relationships: []
       }
+      establishment_goals: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          customers_goal: number
+          establishment_id: string
+          id: string
+          month: string
+          revenue_goal: number
+          rewards_goal: number
+          stamps_goal: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          customers_goal?: number
+          establishment_id: string
+          id?: string
+          month: string
+          revenue_goal?: number
+          rewards_goal?: number
+          stamps_goal?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          customers_goal?: number
+          establishment_id?: string
+          id?: string
+          month?: string
+          revenue_goal?: number
+          rewards_goal?: number
+          stamps_goal?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "establishment_goals_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       establishment_members: {
         Row: {
           active: boolean
