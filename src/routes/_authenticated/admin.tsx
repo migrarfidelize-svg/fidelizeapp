@@ -118,78 +118,86 @@ function AdminLayout() {
   const [openKey, setOpenKey] = useState<string | null>(activeGroup);
   const currentOpen = openKey ?? activeGroup;
 
-  const mobileNav: NavItem[] = [overview, ...groups.flatMap((g) => g.items)];
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const closeMobile = () => setMobileOpen(false);
+
+  const renderSidebarBody = (onNavigate?: () => void) => (
+    <>
+      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+        {(() => {
+          const active = isItemActive(overview);
+          return (
+            <Link to={overview.to} onClick={onNavigate} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${active ? "bg-primary-soft text-primary" : "text-muted-foreground hover:bg-muted"}`}>
+              <overview.icon className="h-4 w-4" /> {overview.label}
+            </Link>
+          );
+        })()}
+        {groups.map((g) => {
+          const isOpen = currentOpen === g.key;
+          const hasActive = g.items.some(isItemActive);
+          return (
+            <div key={g.key} className="pt-1">
+              <button
+                type="button"
+                onClick={() => setOpenKey(isOpen ? null : g.key)}
+                className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${hasActive ? "text-foreground" : "text-muted-foreground hover:bg-muted"}`}
+              >
+                <g.icon className="h-4 w-4" />
+                <span className="flex-1 text-left">{g.label}</span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+              </button>
+              {isOpen && (
+                <div className="mt-1 ml-3 pl-3 border-l space-y-1">
+                  {g.items.map((n) => {
+                    const active = isItemActive(n);
+                    return (
+                      <Link key={n.to} to={n.to} onClick={onNavigate} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${active ? "bg-primary-soft text-primary font-medium" : "text-muted-foreground hover:bg-muted"}`}>
+                        <n.icon className="h-4 w-4" /> {n.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </nav>
+      <div className="p-3 border-t space-y-2">
+        <div className="flex items-center justify-between px-1">
+          <span className="text-xs text-muted-foreground">Tema</span>
+          <ThemeToggle />
+        </div>
+        <Link to="/app" onClick={onNavigate} className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"><ArrowLeft className="h-3 w-3" /> Voltar ao painel do lojista</Link>
+      </div>
+    </>
+  );
 
   return (
     <div className="min-h-dvh bg-muted/30 flex">
       <aside className="hidden md:flex w-64 shrink-0 flex-col border-r bg-card">
         <div className="p-5 border-b flex items-center gap-2"><Logo /><span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-primary-soft text-primary">Admin</span></div>
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          {(() => {
-            const active = isItemActive(overview);
-            return (
-              <Link to={overview.to} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${active ? "bg-primary-soft text-primary" : "text-muted-foreground hover:bg-muted"}`}>
-                <overview.icon className="h-4 w-4" /> {overview.label}
-              </Link>
-            );
-          })()}
-          {groups.map((g) => {
-            const isOpen = currentOpen === g.key;
-            const hasActive = g.items.some(isItemActive);
-            return (
-              <div key={g.key} className="pt-1">
-                <button
-                  type="button"
-                  onClick={() => setOpenKey(isOpen ? null : g.key)}
-                  className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${hasActive ? "text-foreground" : "text-muted-foreground hover:bg-muted"}`}
-                >
-                  <g.icon className="h-4 w-4" />
-                  <span className="flex-1 text-left">{g.label}</span>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
-                </button>
-                {isOpen && (
-                  <div className="mt-1 ml-3 pl-3 border-l space-y-1">
-                    {g.items.map((n) => {
-                      const active = isItemActive(n);
-                      return (
-                        <Link key={n.to} to={n.to} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${active ? "bg-primary-soft text-primary font-medium" : "text-muted-foreground hover:bg-muted"}`}>
-                          <n.icon className="h-4 w-4" /> {n.label}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </nav>
-        <div className="p-3 border-t space-y-2">
-          <div className="flex items-center justify-between px-1">
-            <span className="text-xs text-muted-foreground">Tema</span>
-            <ThemeToggle />
-          </div>
-          <Link to="/app" className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"><ArrowLeft className="h-3 w-3" /> Voltar ao painel do lojista</Link>
-        </div>
+        {renderSidebarBody()}
       </aside>
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="md:hidden flex items-center justify-between p-3 border-b bg-card">
-          <div className="flex items-center gap-2"><Logo /><span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-primary-soft text-primary">Admin</span></div>
+        <header className="md:hidden flex items-center justify-between p-3 border-b bg-card sticky top-0 z-30">
+          <div className="flex items-center gap-2">
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetTrigger asChild>
+                <Button size="icon" variant="ghost" aria-label="Abrir menu"><Menu className="h-5 w-5" /></Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 w-72 flex flex-col">
+                <VisuallyHidden><SheetTitle>Menu de navegação</SheetTitle></VisuallyHidden>
+                <div className="p-5 border-b flex items-center gap-2"><Logo /><span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-primary-soft text-primary">Admin</span></div>
+                {renderSidebarBody(closeMobile)}
+              </SheetContent>
+            </Sheet>
+            <Logo /><span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-primary-soft text-primary">Admin</span>
+          </div>
           <div className="flex items-center gap-1">
             <ThemeToggle />
-            <Link to="/app" className="text-xs text-muted-foreground" aria-label="Voltar"><ArrowLeft className="h-4 w-4" /></Link>
           </div>
         </header>
         <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto"><Outlet /></main>
-        <nav className="md:hidden grid grid-cols-5 border-t bg-card overflow-x-auto">
-          {mobileNav.map((n) => {
-            const active = isItemActive(n);
-            return (
-              <Link key={n.to} to={n.to} className={`flex flex-col items-center gap-1 py-2 text-[10px] ${active ? "text-primary" : "text-muted-foreground"}`}>
-                <n.icon className="h-4 w-4" /> {n.label}
-              </Link>
-            );
-          })}
-        </nav>
       </div>
     </div>
   );
