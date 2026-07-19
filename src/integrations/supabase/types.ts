@@ -299,6 +299,9 @@ export type Database = {
           name: string
           notes: string | null
           phone: string
+          referral_code: string | null
+          referred_by: string | null
+          tier: Database["public"]["Enums"]["customer_tier"]
           updated_at: string
           visits_count: number
         }
@@ -316,6 +319,9 @@ export type Database = {
           name: string
           notes?: string | null
           phone: string
+          referral_code?: string | null
+          referred_by?: string | null
+          tier?: Database["public"]["Enums"]["customer_tier"]
           updated_at?: string
           visits_count?: number
         }
@@ -333,6 +339,9 @@ export type Database = {
           name?: string
           notes?: string | null
           phone?: string
+          referral_code?: string | null
+          referred_by?: string | null
+          tier?: Database["public"]["Enums"]["customer_tier"]
           updated_at?: string
           visits_count?: number
         }
@@ -342,6 +351,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "customers"
             referencedColumns: ["id"]
           },
         ]
@@ -1656,6 +1672,288 @@ export type Database = {
         }
         Relationships: []
       }
+      push_logs: {
+        Row: {
+          body: string | null
+          created_at: string
+          customer_id: string | null
+          error: string | null
+          establishment_id: string | null
+          id: string
+          status: string
+          status_code: number | null
+          subscription_id: string | null
+          title: string
+          url: string | null
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          customer_id?: string | null
+          error?: string | null
+          establishment_id?: string | null
+          id?: string
+          status?: string
+          status_code?: number | null
+          subscription_id?: string | null
+          title: string
+          url?: string | null
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          customer_id?: string | null
+          error?: string | null
+          establishment_id?: string | null
+          id?: string
+          status?: string
+          status_code?: number | null
+          subscription_id?: string | null
+          title?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_logs_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_logs_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_logs_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "push_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscriptions: {
+        Row: {
+          active: boolean
+          auth_key: string
+          created_at: string
+          customer_id: string | null
+          endpoint: string
+          establishment_id: string | null
+          id: string
+          last_error: string | null
+          p256dh: string
+          preferences: Json
+          updated_at: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          active?: boolean
+          auth_key: string
+          created_at?: string
+          customer_id?: string | null
+          endpoint: string
+          establishment_id?: string | null
+          id?: string
+          last_error?: string | null
+          p256dh: string
+          preferences?: Json
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          active?: boolean
+          auth_key?: string
+          created_at?: string
+          customer_id?: string | null
+          endpoint?: string
+          establishment_id?: string | null
+          id?: string
+          last_error?: string | null
+          p256dh?: string
+          preferences?: Json
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_subscriptions_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      retention_dispatches: {
+        Row: {
+          channel: string
+          created_at: string
+          customer_id: string
+          error: string | null
+          establishment_id: string
+          id: string
+          kind: string
+          payload: Json | null
+          status: string
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          customer_id: string
+          error?: string | null
+          establishment_id: string
+          id?: string
+          kind: string
+          payload?: Json | null
+          status?: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          customer_id?: string
+          error?: string | null
+          establishment_id?: string
+          id?: string
+          kind?: string
+          payload?: Json | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "retention_dispatches_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "retention_dispatches_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      retention_events: {
+        Row: {
+          created_at: string
+          customer_id: string
+          establishment_id: string
+          event_type: string
+          from_value: string | null
+          id: string
+          meta: Json | null
+          to_value: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          establishment_id: string
+          event_type: string
+          from_value?: string | null
+          id?: string
+          meta?: Json | null
+          to_value?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          establishment_id?: string
+          event_type?: string
+          from_value?: string | null
+          id?: string
+          meta?: Json | null
+          to_value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "retention_events_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "retention_events_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      retention_settings: {
+        Row: {
+          birthday_coupon_percent: number
+          birthday_enabled: boolean
+          birthday_message: string
+          created_at: string
+          establishment_id: string
+          reengagement_days: number
+          reengagement_enabled: boolean
+          reengagement_message: string
+          referral_bonus_stamps: number
+          referral_enabled: boolean
+          tier_thresholds: Json
+          tiers_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          birthday_coupon_percent?: number
+          birthday_enabled?: boolean
+          birthday_message?: string
+          created_at?: string
+          establishment_id: string
+          reengagement_days?: number
+          reengagement_enabled?: boolean
+          reengagement_message?: string
+          referral_bonus_stamps?: number
+          referral_enabled?: boolean
+          tier_thresholds?: Json
+          tiers_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          birthday_coupon_percent?: number
+          birthday_enabled?: boolean
+          birthday_message?: string
+          created_at?: string
+          establishment_id?: string
+          reengagement_days?: number
+          reengagement_enabled?: boolean
+          reengagement_message?: string
+          referral_bonus_stamps?: number
+          referral_enabled?: boolean
+          tier_thresholds?: Json
+          tiers_enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "retention_settings_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: true
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rewards: {
         Row: {
           campaign_id: string
@@ -2414,6 +2712,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      compute_tier: {
+        Args: { _thresholds: Json; _visits: number }
+        Returns: Database["public"]["Enums"]["customer_tier"]
+      }
       delete_my_account: { Args: never; Returns: undefined }
       get_establishment_plan: {
         Args: { _est: string }
@@ -2490,6 +2792,7 @@ export type Database = {
     }
     Enums: {
       campaign_type: "stamps" | "points"
+      customer_tier: "bronze" | "prata" | "ouro" | "diamante"
       helpdesk_role: "hd_admin" | "hd_agent"
       member_role: "owner" | "manager" | "staff"
       plan_tier: "free" | "starter" | "pro" | "enterprise"
@@ -2646,6 +2949,7 @@ export const Constants = {
   public: {
     Enums: {
       campaign_type: ["stamps", "points"],
+      customer_tier: ["bronze", "prata", "ouro", "diamante"],
       helpdesk_role: ["hd_admin", "hd_agent"],
       member_role: ["owner", "manager", "staff"],
       plan_tier: ["free", "starter", "pro", "enterprise"],

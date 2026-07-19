@@ -201,6 +201,38 @@ export const addStamp = createServerFn({ method: "POST" })
     }).eq("id", card.customer_id);
 
     await auditLog(card.establishment_id, userId, "stamp_added", "loyalty_card", card.id, { completed, new_stamps: completed ? 0 : newStamps });
+
+    // Fire-and-forget push notification to the customer (never blocks or throws).
+    try {
+      const { sendPushToCustomer } = await import("@/lib/push.server");
+      if (completed) {
+        await sendPushToCustomer(
+          card.customer_id,
+          {
+            title: "🎉 Recompensa liberada!",
+            body: "Parabéns! Você completou seu cartão. Retire sua recompensa na próxima visita.",
+            url: `/c/${card.customer_id}`,
+            tag: `reward-${card.id}`,
+          },
+          "reward",
+        );
+      } else {
+        const remaining = campaign.stamps_required - newStamps;
+        await sendPushToCustomer(
+          card.customer_id,
+          {
+            title: "Novo carimbo adicionado! ⭐",
+            body:
+              remaining === 1
+                ? "Falta só 1 carimbo para o seu prêmio!"
+                : `Faltam ${remaining} carimbos para o seu prêmio.`,
+            tag: `stamp-${card.id}`,
+          },
+          "stamp",
+        );
+      }
+    } catch { /* push falhas nunca bloqueiam */ }
+
     return { completed, stamps: completed ? 0 : newStamps, required: campaign.stamps_required, cycle: completed ? card.cycle + 1 : card.cycle };
 
   });
