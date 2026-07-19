@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { StampCard } from "@/components/StampCard";
+import { PublicRatingBlock } from "@/components/PublicRatingBlock";
 import { toast } from "sonner";
 import { Sparkles, MapPin, Phone } from "lucide-react";
 
