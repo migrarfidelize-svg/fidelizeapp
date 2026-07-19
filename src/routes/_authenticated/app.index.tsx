@@ -3,10 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getMyEstablishments, getDashboardData } from "@/lib/loyalty.functions";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, Stamp, Gift, TrendingUp, ArrowRight, Sparkles } from "lucide-react";
+import { Users, Stamp, Gift, TrendingUp, ArrowRight, Sparkles, ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
+import { GoalsCard } from "@/components/GoalsCard";
 
 export const Route = createFileRoute("/_authenticated/app/")({
   component: Dashboard,
