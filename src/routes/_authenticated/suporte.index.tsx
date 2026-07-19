@@ -54,7 +54,7 @@ function SupportInbox() {
   }, [qc]);
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-dvh bg-muted/30">
       <div className="max-w-4xl mx-auto p-6 space-y-6">
         <header className="rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground p-6 shadow-sm">
           <div className="flex items-start gap-4">

@@ -46,8 +46,9 @@ function NewPasswordPage() {
         <form onSubmit={onSubmit} className="rounded-2xl border bg-card p-6 space-y-4">
           {!ready && <p className="text-xs text-muted-foreground">Validando link… se você abriu por engano, solicite outro link.</p>}
           <div className="space-y-1.5">
-            <Label>Nova senha</Label>
-            <Input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Label htmlFor="new-password">Nova senha</Label>
+            <Input id="new-password" type="password" required minLength={8} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} aria-describedby="new-password-hint" />
+            <p id="new-password-hint" className="text-xs text-muted-foreground">Use no mínimo 8 caracteres, com letras e números.</p>
           </div>
           <Button type="submit" disabled={loading || !ready} className="w-full gradient-brand text-primary-foreground">
             {loading ? "Salvando…" : "Salvar nova senha"}

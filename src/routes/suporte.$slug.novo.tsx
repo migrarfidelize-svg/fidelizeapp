@@ -63,7 +63,7 @@ function NewTicket() {
   if (session === undefined) return <div className="p-8 text-center text-muted-foreground">Carregando…</div>;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <header className="border-b">
         <div className="max-w-3xl mx-auto flex items-center justify-between px-4 py-4">
           <Link to="/suporte/$slug" params={params} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> {data?.establishment.name}</Link>

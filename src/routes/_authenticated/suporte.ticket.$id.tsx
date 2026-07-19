@@ -76,7 +76,7 @@ function Ticket() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-dvh bg-muted/30">
       <div className="max-w-3xl mx-auto p-6 space-y-4">
         <Link to="/suporte" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Voltar

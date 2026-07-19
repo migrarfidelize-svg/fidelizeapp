@@ -126,8 +126,9 @@ function AuthPage() {
                   value={whatsapp}
                   onChange={(e) => setWhatsapp(formatWhatsapp(e.target.value))}
                   required
+                  aria-describedby="whatsapp-hint"
                 />
-                <p className="mt-1 text-xs text-muted-foreground">Usaremos para avisos importantes e suporte.</p>
+                <p id="whatsapp-hint" className="mt-1 text-xs text-muted-foreground">Usaremos para avisos importantes e suporte.</p>
               </div>
             )}
             <div>

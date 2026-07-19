@@ -37,7 +37,7 @@ function HelpCenterHub() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-soft/40 to-background">
+    <div className="min-h-dvh bg-gradient-to-b from-primary-soft/40 to-background">
       <header className="border-b bg-background/70 backdrop-blur">
         <div className="max-w-5xl mx-auto flex items-center justify-between px-4 py-4">
           <div className="flex items-center gap-3">

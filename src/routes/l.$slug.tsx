@@ -32,7 +32,7 @@ export const Route = createFileRoute("/l/$slug")({
   }),
   component: PublicPage,
   notFoundComponent: () => (
-    <div className="min-h-screen grid place-items-center p-6 text-center">
+    <div className="min-h-dvh grid place-items-center p-6 text-center">
       <div>
         <h1 className="font-display text-3xl font-bold">Não encontramos essa página</h1>
         <p className="text-muted-foreground mt-2">Verifique o link ou peça um novo QR ao estabelecimento.</p>
@@ -71,7 +71,7 @@ function PublicPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-dvh bg-muted/30">
       <div className="h-40 md:h-56" style={{ background: bg }} />
       <div className="mx-auto max-w-3xl px-4 -mt-20 pb-12">
         <div className="rounded-3xl bg-card border shadow-xl p-6 md:p-10">

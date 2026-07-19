@@ -31,7 +31,7 @@ function MyTickets() {
   if (authed === undefined) return <div className="p-8 text-center text-muted-foreground">Carregando…</div>;
   if (authed === false) {
     return (
-      <div className="min-h-screen grid place-items-center px-4">
+      <div className="min-h-dvh grid place-items-center px-4">
         <div className="max-w-sm text-center">
           <Ticket className="h-12 w-12 mx-auto text-muted-foreground" />
           <h1 className="mt-4 text-2xl font-bold">Meus chamados</h1>
@@ -43,7 +43,7 @@ function MyTickets() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <header className="border-b">
         <div className="max-w-3xl mx-auto flex items-center justify-between px-4 py-4">
           <button onClick={() => navigate({ to: "/" })} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Início</button>
