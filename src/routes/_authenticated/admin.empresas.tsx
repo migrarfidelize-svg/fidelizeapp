@@ -35,7 +35,7 @@ function AdminEmpresas() {
   const [status, setStatus] = useState<"all" | "active" | "blocked">("all");
   const [plan, setPlan_] = useState<"all" | "free" | "starter" | "pro" | "enterprise">("all");
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin-ests", query, status, plan],
     queryFn: () => listFn({ data: { query: query || undefined, status, plan } }),
   });
