@@ -430,3 +430,100 @@ export async function enforceLimit(
     throw new Error(`Limite do plano ${plan.name} atingido: ${limit} ${label}. Faça upgrade para adicionar mais.`);
   }
 }
+
+// ---------- Super Admin: reconcile/repair feature reads across the platform ----------
+// Cross-checks each establishment's plan against plan_features and returns
+// authoritative access map + optionally emits a broadcast that forces the
+// merchant client (see src/routes/_authenticated/app.tsx) to refetch.
+export const adminReconcileFeatureAccess = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    feature_key: z.string().min(1).max(60),
+    dry_run: z.boolean().default(true),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const { supabase } = context;
+
+    // 1. Read all plans + feature enablement
+    const { data: plans, error: pErr } = await supabase.from("plans").select("id, tier, name");
+    if (pErr) throw new Error(pErr.message);
+    const { data: pf, error: fErr } = await supabase.from("plan_features")
+      .select("plan_id, feature_key, enabled").eq("feature_key", data.feature_key);
+    if (fErr) throw new Error(fErr.message);
+    const enabledByTier = new Map<string, boolean>();
+    for (const p of plans ?? []) {
+      const row = (pf ?? []).find((x: any) => x.plan_id === p.id);
+      enabledByTier.set(p.tier, !!row?.enabled);
+    }
+
+    // 2. All establishments and their plan tier
+    const { data: ests, error: eErr } = await supabase.from("establishments")
+      .select("id, name, slug, plan, active");
+    if (eErr) throw new Error(eErr.message);
+
+    const rows = (ests ?? []).map((e: any) => ({
+      id: e.id,
+      name: e.name,
+      slug: e.slug,
+      plan_tier: e.plan,
+      active: e.active,
+      feature_allowed: enabledByTier.get(e.plan) ?? false,
+    }));
+
+    // 3. Broadcast a NOTIFY-like signal via realtime channel so merchant
+    // clients invalidate their cache immediately (non-persistent).
+    // Even in dry_run we broadcast, since it only refreshes reads.
+    try {
+      const channel = supabase.channel(`feature-reconcile-${data.feature_key}`);
+      await channel.subscribe();
+      await channel.send({
+        type: "broadcast",
+        event: "reconcile",
+        payload: { feature_key: data.feature_key, ts: new Date().toISOString() },
+      });
+      await supabase.removeChannel(channel);
+    } catch {
+      // realtime not required for correctness — the postgres_changes on
+      // plan_features already refreshes clients when we touch the row below.
+    }
+
+    let repaired = 0;
+    if (!data.dry_run) {
+      // Touch every plan_features row for this feature to force a postgres_changes
+      // event to every merchant subscriber, guaranteeing UI + cache sync.
+      for (const p of plans ?? []) {
+        const cur = (pf ?? []).find((x: any) => x.plan_id === p.id);
+        const enabled = cur?.enabled ?? false;
+        const { error: upErr } = await supabase.from("plan_features").upsert({
+          plan_id: p.id,
+          feature_key: data.feature_key,
+          feature_name: data.feature_key === "public_reviews" ? "Avaliações públicas de atendimento (QR + página)" : data.feature_key,
+          enabled,
+        }, { onConflict: "plan_id,feature_key" });
+        if (!upErr) repaired += 1;
+      }
+      // Audit
+      await supabase.from("audit_logs").insert({
+        user_id: context.userId,
+        action: "feature_reconcile",
+        entity_type: "plan_feature",
+        entity_id: null,
+        metadata: {
+          feature_key: data.feature_key,
+          plans_touched: repaired,
+          establishments_scanned: rows.length,
+        } as never,
+      });
+    }
+
+    return {
+      feature_key: data.feature_key,
+      dry_run: data.dry_run,
+      plans_summary: Array.from(enabledByTier.entries()).map(([tier, enabled]) => ({ tier, enabled })),
+      establishments: rows,
+      total_allowed: rows.filter((r) => r.feature_allowed).length,
+      total_blocked: rows.filter((r) => !r.feature_allowed).length,
+      repaired_rows: repaired,
+    };
+  });
