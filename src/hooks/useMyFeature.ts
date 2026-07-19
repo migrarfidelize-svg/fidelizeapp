@@ -8,7 +8,9 @@ export function useMyFeature(establishmentId: string | undefined, featureKey: st
     queryKey: ["feature", establishmentId, featureKey],
     queryFn: () => fn({ data: { establishment_id: establishmentId!, feature_key: featureKey } }),
     enabled: !!establishmentId,
-    staleTime: 60_000,
+    staleTime: 15_000,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
   return {
     allowed: q.data?.allowed ?? false,

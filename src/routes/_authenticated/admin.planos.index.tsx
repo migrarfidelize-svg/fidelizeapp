@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { adminListPlans, adminUpdatePlan, adminToggleFeature } from "@/lib/plans.functions";
+import { adminListPlans, adminUpdatePlan, adminToggleFeature, adminPlanFeatureImpact } from "@/lib/plans.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Star, Users, Sparkles, UserCog, CheckCircle2, XCircle, Pencil, Loader2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Star, Users, Sparkles, UserCog, CheckCircle2, XCircle, Pencil, Loader2, AlertTriangle, Sparkle } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/planos/")({
@@ -30,9 +31,29 @@ function AdminPlansPage() {
   const list = useServerFn(adminListPlans);
   const upd = useServerFn(adminUpdatePlan);
   const toggle = useServerFn(adminToggleFeature);
+  const impactFn = useServerFn(adminPlanFeatureImpact);
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["admin-plans"], queryFn: () => list() });
   const [editing, setEditing] = useState<any | null>(null);
+  const [confirmToggle, setConfirmToggle] = useState<null | {
+    plan_id: string; plan_name: string; feature_key: string; feature_name: string; next: boolean;
+  }>(null);
+  const impactQ = useQuery({
+    queryKey: ["plan-feature-impact", confirmToggle?.plan_id, confirmToggle?.feature_key],
+    queryFn: () => impactFn({ data: { plan_id: confirmToggle!.plan_id, feature_key: confirmToggle!.feature_key } }),
+    enabled: !!confirmToggle,
+  });
+  const [saving, setSaving] = useState(false);
+  // Features whose changes are business-critical → require confirmation
+  const SENSITIVE_FEATURES = new Set(["public_reviews"]);
+
+  async function applyToggle(v: boolean, p: any, f: any) {
+    try {
+      await toggle({ data: { plan_id: p.id, feature_key: f.feature_key, feature_name: f.feature_name, enabled: v } });
+      qc.invalidateQueries({ queryKey: ["admin-plans"] });
+      toast.success(`Recurso "${f.feature_name}" ${v ? "ativado" : "desativado"} em ${p.name}.`);
+    } catch (e: any) { toast.error(e.message); }
+  }
 
   return (
     <div className="space-y-6">
@@ -95,11 +116,12 @@ function AdminPlansPage() {
                       </span>
                       <Switch
                         checked={f.enabled}
-                        onCheckedChange={async (v) => {
-                          try {
-                            await toggle({ data: { plan_id: p.id, feature_key: f.feature_key, feature_name: f.feature_name, enabled: v } });
-                            qc.invalidateQueries({ queryKey: ["admin-plans"] });
-                          } catch (e: any) { toast.error(e.message); }
+                        onCheckedChange={(v) => {
+                          if (SENSITIVE_FEATURES.has(f.feature_key)) {
+                            setConfirmToggle({ plan_id: p.id, plan_name: p.name, feature_key: f.feature_key, feature_name: f.feature_name, next: v });
+                          } else {
+                            applyToggle(v, p, f);
+                          }
                         }}
                       />
                     </label>
@@ -170,6 +192,63 @@ function AdminPlansPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!confirmToggle} onOpenChange={(o) => !o && setConfirmToggle(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              {confirmToggle?.next ? <Sparkle className="h-5 w-5 text-primary" /> : <AlertTriangle className="h-5 w-5 text-destructive" />}
+              {confirmToggle?.next ? "Ativar recurso no plano" : "Desativar recurso do plano"}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 text-sm">
+                <div>
+                  Você está prestes a <strong>{confirmToggle?.next ? "ATIVAR" : "DESATIVAR"}</strong> o recurso{" "}
+                  <strong>"{confirmToggle?.feature_name}"</strong> no plano <strong>{confirmToggle?.plan_name}</strong>.
+                </div>
+                {impactQ.isLoading ? (
+                  <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Calculando impacto…</div>
+                ) : impactQ.data ? (
+                  <div className="rounded-lg border p-3 bg-muted/40 space-y-1.5">
+                    <div className="flex justify-between"><span className="text-muted-foreground">Empresas afetadas</span><span className="font-semibold">{impactQ.data.establishments_count}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Plano (tier)</span><span className="font-mono text-xs">{impactQ.data.plan_tier}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Estado atual</span><span>{impactQ.data.currently_enabled ? "Ativo" : "Inativo"}</span></div>
+                  </div>
+                ) : null}
+                {confirmToggle?.next ? (
+                  <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs">
+                    Todos os lojistas neste plano ganharão acesso imediato ao recurso (o cache do painel dos lojistas expira em até 15s ou ao trocar de aba). Um e-mail automático é enviado quando isso desbloqueia "Avaliações públicas".
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
+                    Os lojistas neste plano perderão o acesso ao recurso. QRs de avaliação já criados continuam existindo, mas a geração de novos QRs e o backend serão bloqueados — cada tentativa aparecerá em <strong>/admin/avaliações → Bloqueios de plano</strong>.
+                  </div>
+                )}
+                <div className="text-[11px] text-muted-foreground">Esta ação é registrada em auditoria com data, responsável e diferença antes/depois.</div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={saving}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={saving}
+              onClick={async () => {
+                if (!confirmToggle) return;
+                setSaving(true);
+                try {
+                  await toggle({ data: { plan_id: confirmToggle.plan_id, feature_key: confirmToggle.feature_key, feature_name: confirmToggle.feature_name, enabled: confirmToggle.next } });
+                  qc.invalidateQueries({ queryKey: ["admin-plans"] });
+                  toast.success(`Recurso "${confirmToggle.feature_name}" ${confirmToggle.next ? "ativado" : "desativado"} em ${confirmToggle.plan_name}.`);
+                  setConfirmToggle(null);
+                } catch (e: any) { toast.error(e.message); }
+                finally { setSaving(false); }
+              }}
+            >
+              {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Aplicando…</> : (confirmToggle?.next ? "Ativar recurso" : "Desativar recurso")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

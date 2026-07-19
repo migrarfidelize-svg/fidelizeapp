@@ -143,6 +143,9 @@ export const adminToggleFeature = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     await assertSuperAdmin(context.supabase, context.userId);
+    const { data: prev } = await context.supabase.from("plan_features")
+      .select("enabled").eq("plan_id", data.plan_id).eq("feature_key", data.feature_key).maybeSingle();
+    const previous = prev?.enabled ?? null;
     const { data: upsert, error } = await context.supabase.from("plan_features")
       .upsert({
         plan_id: data.plan_id,
@@ -152,7 +155,49 @@ export const adminToggleFeature = createServerFn({ method: "POST" })
       }, { onConflict: "plan_id,feature_key" })
       .select("*").single();
     if (error) throw new Error(error.message);
+    // Audit log (global — no establishment_id)
+    const { data: planRow } = await context.supabase.from("plans")
+      .select("tier, name").eq("id", data.plan_id).maybeSingle();
+    await context.supabase.from("audit_logs").insert({
+      user_id: context.userId,
+      action: data.enabled ? "plan_feature_enable" : "plan_feature_disable",
+      entity_type: "plan_feature",
+      entity_id: data.plan_id,
+      metadata: {
+        plan_id: data.plan_id,
+        plan_tier: planRow?.tier ?? null,
+        plan_name: planRow?.name ?? null,
+        feature_key: data.feature_key,
+        feature_name: data.feature_name,
+        previous_enabled: previous,
+        new_enabled: data.enabled,
+      } as never,
+    });
     return upsert;
+  });
+
+// Preview impact of toggling a plan feature (count of establishments on that tier)
+export const adminPlanFeatureImpact = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    plan_id: z.string().uuid(),
+    feature_key: z.string().min(1).max(60),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const { data: plan } = await context.supabase.from("plans")
+      .select("id, tier, name").eq("id", data.plan_id).maybeSingle();
+    if (!plan) throw new Error("Plano não encontrado.");
+    const { count } = await context.supabase.from("establishments")
+      .select("id", { count: "exact", head: true }).eq("plan", plan.tier);
+    const { data: current } = await context.supabase.from("plan_features")
+      .select("enabled").eq("plan_id", data.plan_id).eq("feature_key", data.feature_key).maybeSingle();
+    return {
+      plan_tier: plan.tier,
+      plan_name: plan.name,
+      establishments_count: count ?? 0,
+      currently_enabled: current?.enabled ?? false,
+    };
   });
 
 // ---------- Merchant: change plan (upgrade / downgrade) ----------

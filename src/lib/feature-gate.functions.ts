@@ -39,7 +39,10 @@ export const adminListFeatureGateEvents = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({
     feature_key: z.string().min(1).max(60).optional(),
     days: z.number().int().min(1).max(365).optional(),
-    limit: z.number().int().min(1).max(500).optional(),
+    limit: z.number().int().min(1).max(2000).optional(),
+    establishment_id: z.string().uuid().optional(),
+    plan_tier: z.string().min(1).max(40).optional(),
+    search: z.string().min(1).max(120).optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
     await assertSuperAdmin(context.supabase, context.userId);
@@ -50,8 +53,18 @@ export const adminListFeatureGateEvents = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false })
       .limit(data.limit ?? 200);
     if (data.feature_key) q = q.eq("feature_key", data.feature_key);
-    const { data: rows, error } = await q;
+    if (data.establishment_id) q = q.eq("establishment_id", data.establishment_id);
+    if (data.plan_tier) q = q.eq("plan_tier", data.plan_tier);
+    const { data: rowsRaw, error } = await q;
     if (error) throw new Error(error.message);
+    let rows = rowsRaw ?? [];
+    if (data.search) {
+      const s = data.search.toLowerCase();
+      rows = rows.filter((r: any) =>
+        (r.establishments?.name ?? "").toLowerCase().includes(s) ||
+        (r.establishments?.slug ?? "").toLowerCase().includes(s)
+      );
+    }
     // enrich with user emails via admin client
     const userIds = Array.from(new Set((rows ?? []).map((r: any) => r.user_id).filter(Boolean)));
     let userMap: Record<string, { email?: string; name?: string }> = {};
