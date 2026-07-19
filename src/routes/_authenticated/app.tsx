@@ -102,6 +102,7 @@ function AppLayout() {
     { to: "/app/campanhas", label: "Campanhas", icon: Sparkles, exact: false },
     { to: "/app/qrcodes", label: "QR Codes", icon: QrCode, exact: false },
     { to: "/app/retencao", label: "Retenção", icon: HeartHandshake, exact: false },
+    { to: "/app/avaliacoes", label: "Avaliações", icon: Star, exact: false },
     { to: "/app/notificacoes", label: "Notificações", icon: Bell, exact: false },
     { to: "/app/equipe", label: "Equipe", icon: UsersRound, exact: false },
     
