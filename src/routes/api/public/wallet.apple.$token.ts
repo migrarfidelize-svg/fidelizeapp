@@ -91,7 +91,7 @@ export const Route = createFileRoute("/api/public/wallet/apple/$token")({
         try {
           const zip = await buildSignedPkpass({ passJson, logoUrl: est.logo_url, creds });
           console.log("[pkpass] signed", { customer: customer.code, bytes: zip.byteLength });
-          return new Response(zip, {
+          return new Response(zip as BodyInit, {
             status: 200,
             headers: {
               "content-type": "application/vnd.apple.pkpass",
