@@ -23,6 +23,7 @@ import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as CTokenRouteImport } from './routes/c.$token'
 import { Route as AuthRecuperarRouteImport } from './routes/auth.recuperar'
 import { Route as AuthNovaSenhaRouteImport } from './routes/auth.nova-senha'
+import { Route as AuthenticatedLgpdRouteImport } from './routes/_authenticated/lgpd'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as SuporteSlugIndexRouteImport } from './routes/suporte.$slug.index'
@@ -131,6 +132,11 @@ const AuthNovaSenhaRoute = AuthNovaSenhaRouteImport.update({
   id: '/nova-senha',
   path: '/nova-senha',
   getParentRoute: () => AuthRoute,
+} as any)
+const AuthenticatedLgpdRoute = AuthenticatedLgpdRouteImport.update({
+  id: '/lgpd',
+  path: '/lgpd',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   id: '/app',
@@ -361,6 +367,7 @@ export interface FileRoutesByFullPath {
   '/termos': typeof TermosRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/app': typeof AuthenticatedAppRouteWithChildren
+  '/lgpd': typeof AuthenticatedLgpdRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
   '/c/$token': typeof CTokenRoute
@@ -413,6 +420,7 @@ export interface FileRoutesByTo {
   '/precos': typeof PrecosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
+  '/lgpd': typeof AuthenticatedLgpdRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
   '/c/$token': typeof CTokenRoute
@@ -469,6 +477,7 @@ export interface FileRoutesById {
   '/termos': typeof TermosRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
+  '/_authenticated/lgpd': typeof AuthenticatedLgpdRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
   '/c/$token': typeof CTokenRoute
@@ -525,6 +534,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/admin'
     | '/app'
+    | '/lgpd'
     | '/auth/nova-senha'
     | '/auth/recuperar'
     | '/c/$token'
@@ -577,6 +587,7 @@ export interface FileRouteTypes {
     | '/precos'
     | '/privacidade'
     | '/termos'
+    | '/lgpd'
     | '/auth/nova-senha'
     | '/auth/recuperar'
     | '/c/$token'
@@ -632,6 +643,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/_authenticated/admin'
     | '/_authenticated/app'
+    | '/_authenticated/lgpd'
     | '/auth/nova-senha'
     | '/auth/recuperar'
     | '/c/$token'
@@ -800,6 +812,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/nova-senha'
       preLoaderRoute: typeof AuthNovaSenhaRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/_authenticated/lgpd': {
+      id: '/_authenticated/lgpd'
+      path: '/lgpd'
+      fullPath: '/lgpd'
+      preLoaderRoute: typeof AuthenticatedLgpdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/app': {
       id: '/_authenticated/app'
@@ -1152,6 +1171,7 @@ const AuthenticatedAppRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
+  AuthenticatedLgpdRoute: typeof AuthenticatedLgpdRoute
   AuthenticatedSuporteIndexRoute: typeof AuthenticatedSuporteIndexRoute
   AuthenticatedSuporteTicketIdRoute: typeof AuthenticatedSuporteTicketIdRoute
 }
@@ -1159,6 +1179,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
+  AuthenticatedLgpdRoute: AuthenticatedLgpdRoute,
   AuthenticatedSuporteIndexRoute: AuthenticatedSuporteIndexRoute,
   AuthenticatedSuporteTicketIdRoute: AuthenticatedSuporteTicketIdRoute,
 }
@@ -1203,13 +1224,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
