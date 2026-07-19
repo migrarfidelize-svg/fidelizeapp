@@ -21,9 +21,8 @@ async function requireSuperAdmin(supabase: any, userId: string) {
   if (!data) throw new Error("Não autorizado");
 }
 
-function getBaseUrl() {
-  return process.env.VITE_APP_URL || "https://project--6fbe0482-baab-4f96-abc8-c1c72bc2e46e.lovable.app";
-}
+import { getPublicAppUrl } from "@/lib/app-url";
+function getBaseUrl() { return getPublicAppUrl(); }
 
 async function notify(to: string, subject: string, html: string, ticketId: string) {
   try {
