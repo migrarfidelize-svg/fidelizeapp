@@ -961,6 +961,47 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_gate_events: {
+        Row: {
+          action: string
+          context: Json
+          created_at: string
+          establishment_id: string
+          feature_key: string
+          id: string
+          plan_tier: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          context?: Json
+          created_at?: string
+          establishment_id: string
+          feature_key: string
+          id?: string
+          plan_tier?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          context?: Json
+          created_at?: string
+          establishment_id?: string
+          feature_key?: string
+          id?: string
+          plan_tier?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_gate_events_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       help_article_views: {
         Row: {
           article_id: string

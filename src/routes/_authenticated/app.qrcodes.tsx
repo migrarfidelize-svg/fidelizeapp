@@ -21,6 +21,7 @@ import { PromoPoster, FORMATS, SEGMENT_LABEL, type PromoConfig, type PromoFormat
 import { LogoUploadButton } from "@/components/LogoUploadButton";
 import { LoadingSkeleton } from "@/components/states";
 import { useMyFeature } from "@/hooks/useMyFeature";
+import { logFeatureBlocked } from "@/lib/feature-gate.functions";
 import { Link } from "@tanstack/react-router";
 import { Lock } from "lucide-react";
 
@@ -244,6 +245,7 @@ function QRCodes() {
   type QrTarget = "linktree" | "review";
   const [qrTarget, setQrTarget] = useState<QrTarget>("linktree");
   const { allowed: reviewsAllowed } = useMyFeature(est?.id, "public_reviews");
+  const logBlockedFn = useServerFn(logFeatureBlocked);
   useEffect(() => { if (!reviewsAllowed && qrTarget === "review") setQrTarget("linktree"); }, [reviewsAllowed, qrTarget]);
   const targetPath = qrTarget === "review" ? "avaliar" : "l";
   const publicUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/${targetPath}/${est.slug}` : "";
@@ -665,7 +667,21 @@ function QRCodes() {
           <button
             type="button"
             onClick={() => {
-              if (!reviewsAllowed) { toast.error("Avaliações públicas não estão incluídas no seu plano. Faça upgrade em /app/planos."); return; }
+              if (!reviewsAllowed) {
+                toast.error("Avaliações públicas não estão incluídas no seu plano.", {
+                  description: "Faça upgrade para gerar QR de avaliação.",
+                  action: { label: "Ver planos", onClick: () => { window.location.href = "/app/planos"; } },
+                });
+                if (est?.id) {
+                  logBlockedFn({ data: {
+                    establishment_id: est.id,
+                    feature_key: "public_reviews",
+                    action: "qr_target_review",
+                    context: { campaign_id: activeCampaign?.id ?? null, format, segment },
+                  }}).catch(() => {});
+                }
+                return;
+              }
               setQrTarget("review");
             }}
             className={`relative rounded-lg border px-3 py-2.5 text-left transition ${qrTarget === "review" ? "border-primary bg-primary-soft text-primary" : "border-border hover:border-primary/40"} ${!reviewsAllowed ? "opacity-70" : ""}`}
@@ -680,7 +696,17 @@ function QRCodes() {
             </div>
           </button>
         </div>
+        {!reviewsAllowed && (
+          <div className="mt-1 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 flex items-start gap-2">
+            <Lock className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+            <div className="flex-1">
+              <strong>Avaliações públicas (QR + página)</strong> é um recurso adicional. Faça upgrade para gerar QR de avaliação por campanha, mesa ou atendente.
+              <Link to="/app/planos" className="ml-1 font-semibold underline">Ver planos →</Link>
+            </div>
+          </div>
+        )}
       </div>
+
 
       {/* Format picker */}
       <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">

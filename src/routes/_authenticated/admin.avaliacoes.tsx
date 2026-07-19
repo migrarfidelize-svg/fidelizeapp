@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Star, Search, Eye, EyeOff, Trash2, ShieldAlert, TrendingDown, TrendingUp, MessageSquare } from "lucide-react";
+import { Star, Search, Eye, EyeOff, Trash2, ShieldAlert, TrendingDown, TrendingUp, MessageSquare, Lock } from "lucide-react";
 import {
   adminReviewsOverview,
   adminReviewsRanking,
@@ -13,6 +13,7 @@ import {
   adminDeleteReview,
   adminListEstablishmentsMini,
 } from "@/lib/admin-reviews.functions";
+import { adminListFeatureGateEvents, adminFeatureGateSummary } from "@/lib/feature-gate.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -84,6 +85,7 @@ function Page() {
           <TabsTrigger value="ranking">Ranking</TabsTrigger>
           <TabsTrigger value="moderation">Moderação</TabsTrigger>
           <TabsTrigger value="fraud">Fraude</TabsTrigger>
+          <TabsTrigger value="blocked"><Lock className="mr-1 h-3 w-3" />Bloqueios de plano</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -133,6 +135,10 @@ function Page() {
           <FraudCard title="Múltiplas avaliações do mesmo dispositivo (≥3)" rows={fraud.data?.device ?? []} labelKey="Dispositivo" />
           <FraudCard title="Múltiplas avaliações do mesmo IP (≥5)" rows={fraud.data?.ip ?? []} labelKey="IP" />
           <FraudCard title="Rajadas em 10 minutos (≥10)" rows={fraud.data?.bursts ?? []} labelKey="Janela" />
+        </TabsContent>
+
+        <TabsContent value="blocked" className="space-y-4">
+          <BlockedByPlan days={days} />
         </TabsContent>
       </Tabs>
     </div>
@@ -369,5 +375,102 @@ function FraudCard({ title, rows, labelKey }: { title: string; rows: any[]; labe
         ))}
       </CardContent>
     </Card>
+  );
+}
+
+function BlockedByPlan({ days }: { days: number }) {
+  const listFn = useServerFn(adminListFeatureGateEvents);
+  const sumFn = useServerFn(adminFeatureGateSummary);
+  const [feature, setFeature] = useState<string>("public_reviews");
+  const summary = useQuery({ queryKey: ["adm-gate-sum", days], queryFn: () => sumFn({ data: { days } }) });
+  const list = useQuery({
+    queryKey: ["adm-gate-list", days, feature],
+    queryFn: () => listFn({ data: { days, feature_key: feature || undefined, limit: 200 } }),
+  });
+
+  const FEATURE_LABELS: Record<string, string> = {
+    public_reviews: "Avaliações públicas (QR + página)",
+  };
+
+  return (
+    <>
+      <Card>
+        <CardHeader><CardTitle className="text-base">Resumo por recurso ({days}d)</CardTitle></CardHeader>
+        <CardContent>
+          {summary.data && summary.data.byFeature.length ? (
+            <div className="space-y-2">
+              {summary.data.byFeature.map((f) => (
+                <div key={f.feature_key} className="flex items-center justify-between rounded-lg border p-3">
+                  <div>
+                    <div className="text-sm font-semibold">{FEATURE_LABELS[f.feature_key] ?? f.feature_key}</div>
+                    <div className="text-xs text-muted-foreground">{f.distinct_establishments} empresa(s) afetada(s)</div>
+                  </div>
+                  <div className="text-2xl font-bold">{f.count}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">Nenhum bloqueio registrado no período.</p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between gap-3">
+          <CardTitle className="text-base">Tentativas bloqueadas</CardTitle>
+          <Select value={feature} onValueChange={setFeature}>
+            <SelectTrigger className="w-64"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="public_reviews">Avaliações públicas</SelectItem>
+            </SelectContent>
+          </Select>
+        </CardHeader>
+        <CardContent>
+          {list.isLoading && <p className="text-sm text-muted-foreground">Carregando…</p>}
+          {list.data && list.data.length === 0 && (
+            <p className="text-sm text-muted-foreground">Nenhuma tentativa registrada.</p>
+          )}
+          {list.data && list.data.length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-muted-foreground border-b">
+                    <th className="py-2 pr-3">Data</th>
+                    <th className="py-2 pr-3">Empresa</th>
+                    <th className="py-2 pr-3">Plano</th>
+                    <th className="py-2 pr-3">Usuário</th>
+                    <th className="py-2 pr-3">Ação</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {list.data.map((r: any) => (
+                    <tr key={r.id} className="border-b last:border-0">
+                      <td className="py-2 pr-3 whitespace-nowrap">{formatDate(r.created_at)}</td>
+                      <td className="py-2 pr-3">
+                        <div className="font-medium">{r.establishments?.name ?? "—"}</div>
+                        <div className="text-[11px] text-muted-foreground">/{r.establishments?.slug ?? "—"}</div>
+                      </td>
+                      <td className="py-2 pr-3"><Badge variant="outline">{r.plan_tier ?? "—"}</Badge></td>
+                      <td className="py-2 pr-3">
+                        <div>{r.user_name ?? "—"}</div>
+                        <div className="text-[11px] text-muted-foreground">{r.user_email ?? ""}</div>
+                      </td>
+                      <td className="py-2 pr-3">
+                        <div className="font-mono text-xs">{r.action}</div>
+                        {r.context && Object.keys(r.context).length > 0 && (
+                          <div className="text-[11px] text-muted-foreground truncate max-w-xs" title={JSON.stringify(r.context)}>
+                            {JSON.stringify(r.context)}
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </>
   );
 }

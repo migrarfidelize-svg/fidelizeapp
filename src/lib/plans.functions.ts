@@ -192,6 +192,9 @@ export const changeEstablishmentPlan = createServerFn({ method: "POST" })
     const kind: "upgrade" | "downgrade" | "plan_change" =
       toRank > fromRank ? "upgrade" : toRank < fromRank ? "downgrade" : "plan_change";
 
+    // Snapshot feature availability BEFORE the change so we can detect unlocks after it.
+    const reviewsBefore = await hasFeature(supabase, data.establishment_id, "public_reviews");
+
     // 1) Update establishment plan (trigger tg_establishment_subscription_events logs a subscription_events row automatically with actor_id = auth.uid())
     const { error: updErr } = await supabase.from("establishments")
       .update({ plan: toTier as any }).eq("id", data.establishment_id);
@@ -251,8 +254,44 @@ export const changeEstablishmentPlan = createServerFn({ method: "POST" })
       metadata: { from_plan: fromTier, to_plan: toTier, plan_id: newPlan.id, plan_name: newPlan.name } as never,
     });
 
+    // 5) Feature-unlock notifications (e.g. Avaliações públicas)
+    try {
+      const reviewsAfter = await hasFeature(supabase, data.establishment_id, "public_reviews");
+      if (!reviewsBefore && reviewsAfter) {
+        const { data: estFull } = await supabaseAdmin.from("establishments")
+          .select("name, slug").eq("id", data.establishment_id).maybeSingle();
+        const { data: ownerRow } = await supabaseAdmin.from("establishment_members")
+          .select("user_id").eq("establishment_id", data.establishment_id)
+          .eq("role", "owner").eq("active", true).limit(1).maybeSingle();
+        if (ownerRow?.user_id && estFull) {
+          const { data: ownerUser } = await supabaseAdmin.auth.admin.getUserById(ownerRow.user_id);
+          const email = ownerUser?.user?.email;
+          if (email) {
+            const { data: profile } = await supabaseAdmin.from("profiles")
+              .select("full_name").eq("id", ownerRow.user_id).maybeSingle();
+            const appUrl = process.env.APP_URL || process.env.VITE_APP_URL || "https://app.fidelize.com.br";
+            const { sendTemplateEmail } = await import("./email.server");
+            await sendTemplateEmail({
+              to: email,
+              template: "reviews_feature_unlocked",
+              variables: {
+                owner_name: profile?.full_name ?? "",
+                establishment_name: estFull.name,
+                plan_name: newPlan.name,
+                public_review_url: `${appUrl}/avaliar/${estFull.slug}`,
+                app_reviews_url: `${appUrl}/app/avaliacoes`,
+              },
+              actor_id: userId,
+              establishment_id: data.establishment_id,
+            }).catch(() => {/* swallow – não bloqueia o upgrade */});
+          }
+        }
+      }
+    } catch { /* não bloqueia o upgrade */ }
+
     return { ok: true, tier: toTier as any, kind, from: fromTier, to: toTier, plan_name: newPlan.name };
   });
+
 
 // ---------- Feature gating (backend) ----------
 export async function hasFeature(supabase: any, establishmentId: string, featureKey: string): Promise<boolean> {
