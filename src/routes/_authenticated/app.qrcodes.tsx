@@ -20,6 +20,9 @@ import { jsPDF } from "jspdf";
 import { PromoPoster, FORMATS, SEGMENT_LABEL, type PromoConfig, type PromoFormat, type Segment } from "@/components/PromoPoster";
 import { LogoUploadButton } from "@/components/LogoUploadButton";
 import { LoadingSkeleton } from "@/components/states";
+import { useMyFeature } from "@/hooks/useMyFeature";
+import { Link } from "@tanstack/react-router";
+import { Lock } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app/qrcodes")({
   head: () => ({ meta: [{ title: "Divulgação — Fidelize" }] }),
