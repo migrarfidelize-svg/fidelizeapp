@@ -499,7 +499,9 @@ export const adminValidateWebhookUrl = createServerFn({ method: "POST" })
       result.ok = res.status >= 200 && res.status < 300;
       result.message = result.ok
         ? `Endpoint respondeu ${res.status} em ${result.latency_ms}ms. Pronto para o Mercado Pago.`
-        : `Endpoint respondeu ${res.status}. Verifique se a rota está publicada.`;
+        : res.status === 404
+          ? `Endpoint respondeu 404. A URL configurada (${url}) provavelmente ainda não está publicada — publique o app ou aponte PUBLIC_APP_URL para a URL de preview (…-dev.lovable.app).`
+          : `Endpoint respondeu ${res.status}. Verifique se a rota está publicada.`;
     } catch (e: any) {
       result.latency_ms = Date.now() - started;
       result.message = `Falha ao alcançar o endpoint: ${e?.message ?? String(e)}. Publique o app antes de validar o webhook em produção.`;
