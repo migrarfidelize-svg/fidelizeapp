@@ -85,6 +85,7 @@ function Page() {
           <TabsTrigger value="ranking">Ranking</TabsTrigger>
           <TabsTrigger value="moderation">Moderação</TabsTrigger>
           <TabsTrigger value="fraud">Fraude</TabsTrigger>
+          <TabsTrigger value="blocked"><Lock className="mr-1 h-3 w-3" />Bloqueios de plano</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
