@@ -98,12 +98,9 @@ function CustomerCard() {
         )}
 
         {cards.length > 0 && (
-          <>
-            <WalletButtons token={token} />
-            <div className="mt-3">
-              <InstallAppButton label={`Adicionar ${est.name} à tela inicial`} />
-            </div>
-          </>
+          <div className="mt-3">
+            <InstallAppButton label={`Instalar ${est.name} como app`} autoPrompt />
+          </div>
         )}
 
         {/* History */}
