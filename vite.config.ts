@@ -24,11 +24,17 @@ export default defineConfig({
         clientsClaim: true,
         skipWaiting: true,
         cleanupOutdatedCaches: true,
-        // Exclude OAuth callback from navigation fallback so it hits the network.
+        // Offline fallback is only for customer vouchers. Admin/app pages must
+        // always load fresh code on refresh to avoid stale UI/runtime chunks.
         navigateFallback: "/",
+        navigateFallbackAllowlist: [/^\/c\//],
         navigateFallbackDenylist: [
           /^\/~oauth/,
           /^\/api\//,
+          /^\/app(?:\/|$)/,
+          /^\/admin(?:\/|$)/,
+          /^\/auth(?:\/|$)/,
+          /^\/onboarding(?:\/|$)/,
         ],
         // Don't precache HTML — always fetch fresh via NetworkFirst below.
         globPatterns: ["**/*.{js,css,woff,woff2,ico,png,svg,webp,avif}"],
@@ -36,7 +42,7 @@ export default defineConfig({
           {
             // HTML navigations: always try network first, fall back to cache offline.
             urlPattern: ({ request, url }) =>
-              request.mode === "navigate" && !url.pathname.startsWith("/~oauth") && !url.pathname.startsWith("/api/"),
+              request.mode === "navigate" && url.pathname.startsWith("/c/"),
             handler: "NetworkFirst",
             options: {
               cacheName: "html-navigations",
