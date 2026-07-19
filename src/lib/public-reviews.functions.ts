@@ -329,6 +329,7 @@ export const saveRatingOptions = createServerFn({ method: "POST" })
       options: z.array(optionSchema).min(1).max(5),
     }).parse(d))
   .handler(async ({ data, context }) => {
+    await assertFeature(context.supabase, data.establishmentId, "public_reviews");
     // authorize: options belong to form of that establishment
     const { data: form } = await context.supabase
       .from("review_forms")
