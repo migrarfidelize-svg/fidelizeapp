@@ -698,3 +698,253 @@ function PublicInbox({ estId }: { estId: string }) {
   );
 }
 
+
+// ================== LOW-RATING ALERTS (≤2) ==================
+function LowRatingAlerts({ estId }: { estId: string }) {
+  const listFn = useServerFn(listPublicReviewsInbox);
+  const statsFn = useServerFn(getPublicReviewStats);
+  const updFn = useServerFn(updatePublicReview);
+  const qc = useQueryClient();
+  const [search, setSearch] = useState("");
+  const [rating, setRating] = useState<string>("all");
+
+  const { data: stats } = useQuery({ queryKey: ["pr-stats", estId], queryFn: () => statsFn({ data: { establishmentId: estId, days: 30 } }) });
+  const { data: rows, isLoading } = useQuery({
+    queryKey: ["pr-alerts", estId, rating],
+    queryFn: () => listFn({ data: { establishmentId: estId, ratingFilter: rating === "all" ? undefined : Number(rating), limit: 200 } }),
+  });
+
+  const filtered = useMemo(() => {
+    const base = (rows ?? []).filter((r: any) => r.rating <= 2);
+    const s = search.trim().toLowerCase();
+    if (!s) return base;
+    return base.filter((r: any) =>
+      (r.customer_name ?? "").toLowerCase().includes(s) ||
+      (r.comment ?? "").toLowerCase().includes(s) ||
+      (r.customer_phone ?? "").toLowerCase().includes(s) ||
+      (r.customer_email ?? "").toLowerCase().includes(s) ||
+      (r.order_reference ?? "").toLowerCase().includes(s)
+    );
+  }, [rows, search]);
+
+  const open = filtered.filter((r: any) => r.status !== "resolved" && r.status !== "archived");
+  const handled = filtered.filter((r: any) => r.status === "resolved" || r.status === "archived");
+
+  const markHandled = useMutation({
+    mutationFn: async (id: string) => updFn({ data: { id, status: "resolved" } }),
+    onSuccess: () => {
+      toast.success("Marcada como tratada");
+      qc.invalidateQueries({ queryKey: ["pr-alerts", estId] });
+      qc.invalidateQueries({ queryKey: ["pr-inbox", estId] });
+      qc.invalidateQueries({ queryKey: ["pr-stats", estId] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card className="border-destructive/40">
+          <CardContent className="p-4">
+            <div className="text-xs text-muted-foreground flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-destructive" /> Não tratadas</div>
+            <div className="mt-1 text-3xl font-bold text-destructive">{stats?.lowRatingOpen ?? open.length}</div>
+          </CardContent>
+        </Card>
+        <Card><CardContent className="p-4"><div className="text-xs text-muted-foreground">Total ≤2 exibidas</div><div className="mt-1 text-3xl font-bold">{filtered.length}</div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="text-xs text-muted-foreground">Já tratadas</div><div className="mt-1 text-3xl font-bold">{handled.length}</div></CardContent></Card>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[220px]">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input className="pl-8" placeholder="Buscar por nome, comentário, telefone…" value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+        <Select value={rating} onValueChange={setRating}>
+          <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">1★ e 2★</SelectItem>
+            <SelectItem value="1">Apenas 1★</SelectItem>
+            <SelectItem value="2">Apenas 2★</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+      ) : open.length === 0 && handled.length === 0 ? (
+        <Card><CardContent className="p-8 text-center text-muted-foreground">Nenhuma avaliação com nota baixa. 🎉</CardContent></Card>
+      ) : (
+        <>
+          {open.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-destructive flex items-center gap-1"><AlertTriangle className="h-4 w-4" /> Pendentes de atendimento ({open.length})</h3>
+              {open.map((r: any) => (
+                <Card key={r.id} className="border-destructive/30">
+                  <CardContent className="p-4 space-y-2">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Stars n={r.rating} />
+                          <span className="text-sm font-semibold">{r.anonymous ? "Anônimo" : (r.customer_name || "Cliente")}</span>
+                          <Badge variant="destructive" className="text-[10px]">Nota baixa</Badge>
+                          <Badge variant="outline" className="text-[10px]">{r.status}</Badge>
+                        </div>
+                        <div className="text-xs text-muted-foreground">{formatDate(r.created_at)}{r.order_reference ? ` · Pedido ${r.order_reference}` : ""}</div>
+                      </div>
+                      <Button size="sm" onClick={() => markHandled.mutate(r.id)} disabled={markHandled.isPending}>
+                        <CheckCircle2 className="mr-1 h-3 w-3" />Marcar como tratada
+                      </Button>
+                    </div>
+                    {r.comment && <p className="text-sm">{r.comment}</p>}
+                    {!r.anonymous && (r.customer_phone || r.customer_email) && (
+                      <div className="text-xs text-muted-foreground">{r.customer_phone && <span>📞 {r.customer_phone}</span>}{r.customer_email && <span className="ml-3">✉️ {r.customer_email}</span>}</div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+          {handled.length > 0 && (
+            <div className="space-y-2 opacity-70">
+              <h3 className="text-sm font-semibold flex items-center gap-1"><CheckCircle2 className="h-4 w-4" /> Já tratadas ({handled.length})</h3>
+              {handled.map((r: any) => (
+                <Card key={r.id}>
+                  <CardContent className="p-4 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Stars n={r.rating} />
+                      <span className="text-sm font-semibold">{r.anonymous ? "Anônimo" : (r.customer_name || "Cliente")}</span>
+                      <Badge variant="secondary" className="text-[10px]">{r.status}</Badge>
+                      <span className="text-xs text-muted-foreground ml-auto">{formatDate(r.created_at)}</span>
+                    </div>
+                    {r.comment && <p className="text-sm text-muted-foreground">{r.comment}</p>}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ================== INSIGHTS TAB ==================
+function InsightsTab({ estId }: { estId: string }) {
+  const insFn = useServerFn(getReviewInsights);
+  const statsFn = useServerFn(getPublicReviewStats);
+  const [days, setDays] = useState<string>("30");
+  const { data: ins, isLoading } = useQuery({
+    queryKey: ["pr-insights", estId, days],
+    queryFn: () => insFn({ data: { establishmentId: estId, days: Number(days) } }),
+  });
+  const { data: stats } = useQuery({
+    queryKey: ["pr-stats-ins", estId, days],
+    queryFn: () => statsFn({ data: { establishmentId: estId, days: Number(days) } }),
+  });
+
+  if (isLoading || !ins) return <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+
+  const totalByRating = ins.byRatingOption.reduce((s, o) => s + o.count, 0) || 1;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <Label className="text-sm">Período</Label>
+        <Select value={days} onValueChange={setDays}>
+          <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="7">7 dias</SelectItem>
+            <SelectItem value="30">30 dias</SelectItem>
+            <SelectItem value="90">90 dias</SelectItem>
+            <SelectItem value="365">1 ano</SelectItem>
+          </SelectContent>
+        </Select>
+        <div className="ml-auto text-xs text-muted-foreground">{stats?.count ?? 0} avaliações · média {stats?.avg?.toFixed(1) ?? "—"}</div>
+      </div>
+
+      {ins.insights.length > 0 && (
+        <Card className="border-destructive/40 bg-destructive/5">
+          <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><TrendingDown className="h-4 w-4 text-destructive" />Insights — o que mais puxa a nota para baixo</CardTitle></CardHeader>
+          <CardContent className="space-y-2">
+            {ins.insights.map((i, idx) => (
+              <div key={idx} className="flex items-center justify-between gap-3 rounded-lg bg-background p-3">
+                <div className="min-w-0">
+                  <div className="text-sm font-medium truncate">{i.question}</div>
+                  <div className="text-xs text-muted-foreground">{i.responses} respostas · {i.lowCount} com nota ≤2</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-lg font-bold">{i.avgRating.toFixed(1)}★</div>
+                  <div className="text-[10px] text-muted-foreground">média associada</div>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      <Card>
+        <CardHeader className="pb-2"><CardTitle className="text-sm">Breakdown por categoria de nota</CardTitle></CardHeader>
+        <CardContent className="space-y-2">
+          {ins.byRatingOption.length === 0 && <div className="text-sm text-muted-foreground">Sem dados no período.</div>}
+          {ins.byRatingOption.map((o) => {
+            const pct = Math.round((o.count / totalByRating) * 100);
+            return (
+              <div key={o.rating} className="flex items-center gap-3">
+                <div className="flex w-24 items-center gap-1"><Stars n={o.rating} /></div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs text-muted-foreground truncate">{o.label}</div>
+                  <div className="h-2 overflow-hidden rounded-full bg-muted">
+                    <div className="h-full rounded-full bg-yellow-400" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+                <div className="w-20 text-right text-sm tabular-nums">{o.count} <span className="text-muted-foreground text-xs">({pct}%)</span></div>
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2"><CardTitle className="text-sm">Detalhamento por pergunta</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          {ins.byQuestion.length === 0 && <div className="text-sm text-muted-foreground">Nenhuma pergunta extra configurada.</div>}
+          {ins.byQuestion.map((q) => (
+            <div key={q.id} className="rounded-lg border p-3">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="text-sm font-medium">{q.question}</div>
+                  <div className="text-xs text-muted-foreground">{q.responses} respostas · tipo {q.type}</div>
+                </div>
+                <div className="text-right">
+                  <div className={`text-lg font-bold ${q.avgRating > 0 && q.avgRating < 3 ? "text-destructive" : ""}`}>
+                    {q.avgRating > 0 ? `${q.avgRating.toFixed(1)}★` : "—"}
+                  </div>
+                  {q.lowCount > 0 && <Badge variant="destructive" className="text-[10px]">{q.lowCount} nota ≤2</Badge>}
+                </div>
+              </div>
+              {q.breakdown.length > 0 && (
+                <div className="mt-3 space-y-1">
+                  {q.breakdown.map((b, i) => {
+                    const maxCount = Math.max(1, ...q.breakdown.map((x) => x.count));
+                    const pct = Math.round((b.count / maxCount) * 100);
+                    return (
+                      <div key={i} className="flex items-center gap-3 text-xs">
+                        <div className="w-32 truncate">{b.key}</div>
+                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                          <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+                        </div>
+                        <div className="w-24 text-right tabular-nums">
+                          {b.count} resp · {b.avgRating > 0 ? `${b.avgRating.toFixed(1)}★` : "—"}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
