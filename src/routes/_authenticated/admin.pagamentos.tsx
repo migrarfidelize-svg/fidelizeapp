@@ -112,7 +112,7 @@ function AdminPaymentsPage() {
             <Label>Webhook URL</Label>
             <div className="flex gap-2">
               <Input readOnly value={webhookUrl} className="font-mono text-xs" />
-              <Button variant="outline" size="icon" onClick={() => { navigator.clipboard.writeText(webhookUrl); toast.success("Copiado!"); }}><Copy className="h-4 w-4" /></Button>
+              <Button variant="outline" size="icon" aria-label="Copiar URL do webhook" onClick={() => { navigator.clipboard.writeText(webhookUrl); toast.success("Copiado!"); }}><Copy className="h-4 w-4" /></Button>
             </div>
             <p className="text-xs text-muted-foreground">Cole no painel do Mercado Pago em <em>Suas integrações → Webhooks</em>. Marque os eventos <strong>payment</strong> e <strong>merchant_order</strong>.</p>
           </div>

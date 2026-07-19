@@ -104,9 +104,9 @@ function KbManager() {
                   <td className="p-3">{a.published ? <Badge>Publicado</Badge> : <Badge variant="secondary">Rascunho</Badge>}</td>
                   <td className="p-3 text-right">
                     <div className="flex justify-end gap-1">
-                      {a.published && <a href={`/suporte/${est.slug}/kb/${a.slug}`} target="_blank"><Button size="icon" variant="ghost"><Eye className="h-4 w-4" /></Button></a>}
-                      <Button size="icon" variant="ghost" onClick={() => openEdit(a as Article, setEditing)}><Pencil className="h-4 w-4" /></Button>
-                      <Button size="icon" variant="ghost" onClick={() => remove(a.id)}><Trash2 className="h-4 w-4" /></Button>
+                      {a.published && <a href={`/suporte/${est.slug}/kb/${a.slug}`} target="_blank" rel="noreferrer"><Button size="icon" variant="ghost" aria-label="Ver artigo"><Eye className="h-4 w-4" /></Button></a>}
+                      <Button size="icon" variant="ghost" aria-label="Editar artigo" onClick={() => openEdit(a as Article, setEditing)}><Pencil className="h-4 w-4" /></Button>
+                      <Button size="icon" variant="ghost" aria-label="Excluir artigo" onClick={() => remove(a.id)}><Trash2 className="h-4 w-4" /></Button>
                     </div>
                   </td>
                 </tr>

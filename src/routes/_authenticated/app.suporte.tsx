@@ -172,7 +172,7 @@ function TicketDetail({ id, establishmentId, onChange }: { id: string; establish
             </SelectContent>
           </Select>
           {ticket.status !== "solved" && (
-            <Button variant="outline" size="icon" onClick={() => change({ ticket_id: id, status: "solved" })} title="Resolver">
+            <Button variant="outline" size="icon" aria-label="Marcar como resolvido" onClick={() => change({ ticket_id: id, status: "solved" })} title="Resolver">
               <CheckCircle2 className="h-4 w-4" />
             </Button>
           )}
@@ -259,7 +259,7 @@ function QuickReplies({ establishmentId, onPick }: { establishmentId: string; on
                     <div className="text-sm font-medium">{r.title}</div>
                     <div className="text-xs text-muted-foreground line-clamp-2">{r.body}</div>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => remove(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                  <Button variant="ghost" size="icon" aria-label="Excluir resposta rápida" onClick={() => remove(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                 </div>
               ))}
               {!replies?.length && <div className="text-xs text-muted-foreground">Nenhuma cadastrada ainda.</div>}
