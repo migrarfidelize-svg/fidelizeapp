@@ -116,11 +116,12 @@ function AdminPlansPage() {
                       </span>
                       <Switch
                         checked={f.enabled}
-                        onCheckedChange={async (v) => {
-                          try {
-                            await toggle({ data: { plan_id: p.id, feature_key: f.feature_key, feature_name: f.feature_name, enabled: v } });
-                            qc.invalidateQueries({ queryKey: ["admin-plans"] });
-                          } catch (e: any) { toast.error(e.message); }
+                        onCheckedChange={(v) => {
+                          if (SENSITIVE_FEATURES.has(f.feature_key)) {
+                            setConfirmToggle({ plan_id: p.id, plan_name: p.name, feature_key: f.feature_key, feature_name: f.feature_name, next: v });
+                          } else {
+                            applyToggle(v, p, f);
+                          }
                         }}
                       />
                     </label>
