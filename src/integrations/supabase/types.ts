@@ -2367,6 +2367,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_my_account: { Args: never; Returns: undefined }
       get_establishment_plan: {
         Args: { _est: string }
         Returns: {
@@ -2432,6 +2433,13 @@ export type Database = {
         Returns: boolean
       }
       is_super_admin: { Args: { _user: string }; Returns: boolean }
+      mark_past_due_subscriptions: {
+        Args: never
+        Returns: {
+          blocked: number
+          marked_past_due: number
+        }[]
+      }
     }
     Enums: {
       campaign_type: "stamps" | "points"
