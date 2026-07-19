@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { StampCard } from "@/components/StampCard";
+import { PublicRatingBlock } from "@/components/PublicRatingBlock";
 import { toast } from "sonner";
 import { Sparkles, MapPin, Phone } from "lucide-react";
 
@@ -125,6 +126,9 @@ function PublicPage() {
               </div>
             </div>
           )}
+        </div>
+        <div className="mt-6">
+          <PublicRatingBlock slug={slug} source="linktree" />
         </div>
         <div className="text-center mt-6 text-xs text-muted-foreground"><Link to="/">Crie o cartão fidelidade do seu negócio · Fidelize</Link></div>
       </div>
