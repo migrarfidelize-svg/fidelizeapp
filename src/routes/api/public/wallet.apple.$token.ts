@@ -26,7 +26,10 @@ export const Route = createFileRoute("/api/public/wallet/apple/$token")({
         const { readAppleCreds, buildSignedPkpass } = await import("@/lib/pkpass.server");
         const creds = readAppleCreds();
         if (!creds) {
-          console.warn("[pkpass] apple creds missing");
+          // creds missing — respond without leaking details to logs
+          return new Response("Apple Wallet não configurado neste servidor.", { status: 503 });
+        }
+        if (false) {
           return new Response("Apple Wallet não configurado neste servidor.", { status: 503 });
         }
         const token = params.token;

@@ -75,7 +75,8 @@ export const getArticle = createServerFn({ method: "GET" })
     const { data: related } = await s.from("kb_articles")
       .select("id, slug, title").eq("establishment_id", est.id).eq("published", true).neq("id", article.id)
       .limit(4);
-    return { establishment: est, article, related: related ?? [] };
+    const { sanitizeRichHtml } = await import("@/lib/sanitize-html");
+    return { establishment: est, article: { ...article, body_html: sanitizeRichHtml(article.body_html) }, related: related ?? [] };
   });
 
 export const submitArticleFeedback = createServerFn({ method: "POST" })
@@ -302,7 +303,12 @@ export const saveArticle = createServerFn({ method: "POST" })
     title: z.string().trim().min(3).max(150),
     slug: z.string().trim().min(2).max(80).regex(/^[a-z0-9-]+$/, "slug inválido"),
     excerpt: z.string().max(300).optional(),
-    body_html: z.string().max(50000),
+    body_html: z.string().max(50000).transform((v) => {
+      // Sanitize on write so stored HTML is already safe.
+      // Uses require to avoid top-level ESM in transform closure.
+      const { default: sanitize } = require("sanitize-html") as { default: typeof import("sanitize-html") };
+      return sanitize(v, { allowedTags: ["h1","h2","h3","h4","h5","h6","p","br","hr","strong","em","u","s","blockquote","code","pre","ul","ol","li","a","img","table","thead","tbody","tr","th","td","figure","figcaption","span","div"], allowedAttributes: { a: ["href","title","target","rel"], img: ["src","alt","title","width","height","loading"], "*": ["class"] }, allowedSchemes: ["http","https","mailto","tel"], allowedSchemesByTag: { img: ["http","https","data"] } });
+    }),
     tags: z.array(z.string().max(30)).max(10).default([]),
     published: z.boolean().default(false),
   }).parse(d))
