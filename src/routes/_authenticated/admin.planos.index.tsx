@@ -192,6 +192,63 @@ function AdminPlansPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!confirmToggle} onOpenChange={(o) => !o && setConfirmToggle(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              {confirmToggle?.next ? <Sparkle className="h-5 w-5 text-primary" /> : <AlertTriangle className="h-5 w-5 text-destructive" />}
+              {confirmToggle?.next ? "Ativar recurso no plano" : "Desativar recurso do plano"}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 text-sm">
+                <div>
+                  Você está prestes a <strong>{confirmToggle?.next ? "ATIVAR" : "DESATIVAR"}</strong> o recurso{" "}
+                  <strong>"{confirmToggle?.feature_name}"</strong> no plano <strong>{confirmToggle?.plan_name}</strong>.
+                </div>
+                {impactQ.isLoading ? (
+                  <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Calculando impacto…</div>
+                ) : impactQ.data ? (
+                  <div className="rounded-lg border p-3 bg-muted/40 space-y-1.5">
+                    <div className="flex justify-between"><span className="text-muted-foreground">Empresas afetadas</span><span className="font-semibold">{impactQ.data.establishments_count}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Plano (tier)</span><span className="font-mono text-xs">{impactQ.data.plan_tier}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Estado atual</span><span>{impactQ.data.currently_enabled ? "Ativo" : "Inativo"}</span></div>
+                  </div>
+                ) : null}
+                {confirmToggle?.next ? (
+                  <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs">
+                    Todos os lojistas neste plano ganharão acesso imediato ao recurso (o cache do painel dos lojistas expira em até 15s ou ao trocar de aba). Um e-mail automático é enviado quando isso desbloqueia "Avaliações públicas".
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
+                    Os lojistas neste plano perderão o acesso ao recurso. QRs de avaliação já criados continuam existindo, mas a geração de novos QRs e o backend serão bloqueados — cada tentativa aparecerá em <strong>/admin/avaliações → Bloqueios de plano</strong>.
+                  </div>
+                )}
+                <div className="text-[11px] text-muted-foreground">Esta ação é registrada em auditoria com data, responsável e diferença antes/depois.</div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={saving}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={saving}
+              onClick={async () => {
+                if (!confirmToggle) return;
+                setSaving(true);
+                try {
+                  await toggle({ data: { plan_id: confirmToggle.plan_id, feature_key: confirmToggle.feature_key, feature_name: confirmToggle.feature_name, enabled: confirmToggle.next } });
+                  qc.invalidateQueries({ queryKey: ["admin-plans"] });
+                  toast.success(`Recurso "${confirmToggle.feature_name}" ${confirmToggle.next ? "ativado" : "desativado"} em ${confirmToggle.plan_name}.`);
+                  setConfirmToggle(null);
+                } catch (e: any) { toast.error(e.message); }
+                finally { setSaving(false); }
+              }}
+            >
+              {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Aplicando…</> : (confirmToggle?.next ? "Ativar recurso" : "Desativar recurso")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
