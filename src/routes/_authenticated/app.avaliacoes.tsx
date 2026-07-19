@@ -23,7 +23,9 @@ import {
 } from "@/lib/public-reviews.functions";
 import { MerchantReplyDialog } from "@/components/MerchantReplyDialog";
 import { formatDate } from "@/lib/format";
-import { Trash2, Plus, ExternalLink as ExtLink, AlertTriangle, TrendingDown, Search, CheckCircle2 } from "lucide-react";
+import { Trash2, Plus, ExternalLink as ExtLink, AlertTriangle, TrendingDown, Search, CheckCircle2, Lock, Sparkles } from "lucide-react";
+import { useMyFeature } from "@/hooks/useMyFeature";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/app/avaliacoes")({
   head: () => ({ meta: [{ title: "Avaliações — Fidelize" }] }),
