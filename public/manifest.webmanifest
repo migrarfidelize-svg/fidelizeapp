@@ -1,17 +1,24 @@
 {
+  "id": "/",
   "name": "Fidelize — Cartão fidelidade digital",
   "short_name": "Fidelize",
   "description": "Seu cartão fidelidade digital. Acumule carimbos e resgate recompensas sem precisar de app.",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#7c3aed",
   "lang": "pt-BR",
+  "dir": "ltr",
+  "prefer_related_applications": false,
   "categories": ["lifestyle", "shopping", "business"],
   "icons": [
+    { "src": "/icon-512.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "/icon-512.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-512.png", "sizes": "any", "type": "image/png", "purpose": "any" }
   ]
 }
