@@ -101,6 +101,7 @@ function SiteHeader() {
           <a href="#faq" className="hover:text-foreground">Dúvidas</a>
         </nav>
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           {session ? (
             <Button asChild><Link to="/app">Meu painel</Link></Button>
           ) : (
