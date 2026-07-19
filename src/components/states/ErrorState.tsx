@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -27,11 +28,19 @@ export function ErrorState({
   className,
 }: ErrorStateProps) {
   const detail = getMessage(error);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    // Move keyboard/SR focus to the alert so users are aware immediately.
+    ref.current?.focus();
+  }, []);
   return (
     <div
+      ref={ref}
       role="alert"
+      aria-live="assertive"
+      tabIndex={-1}
       className={cn(
-        "flex flex-col items-center justify-center gap-4 rounded-lg border border-destructive/20 bg-destructive/5 px-6 py-12 text-center",
+        "flex flex-col items-center justify-center gap-4 rounded-lg border border-destructive/20 bg-destructive/5 px-6 py-12 text-center outline-none focus-visible:ring-2 focus-visible:ring-ring",
         className,
       )}
     >

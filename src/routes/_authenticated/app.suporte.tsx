@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Label } from "@/components/ui/label";
 import { Ticket, Clock, CheckCircle2, Star, Send, Lock, Zap, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/app/suporte")({
   head: () => ({ meta: [{ title: "Suporte — Fidelize" }] }),
@@ -130,7 +131,7 @@ function TicketDetail({ id, establishmentId, onChange }: { id: string; establish
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const { data } = useQuery({ queryKey: ["hd-ticket", id], queryFn: () => fetchTicket({ data: { id } }), refetchInterval: 15000 });
 
-  if (!data) return <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">Carregando…</div>;
+  if (!data) return <LoadingSkeleton variant="page" />;
   const { ticket, messages } = data;
 
   async function send() {

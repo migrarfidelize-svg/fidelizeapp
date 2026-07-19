@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { FileText, Plus, Trash2, Eye, Send, Save, Code2 } from "lucide-react";
+import { LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/admin/email-templates")({
   head: () => ({ meta: [{ title: "Templates de e-mail — Fidelize" }] }),
@@ -58,7 +59,7 @@ function TemplatesPage() {
       </div>
 
       {isLoading ? (
-        <div className="text-muted-foreground">Carregando…</div>
+        <LoadingSkeleton variant="list" rows={4} />
       ) : templates.length === 0 ? (
         <Card><CardContent className="py-10 text-center text-muted-foreground">Nenhum template cadastrado.</CardContent></Card>
       ) : (
@@ -185,7 +186,7 @@ function TemplateEditor({ id, onClose }: { id?: string; onClose: () => void }) {
         <DialogHeader>
           <DialogTitle>{isEdit ? "Editar template" : "Novo template"}</DialogTitle>
         </DialogHeader>
-        {!loaded ? <div className="text-muted-foreground">Carregando…</div> : (
+        {!loaded ? <LoadingSkeleton variant="list" rows={4} /> : (
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2">

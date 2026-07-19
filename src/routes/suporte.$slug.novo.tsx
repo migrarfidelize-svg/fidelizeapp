@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { LoadingSkeleton } from "@/components/states";
 
 const schema = z.object({
   subject: z.string().trim().min(4, "Descreva melhor o assunto"),
@@ -60,7 +61,7 @@ function NewTicket() {
     } finally { setSubmitting(false); }
   }
 
-  if (session === undefined) return <div className="p-8 text-center text-muted-foreground">Carregando…</div>;
+  if (session === undefined) return <div className="p-8"><LoadingSkeleton variant="form" rows={4} /></div>;
 
   return (
     <div className="min-h-dvh bg-background">

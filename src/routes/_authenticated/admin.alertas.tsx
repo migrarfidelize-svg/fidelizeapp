@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, ExternalLink, Bell } from "lucide-react";
 import { toast } from "sonner";
+import { LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/admin/alertas")({
   component: AdminAlertas,
@@ -44,7 +45,7 @@ function AdminAlertas() {
 
       <Card>
         <CardContent className="p-0">
-          {isLoading && <div className="p-6 text-sm text-muted-foreground">Carregando…</div>}
+          {isLoading && <div className="p-6"><LoadingSkeleton variant="table" rows={5} /></div>}
           {!isLoading && (data?.length ?? 0) === 0 && <div className="p-8 text-sm text-muted-foreground text-center">Sem alertas {onlyUnack ? "pendentes" : "registrados"}.</div>}
           <div className="divide-y">
             {(data ?? []).map((ev) => (

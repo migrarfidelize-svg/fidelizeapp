@@ -14,6 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, FolderPlus, Eye } from "lucide-react";
 import { toast } from "sonner";
+import { LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/app/kb")({
   head: () => ({ meta: [{ title: "Base de conhecimento — Fidelize" }] }),
@@ -41,7 +42,7 @@ function KbManager() {
   const [catOpen, setCatOpen] = useState(false);
   const [catName, setCatName] = useState("");
 
-  if (!est) return <div className="text-center py-12 text-muted-foreground">Carregando…</div>;
+  if (!est) return <LoadingSkeleton variant="card-grid" rows={6} className="py-4" />;
 
   async function save() {
     if (!editing) return;

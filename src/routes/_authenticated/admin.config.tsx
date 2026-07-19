@@ -37,6 +37,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
+import { LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/admin/config")({
   head: () => ({ meta: [{ title: "Configurações — Fidelize" }] }),
@@ -57,7 +58,7 @@ function ConfigPage() {
       <p className="mt-2 text-sm text-muted-foreground">Apenas administradores da plataforma podem acessar Configurações.</p>
     </div>
   );
-  if (!est) return <div className="text-muted-foreground">Carregando estabelecimento…</div>;
+  if (!est) return <LoadingSkeleton variant="page" />;
   return <ConfigInner establishmentId={est.id} />;
 }
 
@@ -67,7 +68,7 @@ function ConfigInner({ establishmentId }: { establishmentId: string }) {
     queryKey: ["est-full", establishmentId],
     queryFn: () => getFull({ data: { establishment_id: establishmentId } }),
   });
-  if (isLoading || !data) return <div className="text-muted-foreground">Carregando…</div>;
+  if (isLoading || !data) return <LoadingSkeleton variant="form" rows={5} />;
 
   return (
     <div className="space-y-6">
@@ -547,7 +548,7 @@ export function EquipeTab({ establishmentId }: { establishmentId: string }) {
         </CardHeader>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-sm text-muted-foreground">Carregando equipe…</div>
+            <div className="p-4"><LoadingSkeleton variant="table" rows={4} /></div>
           ) : filtered.length === 0 ? (
             <div className="p-10 text-center text-sm text-muted-foreground">
               Nenhum membro encontrado.

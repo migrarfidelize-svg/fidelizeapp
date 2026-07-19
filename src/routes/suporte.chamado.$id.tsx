@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Star } from "lucide-react";
 import { toast } from "sonner";
+import { LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/suporte/chamado/$id")({
   head: () => ({ meta: [{ title: "Chamado" }, { name: "robots", content: "noindex" }] }),
@@ -35,7 +36,7 @@ function CustomerTicket() {
   const { data, isLoading } = useQuery({ queryKey: ["my-ticket", id], queryFn: () => fetchTicket({ data: { id } }), enabled: authed === true, refetchInterval: 15000 });
 
   if (authed === false) return <div className="p-8 text-center"><Link to="/auth"><Button>Entrar</Button></Link></div>;
-  if (isLoading || authed === undefined) return <div className="p-8 text-center text-muted-foreground">Carregando…</div>;
+  if (isLoading || authed === undefined) return <div className="p-8"><LoadingSkeleton variant="page" /></div>;
   if (!data) return <div className="p-8 text-center">Chamado não encontrado</div>;
   const { ticket, messages } = data;
 

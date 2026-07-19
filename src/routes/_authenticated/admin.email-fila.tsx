@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { RefreshCw, PlayCircle, Trash2, ListChecks } from "lucide-react";
+import { LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/admin/email-fila")({
   head: () => ({ meta: [{ title: "Fila de e-mails — Fidelize" }] }),
@@ -73,7 +74,7 @@ function QueuePage() {
           <CardDescription>{items.length} registro(s).</CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoading ? <div className="text-sm text-muted-foreground">Carregando…</div> :
+          {isLoading ? <LoadingSkeleton variant="table" rows={5} /> :
           items.length === 0 ? <div className="text-sm text-muted-foreground">Nenhum item.</div> :
           <div className="divide-y">
             {items.map((it: any) => (
