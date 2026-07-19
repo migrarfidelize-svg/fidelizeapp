@@ -303,24 +303,21 @@ export const saveArticle = createServerFn({ method: "POST" })
     title: z.string().trim().min(3).max(150),
     slug: z.string().trim().min(2).max(80).regex(/^[a-z0-9-]+$/, "slug inválido"),
     excerpt: z.string().max(300).optional(),
-    body_html: z.string().max(50000).transform((v) => {
-      // Sanitize on write so stored HTML is already safe.
-      // Uses require to avoid top-level ESM in transform closure.
-      const { default: sanitize } = require("sanitize-html") as { default: typeof import("sanitize-html") };
-      return sanitize(v, { allowedTags: ["h1","h2","h3","h4","h5","h6","p","br","hr","strong","em","u","s","blockquote","code","pre","ul","ol","li","a","img","table","thead","tbody","tr","th","td","figure","figcaption","span","div"], allowedAttributes: { a: ["href","title","target","rel"], img: ["src","alt","title","width","height","loading"], "*": ["class"] }, allowedSchemes: ["http","https","mailto","tel"], allowedSchemesByTag: { img: ["http","https","data"] } });
-    }),
+    body_html: z.string().max(50000),
     tags: z.array(z.string().max(30)).max(10).default([]),
     published: z.boolean().default(false),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    const body_text = data.body_html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+    const { sanitizeRichHtml } = await import("@/lib/sanitize-html");
+    const clean_html = sanitizeRichHtml(data.body_html);
+    const body_text = clean_html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
     const payload = {
       establishment_id: data.establishment_id,
       category_id: data.category_id ?? null,
       title: data.title,
       slug: data.slug,
       excerpt: data.excerpt ?? null,
-      body_html: data.body_html,
+      body_html: clean_html,
       body_text,
       tags: data.tags,
       published: data.published,
