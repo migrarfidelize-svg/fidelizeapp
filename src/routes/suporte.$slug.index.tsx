@@ -28,14 +28,13 @@ function HelpCenterHub() {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const search = useServerFn(searchArticles);
+  const { establishment, categories, articles } = data;
   const { data: results } = useQuery({
-    queryKey: ["kb-search", data?.establishment.id, q],
-    queryFn: () => q.length >= 2 && data ? search({ data: { establishment_id: data.establishment.id, q } }) : Promise.resolve([]),
-    enabled: q.length >= 2 && !!data,
+    queryKey: ["kb-search", establishment.id, q],
+    queryFn: () => q.length >= 2 ? search({ data: { establishment_id: establishment.id, q } }) : Promise.resolve([]),
+    enabled: q.length >= 2,
   });
 
-  if (!data) return null;
-  const { establishment, categories, articles } = data;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary-soft/40 to-background">
@@ -75,7 +74,7 @@ function HelpCenterHub() {
           </div>
         )}
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Link to="/suporte/$slug/novo" params={params}><Button size="lg" className="rounded-full"><MessageCircle className="mr-2 h-4 w-4" />Abrir chamado</Button></Link>
+          <Link to="/suporte/$slug/novo" params={params} search={{ assunto: "" }}><Button size="lg" className="rounded-full"><MessageCircle className="mr-2 h-4 w-4" />Abrir chamado</Button></Link>
           <Link to="/suporte/meus"><Button size="lg" variant="outline" className="rounded-full">Ver meus chamados</Button></Link>
         </div>
       </section>
