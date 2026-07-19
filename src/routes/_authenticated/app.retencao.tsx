@@ -42,9 +42,30 @@ function RetencaoPage() {
     enabled: !!activeEst?.id,
   });
 
-  const [form, setForm] = useState<null | NonNullable<typeof settings>>(null);
+  type RetForm = {
+    establishment_id: string;
+    birthday_enabled: boolean;
+    birthday_message: string;
+    birthday_coupon_percent: number;
+    reengagement_enabled: boolean;
+    reengagement_days: number;
+    reengagement_message: string;
+    tiers_enabled: boolean;
+    tier_thresholds: { bronze: number; prata: number; ouro: number; diamante: number };
+    referral_enabled: boolean;
+    referral_bonus_stamps: number;
+  };
+  const [form, setForm] = useState<RetForm | null>(null);
   useEffect(() => {
-    if (settings) setForm(settings as NonNullable<typeof settings>);
+    if (settings) {
+      const s = settings as unknown as RetForm;
+      setForm({
+        ...s,
+        tier_thresholds: (s.tier_thresholds ?? {
+          bronze: 0, prata: 10, ouro: 25, diamante: 50,
+        }) as RetForm["tier_thresholds"],
+      });
+    }
   }, [settings]);
 
   const save = useMutation({
