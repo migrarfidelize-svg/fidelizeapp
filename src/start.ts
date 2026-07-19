@@ -1,6 +1,7 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";
+import { captureServerError } from "./lib/sentry.server";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
@@ -10,6 +11,7 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
     if (error != null && typeof error === "object" && "statusCode" in error) {
       throw error;
     }
+    captureServerError(error, { middleware: "request" });
     console.error(error);
     return new Response(renderErrorPage(), {
       status: 500,
@@ -18,7 +20,16 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
   }
 });
 
+const serverFnErrorCapture = createMiddleware({ type: "function" }).server(async ({ next }) => {
+  try {
+    return await next();
+  } catch (error) {
+    captureServerError(error, { middleware: "serverFn" });
+    throw error;
+  }
+});
+
 export const startInstance = createStart(() => ({
-  functionMiddleware: [attachSupabaseAuth],
+  functionMiddleware: [attachSupabaseAuth, serverFnErrorCapture],
   requestMiddleware: [errorMiddleware],
 }));
