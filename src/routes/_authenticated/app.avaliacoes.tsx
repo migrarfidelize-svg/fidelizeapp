@@ -15,7 +15,13 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { listReviews, getReviewStats, replyReview, toggleReviewPublic, getReviewSettings, saveReviewSettings } from "@/lib/reviews.functions";
+import {
+  getMerchantReviewForm, saveMerchantReviewForm, saveRatingOptions,
+  upsertReviewQuestion, deleteReviewQuestion,
+  listPublicReviewsInbox, updatePublicReview, getPublicReviewStats,
+} from "@/lib/public-reviews.functions";
 import { formatDate } from "@/lib/format";
+import { Trash2, Plus, ExternalLink as ExtLink } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app/avaliacoes")({
   head: () => ({ meta: [{ title: "Avaliações — Fidelize" }] }),
