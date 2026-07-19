@@ -185,10 +185,9 @@ async function grantBonusStamps(
   customerId: string,
   establishmentId: string,
   count: number,
-  note: string,
+  _note: string,
 ) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  // Pick an active campaign for this establishment.
   const { data: campaign } = await supabaseAdmin
     .from("campaigns")
     .select("id, stamps_required")
@@ -198,7 +197,7 @@ async function grantBonusStamps(
     .limit(1)
     .maybeSingle();
   if (!campaign) return;
-  // Ensure a loyalty_card exists.
+
   const { data: existing } = await supabaseAdmin
     .from("loyalty_cards")
     .select("id, stamps, cycle")
@@ -206,19 +205,28 @@ async function grantBonusStamps(
     .eq("campaign_id", campaign.id)
     .maybeSingle();
   let cardId = existing?.id;
+  let cycle = existing?.cycle ?? 1;
   if (!cardId) {
     const { data: created } = await supabaseAdmin
       .from("loyalty_cards")
-      .insert({ customer_id: customerId, campaign_id: campaign.id, stamps: 0, cycle: 1 })
-      .select("id")
+      .insert({
+        customer_id: customerId,
+        campaign_id: campaign.id,
+        establishment_id: establishmentId,
+        stamps: 0,
+        cycle: 1,
+      })
+      .select("id, cycle")
       .single();
     cardId = created?.id;
+    cycle = created?.cycle ?? 1;
   }
   if (!cardId) return;
   for (let i = 0; i < count; i++) {
     await supabaseAdmin.from("stamps").insert({
       card_id: cardId,
-      note,
+      cycle,
+      establishment_id: establishmentId,
     });
   }
 }
