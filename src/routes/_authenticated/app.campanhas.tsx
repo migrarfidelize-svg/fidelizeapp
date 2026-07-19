@@ -30,6 +30,7 @@ import { StampCard } from "@/components/StampCard";
 import { Plus, Pencil, Trash2, Pause, Play, Sparkles, Users, Gift, CheckCircle2 } from "lucide-react";
 import { LogoUploadButton } from "@/components/LogoUploadButton";
 import { STAMP_ICON_OPTIONS, getStampIcon, stampIconLabel } from "@/lib/stampIcons";
+import { EmptyState, ErrorState, LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/app/campanhas")({
   head: () => ({ meta: [{ title: "Campanhas — Fidelize" }] }),
@@ -97,11 +98,12 @@ function CampanhasPage() {
     | { id: string; name: string; logo_url: string | null; primary_color: string; accent_color: string }
     | undefined;
 
-  const { data: campaigns, isLoading } = useQuery({
+  const campaignsQuery = useQuery({
     queryKey: ["campaigns", est?.id],
     queryFn: () => getCamps({ data: { establishment_id: est!.id } }),
     enabled: !!est?.id,
   });
+  const { data: campaigns, isLoading, isError, error, refetch } = campaignsQuery;
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<CampaignRow | null>(null);
@@ -215,16 +217,22 @@ function CampanhasPage() {
       </div>
 
       {isLoading ? (
-        <Card><CardContent className="p-8 text-center text-muted-foreground">Carregando…</CardContent></Card>
+        <LoadingSkeleton variant="card-grid" rows={6} />
+      ) : isError ? (
+        <ErrorState
+          title="Não foi possível carregar as campanhas"
+          description="Verifique sua conexão e tente novamente."
+          error={error}
+          onRetry={() => refetch()}
+        />
       ) : (campaigns?.length ?? 0) === 0 ? (
-        <Card>
-          <CardContent className="p-10 text-center space-y-3">
-            <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 grid place-items-center text-primary"><Sparkles className="h-6 w-6" /></div>
-            <div className="font-semibold text-lg">Nenhuma campanha ainda</div>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto">Crie sua primeira campanha para começar a distribuir cartões fidelidade aos seus clientes.</p>
-            <Button onClick={openNew} className="gap-2 mt-2"><Plus className="h-4 w-4" />Criar campanha</Button>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Sparkles}
+          title="Nenhuma campanha ainda"
+          description="Crie sua primeira campanha para começar a distribuir cartões fidelidade aos seus clientes."
+          actionLabel="Criar campanha"
+          onAction={openNew}
+        />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {(campaigns as CampaignRow[]).map((c) => (

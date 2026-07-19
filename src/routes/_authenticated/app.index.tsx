@@ -8,6 +8,7 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianG
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
 import { GoalsCard } from "@/components/GoalsCard";
+import { ErrorState, LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/app/")({
   component: Dashboard,
@@ -18,13 +19,24 @@ function Dashboard() {
   const getData = useServerFn(getDashboardData);
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
   const est = memberships?.[0]?.establishment as { id: string; name: string; slug: string } | undefined;
-  const { data } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     enabled: !!est,
     queryKey: ["dashboard", est?.id],
     queryFn: () => getData({ data: { establishment_id: est!.id } }),
   });
 
-  if (!est || !data) return <div className="text-muted-foreground">Carregando painel…</div>;
+  if (!est || isLoading || !data) {
+    if (isError) {
+      return (
+        <ErrorState
+          title="Não foi possível carregar o painel"
+          error={error}
+          onRetry={() => refetch()}
+        />
+      );
+    }
+    return <LoadingSkeleton variant="page" />;
+  }
 
   const stats = [
     { label: "Clientes", value: data.customersCount, icon: Users, color: "text-primary" },

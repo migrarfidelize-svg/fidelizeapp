@@ -14,6 +14,8 @@ import { toast } from "sonner";
 import { formatDate } from "@/lib/format";
 import { downloadCSV, downloadPDF } from "@/lib/export";
 import { adminReportPaymentFailure } from "@/lib/admin.functions";
+import { EmptyState, ErrorState, LoadingSkeleton } from "@/components/states";
+import { Building2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/empresas")({
   component: AdminEmpresas,
@@ -33,7 +35,7 @@ function AdminEmpresas() {
   const [status, setStatus] = useState<"all" | "active" | "blocked">("all");
   const [plan, setPlan_] = useState<"all" | "free" | "starter" | "pro" | "enterprise">("all");
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin-ests", query, status, plan],
     queryFn: () => listFn({ data: { query: query || undefined, status, plan } }),
   });
@@ -119,8 +121,25 @@ function AdminEmpresas() {
 
       <Card>
         <CardContent className="p-0">
-          {isLoading && <div className="p-6 text-sm text-muted-foreground">Carregando…</div>}
-          {!isLoading && (data?.length ?? 0) === 0 && <div className="p-8 text-sm text-muted-foreground text-center">Nenhuma empresa encontrada.</div>}
+          {isLoading && <div className="p-6"><LoadingSkeleton variant="list" rows={5} /></div>}
+          {isError && !isLoading && (
+            <div className="p-6">
+              <ErrorState
+                title="Falha ao carregar empresas"
+                error={error}
+                onRetry={() => refetch()}
+              />
+            </div>
+          )}
+          {!isLoading && !isError && (data?.length ?? 0) === 0 && (
+            <div className="p-6">
+              <EmptyState
+                icon={Building2}
+                title="Nenhuma empresa encontrada"
+                description="Ajuste os filtros ou aguarde novos cadastros."
+              />
+            </div>
+          )}
           <div className="divide-y">
             {(data ?? []).map((e) => (
               <div key={e.id} className="flex items-center gap-4 p-4">
