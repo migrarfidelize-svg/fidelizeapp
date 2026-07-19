@@ -645,6 +645,29 @@ function QRCodes() {
         </div>
       </div>
 
+      {/* Destination picker */}
+      <div className="rounded-xl border p-3 bg-muted/20 space-y-2">
+        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Destino do QR Code</div>
+        <div className="grid sm:grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setQrTarget("linktree")}
+            className={`rounded-lg border px-3 py-2.5 text-left transition ${qrTarget === "linktree" ? "border-primary bg-primary-soft text-primary" : "border-border hover:border-primary/40"}`}
+          >
+            <div className="text-sm font-semibold">Cartão fidelidade</div>
+            <div className="text-[11px] text-muted-foreground truncate">/l/{est?.slug ?? "sua-empresa"}</div>
+          </button>
+          <button
+            type="button"
+            onClick={() => setQrTarget("review")}
+            className={`rounded-lg border px-3 py-2.5 text-left transition ${qrTarget === "review" ? "border-primary bg-primary-soft text-primary" : "border-border hover:border-primary/40"}`}
+          >
+            <div className="text-sm font-semibold">Avaliar atendimento</div>
+            <div className="text-[11px] text-muted-foreground truncate">/avaliar/{est?.slug ?? "sua-empresa"}</div>
+          </button>
+        </div>
+      </div>
+
       {/* Format picker */}
       <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
         {(Object.keys(FORMATS) as PromoFormat[]).map((k) => {
