@@ -295,6 +295,7 @@ export const saveMerchantReviewForm = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: z.infer<typeof formSaveSchema>) => formSaveSchema.parse(d))
   .handler(async ({ data, context }) => {
+    await assertFeature(context.supabase, data.establishmentId, "public_reviews");
     const formId = await ensureForm(
       context.supabase as unknown as ReturnType<typeof publicClient>,
       data.establishmentId,
