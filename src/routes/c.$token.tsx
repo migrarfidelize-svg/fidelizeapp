@@ -98,7 +98,14 @@ function CustomerCard() {
           </div>
         )}
 
-        {cards.length > 0 && <WalletButtons token={token} />}
+        {cards.length > 0 && (
+          <>
+            <WalletButtons token={token} />
+            <div className="mt-3">
+              <InstallAppButton label={`Adicionar ${est.name} à tela inicial`} />
+            </div>
+          </>
+        )}
 
         {/* History */}
         <section className="mt-8 rounded-3xl border bg-card/70 p-5 backdrop-blur">
