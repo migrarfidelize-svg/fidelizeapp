@@ -21,6 +21,7 @@ import {
   listPublicReviewsInbox, updatePublicReview, getPublicReviewStats,
   getReviewInsights,
 } from "@/lib/public-reviews.functions";
+import { MerchantReplyDialog } from "@/components/MerchantReplyDialog";
 import { formatDate } from "@/lib/format";
 import { Trash2, Plus, ExternalLink as ExtLink, AlertTriangle, TrendingDown, Search, CheckCircle2 } from "lucide-react";
 
