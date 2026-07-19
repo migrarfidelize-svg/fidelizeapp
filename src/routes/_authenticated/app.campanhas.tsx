@@ -97,11 +97,12 @@ function CampanhasPage() {
     | { id: string; name: string; logo_url: string | null; primary_color: string; accent_color: string }
     | undefined;
 
-  const { data: campaigns, isLoading } = useQuery({
+  const campaignsQuery = useQuery({
     queryKey: ["campaigns", est?.id],
     queryFn: () => getCamps({ data: { establishment_id: est!.id } }),
     enabled: !!est?.id,
   });
+  const { data: campaigns, isLoading, isError, error, refetch } = campaignsQuery;
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<CampaignRow | null>(null);
