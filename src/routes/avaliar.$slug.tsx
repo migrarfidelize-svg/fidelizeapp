@@ -1,11 +1,18 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { queryOptions, useSuspenseQuery, useQuery } from "@tanstack/react-query";
+import { Star } from "lucide-react";
 import { PublicRatingBlock } from "@/components/PublicRatingBlock";
-import { getPublicReviewForm } from "@/lib/public-reviews.functions";
+import { getPublicReviewForm, getPublicReviewsList } from "@/lib/public-reviews.functions";
+import { formatDate } from "@/lib/format";
 
 const opts = (slug: string) => queryOptions({
   queryKey: ["public-review-form", slug],
   queryFn: () => getPublicReviewForm({ data: { slug } }),
+});
+
+const listOpts = (slug: string) => queryOptions({
+  queryKey: ["public-reviews-list", slug],
+  queryFn: () => getPublicReviewsList({ data: { slug, limit: 12 } }),
 });
 
 export const Route = createFileRoute("/avaliar/$slug")({
@@ -27,9 +34,20 @@ export const Route = createFileRoute("/avaliar/$slug")({
   notFoundComponent: () => <div className="grid min-h-dvh place-items-center text-muted-foreground">Página não encontrada.</div>,
 });
 
+function Stars({ n }: { n: number }) {
+  return (
+    <div className="flex gap-0.5">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <Star key={i} className={`h-4 w-4 ${i <= n ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/30"}`} />
+      ))}
+    </div>
+  );
+}
+
 function Page() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(opts(slug));
+  const { data: reviews } = useQuery(listOpts(slug));
   const d = data!;
   const est = d.est;
 
@@ -52,6 +70,34 @@ function Page() {
             </div>
           )}
         </div>
+
+        {reviews && reviews.length > 0 && (
+          <section className="mt-10">
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">O que outros clientes disseram</h2>
+            <div className="space-y-3">
+              {reviews.map((r) => (
+                <article key={r.id} className="rounded-xl border bg-card p-4 shadow-sm">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <Stars n={r.rating} />
+                      <span className="text-sm font-medium">{r.author}</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{formatDate(r.created_at)}</span>
+                  </div>
+                  {r.comment && <p className="mt-2 text-sm leading-relaxed">{r.comment}</p>}
+                  {r.merchant_reply && (
+                    <div className="mt-3 rounded-lg border-l-2 p-3" style={{ borderColor: est.primary_color, background: `${est.primary_color}10` }}>
+                      <div className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: est.primary_color }}>
+                        Resposta de {est.name}{r.merchant_reply_at ? ` · ${formatDate(r.merchant_reply_at)}` : ""}
+                      </div>
+                      <p className="mt-1 text-sm">{r.merchant_reply}</p>
+                    </div>
+                  )}
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
 
         <div className="mt-10 text-center text-xs text-muted-foreground">Powered by Fidelize</div>
       </div>
