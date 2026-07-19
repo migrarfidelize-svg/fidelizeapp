@@ -136,6 +136,10 @@ function Page() {
           <FraudCard title="Múltiplas avaliações do mesmo IP (≥5)" rows={fraud.data?.ip ?? []} labelKey="IP" />
           <FraudCard title="Rajadas em 10 minutos (≥10)" rows={fraud.data?.bursts ?? []} labelKey="Janela" />
         </TabsContent>
+
+        <TabsContent value="blocked" className="space-y-4">
+          <BlockedByPlan days={days} />
+        </TabsContent>
       </Tabs>
     </div>
   );
