@@ -10,6 +10,17 @@ import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield, LifeBuoy, BookOpen, Package, Receipt } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { GuidedTour, type TourStep } from "@/components/GuidedTour";
+
+const MERCHANT_TOUR_STEPS: TourStep[] = [
+  { target: "[data-tour='sidebar-logo']", title: "Bem-vindo à Fidelize!", description: "Vamos dar um tour rápido pelas áreas essenciais da plataforma. Leva menos de 1 minuto.", placement: "center" },
+  { target: "[data-tour='nav-/app']", title: "Painel", description: "Acompanhe carimbos, clientes ativos, recompensas resgatadas e sua meta do mês em tempo real.", placement: "right" },
+  { target: "[data-tour='nav-/app/carimbar']", title: "Carimbar cliente", description: "Adicione carimbos por busca, leitura de QR Code do voucher ou câmera. É o coração operacional do dia a dia.", placement: "right" },
+  { target: "[data-tour='nav-/app/clientes']", title: "Base de clientes", description: "Todos os seus clientes fidelizados com filtros, importação em CSV e histórico de visitas.", placement: "right" },
+  { target: "[data-tour='nav-/app/campanhas']", title: "Campanhas", description: "Crie e personalize seus cartões: quantos carimbos, qual recompensa, ícones e cores.", placement: "right" },
+  { target: "[data-tour='nav-/app/qrcodes']", title: "Divulgação", description: "Gere materiais prontos para Instagram, Story e balcão. Baixe em alta resolução.", placement: "right" },
+  { target: "[data-tour='nav-/app/planos']", title: "Planos", description: "Acompanhe o uso do seu plano e faça upgrade quando precisar de mais recursos.", placement: "right" },
+];
 
 export const Route = createFileRoute("/_authenticated/app")({
   component: AppLayout,
@@ -103,13 +114,13 @@ function AppLayout() {
   return (
     <div className="min-h-screen bg-muted/30 flex">
       <aside className="hidden md:flex w-64 shrink-0 flex-col border-r bg-card">
-        <div className="p-5 border-b"><Logo /></div>
+        <div className="p-5 border-b" data-tour="sidebar-logo"><Logo /></div>
         <nav className="flex-1 p-3 space-y-1">
           {nav.map((n) => {
             const active = n.exact ? pathname === n.to : pathname.startsWith(n.to);
             const badge = n.to === "/suporte" && unreadSupport > 0 ? unreadSupport : 0;
             return (
-              <Link key={n.to} to={n.to} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${active ? "bg-primary-soft text-primary" : "text-muted-foreground hover:bg-muted"}`}>
+              <Link key={n.to} to={n.to} data-tour={`nav-${n.to}`} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${active ? "bg-primary-soft text-primary" : "text-muted-foreground hover:bg-muted"}`}>
                 <n.icon className="h-4 w-4" />
                 <span className="flex-1">{n.label}</span>
                 {badge > 0 && (
@@ -161,6 +172,7 @@ function AppLayout() {
           })}
         </nav>
       </div>
+      <GuidedTour steps={MERCHANT_TOUR_STEPS} storageKey={`fidelize_tour_v1_${activeEst?.id ?? "user"}`} />
     </div>
   );
 }
