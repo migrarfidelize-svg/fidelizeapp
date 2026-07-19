@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { adminListPlans, adminUpdatePlan, adminToggleFeature, adminPlanFeatureImpact } from "@/lib/plans.functions";
+import { adminListPlans, adminUpdatePlan, adminToggleFeature, adminPlanFeatureImpact, adminReconcileFeatureAccess } from "@/lib/plans.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,9 +10,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Star, Users, Sparkles, UserCog, CheckCircle2, XCircle, Pencil, Loader2, AlertTriangle, Sparkle } from "lucide-react";
+import { Star, Users, Sparkles, UserCog, CheckCircle2, XCircle, Pencil, Loader2, AlertTriangle, Sparkle, Wrench, RefreshCw } from "lucide-react";
+
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/planos/")({
@@ -47,6 +48,24 @@ function AdminPlansPage() {
   // Features whose changes are business-critical → require confirmation
   const SENSITIVE_FEATURES = new Set(["public_reviews"]);
 
+  // Reconcile / repair feature-access modal
+  const reconcileFn = useServerFn(adminReconcileFeatureAccess);
+  const [reconcileFeature, setReconcileFeature] = useState<string | null>(null);
+  const [reconcileDryRun, setReconcileDryRun] = useState(true);
+  const [reconcileResult, setReconcileResult] = useState<any | null>(null);
+  const [reconciling, setReconciling] = useState(false);
+  async function runReconcile() {
+    if (!reconcileFeature) return;
+    setReconciling(true);
+    try {
+      const res = await reconcileFn({ data: { feature_key: reconcileFeature, dry_run: reconcileDryRun } });
+      setReconcileResult(res);
+      toast.success(reconcileDryRun ? "Diagnóstico concluído." : `Repair aplicado: ${res.repaired_rows} plano(s) sincronizado(s).`);
+      qc.invalidateQueries({ queryKey: ["admin-plans"] });
+    } catch (e: any) { toast.error(e.message); }
+    finally { setReconciling(false); }
+  }
+
   async function applyToggle(v: boolean, p: any, f: any) {
     try {
       await toggle({ data: { plan_id: p.id, feature_key: f.feature_key, feature_name: f.feature_name, enabled: v } });
@@ -57,10 +76,16 @@ function AdminPlansPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl font-bold">Planos e Preços</h1>
-        <p className="text-sm text-muted-foreground">Gerencie os planos disponíveis para as empresas da plataforma.</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="font-display text-3xl font-bold">Planos e Preços</h1>
+          <p className="text-sm text-muted-foreground">Gerencie os planos disponíveis para as empresas da plataforma.</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => { setReconcileFeature("public_reviews"); setReconcileDryRun(true); setReconcileResult(null); }}>
+          <Wrench className="h-4 w-4 mr-1.5" /> Reconciliar caches de features
+        </Button>
       </div>
+
 
       {isLoading ? (
         <div className="grid place-items-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
@@ -249,6 +274,78 @@ function AdminPlansPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!reconcileFeature} onOpenChange={(o) => { if (!o) { setReconcileFeature(null); setReconcileResult(null); } }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Wrench className="h-5 w-5" /> Reconciliar caches de features</DialogTitle>
+            <DialogDescription>
+              Cruza planos × plan_features × estabelecimentos para verificar divergências entre o toggle desta tela, o gate no gerador de QR e o <code>assertFeature</code> do backend. Emite broadcast que força o cliente do lojista a recarregar o gate imediatamente.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 text-sm">
+            <div className="flex items-center gap-3">
+              <Label className="w-24">Recurso</Label>
+              <Input value={reconcileFeature ?? ""} onChange={(e) => setReconcileFeature(e.target.value)} className="flex-1 font-mono text-xs" />
+            </div>
+            <label className="flex items-center gap-2">
+              <Switch checked={reconcileDryRun} onCheckedChange={setReconcileDryRun} />
+              <span>Modo diagnóstico (dry-run) — não altera nenhuma linha, apenas retorna o mapa autoritativo.</span>
+            </label>
+            {!reconcileDryRun && (
+              <div className="rounded border border-destructive/30 bg-destructive/5 p-2 text-xs text-destructive">
+                Repair ativo: irá reescrever (upsert idempotente, mantendo o valor atual) cada linha de plan_features do recurso, disparando postgres_changes para todos os lojistas online — sem alterar quem tem ou não acesso.
+              </div>
+            )}
+
+            {reconcileResult && (
+              <div className="rounded-lg border p-3 space-y-3">
+                <div className="flex gap-4 text-xs">
+                  <span><strong>{reconcileResult.total_allowed}</strong> com acesso</span>
+                  <span><strong>{reconcileResult.total_blocked}</strong> bloqueados</span>
+                  {!reconcileResult.dry_run && <span><strong>{reconcileResult.repaired_rows}</strong> linhas sincronizadas</span>}
+                </div>
+                <div>
+                  <div className="text-xs font-semibold mb-1">Habilitação por tier</div>
+                  <div className="flex gap-2 flex-wrap">
+                    {reconcileResult.plans_summary.map((p: any) => (
+                      <Badge key={p.tier} variant={p.enabled ? "default" : "outline"}>{p.tier}: {p.enabled ? "on" : "off"}</Badge>
+                    ))}
+                  </div>
+                </div>
+                <div className="max-h-64 overflow-auto rounded border">
+                  <table className="w-full text-xs">
+                    <thead className="bg-muted sticky top-0">
+                      <tr className="text-left">
+                        <th className="px-2 py-1">Empresa</th>
+                        <th className="px-2 py-1">Plano</th>
+                        <th className="px-2 py-1">Ativa</th>
+                        <th className="px-2 py-1">Feature</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {reconcileResult.establishments.map((e: any) => (
+                        <tr key={e.id} className="border-t">
+                          <td className="px-2 py-1">{e.name} <span className="text-muted-foreground">/{e.slug}</span></td>
+                          <td className="px-2 py-1"><Badge variant="outline">{e.plan_tier}</Badge></td>
+                          <td className="px-2 py-1">{e.active ? "sim" : "não"}</td>
+                          <td className="px-2 py-1">{e.feature_allowed ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> : <XCircle className="h-3.5 w-3.5 text-destructive" />}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setReconcileFeature(null); setReconcileResult(null); }}>Fechar</Button>
+            <Button onClick={runReconcile} disabled={reconciling || !reconcileFeature}>
+              {reconciling ? <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" />Executando…</> : <><RefreshCw className="h-4 w-4 mr-1.5" />{reconcileDryRun ? "Rodar diagnóstico" : "Aplicar repair"}</>}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

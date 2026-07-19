@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Menu } from "lucide-react";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { getAdminStatus } from "@/lib/admin.functions";
+import { checkMyFeature } from "@/lib/plans.functions";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield, LifeBuoy, BookOpen, Package, Receipt, HeartHandshake, Bell, Star } from "lucide-react";
@@ -84,6 +85,62 @@ function AppLayout() {
     })();
     return () => { if (channel) supabase.removeChannel(channel); };
   }, [navigate, queryClient]);
+
+  // Real-time: public_reviews feature flip toast for the merchant
+  const activeEstEarly = memberships?.[0]?.establishment as { id: string } | undefined;
+  const activeEstId = activeEstEarly?.id;
+  const lastAllowedRef = useRef<boolean | null>(null);
+  const checkFeatureFn = useServerFn(checkMyFeature);
+  useEffect(() => {
+    if (!activeEstId) return;
+    let cancelled = false;
+    let ch: ReturnType<typeof supabase.channel> | null = null;
+
+    async function refresh(reason: "init" | "plan_features" | "establishment") {
+      const res = await checkFeatureFn({ data: { establishment_id: activeEstId!, feature_key: "public_reviews" } }).catch(() => null);
+      if (cancelled || !res) return;
+      const allowed = !!res.allowed;
+      const prev = lastAllowedRef.current;
+      lastAllowedRef.current = allowed;
+      queryClient.invalidateQueries({ queryKey: ["feature", activeEstId, "public_reviews"] });
+      if (prev === null || prev === allowed || reason === "init") return;
+      if (allowed) {
+        toast.success("Avaliações públicas foram HABILITADAS na sua conta 🎉", {
+          duration: 12000,
+          description: "Você já pode criar QR Codes de avaliação e coletar CSAT dos clientes. O gate no gerador e no backend foi liberado.",
+          action: { label: "Abrir Avaliações", onClick: () => navigate({ to: "/app/avaliacoes" }) },
+        });
+      } else {
+        toast.warning("Avaliações públicas foram DESABILITADAS na sua conta", {
+          duration: 12000,
+          description: "QRs já existentes continuam salvos, mas a criação de novos QRs de avaliação e o acesso à página foram bloqueados. Faça upgrade para reativar.",
+          action: { label: "Ver planos", onClick: () => navigate({ to: "/app/planos" }) },
+        });
+      }
+    }
+
+    refresh("init");
+
+    ch = supabase
+      .channel(`feature-gate-${activeEstId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "plan_features", filter: "feature_key=eq.public_reviews" },
+        () => refresh("plan_features"),
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "establishments", filter: `id=eq.${activeEstId}` },
+        () => refresh("establishment"),
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      if (ch) supabase.removeChannel(ch);
+    };
+  }, [activeEstId, checkFeatureFn, navigate, queryClient]);
+
 
   const activeEst = memberships?.[0]?.establishment as { id: string; name: string; slug: string; logo_url: string | null } | undefined;
 

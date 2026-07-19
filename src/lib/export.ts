@@ -1,15 +1,31 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
-function csvEscape(v: unknown): string {
+function csvEscape(v: unknown, delimiter: string): string {
   if (v === null || v === undefined) return "";
   const s = String(v);
-  if (/[",\n;]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  const re = new RegExp(`["\\n${delimiter === ";" ? ";" : ","}]`);
+  if (re.test(s)) return `"${s.replace(/"/g, '""')}"`;
   return s;
 }
 
-export function downloadCSV(filename: string, headers: string[], rows: (string | number | null | undefined)[][]) {
-  const csv = [headers.map(csvEscape).join(","), ...rows.map(r => r.map(csvEscape).join(","))].join("\n");
+export type CsvDelimiter = "," | ";";
+
+export function downloadCSV(
+  filename: string,
+  headers: string[],
+  rows: (string | number | null | undefined)[][],
+  opts?: { delimiter?: CsvDelimiter; preamble?: string[] },
+) {
+  const delimiter: CsvDelimiter = opts?.delimiter ?? ",";
+  const lines: string[] = [];
+  if (opts?.preamble && opts.preamble.length) {
+    for (const p of opts.preamble) lines.push(`# ${p}`);
+    lines.push("");
+  }
+  lines.push(headers.map((h) => csvEscape(h, delimiter)).join(delimiter));
+  for (const r of rows) lines.push(r.map((c) => csvEscape(c, delimiter)).join(delimiter));
+  const csv = lines.join("\n");
   const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -17,6 +33,7 @@ export function downloadCSV(filename: string, headers: string[], rows: (string |
   document.body.appendChild(a); a.click(); a.remove();
   URL.revokeObjectURL(url);
 }
+
 
 export function downloadPDF(filename: string, title: string, headers: string[], rows: (string | number | null | undefined)[][], subtitle?: string) {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
