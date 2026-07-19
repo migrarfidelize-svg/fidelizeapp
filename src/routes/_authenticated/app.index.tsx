@@ -8,6 +8,7 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianG
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
 import { GoalsCard } from "@/components/GoalsCard";
+import { ErrorState, LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/app/")({
   component: Dashboard,
