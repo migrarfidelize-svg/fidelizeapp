@@ -62,6 +62,8 @@ function Page() {
         <TabsList className="flex-wrap">
           <TabsTrigger value="feed">Voucher (pós-carimbo)</TabsTrigger>
           <TabsTrigger value="public-inbox">Caixa (público)</TabsTrigger>
+          <TabsTrigger value="alerts"><AlertTriangle className="mr-1 h-3 w-3" />Alertas ≤2</TabsTrigger>
+          <TabsTrigger value="insights"><TrendingDown className="mr-1 h-3 w-3" />Insights</TabsTrigger>
           <TabsTrigger value="public-form">Formulário público</TabsTrigger>
           <TabsTrigger value="public-ratings">Notas 1–5</TabsTrigger>
           <TabsTrigger value="public-questions">Perguntas extras</TabsTrigger>
@@ -69,6 +71,8 @@ function Page() {
         </TabsList>
         <TabsContent value="feed"><Feed estId={est.id} /></TabsContent>
         <TabsContent value="public-inbox"><PublicInbox estId={est.id} /></TabsContent>
+        <TabsContent value="alerts"><LowRatingAlerts estId={est.id} /></TabsContent>
+        <TabsContent value="insights"><InsightsTab estId={est.id} /></TabsContent>
         <TabsContent value="public-form"><PublicFormTab estId={est.id} slug={est.slug} /></TabsContent>
         <TabsContent value="public-ratings"><PublicRatingsTab estId={est.id} /></TabsContent>
         <TabsContent value="public-questions"><PublicQuestionsTab estId={est.id} /></TabsContent>
