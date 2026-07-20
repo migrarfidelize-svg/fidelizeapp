@@ -317,6 +317,130 @@
   100% { transform: translate3d(-2%, 1%, 0) scale(1); }
 }
 
+/* ============================================================
+   SIDEBAR — Tema "Aurora Glass"
+   ============================================================ */
+
+.logo-mark-aurora {
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--primary) 35%, transparent),
+    0 10px 30px -12px color-mix(in oklab, var(--primary) 55%, transparent);
+}
+.logo-mark-aurora::after {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  background: conic-gradient(
+    from 0deg,
+    color-mix(in oklab, var(--primary) 60%, transparent),
+    color-mix(in oklab, var(--accent) 50%, transparent),
+    color-mix(in oklab, var(--primary) 60%, transparent)
+  );
+  filter: blur(10px);
+  opacity: 0.55;
+  animation: logo-aurora-spin 8s linear infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+@keyframes logo-aurora-spin {
+  to { transform: rotate(360deg); }
+}
+
+.sidebar-toggle {
+  position: absolute;
+  right: -14px;
+  top: 22px;
+  z-index: 40;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 9999px;
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 4px 14px -4px color-mix(in oklab, var(--primary) 45%, transparent),
+    0 0 0 4px var(--background);
+  transition: transform .25s ease, box-shadow .25s ease, color .25s ease;
+}
+.sidebar-toggle::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    color-mix(in oklab, var(--primary) 80%, transparent),
+    color-mix(in oklab, var(--accent) 70%, transparent),
+    color-mix(in oklab, var(--primary) 80%, transparent)
+  );
+  filter: blur(6px);
+  opacity: 0.75;
+  animation: logo-aurora-spin 6s linear infinite;
+  z-index: -1;
+}
+.sidebar-toggle:hover {
+  transform: scale(1.1);
+  color: var(--primary);
+  box-shadow:
+    0 6px 22px -4px color-mix(in oklab, var(--primary) 65%, transparent),
+    0 0 0 4px var(--background);
+}
+
+.nav-item-active-aurora {
+  position: absolute;
+  inset: 0;
+  border-radius: 0.75rem;
+  background:
+    linear-gradient(135deg,
+      color-mix(in oklab, var(--primary) 92%, transparent),
+      color-mix(in oklab, var(--primary) 70%, var(--accent))
+    );
+  box-shadow:
+    0 8px 24px -10px color-mix(in oklab, var(--primary) 65%, transparent),
+    inset 0 1px 0 color-mix(in oklab, #ffffff 25%, transparent);
+}
+.nav-item-active-aurora::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--angle, 0deg),
+    color-mix(in oklab, #ffffff 60%, transparent),
+    transparent 25%,
+    transparent 75%,
+    color-mix(in oklab, #ffffff 60%, transparent)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: nav-aurora-sweep 3.5s linear infinite;
+}
+@property --angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes nav-aurora-sweep {
+  to { --angle: 360deg; }
+}
+
+@keyframes icon-breath {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 transparent); }
+  50%      { transform: scale(1.12); filter: drop-shadow(0 0 6px color-mix(in oklab, #ffffff 70%, transparent)); }
+}
+@keyframes icon-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-2px); }
+}
+.nav-icon-active { animation: icon-breath 2.4s ease-in-out infinite; }
+.nav-icon-idle   { transition: transform .25s ease; }
+.group:hover .nav-icon-idle { animation: icon-float 1.6s ease-in-out infinite; }
+
 /* Chip / KPI numérico com destaque tipográfico */
 @utility metric-number {
   font-family: var(--font-display);
