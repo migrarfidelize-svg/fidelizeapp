@@ -242,9 +242,9 @@ function AdminPaymentsPage() {
         <CardContent className="grid gap-3">
           <SecretRow
             name="MERCADOPAGO_ACCESS_TOKEN"
-            label="Access Token (produção)"
+            label="Access Token"
             ok={creds.has_access_token}
-            hint={'Painel do Mercado Pago → "Suas integrações" → sua aplicação → "Credenciais de produção" → copie o "Access Token" (começa com APP_USR-…).'}
+            hint={'Configure manualmente em Sistema → Integrações → Pagamentos → Mercado Pago → Credenciais. Use TEST-… no Sandbox/Teste ou APP_USR-… em Produção.'}
           />
           <SecretRow
             name="MERCADOPAGO_PUBLIC_KEY"
@@ -269,8 +269,7 @@ function AdminPaymentsPage() {
             hint={'Painel do Mercado Pago → "Suas integrações" → sua aplicação → "Webhooks" → após cadastrar a URL, clique em "Configurar notificações" e copie a chave secreta que aparece em "Assinatura secreta".'}
           />
           <p className="text-xs text-muted-foreground">
-            Para adicionar ou trocar Access Token/Webhook Secret, peça ao Lovable:
-            <em> "atualize o secret MERCADOPAGO_ACCESS_TOKEN"</em>. Os valores são gravados criptografados e injetados como variáveis de ambiente no backend.
+            Para adicionar ou trocar Access Token/Webhook Secret, use Sistema → Integrações → Pagamentos → Mercado Pago → Credenciais. O checkout usa primeiro os dados salvos no painel.
           </p>
         </CardContent>
       </Card>
@@ -294,7 +293,7 @@ function AdminPaymentsPage() {
           <div className="space-y-2">
             <Label>Chave pública</Label>
             <Input id="mp-public-key-input" value={publicKey} onChange={e => setPublicKey(e.target.value)} placeholder="APP_USR-abcd-…" className="font-mono text-xs" />
-            <p className="text-xs text-muted-foreground">Usada apenas no navegador para tokenizar o cartão. Pode conviver com a variável de ambiente <code>MERCADOPAGO_PUBLIC_KEY</code>; a variável de ambiente tem prioridade.</p>
+            <p className="text-xs text-muted-foreground">Usada apenas no navegador para tokenizar o cartão. O valor salvo no painel tem prioridade sobre qualquer configuração antiga do backend.</p>
           </div>
           <div className="space-y-2">
             <Label>Webhook URL</Label>
