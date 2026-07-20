@@ -235,8 +235,16 @@ function AdminPaymentsPage() {
             ok={creds.has_public_key}
             optional
             source={(creds as any).public_key_source}
-            hint={'A Public Key NÃO precisa virar secret — cole ela no campo "Chave pública" logo abaixo e clique em Salvar. O secret MERCADOPAGO_PUBLIC_KEY é apenas um cache opcional para o backend; se estiver vazio, usamos o valor salvo no formulário.'}
+            hint={'Cole a Public Key no campo "Chave pública" do card "Configuração" abaixo e clique em Salvar — ela fica salva no banco. O secret MERCADOPAGO_PUBLIC_KEY é opcional (só serve como cache do backend); se estiver vazio, usamos o valor do formulário.'}
+            action={!creds.has_public_key ? {
+              label: "Configurar abaixo",
+              onClick: () => {
+                const el = document.getElementById("mp-public-key-input") as HTMLInputElement | null;
+                if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(() => el.focus(), 300); }
+              },
+            } : undefined}
           />
+
           <SecretRow
             name="MERCADOPAGO_WEBHOOK_SECRET"
             label="Webhook Secret"
