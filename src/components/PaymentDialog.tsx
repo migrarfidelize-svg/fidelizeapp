@@ -13,12 +13,55 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Copy, CheckCircle2, Clock, Loader2, QrCode, CreditCard, FileText, ExternalLink } from "lucide-react";
+import { AlertTriangle, Copy, CheckCircle2, Clock, Loader2, QrCode, CreditCard, FileText, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
 declare global { interface Window { MercadoPago?: any } }
 
 type PlanInfo = { slug: string; name: string; price_monthly: number; tier: string };
+type MercadoPagoHint = {
+  account_email: string | null;
+  account_nickname: string | null;
+  environment: string;
+  account_is_test_user?: boolean;
+  configuration_issue?: string | null;
+};
+
+const MP_TEST_USERS_URL = "https://www.mercadopago.com.br/developers/panel/test-users";
+
+function isMercadoPagoSandboxBuyerEmail(email: string) {
+  return /(^|[+._-])test[_-]?user|testuser\.com/i.test(email.trim());
+}
+
+function SandboxBuyerNotice() {
+  return (
+    <div className="rounded-md border border-amber-400/40 bg-amber-50 p-3 text-xs text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+      <div className="flex gap-2">
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+        <div className="space-y-1">
+          <p><strong>Sandbox/Teste ativo:</strong> o Mercado Pago exige um comprador de teste gerado no painel dele.</p>
+          <p>Não use Gmail/Hotmail ou o e-mail real da sua conta; cole um e-mail no formato <code>TESTUSER...@testuser.com</code>.</p>
+          <a className="inline-flex items-center gap-1 font-medium text-primary hover:underline" href={MP_TEST_USERS_URL} target="_blank" rel="noreferrer">
+            Gerar comprador de teste <ExternalLink className="h-3 w-3" />
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function validateSandboxBuyerEmail(isSandboxLike: boolean, email: string) {
+  const clean = email.trim();
+  if (!clean) {
+    toast.error("Informe o e-mail do comprador.");
+    return false;
+  }
+  if (isSandboxLike && !isMercadoPagoSandboxBuyerEmail(clean)) {
+    toast.error("Em Sandbox/Teste, use um e-mail de comprador de teste do Mercado Pago, como TESTUSER...@testuser.com.");
+    return false;
+  }
+  return true;
+}
 
 export function PaymentDialog({
   open, onOpenChange, plan, establishmentId, payerEmailDefault,
@@ -33,12 +76,13 @@ export function PaymentDialog({
   const hintFn = useServerFn(getMercadoPagoAccountHint);
   const { data: hint } = useQuery({
     queryKey: ["mp-account-hint"],
-    queryFn: () => hintFn() as Promise<{ account_email: string | null; account_nickname: string | null; environment: string; account_is_test_user?: boolean; configuration_issue?: string | null }>,
+    queryFn: () => hintFn() as Promise<MercadoPagoHint>,
     enabled: open,
     staleTime: 5 * 60_000,
   });
   const acctEmail = hint?.account_email ?? null;
-  const isLive = (hint?.environment ?? "production") !== "sandbox";
+  const isSandboxLike = (hint?.environment ?? "production") === "sandbox" || !!hint?.account_is_test_user;
+  const isLive = !isSandboxLike;
   const conflicts = !!(acctEmail && payerEmailDefault && acctEmail.trim().toLowerCase() === payerEmailDefault.trim().toLowerCase());
   const configurationIssue = hint?.configuration_issue ?? null;
   return (
@@ -58,6 +102,7 @@ export function PaymentDialog({
               <strong>Mercado Pago precisa de ajuste:</strong> {configurationIssue}
             </div>
           )}
+          {isSandboxLike && <SandboxBuyerNotice />}
           {isLive && acctEmail && (
             <div className={`rounded-md border p-3 text-xs ${conflicts ? "border-destructive/50 bg-destructive/10 text-destructive" : "border-amber-400/40 bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200"}`}>
               {conflicts ? "⛔" : "⚠️"} <strong>Importante:</strong> o Mercado Pago bloqueia (<code>401 Unauthorized use of live credentials</code>) quando o pagador é o próprio titular da conta que recebe. Use um e-mail e CPF/CNPJ <strong>diferentes</strong> de <code>{acctEmail}</code>{hint?.account_nickname ? ` (${hint.account_nickname})` : ""}. Vale para PIX, Cartão e Boleto.
@@ -75,13 +120,13 @@ export function PaymentDialog({
               <TabsTrigger value="boleto"><FileText className="mr-2 h-4 w-4" />Boleto</TabsTrigger>
             </TabsList>
             <TabsContent value="pix" className="mt-4">
-              <PixForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} onDone={() => onOpenChange(false)} />
+              <PixForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
             </TabsContent>
             <TabsContent value="card" className="mt-4">
-              <CardForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} onDone={() => onOpenChange(false)} />
+              <CardForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
             </TabsContent>
             <TabsContent value="boleto" className="mt-4">
-              <BoletoForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} onDone={() => onOpenChange(false)} />
+              <BoletoForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
             </TabsContent>
           </Tabs>
           </>
@@ -92,17 +137,24 @@ export function PaymentDialog({
 }
 
 // ============ PIX ============
-function PixForm({ plan, establishmentId, payerEmailDefault, onDone }: { plan: PlanInfo; establishmentId: string; payerEmailDefault?: string; onDone: () => void }) {
+function PixForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, onDone }: { plan: PlanInfo; establishmentId: string; payerEmailDefault?: string; isSandboxLike: boolean; onDone: () => void }) {
   const createFn = useServerFn(createPixPayment);
   const statusFn = useServerFn(getPaymentStatus);
   const qc = useQueryClient();
 
   const [email, setEmail] = useState(payerEmailDefault ?? "");
+  const [emailTouched, setEmailTouched] = useState(false);
   const [doc, setDoc] = useState("");
   const [loading, setLoading] = useState(false);
   const [charge, setCharge] = useState<null | { mp_payment_id: string; qr_code: string | null; qr_code_base64: string | null; expires_at: string }>(null);
   const [status, setStatus] = useState<string>("pending");
   const [remaining, setRemaining] = useState(0);
+
+  useEffect(() => {
+    if (isSandboxLike && !emailTouched && (!email || email === payerEmailDefault)) {
+      setEmail("");
+    }
+  }, [email, emailTouched, isSandboxLike, payerEmailDefault]);
 
   useEffect(() => {
     if (!charge || status === "approved") return;
@@ -132,9 +184,10 @@ function PixForm({ plan, establishmentId, payerEmailDefault, onDone }: { plan: P
   }, [charge]);
 
   async function create() {
+    if (!validateSandboxBuyerEmail(isSandboxLike, email)) return;
     setLoading(true);
     try {
-      const r: any = await createFn({ data: { establishment_id: establishmentId, plan_slug: plan.slug, payer_email: email || undefined, payer_doc: doc || undefined } });
+      const r: any = await createFn({ data: { establishment_id: establishmentId, plan_slug: plan.slug, payer_email: email.trim(), payer_doc: doc || undefined } });
       setCharge({ mp_payment_id: r.mp_payment_id, qr_code: r.qr_code, qr_code_base64: r.qr_code_base64, expires_at: r.expires_at });
       setStatus(r.status);
     } catch (e: any) {
@@ -149,14 +202,15 @@ function PixForm({ plan, establishmentId, payerEmailDefault, onDone }: { plan: P
       <div className="space-y-4">
         <div className="space-y-2">
           <Label>E-mail do pagador</Label>
-          <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="voce@empresa.com" />
+          <Input value={email} onChange={e => { setEmailTouched(true); setEmail(e.target.value); }} placeholder={isSandboxLike ? "TESTUSER...@testuser.com" : "voce@empresa.com"} />
         </div>
+        {isSandboxLike && <SandboxBuyerNotice />}
         <div className="space-y-2">
           <Label>CPF/CNPJ (opcional)</Label>
           <Input value={doc} onChange={e => setDoc(e.target.value)} placeholder="Apenas números" />
         </div>
         <p className="text-xs text-muted-foreground">
-          Use um e-mail <strong>diferente</strong> do titular da conta Mercado Pago que recebe. Em credenciais LIVE, o dono da conta não pode pagar para si mesmo.
+          {isSandboxLike ? "Para testes, use o e-mail do comprador de teste gerado no Mercado Pago." : <>Use um e-mail <strong>diferente</strong> do titular da conta Mercado Pago que recebe. Em credenciais LIVE, o dono da conta não pode pagar para si mesmo.</>}
         </p>
         <Button className="w-full gradient-brand text-primary-foreground" onClick={create} disabled={loading}>
           {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Gerando QR Code…</> : "Gerar QR Code PIX"}
@@ -202,7 +256,7 @@ function PixForm({ plan, establishmentId, payerEmailDefault, onDone }: { plan: P
 }
 
 // ============ Cartão ============
-function CardForm({ plan, establishmentId, payerEmailDefault, onDone }: { plan: PlanInfo; establishmentId: string; payerEmailDefault?: string; onDone: () => void }) {
+function CardForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, onDone }: { plan: PlanInfo; establishmentId: string; payerEmailDefault?: string; isSandboxLike: boolean; onDone: () => void }) {
   const createFn = useServerFn(createCardPayment);
   const statusFn = useServerFn(getPaymentStatus);
   const publicKeyFn = useServerFn(getMercadoPagoPublicKey);
@@ -219,6 +273,7 @@ function CardForm({ plan, establishmentId, payerEmailDefault, onDone }: { plan: 
   const [cvv, setCvv] = useState("");
   const [installments, setInstallments] = useState("1");
   const [email, setEmail] = useState(payerEmailDefault ?? "");
+  const [emailTouched, setEmailTouched] = useState(false);
   const [doc, setDoc] = useState("");
   const [docType, setDocType] = useState<"CPF"|"CNPJ">("CPF");
   const [loading, setLoading] = useState(false);
@@ -275,6 +330,12 @@ function CardForm({ plan, establishmentId, payerEmailDefault, onDone }: { plan: 
     }
   }, [sdkReady, publicKey]);
 
+  useEffect(() => {
+    if (isSandboxLike && !emailTouched && (!email || email === payerEmailDefault)) {
+      setEmail("");
+    }
+  }, [email, emailTouched, isSandboxLike, payerEmailDefault]);
+
   // polling if payment is pending after submit
   useEffect(() => {
     if (!paymentId || status === "approved") return;
@@ -292,6 +353,7 @@ function CardForm({ plan, establishmentId, payerEmailDefault, onDone }: { plan: 
 
   async function submit() {
     if (!mpInstance) { toast.error(publicKeyLoading ? "Carregando SDK do Mercado Pago…" : "SDK Mercado Pago não carregado. Verifique a Public Key em /admin/pagamentos."); return; }
+    if (!validateSandboxBuyerEmail(isSandboxLike, email)) return;
     const cleanNumber = number.replace(/\s+/g, "");
     const [expMonth, expYearShort] = exp.split("/").map(s => s.trim());
     if (!cleanNumber || !expMonth || !expYearShort || !cvv || !name) { toast.error("Preencha os dados do cartão."); return; }
@@ -322,7 +384,7 @@ function CardForm({ plan, establishmentId, payerEmailDefault, onDone }: { plan: 
         payment_method_id: methodId,
         issuer_id: issuerId,
         installments: Number(installments),
-        payer_email: email,
+        payer_email: email.trim(),
         payer_doc_type: docType,
         payer_doc_number: doc,
       }});
@@ -351,6 +413,7 @@ function CardForm({ plan, establishmentId, payerEmailDefault, onDone }: { plan: 
 
   return (
     <div className="space-y-3">
+      {isSandboxLike && <SandboxBuyerNotice />}
       {!publicKey && publicKeyLoading && (
         <div className="rounded-md border border-amber-400/40 bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
           Carregando Public Key do Mercado Pago…
@@ -395,7 +458,7 @@ function CardForm({ plan, establishmentId, payerEmailDefault, onDone }: { plan: 
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2"><Label>CPF/CNPJ</Label><Input value={doc} onChange={e => setDoc(e.target.value)} placeholder="Apenas números" /></div>
-        <div className="space-y-2"><Label>E-mail</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} /></div>
+        <div className="space-y-2"><Label>E-mail</Label><Input type="email" value={email} onChange={e => { setEmailTouched(true); setEmail(e.target.value); }} placeholder={isSandboxLike ? "TESTUSER...@testuser.com" : undefined} /></div>
       </div>
 
       {statusDetail && status !== "approved" && (
@@ -436,20 +499,28 @@ function translateDetail(d?: string | null): string {
 }
 
 // ============ Boleto ============
-function BoletoForm({ plan, establishmentId, payerEmailDefault, onDone }: { plan: PlanInfo; establishmentId: string; payerEmailDefault?: string; onDone: () => void }) {
+function BoletoForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, onDone }: { plan: PlanInfo; establishmentId: string; payerEmailDefault?: string; isSandboxLike: boolean; onDone: () => void }) {
   const createFn = useServerFn(createBoletoPayment);
   const [email, setEmail] = useState(payerEmailDefault ?? "");
+  const [emailTouched, setEmailTouched] = useState(false);
   const [first, setFirst] = useState("");
   const [last, setLast] = useState("");
   const [doc, setDoc] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<null | { boleto_url: string | null; expires_at: string; mp_payment_id: string }>(null);
 
+  useEffect(() => {
+    if (isSandboxLike && !emailTouched && (!email || email === payerEmailDefault)) {
+      setEmail("");
+    }
+  }, [email, emailTouched, isSandboxLike, payerEmailDefault]);
+
   async function submit() {
     if (!email || !first || !last || !doc) { toast.error("Preencha todos os campos."); return; }
+    if (!validateSandboxBuyerEmail(isSandboxLike, email)) return;
     setLoading(true);
     try {
-      const r: any = await createFn({ data: { establishment_id: establishmentId, plan_slug: plan.slug, payer_email: email, payer_first_name: first, payer_last_name: last, payer_doc_number: doc } });
+      const r: any = await createFn({ data: { establishment_id: establishmentId, plan_slug: plan.slug, payer_email: email.trim(), payer_first_name: first, payer_last_name: last, payer_doc_number: doc } });
       setResult({ boleto_url: r.boleto_url, expires_at: r.expires_at, mp_payment_id: r.mp_payment_id });
       toast.success("Boleto gerado!");
     } catch (e: any) { toast.error(e?.message ?? "Falha ao gerar boleto"); }
@@ -471,11 +542,12 @@ function BoletoForm({ plan, establishmentId, payerEmailDefault, onDone }: { plan
 
   return (
     <div className="space-y-3">
+      {isSandboxLike && <SandboxBuyerNotice />}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2"><Label>Nome</Label><Input value={first} onChange={e => setFirst(e.target.value)} /></div>
         <div className="space-y-2"><Label>Sobrenome</Label><Input value={last} onChange={e => setLast(e.target.value)} /></div>
       </div>
-      <div className="space-y-2"><Label>E-mail</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} /></div>
+      <div className="space-y-2"><Label>E-mail</Label><Input type="email" value={email} onChange={e => { setEmailTouched(true); setEmail(e.target.value); }} placeholder={isSandboxLike ? "TESTUSER...@testuser.com" : undefined} /></div>
       <div className="space-y-2"><Label>CPF/CNPJ</Label><Input value={doc} onChange={e => setDoc(e.target.value)} placeholder="Apenas números" /></div>
       <Button className="w-full gradient-brand text-primary-foreground" onClick={submit} disabled={loading}>
         {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Gerando…</> : "Gerar boleto"}
