@@ -151,6 +151,13 @@ export const upsertIntegration = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
 
+    if (data.category === "payments" && data.provider === "mercadopago") {
+      try {
+        const { invalidateMercadoPagoCredentialsCache } = await import("@/lib/mercadopago-credentials.server");
+        invalidateMercadoPagoCredentialsCache();
+      } catch { /* noop */ }
+    }
+
     await safeAudit(supabaseAdmin, {
       actor_id: context.userId,
       action: "integration.upsert",
