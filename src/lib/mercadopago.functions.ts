@@ -55,6 +55,26 @@ async function getPlanOrThrow(supabase: any, slug: string) {
   return plan;
 }
 
+// Bloqueia proativamente pagamento em que o pagador é o próprio titular da conta MP,
+// evitando o erro 401 "Unauthorized use of live credentials" em credenciais LIVE.
+async function assertPayerNotAccountHolder(payerEmail: string | null | undefined) {
+  if (!payerEmail) return;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin
+    .from("payment_settings")
+    .select("account_email, environment")
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  const acctEmail = ((data as any)?.account_email as string | null) ?? null;
+  const env = ((data as any)?.environment as string | null) ?? "production";
+  if (env !== "sandbox" && acctEmail && acctEmail.trim().toLowerCase() === payerEmail.trim().toLowerCase()) {
+    throw new Error(
+      `Não é permitido pagar para si mesmo em produção. O e-mail informado (${payerEmail}) é o mesmo da conta Mercado Pago que recebe (${acctEmail}). Use um e-mail diferente para simular/cobrar essa assinatura.`
+    );
+  }
+}
+
 // ----------- Public key (client-safe) -----------
 export const getMercadoPagoPublicKey = createServerFn({ method: "GET" }).handler(async () => {
   const envKey = getPublicKey();
