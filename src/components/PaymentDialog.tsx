@@ -144,76 +144,139 @@ export function PaymentDialog({
   const isLive = !isSandboxLike;
   const conflicts = !!(acctEmail && payerEmailDefault && acctEmail.trim().toLowerCase() === payerEmailDefault.trim().toLowerCase());
   const configurationIssue = hint?.configuration_issue ?? null;
+  const planBenefits = useMemo(() => {
+    const tierMap: Record<string, string[]> = {
+      starter: ["Clientes ilimitados no cartão", "Campanhas ativas", "Suporte por e-mail"],
+      pro: ["Clientes ilimitados no cartão", "Múltiplas campanhas simultâneas", "Relatórios avançados", "Suporte prioritário"],
+      enterprise: ["Multi-lojas e equipe", "API e integrações", "Gestor de conta dedicado", "SLA e suporte 24/7"],
+    };
+    return tierMap[plan?.tier ?? ""] ?? ["Ativação imediata", "Cancele quando quiser", "Nota fiscal automática", "Suporte incluso"];
+  }, [plan?.tier]);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl max-h-[92vh] overflow-hidden p-0 gap-0 border-0 shadow-2xl sm:rounded-3xl" style={{ fontFamily: "'Manrope', system-ui, sans-serif" }}>
+        <DialogHeader className="sr-only">
           <DialogTitle>Assinar {plan?.name}</DialogTitle>
-          <DialogDescription>
-            Assinatura mensal — <strong>{plan ? fmt(plan.price_monthly) : "—"}</strong> · Renovação todo mês · Cancele quando quiser.
-          </DialogDescription>
+          <DialogDescription>Checkout seguro para assinar o plano {plan?.name}.</DialogDescription>
         </DialogHeader>
 
         {plan && (
-          <>
-          {hasMP && hasAsaas && (
-            <div className="flex items-center gap-2">
-              <Label className="text-xs text-muted-foreground">Provedor de pagamento</Label>
-              <Select value={provider} onValueChange={(v) => setProvider(v as "mercadopago" | "asaas")}>
-                <SelectTrigger className="h-8 w-[220px]"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="mercadopago">Mercado Pago{isSandboxLike ? " (Sandbox)" : ""}</SelectItem>
-                  <SelectItem value="asaas">Asaas{asaasMode === "sandbox" ? " (Sandbox)" : ""}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          <div className="grid max-h-[92vh] grid-cols-1 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] overflow-hidden">
+            {/* LEFT — plan summary (navy) */}
+            <aside className="relative flex flex-col justify-between overflow-y-auto bg-[#0a0a1a] p-8 text-white md:p-10" style={{ fontFamily: "'Manrope', system-ui, sans-serif" }}>
+              <div>
+                <div className="flex items-center gap-2">
+                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-indigo-600 font-black italic">F</div>
+                  <span className="text-lg font-bold tracking-tight" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>Fidelize</span>
+                </div>
 
-          {provider === "mercadopago" ? (
-            <>
-              {configurationIssue && (
-                <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-xs text-destructive">
-                  <strong>Mercado Pago precisa de ajuste:</strong> {configurationIssue}
+                <div className="mt-10 space-y-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-indigo-300/80">Plano selecionado</span>
+                  <h2 className="text-3xl font-bold leading-tight" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>{plan.name}</h2>
+                  <p className="text-sm text-slate-400">Assinatura mensal · Cobrança recorrente</p>
                 </div>
-              )}
-              {isSandboxLike && <SandboxBuyerNotice />}
-              {isLive && acctEmail && (
-                <div className={`rounded-md border p-3 text-xs ${conflicts ? "border-destructive/50 bg-destructive/10 text-destructive" : "border-amber-400/40 bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200"}`}>
-                  {conflicts ? "⛔" : "⚠️"} <strong>Importante:</strong> o Mercado Pago bloqueia (<code>401 Unauthorized use of live credentials</code>) quando o pagador é o próprio titular da conta que recebe. Use um e-mail e CPF/CNPJ <strong>diferentes</strong> de <code>{acctEmail}</code>{hint?.account_nickname ? ` (${hint.account_nickname})` : ""}. Vale para PIX, Cartão e Boleto.
+
+                <ul className="mt-8 space-y-3">
+                  {planBenefits.map((b) => (
+                    <li key={b} className="flex items-start gap-3 text-sm text-slate-200">
+                      <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-indigo-500/15 text-indigo-300">
+                        <Check className="h-3 w-3" strokeWidth={3} />
+                      </span>
+                      <span className="min-w-0">{b}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="mt-10">
+                <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-5">
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-xs font-medium uppercase tracking-widest text-slate-400">Total mensal</span>
+                    <span className="text-[11px] text-slate-500">BRL</span>
+                  </div>
+                  <div className="mt-2 flex items-baseline gap-1" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+                    <span className="text-4xl font-extrabold tracking-tight">{fmt(plan.price_monthly)}</span>
+                    <span className="text-sm text-slate-400">/mês</span>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500">Cancele quando quiser · Sem fidelidade</p>
                 </div>
-              )}
-              {isLive && !acctEmail && (
-                <div className="rounded-md border border-amber-400/40 bg-amber-50 dark:bg-amber-950/30 p-3 text-xs text-amber-900 dark:text-amber-200">
-                  ⚠️ <strong>Importante:</strong> use um e-mail e CPF/CNPJ <strong>diferentes</strong> dos cadastrados na conta Mercado Pago que recebe os pagamentos. Em credenciais LIVE, o titular não pode pagar para si mesmo.
+
+                <div className="mt-5 flex flex-wrap items-center gap-3 text-[11px] text-slate-400">
+                  <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-indigo-300" />PCI-DSS</span>
+                  <span className="inline-flex items-center gap-1.5"><Lock className="h-3.5 w-3.5 text-indigo-300" />SSL 256-bit</span>
+                  <span className="inline-flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-indigo-300" />LGPD</span>
                 </div>
+              </div>
+            </aside>
+
+            {/* RIGHT — payment orchestration */}
+            <section className="flex flex-col overflow-y-auto bg-white p-6 dark:bg-neutral-950 md:p-10">
+              <header className="mb-6 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <h3 className="text-xl font-bold tracking-tight" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>Pagamento</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">Confirmação automática · Ativação imediata</p>
+                </div>
+                {hasMP && hasAsaas && (
+                  <Select value={provider} onValueChange={(v) => setProvider(v as "mercadopago" | "asaas")}>
+                    <SelectTrigger className="h-9 w-[180px] shrink-0 rounded-full border-slate-200 text-xs font-medium"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="mercadopago">Mercado Pago{isSandboxLike ? " · Sandbox" : ""}</SelectItem>
+                      <SelectItem value="asaas">Asaas{asaasMode === "sandbox" ? " · Sandbox" : ""}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              </header>
+
+              {provider === "mercadopago" ? (
+                <div className="space-y-4">
+                  {configurationIssue && (
+                    <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+                      <strong>Mercado Pago precisa de ajuste:</strong> {configurationIssue}
+                    </div>
+                  )}
+                  {isSandboxLike && <SandboxBuyerNotice />}
+                  {isLive && acctEmail && (
+                    <div className={`rounded-xl border p-3 text-xs ${conflicts ? "border-destructive/40 bg-destructive/10 text-destructive" : "border-amber-300/60 bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200"}`}>
+                      {conflicts ? "⛔" : "⚠️"} <strong>Importante:</strong> use um e-mail e CPF/CNPJ <strong>diferentes</strong> de <code className="rounded bg-black/5 px-1 py-0.5">{acctEmail}</code>{hint?.account_nickname ? ` (${hint.account_nickname})` : ""}. O Mercado Pago bloqueia (<code>401</code>) quando o pagador é o próprio titular.
+                    </div>
+                  )}
+                  {isLive && !acctEmail && (
+                    <div className="rounded-xl border border-amber-300/60 bg-amber-50 dark:bg-amber-950/30 p-3 text-xs text-amber-900 dark:text-amber-200">
+                      ⚠️ Use um e-mail e CPF/CNPJ <strong>diferentes</strong> dos cadastrados na conta Mercado Pago que recebe.
+                    </div>
+                  )}
+                  <Tabs defaultValue="pix" className="w-full">
+                    <TabsList className="grid h-11 w-full grid-cols-3 rounded-xl bg-slate-100 p-1 dark:bg-neutral-900">
+                      <TabsTrigger value="pix" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-neutral-800"><QrCode className="mr-2 h-4 w-4" />PIX</TabsTrigger>
+                      <TabsTrigger value="card" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-neutral-800"><CreditCard className="mr-2 h-4 w-4" />Cartão</TabsTrigger>
+                      <TabsTrigger value="boleto" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-neutral-800"><FileText className="mr-2 h-4 w-4" />Boleto</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="pix" className="mt-5 focus-visible:outline-none">
+                      <PixForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
+                    </TabsContent>
+                    <TabsContent value="card" className="mt-5 focus-visible:outline-none">
+                      <CardForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
+                    </TabsContent>
+                    <TabsContent value="boleto" className="mt-5 focus-visible:outline-none">
+                      <BoletoForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
+                    </TabsContent>
+                  </Tabs>
+                </div>
+              ) : (
+                <AsaasPaymentTabs
+                  plan={plan}
+                  establishmentId={establishmentId}
+                  payerEmailDefault={payerEmailDefault}
+                  isSandboxLike={asaasMode === "sandbox"}
+                  onDone={() => onOpenChange(false)}
+                />
               )}
-              <Tabs defaultValue="pix" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="pix"><QrCode className="mr-2 h-4 w-4" />PIX</TabsTrigger>
-                  <TabsTrigger value="card"><CreditCard className="mr-2 h-4 w-4" />Cartão</TabsTrigger>
-                  <TabsTrigger value="boleto"><FileText className="mr-2 h-4 w-4" />Boleto</TabsTrigger>
-                </TabsList>
-                <TabsContent value="pix" className="mt-4">
-                  <PixForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
-                </TabsContent>
-                <TabsContent value="card" className="mt-4">
-                  <CardForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
-                </TabsContent>
-                <TabsContent value="boleto" className="mt-4">
-                  <BoletoForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
-                </TabsContent>
-              </Tabs>
-            </>
-          ) : (
-            <AsaasPaymentTabs
-              plan={plan}
-              establishmentId={establishmentId}
-              payerEmailDefault={payerEmailDefault}
-              isSandboxLike={asaasMode === "sandbox"}
-              onDone={() => onOpenChange(false)}
-            />
-          )}
-          </>
+
+              <p className="mt-6 text-center text-[11px] text-muted-foreground">
+                Pagamento processado com segurança via <span className="font-semibold">{provider === "mercadopago" ? "Mercado Pago" : "Asaas"}</span>
+              </p>
+            </section>
+          </div>
         )}
       </DialogContent>
     </Dialog>
