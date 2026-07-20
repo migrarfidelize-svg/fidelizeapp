@@ -14,6 +14,7 @@ import {
   adminSyncWebhookUrl,
   adminSendWebhookTestEvent,
   adminSendWebhookDualTest,
+  adminGetHmacTelemetry,
 } from "@/lib/mercadopago.functions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -287,6 +288,8 @@ function AdminPaymentsPage() {
       </Card>
 
       <WebhookHealthCard />
+
+      <HmacAlertCard />
 
       <DualWebhookTestCard hasSecret={!!creds.has_webhook_secret} />
 
@@ -836,6 +839,169 @@ function ProbePane({ title, data }: { title: string; data: any }) {
           <pre className="mt-1 max-h-32 overflow-auto rounded bg-black/40 p-2 text-[10px] text-emerald-100">{data.body_snippet}</pre>
         </details>
       )}
+    </div>
+  );
+}
+
+function HmacAlertCard() {
+  const telemetryFn = useServerFn(adminGetHmacTelemetry);
+  const { data, refetch } = useQuery({
+    queryKey: ["admin-hmac-telemetry"],
+    queryFn: () => telemetryFn(),
+    refetchInterval: 15_000,
+    refetchOnWindowFocus: true,
+  });
+  const [liveHits, setLiveHits] = useState(0);
+  const seenIdsRef = useRef<Set<string>>(new Set());
+  const lastAtRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    let channel: any;
+    (async () => {
+      const { supabase } = await import("@/integrations/supabase/client");
+      if (cancelled) return;
+      channel = supabase
+        .channel("hmac-alerts")
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "payment_logs" }, (payload: any) => {
+          const row = payload?.new ?? {};
+          const isHmacFail =
+            row.mode === "live" &&
+            row.signature_valid === false &&
+            (row.error === "invalid_signature" || row.error === "missing_webhook_secret");
+          if (!isHmacFail) return;
+          if (seenIdsRef.current.has(row.id)) return;
+          seenIdsRef.current.add(row.id);
+          setLiveHits((n) => n + 1);
+          toast.error(
+            row.error === "missing_webhook_secret"
+              ? "Webhook rejeitado: MERCADOPAGO_WEBHOOK_SECRET não configurado"
+              : `Webhook rejeitado (401) — HMAC inválido${row.mp_id ? ` · id ${row.mp_id}` : ""}`,
+            {
+              description: new Date(row.created_at ?? Date.now()).toLocaleTimeString("pt-BR"),
+              duration: 8000,
+            },
+          );
+          refetch();
+        })
+        .subscribe();
+    })();
+    return () => {
+      cancelled = true;
+      if (channel) {
+        (async () => {
+          const { supabase } = await import("@/integrations/supabase/client");
+          supabase.removeChannel(channel);
+        })();
+      }
+    };
+  }, [refetch]);
+
+  useEffect(() => {
+    if (data?.last_at && data.last_at !== lastAtRef.current) {
+      lastAtRef.current = data.last_at;
+    }
+  }, [data?.last_at]);
+
+  const c1 = data?.last_1h ?? 0;
+  const c24 = data?.last_24h ?? 0;
+  const c7 = data?.last_7d ?? 0;
+  const severity: "ok" | "warn" | "crit" = c1 >= 5 ? "crit" : c1 > 0 ? "warn" : c24 > 0 ? "warn" : "ok";
+  const borderCls =
+    severity === "crit" ? "border-destructive/60 bg-destructive/5"
+    : severity === "warn" ? "border-amber-500/60 bg-amber-500/5"
+    : "border-emerald-500/40 bg-emerald-500/5";
+
+  return (
+    <Card className={borderCls}>
+      <CardHeader>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2">
+              <ShieldCheck className={`h-4 w-4 ${severity === "crit" ? "text-destructive" : severity === "warn" ? "text-amber-500" : "text-emerald-500"}`} />
+              Alertas HMAC (webhooks rejeitados)
+            </CardTitle>
+            <CardDescription>
+              Monitor em tempo real de eventos <strong>live</strong> bloqueados com <code className="text-[11px]">401</code> por assinatura inválida ou <code className="text-[11px]">MERCADOPAGO_WEBHOOK_SECRET</code> ausente.
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            {liveHits > 0 && (
+              <Badge variant="destructive" className="gap-1"><Radio className="h-3 w-3 animate-pulse" />{liveHits} novo{liveHits > 1 ? "s" : ""}</Badge>
+            )}
+            <Button size="sm" variant="ghost" onClick={() => { setLiveHits(0); refetch(); }}>
+              <RefreshCw className="mr-2 h-3.5 w-3.5" />Atualizar
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-3 gap-3">
+          <MetricBox label="Última 1h" value={c1} tone={c1 > 0 ? "bad" : "ok"} />
+          <MetricBox label="Últimas 24h" value={c24} tone={c24 > 0 ? "warn" : "ok"} />
+          <MetricBox label="Últimos 7 dias" value={c7} tone="muted" />
+        </div>
+
+        {!data?.has_webhook_secret && (
+          <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-xs">
+            <div className="flex items-center gap-2 font-medium text-destructive"><AlertCircle className="h-4 w-4" /> Secret não configurado</div>
+            <div className="mt-1 text-muted-foreground">
+              Todo evento live está sendo bloqueado com <strong>503 missing_webhook_secret</strong>. Configure <code className="text-[11px]">MERCADOPAGO_WEBHOOK_SECRET</code> em Secrets e re-publique.
+            </div>
+          </div>
+        )}
+
+        {data?.last_at && (
+          <div className="text-xs text-muted-foreground">
+            Última rejeição: <strong>{new Date(data.last_at).toLocaleString("pt-BR")}</strong>{data.last_error ? ` · ${data.last_error}` : ""}
+          </div>
+        )}
+
+        {(data?.recent?.length ?? 0) === 0 ? (
+          <div className="rounded-lg border border-dashed p-4 text-center text-xs text-muted-foreground">
+            Nenhuma rejeição por HMAC nos últimos 7 dias. Tudo certo.
+          </div>
+        ) : (
+          <div className="rounded-lg border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[160px]">Quando</TableHead>
+                  <TableHead>Evento</TableHead>
+                  <TableHead>MP ID</TableHead>
+                  <TableHead>Erro</TableHead>
+                  <TableHead className="text-right">HTTP</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data!.recent.map((r: any) => (
+                  <TableRow key={r.id}>
+                    <TableCell className="text-xs">{new Date(r.created_at).toLocaleString("pt-BR")}</TableCell>
+                    <TableCell className="text-xs">{r.event_type ?? "—"}</TableCell>
+                    <TableCell className="text-xs font-mono">{r.mp_id ?? "—"}</TableCell>
+                    <TableCell className="text-xs"><Badge variant="destructive" className="text-[10px]">{r.error}</Badge></TableCell>
+                    <TableCell className="text-right text-xs">{r.response_status ?? "—"}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function MetricBox({ label, value, tone }: { label: string; value: number; tone: "ok" | "warn" | "bad" | "muted" }) {
+  const toneCls =
+    tone === "bad" ? "text-destructive"
+    : tone === "warn" ? "text-amber-600 dark:text-amber-400"
+    : tone === "ok" ? "text-emerald-600 dark:text-emerald-400"
+    : "text-foreground";
+  return (
+    <div className="rounded-lg border p-3">
+      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className={`mt-1 text-2xl font-semibold tabular-nums ${toneCls}`}>{value}</div>
     </div>
   );
 }
