@@ -16,6 +16,23 @@ function getPublicKey(): string | null {
   return key || null;
 }
 
+function inferMercadoPagoTestAccount(account: any): boolean {
+  const nickname = String(account?.nickname ?? "");
+  const email = String(account?.email ?? "");
+  const tags = Array.isArray(account?.tags) ? account.tags.map((tag: unknown) => String(tag).toLowerCase()) : [];
+  return /^TESTUSER/i.test(nickname) || /test_user|testuser/i.test(email) || tags.includes("test_user");
+}
+
+function looksLikeMercadoPagoTestEmail(email: string | null | undefined): boolean {
+  return /(^|[+._-])test[_-]?user|testuser\.com/i.test(email ?? "");
+}
+
+function formatMpCredentialMismatchMessage(details: { configuredEnvironment?: string | null; accountNickname?: string | null }) {
+  const nickname = details.accountNickname ? ` (${details.accountNickname})` : "";
+  const environment = details.configuredEnvironment === "sandbox" ? "Sandbox/Teste" : "Produção";
+  return `Configuração Mercado Pago incompatível: o Access Token atual pertence a um usuário de teste${nickname}, mas o painel está em ${environment}. Para receber pagamentos reais, atualize o secret MERCADOPAGO_ACCESS_TOKEN com o Access Token de produção da conta real. Para simular pagamentos, mude o ambiente para Sandbox/Teste em /admin/pagamentos e use um comprador de teste do Mercado Pago.`;
+}
+
 async function mpFetch(path: string, init: RequestInit & { idempotencyKey?: string } = {}) {
   const token = getAccessToken();
   const headers: Record<string, string> = {
@@ -31,10 +48,10 @@ async function mpFetch(path: string, init: RequestInit & { idempotencyKey?: stri
   if (!res.ok) {
     const rawMsg = body?.message ?? body?.error ?? text ?? `MP ${res.status}`;
     const msgStr = typeof rawMsg === "string" ? rawMsg : JSON.stringify(rawMsg);
-    // Detecta erro clássico: pagador é o próprio dono da conta MP (proibido em live).
+    // Detecta erro clássico: credenciais/comprador de ambientes diferentes ou autopagamento em live.
     if (res.status === 401 && /unauthorized use of live credentials/i.test(msgStr)) {
       throw new Error(
-        "Mercado Pago recusou o pagamento: o e-mail do pagador não pode ser o mesmo da conta Mercado Pago que recebe (em credenciais LIVE, o dono da conta não pode pagar para si mesmo). Use um e-mail diferente do titular da conta MP para testar/cobrar."
+        "Mercado Pago recusou o pagamento: as credenciais e o comprador parecem estar em ambientes diferentes, ou o pagador é o próprio titular da conta que recebe. Se a conexão em /admin/pagamentos mostrar TESTUSER, troque para um Access Token de produção de uma conta real ou use Sandbox/Teste com comprador de teste. Em produção, use e-mail/CPF/CNPJ reais e diferentes da conta recebedora."
       );
     }
     throw new Error(`Mercado Pago (${res.status}): ${msgStr}`);
@@ -56,20 +73,39 @@ async function getPlanOrThrow(supabase: any, slug: string) {
   return plan;
 }
 
-// Bloqueia proativamente pagamento em que o pagador é o próprio titular da conta MP,
-// evitando o erro 401 "Unauthorized use of live credentials" em credenciais LIVE.
-async function assertPayerNotAccountHolder(payerEmail: string | null | undefined) {
-  if (!payerEmail) return;
+// Bloqueia proativamente cenários que geram 401 "Unauthorized use of live credentials".
+async function assertMercadoPagoPaymentReady(payerEmail: string | null | undefined) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data } = await supabaseAdmin
     .from("payment_settings")
-    .select("account_email, environment")
+    .select("account_email, account_nickname, environment")
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
   const acctEmail = ((data as any)?.account_email as string | null) ?? null;
+  const storedNickname = ((data as any)?.account_nickname as string | null) ?? null;
   const env = ((data as any)?.environment as string | null) ?? "production";
-  if (env !== "sandbox" && acctEmail && acctEmail.trim().toLowerCase() === payerEmail.trim().toLowerCase()) {
+
+  const account = await mpFetch("/users/me");
+  const accountNickname = (account?.nickname as string | null) ?? storedNickname;
+  const isTestAccount = inferMercadoPagoTestAccount(account);
+  const isSandbox = env === "sandbox";
+
+  if (!isSandbox && isTestAccount) {
+    throw new Error(formatMpCredentialMismatchMessage({ configuredEnvironment: env, accountNickname }));
+  }
+
+  if ((isSandbox || isTestAccount) && payerEmail && !looksLikeMercadoPagoTestEmail(payerEmail)) {
+    throw new Error(
+      "Ambiente de teste detectado no Mercado Pago. Use um e-mail de comprador de teste gerado no painel do Mercado Pago; e-mails reais como Gmail/Hotmail em Sandbox/Teste podem gerar 401."
+    );
+  }
+
+  if (!isSandbox && payerEmail && looksLikeMercadoPagoTestEmail(payerEmail)) {
+    throw new Error("Ambiente de produção detectado. Use um e-mail real do comprador, não um comprador de teste do Mercado Pago.");
+  }
+
+  if (payerEmail && env !== "sandbox" && acctEmail && acctEmail.trim().toLowerCase() === payerEmail.trim().toLowerCase()) {
     throw new Error(
       `Não é permitido pagar para si mesmo em produção. O e-mail informado (${payerEmail}) é o mesmo da conta Mercado Pago que recebe (${acctEmail}). Use um e-mail diferente para simular/cobrar essa assinatura.`
     );
@@ -83,14 +119,23 @@ export const getMercadoPagoAccountHint = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
       .from("payment_settings")
-      .select("account_email, account_nickname, environment")
+      .select("account_email, account_nickname, environment, last_test_message")
       .order("created_at", { ascending: true })
       .limit(1)
       .maybeSingle();
+    const nickname = ((data as any)?.account_nickname as string | null) ?? null;
+    const lastMessage = ((data as any)?.last_test_message as string | null) ?? null;
+    const inferredTestAccount = /^TESTUSER/i.test(nickname ?? "") || /TESTUSER/i.test(lastMessage ?? "");
+    const environment = ((data as any)?.environment as string | null) ?? "production";
+    const configurationIssue = environment !== "sandbox" && inferredTestAccount
+      ? formatMpCredentialMismatchMessage({ configuredEnvironment: environment, accountNickname: nickname ?? lastMessage })
+      : null;
     return {
       account_email: ((data as any)?.account_email as string | null) ?? null,
-      account_nickname: ((data as any)?.account_nickname as string | null) ?? null,
-      environment: ((data as any)?.environment as string | null) ?? "production",
+      account_nickname: nickname,
+      environment,
+      account_is_test_user: inferredTestAccount,
+      configuration_issue: configurationIssue,
     };
   });
 
@@ -134,7 +179,7 @@ export const createPixPayment = createServerFn({ method: "POST" })
 
     const idempotencyKey = crypto.randomUUID();
     const payerEmail = data.payer_email ?? claims?.email ?? `pagador+${data.establishment_id}@fidelize.app`;
-    await assertPayerNotAccountHolder(payerEmail);
+    await assertMercadoPagoPaymentReady(payerEmail);
     const expiresAt = new Date(Date.now() + 30 * 60_000).toISOString();
 
     const mp = await mpFetch("/v1/payments", {
@@ -214,7 +259,7 @@ export const createCardPayment = createServerFn({ method: "POST" })
     const plan = await getPlanOrThrow(supabase, data.plan_slug);
     const amount = Number(plan.price_monthly ?? 0);
     if (!(amount > 0)) throw new Error("Este plano não é cobrado (grátis) — nada a pagar.");
-    await assertPayerNotAccountHolder(data.payer_email);
+    await assertMercadoPagoPaymentReady(data.payer_email);
 
     const idempotencyKey = crypto.randomUUID();
 
@@ -289,7 +334,7 @@ export const createBoletoPayment = createServerFn({ method: "POST" })
     const plan = await getPlanOrThrow(supabase, data.plan_slug);
     const amount = Number(plan.price_monthly ?? 0);
     if (!(amount > 0)) throw new Error("Este plano não é cobrado (grátis).");
-    await assertPayerNotAccountHolder(data.payer_email);
+    await assertMercadoPagoPaymentReady(data.payer_email);
 
     const idempotencyKey = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 3 * 24 * 3600_000).toISOString();
@@ -432,21 +477,35 @@ export const adminTestMercadoPagoConnection = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
     if (!isAdmin) throw new Error("Apenas Super Administradores podem testar.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: settings } = await supabaseAdmin
+      .from("payment_settings")
+      .select("environment")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    const configuredEnvironment = ((settings as any)?.environment as string | null) ?? "production";
     try {
       const me = await mpFetch("/users/me");
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const isTestAccount = inferMercadoPagoTestAccount(me);
+      const accountLabel = me.nickname ?? me.email ?? me.id;
+      const hasEnvironmentMismatch = configuredEnvironment !== "sandbox" && isTestAccount;
+      const message = hasEnvironmentMismatch
+        ? formatMpCredentialMismatchMessage({ configuredEnvironment, accountNickname: me.nickname ?? null })
+        : `Conectado como ${accountLabel}`;
       await supabaseAdmin.from("payment_settings").update({
         last_tested_at: new Date().toISOString(),
-        last_test_status: "ok",
-        last_test_message: `Conectado como ${me.nickname ?? me.email ?? me.id}`,
+        last_test_status: hasEnvironmentMismatch ? "error" : "ok",
+        last_test_message: message,
         webhook_url: publicWebhookUrl(),
         account_id: me.id ? String(me.id) : null,
         account_email: me.email ?? null,
         account_nickname: me.nickname ?? null,
       } as never).neq("id", "00000000-0000-0000-0000-000000000000");
-      return { ok: true, account: { id: me.id, email: me.email, nickname: me.nickname, site_id: me.site_id, live_mode: !me.tags?.includes("test_user") } };
+      const result = { ok: !hasEnvironmentMismatch, account: { id: me.id, email: me.email, nickname: me.nickname, site_id: me.site_id, live_mode: !isTestAccount, is_test_user: isTestAccount }, configuration_issue: hasEnvironmentMismatch ? message : null };
+      if (hasEnvironmentMismatch) throw new Error(message);
+      return result;
     } catch (e: any) {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       await supabaseAdmin.from("payment_settings").update({
         last_tested_at: new Date().toISOString(),
         last_test_status: "error",
@@ -514,6 +573,12 @@ export const adminGetPaymentSettings = createServerFn({ method: "GET" })
     const envPublicKey = (process.env.MERCADOPAGO_PUBLIC_KEY ?? "").trim();
     const publicKeySource: "env" | "db" | null =
       envPublicKey ? "env" : (dbPublicKey ? "db" : null);
+    const accountNickname = ((data as any)?.account_nickname as string | null) ?? null;
+    const lastTestMessage = ((data as any)?.last_test_message as string | null) ?? null;
+    const accountIsTestUser = /^TESTUSER/i.test(accountNickname ?? "") || /TESTUSER/i.test(lastTestMessage ?? "");
+    const configurationIssue = ((data as any)?.environment ?? "production") !== "sandbox" && accountIsTestUser
+      ? formatMpCredentialMismatchMessage({ configuredEnvironment: (data as any)?.environment, accountNickname: accountNickname ?? lastTestMessage })
+      : null;
 
     return {
       settings: data,
@@ -528,6 +593,8 @@ export const adminGetPaymentSettings = createServerFn({ method: "GET" })
         has_public_key: !!publicKeySource,
         public_key_source: publicKeySource,
       },
+      mp_account_is_test_user: accountIsTestUser,
+      configuration_issue: configurationIssue,
     };
   });
 
