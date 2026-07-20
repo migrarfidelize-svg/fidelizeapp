@@ -31,12 +31,12 @@ function AdminAssinaturas() {
   function exportCSV() {
     downloadCSV(`fidelize-assinaturas-${new Date().toISOString().slice(0,10)}.csv`,
       ["Métrica","Valor"],
-      [["MRR estimado", formatBRL(d.mrr)], ["Empresas totais", d.estTotal], ["Ativas", d.estActive], ["Bloqueadas", d.estBlocked], ["Pagantes", d.estTotal - (d.planCounts.free ?? 0)], ["Clientes", d.customersTotal], ["Carimbos", d.stampsTotal], ["Recompensas resgatadas", d.rewardsRedeemed], ...planRows.map(r => [`Plano ${r[0]}`, `${r[1]} (${r[2]})`])]);
+      [["MRR", formatBRL(d.mrr)], ["Empresas totais", d.estTotal], ["Ativas", d.estActive], ["Bloqueadas", d.estBlocked], ["Pagantes", d.estTotal - (d.planCounts.free ?? 0)], ["Clientes", d.customersTotal], ["Carimbos", d.stampsTotal], ["Recompensas resgatadas", d.rewardsRedeemed], ...planRows.map(r => [`Plano ${r[0]}`, `${r[1]} (${r[2]})`])]);
   }
   function exportPDF() {
     downloadPDF(`fidelize-assinaturas-${new Date().toISOString().slice(0,10)}.pdf`, "Assinaturas & Métricas — Fidelize",
       ["Plano","Empresas","Participação"], planRows,
-      `MRR estimado: ${formatBRL(d.mrr)} · ${d.estTotal} empresas · gerado em ${new Date().toLocaleString("pt-BR")}`);
+      `MRR: ${formatBRL(d.mrr)} · ${d.estTotal} empresas · gerado em ${new Date().toLocaleString("pt-BR")}`);
   }
 
   return (
@@ -54,7 +54,7 @@ function AdminAssinaturas() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-wider text-muted-foreground">MRR estimado</div><div className="mt-2 font-display text-3xl font-bold">{formatBRL(d.mrr)}</div></CardContent></Card>
+        <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-wider text-muted-foreground">MRR</div><div className="mt-2 font-display text-3xl font-bold">{formatBRL(d.mrr)}</div></CardContent></Card>
         <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-wider text-muted-foreground">Empresas pagantes</div><div className="mt-2 font-display text-3xl font-bold">{(d.estTotal - (d.planCounts.free ?? 0)).toLocaleString("pt-BR")}</div></CardContent></Card>
         <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-wider text-muted-foreground">Conversão pagos</div><div className="mt-2 font-display text-3xl font-bold">{Math.round(((d.estTotal - (d.planCounts.free ?? 0)) / total) * 100)}%</div></CardContent></Card>
       </div>
