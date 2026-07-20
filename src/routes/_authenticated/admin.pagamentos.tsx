@@ -35,7 +35,7 @@ function AdminPaymentsPage() {
   const saveFn = useServerFn(adminUpdatePaymentSettings);
   const testFn = useServerFn(adminTestMercadoPagoConnection);
 
-  const { data, refetch, isLoading } = useQuery({ queryKey: ["admin-payment-settings"], queryFn: () => getFn() });
+  const { data, refetch, isLoading } = useQuery({ queryKey: ["admin-payment-settings"], queryFn: () => getFn(), refetchInterval: 60_000, refetchOnWindowFocus: true });
 
   const [environment, setEnvironment] = useState<"sandbox"|"production">("production");
   const [publicKey, setPublicKey] = useState("");
