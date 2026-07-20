@@ -204,6 +204,14 @@ export const saveIntegrationCredentials = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
 
+    // Invalida cache in-memory de credenciais MP (5s TTL) para refletir imediatamente.
+    if (data.category === "payments" && data.provider === "mercadopago") {
+      try {
+        const { invalidateMercadoPagoCredentialsCache } = await import("@/lib/mercadopago-credentials.server");
+        invalidateMercadoPagoCredentialsCache();
+      } catch { /* noop */ }
+    }
+
     await safeAudit(supabaseAdmin, {
       actor_id: context.userId,
       action: "integration.credentials.update",
