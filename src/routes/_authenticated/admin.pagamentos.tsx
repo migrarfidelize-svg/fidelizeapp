@@ -138,9 +138,12 @@ function AdminPaymentsPage() {
         </CardContent>
       </Card>
 
+      <WebhookHealthCard />
+
       <RecommendedEventsCard />
 
       <WebhookLogsCard />
+
 
 
       <Card>
