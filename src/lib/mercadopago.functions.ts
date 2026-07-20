@@ -131,20 +131,15 @@ export const getMercadoPagoAccountHint = createServerFn({ method: "GET" })
 // ----------- Public key (client-safe) -----------
 
 export const getMercadoPagoPublicKey = createServerFn({ method: "GET" }).handler(async () => {
-  const envKey = getPublicKey();
-  if (envKey) return { public_key: envKey, source: "env" as const };
-
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin
-    .from("payment_settings")
-    .select("public_key")
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
+  const { loadMercadoPagoCredentials } = await import("./mercadopago-credentials.server");
+  const creds = await loadMercadoPagoCredentials(true);
+  const source = creds.sources.public_key;
   return {
-    public_key: (((data as any)?.public_key as string | null) ?? null)?.trim() || null,
-    source: (((data as any)?.public_key as string | null) ?? "").trim() ? "db" as const : null,
+    public_key: creds.public_key,
+    source: source === "db_integration" ? ("db" as const)
+          : source === "db_payment_settings" ? ("db" as const)
+          : source === "env" ? ("env" as const)
+          : null,
   };
 });
 
