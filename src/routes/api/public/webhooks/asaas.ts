@@ -142,7 +142,7 @@ async function activatePlanAsaas(establishmentId: string, planSlug: string, prov
     cancel_at_period_end: false,
   };
   if (existingSub) {
-    await supabaseAdmin.from("subscriptions").update(subPayload).eq("id", existingSub.id);
+    await supabaseAdmin.from("subscriptions").update(subPayload as never).eq("id", existingSub.id);
   } else {
     await supabaseAdmin.from("subscriptions").insert({ establishment_id: establishmentId, ...subPayload } as never);
   }
