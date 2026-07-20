@@ -80,10 +80,20 @@ export const adminGetOverview = createServerFn({ method: "GET" })
       series.push({ day: d.slice(5), carimbos: map.get(d) ?? 0 });
     }
 
-    // Plans catalog for MRR estimate
+    // Real MRR: sum of price_monthly for establishments with an active paid subscription
     const { data: plans } = await supabase.from("plans").select("tier, price_monthly");
     const priceMap = new Map<string, number>((plans ?? []).map((p: any) => [p.tier, Number(p.price_monthly)]));
-    const mrr = Object.entries(planCounts).reduce((sum, [tier, count]) => sum + (priceMap.get(tier) ?? 0) * count, 0);
+    const { data: activeSubs } = await supabase
+      .from("subscriptions")
+      .select("establishment_id, tier")
+      .eq("status", "active");
+    const seen = new Set<string>();
+    let mrr = 0;
+    (activeSubs ?? []).forEach((s: any) => {
+      if (seen.has(s.establishment_id)) return;
+      seen.add(s.establishment_id);
+      mrr += priceMap.get(s.tier) ?? 0;
+    });
 
     return {
       estTotal: estTotal ?? 0,
@@ -365,47 +375,58 @@ export const adminGetFinancial = createServerFn({ method: "GET" })
 
     const now = new Date();
     const in30 = new Date(now.getTime() + 30 * 86400_000).toISOString();
-    const last12start = new Date(now.getFullYear(), now.getMonth() - 11, 1).toISOString();
+    const last12start = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+    const last12startIso = last12start.toISOString();
 
     const [
       { data: plans },
       { data: ests },
       { data: subs },
       { data: events12 },
+      { data: paidPayments },
     ] = await Promise.all([
       supabase.from("plans").select("tier, name, price_monthly, price_yearly, currency"),
       supabase.from("establishments").select("id, name, slug, plan, active, created_at").is("archived_at", null),
       supabase.from("subscriptions").select("id, establishment_id, tier, status, provider, current_period_start, current_period_end, cancel_at_period_end, trial_ends_at, created_at"),
-      supabase.from("subscription_events").select("id, establishment_id, event_type, from_plan, to_plan, created_at").gte("created_at", last12start).order("created_at", { ascending: false }),
+      supabase.from("subscription_events").select("id, establishment_id, event_type, from_plan, to_plan, created_at").gte("created_at", last12startIso).order("created_at", { ascending: false }),
+      supabase.from("payments").select("amount, approved_at, plan_slug, establishment_id, status").in("status", ["approved", "paid"]).gte("approved_at", last12startIso),
     ]);
 
     const priceMap = new Map<string, number>((plans ?? []).map((p: any) => [p.tier, Number(p.price_monthly ?? 0)]));
     const planNames = new Map<string, string>((plans ?? []).map((p: any) => [p.tier, p.name]));
     const estMap = new Map<string, any>((ests ?? []).map((e: any) => [e.id, e]));
 
-    // MRR per plan (based on establishment plan tier, only active)
+    // REAL MRR: only establishments with an active paid subscription
     const revenueByPlan: Record<string, { count: number; mrr: number; name: string }> = {};
     let mrr = 0;
     let activePaying = 0;
-    (ests ?? []).forEach((e: any) => {
-      const price = priceMap.get(e.plan) ?? 0;
-      const key = e.plan;
+    const countedEst = new Set<string>();
+    (subs ?? []).forEach((s: any) => {
+      if (s.status !== "active") return;
+      if (countedEst.has(s.establishment_id)) return;
+      countedEst.add(s.establishment_id);
+      const price = priceMap.get(s.tier) ?? 0;
+      const key = s.tier;
       if (!revenueByPlan[key]) revenueByPlan[key] = { count: 0, mrr: 0, name: planNames.get(key) ?? key };
-      if (e.active) {
-        revenueByPlan[key].count += 1;
-        revenueByPlan[key].mrr += price;
-        mrr += price;
-        if (price > 0) activePaying += 1;
-      }
+      revenueByPlan[key].count += 1;
+      revenueByPlan[key].mrr += price;
+      mrr += price;
+      if (price > 0) activePaying += 1;
     });
 
-    // Revenue series: last 12 months new subscriptions (upgrade + reactivate + plan_change to higher counted as expansion)
+    // Realized revenue series: last 12 months of approved payments
     const monthKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    const months: { month: string; mrrNew: number; churn: number; net: number }[] = [];
+    const months: { month: string; mrrNew: number; churn: number; net: number; revenue: number }[] = [];
     for (let i = 11; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      months.push({ month: monthKey(d), mrrNew: 0, churn: 0, net: 0 });
+      months.push({ month: monthKey(d), mrrNew: 0, churn: 0, net: 0, revenue: 0 });
     }
+    (paidPayments ?? []).forEach((p: any) => {
+      if (!p.approved_at) return;
+      const k = monthKey(new Date(p.approved_at));
+      const row = months.find(m => m.month === k);
+      if (row) row.revenue += Number(p.amount ?? 0);
+    });
     (events12 ?? []).forEach((ev: any) => {
       const k = monthKey(new Date(ev.created_at));
       const row = months.find(m => m.month === k);
@@ -437,12 +458,13 @@ export const adminGetFinancial = createServerFn({ method: "GET" })
       })
       .sort((a, b) => a.current_period_end.localeCompare(b.current_period_end));
 
-    // Top revenue establishments (by plan price, active)
-    const topRevenue = (ests ?? [])
-      .filter((e: any) => e.active)
-      .map((e: any) => ({ id: e.id, name: e.name, slug: e.slug, plan: e.plan, mrr: priceMap.get(e.plan) ?? 0 }))
-      .sort((a: any, b: any) => b.mrr - a.mrr)
-      .slice(0, 10);
+    // Top revenue establishments: real, from active subscriptions
+    const topRevenue = Array.from(countedEst).map(id => {
+      const est = estMap.get(id);
+      const sub = (subs ?? []).find((s: any) => s.establishment_id === id && s.status === "active");
+      const tier = sub?.tier ?? est?.plan ?? "free";
+      return { id, name: est?.name ?? "—", slug: est?.slug ?? "", plan: tier, mrr: priceMap.get(tier) ?? 0 };
+    }).sort((a, b) => b.mrr - a.mrr).slice(0, 10);
 
     // Trial subscriptions ending soon
     const trials = (subs ?? [])
@@ -464,13 +486,18 @@ export const adminGetFinancial = createServerFn({ method: "GET" })
     const activeEst = (ests ?? []).filter((e: any) => e.active).length;
     const arpu = activePaying > 0 ? mrr / activePaying : 0;
 
-    // Churn rate 30d: cancels / active start-of-window
+    // Churn rate 30d: real cancels / active subs at start of window
     const cutoff30 = new Date(now.getTime() - 30 * 86400_000).toISOString();
     const cancels30 = (events12 ?? []).filter((e: any) => e.event_type === "cancel" && e.created_at >= cutoff30).length;
-    const churnRate = activeEst > 0 ? (cancels30 / activeEst) * 100 : 0;
+    const churnRate = activePaying > 0 ? (cancels30 / activePaying) * 100 : 0;
+
+    // Realized revenue totals
+    const revenue30 = (paidPayments ?? []).filter((p: any) => p.approved_at && p.approved_at >= cutoff30).reduce((s: number, p: any) => s + Number(p.amount ?? 0), 0);
+    const revenue12m = (paidPayments ?? []).reduce((s: number, p: any) => s + Number(p.amount ?? 0), 0);
 
     return {
       mrr, arr: mrr * 12, arpu, activePaying, totalEst, activeEst,
       revenueByPlan, months, upcoming, topRevenue, trials, churnRate, cancels30,
+      revenue30, revenue12m,
     };
   });
