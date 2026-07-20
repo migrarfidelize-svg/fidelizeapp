@@ -77,8 +77,7 @@ function validateSandboxBuyerEmail(isSandboxLike: boolean, email: string) {
     return false;
   }
   if (isSandboxLike && !isMercadoPagoSandboxBuyerEmail(clean)) {
-    toast.error("Em Sandbox/Teste, use o e-mail completo do comprador de teste do Mercado Pago, como test_user...@testuser.com.");
-    return false;
+    toast.warning("Sandbox/Teste ativo: vamos tentar gerar o pagamento, mas se o Mercado Pago retornar 401 use um comprador de teste @testuser.com.");
   }
   return true;
 }
