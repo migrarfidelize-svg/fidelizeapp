@@ -29,7 +29,8 @@ function looksLikeMercadoPagoTestEmail(email: string | null | undefined): boolea
 
 function formatMpCredentialMismatchMessage(details: { configuredEnvironment?: string | null; accountNickname?: string | null }) {
   const nickname = details.accountNickname ? ` (${details.accountNickname})` : "";
-  return `Configuração Mercado Pago incompatível: o Access Token atual pertence a um usuário de teste${nickname}, mas o painel está em Produção. Para receber pagamentos reais, atualize o secret MERCADOPAGO_ACCESS_TOKEN com o Access Token de produção da conta real. Para simular pagamentos, mude o ambiente para Sandbox/Teste em /admin/pagamentos e use um comprador de teste do Mercado Pago.`;
+  const environment = details.configuredEnvironment === "sandbox" ? "Sandbox/Teste" : "Produção";
+  return `Configuração Mercado Pago incompatível: o Access Token atual pertence a um usuário de teste${nickname}, mas o painel está em ${environment}. Para receber pagamentos reais, atualize o secret MERCADOPAGO_ACCESS_TOKEN com o Access Token de produção da conta real. Para simular pagamentos, mude o ambiente para Sandbox/Teste em /admin/pagamentos e use um comprador de teste do Mercado Pago.`;
 }
 
 async function mpFetch(path: string, init: RequestInit & { idempotencyKey?: string } = {}) {
