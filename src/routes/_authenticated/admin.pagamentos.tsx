@@ -722,6 +722,19 @@ function DualWebhookTestCard({ hasSecret }: { hasSecret: boolean }) {
           <div className="grid gap-3 md:grid-cols-2">
             <ProbePane title="Simulador (sem HMAC)" data={result.simulator} />
             <ProbePane title="Evento live (com HMAC)" data={result.live} />
+            <div className="md:col-span-2 rounded-lg border bg-muted/40 p-3 text-[11px] text-muted-foreground space-y-1">
+              <div className="font-medium text-foreground">Como o handler decide o caminho</div>
+              <div>
+                O webhook classifica cada requisição em <code>test</code> / <code>live</code> / <code>unknown</code> e só exige HMAC quando o modo é <code>live</code>. Regras aplicadas em ordem:
+              </div>
+              <ul className="ml-4 list-disc space-y-0.5">
+                <li><code>explicit_type_test</code> — body contém <code>type: "test"</code>.</li>
+                <li><code>explicit_action_test</code> — body contém <code>action: "test.created"</code>.</li>
+                <li><code>sandbox_dummy_id</code> — <code>live_mode:false</code> com <code>data.id:"123456"</code>.</li>
+                <li><code>panel_simulator_ua</code> — user-agent contém <code>restclient-node</code> (botão "Testar URL" do painel MP), mesmo com <code>live_mode:true</code>.</li>
+                <li><code>live_mode_true</code> — <code>live_mode:true</code> sem nenhum sinal acima → evento REAL, HMAC obrigatória.</li>
+              </ul>
+            </div>
             <div className="md:col-span-2 text-[11px] text-muted-foreground">
               URL testada: <code className="font-mono">{result.url}</code> · Verificado em {new Date(result.checked_at).toLocaleString("pt-BR")}
             </div>
@@ -734,6 +747,10 @@ function DualWebhookTestCard({ hasSecret }: { hasSecret: boolean }) {
 
 function ProbePane({ title, data }: { title: string; data: any }) {
   const ok = !!data?.ok;
+  const modeMatched = data?.expected_log_mode ? data?.log_mode === data?.expected_log_mode : null;
+  const sigMatched = data?.expected_signature_valid !== undefined
+    ? data?.signature_valid === data?.expected_signature_valid
+    : null;
   return (
     <div className={`rounded-xl border p-3 ${ok ? "border-emerald-500/40 bg-emerald-500/10" : "border-destructive/40 bg-destructive/10"}`}>
       <div className="flex items-center gap-2">
@@ -741,13 +758,41 @@ function ProbePane({ title, data }: { title: string; data: any }) {
         <div className="font-medium text-sm">{title}</div>
         <Badge variant="outline" className="ml-auto text-[10px]">{data?.path}</Badge>
       </div>
+
+      {data?.path_explanation && (
+        <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+          {data.path_explanation}
+        </p>
+      )}
+      {data?.detection_rule && (
+        <div className="mt-1 text-[11px]">
+          <span className="opacity-60">Regra de detecção esperada:</span>{" "}
+          <code className="font-mono text-[10px] rounded bg-muted px-1 py-0.5">{data.detection_rule}</code>
+        </div>
+      )}
+
       <div className="mt-2 grid grid-cols-2 gap-1 text-[11px] font-mono">
         <div><span className="opacity-60">HTTP</span> {data?.status ?? "—"}</div>
         <div><span className="opacity-60">Latência</span> {data?.latency_ms ?? "—"}ms</div>
         <div><span className="opacity-60">Log</span> {data?.log_matched ? "✓" : "✗"}</div>
         <div><span className="opacity-60">Processado</span> {data?.log_processed === true ? "✓" : data?.log_processed === false ? "✗" : "—"}</div>
-        <div><span className="opacity-60">Modo</span> {data?.log_mode ?? "—"}</div>
-        <div><span className="opacity-60">Assinatura</span> {data?.signature_valid === true ? "válida" : data?.signature_valid === false ? "inválida" : "—"}</div>
+        <div>
+          <span className="opacity-60">Modo</span> {data?.log_mode ?? "—"}
+          {data?.expected_log_mode && (
+            <span className={`ml-1 ${modeMatched ? "text-emerald-600" : "text-destructive"}`}>
+              {modeMatched ? "✓" : `≠ ${data.expected_log_mode}`}
+            </span>
+          )}
+        </div>
+        <div>
+          <span className="opacity-60">Assinatura</span>{" "}
+          {data?.signature_valid === true ? "válida" : data?.signature_valid === false ? "inválida" : "—"}
+          {data?.expected_signature_valid !== undefined && (
+            <span className={`ml-1 ${sigMatched ? "text-emerald-600" : "text-destructive"}`}>
+              {sigMatched ? "✓" : `≠ esperado ${data.expected_signature_valid ? "válida" : "inválida"}`}
+            </span>
+          )}
+        </div>
       </div>
       <div className="mt-2 text-xs">{data?.message}</div>
       {data?.body_snippet && (

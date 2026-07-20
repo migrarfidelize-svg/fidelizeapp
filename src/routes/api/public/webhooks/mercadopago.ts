@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { verifyMercadoPagoSignature, mapMpStatusToPaymentStatus, mapMpMethod } from "@/lib/mercadopago-webhook";
+import { verifyMercadoPagoSignature, mapMpStatusToPaymentStatus, mapMpMethod, classifyMercadoPagoRequest } from "@/lib/mercadopago-webhook";
 
 // Webhook oficial do Mercado Pago.
 // Ref: https://www.mercadopago.com.br/developers/pt/docs/your-integrations/notifications/webhooks
@@ -233,20 +233,11 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
         const action: string | null = body?.action ?? null;
         const liveMode: boolean | null = typeof body?.live_mode === "boolean" ? body.live_mode : null;
 
-        // Handshake/teste do painel do Mercado Pago (não vem assinado).
-        // O simulador do painel usa user-agent `restclient-node` e frequentemente
-        // não inclui `live_mode` no body — tratamos como teste para não confundir logs.
         const userAgent = request.headers.get("user-agent") ?? "";
-        const isPanelSimulator = /restclient-node/i.test(userAgent);
-        const isTest =
-          eventType === "test" ||
-          action === "test.created" ||
-          (liveMode === false && dataId === "123456") ||
-          isPanelSimulator;
-
-        const mode: "test" | "live" | "unknown" = isTest
-          ? "test"
-          : liveMode === true ? "live" : liveMode === false ? "test" : "unknown";
+        const classification = classifyMercadoPagoRequest({
+          eventType, action, liveMode, dataId, userAgent,
+        });
+        const { mode, isTest } = classification;
 
         const signatureValid = verifyMercadoPagoSignature({
           signatureHeader, requestId, dataId, secret,
@@ -265,7 +256,8 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
           headers: {
             "x-request-id": requestId,
             "x-signature": signatureHeader ? "present" : null,
-            "user-agent": request.headers.get("user-agent"),
+            "user-agent": userAgent,
+            "detection_rule": classification.detection,
           },
           mode,
         };
@@ -285,7 +277,7 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
           await logWebhook({
             ...logRow,
             processed: true,
-            reason: "Handshake/teste do painel Mercado Pago aceito sem verificação de assinatura.",
+            reason: `Handshake/teste aceito sem HMAC. Regra: ${classification.detection} — ${classification.reason}`,
             response_status: 200,
           });
           return new Response("test ok", { status: 200 });

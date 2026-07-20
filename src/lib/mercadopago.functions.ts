@@ -689,6 +689,11 @@ export const adminSendWebhookDualTest = createServerFn({ method: "POST" })
       simulator: {
         ok: okA,
         path: "sem HMAC (handshake do painel MP)",
+        path_explanation:
+          "Payload disparado como o botão \"Testar URL\" do painel Mercado Pago: sem cabeçalho x-signature. O handler classifica como TESTE e aceita sem verificar HMAC porque combina duas regras — `type:\"test\"` no body e `action:\"test.created\"`.",
+        detection_rule: "explicit_type_test + explicit_action_test",
+        expected_log_mode: "test",
+        expected_signature_valid: false,
         status: sendA.status,
         latency_ms: sendA.latency_ms,
         body_snippet: sendA.body_snippet,
@@ -701,12 +706,17 @@ export const adminSendWebhookDualTest = createServerFn({ method: "POST" })
         message: sendA.network_error
           ? `Falha de rede: ${sendA.network_error}`
           : okA
-            ? `Handshake aceito sem assinatura (HTTP ${sendA.status}, ${sendA.latency_ms}ms).`
+            ? `Handshake aceito sem assinatura (HTTP ${sendA.status}, ${sendA.latency_ms}ms) — caminho SEM HMAC.`
             : `Simulador falhou (HTTP ${sendA.status ?? "?"}). Log ${logA ? "encontrado" : "ausente"}.`,
       },
       live: {
         ok: okB,
         path: "com HMAC (evento live real)",
+        path_explanation:
+          "Payload com `live_mode:true` e cabeçalhos `x-request-id` + `x-signature` (ts + v1) assinados via HMAC-SHA256 com `MERCADOPAGO_WEBHOOK_SECRET`. O handler classifica como LIVE (regra `live_mode_true`, sem simulador) e SÓ aceita se a assinatura conferir com o manifesto `id:<data.id>;request-id:<id>;ts:<ts>;`.",
+        detection_rule: "live_mode_true (sem UA restclient-node)",
+        expected_log_mode: "live",
+        expected_signature_valid: true,
         status: sendB.status,
         latency_ms: sendB.latency_ms,
         body_snippet: sendB.body_snippet,
@@ -724,7 +734,7 @@ export const adminSendWebhookDualTest = createServerFn({ method: "POST" })
             : sendB.status === 401
               ? `HTTP 401 — assinatura rejeitada. Confirme se o secret salvo bate com o do painel MP.`
               : okB
-                ? `Evento assinado aceito e validado (HTTP ${sendB.status}, ${sendB.latency_ms}ms).`
+                ? `Evento assinado aceito e validado (HTTP ${sendB.status}, ${sendB.latency_ms}ms) — caminho COM HMAC.`
                 : `HTTP ${sendB.status ?? "?"}. Log ${logB ? `signature_valid=${(logB as any).signature_valid}` : "ausente"}.`,
       },
     };
