@@ -722,6 +722,19 @@ function DualWebhookTestCard({ hasSecret }: { hasSecret: boolean }) {
           <div className="grid gap-3 md:grid-cols-2">
             <ProbePane title="Simulador (sem HMAC)" data={result.simulator} />
             <ProbePane title="Evento live (com HMAC)" data={result.live} />
+            <div className="md:col-span-2 rounded-lg border bg-muted/40 p-3 text-[11px] text-muted-foreground space-y-1">
+              <div className="font-medium text-foreground">Como o handler decide o caminho</div>
+              <div>
+                O webhook classifica cada requisição em <code>test</code> / <code>live</code> / <code>unknown</code> e só exige HMAC quando o modo é <code>live</code>. Regras aplicadas em ordem:
+              </div>
+              <ul className="ml-4 list-disc space-y-0.5">
+                <li><code>explicit_type_test</code> — body contém <code>type: "test"</code>.</li>
+                <li><code>explicit_action_test</code> — body contém <code>action: "test.created"</code>.</li>
+                <li><code>sandbox_dummy_id</code> — <code>live_mode:false</code> com <code>data.id:"123456"</code>.</li>
+                <li><code>panel_simulator_ua</code> — user-agent contém <code>restclient-node</code> (botão "Testar URL" do painel MP), mesmo com <code>live_mode:true</code>.</li>
+                <li><code>live_mode_true</code> — <code>live_mode:true</code> sem nenhum sinal acima → evento REAL, HMAC obrigatória.</li>
+              </ul>
+            </div>
             <div className="md:col-span-2 text-[11px] text-muted-foreground">
               URL testada: <code className="font-mono">{result.url}</code> · Verificado em {new Date(result.checked_at).toLocaleString("pt-BR")}
             </div>
