@@ -10,8 +10,14 @@ export function verifyMercadoPagoSignature(opts: {
   requestId: string | null;
   dataId: string | null;
   secret: string;
+  /** Máx. idade do timestamp (ms) para bloquear replay. Default: 10min. 0 = desativa. */
+  maxAgeMs?: number;
+  /** Injeção para testes; default Date.now(). */
+  now?: () => number;
 }): boolean {
   const { signatureHeader, requestId, dataId, secret } = opts;
+  const maxAgeMs = opts.maxAgeMs ?? 10 * 60 * 1000;
+  const now = opts.now ?? Date.now;
   if (!signatureHeader || !secret) return false;
   const parts = Object.fromEntries(
     signatureHeader.split(",").map((p) => {
@@ -22,7 +28,18 @@ export function verifyMercadoPagoSignature(opts: {
   const ts = parts.ts;
   const v1 = parts.v1;
   if (!ts || !v1) return false;
-  const manifest = `id:${dataId ?? ""};request-id:${requestId ?? ""};ts:${ts};`;
+
+  // Replay protection: MP `ts` vem em milissegundos. Rejeita se muito antigo/futuro.
+  if (maxAgeMs > 0) {
+    const tsNum = Number(ts);
+    if (!Number.isFinite(tsNum)) return false;
+    const delta = Math.abs(now() - tsNum);
+    if (delta > maxAgeMs) return false;
+  }
+
+  // Per docs do MP, o `data.id` no manifest deve estar em lowercase.
+  const idForManifest = (dataId ?? "").toLowerCase();
+  const manifest = `id:${idForManifest};request-id:${requestId ?? ""};ts:${ts};`;
   const expected = createHmac("sha256", secret).update(manifest).digest("hex");
   try {
     const a = Buffer.from(v1, "hex");
