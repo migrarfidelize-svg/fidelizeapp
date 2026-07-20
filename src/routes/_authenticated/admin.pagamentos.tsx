@@ -340,33 +340,51 @@ function WebhookLogsCard() {
               <TableRow>
                 <TableHead>Recebido</TableHead>
                 <TableHead>Evento</TableHead>
+                <TableHead>Modo</TableHead>
                 <TableHead>MP ID</TableHead>
                 <TableHead>Assinatura</TableHead>
-                <TableHead>Processado</TableHead>
-                <TableHead>Erro</TableHead>
+                <TableHead>HTTP</TableHead>
+                <TableHead>Motivo</TableHead>
+                <TableHead>Retries</TableHead>
                 <TableHead className="text-right">Payload</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rows.map((r: any) => {
-                const status = r.error ? 500 : (r.processed ? 200 : 202);
+                const status = r.response_status ?? (r.error ? 500 : (r.processed ? 200 : 202));
+                const mode = r.mode ?? (r.live_mode === true ? "live" : r.live_mode === false ? "test" : "—");
                 return (
                   <TableRow key={r.id}>
-                    <TableCell className="text-xs">{new Date(r.created_at).toLocaleString("pt-BR")}</TableCell>
+                    <TableCell className="text-xs whitespace-nowrap">{new Date(r.created_at).toLocaleString("pt-BR")}</TableCell>
                     <TableCell className="text-xs">
                       <div className="font-medium">{r.event_type}</div>
                       {r.action && <div className="text-muted-foreground">{r.action}</div>}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={mode === "live" ? "bg-primary/15 text-primary" : mode === "test" ? "bg-amber-500/15 text-amber-700 dark:text-amber-400" : ""}>
+                        {mode}
+                      </Badge>
                     </TableCell>
                     <TableCell className="font-mono text-xs">{r.mp_id ?? "—"}</TableCell>
                     <TableCell>
                       {r.signature_valid
                         ? <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" variant="outline">Válida</Badge>
-                        : <Badge className="bg-destructive/15 text-destructive" variant="outline">Inválida</Badge>}
+                        : <Badge className="bg-destructive/15 text-destructive" variant="outline">{mode === "test" ? "N/A" : "Inválida"}</Badge>}
                     </TableCell>
                     <TableCell>
                       <Badge className={statusColor(status)} variant="outline">{status}</Badge>
                     </TableCell>
-                    <TableCell className="text-xs text-destructive max-w-[200px] truncate">{r.error ?? "—"}</TableCell>
+                    <TableCell className="text-xs max-w-[240px] truncate" title={r.reason ?? r.error ?? ""}>
+                      {r.error
+                        ? <span className="text-destructive">{r.reason ?? r.error}</span>
+                        : <span className="text-muted-foreground">{r.reason ?? "—"}</span>}
+                    </TableCell>
+                    <TableCell className="text-xs whitespace-nowrap">
+                      {r.retry_count > 0 ? `${r.retry_count}×` : "—"}
+                      {r.next_retry_at && !r.processed && (
+                        <div className="text-muted-foreground text-[10px]">→ {new Date(r.next_retry_at).toLocaleString("pt-BR")}</div>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">
                       <Button size="sm" variant="ghost" onClick={() => setSelected(r)}>Ver</Button>
                     </TableCell>
@@ -374,6 +392,7 @@ function WebhookLogsCard() {
                 );
               })}
             </TableBody>
+
           </Table>
         )}
         {total > 25 && (
