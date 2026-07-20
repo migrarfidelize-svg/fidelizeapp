@@ -573,8 +573,15 @@ export const adminGetPaymentSettings = createServerFn({ method: "GET" })
       ? formatMpCredentialMismatchMessage({ configuredEnvironment: effectiveEnvironment, accountNickname: accountNickname ?? lastTestMessage })
       : null;
 
+    const effectiveSettings = {
+      ...((data as Record<string, unknown> | null) ?? {}),
+      environment: effectiveEnvironment,
+      public_key: creds.public_key ?? ((data as any)?.public_key as string | null) ?? "",
+    };
+
     return {
-      settings: data,
+      settings: effectiveSettings,
+      legacy_settings: data,
       effective_environment: effectiveEnvironment,
       webhook_url: canonicalUrl,
       stored_webhook_url: storedUrl,
@@ -622,6 +629,32 @@ export const adminUpdatePaymentSettings = createServerFn({ method: "POST" })
       } as never);
       if (insertError) throw insertError;
     }
+
+    const { data: existingIntegration } = await (supabaseAdmin as any)
+      .from("integrations")
+      .select("credentials")
+      .eq("category", "payments")
+      .eq("provider", "mercadopago")
+      .maybeSingle();
+    const mergedCredentials: Record<string, string> = { ...(((existingIntegration as any)?.credentials ?? {}) as Record<string, string>) };
+    if (cleanPublicKey) mergedCredentials.public_key = cleanPublicKey;
+    else delete mergedCredentials.public_key;
+    const { error: integrationError } = await (supabaseAdmin as any)
+      .from("integrations")
+      .upsert({
+        category: "payments",
+        provider: "mercadopago",
+        mode: data.environment,
+        credentials: mergedCredentials,
+        updated_by: userId,
+      }, { onConflict: "category,provider" });
+    if (integrationError) throw new Error(integrationError.message);
+
+    try {
+      const { invalidateMercadoPagoCredentialsCache } = await import("./mercadopago-credentials.server");
+      invalidateMercadoPagoCredentialsCache();
+    } catch { /* noop */ }
+
     return { ok: true };
   });
 
