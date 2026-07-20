@@ -164,10 +164,10 @@ function AppLayout() {
     { to: "/app/equipe", label: "Equipe", icon: UsersRound, exact: false },
     
     
-    { to: "/ajuda", label: "Central de Ajuda", icon: BookOpen, exact: false },
+    { to: "/app/kb", label: "Central de Ajuda", icon: BookOpen, exact: false },
     { to: "/app/planos", label: "Planos", icon: Package, exact: false },
     { to: "/app/pagamentos", label: "Pagamentos", icon: Receipt, exact: false },
-    { to: "/suporte", label: "Fale com a Fidelize", icon: LifeBuoy, exact: false },
+    { to: "/app/suporte", label: "Fale com a Fidelize", icon: LifeBuoy, exact: false },
   ] as const;
 
   async function signOut() {
@@ -181,7 +181,7 @@ function AppLayout() {
     <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
       {nav.map((n) => {
         const active = n.exact ? pathname === n.to : pathname.startsWith(n.to);
-        const badge = n.to === "/suporte" && unreadSupport > 0 ? unreadSupport : 0;
+        const badge = n.to === "/app/suporte" && unreadSupport > 0 ? unreadSupport : 0;
         return (
           <Link key={n.to} to={n.to} data-tour={`nav-${n.to}`} onClick={onNavigate} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${active ? "bg-primary-soft text-primary" : "text-muted-foreground hover:bg-muted"}`}>
             <n.icon className="h-4 w-4" />
