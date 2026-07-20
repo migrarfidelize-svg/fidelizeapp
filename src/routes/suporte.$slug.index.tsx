@@ -23,7 +23,7 @@ export const Route = createFileRoute("/suporte/$slug/")({
 });
 
 function HelpCenterHub() {
-  const data = Route.useLoaderData();
+  const data = Route.useLoaderData() as any;
   const params = Route.useParams();
   const navigate = useNavigate();
   const [q, setQ] = useState("");
