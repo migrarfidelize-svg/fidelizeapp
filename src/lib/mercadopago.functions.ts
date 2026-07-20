@@ -65,6 +65,8 @@ async function getPlanOrThrow(supabase: any, slug: string) {
 // Bloqueia proativamente cenários que geram 401 "Unauthorized use of live credentials".
 async function assertMercadoPagoPaymentReady(payerEmail: string | null | undefined) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { loadMercadoPagoCredentials } = await import("./mercadopago-credentials.server");
+  const credentials = await loadMercadoPagoCredentials(true);
   const { data } = await supabaseAdmin
     .from("payment_settings")
     .select("account_email, account_nickname, environment")
@@ -73,7 +75,7 @@ async function assertMercadoPagoPaymentReady(payerEmail: string | null | undefin
     .maybeSingle();
   const acctEmail = ((data as any)?.account_email as string | null) ?? null;
   const storedNickname = ((data as any)?.account_nickname as string | null) ?? null;
-  const env = ((data as any)?.environment as string | null) ?? "production";
+  const env = credentials.mode ?? ((data as any)?.environment as string | null) ?? "production";
 
   const account = await mpFetch("/users/me");
   const accountNickname = (account?.nickname as string | null) ?? storedNickname;
@@ -106,6 +108,8 @@ export const getMercadoPagoAccountHint = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async () => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { loadMercadoPagoCredentials } = await import("./mercadopago-credentials.server");
+    const credentials = await loadMercadoPagoCredentials(true);
     const { data } = await supabaseAdmin
       .from("payment_settings")
       .select("account_email, account_nickname, environment, last_test_message")
@@ -115,7 +119,7 @@ export const getMercadoPagoAccountHint = createServerFn({ method: "GET" })
     const nickname = ((data as any)?.account_nickname as string | null) ?? null;
     const lastMessage = ((data as any)?.last_test_message as string | null) ?? null;
     const inferredTestAccount = /^TESTUSER/i.test(nickname ?? "") || /TESTUSER/i.test(lastMessage ?? "");
-    const environment = ((data as any)?.environment as string | null) ?? "production";
+    const environment = credentials.mode ?? ((data as any)?.environment as string | null) ?? "production";
     const configurationIssue = environment !== "sandbox" && inferredTestAccount
       ? formatMpCredentialMismatchMessage({ configuredEnvironment: environment, accountNickname: nickname ?? lastMessage })
       : null;
@@ -462,13 +466,15 @@ export const adminTestMercadoPagoConnection = createServerFn({ method: "POST" })
     const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
     if (!isAdmin) throw new Error("Apenas Super Administradores podem testar.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { loadMercadoPagoCredentials } = await import("./mercadopago-credentials.server");
+    const credentials = await loadMercadoPagoCredentials(true);
     const { data: settings } = await supabaseAdmin
       .from("payment_settings")
       .select("environment")
       .order("created_at", { ascending: true })
       .limit(1)
       .maybeSingle();
-    const configuredEnvironment = ((settings as any)?.environment as string | null) ?? "production";
+    const configuredEnvironment = credentials.mode ?? ((settings as any)?.environment as string | null) ?? "production";
     try {
       const me = await mpFetch("/users/me");
       const isTestAccount = inferMercadoPagoTestAccount(me);
@@ -562,12 +568,14 @@ export const adminGetPaymentSettings = createServerFn({ method: "GET" })
     const accountNickname = ((data as any)?.account_nickname as string | null) ?? null;
     const lastTestMessage = ((data as any)?.last_test_message as string | null) ?? null;
     const accountIsTestUser = /^TESTUSER/i.test(accountNickname ?? "") || /TESTUSER/i.test(lastTestMessage ?? "");
-    const configurationIssue = ((data as any)?.environment ?? "production") !== "sandbox" && accountIsTestUser
-      ? formatMpCredentialMismatchMessage({ configuredEnvironment: (data as any)?.environment, accountNickname: accountNickname ?? lastTestMessage })
+    const effectiveEnvironment = creds.mode ?? ((data as any)?.environment ?? "production");
+    const configurationIssue = effectiveEnvironment !== "sandbox" && accountIsTestUser
+      ? formatMpCredentialMismatchMessage({ configuredEnvironment: effectiveEnvironment, accountNickname: accountNickname ?? lastTestMessage })
       : null;
 
     return {
       settings: data,
+      effective_environment: effectiveEnvironment,
       webhook_url: canonicalUrl,
       stored_webhook_url: storedUrl,
       webhook_url_stale: stale,
