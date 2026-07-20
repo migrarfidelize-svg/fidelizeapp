@@ -41,6 +41,27 @@ async function fetchMerchantOrderFromMP(orderId: string, accessToken: string) {
   return JSON.parse(text) as any;
 }
 
+async function fetchOrderFromMP(orderId: string, accessToken: string) {
+  // Novo Orders API (Point/Checkout Bricks). Ref: developers.mercadopago.com/pt/reference/orders
+  const res = await fetch(`${MP_API}/v1/orders/${orderId}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  const text = await res.text();
+  if (!res.ok) throw new Error(`MP GET /v1/orders/${orderId} ${res.status}: ${text}`);
+  return JSON.parse(text) as any;
+}
+
+async function fetchPreapprovalFromMP(preapprovalId: string, accessToken: string) {
+  const res = await fetch(`${MP_API}/preapproval/${preapprovalId}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  const text = await res.text();
+  if (!res.ok) throw new Error(`MP GET /preapproval/${preapprovalId} ${res.status}: ${text}`);
+  return JSON.parse(text) as any;
+}
+
+
+
 
 
 
