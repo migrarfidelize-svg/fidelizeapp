@@ -462,7 +462,14 @@ export const adminGetPaymentSettings = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
     if (!isAdmin) throw new Error("Sem permissão.");
-    const { data } = await supabase.from("payment_settings").select("*").order("created_at").limit(1).maybeSingle();
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("payment_settings")
+      .select("*")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
     const hasToken = !!process.env.MERCADOPAGO_ACCESS_TOKEN;
     const hasSecret = !!process.env.MERCADOPAGO_WEBHOOK_SECRET;
     const canonicalUrl = publicWebhookUrl();
@@ -473,7 +480,6 @@ export const adminGetPaymentSettings = createServerFn({ method: "GET" })
     // Auditar divergência (dedupe: máx 1 log/hora por par de URLs)
     let lastDivergenceAt: string | null = null;
     if (stale) {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const oneHourAgo = new Date(Date.now() - 60 * 60_000).toISOString();
       const { data: recent } = await supabaseAdmin
         .from("audit_logs")
@@ -504,8 +510,8 @@ export const adminGetPaymentSettings = createServerFn({ method: "GET" })
       }
     }
 
-    const dbPublicKey = ((data as any)?.public_key as string | null) ?? null;
-    const envPublicKey = process.env.MERCADOPAGO_PUBLIC_KEY ?? null;
+    const dbPublicKey = (((data as any)?.public_key as string | null) ?? "").trim();
+    const envPublicKey = (process.env.MERCADOPAGO_PUBLIC_KEY ?? "").trim();
     const publicKeySource: "env" | "db" | null =
       envPublicKey ? "env" : (dbPublicKey ? "db" : null);
 
