@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock, UsersRound, Settings, Mail, FileText, ListChecks, LifeBuoy, Package, DollarSign, ChevronDown, Wallet, Megaphone, Cog, BookOpen, Menu, Star, Plug } from "lucide-react";
+import { Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock, UsersRound, Settings, Mail, FileText, ListChecks, LifeBuoy, Package, DollarSign, Wallet, Megaphone, Cog, BookOpen, Menu, Star, Plug } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -22,7 +22,6 @@ function AdminLayout() {
   const bootstrap = useServerFn(bootstrapSuperAdmin);
   const { data, isLoading, refetch } = useQuery({ queryKey: ["admin-status"], queryFn: () => getStatus() });
   const pathname = useRouterState({ select: (r) => r.location.pathname });
-  const [openKey, setOpenKey] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   if (isLoading) return <div className="grid min-h-dvh place-items-center text-muted-foreground">Verificando permissões…</div>;
@@ -111,8 +110,6 @@ function AdminLayout() {
   ];
 
   const isItemActive = (n: NavItem) => (n.exact ? pathname === n.to : pathname.startsWith(n.to));
-  const activeGroup = groups.find((g) => g.items.some(isItemActive))?.key ?? null;
-  const currentOpen = openKey ?? activeGroup;
 
   const closeMobile = () => setMobileOpen(false);
 
@@ -128,31 +125,23 @@ function AdminLayout() {
           );
         })()}
         {groups.map((g) => {
-          const isOpen = currentOpen === g.key;
           const hasActive = g.items.some(isItemActive);
           return (
-            <div key={g.key} className="pt-1">
-              <button
-                type="button"
-                onClick={() => setOpenKey(isOpen ? null : g.key)}
-                className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${hasActive ? "text-foreground" : "text-muted-foreground hover:bg-muted"}`}
-              >
-                <g.icon className="h-4 w-4" />
-                <span className="flex-1 text-left">{g.label}</span>
-                <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
-              </button>
-              {isOpen && (
-                <div className="mt-1 ml-3 pl-3 border-l space-y-1">
-                  {g.items.map((n) => {
-                    const active = isItemActive(n);
-                    return (
-                      <Link key={n.to} to={n.to} onClick={onNavigate} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${active ? "bg-primary-soft text-primary font-medium" : "text-muted-foreground hover:bg-muted"}`}>
-                        <n.icon className="h-4 w-4" /> {n.label}
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
+            <div key={g.key} className="pt-2">
+              <div className={`flex items-center gap-3 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider ${hasActive ? "text-primary" : "text-muted-foreground"}`}>
+                <g.icon className="h-3.5 w-3.5" />
+                <span className="flex-1">{g.label}</span>
+              </div>
+              <div className="mt-1 ml-3 pl-3 border-l space-y-1">
+                {g.items.map((n) => {
+                  const active = isItemActive(n);
+                  return (
+                    <Link key={n.to} to={n.to} onClick={onNavigate} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${active ? "bg-primary-soft text-primary font-medium" : "text-muted-foreground hover:bg-muted"}`}>
+                      <n.icon className="h-4 w-4" /> {n.label}
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
           );
         })}
