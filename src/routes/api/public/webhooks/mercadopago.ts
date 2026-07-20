@@ -424,22 +424,34 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
         }
 
         try {
+          let handled = true;
           if ((eventType === "payment" || eventType.startsWith("payment")) && dataId) {
             await processPaymentEvent(dataId);
           } else if (eventType === "merchant_order" && dataId) {
             await processMerchantOrderEvent(dataId);
+          } else if ((eventType === "order" || eventType.startsWith("order")) && dataId) {
+            await processOrderEvent(dataId);
+          } else if (eventType === "subscription_preapproval" && dataId) {
+            await processSubscriptionPreapprovalEvent(dataId);
+          } else {
+            handled = false;
           }
           await logWebhook({
             ...logRow,
             processed: true,
-            reason: eventType === "merchant_order"
-              ? `Merchant order ${dataId} reconciliada com pagamentos associados.`
-              : (eventType === "payment" || eventType.startsWith("payment"))
-                ? `Evento ${eventType} processado com sucesso.`
-                : `Evento ${eventType} recebido; sem ação financeira direta necessária.`,
+            reason: !handled
+              ? `Evento ${eventType} recebido; sem processador dedicado (nenhuma ação financeira aplicável).`
+              : eventType === "merchant_order"
+                ? `Merchant order ${dataId} reconciliada com pagamentos associados.`
+                : (eventType === "order" || eventType.startsWith("order"))
+                  ? `Order ${dataId} reconciliada via Orders API.`
+                  : eventType === "subscription_preapproval"
+                    ? `Preapproval ${dataId} sincronizada (status ${eventType}).`
+                    : `Evento ${eventType} processado com sucesso.`,
             response_status: 200,
           });
           return new Response("ok", { status: 200 });
+
         } catch (e: any) {
           const errMsg = e?.message ?? String(e);
           const retryAt = nextRetryAt(0);
