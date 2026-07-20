@@ -4,6 +4,7 @@ import {
   verifyMercadoPagoSignature,
   mapMpStatusToPaymentStatus,
   mapMpMethod,
+  classifyMercadoPagoRequest,
 } from "@/lib/mercadopago-webhook";
 
 const SECRET = "test_webhook_secret_123";
