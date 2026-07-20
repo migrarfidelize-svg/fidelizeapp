@@ -60,6 +60,7 @@ export function PaymentDialog({
               <BoletoForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} onDone={() => onOpenChange(false)} />
             </TabsContent>
           </Tabs>
+          </>
         )}
       </DialogContent>
     </Dialog>
