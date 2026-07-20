@@ -397,9 +397,15 @@ export const adminGetPaymentSettings = createServerFn({ method: "GET" })
     const { data } = await supabase.from("payment_settings").select("*").order("created_at").limit(1).maybeSingle();
     const hasToken = !!process.env.MERCADOPAGO_ACCESS_TOKEN;
     const hasSecret = !!process.env.MERCADOPAGO_WEBHOOK_SECRET;
+    const canonicalUrl = publicWebhookUrl();
+    const storedUrl = ((data as any)?.webhook_url as string | null) ?? null;
+    const norm = (u: string | null) => (u ?? "").replace(/\/+$/, "").toLowerCase();
+    const stale = !!storedUrl && norm(storedUrl) !== norm(canonicalUrl);
     return {
       settings: data,
-      webhook_url: publicWebhookUrl(),
+      webhook_url: canonicalUrl,
+      stored_webhook_url: storedUrl,
+      webhook_url_stale: stale,
       credentials: {
         has_access_token: hasToken,
         has_webhook_secret: hasSecret,
@@ -407,6 +413,7 @@ export const adminGetPaymentSettings = createServerFn({ method: "GET" })
       },
     };
   });
+
 
 export const adminUpdatePaymentSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
