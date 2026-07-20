@@ -234,10 +234,15 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
         const liveMode: boolean | null = typeof body?.live_mode === "boolean" ? body.live_mode : null;
 
         // Handshake/teste do painel do Mercado Pago (não vem assinado).
+        // O simulador do painel usa user-agent `restclient-node` e frequentemente
+        // não inclui `live_mode` no body — tratamos como teste para não confundir logs.
+        const userAgent = request.headers.get("user-agent") ?? "";
+        const isPanelSimulator = /restclient-node/i.test(userAgent);
         const isTest =
           eventType === "test" ||
           action === "test.created" ||
-          (liveMode === false && dataId === "123456");
+          (liveMode === false && dataId === "123456") ||
+          (isPanelSimulator && liveMode !== true);
 
         const mode: "test" | "live" | "unknown" = isTest
           ? "test"
