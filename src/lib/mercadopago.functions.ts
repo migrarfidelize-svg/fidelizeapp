@@ -55,7 +55,46 @@ async function getPlanOrThrow(supabase: any, slug: string) {
   return plan;
 }
 
+// Bloqueia proativamente pagamento em que o pagador é o próprio titular da conta MP,
+// evitando o erro 401 "Unauthorized use of live credentials" em credenciais LIVE.
+async function assertPayerNotAccountHolder(payerEmail: string | null | undefined) {
+  if (!payerEmail) return;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin
+    .from("payment_settings")
+    .select("account_email, environment")
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  const acctEmail = ((data as any)?.account_email as string | null) ?? null;
+  const env = ((data as any)?.environment as string | null) ?? "production";
+  if (env !== "sandbox" && acctEmail && acctEmail.trim().toLowerCase() === payerEmail.trim().toLowerCase()) {
+    throw new Error(
+      `Não é permitido pagar para si mesmo em produção. O e-mail informado (${payerEmail}) é o mesmo da conta Mercado Pago que recebe (${acctEmail}). Use um e-mail diferente para simular/cobrar essa assinatura.`
+    );
+  }
+}
+
+// ----------- Account hint (auth-only): mostra ao lojista o e-mail do titular MP a evitar -----------
+export const getMercadoPagoAccountHint = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async () => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin
+      .from("payment_settings")
+      .select("account_email, account_nickname, environment")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    return {
+      account_email: ((data as any)?.account_email as string | null) ?? null,
+      account_nickname: ((data as any)?.account_nickname as string | null) ?? null,
+      environment: ((data as any)?.environment as string | null) ?? "production",
+    };
+  });
+
 // ----------- Public key (client-safe) -----------
+
 export const getMercadoPagoPublicKey = createServerFn({ method: "GET" }).handler(async () => {
   const envKey = getPublicKey();
   if (envKey) return { public_key: envKey, source: "env" as const };
@@ -94,6 +133,7 @@ export const createPixPayment = createServerFn({ method: "POST" })
 
     const idempotencyKey = crypto.randomUUID();
     const payerEmail = data.payer_email ?? claims?.email ?? `pagador+${data.establishment_id}@fidelize.app`;
+    await assertPayerNotAccountHolder(payerEmail);
     const expiresAt = new Date(Date.now() + 30 * 60_000).toISOString();
 
     const mp = await mpFetch("/v1/payments", {
@@ -173,8 +213,10 @@ export const createCardPayment = createServerFn({ method: "POST" })
     const plan = await getPlanOrThrow(supabase, data.plan_slug);
     const amount = Number(plan.price_monthly ?? 0);
     if (!(amount > 0)) throw new Error("Este plano não é cobrado (grátis) — nada a pagar.");
+    await assertPayerNotAccountHolder(data.payer_email);
 
     const idempotencyKey = crypto.randomUUID();
+
 
     const mp = await mpFetch("/v1/payments", {
       method: "POST",
@@ -246,6 +288,7 @@ export const createBoletoPayment = createServerFn({ method: "POST" })
     const plan = await getPlanOrThrow(supabase, data.plan_slug);
     const amount = Number(plan.price_monthly ?? 0);
     if (!(amount > 0)) throw new Error("Este plano não é cobrado (grátis).");
+    await assertPayerNotAccountHolder(data.payer_email);
 
     const idempotencyKey = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 3 * 24 * 3600_000).toISOString();
@@ -396,6 +439,9 @@ export const adminTestMercadoPagoConnection = createServerFn({ method: "POST" })
         last_test_status: "ok",
         last_test_message: `Conectado como ${me.nickname ?? me.email ?? me.id}`,
         webhook_url: publicWebhookUrl(),
+        account_id: me.id ? String(me.id) : null,
+        account_email: me.email ?? null,
+        account_nickname: me.nickname ?? null,
       } as never).neq("id", "00000000-0000-0000-0000-000000000000");
       return { ok: true, account: { id: me.id, email: me.email, nickname: me.nickname, site_id: me.site_id, live_mode: !me.tags?.includes("test_user") } };
     } catch (e: any) {

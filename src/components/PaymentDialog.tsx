@@ -3,8 +3,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   createPixPayment, createCardPayment, createBoletoPayment,
-  getPaymentStatus, getMercadoPagoPublicKey,
+  getPaymentStatus, getMercadoPagoPublicKey, getMercadoPagoAccountHint,
 } from "@/lib/mercadopago.functions";
+import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,16 @@ export function PaymentDialog({
   payerEmailDefault?: string;
 }) {
   const fmt = (n: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(n);
+  const hintFn = useServerFn(getMercadoPagoAccountHint);
+  const { data: hint } = useQuery({
+    queryKey: ["mp-account-hint"],
+    queryFn: () => hintFn() as Promise<{ account_email: string | null; account_nickname: string | null; environment: string }>,
+    enabled: open,
+    staleTime: 5 * 60_000,
+  });
+  const acctEmail = hint?.account_email ?? null;
+  const isLive = (hint?.environment ?? "production") !== "sandbox";
+  const conflicts = !!(acctEmail && payerEmailDefault && acctEmail.trim().toLowerCase() === payerEmailDefault.trim().toLowerCase());
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -41,9 +52,16 @@ export function PaymentDialog({
 
         {plan && (
           <>
-          <div className="rounded-md border border-amber-400/40 bg-amber-50 dark:bg-amber-950/30 p-3 text-xs text-amber-900 dark:text-amber-200">
-            ⚠️ <strong>Importante:</strong> use um e-mail e CPF/CNPJ <strong>diferentes</strong> dos cadastrados na conta Mercado Pago que recebe os pagamentos. Em credenciais LIVE, o Mercado Pago bloqueia com erro <code>401 Unauthorized use of live credentials</code> quando o titular tenta pagar para si mesmo. Isso vale para PIX, Cartão e Boleto.
-          </div>
+          {isLive && acctEmail && (
+            <div className={`rounded-md border p-3 text-xs ${conflicts ? "border-destructive/50 bg-destructive/10 text-destructive" : "border-amber-400/40 bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200"}`}>
+              {conflicts ? "⛔" : "⚠️"} <strong>Importante:</strong> o Mercado Pago bloqueia (<code>401 Unauthorized use of live credentials</code>) quando o pagador é o próprio titular da conta que recebe. Use um e-mail e CPF/CNPJ <strong>diferentes</strong> de <code>{acctEmail}</code>{hint?.account_nickname ? ` (${hint.account_nickname})` : ""}. Vale para PIX, Cartão e Boleto.
+            </div>
+          )}
+          {isLive && !acctEmail && (
+            <div className="rounded-md border border-amber-400/40 bg-amber-50 dark:bg-amber-950/30 p-3 text-xs text-amber-900 dark:text-amber-200">
+              ⚠️ <strong>Importante:</strong> use um e-mail e CPF/CNPJ <strong>diferentes</strong> dos cadastrados na conta Mercado Pago que recebe os pagamentos. Em credenciais LIVE, o titular não pode pagar para si mesmo.
+            </div>
+          )}
           <Tabs defaultValue="pix" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="pix"><QrCode className="mr-2 h-4 w-4" />PIX</TabsTrigger>
