@@ -86,11 +86,9 @@ async function assertMercadoPagoPaymentReady(payerEmail: string | null | undefin
     throw new Error(formatMpCredentialMismatchMessage({ configuredEnvironment: env, accountNickname }));
   }
 
-  if ((isSandbox || isTestAccount) && payerEmail && !looksLikeMercadoPagoTestEmail(payerEmail)) {
-    throw new Error(
-      "Ambiente de teste detectado no Mercado Pago. Use um e-mail de comprador de teste gerado no painel do Mercado Pago; e-mails reais como Gmail/Hotmail em Sandbox/Teste podem gerar 401."
-    );
-  }
+  // Sandbox/Teste não deve bloquear a criação no backend: o painel já orienta o
+  // lojista a usar comprador TESTUSER, mas deixamos o Mercado Pago responder
+  // para evitar falsos positivos com formatos de e-mail de teste novos.
 
   if (!isSandbox && payerEmail && looksLikeMercadoPagoTestEmail(payerEmail)) {
     throw new Error("Ambiente de produção detectado. Use um e-mail real do comprador, não um comprador de teste do Mercado Pago.");
