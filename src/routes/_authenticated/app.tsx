@@ -2,9 +2,9 @@ import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tan
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { Menu } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
@@ -12,8 +12,13 @@ import { getAdminStatus } from "@/lib/admin.functions";
 import { checkMyFeature } from "@/lib/plans.functions";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield, LifeBuoy, BookOpen, Package, Receipt, HeartHandshake, Bell, Star } from "lucide-react";
+import {
+  LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield,
+  LifeBuoy, BookOpen, Package, Receipt, HeartHandshake, Bell, Star, Menu,
+  PanelLeftClose, PanelLeftOpen, Search,
+} from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { GuidedTour, type TourStep } from "@/components/GuidedTour";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -31,6 +36,51 @@ export const Route = createFileRoute("/_authenticated/app")({
   component: AppLayout,
 });
 
+type NavItem = { to: string; label: string; icon: any; exact?: boolean };
+type NavGroup = { key: string; label: string; items: NavItem[] };
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    key: "operacao",
+    label: "Operação",
+    items: [
+      { to: "/app", label: "Painel", icon: LayoutDashboard, exact: true },
+      { to: "/app/carimbar", label: "Carimbar", icon: Stamp },
+      { to: "/app/clientes", label: "Clientes", icon: Users },
+    ],
+  },
+  {
+    key: "marketing",
+    label: "Marketing",
+    items: [
+      { to: "/app/campanhas", label: "Campanhas", icon: Sparkles },
+      { to: "/app/qrcodes", label: "QR Codes", icon: QrCode },
+      { to: "/app/retencao", label: "Retenção", icon: HeartHandshake },
+      { to: "/app/avaliacoes", label: "Avaliações", icon: Star },
+      { to: "/app/notificacoes", label: "Notificações", icon: Bell },
+    ],
+  },
+  {
+    key: "conta",
+    label: "Conta",
+    items: [
+      { to: "/app/equipe", label: "Equipe", icon: UsersRound },
+      { to: "/app/planos", label: "Planos", icon: Package },
+      { to: "/app/pagamentos", label: "Pagamentos", icon: Receipt },
+    ],
+  },
+  {
+    key: "ajuda",
+    label: "Suporte",
+    items: [
+      { to: "/app/kb", label: "Central de Ajuda", icon: BookOpen },
+      { to: "/app/suporte", label: "Fale com a Fidelize", icon: LifeBuoy },
+    ],
+  },
+];
+
+const FLAT_NAV = NAV_GROUPS.flatMap((g) => g.items);
+
 function AppLayout() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -40,8 +90,18 @@ function AppLayout() {
   const { data: adminStatus } = useQuery({ queryKey: ["admin-status"], queryFn: () => getAdmin() });
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState<boolean>(false);
 
-  // Unread support replies from Fidelize admin
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem("fidelize_sidebar_collapsed");
+      if (v === "1") setCollapsed(true);
+    } catch { /* noop */ }
+  }, []);
+  useEffect(() => {
+    try { localStorage.setItem("fidelize_sidebar_collapsed", collapsed ? "1" : "0"); } catch { /* noop */ }
+  }, [collapsed]);
+
   const { data: unreadSupport = 0 } = useQuery({
     queryKey: ["support-unread"],
     queryFn: async () => {
@@ -86,7 +146,6 @@ function AppLayout() {
     return () => { if (channel) supabase.removeChannel(channel); };
   }, [navigate, queryClient]);
 
-  // Real-time: public_reviews feature flip toast for the merchant
   const activeEstEarly = memberships?.[0]?.establishment as { id: string } | undefined;
   const activeEstId = activeEstEarly?.id;
   const lastAllowedRef = useRef<boolean | null>(null);
@@ -107,40 +166,27 @@ function AppLayout() {
       if (allowed) {
         toast.success("Avaliações públicas foram HABILITADAS na sua conta 🎉", {
           duration: 12000,
-          description: "Você já pode criar QR Codes de avaliação e coletar CSAT dos clientes. O gate no gerador e no backend foi liberado.",
+          description: "Você já pode criar QR Codes de avaliação e coletar CSAT dos clientes.",
           action: { label: "Abrir Avaliações", onClick: () => navigate({ to: "/app/avaliacoes" }) },
         });
       } else {
         toast.warning("Avaliações públicas foram DESABILITADAS na sua conta", {
           duration: 12000,
-          description: "QRs já existentes continuam salvos, mas a criação de novos QRs de avaliação e o acesso à página foram bloqueados. Faça upgrade para reativar.",
+          description: "QRs já existentes continuam salvos. Faça upgrade para reativar.",
           action: { label: "Ver planos", onClick: () => navigate({ to: "/app/planos" }) },
         });
       }
     }
 
     refresh("init");
-
     ch = supabase
       .channel(`feature-gate-${activeEstId}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "plan_features", filter: "feature_key=eq.public_reviews" },
-        () => refresh("plan_features"),
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "establishments", filter: `id=eq.${activeEstId}` },
-        () => refresh("establishment"),
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "plan_features", filter: "feature_key=eq.public_reviews" }, () => refresh("plan_features"))
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "establishments", filter: `id=eq.${activeEstId}` }, () => refresh("establishment"))
       .subscribe();
 
-    return () => {
-      cancelled = true;
-      if (ch) supabase.removeChannel(ch);
-    };
+    return () => { cancelled = true; if (ch) supabase.removeChannel(ch); };
   }, [activeEstId, checkFeatureFn, navigate, queryClient]);
-
 
   const activeEst = memberships?.[0]?.establishment as { id: string; name: string; slug: string; logo_url: string | null } | undefined;
 
@@ -152,23 +198,8 @@ function AppLayout() {
     return <div className="grid min-h-screen place-items-center text-muted-foreground">Configurando sua empresa…</div>;
   }
 
-  const nav = [
-    { to: "/app", label: "Painel", icon: LayoutDashboard, exact: true },
-    { to: "/app/carimbar", label: "Carimbar", icon: Stamp, exact: false },
-    { to: "/app/clientes", label: "Clientes", icon: Users, exact: false },
-    { to: "/app/campanhas", label: "Campanhas", icon: Sparkles, exact: false },
-    { to: "/app/qrcodes", label: "QR Codes", icon: QrCode, exact: false },
-    { to: "/app/retencao", label: "Retenção", icon: HeartHandshake, exact: false },
-    { to: "/app/avaliacoes", label: "Avaliações", icon: Star, exact: false },
-    { to: "/app/notificacoes", label: "Notificações", icon: Bell, exact: false },
-    { to: "/app/equipe", label: "Equipe", icon: UsersRound, exact: false },
-    
-    
-    { to: "/app/kb", label: "Central de Ajuda", icon: BookOpen, exact: false },
-    { to: "/app/planos", label: "Planos", icon: Package, exact: false },
-    { to: "/app/pagamentos", label: "Pagamentos", icon: Receipt, exact: false },
-    { to: "/app/suporte", label: "Fale com a Fidelize", icon: LifeBuoy, exact: false },
-  ] as const;
+  const isItemActive = (n: NavItem) => (n.exact ? pathname === n.to : pathname.startsWith(n.to));
+  const activeNav = FLAT_NAV.find((n) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))) ?? FLAT_NAV[0];
 
   async function signOut() {
     await queryClient.cancelQueries();
@@ -177,92 +208,236 @@ function AppLayout() {
     navigate({ to: "/auth", replace: true });
   }
 
-  const renderNav = (onNavigate?: () => void) => (
-    <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-      {nav.map((n) => {
-        const active = n.exact ? pathname === n.to : pathname.startsWith(n.to);
-        const badge = n.to === "/app/suporte" && unreadSupport > 0 ? unreadSupport : 0;
-        return (
-          <Link key={n.to} to={n.to} data-tour={`nav-${n.to}`} onClick={onNavigate} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${active ? "bg-primary-soft text-primary" : "text-muted-foreground hover:bg-muted"}`}>
-            <n.icon className="h-4 w-4" />
-            <span className="flex-1">{n.label}</span>
-            {badge > 0 && (
-              <span
-                role="status"
-                aria-live="polite"
-                aria-label={`${badge} ${badge === 1 ? "nova mensagem de suporte" : "novas mensagens de suporte"}`}
-                className="ml-auto inline-flex min-w-[20px] h-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground"
-              >
-                <span aria-hidden="true">{badge > 9 ? "9+" : badge}</span>
-              </span>
-            )}
-          </Link>
-        );
-      })}
-    </nav>
+  const renderNavItem = (n: NavItem, onNavigate?: () => void, forceExpanded = false) => {
+    const active = isItemActive(n);
+    const badge = n.to === "/app/suporte" && unreadSupport > 0 ? unreadSupport : 0;
+    const showLabel = forceExpanded || !collapsed;
+    const inner = (
+      <Link
+        to={n.to}
+        data-tour={`nav-${n.to}`}
+        onClick={onNavigate}
+        className={[
+          "group relative flex items-center gap-3 rounded-xl h-10 text-sm font-medium transition-colors",
+          showLabel ? "px-3" : "px-0 justify-center",
+          active ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+        ].join(" ")}
+      >
+        {active && (
+          <motion.span
+            layoutId="active-nav-pill"
+            transition={{ type: "spring", stiffness: 380, damping: 32 }}
+            className="absolute inset-0 rounded-xl bg-primary shadow-[0_10px_30px_-12px_color-mix(in_oklab,var(--color-primary)_55%,transparent)]"
+          />
+        )}
+        <span className="relative z-10 grid place-items-center h-8 w-8 shrink-0">
+          <n.icon className="h-[18px] w-[18px]" strokeWidth={active ? 2.4 : 1.8} />
+        </span>
+        <AnimatePresence initial={false}>
+          {showLabel && (
+            <motion.span
+              key="label"
+              initial={{ opacity: 0, x: -6 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -6 }}
+              transition={{ duration: 0.18 }}
+              className="relative z-10 flex-1 whitespace-nowrap"
+            >
+              {n.label}
+            </motion.span>
+          )}
+        </AnimatePresence>
+        {badge > 0 && showLabel && (
+          <span className="relative z-10 inline-flex min-w-[20px] h-5 items-center justify-center rounded-full bg-accent px-1.5 text-[11px] font-semibold text-accent-foreground">
+            {badge > 9 ? "9+" : badge}
+          </span>
+        )}
+        {badge > 0 && !showLabel && (
+          <span className="absolute top-1 right-1 z-10 h-2 w-2 rounded-full bg-accent ring-2 ring-card" />
+        )}
+      </Link>
+    );
+    if (!showLabel) {
+      return (
+        <Tooltip key={n.to} delayDuration={100}>
+          <TooltipTrigger asChild>{inner}</TooltipTrigger>
+          <TooltipContent side="right" className="font-medium">{n.label}</TooltipContent>
+        </Tooltip>
+      );
+    }
+    return <div key={n.to}>{inner}</div>;
+  };
+
+  const renderNav = (onNavigate?: () => void, forceExpanded = false) => (
+    <LayoutGroup id="sidebar-nav">
+      <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto">
+        {NAV_GROUPS.map((g) => (
+          <div key={g.key} className="space-y-1">
+            <AnimatePresence initial={false}>
+              {(forceExpanded || !collapsed) && (
+                <motion.div
+                  key="grouplabel"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70"
+                >
+                  {g.label}
+                </motion.div>
+              )}
+            </AnimatePresence>
+            {g.items.map((n) => renderNavItem(n, onNavigate, forceExpanded))}
+          </div>
+        ))}
+      </nav>
+    </LayoutGroup>
   );
 
-  const renderFooter = (onNavigate?: () => void) => (
-    <div className="p-3 border-t space-y-2">
-      <div className="flex items-center justify-between px-1">
-        <span className="text-xs text-muted-foreground">Tema</span>
-        <ThemeToggle />
+  const renderFooter = (onNavigate?: () => void, forceExpanded = false) => {
+    const showLabel = forceExpanded || !collapsed;
+    return (
+      <div className={`border-t ${showLabel ? "p-3" : "p-2"} space-y-2`}>
+        <div className={`flex items-center ${showLabel ? "justify-between px-1" : "justify-center"}`}>
+          {showLabel && <span className="text-xs text-muted-foreground">Tema</span>}
+          <ThemeToggle />
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className={`w-full ${showLabel ? "justify-between" : "justify-center px-0"} h-11`}>
+              <span className={`grid place-items-center h-8 w-8 rounded-lg bg-primary/15 text-primary text-[11px] font-bold shrink-0`}>
+                {activeEst?.name?.slice(0, 2).toUpperCase() ?? "FZ"}
+              </span>
+              {showLabel && (
+                <>
+                  <span className="truncate text-sm flex-1 text-left ml-2">{activeEst?.name}</span>
+                  <ChevronDown className="h-4 w-4" />
+                </>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuItem asChild><Link to="/l/$slug" params={{ slug: activeEst!.slug }} onClick={onNavigate}>Ver página pública</Link></DropdownMenuItem>
+            <DropdownMenuItem asChild><Link to="/lgpd" onClick={onNavigate}><Shield className="mr-2 h-4 w-4" />Meus Dados (LGPD)</Link></DropdownMenuItem>
+            {adminStatus?.isAdmin && (
+              <DropdownMenuItem asChild><Link to="/admin" onClick={onNavigate}><Shield className="mr-2 h-4 w-4" />Painel do administrador</Link></DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => { onNavigate?.(); signOut(); }}><LogOut className="mr-2 h-4 w-4" />Sair</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="w-full justify-between">
-            <span className="truncate text-sm">{activeEst?.name}</span>
-            <ChevronDown className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuItem asChild><Link to="/l/$slug" params={{ slug: activeEst!.slug }} onClick={onNavigate}>Ver página pública</Link></DropdownMenuItem>
-          <DropdownMenuItem asChild><Link to="/lgpd" onClick={onNavigate}><Shield className="mr-2 h-4 w-4" />Meus Dados (LGPD)</Link></DropdownMenuItem>
-          {adminStatus?.isAdmin && (
-            <DropdownMenuItem asChild><Link to="/admin" onClick={onNavigate}><Shield className="mr-2 h-4 w-4" />Painel do administrador</Link></DropdownMenuItem>
-          )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => { onNavigate?.(); signOut(); }}><LogOut className="mr-2 h-4 w-4" />Sair</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-  );
+    );
+  };
 
   const closeMobile = () => setMobileOpen(false);
+  const sidebarWidth = collapsed ? 76 : 264;
 
   return (
-    <div className="min-h-screen bg-muted/30 flex">
-      <aside className="hidden md:flex w-64 shrink-0 flex-col border-r bg-card">
-        <div className="p-5 border-b" data-tour="sidebar-logo"><Logo /></div>
-        {renderNav()}
-        {renderFooter()}
-      </aside>
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="md:hidden flex items-center justify-between p-3 border-b bg-card sticky top-0 z-30">
-          <div className="flex items-center gap-2">
-            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-              <SheetTrigger asChild>
-                <Button size="icon" variant="ghost" aria-label="Abrir menu"><Menu className="h-5 w-5" /></Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-72 flex flex-col">
-                <VisuallyHidden><SheetTitle>Menu de navegação</SheetTitle></VisuallyHidden>
-                <div className="p-5 border-b"><Logo /></div>
-                {renderNav(closeMobile)}
-                {renderFooter(closeMobile)}
-              </SheetContent>
-            </Sheet>
-            <Logo />
+    <TooltipProvider>
+      <div className="min-h-screen flex bg-[color-mix(in_oklab,var(--color-background)_92%,var(--color-primary)_4%)]">
+        {/* Desktop sidebar */}
+        <motion.aside
+          animate={{ width: sidebarWidth }}
+          transition={{ type: "spring", stiffness: 300, damping: 32 }}
+          className="hidden md:flex shrink-0 flex-col border-r bg-card/80 backdrop-blur-xl relative"
+        >
+          <div className={`flex items-center border-b ${collapsed ? "justify-center p-3" : "justify-between p-4"}`} data-tour="sidebar-logo">
+            {collapsed ? (
+              <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary/15 text-primary font-black">F</div>
+            ) : (
+              <Logo />
+            )}
           </div>
-          <div className="flex items-center gap-1">
-            <ThemeToggle />
-          </div>
-        </header>
-        <main className="flex-1 p-4 md:p-8 max-w-6xl w-full mx-auto">
-          <Outlet />
-        </main>
-      </div>
+          {renderNav()}
+          {renderFooter()}
 
-      <GuidedTour steps={MERCHANT_TOUR_STEPS} storageKey={`fidelize_tour_v1_${activeEst?.id ?? "user"}`} />
-    </div>
+          {/* Expand/collapse toggle — floating, animated */}
+          <button
+            type="button"
+            aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
+            onClick={() => setCollapsed((c) => !c)}
+            className="group absolute -right-3.5 top-6 z-30 grid h-7 w-7 place-items-center rounded-full border bg-card text-muted-foreground shadow-md hover:text-primary hover:border-primary/50 transition-colors"
+          >
+            <span className="pointer-events-none absolute inset-0 rounded-full bg-primary/25 opacity-0 group-hover:opacity-100 blur-md transition-opacity" />
+            <motion.span
+              animate={{ rotate: collapsed ? 0 : 180 }}
+              transition={{ type: "spring", stiffness: 260, damping: 20 }}
+              className="relative"
+            >
+              {collapsed ? <PanelLeftOpen className="h-3.5 w-3.5" /> : <PanelLeftClose className="h-3.5 w-3.5" />}
+            </motion.span>
+          </button>
+        </motion.aside>
+
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Top bar (desktop + mobile) */}
+          <header className="sticky top-0 z-20 flex items-center justify-between gap-3 h-14 px-4 md:px-6 border-b bg-card/70 backdrop-blur-xl">
+            <div className="flex items-center gap-3 min-w-0">
+              {/* Mobile trigger */}
+              <div className="md:hidden">
+                <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+                  <SheetTrigger asChild>
+                    <Button size="icon" variant="ghost" aria-label="Abrir menu"><Menu className="h-5 w-5" /></Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="p-0 w-72 flex flex-col">
+                    <VisuallyHidden><SheetTitle>Menu de navegação</SheetTitle></VisuallyHidden>
+                    <div className="p-4 border-b"><Logo /></div>
+                    {renderNav(closeMobile, true)}
+                    {renderFooter(closeMobile, true)}
+                  </SheetContent>
+                </Sheet>
+              </div>
+              <div className="md:hidden"><Logo /></div>
+
+              {/* Breadcrumb / page title (desktop) */}
+              <div className="hidden md:flex items-center gap-2 min-w-0">
+                <span className="text-xs uppercase tracking-wider text-muted-foreground">Fidelize</span>
+                <span className="text-muted-foreground/40">/</span>
+                <AnimatePresence mode="wait">
+                  <motion.h1
+                    key={activeNav.to}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.18 }}
+                    className="font-display text-sm font-semibold truncate"
+                  >
+                    {activeNav.label}
+                  </motion.h1>
+                </AnimatePresence>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" className="hidden lg:inline-flex text-muted-foreground gap-2 h-9">
+                <Search className="h-4 w-4" />
+                <span className="text-xs">Buscar</span>
+                <kbd className="ml-2 rounded border bg-muted/60 px-1.5 py-0.5 text-[10px] font-mono">⌘K</kbd>
+              </Button>
+              <div className="hidden md:block"><ThemeToggle /></div>
+            </div>
+          </header>
+
+          {/* Main with page transition */}
+          <main className="flex-1 relative">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={pathname}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                className="p-4 md:p-8 max-w-6xl w-full mx-auto"
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
+          </main>
+        </div>
+
+        <GuidedTour steps={MERCHANT_TOUR_STEPS} storageKey={`fidelize_tour_v1_${activeEst?.id ?? "user"}`} />
+      </div>
+    </TooltipProvider>
   );
 }
