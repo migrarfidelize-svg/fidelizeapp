@@ -235,8 +235,16 @@ function AdminPaymentsPage() {
             ok={creds.has_public_key}
             optional
             source={(creds as any).public_key_source}
-            hint={'A Public Key NÃO precisa virar secret — cole ela no campo "Chave pública" logo abaixo e clique em Salvar. O secret MERCADOPAGO_PUBLIC_KEY é apenas um cache opcional para o backend; se estiver vazio, usamos o valor salvo no formulário.'}
+            hint={'Cole a Public Key no campo "Chave pública" do card "Configuração" abaixo e clique em Salvar — ela fica salva no banco. O secret MERCADOPAGO_PUBLIC_KEY é opcional (só serve como cache do backend); se estiver vazio, usamos o valor do formulário.'}
+            action={!creds.has_public_key ? {
+              label: "Configurar abaixo",
+              onClick: () => {
+                const el = document.getElementById("mp-public-key-input") as HTMLInputElement | null;
+                if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(() => el.focus(), 300); }
+              },
+            } : undefined}
           />
+
           <SecretRow
             name="MERCADOPAGO_WEBHOOK_SECRET"
             label="Webhook Secret"
@@ -268,7 +276,7 @@ function AdminPaymentsPage() {
           </div>
           <div className="space-y-2">
             <Label>Chave pública</Label>
-            <Input value={publicKey} onChange={e => setPublicKey(e.target.value)} placeholder="APP_USR-abcd-…" className="font-mono text-xs" />
+            <Input id="mp-public-key-input" value={publicKey} onChange={e => setPublicKey(e.target.value)} placeholder="APP_USR-abcd-…" className="font-mono text-xs" />
             <p className="text-xs text-muted-foreground">Usada apenas no navegador para tokenizar o cartão. Pode conviver com a variável de ambiente <code>MERCADOPAGO_PUBLIC_KEY</code>; a variável de ambiente tem prioridade.</p>
           </div>
           <div className="space-y-2">
@@ -340,8 +348,8 @@ function AdminPaymentsPage() {
 }
 
 function SecretRow({
-  name, label, ok, hint, optional, source,
-}: { name: string; label: string; ok: boolean; hint: string; optional?: boolean; source?: "env" | "db" | null }) {
+  name, label, ok, hint, optional, source, action,
+}: { name: string; label: string; ok: boolean; hint: string; optional?: boolean; source?: "env" | "db" | null; action?: { label: string; onClick: () => void } }) {
   const showOk = ok;
   const showBadge = showOk
     ? <Badge variant="outline" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
@@ -360,9 +368,13 @@ function SecretRow({
         <div className="text-xs text-muted-foreground mt-1">{hint}</div>
         <code className="text-[10px] text-muted-foreground">{name}</code>
       </div>
+      {action && (
+        <Button size="sm" variant="outline" onClick={action.onClick}>{action.label}</Button>
+      )}
     </div>
   );
 }
+
 
 function ValidateWebhookButton() {
   const validateFn = useServerFn(adminValidateWebhookUrl);
