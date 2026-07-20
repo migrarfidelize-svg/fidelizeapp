@@ -126,6 +126,9 @@ function PixForm({ plan, establishmentId, payerEmailDefault, onDone }: { plan: P
           <Label>CPF/CNPJ (opcional)</Label>
           <Input value={doc} onChange={e => setDoc(e.target.value)} placeholder="Apenas números" />
         </div>
+        <p className="text-xs text-muted-foreground">
+          Use um e-mail <strong>diferente</strong> do titular da conta Mercado Pago que recebe. Em credenciais LIVE, o dono da conta não pode pagar para si mesmo.
+        </p>
         <Button className="w-full gradient-brand text-primary-foreground" onClick={create} disabled={loading}>
           {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Gerando QR Code…</> : "Gerar QR Code PIX"}
         </Button>
