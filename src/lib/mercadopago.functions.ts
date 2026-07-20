@@ -521,3 +521,63 @@ export const adminValidateWebhookUrl = createServerFn({ method: "POST" })
     return result;
   });
 
+// ----------- Admin: webhook health summary -----------
+export const adminGetWebhookHealth = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Sem permissão.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const url = publicWebhookUrl();
+    const hasSecret = !!process.env.MERCADOPAGO_WEBHOOK_SECRET;
+    const hasToken = !!process.env.MERCADOPAGO_ACCESS_TOKEN;
+
+    const [{ data: lastTest }, { data: lastLive }, { data: lastFail }, { count: pending }] = await Promise.all([
+      supabaseAdmin.from("payment_logs").select("*").eq("mode", "test").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      supabaseAdmin.from("payment_logs").select("*").eq("mode", "live").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      supabaseAdmin.from("payment_logs").select("*").not("error", "is", null).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      supabaseAdmin.from("payment_logs").select("id", { count: "exact", head: true }).not("error", "is", null).eq("processed", false),
+    ]);
+
+    const ready = hasToken && hasSecret && url.startsWith("https://");
+
+    return {
+      webhook_url: url,
+      https: url.startsWith("https://"),
+      has_access_token: hasToken,
+      has_webhook_secret: hasSecret,
+      ready,
+      last_test: lastTest ?? null,
+      last_live: lastLive ?? null,
+      last_failure: lastFail ?? null,
+      pending_retries: pending ?? 0,
+    };
+  });
+
+// ----------- Admin: trigger retry queue manually -----------
+export const adminRetryWebhookQueue = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Sem permissão.");
+    const { retryFailedWebhooks } = await import("@/routes/api/public/webhooks/mercadopago");
+    // Força retry imediato ignorando janela agendada:
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("payment_logs").update({ next_retry_at: new Date().toISOString() } as never)
+      .not("error", "is", null).eq("processed", false).is("next_retry_at", null as never);
+    const result = await retryFailedWebhooks(100);
+    try {
+      await supabaseAdmin.from("audit_logs").insert({
+        user_id: userId,
+        action: "mp_webhook_retry_manual",
+        entity_type: "payment_logs",
+        metadata: result as never,
+      } as never);
+    } catch { /* noop */ }
+    return result;
+  });
+
+
