@@ -28,7 +28,7 @@ export interface TestConnectionResult {
   status?: number;              // HTTP status
   latency_ms?: number;
   message: string;              // mensagem crua da API — nunca ocultar
-  details?: Record<string, unknown>;
+  details?: Record<string, string | number | boolean | null>;
 }
 
 export interface IntegrationRuntimeConfig {

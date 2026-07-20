@@ -40,7 +40,7 @@ export const mercadopagoProvider: PaymentProvider = {
           message: `Credencial de teste (${me.nickname}) configurada em ambiente de produção. Troque para o Access Token real ou mude o modo para Sandbox.`,
         };
       }
-      return { ok: true, status: 200, latency_ms, message: `Conectado como ${me.nickname ?? me.email ?? me.id}`, details: me as unknown as Record<string, unknown> };
+      return { ok: true, status: 200, latency_ms, message: `Conectado como ${me.nickname ?? me.email ?? me.id}`, details: { id: me.id ?? null, nickname: me.nickname ?? null, site_id: me.site_id ?? null } };
     } catch (e: any) {
       return { ok: false, message: e?.message ?? String(e) };
     }
