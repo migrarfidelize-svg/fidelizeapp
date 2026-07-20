@@ -585,6 +585,144 @@ function publicWebhookUrl(): string {
   return `${getPublicAppUrl()}/api/public/webhooks/mercadopago`;
 }
 
+// ----------- Admin: dual probe (unsigned simulator + signed live) -----------
+export const adminSendWebhookDualTest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Sem permissão.");
+
+    const { createHmac } = await import("crypto");
+    const url = publicWebhookUrl();
+    const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET ?? "";
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    async function findLog(probeId: string, sinceMs: number) {
+      const sinceIso = new Date(sinceMs - 2000).toISOString();
+      const { data: logs } = await supabaseAdmin
+        .from("payment_logs")
+        .select("id, created_at, mode, processed, response_status, reason, signature_valid, live_mode, payload")
+        .gte("created_at", sinceIso)
+        .order("created_at", { ascending: false })
+        .limit(30);
+      return (logs ?? []).find((r: any) => r?.payload?._probe === probeId) ?? null;
+    }
+
+    async function send(payload: Record<string, unknown>, headers: Record<string, string>) {
+      const started = Date.now();
+      let status: number | null = null;
+      let body_snippet = "";
+      let network_error: string | null = null;
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "user-agent": "Fidelize-Webhook-Probe/1.0", ...headers },
+          body: JSON.stringify(payload),
+        });
+        status = res.status;
+        body_snippet = (await res.text()).slice(0, 200);
+      } catch (e: any) {
+        network_error = e?.message ?? String(e);
+      }
+      return { started, status, body_snippet, network_error, latency_ms: Date.now() - started };
+    }
+
+    // --- Path A: unsigned simulator (test/handshake) ---
+    const probeA = `probe-sim-${Date.now()}`;
+    const payloadA = { type: "test", action: "test.created", live_mode: false, data: { id: "123456" }, _probe: probeA };
+    const sendA = await send(payloadA, {});
+    const logA = await findLog(probeA, sendA.started);
+    const okA =
+      sendA.status !== null && sendA.status >= 200 && sendA.status < 300 && !!logA && (logA as any).processed === true;
+
+    // --- Path B: HMAC-signed live event ---
+    const probeB = `probe-live-${Date.now()}`;
+    const dataIdB = probeB.toLowerCase();
+    const ts = Date.now().toString();
+    const requestId = probeB;
+    const manifest = `id:${dataIdB};request-id:${requestId};ts:${ts};`;
+    const signature = secret ? createHmac("sha256", secret).update(manifest).digest("hex") : "";
+    const payloadB = {
+      type: "webhook_probe",
+      action: "probe.signed",
+      live_mode: true,
+      data: { id: dataIdB },
+      _probe: probeB,
+    };
+    const headersB: Record<string, string> = { "x-request-id": requestId };
+    if (secret) headersB["x-signature"] = `ts=${ts},v1=${signature}`;
+    const sendB = await send(payloadB, headersB);
+    const logB = await findLog(probeB, sendB.started);
+    const okB = !!secret &&
+      sendB.status !== null && sendB.status >= 200 && sendB.status < 300 &&
+      !!logB && (logB as any).signature_valid === true && (logB as any).processed === true;
+
+    const summary = {
+      has_webhook_secret: !!secret,
+      checked_at: new Date().toISOString(),
+      url,
+    };
+
+    try {
+      await supabaseAdmin.from("audit_logs").insert({
+        user_id: userId,
+        action: "mp_webhook_dual_probe",
+        entity_type: "payment_settings",
+        metadata: {
+          url,
+          simulator: { ok: okA, status: sendA.status, log_id: (logA as any)?.id ?? null, latency_ms: sendA.latency_ms },
+          live: { ok: okB, status: sendB.status, log_id: (logB as any)?.id ?? null, latency_ms: sendB.latency_ms, has_secret: !!secret },
+        } as never,
+      } as never);
+    } catch { /* noop */ }
+
+    return {
+      ...summary,
+      simulator: {
+        ok: okA,
+        path: "sem HMAC (handshake do painel MP)",
+        status: sendA.status,
+        latency_ms: sendA.latency_ms,
+        body_snippet: sendA.body_snippet,
+        network_error: sendA.network_error,
+        log_matched: !!logA,
+        log_id: (logA as any)?.id ?? null,
+        log_processed: (logA as any)?.processed ?? null,
+        log_mode: (logA as any)?.mode ?? null,
+        signature_valid: (logA as any)?.signature_valid ?? null,
+        message: sendA.network_error
+          ? `Falha de rede: ${sendA.network_error}`
+          : okA
+            ? `Handshake aceito sem assinatura (HTTP ${sendA.status}, ${sendA.latency_ms}ms).`
+            : `Simulador falhou (HTTP ${sendA.status ?? "?"}). Log ${logA ? "encontrado" : "ausente"}.`,
+      },
+      live: {
+        ok: okB,
+        path: "com HMAC (evento live real)",
+        status: sendB.status,
+        latency_ms: sendB.latency_ms,
+        body_snippet: sendB.body_snippet,
+        network_error: sendB.network_error,
+        log_matched: !!logB,
+        log_id: (logB as any)?.id ?? null,
+        log_processed: (logB as any)?.processed ?? null,
+        log_mode: (logB as any)?.mode ?? null,
+        signature_valid: (logB as any)?.signature_valid ?? null,
+        has_secret: !!secret,
+        message: !secret
+          ? "MERCADOPAGO_WEBHOOK_SECRET não configurado — não é possível assinar o payload."
+          : sendB.network_error
+            ? `Falha de rede: ${sendB.network_error}`
+            : sendB.status === 401
+              ? `HTTP 401 — assinatura rejeitada. Confirme se o secret salvo bate com o do painel MP.`
+              : okB
+                ? `Evento assinado aceito e validado (HTTP ${sendB.status}, ${sendB.latency_ms}ms).`
+                : `HTTP ${sendB.status ?? "?"}. Log ${logB ? `signature_valid=${(logB as any).signature_valid}` : "ausente"}.`,
+      },
+    };
+  });
+
 // ----------- Admin: recommended webhook events -----------
 export const RECOMMENDED_MP_EVENTS: Array<{ key: string; label: string; required: boolean; description: string }> = [
   { key: "payment", label: "Pagamentos (payment)", required: true, description: "Cobre PIX, cartão e boleto — indispensável para ativar planos após aprovação." },
