@@ -79,7 +79,17 @@ function AdminPaymentsPage() {
 
   const creds = (data as any)?.credentials ?? { has_access_token: false, has_webhook_secret: false, has_public_key: false };
   const webhookUrl = (data as any)?.webhook_url ?? "";
+  const storedWebhookUrl: string | null = (data as any)?.stored_webhook_url ?? null;
+  const webhookStale: boolean = !!(data as any)?.webhook_url_stale;
   const settings = (data as any)?.settings ?? {};
+
+  async function reconcileStoredUrl() {
+    try {
+      await saveFn({ data: { environment, public_key: publicKey || null } });
+      toast.success("URL sincronizada com a canônica.");
+      refetch();
+    } catch (e: any) { toast.error(e?.message ?? "Falha ao sincronizar"); }
+  }
 
   return (
     <div className="space-y-6">
@@ -87,6 +97,46 @@ function AdminPaymentsPage() {
         <h1 className="font-display text-3xl font-bold">Mercado Pago</h1>
         <p className="text-sm text-muted-foreground">Integração de pagamentos para as assinaturas da plataforma.</p>
       </div>
+
+      {webhookStale && (
+        <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+            <div className="flex-1 space-y-2 min-w-0">
+              <div>
+                <div className="font-medium text-amber-900 dark:text-amber-100">URL do webhook desatualizada</div>
+                <p className="text-sm text-amber-900/80 dark:text-amber-100/80">
+                  A URL salva diverge da URL canônica atual. Atualize também no painel do Mercado Pago para não perder eventos.
+                </p>
+              </div>
+              <div className="grid gap-1 text-xs font-mono">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Badge variant="outline" className="bg-destructive/15 text-destructive shrink-0">Antiga</Badge>
+                  <span className="truncate" title={storedWebhookUrl ?? ""}>{storedWebhookUrl ?? "—"}</span>
+                </div>
+                <div className="flex items-center gap-2 min-w-0">
+                  <Badge variant="outline" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 shrink-0">Nova</Badge>
+                  <span className="truncate" title={webhookUrl}>{webhookUrl}</span>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 pt-1">
+                <Button size="sm" onClick={() => { navigator.clipboard.writeText(webhookUrl); toast.success("URL nova copiada!"); }}>
+                  <Copy className="mr-2 h-4 w-4" />Copiar URL nova
+                </Button>
+                <Button size="sm" variant="outline" onClick={reconcileStoredUrl}>
+                  <RefreshCw className="mr-2 h-4 w-4" />Sincronizar valor salvo
+                </Button>
+                <Button size="sm" variant="ghost" asChild>
+                  <a href="https://www.mercadopago.com.br/developers/panel/app" target="_blank" rel="noreferrer">
+                    <ExternalLink className="mr-2 h-4 w-4" />Abrir painel Mercado Pago
+                  </a>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       <Card>
         <CardHeader>
