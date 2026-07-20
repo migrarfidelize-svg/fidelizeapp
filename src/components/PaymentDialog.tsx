@@ -359,7 +359,7 @@ function PixForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, onDo
         <p className="text-xs text-muted-foreground">
           {isSandboxLike ? "Para testes, use o e-mail do comprador de teste gerado no Mercado Pago." : <>Use um e-mail <strong>diferente</strong> do titular da conta Mercado Pago que recebe. Em credenciais LIVE, o dono da conta não pode pagar para si mesmo.</>}
         </p>
-        <Button className="w-full gradient-brand text-primary-foreground" onClick={create} disabled={loading}>
+        <Button className="w-full h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-lg shadow-indigo-500/20 transition-all" onClick={create} disabled={loading}>
           {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Gerando QR Code…</> : "Gerar QR Code PIX"}
         </Button>
       </div>
@@ -637,7 +637,7 @@ function CardForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, onD
         <div className="rounded-md bg-muted p-2 text-xs text-muted-foreground">Status: {status} — {translateDetail(statusDetail)}</div>
       )}
 
-      <Button className="w-full gradient-brand text-primary-foreground" onClick={submit} disabled={loading || publicKeyLoading || !mpInstance}>
+      <Button className="w-full h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-lg shadow-indigo-500/20 transition-all" onClick={submit} disabled={loading || publicKeyLoading || !mpInstance}>
         {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processando…</> : `Pagar ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(plan.price_monthly)}`}
       </Button>
       <p className="text-[10px] text-center text-muted-foreground">Dados do cartão tokenizados pelo SDK oficial do Mercado Pago. Nada trafega em texto puro.</p>
@@ -738,7 +738,7 @@ function BoletoForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, o
       </div>
       <div className="space-y-2"><Label>E-mail do comprador</Label><Input type="email" value={email} onChange={e => { setEmailTouched(true); setEmail(e.target.value); }} placeholder={isSandboxLike ? "test_user...@testuser.com" : undefined} /></div>
       <div className="space-y-2"><Label>CPF/CNPJ</Label><Input value={doc} onChange={e => setDoc(e.target.value)} placeholder="Apenas números" /></div>
-      <Button className="w-full gradient-brand text-primary-foreground" onClick={submit} disabled={loading}>
+      <Button className="w-full h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-lg shadow-indigo-500/20 transition-all" onClick={submit} disabled={loading}>
         {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Gerando…</> : "Gerar boleto"}
       </Button>
     </div>
