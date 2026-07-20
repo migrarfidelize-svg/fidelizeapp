@@ -14,7 +14,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plug, CheckCircle2, XCircle, Loader2, KeyRound, ExternalLink, Settings2,
   Copy, CopyCheck, RotateCcw, AlertTriangle, Clock, BookOpen, History, Webhook, Save,
+  Sparkles, CreditCard, Zap,
 } from "lucide-react";
+import { motion } from "framer-motion";
+import { ProviderBrand, providerAccent } from "@/components/integrations/ProviderBrand";
+import { SectionBanner } from "@/components/integrations/SectionBanner";
 import { toast } from "sonner";
 import {
   listIntegrationCatalog,
@@ -78,34 +82,52 @@ function IntegrationsPage() {
 
   const isLoading = catalog.isLoading || saved.isLoading;
 
+  const aiConfigured = grouped.ai.filter((m) => byKey.get(`ai:${m.id}`)?.enabled).length;
+  const payConfigured = grouped.payments.filter((m) => byKey.get(`payments:${m.id}`)?.enabled).length;
+  const webhooksActive = (webhooks.data ?? []).length;
+
   return (
-    <div className="p-4 md:p-8 space-y-6">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="font-display text-3xl font-bold flex items-center gap-3">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-primary-soft text-primary"><Plug className="h-5 w-5" /></span>
-            Centro de Integrações
-          </h1>
-          <p className="text-muted-foreground mt-1 max-w-3xl text-sm">
-            Configure, teste e monitore todas as integrações do sistema (IA, Pagamentos e Webhooks) em um único lugar.
-            Todas as credenciais são editáveis manualmente e armazenadas somente no backend.
-          </p>
-        </div>
-      </div>
+    <div className="p-4 md:p-8 space-y-8">
+      <SectionBanner
+        title="Centro de Integrações"
+        subtitle="Configure, teste e monitore todas as integrações (IA, Pagamentos e Webhooks) em um único painel. Credenciais editáveis e armazenadas apenas no backend."
+        icon={Plug}
+        gradient="from-indigo-600 via-violet-600 to-fuchsia-600"
+        accent="#a855f7"
+        stats={[
+          { label: "IA ativas", value: aiConfigured },
+          { label: "Pagamentos", value: payConfigured },
+          { label: "Webhooks", value: webhooksActive },
+        ]}
+      />
 
       <Tabs defaultValue="providers" className="w-full">
         <TabsList>
-          <TabsTrigger value="providers">Provedores</TabsTrigger>
+          <TabsTrigger value="providers"><Zap className="h-4 w-4 mr-1" />Provedores</TabsTrigger>
           <TabsTrigger value="webhooks"><Webhook className="h-4 w-4 mr-1" />Webhooks</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="providers" className="mt-6 space-y-8">
-          <section>
-            <h2 className="font-display text-lg mb-3">Inteligência Artificial</h2>
+        <TabsContent value="providers" className="mt-6 space-y-10">
+          <section className="space-y-5">
+            <SectionBanner
+              title="Inteligência Artificial"
+              subtitle="Conecte modelos de linguagem para automações, respostas inteligentes e geração de conteúdo em todo o sistema."
+              icon={Sparkles}
+              gradient="from-emerald-500 via-teal-500 to-cyan-600"
+              accent="#14b8a6"
+              stats={[{ label: "Provedores", value: grouped.ai.length }, { label: "Ativos", value: aiConfigured }]}
+            />
             {isLoading ? <SkeletonGrid /> : <Grid metas={grouped.ai} byKey={byKey} onChanged={() => saved.refetch()} />}
           </section>
-          <section>
-            <h2 className="font-display text-lg mb-3">Pagamentos</h2>
+          <section className="space-y-5">
+            <SectionBanner
+              title="Pagamentos"
+              subtitle="Gateways para assinaturas, checkout transparente, PIX, cartão e boleto. Configure credenciais e webhooks com segurança."
+              icon={CreditCard}
+              gradient="from-amber-500 via-orange-500 to-rose-600"
+              accent="#f97316"
+              stats={[{ label: "Gateways", value: grouped.payments.length }, { label: "Ativos", value: payConfigured }]}
+            />
             {isLoading ? <SkeletonGrid /> : <Grid metas={grouped.payments} byKey={byKey} onChanged={() => saved.refetch()} />}
           </section>
         </TabsContent>
@@ -133,8 +155,15 @@ function SkeletonGrid() {
 function Grid({ metas, byKey, onChanged }: { metas: CatalogMeta[]; byKey: Map<string, IntegrationRow>; onChanged: () => void }) {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {metas.map((meta) => (
-        <ProviderCard key={`${meta.category}:${meta.id}`} meta={meta} row={byKey.get(`${meta.category}:${meta.id}`)} onChanged={onChanged} />
+      {metas.map((meta, idx) => (
+        <motion.div
+          key={`${meta.category}:${meta.id}`}
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: idx * 0.05, duration: 0.35, ease: "easeOut" }}
+        >
+          <ProviderCard meta={meta} row={byKey.get(`${meta.category}:${meta.id}`)} onChanged={onChanged} />
+        </motion.div>
       ))}
     </div>
   );
@@ -176,12 +205,26 @@ function ProviderCard({ meta, row, onChanged }: { meta: CatalogMeta; row?: Integ
     finally { setTesting(false); }
   }
 
+  const accent = providerAccent(meta.id);
   return (
-    <Card className="flex flex-col">
+    <Card
+      className="group relative flex flex-col overflow-hidden border-border/60 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl"
+      style={{ ["--accent" as any]: accent }}
+    >
+      <span
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-[3px] opacity-80"
+        style={{ background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }}
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -top-16 -right-16 h-40 w-40 rounded-full blur-3xl opacity-0 transition-opacity duration-500 group-hover:opacity-40"
+        style={{ background: accent }}
+      />
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="h-10 w-10 rounded-xl bg-muted grid place-items-center text-xl">{meta.icon ?? "🔌"}</div>
+            <ProviderBrand providerId={meta.id} />
             <div className="min-w-0">
               <CardTitle className="text-base truncate">{meta.label}</CardTitle>
               <p className="text-xs text-muted-foreground line-clamp-2">{meta.description}</p>
@@ -236,7 +279,7 @@ function ManageDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><span className="text-xl">{meta.icon ?? "🔌"}</span>{meta.label}</DialogTitle>
+          <DialogTitle className="flex items-center gap-3"><ProviderBrand providerId={meta.id} size="sm" animate={false} />{meta.label}</DialogTitle>
           <DialogDescription>{meta.description}</DialogDescription>
         </DialogHeader>
 
