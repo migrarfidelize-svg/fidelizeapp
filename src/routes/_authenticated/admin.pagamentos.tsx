@@ -215,14 +215,37 @@ function AdminPaymentsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Credenciais (segredos do backend)</CardTitle>
-          <CardDescription>Access Token e Webhook Secret nunca aparecem em tela. Configure-os como secrets do projeto.</CardDescription>
+          <CardTitle className="text-base">Credenciais do Mercado Pago</CardTitle>
+          <CardDescription>
+            Somente <strong>Access Token</strong> e <strong>Webhook Secret</strong> são secrets do backend.
+            A <strong>Public Key</strong> é preenchida no campo do formulário abaixo (não existe secret obrigatório para ela).
+          </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3">
-          <SecretRow name="MERCADOPAGO_ACCESS_TOKEN" label="Access Token" ok={creds.has_access_token} hint="Painel Mercado Pago → Suas integrações → Credenciais de produção" />
-          <SecretRow name="MERCADOPAGO_PUBLIC_KEY" label="Public Key (backend cache)" ok={creds.has_public_key} hint="Mesma tela — pode ser gravada também como secret; é referenciada no navegador para tokenizar cartão." />
-          <SecretRow name="MERCADOPAGO_WEBHOOK_SECRET" label="Webhook Secret" ok={creds.has_webhook_secret} hint="Painel Mercado Pago → Webhooks → chave secreta gerada ao configurar a URL." />
-          <p className="text-xs text-muted-foreground">Para adicionar/atualizar, peça ao Lovable: <em>“atualize o secret MERCADOPAGO_ACCESS_TOKEN”</em>. Os valores são gravados criptografados e injetados como variáveis de ambiente no backend.</p>
+          <SecretRow
+            name="MERCADOPAGO_ACCESS_TOKEN"
+            label="Access Token (produção)"
+            ok={creds.has_access_token}
+            hint={'Painel do Mercado Pago → "Suas integrações" → sua aplicação → "Credenciais de produção" → copie o "Access Token" (começa com APP_USR-…).'}
+          />
+          <SecretRow
+            name="MERCADOPAGO_PUBLIC_KEY"
+            label="Public Key"
+            ok={creds.has_public_key}
+            optional
+            source={(creds as any).public_key_source}
+            hint={'A Public Key NÃO precisa virar secret — cole ela no campo "Chave pública" logo abaixo e clique em Salvar. O secret MERCADOPAGO_PUBLIC_KEY é apenas um cache opcional para o backend; se estiver vazio, usamos o valor salvo no formulário.'}
+          />
+          <SecretRow
+            name="MERCADOPAGO_WEBHOOK_SECRET"
+            label="Webhook Secret"
+            ok={creds.has_webhook_secret}
+            hint={'Painel do Mercado Pago → "Suas integrações" → sua aplicação → "Webhooks" → após cadastrar a URL, clique em "Configurar notificações" e copie a chave secreta que aparece em "Assinatura secreta".'}
+          />
+          <p className="text-xs text-muted-foreground">
+            Para adicionar ou trocar Access Token/Webhook Secret, peça ao Lovable:
+            <em> "atualize o secret MERCADOPAGO_ACCESS_TOKEN"</em>. Os valores são gravados criptografados e injetados como variáveis de ambiente no backend.
+          </p>
         </CardContent>
       </Card>
 
@@ -313,14 +336,23 @@ function AdminPaymentsPage() {
   );
 }
 
-function SecretRow({ name, label, ok, hint }: { name: string; label: string; ok: boolean; hint: string }) {
+function SecretRow({
+  name, label, ok, hint, optional, source,
+}: { name: string; label: string; ok: boolean; hint: string; optional?: boolean; source?: "env" | "db" | null }) {
+  const showOk = ok;
+  const showBadge = showOk
+    ? <Badge variant="outline" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
+        {source === "db" ? "Salvo no formulário" : source === "env" ? "Salvo como secret" : "Configurado"}
+      </Badge>
+    : optional
+      ? <Badge variant="outline" className="bg-muted text-muted-foreground">Opcional — não configurado</Badge>
+      : <Badge variant="outline" className="bg-destructive/15 text-destructive">Não configurado</Badge>;
   return (
     <div className="flex items-start justify-between gap-3 rounded-lg border p-3">
       <div className="min-w-0">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="font-medium text-sm">{label}</span>
-          {ok ? <Badge variant="outline" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">Configurado</Badge>
-              : <Badge variant="outline" className="bg-destructive/15 text-destructive">Não configurado</Badge>}
+          {showBadge}
         </div>
         <div className="text-xs text-muted-foreground mt-1">{hint}</div>
         <code className="text-[10px] text-muted-foreground">{name}</code>
