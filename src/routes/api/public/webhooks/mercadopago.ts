@@ -1,5 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { verifyMercadoPagoSignature, mapMpStatusToPaymentStatus, mapMpMethod, classifyMercadoPagoRequest } from "@/lib/mercadopago-webhook";
+import {
+  verifyMercadoPagoSignature,
+  mapMpStatusToPaymentStatus,
+  mapMpMethod,
+  classifyMercadoPagoRequest,
+  evaluateMercadoPagoWebhookSecurity,
+  isRetryableMercadoPagoWebhookError,
+} from "@/lib/mercadopago-webhook";
 
 // Webhook oficial do Mercado Pago.
 // Ref: https://www.mercadopago.com.br/developers/pt/docs/your-integrations/notifications/webhooks
@@ -22,6 +29,15 @@ async function fetchPaymentFromMP(paymentId: string, accessToken: string) {
   });
   const text = await res.text();
   if (!res.ok) throw new Error(`MP GET /v1/payments/${paymentId} ${res.status}: ${text}`);
+  return JSON.parse(text) as any;
+}
+
+async function fetchMerchantOrderFromMP(orderId: string, accessToken: string) {
+  const res = await fetch(`${MP_API}/merchant_orders/${orderId}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  const text = await res.text();
+  if (!res.ok) throw new Error(`MP GET /merchant_orders/${orderId} ${res.status}: ${text}`);
   return JSON.parse(text) as any;
 }
 
@@ -80,6 +96,27 @@ async function processPaymentEvent(paymentId: string) {
     if (estId && planSlug) {
       await activatePlan(estId, planSlug, String(mp.id));
     }
+  }
+}
+
+async function processMerchantOrderEvent(orderId: string) {
+  const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+  if (!accessToken) throw new Error("MERCADOPAGO_ACCESS_TOKEN não configurado");
+
+  const order = await fetchMerchantOrderFromMP(orderId, accessToken);
+  const paymentIds = Array.from(new Set(
+    ((order?.payments ?? []) as any[])
+      .map((payment) => payment?.id)
+      .filter((id): id is string | number => id !== null && id !== undefined)
+      .map((id) => String(id)),
+  ));
+
+  if (paymentIds.length === 0) {
+    throw new Error(`Merchant order ${orderId} sem pagamentos associados para reconciliar.`);
+  }
+
+  for (const paymentId of paymentIds) {
+    await processPaymentEvent(paymentId);
   }
 }
 
@@ -262,15 +299,21 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
           mode,
         };
 
-        // HMAC obrigatória APENAS para eventos live. Testes do painel MP não são assinados.
-        if (mode === "live" && secret && !signatureValid) {
+        // HMAC obrigatória para eventos live. Testes do painel MP não são assinados.
+        const security = evaluateMercadoPagoWebhookSecurity({
+          mode,
+          signatureValid,
+          hasWebhookSecret: !!secret,
+        });
+        if (!security.accepted) {
           await logWebhook({
             ...logRow,
-            error: "invalid_signature",
-            reason: "Assinatura HMAC inválida em evento live. Verifique MERCADOPAGO_WEBHOOK_SECRET.",
-            response_status: 401,
+            error: security.error,
+            reason: security.reason,
+            response_status: security.status,
+            next_retry_at: null,
           });
-          return new Response("invalid signature", { status: 401 });
+          return new Response(security.error, { status: security.status });
         }
 
         if (isTest) {
@@ -286,11 +329,17 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
         try {
           if ((eventType === "payment" || eventType.startsWith("payment")) && dataId) {
             await processPaymentEvent(dataId);
+          } else if (eventType === "merchant_order" && dataId) {
+            await processMerchantOrderEvent(dataId);
           }
           await logWebhook({
             ...logRow,
             processed: true,
-            reason: `Evento ${eventType} processado com sucesso.`,
+            reason: eventType === "merchant_order"
+              ? `Merchant order ${dataId} reconciliada com pagamentos associados.`
+              : (eventType === "payment" || eventType.startsWith("payment"))
+                ? `Evento ${eventType} processado com sucesso.`
+                : `Evento ${eventType} recebido; sem ação financeira direta necessária.`,
             response_status: 200,
           });
           return new Response("ok", { status: 200 });
@@ -321,9 +370,11 @@ export async function retryFailedWebhooks(limit = 20): Promise<{
 
   const { data: pending } = await supabaseAdmin
     .from("payment_logs")
-    .select("id, mp_id, event_type, retry_count, payload")
+    .select("id, mp_id, event_type, retry_count, payload, error, response_status")
     .not("error", "is", null)
     .eq("processed", false)
+    .neq("error", "invalid_signature")
+    .neq("error", "missing_webhook_secret")
     .lte("next_retry_at", nowIso)
     .lt("retry_count", RETRY_MAX_ATTEMPTS)
     .order("next_retry_at", { ascending: true })
@@ -336,8 +387,22 @@ export async function retryFailedWebhooks(limit = 20): Promise<{
   for (const r of rows as any[]) {
     const attempt = (r.retry_count ?? 0) + 1;
     try {
+      if (!isRetryableMercadoPagoWebhookError(r.error, r.response_status)) {
+        await supabaseAdmin.from("payment_logs").update({
+          reason: "Falha de segurança/configuração não entra na fila de retry automático.",
+          next_retry_at: null,
+          last_retry_at: nowIso,
+        } as never).eq("id", r.id);
+        failed++;
+        details.push({ id: r.id, mp_id: r.mp_id, ok: false, error: r.error ?? "non_retryable" });
+        continue;
+      }
       if ((r.event_type === "payment" || String(r.event_type).startsWith("payment")) && r.mp_id) {
         await processPaymentEvent(String(r.mp_id));
+      } else if (r.event_type === "merchant_order" && r.mp_id) {
+        await processMerchantOrderEvent(String(r.mp_id));
+      } else {
+        throw new Error(`Evento ${r.event_type} não possui processador de retry.`);
       }
       await supabaseAdmin.from("payment_logs").update({
         processed: true,

@@ -5,6 +5,8 @@ import {
   mapMpStatusToPaymentStatus,
   mapMpMethod,
   classifyMercadoPagoRequest,
+  evaluateMercadoPagoWebhookSecurity,
+  isRetryableMercadoPagoWebhookError,
 } from "@/lib/mercadopago-webhook";
 
 const SECRET = "test_webhook_secret_123";
@@ -214,9 +216,10 @@ describe("cenários end-to-end do handler MP: HMAC obrigatória apenas em live r
     const signatureValid = verifyMercadoPagoSignature({
       signatureHeader: null, requestId: null, dataId, secret: SECRET,
     });
-    // Handler: só bloqueia quando mode === "live" && !signatureValid
-    const shouldReject = c.mode === "live" && !signatureValid;
-    expect(shouldReject).toBe(false);
+    const security = evaluateMercadoPagoWebhookSecurity({
+      mode: c.mode, signatureValid, hasWebhookSecret: true,
+    });
+    expect(security.accepted).toBe(true);
     expect(c.isTest).toBe(true);
   });
 
@@ -235,8 +238,10 @@ describe("cenários end-to-end do handler MP: HMAC obrigatória apenas em live r
 
     expect(c.mode).toBe("live");
     expect(signatureValid).toBe(true);
-    const shouldReject = c.mode === "live" && !signatureValid;
-    expect(shouldReject).toBe(false);
+    const security = evaluateMercadoPagoWebhookSecurity({
+      mode: c.mode, signatureValid, hasWebhookSecret: true,
+    });
+    expect(security.accepted).toBe(true);
   });
 
   it("evento live real SEM HMAC é rejeitado com 401", () => {
@@ -249,7 +254,13 @@ describe("cenários end-to-end do handler MP: HMAC obrigatória apenas em live r
     });
     expect(c.mode).toBe("live");
     expect(signatureValid).toBe(false);
-    expect(c.mode === "live" && !signatureValid).toBe(true); // handler retornaria 401
+    const security = evaluateMercadoPagoWebhookSecurity({
+      mode: c.mode, signatureValid, hasWebhookSecret: true,
+    });
+    expect(security.accepted).toBe(false);
+    expect(security.status).toBe(401);
+    expect(security.error).toBe("invalid_signature");
+    expect(isRetryableMercadoPagoWebhookError(security.error, security.status)).toBe(false);
   });
 
   it("evento live real com HMAC inválida (secret errado) é rejeitado", () => {
@@ -267,5 +278,24 @@ describe("cenários end-to-end do handler MP: HMAC obrigatória apenas em live r
     });
     expect(c.mode).toBe("live");
     expect(signatureValid).toBe(false);
+    const security = evaluateMercadoPagoWebhookSecurity({
+      mode: c.mode, signatureValid, hasWebhookSecret: true,
+    });
+    expect(security.accepted).toBe(false);
+    expect(security.error).toBe("invalid_signature");
+    expect(isRetryableMercadoPagoWebhookError(security.error, security.status)).toBe(false);
+  });
+
+  it("evento live real é bloqueado quando o Webhook Secret não está configurado", () => {
+    const c = classifyMercadoPagoRequest({
+      eventType: "payment", action: "payment.created", liveMode: true, dataId: "9876543210", userAgent: REAL_UA,
+    });
+    const security = evaluateMercadoPagoWebhookSecurity({
+      mode: c.mode, signatureValid: false, hasWebhookSecret: false,
+    });
+    expect(security.accepted).toBe(false);
+    expect(security.status).toBe(503);
+    expect(security.error).toBe("missing_webhook_secret");
+    expect(isRetryableMercadoPagoWebhookError(security.error, security.status)).toBe(false);
   });
 });

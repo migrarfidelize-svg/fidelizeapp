@@ -512,8 +512,9 @@ function WebhookLogsCard() {
               {rows.map((r: any) => {
                 const status = r.response_status ?? (r.error ? 500 : (r.processed ? 200 : 202));
                 const mode = r.mode ?? (r.live_mode === true ? "live" : r.live_mode === false ? "test" : "—");
+                const securityBlocked = mode === "live" && !r.signature_valid && (r.error === "invalid_signature" || status === 401 || status === 503);
                 return (
-                  <TableRow key={r.id}>
+                  <TableRow key={r.id} className={securityBlocked ? "bg-destructive/5" : undefined}>
                     <TableCell className="text-xs whitespace-nowrap">{new Date(r.created_at).toLocaleString("pt-BR")}</TableCell>
                     <TableCell className="text-xs">
                       <div className="font-medium">{r.event_type}</div>
@@ -534,12 +535,14 @@ function WebhookLogsCard() {
                       <Badge className={statusColor(status)} variant="outline">{status}</Badge>
                     </TableCell>
                     <TableCell className="text-xs max-w-[240px] truncate" title={r.reason ?? r.error ?? ""}>
-                      {r.error
+                      {securityBlocked
+                        ? <span className="text-destructive">Bloqueado por segurança — {r.reason ?? r.error}</span>
+                        : r.error
                         ? <span className="text-destructive">{r.reason ?? r.error}</span>
                         : <span className="text-muted-foreground">{r.reason ?? "—"}</span>}
                     </TableCell>
                     <TableCell className="text-xs whitespace-nowrap">
-                      {r.retry_count > 0 ? `${r.retry_count}×` : "—"}
+                      {securityBlocked ? "Não aplicável" : r.retry_count > 0 ? `${r.retry_count}×` : "—"}
                       {r.next_retry_at && !r.processed && (
                         <div className="text-muted-foreground text-[10px]">→ {new Date(r.next_retry_at).toLocaleString("pt-BR")}</div>
                       )}
