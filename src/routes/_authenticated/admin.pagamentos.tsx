@@ -336,14 +336,23 @@ function AdminPaymentsPage() {
   );
 }
 
-function SecretRow({ name, label, ok, hint }: { name: string; label: string; ok: boolean; hint: string }) {
+function SecretRow({
+  name, label, ok, hint, optional, source,
+}: { name: string; label: string; ok: boolean; hint: string; optional?: boolean; source?: "env" | "db" | null }) {
+  const showOk = ok;
+  const showBadge = showOk
+    ? <Badge variant="outline" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
+        {source === "db" ? "Salvo no formulário" : source === "env" ? "Salvo como secret" : "Configurado"}
+      </Badge>
+    : optional
+      ? <Badge variant="outline" className="bg-muted text-muted-foreground">Opcional — não configurado</Badge>
+      : <Badge variant="outline" className="bg-destructive/15 text-destructive">Não configurado</Badge>;
   return (
     <div className="flex items-start justify-between gap-3 rounded-lg border p-3">
       <div className="min-w-0">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="font-medium text-sm">{label}</span>
-          {ok ? <Badge variant="outline" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">Configurado</Badge>
-              : <Badge variant="outline" className="bg-destructive/15 text-destructive">Não configurado</Badge>}
+          {showBadge}
         </div>
         <div className="text-xs text-muted-foreground mt-1">{hint}</div>
         <code className="text-[10px] text-muted-foreground">{name}</code>
