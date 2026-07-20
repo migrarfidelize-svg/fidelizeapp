@@ -276,7 +276,7 @@ function AdminPaymentsPage() {
           </div>
           <div className="space-y-2">
             <Label>Chave pública</Label>
-            <Input value={publicKey} onChange={e => setPublicKey(e.target.value)} placeholder="APP_USR-abcd-…" className="font-mono text-xs" />
+            <Input id="mp-public-key-input" value={publicKey} onChange={e => setPublicKey(e.target.value)} placeholder="APP_USR-abcd-…" className="font-mono text-xs" />
             <p className="text-xs text-muted-foreground">Usada apenas no navegador para tokenizar o cartão. Pode conviver com a variável de ambiente <code>MERCADOPAGO_PUBLIC_KEY</code>; a variável de ambiente tem prioridade.</p>
           </div>
           <div className="space-y-2">
