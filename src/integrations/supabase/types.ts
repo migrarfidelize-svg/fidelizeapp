@@ -1460,11 +1460,17 @@ export type Database = {
           event_type: string
           headers: Json | null
           id: string
+          last_retry_at: string | null
           live_mode: boolean | null
+          mode: string | null
           mp_id: string | null
           mp_resource: string | null
+          next_retry_at: string | null
           payload: Json | null
           processed: boolean
+          reason: string | null
+          response_status: number | null
+          retry_count: number
           signature_valid: boolean
         }
         Insert: {
@@ -1474,11 +1480,17 @@ export type Database = {
           event_type: string
           headers?: Json | null
           id?: string
+          last_retry_at?: string | null
           live_mode?: boolean | null
+          mode?: string | null
           mp_id?: string | null
           mp_resource?: string | null
+          next_retry_at?: string | null
           payload?: Json | null
           processed?: boolean
+          reason?: string | null
+          response_status?: number | null
+          retry_count?: number
           signature_valid?: boolean
         }
         Update: {
@@ -1488,11 +1500,17 @@ export type Database = {
           event_type?: string
           headers?: Json | null
           id?: string
+          last_retry_at?: string | null
           live_mode?: boolean | null
+          mode?: string | null
           mp_id?: string | null
           mp_resource?: string | null
+          next_retry_at?: string | null
           payload?: Json | null
           processed?: boolean
+          reason?: string | null
+          response_status?: number | null
+          retry_count?: number
           signature_valid?: boolean
         }
         Relationships: []
