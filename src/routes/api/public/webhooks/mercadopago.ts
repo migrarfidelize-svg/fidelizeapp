@@ -277,7 +277,7 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
           await logWebhook({
             ...logRow,
             processed: true,
-            reason: "Handshake/teste do painel Mercado Pago aceito sem verificação de assinatura.",
+            reason: `Handshake/teste aceito sem HMAC. Regra: ${classification.detection} — ${classification.reason}`,
             response_status: 200,
           });
           return new Response("test ok", { status: 200 });
