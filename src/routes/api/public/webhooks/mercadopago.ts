@@ -188,13 +188,26 @@ async function logWebhook(row: {
   error: string | null;
   payload: any;
   headers: any;
+  mode?: string | null;
+  reason?: string | null;
+  response_status?: number | null;
+  next_retry_at?: string | null;
 }) {
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("payment_logs").insert(row);
+    await supabaseAdmin.from("payment_logs").insert(row as never);
   } catch (e) {
     console.error("payment_logs insert failed", e);
   }
+}
+
+/** Backoff (ms): 1min, 5min, 15min, 1h, 6h, 24h — 6 tentativas máx. */
+const RETRY_BACKOFF_MS = [60_000, 5*60_000, 15*60_000, 60*60_000, 6*60*60_000, 24*60*60_000];
+export const RETRY_MAX_ATTEMPTS = RETRY_BACKOFF_MS.length;
+
+function nextRetryAt(attempt: number): string | null {
+  if (attempt >= RETRY_BACKOFF_MS.length) return null;
+  return new Date(Date.now() + RETRY_BACKOFF_MS[attempt]).toISOString();
 }
 
 export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
@@ -208,31 +221,38 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
         const signatureHeader = request.headers.get("x-signature");
         const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET ?? "";
 
-        // Parse body
         let body: any = {};
         try { body = rawBody ? JSON.parse(rawBody) : {}; } catch { body = {}; }
 
         const eventType: string = body.type ?? body.topic ?? url.searchParams.get("type") ?? url.searchParams.get("topic") ?? "unknown";
-        // Per docs do MP, o `data.id` para o manifest de assinatura vem da query string.
-        // Body é usado como fallback quando a query não trouxer o id.
         const dataId: string | null =
           url.searchParams.get("data.id") ??
           url.searchParams.get("id") ??
           body?.data?.id?.toString() ??
           null;
         const action: string | null = body?.action ?? null;
+        const liveMode: boolean | null = typeof body?.live_mode === "boolean" ? body.live_mode : null;
+
+        // Handshake/teste do painel do Mercado Pago (não vem assinado).
+        const isTest =
+          eventType === "test" ||
+          action === "test.created" ||
+          (liveMode === false && dataId === "123456");
+
+        const mode: "test" | "live" | "unknown" = isTest
+          ? "test"
+          : liveMode === true ? "live" : liveMode === false ? "test" : "unknown";
 
         const signatureValid = verifyMercadoPagoSignature({
           signatureHeader, requestId, dataId, secret,
         });
 
-        // Log everything up front
         const logRow = {
           event_type: eventType,
           mp_resource: eventType,
           mp_id: dataId,
           action,
-          live_mode: typeof body?.live_mode === "boolean" ? body.live_mode : null,
+          live_mode: liveMode,
           signature_valid: signatureValid,
           processed: false,
           error: null as string | null,
@@ -242,23 +262,27 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
             "x-signature": signatureHeader ? "present" : null,
             "user-agent": request.headers.get("user-agent"),
           },
+          mode,
         };
 
-        // Handshake/teste do painel do Mercado Pago: aceita sem assinatura.
-        const isTest =
-          eventType === "test" ||
-          action === "test.created" ||
-          body?.live_mode === false && dataId === "123456";
-
-        // Se secret está configurado e assinatura inválida, rejeita (produção).
-        // Exceção: payload de teste do painel MP (não vem assinado).
-        if (secret && !signatureValid && !isTest) {
-          await logWebhook({ ...logRow, error: "invalid_signature" });
+        // HMAC obrigatória APENAS para eventos live. Testes do painel MP não são assinados.
+        if (mode === "live" && secret && !signatureValid) {
+          await logWebhook({
+            ...logRow,
+            error: "invalid_signature",
+            reason: "Assinatura HMAC inválida em evento live. Verifique MERCADOPAGO_WEBHOOK_SECRET.",
+            response_status: 401,
+          });
           return new Response("invalid signature", { status: 401 });
         }
 
         if (isTest) {
-          await logWebhook({ ...logRow, processed: true, error: null });
+          await logWebhook({
+            ...logRow,
+            processed: true,
+            reason: "Handshake/teste do painel Mercado Pago aceito sem verificação de assinatura.",
+            response_status: 200,
+          });
           return new Response("test ok", { status: 200 });
         }
 
@@ -266,15 +290,86 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
           if ((eventType === "payment" || eventType.startsWith("payment")) && dataId) {
             await processPaymentEvent(dataId);
           }
-          // merchant_order / subscription: apenas logamos por enquanto
-          await logWebhook({ ...logRow, processed: true });
+          await logWebhook({
+            ...logRow,
+            processed: true,
+            reason: `Evento ${eventType} processado com sucesso.`,
+            response_status: 200,
+          });
           return new Response("ok", { status: 200 });
         } catch (e: any) {
-          await logWebhook({ ...logRow, error: e?.message ?? String(e) });
-          // Retorna 200 para não gerar loop de retry em erro nosso; auditoria fica em payment_logs.
+          const errMsg = e?.message ?? String(e);
+          const retryAt = nextRetryAt(0);
+          await logWebhook({
+            ...logRow,
+            error: errMsg,
+            reason: `Falha ao processar; agendado para retry ${retryAt ?? "(sem mais tentativas)"}`,
+            response_status: 200,
+            next_retry_at: retryAt,
+          });
+          // 200 para o MP não gerar loop nativo — reprocessamento é nosso via cron.
           return new Response("logged", { status: 200 });
         }
       },
     },
   },
 });
+
+// ----------- Retry worker (exportado para o endpoint /api/public/hooks/mercadopago-retry) -----------
+export async function retryFailedWebhooks(limit = 20): Promise<{
+  picked: number; recovered: number; failed: number; details: Array<{ id: string; mp_id: string | null; ok: boolean; error?: string }>;
+}> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const nowIso = new Date().toISOString();
+
+  const { data: pending } = await supabaseAdmin
+    .from("payment_logs")
+    .select("id, mp_id, event_type, retry_count, payload")
+    .not("error", "is", null)
+    .eq("processed", false)
+    .lte("next_retry_at", nowIso)
+    .lt("retry_count", RETRY_MAX_ATTEMPTS)
+    .order("next_retry_at", { ascending: true })
+    .limit(limit);
+
+  const rows = pending ?? [];
+  const details: Array<{ id: string; mp_id: string | null; ok: boolean; error?: string }> = [];
+  let recovered = 0, failed = 0;
+
+  for (const r of rows as any[]) {
+    const attempt = (r.retry_count ?? 0) + 1;
+    try {
+      if ((r.event_type === "payment" || String(r.event_type).startsWith("payment")) && r.mp_id) {
+        await processPaymentEvent(String(r.mp_id));
+      }
+      await supabaseAdmin.from("payment_logs").update({
+        processed: true,
+        error: null,
+        reason: `Recuperado no retry #${attempt}.`,
+        response_status: 200,
+        retry_count: attempt,
+        last_retry_at: nowIso,
+        next_retry_at: null,
+      } as never).eq("id", r.id);
+      recovered++;
+      details.push({ id: r.id, mp_id: r.mp_id, ok: true });
+    } catch (e: any) {
+      const errMsg = e?.message ?? String(e);
+      const next = nextRetryAt(attempt);
+      await supabaseAdmin.from("payment_logs").update({
+        error: errMsg,
+        reason: next
+          ? `Retry #${attempt} falhou; próxima tentativa ${next}.`
+          : `Retry #${attempt} falhou; limite de tentativas atingido.`,
+        retry_count: attempt,
+        last_retry_at: nowIso,
+        next_retry_at: next,
+      } as never).eq("id", r.id);
+      failed++;
+      details.push({ id: r.id, mp_id: r.mp_id, ok: false, error: errMsg });
+    }
+  }
+
+  return { picked: rows.length, recovered, failed, details };
+}
+
