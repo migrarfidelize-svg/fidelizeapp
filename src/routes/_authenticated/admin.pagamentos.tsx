@@ -88,6 +88,8 @@ function AdminPaymentsPage() {
   const settingsUpdatedAt: string | null = (data as any)?.settings_updated_at ?? null;
   const lastDivergenceAt: string | null = (data as any)?.last_divergence_at ?? null;
   const settings = (data as any)?.settings ?? {};
+  const configurationIssue: string | null = (data as any)?.configuration_issue ?? null;
+  const mpAccountIsTestUser: boolean = !!(data as any)?.mp_account_is_test_user;
 
   const syncFn = useServerFn(adminSyncWebhookUrl);
   const probeFn = useServerFn(adminSendWebhookTestEvent);
@@ -145,6 +147,21 @@ function AdminPaymentsPage() {
         <h1 className="font-display text-3xl font-bold">Mercado Pago</h1>
         <p className="text-sm text-muted-foreground">Integração de pagamentos para as assinaturas da plataforma.</p>
       </div>
+
+      {configurationIssue && (
+        <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4">
+          <div className="flex items-start gap-3">
+            <XCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
+            <div className="min-w-0 space-y-2">
+              <div className="font-medium text-destructive">Credenciais incompatíveis com o ambiente</div>
+              <p className="text-sm text-destructive/90">{configurationIssue}</p>
+              <p className="text-xs text-muted-foreground">
+                O erro aparece no checkout como <strong>Mercado Pago (401): Unauthorized use of live credentials</strong>. Em produção, Access Token e comprador precisam ser reais; em Sandbox/Teste, use usuário/comprador de teste.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {webhookStale && (
         <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-4">
@@ -326,7 +343,12 @@ function AdminPaymentsPage() {
             <div className="mt-3 rounded-lg bg-muted p-3 text-xs space-y-1">
               <div><strong>Conta:</strong> {testResult.account.nickname ?? testResult.account.email}</div>
               <div><strong>Site:</strong> {testResult.account.site_id}</div>
-              <div><strong>Modo:</strong> <Badge variant={testResult.account.live_mode ? "default" : "secondary"}>{testResult.account.live_mode ? "Produção" : "Teste"}</Badge></div>
+                <div><strong>Modo:</strong> <Badge variant={testResult.account.live_mode ? "default" : "secondary"}>{testResult.account.live_mode ? "Produção" : "Teste"}</Badge></div>
+            </div>
+          )}
+          {!testResult?.account && mpAccountIsTestUser && (
+            <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-900 dark:text-amber-100">
+              Conta Mercado Pago detectada como <strong>TESTUSER</strong>. Use Sandbox/Teste ou troque o Access Token por uma conta real para cobrar em produção.
             </div>
           )}
         </CardContent>
