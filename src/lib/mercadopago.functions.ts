@@ -513,8 +513,10 @@ export const adminGetPaymentSettings = createServerFn({ method: "GET" })
       .limit(1)
       .maybeSingle();
     if (error) throw error;
-    const hasToken = !!process.env.MERCADOPAGO_ACCESS_TOKEN;
-    const hasSecret = !!process.env.MERCADOPAGO_WEBHOOK_SECRET;
+    const { loadMercadoPagoCredentials } = await import("./mercadopago-credentials.server");
+    const creds = await loadMercadoPagoCredentials(true);
+    const hasToken = !!creds.access_token;
+    const hasSecret = !!creds.webhook_secret;
     const canonicalUrl = publicWebhookUrl();
     const storedUrl = ((data as any)?.webhook_url as string | null) ?? null;
     const norm = (u: string | null) => (u ?? "").replace(/\/+$/, "").toLowerCase();
@@ -553,10 +555,10 @@ export const adminGetPaymentSettings = createServerFn({ method: "GET" })
       }
     }
 
-    const dbPublicKey = (((data as any)?.public_key as string | null) ?? "").trim();
-    const envPublicKey = (process.env.MERCADOPAGO_PUBLIC_KEY ?? "").trim();
     const publicKeySource: "env" | "db" | null =
-      envPublicKey ? "env" : (dbPublicKey ? "db" : null);
+      creds.sources.public_key === "env" ? "env"
+      : creds.sources.public_key ? "db"
+      : null;
     const accountNickname = ((data as any)?.account_nickname as string | null) ?? null;
     const lastTestMessage = ((data as any)?.last_test_message as string | null) ?? null;
     const accountIsTestUser = /^TESTUSER/i.test(accountNickname ?? "") || /TESTUSER/i.test(lastTestMessage ?? "");
@@ -574,8 +576,10 @@ export const adminGetPaymentSettings = createServerFn({ method: "GET" })
       credentials: {
         has_access_token: hasToken,
         has_webhook_secret: hasSecret,
-        has_public_key: !!publicKeySource,
+        has_public_key: !!creds.public_key,
         public_key_source: publicKeySource,
+        access_token_source: creds.sources.access_token,
+        webhook_secret_source: creds.sources.webhook_secret,
       },
       mp_account_is_test_user: accountIsTestUser,
       configuration_issue: configurationIssue,
