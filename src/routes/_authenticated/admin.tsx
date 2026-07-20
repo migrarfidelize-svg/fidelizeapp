@@ -22,7 +22,6 @@ function AdminLayout() {
   const bootstrap = useServerFn(bootstrapSuperAdmin);
   const { data, isLoading, refetch } = useQuery({ queryKey: ["admin-status"], queryFn: () => getStatus() });
   const pathname = useRouterState({ select: (r) => r.location.pathname });
-  const [openKey, setOpenKey] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   if (isLoading) return <div className="grid min-h-dvh place-items-center text-muted-foreground">Verificando permissões…</div>;
