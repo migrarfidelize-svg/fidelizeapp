@@ -583,7 +583,15 @@ function WebhookLogsCard() {
                 <div><strong>MP ID:</strong> <span className="font-mono">{selected.mp_id ?? "—"}</span></div>
                 <div><strong>Ação:</strong> {selected.action ?? "—"}</div>
                 <div><strong>Modo:</strong> {selected.mode ?? "—"} (live_mode={String(selected.live_mode)})</div>
-                <div><strong>Assinatura válida:</strong> {String(selected.signature_valid)}</div>
+                <div><strong>Assinatura:</strong> {(() => {
+                  const mode = selected.mode ?? (selected.live_mode ? "live" : selected.live_mode === false ? "test" : "unknown");
+                  if (selected.signature_valid) return <span className="text-emerald-600">válida (HMAC ok)</span>;
+                  if (mode === "live" && (selected.error === "invalid_signature" || selected.response_status === 401)) {
+                    return <span className="text-destructive">inválida — evento live bloqueado</span>;
+                  }
+                  if (mode !== "live") return <span className="text-muted-foreground">não verificada (handshake/teste — MP não assina)</span>;
+                  return <span className="text-muted-foreground">não verificada</span>;
+                })()}</div>
                 <div><strong>HTTP resposta:</strong> {selected.response_status ?? "—"}</div>
                 <div><strong>Processado:</strong> {String(selected.processed)}</div>
                 <div><strong>Retries:</strong> {selected.retry_count ?? 0}</div>

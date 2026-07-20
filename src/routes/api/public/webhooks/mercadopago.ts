@@ -41,6 +41,27 @@ async function fetchMerchantOrderFromMP(orderId: string, accessToken: string) {
   return JSON.parse(text) as any;
 }
 
+async function fetchOrderFromMP(orderId: string, accessToken: string) {
+  // Novo Orders API (Point/Checkout Bricks). Ref: developers.mercadopago.com/pt/reference/orders
+  const res = await fetch(`${MP_API}/v1/orders/${orderId}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  const text = await res.text();
+  if (!res.ok) throw new Error(`MP GET /v1/orders/${orderId} ${res.status}: ${text}`);
+  return JSON.parse(text) as any;
+}
+
+async function fetchPreapprovalFromMP(preapprovalId: string, accessToken: string) {
+  const res = await fetch(`${MP_API}/preapproval/${preapprovalId}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  const text = await res.text();
+  if (!res.ok) throw new Error(`MP GET /preapproval/${preapprovalId} ${res.status}: ${text}`);
+  return JSON.parse(text) as any;
+}
+
+
+
 
 
 
@@ -119,6 +140,82 @@ async function processMerchantOrderEvent(orderId: string) {
     await processPaymentEvent(paymentId);
   }
 }
+
+async function processOrderEvent(orderId: string) {
+  // Orders API (Point/Checkout Bricks). Reconcilia via os pagamentos internos do order.
+  const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+  if (!accessToken) throw new Error("MERCADOPAGO_ACCESS_TOKEN não configurado");
+
+  const order = await fetchOrderFromMP(orderId, accessToken);
+  const payments = (order?.transactions?.payments ?? []) as any[];
+  const paymentIds = Array.from(new Set(
+    payments
+      .map((payment) => payment?.id)
+      .filter((id): id is string | number => id !== null && id !== undefined)
+      .map((id) => String(id)),
+  ));
+
+  if (paymentIds.length === 0) {
+    // Ordens podem chegar sem pagamentos ainda (ex: created/processing). Sem erro — apenas nada a reconciliar agora.
+    return;
+  }
+
+  for (const paymentId of paymentIds) {
+    try {
+      await processPaymentEvent(paymentId);
+    } catch (e) {
+      // Alguns payment IDs de Orders podem ser sintéticos (ex.: PAY01...). Ignora erros individuais para não travar o order.
+      console.warn(`[mp-webhook] falha ao processar pagamento ${paymentId} do order ${orderId}:`, e);
+    }
+  }
+}
+
+async function processSubscriptionPreapprovalEvent(preapprovalId: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+  if (!accessToken) throw new Error("MERCADOPAGO_ACCESS_TOKEN não configurado");
+
+  const preapproval = await fetchPreapprovalFromMP(preapprovalId, accessToken);
+
+  // Localiza subscription pelo mp_subscription_id (preferido) ou external_id (fallback).
+  const { data: existing } = await supabaseAdmin
+    .from("subscriptions")
+    .select("id, establishment_id, plan_id, tier, status")
+    .or(`mp_subscription_id.eq.${preapprovalId},external_id.eq.${preapprovalId}`)
+    .maybeSingle();
+
+  const rawStatus = String(preapproval?.status ?? "").toLowerCase();
+  // authorized → active; paused → past_due; cancelled/finished → cancelled
+  const mapped = rawStatus === "authorized" ? "active"
+    : rawStatus === "paused" ? "past_due"
+    : rawStatus === "cancelled" || rawStatus === "finished" ? "cancelled"
+    : rawStatus || "pending";
+
+  const nextPayment = preapproval?.next_payment_date ? new Date(preapproval.next_payment_date).toISOString() : null;
+
+  if (existing) {
+    const updatePayload: any = {
+      status: mapped,
+      mp_subscription_id: preapprovalId,
+      next_billing_date: nextPayment,
+      cancel_at_period_end: mapped === "cancelled",
+      updated_at: new Date().toISOString(),
+    };
+    if (mapped === "cancelled") updatePayload.cancelled_at = new Date().toISOString();
+    await supabaseAdmin.from("subscriptions").update(updatePayload).eq("id", existing.id);
+
+    // Se cancelado, registra evento e opcionalmente desativa establishment.
+    if (mapped === "cancelled") {
+      await supabaseAdmin.from("subscription_events").insert({
+        establishment_id: existing.establishment_id,
+        event_type: "cancel",
+        message: `Assinatura MP ${preapprovalId} cancelada via preapproval.`,
+      } as never);
+    }
+  }
+  // Se não existe, registra apenas o log — não criamos subscription "órfã" sem estabelecimento.
+}
+
 
 async function activatePlan(establishmentId: string, planSlug: string, mpPaymentId: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -327,22 +424,34 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
         }
 
         try {
+          let handled = true;
           if ((eventType === "payment" || eventType.startsWith("payment")) && dataId) {
             await processPaymentEvent(dataId);
           } else if (eventType === "merchant_order" && dataId) {
             await processMerchantOrderEvent(dataId);
+          } else if ((eventType === "order" || eventType.startsWith("order")) && dataId) {
+            await processOrderEvent(dataId);
+          } else if (eventType === "subscription_preapproval" && dataId) {
+            await processSubscriptionPreapprovalEvent(dataId);
+          } else {
+            handled = false;
           }
           await logWebhook({
             ...logRow,
             processed: true,
-            reason: eventType === "merchant_order"
-              ? `Merchant order ${dataId} reconciliada com pagamentos associados.`
-              : (eventType === "payment" || eventType.startsWith("payment"))
-                ? `Evento ${eventType} processado com sucesso.`
-                : `Evento ${eventType} recebido; sem ação financeira direta necessária.`,
+            reason: !handled
+              ? `Evento ${eventType} recebido; sem processador dedicado (nenhuma ação financeira aplicável).`
+              : eventType === "merchant_order"
+                ? `Merchant order ${dataId} reconciliada com pagamentos associados.`
+                : (eventType === "order" || eventType.startsWith("order"))
+                  ? `Order ${dataId} reconciliada via Orders API.`
+                  : eventType === "subscription_preapproval"
+                    ? `Preapproval ${dataId} sincronizada (status ${eventType}).`
+                    : `Evento ${eventType} processado com sucesso.`,
             response_status: 200,
           });
           return new Response("ok", { status: 200 });
+
         } catch (e: any) {
           const errMsg = e?.message ?? String(e);
           const retryAt = nextRetryAt(0);
@@ -397,13 +506,19 @@ export async function retryFailedWebhooks(limit = 20): Promise<{
         details.push({ id: r.id, mp_id: r.mp_id, ok: false, error: r.error ?? "non_retryable" });
         continue;
       }
-      if ((r.event_type === "payment" || String(r.event_type).startsWith("payment")) && r.mp_id) {
+      const et = String(r.event_type ?? "");
+      if ((et === "payment" || et.startsWith("payment")) && r.mp_id) {
         await processPaymentEvent(String(r.mp_id));
-      } else if (r.event_type === "merchant_order" && r.mp_id) {
+      } else if (et === "merchant_order" && r.mp_id) {
         await processMerchantOrderEvent(String(r.mp_id));
+      } else if ((et === "order" || et.startsWith("order")) && r.mp_id) {
+        await processOrderEvent(String(r.mp_id));
+      } else if (et === "subscription_preapproval" && r.mp_id) {
+        await processSubscriptionPreapprovalEvent(String(r.mp_id));
       } else {
-        throw new Error(`Evento ${r.event_type} não possui processador de retry.`);
+        throw new Error(`Evento ${et || "(sem tipo)"} não possui processador de retry.`);
       }
+
       await supabaseAdmin.from("payment_logs").update({
         processed: true,
         error: null,
