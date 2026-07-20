@@ -443,6 +443,11 @@ export const adminGetPaymentSettings = createServerFn({ method: "GET" })
       }
     }
 
+    const dbPublicKey = ((data as any)?.public_key as string | null) ?? null;
+    const envPublicKey = process.env.MERCADOPAGO_PUBLIC_KEY ?? null;
+    const publicKeySource: "env" | "db" | null =
+      envPublicKey ? "env" : (dbPublicKey ? "db" : null);
+
     return {
       settings: data,
       webhook_url: canonicalUrl,
@@ -453,7 +458,8 @@ export const adminGetPaymentSettings = createServerFn({ method: "GET" })
       credentials: {
         has_access_token: hasToken,
         has_webhook_secret: hasSecret,
-        has_public_key: !!process.env.MERCADOPAGO_PUBLIC_KEY,
+        has_public_key: !!publicKeySource,
+        public_key_source: publicKeySource,
       },
     };
   });
