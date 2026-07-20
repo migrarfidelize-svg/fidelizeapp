@@ -117,12 +117,28 @@ export function PaymentDialog({
 }) {
   const fmt = (n: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(n);
   const hintFn = useServerFn(getMercadoPagoAccountHint);
+  const providersFn = useServerFn(getActivePaymentProviders);
   const { data: hint } = useQuery({
     queryKey: ["mp-account-hint"],
     queryFn: () => hintFn() as Promise<MercadoPagoHint>,
     enabled: open,
     staleTime: 5 * 60_000,
   });
+  const { data: providersData } = useQuery({
+    queryKey: ["active-payment-providers"],
+    queryFn: () => providersFn() as Promise<{ providers: Array<{ id: "mercadopago" | "asaas"; enabled: boolean; mode: "sandbox" | "production" }> }>,
+    enabled: open,
+    staleTime: 60_000,
+  });
+  const activeProviders = (providersData?.providers ?? []).filter((p) => p.enabled);
+  const hasMP = activeProviders.some((p) => p.id === "mercadopago") || activeProviders.length === 0;
+  const hasAsaas = activeProviders.some((p) => p.id === "asaas");
+  const [provider, setProvider] = useState<"mercadopago" | "asaas">("mercadopago");
+  useEffect(() => {
+    if (!hasMP && hasAsaas) setProvider("asaas");
+    else if (hasMP && !hasAsaas) setProvider("mercadopago");
+  }, [hasMP, hasAsaas]);
+  const asaasMode = activeProviders.find((p) => p.id === "asaas")?.mode ?? "sandbox";
   const acctEmail = hint?.account_email ?? null;
   const isSandboxLike = (hint?.environment ?? "production") === "sandbox" || !!hint?.account_is_test_user;
   const isLive = !isSandboxLike;
