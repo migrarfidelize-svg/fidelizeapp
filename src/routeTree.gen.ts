@@ -67,6 +67,7 @@ import { Route as AuthenticatedAdminSuporteIndexRouteImport } from './routes/_au
 import { Route as AuthenticatedAdminPlanosIndexRouteImport } from './routes/_authenticated/admin.planos.index'
 import { Route as SuporteSlugKbArticleRouteImport } from './routes/suporte.$slug.kb.$article'
 import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api/public/webhooks/mercadopago'
+import { Route as ApiPublicMercadopagoPublicKeyRouteImport } from './routes/api/public/mercadopago/public-key'
 import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/api/public/hooks/process-email-queue'
 import { Route as ApiPublicHooksMercadopagoRetryRouteImport } from './routes/api/public/hooks/mercadopago-retry'
 import { Route as ApiPublicCronReengagementRouteImport } from './routes/api/public/cron/reengagement'
@@ -390,6 +391,12 @@ const ApiPublicWebhooksMercadopagoRoute =
     path: '/api/public/webhooks/mercadopago',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicMercadopagoPublicKeyRoute =
+  ApiPublicMercadopagoPublicKeyRouteImport.update({
+    id: '/api/public/mercadopago/public-key',
+    path: '/api/public/mercadopago/public-key',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksProcessEmailQueueRoute =
   ApiPublicHooksProcessEmailQueueRouteImport.update({
     id: '/api/public/hooks/process-email-queue',
@@ -498,6 +505,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
+  '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
   '/admin/planos/': typeof AuthenticatedAdminPlanosIndexRoute
@@ -563,6 +571,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
+  '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
   '/admin/planos': typeof AuthenticatedAdminPlanosIndexRoute
@@ -632,6 +641,7 @@ export interface FileRoutesById {
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
+  '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
   '/_authenticated/admin/planos/': typeof AuthenticatedAdminPlanosIndexRoute
@@ -701,6 +711,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/reengagement'
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/process-email-queue'
+    | '/api/public/mercadopago/public-key'
     | '/api/public/webhooks/mercadopago'
     | '/suporte/$slug/kb/$article'
     | '/admin/planos/'
@@ -766,6 +777,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/reengagement'
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/process-email-queue'
+    | '/api/public/mercadopago/public-key'
     | '/api/public/webhooks/mercadopago'
     | '/suporte/$slug/kb/$article'
     | '/admin/planos'
@@ -834,6 +846,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/reengagement'
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/process-email-queue'
+    | '/api/public/mercadopago/public-key'
     | '/api/public/webhooks/mercadopago'
     | '/suporte/$slug/kb/$article'
     | '/_authenticated/admin/planos/'
@@ -867,6 +880,7 @@ export interface RootRouteChildren {
   ApiPublicCronReengagementRoute: typeof ApiPublicCronReengagementRoute
   ApiPublicHooksMercadopagoRetryRoute: typeof ApiPublicHooksMercadopagoRetryRoute
   ApiPublicHooksProcessEmailQueueRoute: typeof ApiPublicHooksProcessEmailQueueRoute
+  ApiPublicMercadopagoPublicKeyRoute: typeof ApiPublicMercadopagoPublicKeyRoute
   ApiPublicWebhooksMercadopagoRoute: typeof ApiPublicWebhooksMercadopagoRoute
   SuporteSlugKbArticleRoute: typeof SuporteSlugKbArticleRoute
   ApiPublicWalletAppleTokenRoute: typeof ApiPublicWalletAppleTokenRoute
@@ -1280,6 +1294,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksMercadopagoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/mercadopago/public-key': {
+      id: '/api/public/mercadopago/public-key'
+      path: '/api/public/mercadopago/public-key'
+      fullPath: '/api/public/mercadopago/public-key'
+      preLoaderRoute: typeof ApiPublicMercadopagoPublicKeyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/process-email-queue': {
       id: '/api/public/hooks/process-email-queue'
       path: '/api/public/hooks/process-email-queue'
@@ -1477,6 +1498,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronReengagementRoute: ApiPublicCronReengagementRoute,
   ApiPublicHooksMercadopagoRetryRoute: ApiPublicHooksMercadopagoRetryRoute,
   ApiPublicHooksProcessEmailQueueRoute: ApiPublicHooksProcessEmailQueueRoute,
+  ApiPublicMercadopagoPublicKeyRoute: ApiPublicMercadopagoPublicKeyRoute,
   ApiPublicWebhooksMercadopagoRoute: ApiPublicWebhooksMercadopagoRoute,
   SuporteSlugKbArticleRoute: SuporteSlugKbArticleRoute,
   ApiPublicWalletAppleTokenRoute: ApiPublicWalletAppleTokenRoute,
