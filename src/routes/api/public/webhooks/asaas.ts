@@ -87,7 +87,7 @@ async function reconcileAsaasPayment(remotePayment: any) {
   }
 
   if (existing) {
-    await supabaseAdmin.from("payments").update(update).eq("id", existing.id);
+    await supabaseAdmin.from("payments").update(update as never).eq("id", existing.id);
   } else {
     await supabaseAdmin.from("payments").insert({
       provider: "asaas",

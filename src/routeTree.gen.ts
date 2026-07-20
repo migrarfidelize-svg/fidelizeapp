@@ -68,6 +68,7 @@ import { Route as AuthenticatedAdminSuporteIndexRouteImport } from './routes/_au
 import { Route as AuthenticatedAdminPlanosIndexRouteImport } from './routes/_authenticated/admin.planos.index'
 import { Route as SuporteSlugKbArticleRouteImport } from './routes/suporte.$slug.kb.$article'
 import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api/public/webhooks/mercadopago'
+import { Route as ApiPublicWebhooksAsaasRouteImport } from './routes/api/public/webhooks/asaas'
 import { Route as ApiPublicMercadopagoPublicKeyRouteImport } from './routes/api/public/mercadopago/public-key'
 import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/api/public/hooks/process-email-queue'
 import { Route as ApiPublicHooksMercadopagoRetryRouteImport } from './routes/api/public/hooks/mercadopago-retry'
@@ -398,6 +399,11 @@ const ApiPublicWebhooksMercadopagoRoute =
     path: '/api/public/webhooks/mercadopago',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicWebhooksAsaasRoute = ApiPublicWebhooksAsaasRouteImport.update({
+  id: '/api/public/webhooks/asaas',
+  path: '/api/public/webhooks/asaas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicMercadopagoPublicKeyRoute =
   ApiPublicMercadopagoPublicKeyRouteImport.update({
     id: '/api/public/mercadopago/public-key',
@@ -514,6 +520,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
+  '/api/public/webhooks/asaas': typeof ApiPublicWebhooksAsaasRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
   '/admin/planos/': typeof AuthenticatedAdminPlanosIndexRoute
@@ -581,6 +588,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
+  '/api/public/webhooks/asaas': typeof ApiPublicWebhooksAsaasRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
   '/admin/planos': typeof AuthenticatedAdminPlanosIndexRoute
@@ -652,6 +660,7 @@ export interface FileRoutesById {
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
+  '/api/public/webhooks/asaas': typeof ApiPublicWebhooksAsaasRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
   '/_authenticated/admin/planos/': typeof AuthenticatedAdminPlanosIndexRoute
@@ -723,6 +732,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/process-email-queue'
     | '/api/public/mercadopago/public-key'
+    | '/api/public/webhooks/asaas'
     | '/api/public/webhooks/mercadopago'
     | '/suporte/$slug/kb/$article'
     | '/admin/planos/'
@@ -790,6 +800,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/process-email-queue'
     | '/api/public/mercadopago/public-key'
+    | '/api/public/webhooks/asaas'
     | '/api/public/webhooks/mercadopago'
     | '/suporte/$slug/kb/$article'
     | '/admin/planos'
@@ -860,6 +871,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/process-email-queue'
     | '/api/public/mercadopago/public-key'
+    | '/api/public/webhooks/asaas'
     | '/api/public/webhooks/mercadopago'
     | '/suporte/$slug/kb/$article'
     | '/_authenticated/admin/planos/'
@@ -894,6 +906,7 @@ export interface RootRouteChildren {
   ApiPublicHooksMercadopagoRetryRoute: typeof ApiPublicHooksMercadopagoRetryRoute
   ApiPublicHooksProcessEmailQueueRoute: typeof ApiPublicHooksProcessEmailQueueRoute
   ApiPublicMercadopagoPublicKeyRoute: typeof ApiPublicMercadopagoPublicKeyRoute
+  ApiPublicWebhooksAsaasRoute: typeof ApiPublicWebhooksAsaasRoute
   ApiPublicWebhooksMercadopagoRoute: typeof ApiPublicWebhooksMercadopagoRoute
   SuporteSlugKbArticleRoute: typeof SuporteSlugKbArticleRoute
   ApiPublicWalletAppleTokenRoute: typeof ApiPublicWalletAppleTokenRoute
@@ -1314,6 +1327,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksMercadopagoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhooks/asaas': {
+      id: '/api/public/webhooks/asaas'
+      path: '/api/public/webhooks/asaas'
+      fullPath: '/api/public/webhooks/asaas'
+      preLoaderRoute: typeof ApiPublicWebhooksAsaasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/mercadopago/public-key': {
       id: '/api/public/mercadopago/public-key'
       path: '/api/public/mercadopago/public-key'
@@ -1521,6 +1541,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksMercadopagoRetryRoute: ApiPublicHooksMercadopagoRetryRoute,
   ApiPublicHooksProcessEmailQueueRoute: ApiPublicHooksProcessEmailQueueRoute,
   ApiPublicMercadopagoPublicKeyRoute: ApiPublicMercadopagoPublicKeyRoute,
+  ApiPublicWebhooksAsaasRoute: ApiPublicWebhooksAsaasRoute,
   ApiPublicWebhooksMercadopagoRoute: ApiPublicWebhooksMercadopagoRoute,
   SuporteSlugKbArticleRoute: SuporteSlugKbArticleRoute,
   ApiPublicWalletAppleTokenRoute: ApiPublicWalletAppleTokenRoute,
