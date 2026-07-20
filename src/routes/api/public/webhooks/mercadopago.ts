@@ -242,7 +242,7 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
           eventType === "test" ||
           action === "test.created" ||
           (liveMode === false && dataId === "123456") ||
-          (isPanelSimulator && liveMode !== true);
+          isPanelSimulator;
 
         const mode: "test" | "live" | "unknown" = isTest
           ? "test"
