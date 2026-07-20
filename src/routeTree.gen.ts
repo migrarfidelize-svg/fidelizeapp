@@ -68,6 +68,7 @@ import { Route as AuthenticatedAdminPlanosIndexRouteImport } from './routes/_aut
 import { Route as SuporteSlugKbArticleRouteImport } from './routes/suporte.$slug.kb.$article'
 import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api/public/webhooks/mercadopago'
 import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/api/public/hooks/process-email-queue'
+import { Route as ApiPublicHooksMercadopagoRetryRouteImport } from './routes/api/public/hooks/mercadopago-retry'
 import { Route as ApiPublicCronReengagementRouteImport } from './routes/api/public/cron/reengagement'
 import { Route as ApiPublicCronBirthdayRouteImport } from './routes/api/public/cron/birthday'
 import { Route as AuthenticatedSuporteTicketIdRouteImport } from './routes/_authenticated/suporte.ticket.$id'
@@ -395,6 +396,12 @@ const ApiPublicHooksProcessEmailQueueRoute =
     path: '/api/public/hooks/process-email-queue',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksMercadopagoRetryRoute =
+  ApiPublicHooksMercadopagoRetryRouteImport.update({
+    id: '/api/public/hooks/mercadopago-retry',
+    path: '/api/public/hooks/mercadopago-retry',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronReengagementRoute =
   ApiPublicCronReengagementRouteImport.update({
     id: '/api/public/cron/reengagement',
@@ -489,6 +496,7 @@ export interface FileRoutesByFullPath {
   '/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
+  '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
@@ -553,6 +561,7 @@ export interface FileRoutesByTo {
   '/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
+  '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
@@ -621,6 +630,7 @@ export interface FileRoutesById {
   '/_authenticated/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
+  '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
@@ -689,6 +699,7 @@ export interface FileRouteTypes {
     | '/suporte/ticket/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
+    | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/process-email-queue'
     | '/api/public/webhooks/mercadopago'
     | '/suporte/$slug/kb/$article'
@@ -753,6 +764,7 @@ export interface FileRouteTypes {
     | '/suporte/ticket/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
+    | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/process-email-queue'
     | '/api/public/webhooks/mercadopago'
     | '/suporte/$slug/kb/$article'
@@ -820,6 +832,7 @@ export interface FileRouteTypes {
     | '/_authenticated/suporte/ticket/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
+    | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/process-email-queue'
     | '/api/public/webhooks/mercadopago'
     | '/suporte/$slug/kb/$article'
@@ -852,6 +865,7 @@ export interface RootRouteChildren {
   SuporteSlugIndexRoute: typeof SuporteSlugIndexRoute
   ApiPublicCronBirthdayRoute: typeof ApiPublicCronBirthdayRoute
   ApiPublicCronReengagementRoute: typeof ApiPublicCronReengagementRoute
+  ApiPublicHooksMercadopagoRetryRoute: typeof ApiPublicHooksMercadopagoRetryRoute
   ApiPublicHooksProcessEmailQueueRoute: typeof ApiPublicHooksProcessEmailQueueRoute
   ApiPublicWebhooksMercadopagoRoute: typeof ApiPublicWebhooksMercadopagoRoute
   SuporteSlugKbArticleRoute: typeof SuporteSlugKbArticleRoute
@@ -1273,6 +1287,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessEmailQueueRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/mercadopago-retry': {
+      id: '/api/public/hooks/mercadopago-retry'
+      path: '/api/public/hooks/mercadopago-retry'
+      fullPath: '/api/public/hooks/mercadopago-retry'
+      preLoaderRoute: typeof ApiPublicHooksMercadopagoRetryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/reengagement': {
       id: '/api/public/cron/reengagement'
       path: '/api/public/cron/reengagement'
@@ -1454,6 +1475,7 @@ const rootRouteChildren: RootRouteChildren = {
   SuporteSlugIndexRoute: SuporteSlugIndexRoute,
   ApiPublicCronBirthdayRoute: ApiPublicCronBirthdayRoute,
   ApiPublicCronReengagementRoute: ApiPublicCronReengagementRoute,
+  ApiPublicHooksMercadopagoRetryRoute: ApiPublicHooksMercadopagoRetryRoute,
   ApiPublicHooksProcessEmailQueueRoute: ApiPublicHooksProcessEmailQueueRoute,
   ApiPublicWebhooksMercadopagoRoute: ApiPublicWebhooksMercadopagoRoute,
   SuporteSlugKbArticleRoute: SuporteSlugKbArticleRoute,

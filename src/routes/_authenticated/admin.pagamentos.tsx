@@ -9,6 +9,8 @@ import {
   adminGetWebhookGuide,
   adminListWebhookLogs,
   adminValidateWebhookUrl,
+  adminGetWebhookHealth,
+  adminRetryWebhookQueue,
 } from "@/lib/mercadopago.functions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,7 +22,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Copy, Loader2, CheckCircle2, XCircle, AlertCircle, ExternalLink, RefreshCw, ShieldCheck, Radio } from "lucide-react";
+import { Copy, Loader2, CheckCircle2, XCircle, AlertCircle, ExternalLink, RefreshCw, ShieldCheck, Radio, Activity, RotateCw } from "lucide-react";
 import { toast } from "sonner";
 
 
@@ -136,9 +138,12 @@ function AdminPaymentsPage() {
         </CardContent>
       </Card>
 
+      <WebhookHealthCard />
+
       <RecommendedEventsCard />
 
       <WebhookLogsCard />
+
 
 
       <Card>
@@ -335,33 +340,51 @@ function WebhookLogsCard() {
               <TableRow>
                 <TableHead>Recebido</TableHead>
                 <TableHead>Evento</TableHead>
+                <TableHead>Modo</TableHead>
                 <TableHead>MP ID</TableHead>
                 <TableHead>Assinatura</TableHead>
-                <TableHead>Processado</TableHead>
-                <TableHead>Erro</TableHead>
+                <TableHead>HTTP</TableHead>
+                <TableHead>Motivo</TableHead>
+                <TableHead>Retries</TableHead>
                 <TableHead className="text-right">Payload</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rows.map((r: any) => {
-                const status = r.error ? 500 : (r.processed ? 200 : 202);
+                const status = r.response_status ?? (r.error ? 500 : (r.processed ? 200 : 202));
+                const mode = r.mode ?? (r.live_mode === true ? "live" : r.live_mode === false ? "test" : "—");
                 return (
                   <TableRow key={r.id}>
-                    <TableCell className="text-xs">{new Date(r.created_at).toLocaleString("pt-BR")}</TableCell>
+                    <TableCell className="text-xs whitespace-nowrap">{new Date(r.created_at).toLocaleString("pt-BR")}</TableCell>
                     <TableCell className="text-xs">
                       <div className="font-medium">{r.event_type}</div>
                       {r.action && <div className="text-muted-foreground">{r.action}</div>}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={mode === "live" ? "bg-primary/15 text-primary" : mode === "test" ? "bg-amber-500/15 text-amber-700 dark:text-amber-400" : ""}>
+                        {mode}
+                      </Badge>
                     </TableCell>
                     <TableCell className="font-mono text-xs">{r.mp_id ?? "—"}</TableCell>
                     <TableCell>
                       {r.signature_valid
                         ? <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" variant="outline">Válida</Badge>
-                        : <Badge className="bg-destructive/15 text-destructive" variant="outline">Inválida</Badge>}
+                        : <Badge className="bg-destructive/15 text-destructive" variant="outline">{mode === "test" ? "N/A" : "Inválida"}</Badge>}
                     </TableCell>
                     <TableCell>
                       <Badge className={statusColor(status)} variant="outline">{status}</Badge>
                     </TableCell>
-                    <TableCell className="text-xs text-destructive max-w-[200px] truncate">{r.error ?? "—"}</TableCell>
+                    <TableCell className="text-xs max-w-[240px] truncate" title={r.reason ?? r.error ?? ""}>
+                      {r.error
+                        ? <span className="text-destructive">{r.reason ?? r.error}</span>
+                        : <span className="text-muted-foreground">{r.reason ?? "—"}</span>}
+                    </TableCell>
+                    <TableCell className="text-xs whitespace-nowrap">
+                      {r.retry_count > 0 ? `${r.retry_count}×` : "—"}
+                      {r.next_retry_at && !r.processed && (
+                        <div className="text-muted-foreground text-[10px]">→ {new Date(r.next_retry_at).toLocaleString("pt-BR")}</div>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">
                       <Button size="sm" variant="ghost" onClick={() => setSelected(r)}>Ver</Button>
                     </TableCell>
@@ -369,6 +392,7 @@ function WebhookLogsCard() {
                 );
               })}
             </TableBody>
+
           </Table>
         )}
         {total > 25 && (
@@ -393,10 +417,14 @@ function WebhookLogsCard() {
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div><strong>MP ID:</strong> <span className="font-mono">{selected.mp_id ?? "—"}</span></div>
                 <div><strong>Ação:</strong> {selected.action ?? "—"}</div>
-                <div><strong>Live mode:</strong> {String(selected.live_mode)}</div>
+                <div><strong>Modo:</strong> {selected.mode ?? "—"} (live_mode={String(selected.live_mode)})</div>
                 <div><strong>Assinatura válida:</strong> {String(selected.signature_valid)}</div>
+                <div><strong>HTTP resposta:</strong> {selected.response_status ?? "—"}</div>
                 <div><strong>Processado:</strong> {String(selected.processed)}</div>
-                <div><strong>Erro:</strong> {selected.error ?? "—"}</div>
+                <div><strong>Retries:</strong> {selected.retry_count ?? 0}</div>
+                <div><strong>Próximo retry:</strong> {selected.next_retry_at ? new Date(selected.next_retry_at).toLocaleString("pt-BR") : "—"}</div>
+                <div className="col-span-2"><strong>Motivo:</strong> <span className="text-muted-foreground">{selected.reason ?? "—"}</span></div>
+                <div className="col-span-2"><strong>Erro:</strong> <span className="text-destructive">{selected.error ?? "—"}</span></div>
               </div>
               <div>
                 <div className="text-xs font-medium mb-1">Headers</div>
@@ -417,3 +445,104 @@ function WebhookLogsCard() {
     </Card>
   );
 }
+
+function WebhookHealthCard() {
+  const healthFn = useServerFn(adminGetWebhookHealth);
+  const retryFn = useServerFn(adminRetryWebhookQueue);
+  const { data, refetch, isFetching } = useQuery({
+    queryKey: ["mp-webhook-health"],
+    queryFn: () => healthFn(),
+    refetchInterval: 30_000,
+  });
+  const [retrying, setRetrying] = useState(false);
+
+  async function runRetry() {
+    setRetrying(true);
+    try {
+      const r: any = await retryFn();
+      toast.success(`Reprocessamento: ${r.recovered}/${r.picked} recuperados, ${r.failed} falharam.`);
+      refetch();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao reprocessar");
+    } finally { setRetrying(false); }
+  }
+
+  const h: any = data ?? {};
+  const ready: boolean = !!h.ready;
+  const pending: number = h.pending_retries ?? 0;
+
+  const StatusPill = ({ ok, label }: { ok: boolean; label: string }) => (
+    <div className="flex items-center gap-2 text-sm">
+      {ok ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <XCircle className="h-4 w-4 text-destructive" />}
+      <span className={ok ? "" : "text-destructive"}>{label}</span>
+    </div>
+  );
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2"><Activity className="h-4 w-4" />Status do webhook</CardTitle>
+            <CardDescription>Diagnóstico em tempo real do endpoint do Mercado Pago.</CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => refetch()} disabled={isFetching}>
+              <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+            </Button>
+            <Button size="sm" onClick={runRetry} disabled={retrying || pending === 0}>
+              {retrying ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RotateCw className="mr-2 h-4 w-4" />}
+              Reprocessar fila ({pending})
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2 rounded-lg border p-3">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Configuração</div>
+          <StatusPill ok={!!h.has_access_token} label="Access Token configurado" />
+          <StatusPill ok={!!h.has_webhook_secret} label="Webhook Secret configurado (assinatura HMAC live)" />
+          <StatusPill ok={!!h.https} label="URL pública HTTPS" />
+          <div className="pt-2 border-t">
+            <Badge variant="outline" className={ready ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" : "bg-amber-500/15 text-amber-700 dark:text-amber-400"}>
+              {ready ? "Pronto para produção" : "Configuração incompleta"}
+            </Badge>
+          </div>
+        </div>
+        <div className="space-y-3 rounded-lg border p-3">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Últimas entregas</div>
+          <div>
+            <div className="text-xs text-muted-foreground">Último teste (painel MP)</div>
+            {h.last_test ? (
+              <div className="text-sm">
+                <Badge variant="outline" className={h.last_test.processed ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" : "bg-destructive/15 text-destructive"}>
+                  {h.last_test.processed ? "Aprovado" : "Falhou"}
+                </Badge>
+                <span className="ml-2 text-xs text-muted-foreground">{new Date(h.last_test.created_at).toLocaleString("pt-BR")}</span>
+              </div>
+            ) : <div className="text-xs text-muted-foreground">Nenhum teste recebido ainda. Clique em "Testar" no painel do Mercado Pago.</div>}
+          </div>
+          <div>
+            <div className="text-xs text-muted-foreground">Último evento live</div>
+            {h.last_live ? (
+              <div className="text-sm">
+                <Badge variant="outline" className={h.last_live.processed ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" : "bg-destructive/15 text-destructive"}>
+                  {h.last_live.event_type} — HTTP {h.last_live.response_status ?? "—"}
+                </Badge>
+                <span className="ml-2 text-xs text-muted-foreground">{new Date(h.last_live.created_at).toLocaleString("pt-BR")}</span>
+              </div>
+            ) : <div className="text-xs text-muted-foreground">Nenhum evento de produção recebido ainda.</div>}
+          </div>
+          {h.last_failure && (
+            <div className="pt-2 border-t">
+              <div className="text-xs text-muted-foreground">Última falha</div>
+              <div className="text-xs text-destructive truncate" title={h.last_failure.error}>{h.last_failure.reason ?? h.last_failure.error}</div>
+              <div className="text-[10px] text-muted-foreground">{new Date(h.last_failure.created_at).toLocaleString("pt-BR")}</div>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
