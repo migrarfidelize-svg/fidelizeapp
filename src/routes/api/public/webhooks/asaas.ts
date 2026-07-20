@@ -17,7 +17,11 @@ async function fetchAsaasPayment(paymentId: string) {
   const { requireAsaasAccessToken } = await import("@/lib/asaas-credentials.server");
   const { token, base } = await requireAsaasAccessToken();
   const res = await fetch(`${base}/payments/${paymentId}`, {
-    headers: { access_token: token, accept: "application/json" },
+    headers: {
+      access_token: token,
+      accept: "application/json",
+      "User-Agent": "Fidelize/1.0 (+asaas-webhook)",
+    },
   });
   const text = await res.text();
   if (!res.ok) throw new Error(`Asaas GET /payments/${paymentId} ${res.status}: ${text}`);
