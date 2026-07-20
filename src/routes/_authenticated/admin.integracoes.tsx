@@ -205,12 +205,26 @@ function ProviderCard({ meta, row, onChanged }: { meta: CatalogMeta; row?: Integ
     finally { setTesting(false); }
   }
 
+  const accent = providerAccent(meta.id);
   return (
-    <Card className="flex flex-col">
+    <Card
+      className="group relative flex flex-col overflow-hidden border-border/60 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl"
+      style={{ ["--accent" as any]: accent }}
+    >
+      <span
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-[3px] opacity-80"
+        style={{ background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }}
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -top-16 -right-16 h-40 w-40 rounded-full blur-3xl opacity-0 transition-opacity duration-500 group-hover:opacity-40"
+        style={{ background: accent }}
+      />
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="h-10 w-10 rounded-xl bg-muted grid place-items-center text-xl">{meta.icon ?? "🔌"}</div>
+            <ProviderBrand providerId={meta.id} />
             <div className="min-w-0">
               <CardTitle className="text-base truncate">{meta.label}</CardTitle>
               <p className="text-xs text-muted-foreground line-clamp-2">{meta.description}</p>
