@@ -114,6 +114,7 @@ export const createPixPayment = createServerFn({ method: "POST" })
 
     const idempotencyKey = crypto.randomUUID();
     const payerEmail = data.payer_email ?? claims?.email ?? `pagador+${data.establishment_id}@fidelize.app`;
+    await assertPayerNotAccountHolder(payerEmail);
     const expiresAt = new Date(Date.now() + 30 * 60_000).toISOString();
 
     const mp = await mpFetch("/v1/payments", {
