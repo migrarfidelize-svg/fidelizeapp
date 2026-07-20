@@ -244,10 +244,22 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
           },
         };
 
+        // Handshake/teste do painel do Mercado Pago: aceita sem assinatura.
+        const isTest =
+          eventType === "test" ||
+          action === "test.created" ||
+          body?.live_mode === false && dataId === "123456";
+
         // Se secret está configurado e assinatura inválida, rejeita (produção).
-        if (secret && !signatureValid) {
+        // Exceção: payload de teste do painel MP (não vem assinado).
+        if (secret && !signatureValid && !isTest) {
           await logWebhook({ ...logRow, error: "invalid_signature" });
           return new Response("invalid signature", { status: 401 });
+        }
+
+        if (isTest) {
+          await logWebhook({ ...logRow, processed: true, error: null });
+          return new Response("test ok", { status: 200 });
         }
 
         try {
