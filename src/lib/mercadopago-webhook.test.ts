@@ -121,3 +121,151 @@ describe("mapMpMethod", () => {
     expect(mapMpMethod(undefined)).toBe("pix");
   });
 });
+
+describe("classifyMercadoPagoRequest — detecção do simulador vs evento real", () => {
+  const REAL_UA = "MercadoPago WebHook v1.0 (Java/17)";
+  const SIM_UA = "restclient-node/0.1.0";
+
+  it("live_mode:true vindo do simulador do painel (UA restclient-node) → mode=test, regra=panel_simulator_ua", () => {
+    const c = classifyMercadoPagoRequest({
+      eventType: "payment",
+      action: "payment.updated",
+      liveMode: true,
+      dataId: "1234567890",
+      userAgent: SIM_UA,
+    });
+    expect(c.mode).toBe("test");
+    expect(c.isTest).toBe(true);
+    expect(c.detection).toBe("panel_simulator_ua");
+    expect(c.reason).toMatch(/restclient-node/i);
+  });
+
+  it("live_mode:true vindo de evento real (UA MercadoPago) → mode=live, regra=live_mode_true", () => {
+    const c = classifyMercadoPagoRequest({
+      eventType: "payment",
+      action: "payment.created",
+      liveMode: true,
+      dataId: "9876543210",
+      userAgent: REAL_UA,
+    });
+    expect(c.mode).toBe("live");
+    expect(c.isTest).toBe(false);
+    expect(c.detection).toBe("live_mode_true");
+  });
+
+  it('body com type:"test" tem precedência sobre live_mode:true', () => {
+    const c = classifyMercadoPagoRequest({
+      eventType: "test",
+      action: null,
+      liveMode: true,
+      dataId: "1",
+      userAgent: REAL_UA,
+    });
+    expect(c.mode).toBe("test");
+    expect(c.detection).toBe("explicit_type_test");
+  });
+
+  it('action:"test.created" é reconhecido como handshake', () => {
+    const c = classifyMercadoPagoRequest({
+      eventType: "payment",
+      action: "test.created",
+      liveMode: null,
+      dataId: null,
+      userAgent: null,
+    });
+    expect(c.detection).toBe("explicit_action_test");
+    expect(c.isTest).toBe(true);
+  });
+
+  it('payload dummy do sandbox (live_mode:false + data.id:"123456") é teste', () => {
+    const c = classifyMercadoPagoRequest({
+      eventType: "payment",
+      action: null,
+      liveMode: false,
+      dataId: "123456",
+      userAgent: REAL_UA,
+    });
+    expect(c.detection).toBe("sandbox_dummy_id");
+  });
+
+  it("sem live_mode, sem UA, sem type:test → unknown", () => {
+    const c = classifyMercadoPagoRequest({
+      eventType: "payment",
+      action: null,
+      liveMode: null,
+      dataId: "1",
+      userAgent: null,
+    });
+    expect(c.mode).toBe("unknown");
+    expect(c.detection).toBe("no_signal");
+  });
+});
+
+describe("cenários end-to-end do handler MP: HMAC obrigatória apenas em live real", () => {
+  const SECRET = "test_webhook_secret_123";
+  const REAL_UA = "MercadoPago WebHook v1.0 (Java/17)";
+  const SIM_UA = "restclient-node/0.1.0";
+
+  it("simulador do painel (live_mode:true, sem HMAC) é aceito sem assinatura", () => {
+    const dataId = "1234567890";
+    const c = classifyMercadoPagoRequest({
+      eventType: "payment", action: "payment.updated", liveMode: true, dataId, userAgent: SIM_UA,
+    });
+    const signatureValid = verifyMercadoPagoSignature({
+      signatureHeader: null, requestId: null, dataId, secret: SECRET,
+    });
+    // Handler: só bloqueia quando mode === "live" && !signatureValid
+    const shouldReject = c.mode === "live" && !signatureValid;
+    expect(shouldReject).toBe(false);
+    expect(c.isTest).toBe(true);
+  });
+
+  it("evento live real com HMAC válido é aceito e processado", () => {
+    const dataId = "9876543210";
+    const requestId = "req-real-1";
+    const ts = String(Date.now());
+    const manifest = `id:${dataId.toLowerCase()};request-id:${requestId};ts:${ts};`;
+    const v1 = createHmac("sha256", SECRET).update(manifest).digest("hex");
+    const signatureHeader = `ts=${ts},v1=${v1}`;
+
+    const c = classifyMercadoPagoRequest({
+      eventType: "payment", action: "payment.created", liveMode: true, dataId, userAgent: REAL_UA,
+    });
+    const signatureValid = verifyMercadoPagoSignature({ signatureHeader, requestId, dataId, secret: SECRET });
+
+    expect(c.mode).toBe("live");
+    expect(signatureValid).toBe(true);
+    const shouldReject = c.mode === "live" && !signatureValid;
+    expect(shouldReject).toBe(false);
+  });
+
+  it("evento live real SEM HMAC é rejeitado com 401", () => {
+    const dataId = "9876543210";
+    const c = classifyMercadoPagoRequest({
+      eventType: "payment", action: "payment.created", liveMode: true, dataId, userAgent: REAL_UA,
+    });
+    const signatureValid = verifyMercadoPagoSignature({
+      signatureHeader: null, requestId: null, dataId, secret: SECRET,
+    });
+    expect(c.mode).toBe("live");
+    expect(signatureValid).toBe(false);
+    expect(c.mode === "live" && !signatureValid).toBe(true); // handler retornaria 401
+  });
+
+  it("evento live real com HMAC inválida (secret errado) é rejeitado", () => {
+    const dataId = "9876543210";
+    const requestId = "req-real-2";
+    const ts = String(Date.now());
+    const manifest = `id:${dataId};request-id:${requestId};ts:${ts};`;
+    const v1 = createHmac("sha256", "outro_secret_qualquer").update(manifest).digest("hex");
+
+    const c = classifyMercadoPagoRequest({
+      eventType: "payment", action: "payment.created", liveMode: true, dataId, userAgent: REAL_UA,
+    });
+    const signatureValid = verifyMercadoPagoSignature({
+      signatureHeader: `ts=${ts},v1=${v1}`, requestId, dataId, secret: SECRET,
+    });
+    expect(c.mode).toBe("live");
+    expect(signatureValid).toBe(false);
+  });
+});
