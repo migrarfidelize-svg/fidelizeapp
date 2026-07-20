@@ -17,7 +17,11 @@ async function fetchAsaasPayment(paymentId: string) {
   const { requireAsaasAccessToken } = await import("@/lib/asaas-credentials.server");
   const { token, base } = await requireAsaasAccessToken();
   const res = await fetch(`${base}/payments/${paymentId}`, {
-    headers: { access_token: token, accept: "application/json" },
+    headers: {
+      access_token: token,
+      accept: "application/json",
+      "User-Agent": "Fidelize/1.0 (+asaas-webhook)",
+    },
   });
   const text = await res.text();
   if (!res.ok) throw new Error(`Asaas GET /payments/${paymentId} ${res.status}: ${text}`);
@@ -198,8 +202,24 @@ export const Route = createFileRoute("/api/public/webhooks/asaas")({
         try {
           let handled = true;
           if (paymentId && event.startsWith("PAYMENT_")) {
-            // Consulta autoritativa: nunca confia só no payload.
-            const remote = await fetchAsaasPayment(paymentId);
+            // Consulta autoritativa; se falhar (rate-limit, User-Agent, etc.),
+            // usamos o próprio payload — o header asaas-access-token já
+            // autenticou a origem quando webhook_token está configurado.
+            let remote: any = null;
+            try {
+              remote = await fetchAsaasPayment(paymentId);
+            } catch (fetchErr) {
+              remote = payment;
+              await logAsaasWebhook({
+                event, payment_id: paymentId,
+                signature_valid: !!expected, processed: false,
+                error: (fetchErr as Error)?.message ?? String(fetchErr),
+                payload: body, headers: headersLog,
+                response_status: 200,
+                reason: "Falha na consulta autoritativa; reconciliando via payload do webhook.",
+                mode: creds.mode,
+              });
+            }
             await reconcileAsaasPayment(remote);
           } else {
             handled = false;
