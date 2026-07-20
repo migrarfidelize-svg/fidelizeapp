@@ -213,10 +213,12 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
         try { body = rawBody ? JSON.parse(rawBody) : {}; } catch { body = {}; }
 
         const eventType: string = body.type ?? body.topic ?? url.searchParams.get("type") ?? url.searchParams.get("topic") ?? "unknown";
+        // Per docs do MP, o `data.id` para o manifest de assinatura vem da query string.
+        // Body é usado como fallback quando a query não trouxer o id.
         const dataId: string | null =
-          body?.data?.id?.toString() ??
           url.searchParams.get("data.id") ??
           url.searchParams.get("id") ??
+          body?.data?.id?.toString() ??
           null;
         const action: string | null = body?.action ?? null;
 
