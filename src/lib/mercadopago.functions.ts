@@ -5,17 +5,6 @@ import { getPublicAppUrl } from "@/lib/app-url";
 
 const MP_API = "https://api.mercadopago.com";
 
-function getAccessToken(): string {
-  const t = process.env.MERCADOPAGO_ACCESS_TOKEN;
-  if (!t) throw new Error("MERCADOPAGO_ACCESS_TOKEN não configurado. Peça ao Super Administrador para configurar a integração.");
-  return t;
-}
-
-function getPublicKey(): string | null {
-  const key = process.env.MERCADOPAGO_PUBLIC_KEY?.trim();
-  return key || null;
-}
-
 function inferMercadoPagoTestAccount(account: any): boolean {
   const nickname = String(account?.nickname ?? "");
   const email = String(account?.email ?? "");
@@ -30,11 +19,12 @@ function looksLikeMercadoPagoTestEmail(email: string | null | undefined): boolea
 function formatMpCredentialMismatchMessage(details: { configuredEnvironment?: string | null; accountNickname?: string | null }) {
   const nickname = details.accountNickname ? ` (${details.accountNickname})` : "";
   const environment = details.configuredEnvironment === "sandbox" ? "Sandbox/Teste" : "Produção";
-  return `Configuração Mercado Pago incompatível: o Access Token atual pertence a um usuário de teste${nickname}, mas o painel está em ${environment}. Para receber pagamentos reais, atualize o secret MERCADOPAGO_ACCESS_TOKEN com o Access Token de produção da conta real. Para simular pagamentos, mude o ambiente para Sandbox/Teste em /admin/pagamentos e use um comprador de teste do Mercado Pago.`;
+  return `Configuração Mercado Pago incompatível: o Access Token cadastrado em /admin/integracoes pertence a um usuário de teste${nickname}, mas o painel está em ${environment}. Para receber pagamentos reais, atualize o Access Token em /admin/integracoes → Pagamentos → Mercado Pago (aba Credenciais) com um token de produção da conta real. Para simular, mude o ambiente para Sandbox/Teste e use um comprador de teste do Mercado Pago.`;
 }
 
 async function mpFetch(path: string, init: RequestInit & { idempotencyKey?: string } = {}) {
-  const token = getAccessToken();
+  const { requireMercadoPagoAccessToken } = await import("./mercadopago-credentials.server");
+  const token = await requireMercadoPagoAccessToken();
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
@@ -48,10 +38,9 @@ async function mpFetch(path: string, init: RequestInit & { idempotencyKey?: stri
   if (!res.ok) {
     const rawMsg = body?.message ?? body?.error ?? text ?? `MP ${res.status}`;
     const msgStr = typeof rawMsg === "string" ? rawMsg : JSON.stringify(rawMsg);
-    // Detecta erro clássico: credenciais/comprador de ambientes diferentes ou autopagamento em live.
     if (res.status === 401 && /unauthorized use of live credentials/i.test(msgStr)) {
       throw new Error(
-        "Mercado Pago recusou o pagamento: as credenciais e o comprador parecem estar em ambientes diferentes, ou o pagador é o próprio titular da conta que recebe. Se a conexão em /admin/pagamentos mostrar TESTUSER, troque para um Access Token de produção de uma conta real ou use Sandbox/Teste com comprador de teste. Em produção, use e-mail/CPF/CNPJ reais e diferentes da conta recebedora."
+        "Mercado Pago recusou o pagamento: as credenciais e o comprador parecem estar em ambientes diferentes, ou o pagador é o próprio titular da conta que recebe. Se a conexão em /admin/integracoes mostrar TESTUSER, troque o Access Token para um de produção de uma conta real. Em produção, use e-mail/CPF/CNPJ reais e diferentes da conta recebedora.",
       );
     }
     throw new Error(`Mercado Pago (${res.status}): ${msgStr}`);
