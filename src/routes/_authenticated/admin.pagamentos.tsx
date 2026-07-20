@@ -83,15 +83,59 @@ function AdminPaymentsPage() {
   const webhookUrl = (data as any)?.webhook_url ?? "";
   const storedWebhookUrl: string | null = (data as any)?.stored_webhook_url ?? null;
   const webhookStale: boolean = !!(data as any)?.webhook_url_stale;
+  const settingsUpdatedAt: string | null = (data as any)?.settings_updated_at ?? null;
+  const lastDivergenceAt: string | null = (data as any)?.last_divergence_at ?? null;
   const settings = (data as any)?.settings ?? {};
 
+  const syncFn = useServerFn(adminSyncWebhookUrl);
+  const probeFn = useServerFn(adminSendWebhookTestEvent);
+  const [syncing, setSyncing] = useState(false);
+  const [probing, setProbing] = useState(false);
+  const [probeResult, setProbeResult] = useState<any>(null);
+
+  // Toast one-shot por par (stored,canonical) — evita spam a cada refetch
+  const notifiedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!webhookStale) { notifiedRef.current = null; return; }
+    const key = `${storedWebhookUrl}→${webhookUrl}`;
+    if (notifiedRef.current === key) return;
+    notifiedRef.current = key;
+    toast.warning("Webhook do Mercado Pago desatualizado", {
+      description: "A URL salva diverge da canônica atual. Atualize no painel do Mercado Pago.",
+      action: {
+        label: "Abrir painel MP",
+        onClick: () => window.open("https://www.mercadopago.com.br/developers/panel/app", "_blank", "noopener,noreferrer"),
+      },
+      duration: 10_000,
+    });
+  }, [webhookStale, storedWebhookUrl, webhookUrl]);
+
   async function reconcileStoredUrl() {
+    setSyncing(true);
     try {
-      await saveFn({ data: { environment, public_key: publicKey || null } });
-      toast.success("URL sincronizada com a canônica.");
+      const r: any = await syncFn();
+      toast.success(`URL sincronizada: ${r.to}`);
       refetch();
     } catch (e: any) { toast.error(e?.message ?? "Falha ao sincronizar"); }
+    finally { setSyncing(false); }
   }
+
+  async function runProbe() {
+    setProbing(true);
+    setProbeResult(null);
+    try {
+      const r: any = await probeFn();
+      setProbeResult(r);
+      if (r.ok) toast.success(r.message);
+      else toast.error(r.message);
+      refetch();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao enviar evento de teste");
+    } finally { setProbing(false); }
+  }
+
+  const fmt = (iso: string | null | undefined) =>
+    iso ? new Date(iso).toLocaleString("pt-BR") : "—";
 
   return (
     <div className="space-y-6">
@@ -104,7 +148,7 @@ function AdminPaymentsPage() {
         <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-4">
           <div className="flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
-            <div className="flex-1 space-y-2 min-w-0">
+            <div className="flex-1 space-y-3 min-w-0">
               <div>
                 <div className="font-medium text-amber-900 dark:text-amber-100">URL do webhook desatualizada</div>
                 <p className="text-sm text-amber-900/80 dark:text-amber-100/80">
@@ -113,24 +157,52 @@ function AdminPaymentsPage() {
               </div>
               <div className="grid gap-1 text-xs font-mono">
                 <div className="flex items-center gap-2 min-w-0">
-                  <Badge variant="outline" className="bg-destructive/15 text-destructive shrink-0">Antiga</Badge>
+                  <Badge variant="outline" className="bg-destructive/15 text-destructive shrink-0">Salva</Badge>
                   <span className="truncate" title={storedWebhookUrl ?? ""}>{storedWebhookUrl ?? "—"}</span>
                 </div>
                 <div className="flex items-center gap-2 min-w-0">
-                  <Badge variant="outline" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 shrink-0">Nova</Badge>
+                  <Badge variant="outline" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 shrink-0">Canônica</Badge>
                   <span className="truncate" title={webhookUrl}>{webhookUrl}</span>
                 </div>
               </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] text-amber-900/80 dark:text-amber-100/80">
+                <div><span className="opacity-70">Última atualização salva:</span><br /><span className="font-mono">{fmt(settingsUpdatedAt)}</span></div>
+                <div><span className="opacity-70">Divergência detectada:</span><br /><span className="font-mono">{fmt(lastDivergenceAt)}</span></div>
+                <div><span className="opacity-70">Última verificação:</span><br /><span className="font-mono">{fmt(probeResult?.checked_at ?? null)}</span></div>
+              </div>
+              {probeResult && (
+                <div className={`rounded-lg border p-2 text-xs ${probeResult.ok ? "border-emerald-500/40 bg-emerald-500/10" : "border-destructive/40 bg-destructive/10"}`}>
+                  <div className="flex items-center gap-2">
+                    {probeResult.ok ? <CheckCircle2 className="h-4 w-4 text-emerald-600" /> : <XCircle className="h-4 w-4 text-destructive" />}
+                    <span className="font-medium">
+                      {probeResult.ok ? "Endpoint recebeu evento de teste" : "Evento de teste não confirmado"}
+                    </span>
+                  </div>
+                  <div className="mt-1 opacity-80">
+                    HTTP {probeResult.status ?? "—"} · {probeResult.latency_ms}ms · log {probeResult.log_matched ? "✓ registrado" : "✗ não encontrado"}
+                  </div>
+                  <div className="mt-1">{probeResult.message}</div>
+                </div>
+              )}
               <div className="flex flex-wrap gap-2 pt-1">
-                <Button size="sm" onClick={() => { navigator.clipboard.writeText(webhookUrl); toast.success("URL nova copiada!"); }}>
-                  <Copy className="mr-2 h-4 w-4" />Copiar URL nova
+                <Button size="sm" onClick={() => { navigator.clipboard.writeText(webhookUrl); toast.success("URL canônica copiada!"); }}>
+                  <Copy className="mr-2 h-4 w-4" />Copiar URL canônica
                 </Button>
-                <Button size="sm" variant="outline" onClick={reconcileStoredUrl}>
-                  <RefreshCw className="mr-2 h-4 w-4" />Sincronizar valor salvo
+                <Button size="sm" variant="outline" onClick={reconcileStoredUrl} disabled={syncing}>
+                  {syncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                  Sincronizar valor salvo
+                </Button>
+                <Button size="sm" variant="outline" onClick={runProbe} disabled={probing}>
+                  {probing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                  Testar entrega real
                 </Button>
                 <Button size="sm" variant="ghost" asChild>
-                  <a href="https://www.mercadopago.com.br/developers/panel/app" target="_blank" rel="noreferrer">
-                    <ExternalLink className="mr-2 h-4 w-4" />Abrir painel Mercado Pago
+                  <a
+                    href={`https://www.mercadopago.com.br/developers/panel/app?webhook_url=${encodeURIComponent(webhookUrl)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <ExternalLink className="mr-2 h-4 w-4" />Atualizar no Mercado Pago
                   </a>
                 </Button>
               </div>
