@@ -80,10 +80,20 @@ export const adminGetOverview = createServerFn({ method: "GET" })
       series.push({ day: d.slice(5), carimbos: map.get(d) ?? 0 });
     }
 
-    // Plans catalog for MRR estimate
+    // Real MRR: sum of price_monthly for establishments with an active paid subscription
     const { data: plans } = await supabase.from("plans").select("tier, price_monthly");
     const priceMap = new Map<string, number>((plans ?? []).map((p: any) => [p.tier, Number(p.price_monthly)]));
-    const mrr = Object.entries(planCounts).reduce((sum, [tier, count]) => sum + (priceMap.get(tier) ?? 0) * count, 0);
+    const { data: activeSubs } = await supabase
+      .from("subscriptions")
+      .select("establishment_id, tier")
+      .eq("status", "active");
+    const seen = new Set<string>();
+    let mrr = 0;
+    (activeSubs ?? []).forEach((s: any) => {
+      if (seen.has(s.establishment_id)) return;
+      seen.add(s.establishment_id);
+      mrr += priceMap.get(s.tier) ?? 0;
+    });
 
     return {
       estTotal: estTotal ?? 0,
