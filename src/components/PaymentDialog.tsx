@@ -204,6 +204,8 @@ function CardForm({ plan, establishmentId, payerEmailDefault, onDone }: { plan: 
 
   const [sdkReady, setSdkReady] = useState(false);
   const [publicKey, setPublicKey] = useState<string | null>(null);
+  const [publicKeyLoading, setPublicKeyLoading] = useState(false);
+  const [publicKeyError, setPublicKeyError] = useState<string | null>(null);
   const [mpInstance, setMpInstance] = useState<any>(null);
   const [number, setNumber] = useState("");
   const [name, setName] = useState("");
@@ -218,23 +220,48 @@ function CardForm({ plan, establishmentId, payerEmailDefault, onDone }: { plan: 
   const [statusDetail, setStatusDetail] = useState<string | null>(null);
   const [paymentId, setPaymentId] = useState<string | null>(null);
 
-  useEffect(() => {
-    (async () => {
-      const r: any = await publicKeyFn();
-      if (!r.public_key) return;
-      setPublicKey(r.public_key);
+  async function loadPublicKey() {
+    setPublicKeyLoading(true);
+    setPublicKeyError(null);
+    try {
+      let r: any = null;
+      try {
+        const res = await fetch("/api/public/mercadopago/public-key", { cache: "no-store" });
+        if (res.ok) r = await res.json();
+      } catch {
+        // Fallback abaixo via server function.
+      }
+      if (!r?.public_key) r = await publicKeyFn();
+      const key = typeof r?.public_key === "string" ? r.public_key.trim() : "";
+      if (!key) {
+        setPublicKey(null);
+        setPublicKeyError("Public Key ainda não foi encontrada no backend.");
+        return;
+      }
+      setPublicKey(key);
       if (!document.getElementById("mp-sdk-v2")) {
         const s = document.createElement("script");
         s.id = "mp-sdk-v2";
         s.src = "https://sdk.mercadopago.com/js/v2";
         s.async = true;
         s.onload = () => setSdkReady(true);
+        s.onerror = () => setPublicKeyError("Não foi possível carregar o SDK do Mercado Pago.");
         document.head.appendChild(s);
       } else {
         setSdkReady(true);
       }
-    })();
-  }, [publicKeyFn]);
+    } catch (e: any) {
+      setPublicKey(null);
+      setPublicKeyError(e?.message ?? "Falha ao buscar a Public Key do Mercado Pago.");
+    } finally {
+      setPublicKeyLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadPublicKey();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (sdkReady && publicKey && window.MercadoPago) {
@@ -258,7 +285,7 @@ function CardForm({ plan, establishmentId, payerEmailDefault, onDone }: { plan: 
   }, [paymentId, status, statusFn, qc, onDone]);
 
   async function submit() {
-    if (!mpInstance) { toast.error("SDK Mercado Pago não carregado. Verifique se a Public Key foi configurada em /admin/pagamentos."); return; }
+    if (!mpInstance) { toast.error(publicKeyLoading ? "Carregando SDK do Mercado Pago…" : "SDK Mercado Pago não carregado. Verifique a Public Key em /admin/pagamentos."); return; }
     const cleanNumber = number.replace(/\s+/g, "");
     const [expMonth, expYearShort] = exp.split("/").map(s => s.trim());
     if (!cleanNumber || !expMonth || !expYearShort || !cvv || !name) { toast.error("Preencha os dados do cartão."); return; }
@@ -318,9 +345,16 @@ function CardForm({ plan, establishmentId, payerEmailDefault, onDone }: { plan: 
 
   return (
     <div className="space-y-3">
-      {!publicKey && (
+      {!publicKey && publicKeyLoading && (
+        <div className="rounded-md border border-amber-400/40 bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+          Carregando Public Key do Mercado Pago…
+        </div>
+      )}
+      {!publicKey && !publicKeyLoading && (
         <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
-          Public Key do Mercado Pago não configurada. Peça ao Super Administrador para configurar em /admin/pagamentos.
+          <div>Public Key do Mercado Pago não configurada ou não carregada. Confirme em /admin/pagamentos e tente novamente.</div>
+          {publicKeyError && <div className="mt-1 text-xs opacity-80">Detalhe: {publicKeyError}</div>}
+          <Button type="button" variant="outline" size="sm" className="mt-2" onClick={loadPublicKey}>Verificar novamente</Button>
         </div>
       )}
       <div className="space-y-2">
@@ -362,7 +396,7 @@ function CardForm({ plan, establishmentId, payerEmailDefault, onDone }: { plan: 
         <div className="rounded-md bg-muted p-2 text-xs text-muted-foreground">Status: {status} — {translateDetail(statusDetail)}</div>
       )}
 
-      <Button className="w-full gradient-brand text-primary-foreground" onClick={submit} disabled={loading || !mpInstance}>
+      <Button className="w-full gradient-brand text-primary-foreground" onClick={submit} disabled={loading || publicKeyLoading || !mpInstance}>
         {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processando…</> : `Pagar ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(plan.price_monthly)}`}
       </Button>
       <p className="text-[10px] text-center text-muted-foreground">Dados do cartão tokenizados pelo SDK oficial do Mercado Pago. Nada trafega em texto puro.</p>

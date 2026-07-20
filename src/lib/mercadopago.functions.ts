@@ -12,7 +12,8 @@ function getAccessToken(): string {
 }
 
 function getPublicKey(): string | null {
-  return process.env.MERCADOPAGO_PUBLIC_KEY ?? null;
+  const key = process.env.MERCADOPAGO_PUBLIC_KEY?.trim();
+  return key || null;
 }
 
 async function mpFetch(path: string, init: RequestInit & { idempotencyKey?: string } = {}) {
@@ -108,8 +109,8 @@ export const getMercadoPagoPublicKey = createServerFn({ method: "GET" }).handler
     .maybeSingle();
 
   return {
-    public_key: ((data as any)?.public_key as string | null) ?? null,
-    source: ((data as any)?.public_key ? "db" : null) as "db" | null,
+    public_key: (((data as any)?.public_key as string | null) ?? null)?.trim() || null,
+    source: (((data as any)?.public_key as string | null) ?? "").trim() ? "db" as const : null,
   };
 });
 
@@ -536,12 +537,22 @@ export const adminUpdatePaymentSettings = createServerFn({ method: "POST" })
     const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
     if (!isAdmin) throw new Error("Sem permissão.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("payment_settings").update({
+    const cleanPublicKey = data.public_key?.trim() || null;
+    const { count, error } = await supabaseAdmin.from("payment_settings").update({
       environment: data.environment,
-      public_key: data.public_key ?? null,
+      public_key: cleanPublicKey,
       webhook_url: publicWebhookUrl(),
       updated_at: new Date().toISOString(),
-    } as never).neq("id", "00000000-0000-0000-0000-000000000000");
+    } as never, { count: "exact" }).neq("id", "00000000-0000-0000-0000-000000000000");
+    if (error) throw error;
+    if (!count) {
+      const { error: insertError } = await supabaseAdmin.from("payment_settings").insert({
+        environment: data.environment,
+        public_key: cleanPublicKey,
+        webhook_url: publicWebhookUrl(),
+      } as never);
+      if (insertError) throw insertError;
+    }
     return { ok: true };
   });
 
