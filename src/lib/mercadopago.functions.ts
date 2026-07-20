@@ -401,11 +401,48 @@ export const adminGetPaymentSettings = createServerFn({ method: "GET" })
     const storedUrl = ((data as any)?.webhook_url as string | null) ?? null;
     const norm = (u: string | null) => (u ?? "").replace(/\/+$/, "").toLowerCase();
     const stale = !!storedUrl && norm(storedUrl) !== norm(canonicalUrl);
+
+    // Auditar divergência (dedupe: máx 1 log/hora por par de URLs)
+    let lastDivergenceAt: string | null = null;
+    if (stale) {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const oneHourAgo = new Date(Date.now() - 60 * 60_000).toISOString();
+      const { data: recent } = await supabaseAdmin
+        .from("audit_logs")
+        .select("id, created_at, metadata")
+        .eq("action", "mp_webhook_url_divergence")
+        .gte("created_at", oneHourAgo)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const sameRecent =
+        recent &&
+        norm(((recent as any).metadata?.stored_url as string) ?? "") === norm(storedUrl) &&
+        norm(((recent as any).metadata?.canonical_url as string) ?? "") === norm(canonicalUrl);
+      if (!sameRecent) {
+        const { data: inserted } = await supabaseAdmin.from("audit_logs").insert({
+          user_id: userId,
+          action: "mp_webhook_url_divergence",
+          entity_type: "payment_settings",
+          metadata: {
+            stored_url: storedUrl,
+            canonical_url: canonicalUrl,
+            detected_at: new Date().toISOString(),
+          } as never,
+        } as never).select("created_at").maybeSingle();
+        lastDivergenceAt = ((inserted as any)?.created_at as string) ?? new Date().toISOString();
+      } else {
+        lastDivergenceAt = (recent as any).created_at as string;
+      }
+    }
+
     return {
       settings: data,
       webhook_url: canonicalUrl,
       stored_webhook_url: storedUrl,
       webhook_url_stale: stale,
+      settings_updated_at: ((data as any)?.updated_at as string | null) ?? null,
+      last_divergence_at: lastDivergenceAt,
       credentials: {
         has_access_token: hasToken,
         has_webhook_secret: hasSecret,
@@ -430,8 +467,118 @@ export const adminUpdatePaymentSettings = createServerFn({ method: "POST" })
       environment: data.environment,
       public_key: data.public_key ?? null,
       webhook_url: publicWebhookUrl(),
+      updated_at: new Date().toISOString(),
     } as never).neq("id", "00000000-0000-0000-0000-000000000000");
     return { ok: true };
+  });
+
+// ----------- Admin: sync stored webhook URL to canonical -----------
+export const adminSyncWebhookUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Sem permissão.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const canonical = publicWebhookUrl();
+    const { data: before } = await supabaseAdmin.from("payment_settings").select("webhook_url").limit(1).maybeSingle();
+    const storedBefore = ((before as any)?.webhook_url as string | null) ?? null;
+    await supabaseAdmin.from("payment_settings").update({
+      webhook_url: canonical,
+      updated_at: new Date().toISOString(),
+    } as never).neq("id", "00000000-0000-0000-0000-000000000000");
+    try {
+      await supabaseAdmin.from("audit_logs").insert({
+        user_id: userId,
+        action: "mp_webhook_url_synced",
+        entity_type: "payment_settings",
+        metadata: { from: storedBefore, to: canonical, at: new Date().toISOString() } as never,
+      } as never);
+    } catch { /* noop */ }
+    return { ok: true, from: storedBefore, to: canonical };
+  });
+
+// ----------- Admin: simulate a real event delivery -----------
+export const adminSendWebhookTestEvent = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Sem permissão.");
+
+    const url = publicWebhookUrl();
+    const started = Date.now();
+    const probeId = `probe-${Date.now()}`;
+    const body = {
+      type: "test",
+      action: "test.created",
+      live_mode: false,
+      data: { id: "123456" },
+      _probe: probeId,
+    };
+
+    let status: number | null = null;
+    let responseText = "";
+    let networkError: string | null = null;
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "user-agent": "Fidelize-Webhook-Probe/1.0",
+        },
+        body: JSON.stringify(body),
+      });
+      status = res.status;
+      responseText = (await res.text()).slice(0, 200);
+    } catch (e: any) {
+      networkError = e?.message ?? String(e);
+    }
+    const latency = Date.now() - started;
+
+    // Confirmar que o handler gravou em payment_logs após o started
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const sinceIso = new Date(started - 2000).toISOString();
+    const { data: logs } = await supabaseAdmin
+      .from("payment_logs")
+      .select("id, created_at, mode, processed, response_status, reason, payload")
+      .gte("created_at", sinceIso)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    const match = (logs ?? []).find((r: any) => r?.payload?._probe === probeId) ?? null;
+
+    const ok = status !== null && status >= 200 && status < 300 && !!match;
+    const message = networkError
+      ? `Falha de rede: ${networkError}`
+      : !status || status < 200 || status >= 300
+        ? `Endpoint respondeu HTTP ${status ?? "?"}. Verifique se a rota está publicada em ${url}.`
+        : match
+          ? `Evento sintético entregue e persistido em payment_logs em ${latency}ms.`
+          : `HTTP ${status} recebido, mas o log de webhook não foi encontrado. Verifique se o handler gravou o evento.`;
+
+    try {
+      await supabaseAdmin.from("audit_logs").insert({
+        user_id: userId,
+        action: "mp_webhook_probe",
+        entity_type: "payment_settings",
+        metadata: {
+          url, ok, status, latency_ms: latency, probe_id: probeId, match_id: (match as any)?.id ?? null,
+        } as never,
+      } as never);
+    } catch { /* noop */ }
+
+    return {
+      ok,
+      url,
+      status,
+      latency_ms: latency,
+      body_snippet: responseText,
+      log_matched: !!match,
+      log_id: (match as any)?.id ?? null,
+      log_processed: (match as any)?.processed ?? null,
+      message,
+      checked_at: new Date().toISOString(),
+    };
   });
 
 function publicWebhookUrl(): string {
