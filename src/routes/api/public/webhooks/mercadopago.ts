@@ -506,13 +506,19 @@ export async function retryFailedWebhooks(limit = 20): Promise<{
         details.push({ id: r.id, mp_id: r.mp_id, ok: false, error: r.error ?? "non_retryable" });
         continue;
       }
-      if ((r.event_type === "payment" || String(r.event_type).startsWith("payment")) && r.mp_id) {
+      const et = String(r.event_type ?? "");
+      if ((et === "payment" || et.startsWith("payment")) && r.mp_id) {
         await processPaymentEvent(String(r.mp_id));
-      } else if (r.event_type === "merchant_order" && r.mp_id) {
+      } else if (et === "merchant_order" && r.mp_id) {
         await processMerchantOrderEvent(String(r.mp_id));
+      } else if ((et === "order" || et.startsWith("order")) && r.mp_id) {
+        await processOrderEvent(String(r.mp_id));
+      } else if (et === "subscription_preapproval" && r.mp_id) {
+        await processSubscriptionPreapprovalEvent(String(r.mp_id));
       } else {
-        throw new Error(`Evento ${r.event_type} não possui processador de retry.`);
+        throw new Error(`Evento ${et || "(sem tipo)"} não possui processador de retry.`);
       }
+
       await supabaseAdmin.from("payment_logs").update({
         processed: true,
         error: null,
