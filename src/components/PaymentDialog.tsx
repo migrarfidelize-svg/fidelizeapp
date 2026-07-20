@@ -3,8 +3,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   createPixPayment, createCardPayment, createBoletoPayment,
-  getPaymentStatus, getMercadoPagoPublicKey,
+  getPaymentStatus, getMercadoPagoPublicKey, getMercadoPagoAccountHint,
 } from "@/lib/mercadopago.functions";
+import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
