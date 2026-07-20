@@ -1204,43 +1204,52 @@ export type Database = {
           category: string
           config: Json
           created_at: string
+          credentials: Json
           credentials_ref: Json
           enabled: boolean
           id: string
+          last_test_details: Json | null
           last_test_message: string | null
           last_test_status: string | null
           last_tested_at: string | null
           mode: string | null
           provider: string
           updated_at: string
+          updated_by: string | null
         }
         Insert: {
           category: string
           config?: Json
           created_at?: string
+          credentials?: Json
           credentials_ref?: Json
           enabled?: boolean
           id?: string
+          last_test_details?: Json | null
           last_test_message?: string | null
           last_test_status?: string | null
           last_tested_at?: string | null
           mode?: string | null
           provider: string
           updated_at?: string
+          updated_by?: string | null
         }
         Update: {
           category?: string
           config?: Json
           created_at?: string
+          credentials?: Json
           credentials_ref?: Json
           enabled?: boolean
           id?: string
+          last_test_details?: Json | null
           last_test_message?: string | null
           last_test_status?: string | null
           last_tested_at?: string | null
           mode?: string | null
           provider?: string
           updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
