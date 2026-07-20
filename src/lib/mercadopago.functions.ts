@@ -740,7 +740,8 @@ export const adminSendWebhookDualTest = createServerFn({ method: "POST" })
 
     const { createHmac } = await import("crypto");
     const url = publicWebhookUrl();
-    const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET ?? "";
+    const { loadMercadoPagoCredentials } = await import("./mercadopago-credentials.server");
+    const secret = (await loadMercadoPagoCredentials(true)).webhook_secret ?? "";
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     async function findLog(probeId: string, sinceMs: number) {
@@ -978,8 +979,10 @@ export const adminGetWebhookHealth = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const url = publicWebhookUrl();
-    const hasSecret = !!process.env.MERCADOPAGO_WEBHOOK_SECRET;
-    const hasToken = !!process.env.MERCADOPAGO_ACCESS_TOKEN;
+    const { loadMercadoPagoCredentials } = await import("./mercadopago-credentials.server");
+    const mpCreds = await loadMercadoPagoCredentials(true);
+    const hasSecret = !!mpCreds.webhook_secret;
+    const hasToken = !!mpCreds.access_token;
 
     const [{ data: lastTest }, { data: lastLive }, { data: lastFail }, { count: pending }] = await Promise.all([
       supabaseAdmin.from("payment_logs").select("*").eq("mode", "test").order("created_at", { ascending: false }).limit(1).maybeSingle(),
@@ -1076,7 +1079,7 @@ export const adminGetHmacTelemetry = createServerFn({ method: "GET" })
       last_at: last?.created_at ?? null,
       last_error: last?.error ?? null,
       recent: recent ?? [],
-      has_webhook_secret: !!process.env.MERCADOPAGO_WEBHOOK_SECRET,
+      has_webhook_secret: !!(await (await import("./mercadopago-credentials.server")).loadMercadoPagoCredentials(true)).webhook_secret,
     };
   });
 
