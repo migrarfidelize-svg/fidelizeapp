@@ -265,6 +265,8 @@ function AdminPaymentsPage() {
 
       <WebhookHealthCard />
 
+      <DualWebhookTestCard hasSecret={!!creds.has_webhook_secret} />
+
       <RecommendedEventsCard />
 
       <WebhookLogsCard />
