@@ -67,8 +67,8 @@ async function fetchPreapprovalFromMP(preapprovalId: string, accessToken: string
 
 async function processPaymentEvent(paymentId: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
-  if (!accessToken) throw new Error("MERCADOPAGO_ACCESS_TOKEN não configurado");
+  const { requireMercadoPagoAccessToken } = await import("@/lib/mercadopago-credentials.server");
+  const accessToken = await requireMercadoPagoAccessToken();
 
   const mp = await fetchPaymentFromMP(paymentId, accessToken);
 
@@ -121,8 +121,8 @@ async function processPaymentEvent(paymentId: string) {
 }
 
 async function processMerchantOrderEvent(orderId: string) {
-  const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
-  if (!accessToken) throw new Error("MERCADOPAGO_ACCESS_TOKEN não configurado");
+  const { requireMercadoPagoAccessToken } = await import("@/lib/mercadopago-credentials.server");
+  const accessToken = await requireMercadoPagoAccessToken();
 
   const order = await fetchMerchantOrderFromMP(orderId, accessToken);
   const paymentIds = Array.from(new Set(
@@ -143,8 +143,8 @@ async function processMerchantOrderEvent(orderId: string) {
 
 async function processOrderEvent(orderId: string) {
   // Orders API (Point/Checkout Bricks). Reconcilia via os pagamentos internos do order.
-  const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
-  if (!accessToken) throw new Error("MERCADOPAGO_ACCESS_TOKEN não configurado");
+  const { requireMercadoPagoAccessToken } = await import("@/lib/mercadopago-credentials.server");
+  const accessToken = await requireMercadoPagoAccessToken();
 
   const order = await fetchOrderFromMP(orderId, accessToken);
   const payments = (order?.transactions?.payments ?? []) as any[];
@@ -172,8 +172,8 @@ async function processOrderEvent(orderId: string) {
 
 async function processSubscriptionPreapprovalEvent(preapprovalId: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
-  if (!accessToken) throw new Error("MERCADOPAGO_ACCESS_TOKEN não configurado");
+  const { requireMercadoPagoAccessToken } = await import("@/lib/mercadopago-credentials.server");
+  const accessToken = await requireMercadoPagoAccessToken();
 
   const preapproval = await fetchPreapprovalFromMP(preapprovalId, accessToken);
 
@@ -353,7 +353,9 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
         const rawBody = await request.text();
         const requestId = request.headers.get("x-request-id");
         const signatureHeader = request.headers.get("x-signature");
-        const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET ?? "";
+        const { loadMercadoPagoCredentials } = await import("@/lib/mercadopago-credentials.server");
+        const mpCreds = await loadMercadoPagoCredentials(true);
+        const secret = mpCreds.webhook_secret ?? "";
 
         let body: any = {};
         try { body = rawBody ? JSON.parse(rawBody) : {}; } catch { body = {}; }

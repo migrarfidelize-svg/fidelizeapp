@@ -5,17 +5,6 @@ import { getPublicAppUrl } from "@/lib/app-url";
 
 const MP_API = "https://api.mercadopago.com";
 
-function getAccessToken(): string {
-  const t = process.env.MERCADOPAGO_ACCESS_TOKEN;
-  if (!t) throw new Error("MERCADOPAGO_ACCESS_TOKEN não configurado. Peça ao Super Administrador para configurar a integração.");
-  return t;
-}
-
-function getPublicKey(): string | null {
-  const key = process.env.MERCADOPAGO_PUBLIC_KEY?.trim();
-  return key || null;
-}
-
 function inferMercadoPagoTestAccount(account: any): boolean {
   const nickname = String(account?.nickname ?? "");
   const email = String(account?.email ?? "");
@@ -30,11 +19,12 @@ function looksLikeMercadoPagoTestEmail(email: string | null | undefined): boolea
 function formatMpCredentialMismatchMessage(details: { configuredEnvironment?: string | null; accountNickname?: string | null }) {
   const nickname = details.accountNickname ? ` (${details.accountNickname})` : "";
   const environment = details.configuredEnvironment === "sandbox" ? "Sandbox/Teste" : "Produção";
-  return `Configuração Mercado Pago incompatível: o Access Token atual pertence a um usuário de teste${nickname}, mas o painel está em ${environment}. Para receber pagamentos reais, atualize o secret MERCADOPAGO_ACCESS_TOKEN com o Access Token de produção da conta real. Para simular pagamentos, mude o ambiente para Sandbox/Teste em /admin/pagamentos e use um comprador de teste do Mercado Pago.`;
+  return `Configuração Mercado Pago incompatível: o Access Token cadastrado em /admin/integracoes pertence a um usuário de teste${nickname}, mas o painel está em ${environment}. Para receber pagamentos reais, atualize o Access Token em /admin/integracoes → Pagamentos → Mercado Pago (aba Credenciais) com um token de produção da conta real. Para simular, mude o ambiente para Sandbox/Teste e use um comprador de teste do Mercado Pago.`;
 }
 
 async function mpFetch(path: string, init: RequestInit & { idempotencyKey?: string } = {}) {
-  const token = getAccessToken();
+  const { requireMercadoPagoAccessToken } = await import("./mercadopago-credentials.server");
+  const token = await requireMercadoPagoAccessToken();
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
@@ -48,10 +38,9 @@ async function mpFetch(path: string, init: RequestInit & { idempotencyKey?: stri
   if (!res.ok) {
     const rawMsg = body?.message ?? body?.error ?? text ?? `MP ${res.status}`;
     const msgStr = typeof rawMsg === "string" ? rawMsg : JSON.stringify(rawMsg);
-    // Detecta erro clássico: credenciais/comprador de ambientes diferentes ou autopagamento em live.
     if (res.status === 401 && /unauthorized use of live credentials/i.test(msgStr)) {
       throw new Error(
-        "Mercado Pago recusou o pagamento: as credenciais e o comprador parecem estar em ambientes diferentes, ou o pagador é o próprio titular da conta que recebe. Se a conexão em /admin/pagamentos mostrar TESTUSER, troque para um Access Token de produção de uma conta real ou use Sandbox/Teste com comprador de teste. Em produção, use e-mail/CPF/CNPJ reais e diferentes da conta recebedora."
+        "Mercado Pago recusou o pagamento: as credenciais e o comprador parecem estar em ambientes diferentes, ou o pagador é o próprio titular da conta que recebe. Se a conexão em /admin/integracoes mostrar TESTUSER, troque o Access Token para um de produção de uma conta real. Em produção, use e-mail/CPF/CNPJ reais e diferentes da conta recebedora.",
       );
     }
     throw new Error(`Mercado Pago (${res.status}): ${msgStr}`);
@@ -142,20 +131,15 @@ export const getMercadoPagoAccountHint = createServerFn({ method: "GET" })
 // ----------- Public key (client-safe) -----------
 
 export const getMercadoPagoPublicKey = createServerFn({ method: "GET" }).handler(async () => {
-  const envKey = getPublicKey();
-  if (envKey) return { public_key: envKey, source: "env" as const };
-
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin
-    .from("payment_settings")
-    .select("public_key")
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
+  const { loadMercadoPagoCredentials } = await import("./mercadopago-credentials.server");
+  const creds = await loadMercadoPagoCredentials(true);
+  const source = creds.sources.public_key;
   return {
-    public_key: (((data as any)?.public_key as string | null) ?? null)?.trim() || null,
-    source: (((data as any)?.public_key as string | null) ?? "").trim() ? "db" as const : null,
+    public_key: creds.public_key,
+    source: source === "db_integration" ? ("db" as const)
+          : source === "db_payment_settings" ? ("db" as const)
+          : source === "env" ? ("env" as const)
+          : null,
   };
 });
 
@@ -529,8 +513,10 @@ export const adminGetPaymentSettings = createServerFn({ method: "GET" })
       .limit(1)
       .maybeSingle();
     if (error) throw error;
-    const hasToken = !!process.env.MERCADOPAGO_ACCESS_TOKEN;
-    const hasSecret = !!process.env.MERCADOPAGO_WEBHOOK_SECRET;
+    const { loadMercadoPagoCredentials } = await import("./mercadopago-credentials.server");
+    const creds = await loadMercadoPagoCredentials(true);
+    const hasToken = !!creds.access_token;
+    const hasSecret = !!creds.webhook_secret;
     const canonicalUrl = publicWebhookUrl();
     const storedUrl = ((data as any)?.webhook_url as string | null) ?? null;
     const norm = (u: string | null) => (u ?? "").replace(/\/+$/, "").toLowerCase();
@@ -569,10 +555,10 @@ export const adminGetPaymentSettings = createServerFn({ method: "GET" })
       }
     }
 
-    const dbPublicKey = (((data as any)?.public_key as string | null) ?? "").trim();
-    const envPublicKey = (process.env.MERCADOPAGO_PUBLIC_KEY ?? "").trim();
     const publicKeySource: "env" | "db" | null =
-      envPublicKey ? "env" : (dbPublicKey ? "db" : null);
+      creds.sources.public_key === "env" ? "env"
+      : creds.sources.public_key ? "db"
+      : null;
     const accountNickname = ((data as any)?.account_nickname as string | null) ?? null;
     const lastTestMessage = ((data as any)?.last_test_message as string | null) ?? null;
     const accountIsTestUser = /^TESTUSER/i.test(accountNickname ?? "") || /TESTUSER/i.test(lastTestMessage ?? "");
@@ -590,8 +576,10 @@ export const adminGetPaymentSettings = createServerFn({ method: "GET" })
       credentials: {
         has_access_token: hasToken,
         has_webhook_secret: hasSecret,
-        has_public_key: !!publicKeySource,
+        has_public_key: !!creds.public_key,
         public_key_source: publicKeySource,
+        access_token_source: creds.sources.access_token,
+        webhook_secret_source: creds.sources.webhook_secret,
       },
       mp_account_is_test_user: accountIsTestUser,
       configuration_issue: configurationIssue,
@@ -752,7 +740,8 @@ export const adminSendWebhookDualTest = createServerFn({ method: "POST" })
 
     const { createHmac } = await import("crypto");
     const url = publicWebhookUrl();
-    const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET ?? "";
+    const { loadMercadoPagoCredentials } = await import("./mercadopago-credentials.server");
+    const secret = (await loadMercadoPagoCredentials(true)).webhook_secret ?? "";
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     async function findLog(probeId: string, sinceMs: number) {
@@ -990,8 +979,10 @@ export const adminGetWebhookHealth = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const url = publicWebhookUrl();
-    const hasSecret = !!process.env.MERCADOPAGO_WEBHOOK_SECRET;
-    const hasToken = !!process.env.MERCADOPAGO_ACCESS_TOKEN;
+    const { loadMercadoPagoCredentials } = await import("./mercadopago-credentials.server");
+    const mpCreds = await loadMercadoPagoCredentials(true);
+    const hasSecret = !!mpCreds.webhook_secret;
+    const hasToken = !!mpCreds.access_token;
 
     const [{ data: lastTest }, { data: lastLive }, { data: lastFail }, { count: pending }] = await Promise.all([
       supabaseAdmin.from("payment_logs").select("*").eq("mode", "test").order("created_at", { ascending: false }).limit(1).maybeSingle(),
@@ -1088,7 +1079,7 @@ export const adminGetHmacTelemetry = createServerFn({ method: "GET" })
       last_at: last?.created_at ?? null,
       last_error: last?.error ?? null,
       recent: recent ?? [],
-      has_webhook_secret: !!process.env.MERCADOPAGO_WEBHOOK_SECRET,
+      has_webhook_secret: !!(await (await import("./mercadopago-credentials.server")).loadMercadoPagoCredentials(true)).webhook_secret,
     };
   });
 
