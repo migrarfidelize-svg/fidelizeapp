@@ -1522,6 +1522,7 @@ export type Database = {
           next_retry_at: string | null
           payload: Json | null
           processed: boolean
+          provider: string
           reason: string | null
           response_status: number | null
           retry_count: number
@@ -1542,6 +1543,7 @@ export type Database = {
           next_retry_at?: string | null
           payload?: Json | null
           processed?: boolean
+          provider?: string
           reason?: string | null
           response_status?: number | null
           retry_count?: number
@@ -1562,6 +1564,7 @@ export type Database = {
           next_retry_at?: string | null
           payload?: Json | null
           processed?: boolean
+          provider?: string
           reason?: string | null
           response_status?: number | null
           retry_count?: number
@@ -1683,6 +1686,8 @@ export type Database = {
           pix_qr_code_base64: string | null
           plan_id: string | null
           plan_slug: string | null
+          provider: string
+          provider_payment_id: string | null
           raw: Json | null
           receipt_url: string | null
           status: string
@@ -1714,6 +1719,8 @@ export type Database = {
           pix_qr_code_base64?: string | null
           plan_id?: string | null
           plan_slug?: string | null
+          provider?: string
+          provider_payment_id?: string | null
           raw?: Json | null
           receipt_url?: string | null
           status?: string
@@ -1745,6 +1752,8 @@ export type Database = {
           pix_qr_code_base64?: string | null
           plan_id?: string | null
           plan_slug?: string | null
+          provider?: string
+          provider_payment_id?: string | null
           raw?: Json | null
           receipt_url?: string | null
           status?: string
