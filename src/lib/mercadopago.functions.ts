@@ -913,4 +913,54 @@ export const adminRetryWebhookQueue = createServerFn({ method: "POST" })
     return result;
   });
 
+// ----------- Admin: HMAC rejection telemetry (real-time alerts source) -----------
+export const adminGetHmacTelemetry = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Sem permissão.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const now = Date.now();
+    const iso = (ms: number) => new Date(now - ms).toISOString();
+    const H1 = iso(60 * 60 * 1000);
+    const H24 = iso(24 * 60 * 60 * 1000);
+    const D7 = iso(7 * 24 * 60 * 60 * 1000);
+
+    const base = () => supabaseAdmin
+      .from("payment_logs")
+      .select("id", { count: "exact", head: true })
+      .eq("mode", "live")
+      .eq("signature_valid", false)
+      .in("error", ["invalid_signature", "missing_webhook_secret"]);
+
+    const [{ count: c1h }, { count: c24h }, { count: c7d }, { data: recent }, { data: last }] = await Promise.all([
+      base().gte("created_at", H1),
+      base().gte("created_at", H24),
+      base().gte("created_at", D7),
+      supabaseAdmin.from("payment_logs")
+        .select("id, created_at, mp_id, event_type, error, response_status, headers, live_mode")
+        .eq("mode", "live").eq("signature_valid", false)
+        .in("error", ["invalid_signature", "missing_webhook_secret"])
+        .order("created_at", { ascending: false }).limit(20),
+      supabaseAdmin.from("payment_logs")
+        .select("id, created_at, mp_id, error")
+        .eq("mode", "live").eq("signature_valid", false)
+        .in("error", ["invalid_signature", "missing_webhook_secret"])
+        .order("created_at", { ascending: false }).limit(1).maybeSingle(),
+    ]);
+
+    return {
+      last_1h: c1h ?? 0,
+      last_24h: c24h ?? 0,
+      last_7d: c7d ?? 0,
+      last_at: last?.created_at ?? null,
+      last_error: last?.error ?? null,
+      recent: recent ?? [],
+      has_webhook_secret: !!process.env.MERCADOPAGO_WEBHOOK_SECRET,
+    };
+  });
+
+
 
