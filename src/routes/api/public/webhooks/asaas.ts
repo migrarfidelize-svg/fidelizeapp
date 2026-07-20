@@ -202,8 +202,24 @@ export const Route = createFileRoute("/api/public/webhooks/asaas")({
         try {
           let handled = true;
           if (paymentId && event.startsWith("PAYMENT_")) {
-            // Consulta autoritativa: nunca confia só no payload.
-            const remote = await fetchAsaasPayment(paymentId);
+            // Consulta autoritativa; se falhar (rate-limit, User-Agent, etc.),
+            // usamos o próprio payload — o header asaas-access-token já
+            // autenticou a origem quando webhook_token está configurado.
+            let remote: any = null;
+            try {
+              remote = await fetchAsaasPayment(paymentId);
+            } catch (fetchErr) {
+              remote = payment;
+              await logAsaasWebhook({
+                event, payment_id: paymentId,
+                signature_valid: !!expected, processed: false,
+                error: (fetchErr as Error)?.message ?? String(fetchErr),
+                payload: body, headers: headersLog,
+                response_status: 200,
+                reason: "Falha na consulta autoritativa; reconciliando via payload do webhook.",
+                mode: creds.mode,
+              });
+            }
             await reconcileAsaasPayment(remote);
           } else {
             handled = false;
