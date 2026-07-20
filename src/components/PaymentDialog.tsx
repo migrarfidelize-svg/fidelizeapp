@@ -33,13 +33,14 @@ export function PaymentDialog({
   const hintFn = useServerFn(getMercadoPagoAccountHint);
   const { data: hint } = useQuery({
     queryKey: ["mp-account-hint"],
-    queryFn: () => hintFn() as Promise<{ account_email: string | null; account_nickname: string | null; environment: string }>,
+    queryFn: () => hintFn() as Promise<{ account_email: string | null; account_nickname: string | null; environment: string; account_is_test_user?: boolean; configuration_issue?: string | null }>,
     enabled: open,
     staleTime: 5 * 60_000,
   });
   const acctEmail = hint?.account_email ?? null;
   const isLive = (hint?.environment ?? "production") !== "sandbox";
   const conflicts = !!(acctEmail && payerEmailDefault && acctEmail.trim().toLowerCase() === payerEmailDefault.trim().toLowerCase());
+  const configurationIssue = hint?.configuration_issue ?? null;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -52,6 +53,11 @@ export function PaymentDialog({
 
         {plan && (
           <>
+          {configurationIssue && (
+            <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-xs text-destructive">
+              <strong>Mercado Pago precisa de ajuste:</strong> {configurationIssue}
+            </div>
+          )}
           {isLive && acctEmail && (
             <div className={`rounded-md border p-3 text-xs ${conflicts ? "border-destructive/50 bg-destructive/10 text-destructive" : "border-amber-400/40 bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200"}`}>
               {conflicts ? "⛔" : "⚠️"} <strong>Importante:</strong> o Mercado Pago bloqueia (<code>401 Unauthorized use of live credentials</code>) quando o pagador é o próprio titular da conta que recebe. Use um e-mail e CPF/CNPJ <strong>diferentes</strong> de <code>{acctEmail}</code>{hint?.account_nickname ? ` (${hint.account_nickname})` : ""}. Vale para PIX, Cartão e Boleto.
