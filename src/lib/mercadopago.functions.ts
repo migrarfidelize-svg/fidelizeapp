@@ -420,6 +420,9 @@ export const adminTestMercadoPagoConnection = createServerFn({ method: "POST" })
         last_test_status: "ok",
         last_test_message: `Conectado como ${me.nickname ?? me.email ?? me.id}`,
         webhook_url: publicWebhookUrl(),
+        account_id: me.id ? String(me.id) : null,
+        account_email: me.email ?? null,
+        account_nickname: me.nickname ?? null,
       } as never).neq("id", "00000000-0000-0000-0000-000000000000");
       return { ok: true, account: { id: me.id, email: me.email, nickname: me.nickname, site_id: me.site_id, live_mode: !me.tags?.includes("test_user") } };
     } catch (e: any) {
