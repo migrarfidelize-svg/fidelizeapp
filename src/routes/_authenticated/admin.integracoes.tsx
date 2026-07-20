@@ -279,7 +279,7 @@ function ManageDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><span className="text-xl">{meta.icon ?? "🔌"}</span>{meta.label}</DialogTitle>
+          <DialogTitle className="flex items-center gap-3"><ProviderBrand providerId={meta.id} size="sm" animate={false} />{meta.label}</DialogTitle>
           <DialogDescription>{meta.description}</DialogDescription>
         </DialogHeader>
 
