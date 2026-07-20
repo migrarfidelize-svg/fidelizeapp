@@ -1199,6 +1199,51 @@ export type Database = {
           },
         ]
       }
+      integrations: {
+        Row: {
+          category: string
+          config: Json
+          created_at: string
+          credentials_ref: Json
+          enabled: boolean
+          id: string
+          last_test_message: string | null
+          last_test_status: string | null
+          last_tested_at: string | null
+          mode: string | null
+          provider: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          config?: Json
+          created_at?: string
+          credentials_ref?: Json
+          enabled?: boolean
+          id?: string
+          last_test_message?: string | null
+          last_test_status?: string | null
+          last_tested_at?: string | null
+          mode?: string | null
+          provider: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          config?: Json
+          created_at?: string
+          credentials_ref?: Json
+          enabled?: boolean
+          id?: string
+          last_test_message?: string | null
+          last_test_status?: string | null
+          last_tested_at?: string | null
+          mode?: string | null
+          provider?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       kb_articles: {
         Row: {
           author_id: string | null
