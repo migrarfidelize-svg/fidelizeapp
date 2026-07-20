@@ -11,6 +11,7 @@ import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { getAdminStatus } from "@/lib/admin.functions";
 import { checkMyFeature } from "@/lib/plans.functions";
 import { Logo } from "@/components/Logo";
+import { LogoMark } from "@/components/LogoMark";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield,
@@ -227,11 +228,14 @@ function AppLayout() {
           <motion.span
             layoutId="active-nav-pill"
             transition={{ type: "spring", stiffness: 380, damping: 32 }}
-            className="absolute inset-0 rounded-xl bg-primary shadow-[0_10px_30px_-12px_color-mix(in_oklab,var(--color-primary)_55%,transparent)]"
+            className="nav-item-active-aurora"
           />
         )}
         <span className="relative z-10 grid place-items-center h-8 w-8 shrink-0">
-          <n.icon className="h-[18px] w-[18px]" strokeWidth={active ? 2.4 : 1.8} />
+          <n.icon
+            className={`h-[18px] w-[18px] ${active ? "nav-icon-active" : "nav-icon-idle"}`}
+            strokeWidth={active ? 2.4 : 1.8}
+          />
         </span>
         <AnimatePresence initial={false}>
           {showLabel && (
@@ -343,29 +347,24 @@ function AppLayout() {
           className="hidden md:flex shrink-0 flex-col border-r bg-card/80 backdrop-blur-xl relative"
         >
           <div className={`flex items-center border-b ${collapsed ? "justify-center p-3" : "justify-between p-4"}`} data-tour="sidebar-logo">
-            {collapsed ? (
-              <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary/15 text-primary font-black">F</div>
-            ) : (
-              <Logo />
-            )}
+            {collapsed ? <LogoMark size={38} /> : <Logo />}
           </div>
           {renderNav()}
           {renderFooter()}
 
-          {/* Expand/collapse toggle — floating, animated */}
+          {/* Expand/collapse toggle — destaque com anel aurora */}
           <button
             type="button"
             aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
             onClick={() => setCollapsed((c) => !c)}
-            className="group absolute -right-3.5 top-6 z-30 grid h-7 w-7 place-items-center rounded-full border bg-card text-muted-foreground shadow-md hover:text-primary hover:border-primary/50 transition-colors"
+            className="sidebar-toggle group"
           >
-            <span className="pointer-events-none absolute inset-0 rounded-full bg-primary/25 opacity-0 group-hover:opacity-100 blur-md transition-opacity" />
             <motion.span
               animate={{ rotate: collapsed ? 0 : 180 }}
               transition={{ type: "spring", stiffness: 260, damping: 20 }}
               className="relative"
             >
-              {collapsed ? <PanelLeftOpen className="h-3.5 w-3.5" /> : <PanelLeftClose className="h-3.5 w-3.5" />}
+              {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
             </motion.span>
           </button>
         </motion.aside>
