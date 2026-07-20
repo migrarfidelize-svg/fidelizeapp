@@ -29,7 +29,7 @@ export function Logo({ className = "" }: { className?: string }) {
             <rect x="196" y="156" width="140" height="40" rx="12" />
             <rect x="196" y="244" width="104" height="36" rx="10" />
           </g>
-          <g fill="#ffffff" opacity="0.45" style={{ mixBlendMode: "overlay" }}>
+          <g fill="#ffffff" opacity="0.35" style={{ mixBlendMode: "overlay" }}>
             <rect x="200" y="160" width="14" height="208" rx="7" />
             <rect x="200" y="160" width="132" height="10" rx="5" />
           </g>
