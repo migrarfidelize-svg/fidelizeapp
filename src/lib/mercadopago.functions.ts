@@ -75,7 +75,26 @@ async function assertPayerNotAccountHolder(payerEmail: string | null | undefined
   }
 }
 
+// ----------- Account hint (auth-only): mostra ao lojista o e-mail do titular MP a evitar -----------
+export const getMercadoPagoAccountHint = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async () => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin
+      .from("payment_settings")
+      .select("account_email, account_nickname, environment")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    return {
+      account_email: ((data as any)?.account_email as string | null) ?? null,
+      account_nickname: ((data as any)?.account_nickname as string | null) ?? null,
+      environment: ((data as any)?.environment as string | null) ?? "production",
+    };
+  });
+
 // ----------- Public key (client-safe) -----------
+
 export const getMercadoPagoPublicKey = createServerFn({ method: "GET" }).handler(async () => {
   const envKey = getPublicKey();
   if (envKey) return { public_key: envKey, source: "env" as const };
