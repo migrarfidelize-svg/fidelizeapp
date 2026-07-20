@@ -10,6 +10,10 @@ async function assertSuperAdmin(supabase: any, userId: string) {
   if (!data) throw new Error("Acesso restrito: apenas administradores da plataforma.");
 }
 
+async function safeAudit(supabaseAdmin: any, row: Record<string, unknown>) {
+  try { await (supabaseAdmin as any).from("audit_logs").insert(row); } catch { /* audit best-effort */ }
+}
+
 /** Catálogo estático (metadados) — seguro para o cliente. */
 export const listIntegrationCatalog = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -23,16 +27,15 @@ export const listIntegrations = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertSuperAdmin(context.supabase, context.userId);
-    const { data, error } = await context.supabase
+    const { data, error } = await (context.supabase as any)
       .from("integrations")
       .select("*")
       .order("category")
       .order("provider");
     if (error) throw new Error(error.message);
 
-    // Descobre quais secrets existem no ambiente do worker (sem revelar valores).
     const rows = (data ?? []) as any[];
-    const enriched = rows.map((row) => {
+    return rows.map((row) => {
       const refs = (row.credentials_ref ?? {}) as Record<string, string>;
       const secretStatus: Record<string, boolean> = {};
       for (const [field, envName] of Object.entries(refs)) {
@@ -40,7 +43,6 @@ export const listIntegrations = createServerFn({ method: "GET" })
       }
       return { ...row, secret_status: secretStatus };
     });
-    return enriched;
   });
 
 const UpsertInput = z.object({
@@ -57,35 +59,29 @@ export const upsertIntegration = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => UpsertInput.parse(d))
   .handler(async ({ context, data }) => {
     await assertSuperAdmin(context.supabase, context.userId);
-    // valida provider existe
     getProvider(data.category as IntegrationCategory, data.provider);
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const payload: Record<string, unknown> = {
-      category: data.category,
-      provider: data.provider,
-    };
+    const payload: Record<string, unknown> = { category: data.category, provider: data.provider };
     if (data.enabled !== undefined) payload.enabled = data.enabled;
     if (data.mode !== undefined) payload.mode = data.mode;
     if (data.config !== undefined) payload.config = data.config;
     if (data.credentials_ref !== undefined) payload.credentials_ref = data.credentials_ref;
 
-    const { data: row, error } = await supabaseAdmin
+    const { data: row, error } = await (supabaseAdmin as any)
       .from("integrations")
       .upsert(payload, { onConflict: "category,provider" })
       .select()
       .single();
     if (error) throw new Error(error.message);
 
-    // audit log
-    await supabaseAdmin.from("audit_logs").insert({
+    await safeAudit(supabaseAdmin, {
       actor_id: context.userId,
       action: "integration.upsert",
       target_type: "integration",
-      target_id: row.id,
+      target_id: row?.id,
       metadata: { category: data.category, provider: data.provider, enabled: data.enabled, mode: data.mode },
-    }).then(() => null, () => null);
-
+    });
     return row;
   });
 
@@ -100,19 +96,19 @@ export const toggleIntegration = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     await assertSuperAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: row, error } = await supabaseAdmin
+    const { data: row, error } = await (supabaseAdmin as any)
       .from("integrations")
       .upsert({ category: data.category, provider: data.provider, enabled: data.enabled }, { onConflict: "category,provider" })
       .select()
       .single();
     if (error) throw new Error(error.message);
-    await supabaseAdmin.from("audit_logs").insert({
+    await safeAudit(supabaseAdmin, {
       actor_id: context.userId,
       action: data.enabled ? "integration.enable" : "integration.disable",
       target_type: "integration",
-      target_id: row.id,
+      target_id: row?.id,
       metadata: { category: data.category, provider: data.provider },
-    }).then(() => null, () => null);
+    });
     return row;
   });
 
@@ -127,7 +123,7 @@ export const testIntegration = createServerFn({ method: "POST" })
     await assertSuperAdmin(context.supabase, context.userId);
     const provider = getProvider(data.category as IntegrationCategory, data.provider);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: row } = await supabaseAdmin
+    const { data: row } = await (supabaseAdmin as any)
       .from("integrations")
       .select("*")
       .eq("category", data.category)
@@ -135,12 +131,11 @@ export const testIntegration = createServerFn({ method: "POST" })
       .maybeSingle();
 
     const runtime: IntegrationRuntimeConfig = {
-      enabled: row?.enabled ?? false,
-      mode: row?.mode ?? "production",
-      config: (row?.config ?? {}) as Record<string, unknown>,
-      credentials_ref: (row?.credentials_ref ?? {}) as Record<string, string>,
+      enabled: (row as any)?.enabled ?? false,
+      mode: (((row as any)?.mode as "sandbox" | "production" | null) ?? "production"),
+      config: ((row as any)?.config ?? {}) as Record<string, unknown>,
+      credentials_ref: ((row as any)?.credentials_ref ?? {}) as Record<string, string>,
     };
-    // fallback: se credentials_ref vazio, usa nomes de secret dos metadados
     for (const f of provider.meta.fields) {
       if (f.kind === "secret" && f.secretName && !runtime.credentials_ref[f.name]) {
         runtime.credentials_ref[f.name] = f.secretName;
@@ -149,7 +144,7 @@ export const testIntegration = createServerFn({ method: "POST" })
 
     const result = await provider.testConnection(runtime, process.env as Record<string, string | undefined>);
 
-    await supabaseAdmin
+    await (supabaseAdmin as any)
       .from("integrations")
       .upsert({
         category: data.category,
@@ -159,13 +154,13 @@ export const testIntegration = createServerFn({ method: "POST" })
         last_tested_at: new Date().toISOString(),
       }, { onConflict: "category,provider" });
 
-    await supabaseAdmin.from("audit_logs").insert({
+    await safeAudit(supabaseAdmin, {
       actor_id: context.userId,
       action: "integration.test",
       target_type: "integration",
-      target_id: row?.id ?? null,
-      metadata: { category: data.category, provider: data.provider, ok: result.ok, status: result.status, latency_ms: result.latency_ms },
-    }).then(() => null, () => null);
+      target_id: (row as any)?.id ?? null,
+      metadata: { category: data.category, provider: data.provider, ok: result.ok, status: result.status ?? null, latency_ms: result.latency_ms ?? null },
+    });
 
     return result;
   });
