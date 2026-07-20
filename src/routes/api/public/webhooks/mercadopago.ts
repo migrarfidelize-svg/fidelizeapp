@@ -141,6 +141,82 @@ async function processMerchantOrderEvent(orderId: string) {
   }
 }
 
+async function processOrderEvent(orderId: string) {
+  // Orders API (Point/Checkout Bricks). Reconcilia via os pagamentos internos do order.
+  const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+  if (!accessToken) throw new Error("MERCADOPAGO_ACCESS_TOKEN não configurado");
+
+  const order = await fetchOrderFromMP(orderId, accessToken);
+  const payments = (order?.transactions?.payments ?? []) as any[];
+  const paymentIds = Array.from(new Set(
+    payments
+      .map((payment) => payment?.id)
+      .filter((id): id is string | number => id !== null && id !== undefined)
+      .map((id) => String(id)),
+  ));
+
+  if (paymentIds.length === 0) {
+    // Ordens podem chegar sem pagamentos ainda (ex: created/processing). Sem erro — apenas nada a reconciliar agora.
+    return;
+  }
+
+  for (const paymentId of paymentIds) {
+    try {
+      await processPaymentEvent(paymentId);
+    } catch (e) {
+      // Alguns payment IDs de Orders podem ser sintéticos (ex.: PAY01...). Ignora erros individuais para não travar o order.
+      console.warn(`[mp-webhook] falha ao processar pagamento ${paymentId} do order ${orderId}:`, e);
+    }
+  }
+}
+
+async function processSubscriptionPreapprovalEvent(preapprovalId: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+  if (!accessToken) throw new Error("MERCADOPAGO_ACCESS_TOKEN não configurado");
+
+  const preapproval = await fetchPreapprovalFromMP(preapprovalId, accessToken);
+
+  // Localiza subscription pelo mp_subscription_id (preferido) ou external_id (fallback).
+  const { data: existing } = await supabaseAdmin
+    .from("subscriptions")
+    .select("id, establishment_id, plan_id, tier, status")
+    .or(`mp_subscription_id.eq.${preapprovalId},external_id.eq.${preapprovalId}`)
+    .maybeSingle();
+
+  const rawStatus = String(preapproval?.status ?? "").toLowerCase();
+  // authorized → active; paused → past_due; cancelled/finished → cancelled
+  const mapped = rawStatus === "authorized" ? "active"
+    : rawStatus === "paused" ? "past_due"
+    : rawStatus === "cancelled" || rawStatus === "finished" ? "cancelled"
+    : rawStatus || "pending";
+
+  const nextPayment = preapproval?.next_payment_date ? new Date(preapproval.next_payment_date).toISOString() : null;
+
+  if (existing) {
+    const updatePayload: any = {
+      status: mapped,
+      mp_subscription_id: preapprovalId,
+      next_billing_date: nextPayment,
+      cancel_at_period_end: mapped === "cancelled",
+      updated_at: new Date().toISOString(),
+    };
+    if (mapped === "cancelled") updatePayload.cancelled_at = new Date().toISOString();
+    await supabaseAdmin.from("subscriptions").update(updatePayload).eq("id", existing.id);
+
+    // Se cancelado, registra evento e opcionalmente desativa establishment.
+    if (mapped === "cancelled") {
+      await supabaseAdmin.from("subscription_events").insert({
+        establishment_id: existing.establishment_id,
+        event_type: "cancel",
+        message: `Assinatura MP ${preapprovalId} cancelada via preapproval.`,
+      } as never);
+    }
+  }
+  // Se não existe, registra apenas o log — não criamos subscription "órfã" sem estabelecimento.
+}
+
+
 async function activatePlan(establishmentId: string, planSlug: string, mpPaymentId: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: plan } = await supabaseAdmin
