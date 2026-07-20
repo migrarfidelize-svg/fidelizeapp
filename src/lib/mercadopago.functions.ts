@@ -269,6 +269,7 @@ export const createBoletoPayment = createServerFn({ method: "POST" })
     const plan = await getPlanOrThrow(supabase, data.plan_slug);
     const amount = Number(plan.price_monthly ?? 0);
     if (!(amount > 0)) throw new Error("Este plano não é cobrado (grátis).");
+    await assertPayerNotAccountHolder(data.payer_email);
 
     const idempotencyKey = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 3 * 24 * 3600_000).toISOString();
