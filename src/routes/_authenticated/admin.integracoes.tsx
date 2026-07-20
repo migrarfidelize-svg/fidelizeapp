@@ -155,8 +155,15 @@ function SkeletonGrid() {
 function Grid({ metas, byKey, onChanged }: { metas: CatalogMeta[]; byKey: Map<string, IntegrationRow>; onChanged: () => void }) {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {metas.map((meta) => (
-        <ProviderCard key={`${meta.category}:${meta.id}`} meta={meta} row={byKey.get(`${meta.category}:${meta.id}`)} onChanged={onChanged} />
+      {metas.map((meta, idx) => (
+        <motion.div
+          key={`${meta.category}:${meta.id}`}
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: idx * 0.05, duration: 0.35, ease: "easeOut" }}
+        >
+          <ProviderCard meta={meta} row={byKey.get(`${meta.category}:${meta.id}`)} onChanged={onChanged} />
+        </motion.div>
       ))}
     </div>
   );
