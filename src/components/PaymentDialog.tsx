@@ -418,7 +418,7 @@ function CardForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, onD
         identificationType: docType,
         identificationNumber: doc.replace(/\D/g, ""),
       });
-      if (!token?.id) throw new Error(token?.error ?? "Falha ao tokenizar cartão");
+      if (!token?.id) throw new Error(getMercadoPagoSdkErrorMessage(token?.error, "Falha ao tokenizar cartão."));
 
       // Descobre payment_method_id (bandeira) via BIN
       const bin = cleanNumber.slice(0, 8);
@@ -450,10 +450,20 @@ function CardForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, onD
         toast.error(`Cartão recusado: ${translateDetail(r.status_detail)}`);
       }
     } catch (e: any) {
-      toast.error(e?.message ?? "Falha no pagamento");
+      toast.error(getMercadoPagoSdkErrorMessage(e, "Falha no pagamento."));
     } finally {
       setLoading(false);
     }
+  }
+
+  function fillSandboxCardData() {
+    setName(SANDBOX_APPROVED_CARDHOLDER);
+    setNumber(formatCardNumber("5031433215406351"));
+    setExp("11/30");
+    setCvv("123");
+    setDocType("CPF");
+    setDoc(SANDBOX_TEST_CPF);
+    toast.success("Dados de cartão de teste preenchidos. Informe apenas o e-mail do comprador de teste.");
   }
 
   if (status === "approved") {
@@ -463,7 +473,14 @@ function CardForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, onD
   return (
     <div className="space-y-3">
       {isSandboxLike && <SandboxBuyerNotice />}
-      {isSandboxLike && <SandboxCardTestGuide />}
+      {isSandboxLike && (
+        <div className="space-y-2">
+          <SandboxCardTestGuide />
+          <Button type="button" variant="outline" size="sm" className="w-full" onClick={fillSandboxCardData}>
+            Preencher cartão de teste aprovado
+          </Button>
+        </div>
+      )}
       {!publicKey && publicKeyLoading && (
         <div className="rounded-md border border-amber-400/40 bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
           Carregando Public Key do Mercado Pago…
@@ -546,6 +563,22 @@ function translateDetail(d?: string | null): string {
     accredited: "Aprovado",
   };
   return d ? (map[d] ?? d) : "";
+}
+
+function getMercadoPagoSdkErrorMessage(error: unknown, fallback: string) {
+  if (!error) return fallback;
+  if (error instanceof Error) return error.message || fallback;
+  if (typeof error === "string") return error;
+  if (typeof error === "object") {
+    const err = error as Record<string, any>;
+    const cause = Array.isArray(err.cause) ? err.cause[0] : null;
+    const code = cause?.code ?? err.code;
+    const description = cause?.description ?? err.description ?? err.message;
+    if (description && code) return `${description} (${code})`;
+    if (description) return String(description);
+    try { return JSON.stringify(error); } catch { return fallback; }
+  }
+  return fallback;
 }
 
 // ============ Boleto ============
