@@ -156,38 +156,63 @@ export function PaymentDialog({
 
         {plan && (
           <>
-          {configurationIssue && (
-            <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-xs text-destructive">
-              <strong>Mercado Pago precisa de ajuste:</strong> {configurationIssue}
+          {hasMP && hasAsaas && (
+            <div className="flex items-center gap-2">
+              <Label className="text-xs text-muted-foreground">Provedor de pagamento</Label>
+              <Select value={provider} onValueChange={(v) => setProvider(v as "mercadopago" | "asaas")}>
+                <SelectTrigger className="h-8 w-[220px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mercadopago">Mercado Pago{isSandboxLike ? " (Sandbox)" : ""}</SelectItem>
+                  <SelectItem value="asaas">Asaas{asaasMode === "sandbox" ? " (Sandbox)" : ""}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           )}
-          {isSandboxLike && <SandboxBuyerNotice />}
-          {isLive && acctEmail && (
-            <div className={`rounded-md border p-3 text-xs ${conflicts ? "border-destructive/50 bg-destructive/10 text-destructive" : "border-amber-400/40 bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200"}`}>
-              {conflicts ? "⛔" : "⚠️"} <strong>Importante:</strong> o Mercado Pago bloqueia (<code>401 Unauthorized use of live credentials</code>) quando o pagador é o próprio titular da conta que recebe. Use um e-mail e CPF/CNPJ <strong>diferentes</strong> de <code>{acctEmail}</code>{hint?.account_nickname ? ` (${hint.account_nickname})` : ""}. Vale para PIX, Cartão e Boleto.
-            </div>
+
+          {provider === "mercadopago" ? (
+            <>
+              {configurationIssue && (
+                <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-xs text-destructive">
+                  <strong>Mercado Pago precisa de ajuste:</strong> {configurationIssue}
+                </div>
+              )}
+              {isSandboxLike && <SandboxBuyerNotice />}
+              {isLive && acctEmail && (
+                <div className={`rounded-md border p-3 text-xs ${conflicts ? "border-destructive/50 bg-destructive/10 text-destructive" : "border-amber-400/40 bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200"}`}>
+                  {conflicts ? "⛔" : "⚠️"} <strong>Importante:</strong> o Mercado Pago bloqueia (<code>401 Unauthorized use of live credentials</code>) quando o pagador é o próprio titular da conta que recebe. Use um e-mail e CPF/CNPJ <strong>diferentes</strong> de <code>{acctEmail}</code>{hint?.account_nickname ? ` (${hint.account_nickname})` : ""}. Vale para PIX, Cartão e Boleto.
+                </div>
+              )}
+              {isLive && !acctEmail && (
+                <div className="rounded-md border border-amber-400/40 bg-amber-50 dark:bg-amber-950/30 p-3 text-xs text-amber-900 dark:text-amber-200">
+                  ⚠️ <strong>Importante:</strong> use um e-mail e CPF/CNPJ <strong>diferentes</strong> dos cadastrados na conta Mercado Pago que recebe os pagamentos. Em credenciais LIVE, o titular não pode pagar para si mesmo.
+                </div>
+              )}
+              <Tabs defaultValue="pix" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="pix"><QrCode className="mr-2 h-4 w-4" />PIX</TabsTrigger>
+                  <TabsTrigger value="card"><CreditCard className="mr-2 h-4 w-4" />Cartão</TabsTrigger>
+                  <TabsTrigger value="boleto"><FileText className="mr-2 h-4 w-4" />Boleto</TabsTrigger>
+                </TabsList>
+                <TabsContent value="pix" className="mt-4">
+                  <PixForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
+                </TabsContent>
+                <TabsContent value="card" className="mt-4">
+                  <CardForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
+                </TabsContent>
+                <TabsContent value="boleto" className="mt-4">
+                  <BoletoForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
+                </TabsContent>
+              </Tabs>
+            </>
+          ) : (
+            <AsaasPaymentTabs
+              plan={plan}
+              establishmentId={establishmentId}
+              payerEmailDefault={payerEmailDefault}
+              isSandboxLike={asaasMode === "sandbox"}
+              onDone={() => onOpenChange(false)}
+            />
           )}
-          {isLive && !acctEmail && (
-            <div className="rounded-md border border-amber-400/40 bg-amber-50 dark:bg-amber-950/30 p-3 text-xs text-amber-900 dark:text-amber-200">
-              ⚠️ <strong>Importante:</strong> use um e-mail e CPF/CNPJ <strong>diferentes</strong> dos cadastrados na conta Mercado Pago que recebe os pagamentos. Em credenciais LIVE, o titular não pode pagar para si mesmo.
-            </div>
-          )}
-          <Tabs defaultValue="pix" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="pix"><QrCode className="mr-2 h-4 w-4" />PIX</TabsTrigger>
-              <TabsTrigger value="card"><CreditCard className="mr-2 h-4 w-4" />Cartão</TabsTrigger>
-              <TabsTrigger value="boleto"><FileText className="mr-2 h-4 w-4" />Boleto</TabsTrigger>
-            </TabsList>
-            <TabsContent value="pix" className="mt-4">
-              <PixForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
-            </TabsContent>
-            <TabsContent value="card" className="mt-4">
-              <CardForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
-            </TabsContent>
-            <TabsContent value="boleto" className="mt-4">
-              <BoletoForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
-            </TabsContent>
-          </Tabs>
           </>
         )}
       </DialogContent>
