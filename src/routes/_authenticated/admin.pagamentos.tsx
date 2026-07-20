@@ -734,6 +734,10 @@ function DualWebhookTestCard({ hasSecret }: { hasSecret: boolean }) {
 
 function ProbePane({ title, data }: { title: string; data: any }) {
   const ok = !!data?.ok;
+  const modeMatched = data?.expected_log_mode ? data?.log_mode === data?.expected_log_mode : null;
+  const sigMatched = data?.expected_signature_valid !== undefined
+    ? data?.signature_valid === data?.expected_signature_valid
+    : null;
   return (
     <div className={`rounded-xl border p-3 ${ok ? "border-emerald-500/40 bg-emerald-500/10" : "border-destructive/40 bg-destructive/10"}`}>
       <div className="flex items-center gap-2">
@@ -741,13 +745,41 @@ function ProbePane({ title, data }: { title: string; data: any }) {
         <div className="font-medium text-sm">{title}</div>
         <Badge variant="outline" className="ml-auto text-[10px]">{data?.path}</Badge>
       </div>
+
+      {data?.path_explanation && (
+        <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+          {data.path_explanation}
+        </p>
+      )}
+      {data?.detection_rule && (
+        <div className="mt-1 text-[11px]">
+          <span className="opacity-60">Regra de detecção esperada:</span>{" "}
+          <code className="font-mono text-[10px] rounded bg-muted px-1 py-0.5">{data.detection_rule}</code>
+        </div>
+      )}
+
       <div className="mt-2 grid grid-cols-2 gap-1 text-[11px] font-mono">
         <div><span className="opacity-60">HTTP</span> {data?.status ?? "—"}</div>
         <div><span className="opacity-60">Latência</span> {data?.latency_ms ?? "—"}ms</div>
         <div><span className="opacity-60">Log</span> {data?.log_matched ? "✓" : "✗"}</div>
         <div><span className="opacity-60">Processado</span> {data?.log_processed === true ? "✓" : data?.log_processed === false ? "✗" : "—"}</div>
-        <div><span className="opacity-60">Modo</span> {data?.log_mode ?? "—"}</div>
-        <div><span className="opacity-60">Assinatura</span> {data?.signature_valid === true ? "válida" : data?.signature_valid === false ? "inválida" : "—"}</div>
+        <div>
+          <span className="opacity-60">Modo</span> {data?.log_mode ?? "—"}
+          {data?.expected_log_mode && (
+            <span className={`ml-1 ${modeMatched ? "text-emerald-600" : "text-destructive"}`}>
+              {modeMatched ? "✓" : `≠ ${data.expected_log_mode}`}
+            </span>
+          )}
+        </div>
+        <div>
+          <span className="opacity-60">Assinatura</span>{" "}
+          {data?.signature_valid === true ? "válida" : data?.signature_valid === false ? "inválida" : "—"}
+          {data?.expected_signature_valid !== undefined && (
+            <span className={`ml-1 ${sigMatched ? "text-emerald-600" : "text-destructive"}`}>
+              {sigMatched ? "✓" : `≠ esperado ${data.expected_signature_valid ? "válida" : "inválida"}`}
+            </span>
+          )}
+        </div>
       </div>
       <div className="mt-2 text-xs">{data?.message}</div>
       {data?.body_snippet && (
