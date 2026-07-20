@@ -28,9 +28,25 @@ type MercadoPagoHint = {
 };
 
 const MP_TEST_USERS_URL = "https://www.mercadopago.com.br/developers/panel/test-users";
+const SANDBOX_APPROVED_CARDHOLDER = "APRO";
+const SANDBOX_TEST_CPF = "12345678909";
 
 function isMercadoPagoSandboxBuyerEmail(email: string) {
-  return /(^|[+._-])test[_-]?user|testuser\.com/i.test(email.trim());
+  const clean = email.trim().toLowerCase();
+  return /^[^\s@]+@testuser\.com$/.test(clean);
+}
+
+function isOnlyMercadoPagoTestNickname(email: string) {
+  return /^TESTUSER\d+$/i.test(email.trim());
+}
+
+function onlyDigits(value: string) {
+  return value.replace(/\D/g, "");
+}
+
+function hasValidBrazilianDocLength(value: string) {
+  const digits = onlyDigits(value);
+  return digits.length === 11 || digits.length === 14;
 }
 
 function SandboxBuyerNotice() {
@@ -39,8 +55,8 @@ function SandboxBuyerNotice() {
       <div className="flex gap-2">
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
         <div className="space-y-1">
-          <p><strong>Sandbox/Teste ativo:</strong> o Mercado Pago exige um comprador de teste gerado no painel dele.</p>
-          <p>Não use Gmail/Hotmail ou o e-mail real da sua conta; cole um e-mail no formato <code>TESTUSER...@testuser.com</code>.</p>
+          <p><strong>Sandbox/Teste ativo:</strong> o Mercado Pago exige o <strong>e-mail completo</strong> do comprador de teste gerado no painel dele.</p>
+          <p>Não use Gmail/Hotmail, senha, ID ou nickname <code>TESTUSER...</code>; cole o e-mail no formato <code>test_user...@testuser.com</code>.</p>
           <a className="inline-flex items-center gap-1 font-medium text-primary hover:underline" href={MP_TEST_USERS_URL} target="_blank" rel="noreferrer">
             Gerar comprador de teste <ExternalLink className="h-3 w-3" />
           </a>
@@ -56,11 +72,37 @@ function validateSandboxBuyerEmail(isSandboxLike: boolean, email: string) {
     toast.error("Informe o e-mail do comprador.");
     return false;
   }
+  if (isSandboxLike && isOnlyMercadoPagoTestNickname(clean)) {
+    toast.error("Você informou o nickname TESTUSER. No Sandbox, use o e-mail completo do comprador de teste, terminado em @testuser.com.");
+    return false;
+  }
   if (isSandboxLike && !isMercadoPagoSandboxBuyerEmail(clean)) {
-    toast.error("Em Sandbox/Teste, use um e-mail de comprador de teste do Mercado Pago, como TESTUSER...@testuser.com.");
+    toast.error("Em Sandbox/Teste, use o e-mail completo do comprador de teste do Mercado Pago, como test_user...@testuser.com.");
     return false;
   }
   return true;
+}
+
+function validateBrazilianDoc(doc: string, label = "CPF/CNPJ") {
+  if (!hasValidBrazilianDocLength(doc)) {
+    toast.error(`${label} inválido. Use 11 dígitos para CPF ou 14 para CNPJ. Para testes, use CPF ${SANDBOX_TEST_CPF}.`);
+    return false;
+  }
+  return true;
+}
+
+function SandboxCardTestGuide() {
+  return (
+    <div className="rounded-md border border-blue-400/40 bg-blue-50 p-3 text-xs text-blue-900 dark:bg-blue-950/30 dark:text-blue-200">
+      <p className="font-medium">Dados recomendados para cartão aprovado em Sandbox</p>
+      <div className="mt-2 grid gap-1 sm:grid-cols-2">
+        <span>Nome: <code>{SANDBOX_APPROVED_CARDHOLDER}</code></span>
+        <span>CPF: <code>{SANDBOX_TEST_CPF}</code></span>
+        <span>Cartão: <code>5031 4332 1540 6351</code></span>
+        <span>CVV/validade: <code>123</code> · <code>11/30</code></span>
+      </div>
+    </div>
+  );
 }
 
 export function PaymentDialog({
@@ -202,7 +244,7 @@ function PixForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, onDo
       <div className="space-y-4">
         <div className="space-y-2">
           <Label>E-mail do pagador</Label>
-          <Input value={email} onChange={e => { setEmailTouched(true); setEmail(e.target.value); }} placeholder={isSandboxLike ? "TESTUSER...@testuser.com" : "voce@empresa.com"} />
+          <Input value={email} onChange={e => { setEmailTouched(true); setEmail(e.target.value); }} placeholder={isSandboxLike ? "test_user...@testuser.com" : "voce@empresa.com"} />
         </div>
         {isSandboxLike && <SandboxBuyerNotice />}
         <div className="space-y-2">
@@ -268,13 +310,13 @@ function CardForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, onD
   const [publicKeyError, setPublicKeyError] = useState<string | null>(null);
   const [mpInstance, setMpInstance] = useState<any>(null);
   const [number, setNumber] = useState("");
-  const [name, setName] = useState("");
+  const [name, setName] = useState(isSandboxLike ? SANDBOX_APPROVED_CARDHOLDER : "");
   const [exp, setExp] = useState("");
   const [cvv, setCvv] = useState("");
   const [installments, setInstallments] = useState("1");
   const [email, setEmail] = useState(payerEmailDefault ?? "");
   const [emailTouched, setEmailTouched] = useState(false);
-  const [doc, setDoc] = useState("");
+  const [doc, setDoc] = useState(isSandboxLike ? SANDBOX_TEST_CPF : "");
   const [docType, setDocType] = useState<"CPF"|"CNPJ">("CPF");
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
@@ -336,6 +378,12 @@ function CardForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, onD
     }
   }, [email, emailTouched, isSandboxLike, payerEmailDefault]);
 
+  useEffect(() => {
+    if (!isSandboxLike) return;
+    if (!name) setName(SANDBOX_APPROVED_CARDHOLDER);
+    if (!doc) setDoc(SANDBOX_TEST_CPF);
+  }, [doc, isSandboxLike, name]);
+
   // polling if payment is pending after submit
   useEffect(() => {
     if (!paymentId || status === "approved") return;
@@ -357,6 +405,7 @@ function CardForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, onD
     const cleanNumber = number.replace(/\s+/g, "");
     const [expMonth, expYearShort] = exp.split("/").map(s => s.trim());
     if (!cleanNumber || !expMonth || !expYearShort || !cvv || !name) { toast.error("Preencha os dados do cartão."); return; }
+    if (!validateBrazilianDoc(doc, docType)) return;
     setLoading(true);
     try {
       // Tokenização no browser — dados do cartão nunca chegam ao backend
@@ -414,6 +463,7 @@ function CardForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, onD
   return (
     <div className="space-y-3">
       {isSandboxLike && <SandboxBuyerNotice />}
+      {isSandboxLike && <SandboxCardTestGuide />}
       {!publicKey && publicKeyLoading && (
         <div className="rounded-md border border-amber-400/40 bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
           Carregando Public Key do Mercado Pago…
@@ -458,7 +508,7 @@ function CardForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, onD
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2"><Label>CPF/CNPJ</Label><Input value={doc} onChange={e => setDoc(e.target.value)} placeholder="Apenas números" /></div>
-        <div className="space-y-2"><Label>E-mail</Label><Input type="email" value={email} onChange={e => { setEmailTouched(true); setEmail(e.target.value); }} placeholder={isSandboxLike ? "TESTUSER...@testuser.com" : undefined} /></div>
+        <div className="space-y-2"><Label>E-mail do comprador</Label><Input type="email" value={email} onChange={e => { setEmailTouched(true); setEmail(e.target.value); }} placeholder={isSandboxLike ? "test_user...@testuser.com" : undefined} /></div>
       </div>
 
       {statusDetail && status !== "approved" && (
@@ -518,6 +568,7 @@ function BoletoForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, o
   async function submit() {
     if (!email || !first || !last || !doc) { toast.error("Preencha todos os campos."); return; }
     if (!validateSandboxBuyerEmail(isSandboxLike, email)) return;
+    if (!validateBrazilianDoc(doc)) return;
     setLoading(true);
     try {
       const r: any = await createFn({ data: { establishment_id: establishmentId, plan_slug: plan.slug, payer_email: email.trim(), payer_first_name: first, payer_last_name: last, payer_doc_number: doc } });
@@ -547,7 +598,7 @@ function BoletoForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, o
         <div className="space-y-2"><Label>Nome</Label><Input value={first} onChange={e => setFirst(e.target.value)} /></div>
         <div className="space-y-2"><Label>Sobrenome</Label><Input value={last} onChange={e => setLast(e.target.value)} /></div>
       </div>
-      <div className="space-y-2"><Label>E-mail</Label><Input type="email" value={email} onChange={e => { setEmailTouched(true); setEmail(e.target.value); }} placeholder={isSandboxLike ? "TESTUSER...@testuser.com" : undefined} /></div>
+      <div className="space-y-2"><Label>E-mail do comprador</Label><Input type="email" value={email} onChange={e => { setEmailTouched(true); setEmail(e.target.value); }} placeholder={isSandboxLike ? "test_user...@testuser.com" : undefined} /></div>
       <div className="space-y-2"><Label>CPF/CNPJ</Label><Input value={doc} onChange={e => setDoc(e.target.value)} placeholder="Apenas números" /></div>
       <Button className="w-full gradient-brand text-primary-foreground" onClick={submit} disabled={loading}>
         {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Gerando…</> : "Gerar boleto"}
