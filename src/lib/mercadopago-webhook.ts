@@ -51,6 +51,86 @@ export function verifyMercadoPagoSignature(opts: {
   }
 }
 
+/**
+ * Classifica uma requisição chegando no webhook do Mercado Pago em:
+ *  - "test"    → handshake/simulador (aceita sem HMAC)
+ *  - "live"    → evento real (exige HMAC válido)
+ *  - "unknown" → sem `live_mode` explícito e sem sinais de teste
+ *
+ * Também informa qual regra de detecção classificou como teste, para
+ * uso em UI e logs de auditoria.
+ */
+export type MpRequestMode = "test" | "live" | "unknown";
+export type MpDetectionRule =
+  | "explicit_type_test"        // body.type === "test"
+  | "explicit_action_test"      // body.action === "test.created"
+  | "sandbox_dummy_id"          // live_mode:false && data.id === "123456"
+  | "panel_simulator_ua"        // user-agent contém "restclient-node"
+  | "live_mode_true"            // live_mode:true (e nenhum sinal de teste)
+  | "live_mode_false"           // live_mode:false (fora dos casos acima)
+  | "no_signal";                // nenhuma informação suficiente
+
+export interface MpClassification {
+  mode: MpRequestMode;
+  isTest: boolean;
+  detection: MpDetectionRule;
+  /** Explicação legível em pt-BR do que foi identificado. */
+  reason: string;
+}
+
+export function classifyMercadoPagoRequest(input: {
+  eventType: string | null | undefined;
+  action: string | null | undefined;
+  liveMode: boolean | null | undefined;
+  dataId: string | null | undefined;
+  userAgent: string | null | undefined;
+}): MpClassification {
+  const { eventType, action, liveMode, dataId } = input;
+  const userAgent = input.userAgent ?? "";
+  const isPanelSimulator = /restclient-node/i.test(userAgent);
+
+  if (eventType === "test") {
+    return {
+      mode: "test", isTest: true, detection: "explicit_type_test",
+      reason: 'Body possui `type: "test"` (handshake explícito do painel MP).',
+    };
+  }
+  if (action === "test.created") {
+    return {
+      mode: "test", isTest: true, detection: "explicit_action_test",
+      reason: 'Body possui `action: "test.created"` (handshake explícito).',
+    };
+  }
+  if (liveMode === false && dataId === "123456") {
+    return {
+      mode: "test", isTest: true, detection: "sandbox_dummy_id",
+      reason: '`live_mode: false` com `data.id: "123456"` (payload dummy do sandbox MP).',
+    };
+  }
+  if (isPanelSimulator) {
+    return {
+      mode: "test", isTest: true, detection: "panel_simulator_ua",
+      reason: 'User-agent contém `restclient-node` — simulador "Testar URL" do painel MP (não assina o payload, mesmo com `live_mode: true`).',
+    };
+  }
+  if (liveMode === true) {
+    return {
+      mode: "live", isTest: false, detection: "live_mode_true",
+      reason: '`live_mode: true` sem sinais de teste — evento real; HMAC obrigatória.',
+    };
+  }
+  if (liveMode === false) {
+    return {
+      mode: "test", isTest: true, detection: "live_mode_false",
+      reason: '`live_mode: false` sem sinais adicionais — tratando como sandbox.',
+    };
+  }
+  return {
+    mode: "unknown", isTest: false, detection: "no_signal",
+    reason: "Nenhuma informação suficiente para classificar (sem `live_mode`, sem UA de simulador, sem `type: test`).",
+  };
+}
+
 const ALLOWED_STATUSES = new Set([
   "pending", "in_process", "approved", "authorized", "rejected", "cancelled", "refunded", "charged_back",
 ]);
