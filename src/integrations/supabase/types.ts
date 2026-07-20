@@ -1561,6 +1561,9 @@ export type Database = {
       }
       payment_settings: {
         Row: {
+          account_email: string | null
+          account_id: string | null
+          account_nickname: string | null
           created_at: string
           environment: string
           id: string
@@ -1572,6 +1575,9 @@ export type Database = {
           webhook_url: string | null
         }
         Insert: {
+          account_email?: string | null
+          account_id?: string | null
+          account_nickname?: string | null
           created_at?: string
           environment?: string
           id?: string
@@ -1583,6 +1589,9 @@ export type Database = {
           webhook_url?: string | null
         }
         Update: {
+          account_email?: string | null
+          account_id?: string | null
+          account_nickname?: string | null
           created_at?: string
           environment?: string
           id?: string
