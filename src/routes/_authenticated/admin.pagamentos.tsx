@@ -13,6 +13,7 @@ import {
   adminRetryWebhookQueue,
   adminSyncWebhookUrl,
   adminSendWebhookTestEvent,
+  adminSendWebhookDualTest,
 } from "@/lib/mercadopago.functions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -263,6 +264,8 @@ function AdminPaymentsPage() {
       </Card>
 
       <WebhookHealthCard />
+
+      <DualWebhookTestCard hasSecret={!!creds.has_webhook_secret} />
 
       <RecommendedEventsCard />
 
@@ -670,3 +673,89 @@ function WebhookHealthCard() {
   );
 }
 
+
+function DualWebhookTestCard({ hasSecret }: { hasSecret: boolean }) {
+  const dualFn = useServerFn(adminSendWebhookDualTest);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<any>(null);
+
+  async function run() {
+    setLoading(true);
+    setResult(null);
+    try {
+      const r: any = await dualFn();
+      setResult(r);
+      const both = r.simulator.ok && r.live.ok;
+      if (both) toast.success("Ambos os caminhos foram validados.");
+      else if (r.simulator.ok) toast.warning("Simulador OK, mas evento assinado falhou.");
+      else toast.error("Falha em um ou mais caminhos.");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao executar teste dual");
+    } finally { setLoading(false); }
+  }
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-start justify-between gap-3">
+        <div>
+          <CardTitle className="text-base flex items-center gap-2"><ShieldCheck className="h-4 w-4" />Teste dual do webhook</CardTitle>
+          <CardDescription>
+            Envia dois payloads controlados: <strong>simulador</strong> (sem HMAC) e <strong>evento live</strong> (com HMAC assinado com <code>MERCADOPAGO_WEBHOOK_SECRET</code>). Compara os dois caminhos lado a lado.
+          </CardDescription>
+        </div>
+        <Button size="sm" onClick={run} disabled={loading}>
+          {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+          Executar teste
+        </Button>
+      </CardHeader>
+      <CardContent>
+        {!hasSecret && (
+          <div className="mb-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-2 text-xs text-amber-900 dark:text-amber-100">
+            <AlertCircle className="inline h-3.5 w-3.5 mr-1" />
+            O caminho HMAC exige <code>MERCADOPAGO_WEBHOOK_SECRET</code> configurado. Sem ele, apenas o simulador é validável.
+          </div>
+        )}
+        {!result && !loading && (
+          <div className="text-sm text-muted-foreground">Clique em <em>Executar teste</em> para disparar os dois payloads.</div>
+        )}
+        {result && (
+          <div className="grid gap-3 md:grid-cols-2">
+            <ProbePane title="Simulador (sem HMAC)" data={result.simulator} />
+            <ProbePane title="Evento live (com HMAC)" data={result.live} />
+            <div className="md:col-span-2 text-[11px] text-muted-foreground">
+              URL testada: <code className="font-mono">{result.url}</code> · Verificado em {new Date(result.checked_at).toLocaleString("pt-BR")}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ProbePane({ title, data }: { title: string; data: any }) {
+  const ok = !!data?.ok;
+  return (
+    <div className={`rounded-xl border p-3 ${ok ? "border-emerald-500/40 bg-emerald-500/10" : "border-destructive/40 bg-destructive/10"}`}>
+      <div className="flex items-center gap-2">
+        {ok ? <CheckCircle2 className="h-4 w-4 text-emerald-600" /> : <XCircle className="h-4 w-4 text-destructive" />}
+        <div className="font-medium text-sm">{title}</div>
+        <Badge variant="outline" className="ml-auto text-[10px]">{data?.path}</Badge>
+      </div>
+      <div className="mt-2 grid grid-cols-2 gap-1 text-[11px] font-mono">
+        <div><span className="opacity-60">HTTP</span> {data?.status ?? "—"}</div>
+        <div><span className="opacity-60">Latência</span> {data?.latency_ms ?? "—"}ms</div>
+        <div><span className="opacity-60">Log</span> {data?.log_matched ? "✓" : "✗"}</div>
+        <div><span className="opacity-60">Processado</span> {data?.log_processed === true ? "✓" : data?.log_processed === false ? "✗" : "—"}</div>
+        <div><span className="opacity-60">Modo</span> {data?.log_mode ?? "—"}</div>
+        <div><span className="opacity-60">Assinatura</span> {data?.signature_valid === true ? "válida" : data?.signature_valid === false ? "inválida" : "—"}</div>
+      </div>
+      <div className="mt-2 text-xs">{data?.message}</div>
+      {data?.body_snippet && (
+        <details className="mt-2">
+          <summary className="cursor-pointer text-[11px] opacity-70">Resposta bruta</summary>
+          <pre className="mt-1 max-h-32 overflow-auto rounded bg-black/40 p-2 text-[10px] text-emerald-100">{data.body_snippet}</pre>
+        </details>
+      )}
+    </div>
+  );
+}
