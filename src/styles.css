@@ -56,99 +56,119 @@
 }
 
 :root {
-  --radius: 0.9rem;
+  --radius: 1rem;
 
-  /* Fundo creme quente — foge do branco frio "AI SaaS" */
-  --background: oklch(0.985 0.006 85);
-  --foreground: oklch(0.22 0.04 250);
+  /* Fundo "cristal quente" — creme tocado por brilho ciano/azul-bebê */
+  --background: oklch(0.982 0.008 235);
+  --foreground: oklch(0.2 0.045 250);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.04 250);
+  --card-foreground: oklch(0.2 0.045 250);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.04 250);
+  --popover-foreground: oklch(0.2 0.045 250);
 
-  /* Azul-bebê como cor predominante */
-  --primary: oklch(0.82 0.09 235);
-  --primary-foreground: oklch(0.22 0.05 250);
-  --primary-soft: oklch(0.95 0.035 235);
+  /* Azul-bebê elétrico como cor predominante */
+  --primary: oklch(0.78 0.11 235);
+  --primary-foreground: oklch(0.18 0.05 250);
+  --primary-soft: oklch(0.94 0.045 235);
 
-  --secondary: oklch(0.96 0.015 235);
-  --secondary-foreground: oklch(0.28 0.05 250);
+  --secondary: oklch(0.955 0.02 235);
+  --secondary-foreground: oklch(0.26 0.05 250);
 
-  --muted: oklch(0.955 0.01 235);
-  --muted-foreground: oklch(0.5 0.03 250);
+  --muted: oklch(0.955 0.012 235);
+  --muted-foreground: oklch(0.48 0.03 250);
 
-  /* Acento em areia quente para equilibrar o azul frio */
-  --accent: oklch(0.82 0.08 60);
-  --accent-foreground: oklch(0.25 0.04 60);
-  --accent-soft: oklch(0.96 0.035 60);
+  /* Acento "areia iridescente" — quente, sutil */
+  --accent: oklch(0.83 0.09 65);
+  --accent-foreground: oklch(0.24 0.04 60);
+  --accent-soft: oklch(0.96 0.035 65);
 
   --destructive: oklch(0.62 0.19 25);
   --destructive-foreground: oklch(0.99 0.005 90);
 
-  --success: oklch(0.62 0.14 160);
+  --success: oklch(0.66 0.14 165);
   --success-foreground: oklch(0.99 0.005 90);
 
-  --border: oklch(0.9 0.02 235);
+  --border: oklch(0.88 0.02 235);
   --input: oklch(0.9 0.02 235);
-  --ring: oklch(0.7 0.11 235);
+  --ring: oklch(0.7 0.12 235);
 
-  --chart-1: oklch(0.72 0.11 235);
-  --chart-2: oklch(0.82 0.08 60);
-  --chart-3: oklch(0.55 0.1 210);
-  --chart-4: oklch(0.68 0.13 165);
-  --chart-5: oklch(0.78 0.09 90);
+  --chart-1: oklch(0.72 0.12 235);
+  --chart-2: oklch(0.82 0.09 65);
+  --chart-3: oklch(0.6 0.12 200);
+  --chart-4: oklch(0.7 0.14 165);
+  --chart-5: oklch(0.75 0.11 300);
 
-  --sidebar: oklch(0.985 0.006 85);
-  --sidebar-foreground: oklch(0.22 0.04 250);
-  --sidebar-primary: oklch(0.82 0.09 235);
-  --sidebar-primary-foreground: oklch(0.22 0.05 250);
-  --sidebar-accent: oklch(0.95 0.03 235);
-  --sidebar-accent-foreground: oklch(0.28 0.05 250);
-  --sidebar-border: oklch(0.9 0.02 235);
-  --sidebar-ring: oklch(0.7 0.11 235);
+  --sidebar: oklch(0.985 0.008 235);
+  --sidebar-foreground: oklch(0.2 0.045 250);
+  --sidebar-primary: oklch(0.78 0.11 235);
+  --sidebar-primary-foreground: oklch(0.18 0.05 250);
+  --sidebar-accent: oklch(0.94 0.035 235);
+  --sidebar-accent-foreground: oklch(0.26 0.05 250);
+  --sidebar-border: oklch(0.88 0.02 235);
+  --sidebar-ring: oklch(0.7 0.12 235);
+
+  /* Tokens futuristas — gradientes, glass e glow reutilizáveis */
+  --grid-line: color-mix(in oklab, var(--foreground) 8%, transparent);
+  --glass-bg: color-mix(in oklab, var(--card) 78%, transparent);
+  --glass-border: color-mix(in oklab, var(--primary) 22%, transparent);
+  --glow-primary: color-mix(in oklab, var(--primary) 45%, transparent);
+  --glow-accent: color-mix(in oklab, var(--accent) 40%, transparent);
+  --hairline: color-mix(in oklab, var(--foreground) 10%, transparent);
+  --gradient-hero: radial-gradient(1200px 600px at 15% -10%, color-mix(in oklab, var(--primary) 22%, transparent), transparent 60%),
+                   radial-gradient(900px 500px at 100% 0%, color-mix(in oklab, var(--accent) 18%, transparent), transparent 60%);
+  --gradient-line: linear-gradient(135deg, color-mix(in oklab, var(--primary) 70%, transparent), color-mix(in oklab, var(--accent) 55%, transparent));
 }
 
 .dark {
-  /* Navy profundo com leve viés azul — não é o preto/roxo genérico */
-  --background: oklch(0.17 0.03 250);
+  /* Navy espacial — profundidade fria, sem ir ao preto */
+  --background: oklch(0.16 0.035 250);
   --foreground: oklch(0.97 0.01 235);
-  --card: oklch(0.21 0.035 250);
+  --card: oklch(0.21 0.04 250);
   --card-foreground: oklch(0.97 0.01 235);
-  --popover: oklch(0.21 0.035 250);
+  --popover: oklch(0.21 0.04 250);
   --popover-foreground: oklch(0.97 0.01 235);
 
-  /* Azul-bebê continua predominante; contraste ajustado no escuro */
-  --primary: oklch(0.85 0.09 235);
-  --primary-foreground: oklch(0.18 0.04 250);
-  --primary-soft: oklch(0.32 0.06 235);
+  --primary: oklch(0.86 0.11 235);
+  --primary-foreground: oklch(0.16 0.04 250);
+  --primary-soft: oklch(0.3 0.07 235);
 
-  --secondary: oklch(0.27 0.04 250);
+  --secondary: oklch(0.26 0.045 250);
   --secondary-foreground: oklch(0.97 0.01 235);
-  --muted: oklch(0.27 0.04 250);
-  --muted-foreground: oklch(0.72 0.02 235);
+  --muted: oklch(0.25 0.04 250);
+  --muted-foreground: oklch(0.74 0.025 235);
 
-  --accent: oklch(0.82 0.09 60);
-  --accent-foreground: oklch(0.18 0.04 250);
-  --accent-soft: oklch(0.3 0.06 60);
+  --accent: oklch(0.83 0.1 65);
+  --accent-foreground: oklch(0.16 0.04 250);
+  --accent-soft: oklch(0.3 0.07 65);
 
-  --destructive: oklch(0.7 0.2 25);
-  --destructive-foreground: oklch(0.18 0.04 250);
-  --success: oklch(0.72 0.14 160);
-  --success-foreground: oklch(0.18 0.04 250);
+  --destructive: oklch(0.72 0.2 25);
+  --destructive-foreground: oklch(0.16 0.04 250);
+  --success: oklch(0.75 0.14 165);
+  --success-foreground: oklch(0.16 0.04 250);
 
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.85 0.09 235);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.86 0.11 235);
 
-  --sidebar: oklch(0.21 0.035 250);
+  --sidebar: oklch(0.19 0.04 250);
   --sidebar-foreground: oklch(0.97 0.01 235);
-  --sidebar-primary: oklch(0.85 0.09 235);
-  --sidebar-primary-foreground: oklch(0.18 0.04 250);
-  --sidebar-accent: oklch(0.27 0.04 250);
+  --sidebar-primary: oklch(0.86 0.11 235);
+  --sidebar-primary-foreground: oklch(0.16 0.04 250);
+  --sidebar-accent: oklch(0.26 0.045 250);
   --sidebar-accent-foreground: oklch(0.97 0.01 235);
-  --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: oklch(0.85 0.09 235);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.86 0.11 235);
+
+  --grid-line: color-mix(in oklab, var(--primary) 10%, transparent);
+  --glass-bg: color-mix(in oklab, var(--card) 62%, transparent);
+  --glass-border: color-mix(in oklab, var(--primary) 30%, transparent);
+  --glow-primary: color-mix(in oklab, var(--primary) 40%, transparent);
+  --glow-accent: color-mix(in oklab, var(--accent) 35%, transparent);
+  --hairline: color-mix(in oklab, var(--primary) 22%, transparent);
+  --gradient-hero: radial-gradient(1200px 600px at 15% -10%, color-mix(in oklab, var(--primary) 28%, transparent), transparent 60%),
+                   radial-gradient(900px 500px at 100% 0%, color-mix(in oklab, var(--accent) 22%, transparent), transparent 60%);
+  --gradient-line: linear-gradient(135deg, color-mix(in oklab, var(--primary) 80%, transparent), color-mix(in oklab, var(--accent) 60%, transparent));
 }
 
 @layer base {
@@ -158,26 +178,152 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    background-image:
+      var(--gradient-hero),
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: auto, 44px 44px, 44px 44px;
+    background-position: 0 0, 0 0, 0 0;
+    background-attachment: fixed, fixed, fixed;
   }
   h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
 
-  /* Consistent, high-contrast focus indicator across buttons, links,
-     inputs and any element opting in via [tabindex]. Uses the ring
-     token which is already tuned for both light and dark themes. */
   :where(a, button, [role="button"], [role="link"], [role="tab"], [role="menuitem"], [role="option"], input, select, textarea, summary, [tabindex]):focus-visible {
     outline: 2px solid var(--color-ring);
     outline-offset: 2px;
     border-radius: var(--radius-sm);
   }
+
+  /* Futurist card treatment — aplica em toda ocorrência de bg-card
+     (shadcn Card, blocos custom, popovers do painel). Cria borda
+     hairline gradiente + brilho ambiente, com fallback total no fundo. */
+  :where(.bg-card):not(button):not([data-no-fx]) {
+    position: relative;
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid transparent;
+    background-image: linear-gradient(var(--glass-bg), var(--glass-bg)),
+                      var(--gradient-line);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    box-shadow:
+      0 1px 0 color-mix(in oklab, var(--foreground) 4%, transparent) inset,
+      0 30px 60px -40px color-mix(in oklab, var(--primary) 30%, transparent);
+    transition: box-shadow .3s ease, transform .3s ease;
+  }
+  :where(.bg-card):not(button):not([data-no-fx]):hover {
+    box-shadow:
+      0 1px 0 color-mix(in oklab, var(--foreground) 6%, transparent) inset,
+      0 40px 80px -40px color-mix(in oklab, var(--primary) 45%, transparent),
+      0 0 0 1px color-mix(in oklab, var(--primary) 20%, transparent);
+  }
+
+  /* Inputs futuristas — hairline luminosa no foco */
+  :where(input, textarea, select):not([type="checkbox"]):not([type="radio"]) {
+    transition: box-shadow .2s ease, border-color .2s ease, background-color .2s ease;
+  }
+  :where(input, textarea, select):focus {
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 22%, transparent);
+  }
 }
 
 
 @utility gradient-brand {
-  background-image: linear-gradient(135deg, var(--color-primary), color-mix(in oklab, var(--color-primary) 60%, var(--color-accent)));
+  background-image: linear-gradient(135deg, var(--color-primary), color-mix(in oklab, var(--color-primary) 55%, var(--color-accent)));
 }
 @utility gradient-warm {
-  background-image: linear-gradient(135deg, var(--color-accent), color-mix(in oklab, var(--color-accent) 70%, var(--color-primary)));
+  background-image: linear-gradient(135deg, var(--color-accent), color-mix(in oklab, var(--color-accent) 65%, var(--color-primary)));
 }
 @utility surface-glow {
-  box-shadow: 0 20px 60px -30px color-mix(in oklab, var(--color-primary) 40%, transparent);
+  box-shadow: 0 20px 60px -30px color-mix(in oklab, var(--color-primary) 45%, transparent);
+}
+
+/* Painel de vidro reutilizável — para heros, modais e KPIs */
+@utility glass-panel {
+  position: relative;
+  border-radius: var(--radius-xl);
+  background: var(--glass-bg);
+  backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 1px 0 color-mix(in oklab, var(--foreground) 6%, transparent) inset,
+    0 40px 90px -40px color-mix(in oklab, var(--primary) 45%, transparent);
+}
+
+/* Hairline gradiente ao redor de qualquer bloco (sem tocar no fundo) */
+@utility hairline-glow {
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: var(--gradient-line);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0.9;
+  }
+}
+
+/* Bloco "futurista" — grid interno + brilho radial suave.
+   Uso: <div class="futurist-surface">... */
+@utility futurist-surface {
+  position: relative;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background:
+    radial-gradient(600px 300px at 0% 0%, color-mix(in oklab, var(--primary) 14%, transparent), transparent 60%),
+    radial-gradient(500px 300px at 100% 100%, color-mix(in oklab, var(--accent) 12%, transparent), transparent 60%),
+    var(--card);
+  border: 1px solid var(--glass-border);
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 28px 28px;
+    mask-image: radial-gradient(600px 400px at 50% 0%, #000 30%, transparent 75%);
+    pointer-events: none;
+    opacity: 0.5;
+  }
+}
+
+/* Ambiente animado — respiração sutil para heros e KPIs */
+@utility aurora-bg {
+  position: relative;
+  overflow: hidden;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -20%;
+    background:
+      radial-gradient(40% 40% at 20% 30%, color-mix(in oklab, var(--primary) 35%, transparent), transparent 60%),
+      radial-gradient(35% 35% at 80% 70%, color-mix(in oklab, var(--accent) 30%, transparent), transparent 60%);
+    filter: blur(30px);
+    animation: aurora-drift 18s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+}
+
+@keyframes aurora-drift {
+  0%   { transform: translate3d(0,0,0) scale(1); }
+  50%  { transform: translate3d(2%, -1%, 0) scale(1.05); }
+  100% { transform: translate3d(-2%, 1%, 0) scale(1); }
+}
+
+/* Chip / KPI numérico com destaque tipográfico */
+@utility metric-number {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  background: linear-gradient(180deg, var(--foreground), color-mix(in oklab, var(--foreground) 60%, var(--primary)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
