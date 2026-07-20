@@ -40,6 +40,10 @@ export function PaymentDialog({
         </DialogHeader>
 
         {plan && (
+          <>
+          <div className="rounded-md border border-amber-400/40 bg-amber-50 dark:bg-amber-950/30 p-3 text-xs text-amber-900 dark:text-amber-200">
+            ⚠️ <strong>Importante:</strong> use um e-mail e CPF/CNPJ <strong>diferentes</strong> dos cadastrados na conta Mercado Pago que recebe os pagamentos. Em credenciais LIVE, o Mercado Pago bloqueia com erro <code>401 Unauthorized use of live credentials</code> quando o titular tenta pagar para si mesmo. Isso vale para PIX, Cartão e Boleto.
+          </div>
           <Tabs defaultValue="pix" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="pix"><QrCode className="mr-2 h-4 w-4" />PIX</TabsTrigger>
