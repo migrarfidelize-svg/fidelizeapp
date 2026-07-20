@@ -171,7 +171,7 @@ function AsaasForm({
           <div className="space-y-1"><Label>CVV</Label><Input value={cardCcv} onChange={(e) => setCardCcv(e.target.value)} /></div>
         </div>
       )}
-      <Button className="w-full gradient-brand text-primary-foreground" onClick={submit} disabled={loading}>
+      <Button className="w-full h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-lg shadow-indigo-500/20 transition-all" onClick={submit} disabled={loading}>
         {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processando…</> : billingType === "PIX" ? "Gerar PIX" : billingType === "BOLETO" ? "Gerar boleto" : "Pagar com cartão"}
       </Button>
     </div>
