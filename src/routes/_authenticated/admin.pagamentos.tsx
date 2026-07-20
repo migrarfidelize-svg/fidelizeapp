@@ -348,8 +348,8 @@ function AdminPaymentsPage() {
 }
 
 function SecretRow({
-  name, label, ok, hint, optional, source,
-}: { name: string; label: string; ok: boolean; hint: string; optional?: boolean; source?: "env" | "db" | null }) {
+  name, label, ok, hint, optional, source, action,
+}: { name: string; label: string; ok: boolean; hint: string; optional?: boolean; source?: "env" | "db" | null; action?: { label: string; onClick: () => void } }) {
   const showOk = ok;
   const showBadge = showOk
     ? <Badge variant="outline" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
@@ -368,9 +368,13 @@ function SecretRow({
         <div className="text-xs text-muted-foreground mt-1">{hint}</div>
         <code className="text-[10px] text-muted-foreground">{name}</code>
       </div>
+      {action && (
+        <Button size="sm" variant="outline" onClick={action.onClick}>{action.label}</Button>
+      )}
     </div>
   );
 }
+
 
 function ValidateWebhookButton() {
   const validateFn = useServerFn(adminValidateWebhookUrl);
