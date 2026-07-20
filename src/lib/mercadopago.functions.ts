@@ -28,8 +28,15 @@ async function mpFetch(path: string, init: RequestInit & { idempotencyKey?: stri
   let body: any = null;
   try { body = text ? JSON.parse(text) : null; } catch { body = text; }
   if (!res.ok) {
-    const msg = body?.message ?? body?.error ?? text ?? `MP ${res.status}`;
-    throw new Error(`Mercado Pago (${res.status}): ${typeof msg === "string" ? msg : JSON.stringify(msg)}`);
+    const rawMsg = body?.message ?? body?.error ?? text ?? `MP ${res.status}`;
+    const msgStr = typeof rawMsg === "string" ? rawMsg : JSON.stringify(rawMsg);
+    // Detecta erro clássico: pagador é o próprio dono da conta MP (proibido em live).
+    if (res.status === 401 && /unauthorized use of live credentials/i.test(msgStr)) {
+      throw new Error(
+        "Mercado Pago recusou o pagamento: o e-mail do pagador não pode ser o mesmo da conta Mercado Pago que recebe (em credenciais LIVE, o dono da conta não pode pagar para si mesmo). Use um e-mail diferente do titular da conta MP para testar/cobrar."
+      );
+    }
+    throw new Error(`Mercado Pago (${res.status}): ${msgStr}`);
   }
   return body;
 }
