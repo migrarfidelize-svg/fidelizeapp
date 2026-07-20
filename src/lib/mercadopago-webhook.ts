@@ -78,6 +78,10 @@ export interface MpClassification {
   reason: string;
 }
 
+export type MpSecurityDecision =
+  | { accepted: true; status: 200; error: null; reason: null; retryable: false }
+  | { accepted: false; status: 401 | 503; error: "invalid_signature" | "missing_webhook_secret"; reason: string; retryable: false };
+
 export function classifyMercadoPagoRequest(input: {
   eventType: string | null | undefined;
   action: string | null | undefined;
@@ -129,6 +133,43 @@ export function classifyMercadoPagoRequest(input: {
     mode: "unknown", isTest: false, detection: "no_signal",
     reason: "Nenhuma informação suficiente para classificar (sem `live_mode`, sem UA de simulador, sem `type: test`).",
   };
+}
+
+export function evaluateMercadoPagoWebhookSecurity(input: {
+  mode: MpRequestMode;
+  signatureValid: boolean;
+  hasWebhookSecret: boolean;
+}): MpSecurityDecision {
+  if (input.mode !== "live") {
+    return { accepted: true, status: 200, error: null, reason: null, retryable: false };
+  }
+  if (!input.hasWebhookSecret) {
+    return {
+      accepted: false,
+      status: 503,
+      error: "missing_webhook_secret",
+      reason: "Evento live bloqueado: MERCADOPAGO_WEBHOOK_SECRET não está configurado, então não é possível validar a assinatura HMAC.",
+      retryable: false,
+    };
+  }
+  if (!input.signatureValid) {
+    return {
+      accepted: false,
+      status: 401,
+      error: "invalid_signature",
+      reason: "Assinatura HMAC inválida em evento live. Verifique se a Assinatura secreta cadastrada no Mercado Pago é exatamente o mesmo MERCADOPAGO_WEBHOOK_SECRET salvo no backend.",
+      retryable: false,
+    };
+  }
+  return { accepted: true, status: 200, error: null, reason: null, retryable: false };
+}
+
+export function isRetryableMercadoPagoWebhookError(error: string | null | undefined, responseStatus?: number | null): boolean {
+  if (!error) return false;
+  const normalized = error.toLowerCase();
+  if (normalized.includes("invalid_signature") || normalized.includes("missing_webhook_secret")) return false;
+  if (responseStatus === 401 || responseStatus === 403) return false;
+  return true;
 }
 
 const ALLOWED_STATUSES = new Set([

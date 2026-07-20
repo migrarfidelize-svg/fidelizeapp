@@ -57,7 +57,21 @@ async function getPlanOrThrow(supabase: any, slug: string) {
 
 // ----------- Public key (client-safe) -----------
 export const getMercadoPagoPublicKey = createServerFn({ method: "GET" }).handler(async () => {
-  return { public_key: getPublicKey() };
+  const envKey = getPublicKey();
+  if (envKey) return { public_key: envKey, source: "env" as const };
+
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin
+    .from("payment_settings")
+    .select("public_key")
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  return {
+    public_key: ((data as any)?.public_key as string | null) ?? null,
+    source: ((data as any)?.public_key ? "db" : null) as "db" | null,
+  };
 });
 
 // ----------- PIX -----------
@@ -882,7 +896,11 @@ export const adminRetryWebhookQueue = createServerFn({ method: "POST" })
     // Força retry imediato ignorando janela agendada:
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.from("payment_logs").update({ next_retry_at: new Date().toISOString() } as never)
-      .not("error", "is", null).eq("processed", false).is("next_retry_at", null as never);
+      .not("error", "is", null)
+      .neq("error", "invalid_signature")
+      .neq("error", "missing_webhook_secret")
+      .eq("processed", false)
+      .is("next_retry_at", null as never);
     const result = await retryFailedWebhooks(100);
     try {
       await supabaseAdmin.from("audit_logs").insert({
