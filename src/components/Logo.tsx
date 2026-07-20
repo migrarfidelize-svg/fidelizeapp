@@ -5,13 +5,12 @@ export function Logo({ className = "" }: { className?: string }) {
         <svg viewBox="0 0 512 512" className="h-8 w-8" aria-hidden="true">
           <defs>
             <linearGradient id="fz-logo-g" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stopColor="#8B5CF6" />
-              <stop offset="1" stopColor="#6D28D9" />
+              <stop offset="0" stopColor="#BEDCFF" />
+              <stop offset="1" stopColor="#7FB4F0" />
             </linearGradient>
             <linearGradient id="fz-logo-f-shine" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#ffffff" stopOpacity="1" />
-              <stop offset="0.45" stopColor="#ffffff" stopOpacity="0.92" />
-              <stop offset="1" stopColor="#E9D5FF" stopOpacity="0.85" />
+              <stop offset="0" stopColor="#1E2A44" stopOpacity="1" />
+              <stop offset="1" stopColor="#2A3A5A" stopOpacity="0.95" />
             </linearGradient>
           </defs>
           <rect width="512" height="512" rx="112" ry="112" fill="url(#fz-logo-g)" />
