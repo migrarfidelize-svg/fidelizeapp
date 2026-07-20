@@ -299,3 +299,38 @@ describe("cenários end-to-end do handler MP: HMAC obrigatória apenas em live r
     expect(isRetryableMercadoPagoWebhookError(security.error, security.status)).toBe(false);
   });
 });
+
+describe("novos processadores de webhook (order.* e subscription_preapproval)", () => {
+  const REAL_UA = "MercadoPago Webhook v1.0";
+  it("order.processed em live exige HMAC válido para ser aceito", () => {
+    const c = classifyMercadoPagoRequest({
+      eventType: "order", action: "order.processed", liveMode: true, dataId: "ORD-123", userAgent: REAL_UA,
+    });
+    expect(c.mode).toBe("live");
+    const security = evaluateMercadoPagoWebhookSecurity({
+      mode: c.mode, signatureValid: false, hasWebhookSecret: true,
+    });
+    expect(security.accepted).toBe(false);
+    expect(security.error).toBe("invalid_signature");
+  });
+
+  it("subscription_preapproval em live com HMAC válido é aceito", () => {
+    const c = classifyMercadoPagoRequest({
+      eventType: "subscription_preapproval", action: null, liveMode: true, dataId: "PRE-987", userAgent: REAL_UA,
+    });
+    expect(c.mode).toBe("live");
+    const security = evaluateMercadoPagoWebhookSecurity({
+      mode: c.mode, signatureValid: true, hasWebhookSecret: true,
+    });
+    expect(security.accepted).toBe(true);
+  });
+
+  it("order.created sem live_mode e sem UA real é classificado como teste (handshake)", () => {
+    const c = classifyMercadoPagoRequest({
+      eventType: "order", action: "order.created", liveMode: null, dataId: "ORD-XYZ",
+      userAgent: "restclient-node/5.3.0",
+    });
+    expect(c.mode).toBe("test");
+  });
+});
+
