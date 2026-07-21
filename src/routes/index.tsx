@@ -639,7 +639,7 @@ function Comparison() {
         // Anima até 70% e segura no 100% pelos 30% restantes para o usuário
         // ver a cena totalmente montada antes de sair para a próxima âncora.
         // Anima até 45% do scroll e segura totalmente montado nos 55% restantes.
-        const p = Math.min(1, raw / 0.45);
+        const p = Math.min(1, raw / 0.6);
         stage.style.setProperty("--p", String(p));
       });
     };
@@ -668,7 +668,7 @@ function Comparison() {
 
   return (
     <section id="comparativo" className="relative bg-[#08090f]">
-      <div ref={wrapRef} className="relative h-[480vh]">
+      <div ref={wrapRef} className="relative h-[240vh]">
         <div
           ref={stageRef}
           className="tear-stage sticky top-0 flex h-screen items-center overflow-hidden"
