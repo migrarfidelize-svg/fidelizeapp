@@ -25,7 +25,7 @@ export const listUsers = createServerFn({ method: "GET" })
       .range((page - 1) * pageSize, page * pageSize - 1);
 
     if (data.account_type && data.account_type !== "all") {
-      query = query.eq("account_type", data.account_type);
+      query = query.eq("account_type", data.account_type as any);
     }
     if (data.q && data.q.trim()) {
       const q = data.q.trim();
