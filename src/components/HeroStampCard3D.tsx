@@ -257,7 +257,7 @@ export function HeroStampCard3D() {
         <button
           type="button"
           onClick={() => setFlipped((f) => !f)}
-          className="group flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] transition-all hover:-translate-y-0.5"
+          className="landing-flip-btn group flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] transition-all hover:-translate-y-0.5"
           style={{ borderColor: `${CYAN}44`, background: `${CYAN}10`, color: CYAN }}
         >
           <RotateCw className="h-3.5 w-3.5 transition-transform group-hover:rotate-180" />
