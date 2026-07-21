@@ -24,14 +24,15 @@ import { GuidedTour, type TourStep } from "@/components/GuidedTour";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const MERCHANT_TOUR_STEPS: TourStep[] = [
-  { target: "[data-tour='sidebar-logo']", title: "Bem-vindo à Fidelize!", description: "Vamos dar um tour rápido pelas áreas essenciais da plataforma. Leva menos de 1 minuto.", placement: "center" },
-  { target: "[data-tour='nav-/app']", title: "Painel", description: "Acompanhe carimbos, clientes ativos, recompensas resgatadas e sua meta do mês em tempo real.", placement: "right" },
-  { target: "[data-tour='nav-/app/carimbar']", title: "Carimbar cliente", description: "Adicione carimbos por busca, leitura de QR Code do voucher ou câmera. É o coração operacional do dia a dia.", placement: "right" },
-  { target: "[data-tour='nav-/app/clientes']", title: "Base de clientes", description: "Todos os seus clientes fidelizados com filtros, importação em CSV e histórico de visitas.", placement: "right" },
-  { target: "[data-tour='nav-/app/campanhas']", title: "Campanhas", description: "Crie e personalize seus cartões: quantos carimbos, qual recompensa, ícones e cores.", placement: "right" },
-  { target: "[data-tour='nav-/app/qrcodes']", title: "Divulgação", description: "Gere materiais prontos para Instagram, Story e balcão. Baixe em alta resolução.", placement: "right" },
-  { target: "[data-tour='nav-/app/planos']", title: "Planos", description: "Acompanhe o uso do seu plano e faça upgrade quando precisar de mais recursos.", placement: "right" },
+  { preview: "welcome", title: "Bem-vindo à Fidelize!", description: "Vamos dar um tour rápido pelas áreas essenciais da plataforma. Leva menos de 1 minuto." },
+  { preview: "dashboard", title: "Painel em tempo real", description: "Acompanhe carimbos, clientes ativos, recompensas resgatadas e sua meta do mês em tempo real." },
+  { preview: "stamp", title: "Carimbar cliente", description: "Adicione carimbos por busca, leitura do QR Code do voucher ou câmera. É o coração operacional do dia a dia." },
+  { preview: "customers", title: "Base de clientes", description: "Todos os seus clientes fidelizados com filtros avançados, importação em CSV e histórico completo de visitas." },
+  { preview: "campaigns", title: "Campanhas", description: "Crie e personalize seus cartões: quantos carimbos, qual recompensa, ícones, cores e regras de bônus." },
+  { preview: "qrcodes", title: "Divulgação profissional", description: "Gere materiais prontos para Instagram, Story e balcão. Baixe em alta resolução, formatos Story, Feed e A5." },
+  { preview: "plans", title: "Seu plano e uso", description: "Acompanhe o uso do seu plano em tempo real e faça upgrade quando precisar de mais recursos." },
 ];
+
 
 export const Route = createFileRoute("/_authenticated/app")({
   component: AppLayout,
