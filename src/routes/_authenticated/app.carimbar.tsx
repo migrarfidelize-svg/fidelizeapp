@@ -196,9 +196,19 @@ function Carimbar() {
       />
 
       <Tabs defaultValue="scan" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
-          <TabsTrigger value="scan"><QrCode className="h-4 w-4 mr-2" /> Escanear</TabsTrigger>
-          <TabsTrigger value="search"><Search className="h-4 w-4 mr-2" /> Pesquisar</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 max-w-md bg-[color:color-mix(in_oklab,var(--muted)_60%,transparent)] border border-border/60">
+          <TabsTrigger
+            value="scan"
+            className="data-[state=active]:bg-primary/15 data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-primary/40 data-[state=active]:shadow-[0_0_0_1px_color-mix(in_oklab,var(--primary)_25%,transparent),0_6px_18px_-8px_color-mix(in_oklab,var(--primary)_45%,transparent)] font-medium transition-all"
+          >
+            <QrCode className="h-4 w-4 mr-2" /> Escanear
+          </TabsTrigger>
+          <TabsTrigger
+            value="search"
+            className="data-[state=active]:bg-primary/15 data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-primary/40 data-[state=active]:shadow-[0_0_0_1px_color-mix(in_oklab,var(--primary)_25%,transparent),0_6px_18px_-8px_color-mix(in_oklab,var(--primary)_45%,transparent)] font-medium transition-all"
+          >
+            <Search className="h-4 w-4 mr-2" /> Pesquisar
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="scan" className="mt-4">
@@ -237,9 +247,9 @@ function Carimbar() {
                     { n: "02", t: "Centralize o QR dentro da mira" },
                     { n: "03", t: "Revise os dados e confirme o carimbo" },
                   ].map((s) => (
-                    <li key={s.n} className="flex items-center gap-3 rounded-xl border border-primary/15 bg-background/40 px-3 py-2.5">
-                      <span className="font-mono text-[11px] text-primary/80 tracking-widest">{s.n}</span>
-                      <span className="text-foreground/90">{s.t}</span>
+                    <li key={s.n} className="flex items-center gap-3 rounded-xl border border-primary/25 bg-[color:color-mix(in_oklab,var(--primary)_6%,var(--card))] px-3 py-2.5">
+                      <span className="inline-flex items-center justify-center h-6 min-w-[1.75rem] rounded-md bg-primary/15 text-primary font-mono text-[11px] font-semibold tracking-widest">{s.n}</span>
+                      <span className="text-foreground font-medium">{s.t}</span>
                     </li>
                   ))}
                 </ol>
