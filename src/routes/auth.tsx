@@ -5,17 +5,32 @@ import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
 import { Coffee, Check, ArrowRight, Sparkles, Wifi, Store, User } from "lucide-react";
-import { claimCustomerByToken } from "@/lib/my-wallet.functions";
+import { claimCustomerByToken, attachEstablishmentBySlug } from "@/lib/my-wallet.functions";
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup"]).default("signin"),
   as: z.enum(["customer", "establishment"]).optional(),
   claim: z.string().optional(),
+  est_slug: z.string().optional(),
   next: z.string().optional(),
 });
 
-async function routeAfterAuth(opts: { claim?: string; next?: string }): Promise<{ to: string; toast?: string }> {
-  // If we were sent here from a QR link, always try to attach the card first.
+async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: string }): Promise<{ to: string; toast?: string }> {
+  // Vindo de um QR de estabelecimento (usuário já tinha conta ou acabou de criar).
+  if (opts.est_slug) {
+    try {
+      const r = await attachEstablishmentBySlug({ data: { slug: opts.est_slug } });
+      const msg = r.status === "created"
+        ? `Bem-vindo à ${r.name}! Cartão adicionado à sua carteira.`
+        : r.status === "adopted"
+        ? `Encontramos seu cadastro em ${r.name}. Cartão vinculado à sua conta.`
+        : `Você já tem cartão em ${r.name}.`;
+      return { to: `/carteira/${r.slug}`, toast: msg };
+    } catch {
+      // Segue fluxo padrão.
+    }
+  }
+  // Se veio de um link com token específico, tenta vincular esse cartão.
   if (opts.claim) {
     try {
       const r = await claimCustomerByToken({ data: { token: opts.claim } });
@@ -41,7 +56,7 @@ export const Route = createFileRoute("/auth")({
   beforeLoad: async ({ search }) => {
     const { data } = await supabase.auth.getSession();
     if (data.session) {
-      const dest = await routeAfterAuth({ claim: search.claim, next: search.next });
+      const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
       throw redirect({ to: dest.to });
     }
   },
@@ -128,7 +143,7 @@ function AuthPage() {
           toast.success("Conta criada! Vamos configurar seu cartão.");
           navigate({ to: "/onboarding" });
         } else {
-          const dest = await routeAfterAuth({ claim: search.claim, next: search.next });
+          const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
           toast.success(dest.toast ?? "Conta criada!");
           navigate({ to: dest.to });
         }
@@ -164,7 +179,7 @@ function AuthPage() {
             throw error;
           }
         }
-        const dest = await routeAfterAuth({ claim: search.claim, next: search.next });
+        const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
         toast.success(dest.toast ?? "Bem-vindo de volta!");
         navigate({ to: dest.to });
       }

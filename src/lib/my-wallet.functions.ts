@@ -116,6 +116,124 @@ export const claimCustomerByToken = createServerFn({ method: "POST" })
     return { ok: true as const, slug: (row.establishments as { slug: string }).slug };
   });
 
+/**
+ * Vincula o usuário autenticado ao estabelecimento (pelo slug), reutilizando
+ * a linha em `customers` que já exista para o par (establishment, user) ou
+ * "adotando" uma linha órfã com o mesmo telefone do profile. Cria também um
+ * `loyalty_card` na primeira campanha ativa quando ainda não existir.
+ * Idempotente — pode ser chamado várias vezes sem efeitos colaterais.
+ */
+export const attachEstablishmentBySlug = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ slug: z.string().min(1).max(80) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: est, error: eErr } = await supabaseAdmin
+      .from("establishments")
+      .select("id, slug, name, active")
+      .eq("slug", data.slug)
+      .maybeSingle();
+    if (eErr) throw eErr;
+    if (!est || !est.active) throw new Error("Estabelecimento indisponível.");
+
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("full_name, phone")
+      .eq("id", context.userId)
+      .maybeSingle();
+    const phoneDigits = (profile?.phone ?? "").replace(/\D/g, "").slice(0, 11);
+
+    // 1) Já existe customer deste user neste estabelecimento?
+    let { data: mine } = await supabaseAdmin
+      .from("customers")
+      .select("id")
+      .eq("establishment_id", est.id)
+      .eq("user_id", context.userId)
+      .maybeSingle();
+
+    // 2) Se não, tenta adotar uma linha órfã com o mesmo telefone (criada
+    //    manualmente pelo lojista antes do cliente ter conta).
+    let adopted = false;
+    if (!mine && phoneDigits.length >= 10) {
+      const { data: orphan } = await supabaseAdmin
+        .from("customers")
+        .select("id, user_id")
+        .eq("establishment_id", est.id)
+        .eq("phone", phoneDigits)
+        .is("user_id", null)
+        .maybeSingle();
+      if (orphan) {
+        const { error: linkErr } = await supabaseAdmin
+          .from("customers")
+          .update({ user_id: context.userId })
+          .eq("id", orphan.id);
+        if (linkErr) throw linkErr;
+        mine = { id: orphan.id };
+        adopted = true;
+      }
+    }
+
+    // 3) Caso ainda não haja linha, cria uma nova para este estabelecimento.
+    let created = false;
+    if (!mine) {
+      const { data: nc, error: cErr } = await supabaseAdmin
+        .from("customers")
+        .insert({
+          establishment_id: est.id,
+          user_id: context.userId,
+          name: profile?.full_name ?? "Cliente Fidelize",
+          phone: phoneDigits || "",
+          marketing_opt_in: false,
+        })
+        .select("id")
+        .single();
+      if (cErr) throw cErr;
+      mine = nc;
+      created = true;
+      await supabaseAdmin.from("consents").insert({
+        customer_id: mine.id,
+        establishment_id: est.id,
+        marketing_opt_in: false,
+      });
+    }
+
+    // 4) Garante um cartão na campanha ativa mais antiga.
+    const { data: campaign } = await supabaseAdmin
+      .from("campaigns")
+      .select("id")
+      .eq("establishment_id", est.id)
+      .eq("active", true)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (campaign) {
+      const { data: existingCard } = await supabaseAdmin
+        .from("loyalty_cards")
+        .select("id")
+        .eq("customer_id", mine.id)
+        .eq("campaign_id", campaign.id)
+        .maybeSingle();
+      if (!existingCard) {
+        await supabaseAdmin.from("loyalty_cards").insert({
+          customer_id: mine.id,
+          campaign_id: campaign.id,
+          establishment_id: est.id,
+          stamps: 0,
+          cycle: 1,
+        });
+      }
+    }
+
+    return {
+      ok: true as const,
+      slug: est.slug,
+      name: est.name,
+      status: created ? ("created" as const) : adopted ? ("adopted" as const) : ("existing" as const),
+    };
+  });
+
 /** Wallet detail: one establishment's card for the current user. */
 export const getMyEstablishmentCard = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

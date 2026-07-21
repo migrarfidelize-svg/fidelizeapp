@@ -1,8 +1,10 @@
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { getEstablishmentBySlug, registerOrLoginCustomer } from "@/lib/loyalty.functions";
+import { attachEstablishmentBySlug } from "@/lib/my-wallet.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { StampCard } from "@/components/StampCard";
 import { PublicRatingBlock } from "@/components/PublicRatingBlock";
 import { toast } from "sonner";
-import { Sparkles, MapPin, Phone } from "lucide-react";
+import { Sparkles, MapPin, Phone, LogIn } from "lucide-react";
 
 const opts = (slug: string) => queryOptions({
   queryKey: ["est", slug],
@@ -18,6 +20,23 @@ const opts = (slug: string) => queryOptions({
 });
 
 export const Route = createFileRoute("/l/$slug")({
+  ssr: false,
+  beforeLoad: async ({ params }) => {
+    // Se o visitante já está logado, tenta vincular esta empresa à conta e
+    // manda direto para a carteira — sem re-preencher o formulário.
+    try {
+      const { data: sess } = await supabase.auth.getSession();
+      if (!sess.session) return;
+      const { data: accType } = await supabase.rpc("my_account_type");
+      // Só faz auto-attach para clientes; estabelecimento/admin veem a página pública.
+      if (accType !== "customer") return;
+      const r = await attachEstablishmentBySlug({ data: { slug: params.slug } });
+      throw redirect({ to: `/carteira/${r.slug}` });
+    } catch (e) {
+      // redirect() lança — deixa passar. Outros erros: cai no fluxo público.
+      if (e && typeof e === "object" && "to" in (e as object)) throw e;
+    }
+  },
   loader: async ({ params, context }) => {
     const d = await context.queryClient.ensureQueryData(opts(params.slug));
     if (!d) throw notFound();
@@ -71,6 +90,7 @@ function PublicPage() {
     finally { setLoading(false); }
   }
 
+
   return (
     <div className="min-h-dvh bg-muted/30">
       <div className="h-40 md:h-56" style={{ background: bg }} />
@@ -98,7 +118,22 @@ function PublicPage() {
                 <h2 className="mt-3 font-display text-xl font-bold">{campaign.name}</h2>
                 <p className="mt-1 text-muted-foreground">Acumule {campaign.stamps_required} carimbos e ganhe <strong className="text-foreground">{campaign.reward_title}</strong>.</p>
 
-                <form onSubmit={submit} className="mt-6 space-y-4">
+                <Link
+                  to="/auth"
+                  search={{ mode: "signin", as: "customer", est_slug: slug }}
+                  className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary-soft/50 px-4 py-3 text-sm transition hover:bg-primary-soft"
+                >
+                  <span className="flex items-center gap-2 text-primary font-medium">
+                    <LogIn className="h-4 w-4" /> Já tenho conta Fidelize
+                  </span>
+                  <span className="text-xs text-muted-foreground">Entrar com WhatsApp</span>
+                </Link>
+
+                <div className="mt-4 flex items-center gap-3 text-[10px] uppercase tracking-widest text-muted-foreground">
+                  <div className="h-px flex-1 bg-border" /> ou crie sua conta <div className="h-px flex-1 bg-border" />
+                </div>
+
+                <form onSubmit={submit} className="mt-4 space-y-4">
                   <div>
                     <Label>Seu nome</Label>
                     <Input required minLength={2} maxLength={80} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
