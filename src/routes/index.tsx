@@ -996,7 +996,7 @@ function Examples() {
 
 
   return (
-    <section className="relative overflow-hidden border-y border-white/5 bg-[oklch(0.14_0.02_230)] py-16 md:py-20">
+    <section className="relative overflow-hidden border-y border-white/5 bg-[oklch(0.14_0.02_230)] pt-28 pb-16 md:pt-32 md:pb-20">
       <div className="pointer-events-none absolute inset-0 opacity-60"
         style={{
           background:
