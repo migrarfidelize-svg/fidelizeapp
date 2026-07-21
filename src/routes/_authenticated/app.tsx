@@ -528,7 +528,7 @@ function AppLayout() {
         </aside>
 
 
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex flex-col min-w-0 md:pl-24">
           {/* Top bar (desktop + mobile) */}
           <header className="sticky top-0 z-20 flex items-center justify-between gap-3 h-14 px-4 md:px-6 border-b bg-card/70 backdrop-blur-xl">
             <div className="flex items-center gap-3 min-w-0">
