@@ -355,6 +355,17 @@ function AdminLayout() {
             </div>
 
             <div className="flex items-center gap-2">
+              <a
+                href="/carteira"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden md:inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-card/60 px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-primary-soft hover:text-primary transition-colors"
+                aria-label="Abrir painel /carteira em nova aba"
+                title="Ver painel do cliente final"
+              >
+                <Wallet2 className="h-3.5 w-3.5" />
+                Ver /carteira
+              </a>
               <div className="hidden md:block"><ThemeToggle /></div>
             </div>
           </header>
