@@ -40,6 +40,8 @@ function AdminPaymentsPage() {
   const getFn = useServerFn(adminGetPaymentSettings);
   const saveFn = useServerFn(adminUpdatePaymentSettings);
   const testFn = useServerFn(adminTestMercadoPagoConnection);
+  const syncFn = useServerFn(adminSyncWebhookUrl);
+  const probeFn = useServerFn(adminSendWebhookTestEvent);
 
   const { data, refetch, isLoading } = useQuery({ queryKey: ["admin-payment-settings"], queryFn: () => getFn(), refetchInterval: 60_000, refetchOnWindowFocus: true });
 
@@ -48,6 +50,10 @@ function AdminPaymentsPage() {
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [probing, setProbing] = useState(false);
+  const [probeResult, setProbeResult] = useState<any>(null);
+  const notifiedRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (data?.settings) {
@@ -55,6 +61,25 @@ function AdminPaymentsPage() {
       setPublicKey(((data as any).settings.public_key as any) ?? "");
     }
   }, [data]);
+
+  const webhookUrl = (data as any)?.webhook_url ?? "";
+  const storedWebhookUrl: string | null = (data as any)?.stored_webhook_url ?? null;
+  const webhookStale: boolean = !!(data as any)?.webhook_url_stale;
+
+  useEffect(() => {
+    if (!webhookStale) { notifiedRef.current = null; return; }
+    const key = `${storedWebhookUrl}→${webhookUrl}`;
+    if (notifiedRef.current === key) return;
+    notifiedRef.current = key;
+    toast.warning("Webhook do Mercado Pago desatualizado", {
+      description: "A URL salva diverge da canônica atual. Atualize no painel do Mercado Pago.",
+      action: {
+        label: "Abrir painel MP",
+        onClick: () => window.open("https://www.mercadopago.com.br/developers/panel/app", "_blank", "noopener,noreferrer"),
+      },
+      duration: 10_000,
+    });
+  }, [webhookStale, storedWebhookUrl, webhookUrl]);
 
   async function save() {
     setSaving(true);
@@ -80,41 +105,6 @@ function AdminPaymentsPage() {
       refetch();
     } finally { setTesting(false); }
   }
-
-  if (isLoading) return <div className="grid place-items-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
-
-  const creds = (data as any)?.credentials ?? { has_access_token: false, has_webhook_secret: false, has_public_key: false };
-  const webhookUrl = (data as any)?.webhook_url ?? "";
-  const storedWebhookUrl: string | null = (data as any)?.stored_webhook_url ?? null;
-  const webhookStale: boolean = !!(data as any)?.webhook_url_stale;
-  const settingsUpdatedAt: string | null = (data as any)?.settings_updated_at ?? null;
-  const lastDivergenceAt: string | null = (data as any)?.last_divergence_at ?? null;
-  const settings = (data as any)?.settings ?? {};
-  const configurationIssue: string | null = (data as any)?.configuration_issue ?? null;
-  const mpAccountIsTestUser: boolean = !!(data as any)?.mp_account_is_test_user;
-
-  const syncFn = useServerFn(adminSyncWebhookUrl);
-  const probeFn = useServerFn(adminSendWebhookTestEvent);
-  const [syncing, setSyncing] = useState(false);
-  const [probing, setProbing] = useState(false);
-  const [probeResult, setProbeResult] = useState<any>(null);
-
-  // Toast one-shot por par (stored,canonical) — evita spam a cada refetch
-  const notifiedRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (!webhookStale) { notifiedRef.current = null; return; }
-    const key = `${storedWebhookUrl}→${webhookUrl}`;
-    if (notifiedRef.current === key) return;
-    notifiedRef.current = key;
-    toast.warning("Webhook do Mercado Pago desatualizado", {
-      description: "A URL salva diverge da canônica atual. Atualize no painel do Mercado Pago.",
-      action: {
-        label: "Abrir painel MP",
-        onClick: () => window.open("https://www.mercadopago.com.br/developers/panel/app", "_blank", "noopener,noreferrer"),
-      },
-      duration: 10_000,
-    });
-  }, [webhookStale, storedWebhookUrl, webhookUrl]);
 
   async function reconcileStoredUrl() {
     setSyncing(true);
@@ -142,6 +132,16 @@ function AdminPaymentsPage() {
 
   const fmt = (iso: string | null | undefined) =>
     iso ? new Date(iso).toLocaleString("pt-BR") : "—";
+
+  if (isLoading) return <div className="grid place-items-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+
+  const creds = (data as any)?.credentials ?? { has_access_token: false, has_webhook_secret: false, has_public_key: false };
+  const settingsUpdatedAt: string | null = (data as any)?.settings_updated_at ?? null;
+  const lastDivergenceAt: string | null = (data as any)?.last_divergence_at ?? null;
+  const settings = (data as any)?.settings ?? {};
+  const configurationIssue: string | null = (data as any)?.configuration_issue ?? null;
+  const mpAccountIsTestUser: boolean = !!(data as any)?.mp_account_is_test_user;
+
 
   return (
     <div className="space-y-6">
