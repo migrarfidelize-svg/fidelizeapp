@@ -235,7 +235,7 @@ export const adminGetEstablishmentDetail = createServerFn({ method: "POST" })
       supabase.from("rewards").select("*", { count: "exact", head: true }).eq("establishment_id", data.establishment_id).not("redeemed_at", "is", null).gte("redeemed_at", since),
       supabase.from("stamps").select("created_at").eq("establishment_id", data.establishment_id).is("reverted_at", null).gte("created_at", since),
       supabase.from("campaigns").select("id, name, stamps_required, active").eq("establishment_id", data.establishment_id),
-      supabase.from("establishment_members").select("user_id, role, active").eq("establishment_id", data.establishment_id),
+      supabase.from("establishment_members").select("user_id, role, active, display_name, invited_email, created_at").eq("establishment_id", data.establishment_id),
     ]);
 
     if (!est) throw new Error("Estabelecimento não encontrado");
