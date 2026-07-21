@@ -94,18 +94,18 @@ export function SegmentsCarousel() {
                     "radial-gradient(closest-side, color-mix(in oklab, hsl(var(--primary)) 28%, transparent), transparent 72%)",
                 }}
               />
-              {/* glass frame */}
+              {/* glass frame with strong cyan border */}
               <div
                 aria-hidden
                 className="pointer-events-none absolute inset-0 rounded-[36px]"
                 style={{
                   opacity: isActive ? 1 : 0,
                   transition: "opacity 500ms ease",
-                  border: "1.5px solid color-mix(in oklab, hsl(var(--primary)) 65%, transparent)",
+                  border: "2px solid hsl(var(--primary))",
                   boxShadow:
-                    "inset 0 0 0 1px color-mix(in oklab, hsl(var(--primary)) 25%, transparent), 0 25px 60px -20px color-mix(in oklab, hsl(var(--primary)) 60%, transparent), 0 0 90px -10px color-mix(in oklab, hsl(var(--primary)) 45%, transparent)",
+                    "inset 0 0 0 1px color-mix(in oklab, hsl(var(--primary)) 35%, transparent), inset 0 0 40px color-mix(in oklab, hsl(var(--primary)) 15%, transparent), 0 30px 80px -20px color-mix(in oklab, hsl(var(--primary)) 70%, transparent), 0 0 120px -10px color-mix(in oklab, hsl(var(--primary)) 55%, transparent)",
                   background:
-                    "linear-gradient(180deg, color-mix(in oklab, hsl(var(--card)) 60%, transparent), color-mix(in oklab, hsl(var(--background)) 30%, transparent))",
+                    "linear-gradient(180deg, color-mix(in oklab, hsl(var(--card)) 75%, transparent), color-mix(in oklab, hsl(var(--background)) 45%, transparent))",
                   backdropFilter: "blur(6px)",
                 }}
               />
