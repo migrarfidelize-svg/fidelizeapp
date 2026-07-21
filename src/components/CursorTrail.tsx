@@ -66,7 +66,7 @@ export function CursorTrail() {
       colors: [string, string];
     };
 
-    const NODES = 42; // longer chain
+    const NODES = 22; // shorter chain = shorter trail
     const RIBBONS = 5;
     const cx = width / 2;
     const cy = height / 2;
@@ -123,7 +123,7 @@ export function CursorTrail() {
       ctx.clearRect(0, 0, width, height);
 
       const idle = performance.now() - lastMove;
-      const alpha = visible ? Math.max(0, 1 - idle / 1400) : 0;
+      const alpha = visible ? Math.max(0, 1 - idle / 500) : 0;
       if (alpha <= 0.01) {
         raf = requestAnimationFrame(tick);
         return;
