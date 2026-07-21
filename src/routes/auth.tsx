@@ -58,13 +58,15 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
-  // Cliente é o padrão. Se veio de /c/:token com ?claim=... também force customer.
   const [role, setRole] = useState<"customer" | "establishment">(
     search.as ?? (search.claim ? "customer" : "customer"),
   );
 
   const isSignup = mode === "signup";
+  const isCustomer = role === "customer";
   const isEstablishmentSignup = isSignup && role === "establishment";
+  // Cliente (carteira) usa apenas WhatsApp — cadastro exige nome + WhatsApp, login exige só WhatsApp.
+  const walletFlow = isCustomer;
 
   function formatWhatsapp(v: string) {
     const d = v.replace(/\D/g, "").slice(0, 11);
@@ -74,26 +76,48 @@ function AuthPage() {
     return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
   }
 
+  /**
+   * Credenciais sintéticas para clientes que usam apenas o WhatsApp.
+   * O número (com DDD) atua como identificador único e como PIN — trade-off
+   * consciente pedido pelo usuário: "só o WhatsApp para acessar".
+   */
+  function walletCredentials(digits: string) {
+    return {
+      email: `wa${digits}@carteira.fidelize.app`,
+      password: `wa_${digits}_fidelize_v1`,
+    };
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     try {
       if (isSignup) {
         const digits = whatsapp.replace(/\D/g, "");
-        if (isEstablishmentSignup && digits.length < 10) {
+        if (digits.length < 10) {
           toast.error("Informe um WhatsApp válido com DDD.");
           setLoading(false);
           return;
         }
+        const creds = walletFlow ? walletCredentials(digits) : { email, password };
         const { data: signUpData, error } = await supabase.auth.signUp({
-          email, password,
+          email: creds.email,
+          password: creds.password,
           options: {
             data: { full_name: name, phone: whatsapp, whatsapp },
             emailRedirectTo: window.location.origin + "/auth",
           },
         });
-        if (error) throw error;
-        const uid = signUpData.user?.id;
+        if (error) {
+          const msg = (error.message || "").toLowerCase();
+          if (walletFlow && (msg.includes("already") || msg.includes("registered") || msg.includes("exists"))) {
+            const retry = await supabase.auth.signInWithPassword(creds);
+            if (retry.error) throw new Error("Este WhatsApp já tem cadastro. Toque em Entrar.");
+          } else {
+            throw error;
+          }
+        }
+        const uid = signUpData.user?.id ?? (await supabase.auth.getUser()).data.user?.id;
         if (uid) {
           await supabase.from("profiles").upsert({ id: uid, full_name: name, phone: whatsapp }, { onConflict: "id" });
         }
@@ -101,25 +125,41 @@ function AuthPage() {
           toast.success("Conta criada! Vamos configurar seu cartão.");
           navigate({ to: "/onboarding" });
         } else {
-          // Cliente: se veio de QR, vincula; senão, vai pra carteira.
           const dest = await routeAfterAuth({ claim: search.claim, next: search.next });
           toast.success(dest.toast ?? "Conta criada!");
           navigate({ to: dest.to });
         }
       } else {
-        let { error } = await supabase.auth.signInWithPassword({ email, password });
+        let creds: { email: string; password: string };
+        if (walletFlow) {
+          const digits = whatsapp.replace(/\D/g, "");
+          if (digits.length < 10) {
+            toast.error("Informe seu WhatsApp com DDD.");
+            setLoading(false);
+            return;
+          }
+          creds = walletCredentials(digits);
+        } else {
+          creds = { email, password };
+        }
+        let { error } = await supabase.auth.signInWithPassword(creds);
         if (error) {
           const msg = (error.message || "").toLowerCase();
           const code = (error as { code?: string }).code ?? "";
           if (msg.includes("not confirmed") || msg.includes("email not confirmed") || code === "email_not_confirmed") {
             const { confirmEmailByAddress } = await import("@/lib/auth-confirm.functions");
-            const res = await confirmEmailByAddress({ data: { email } });
+            const res = await confirmEmailByAddress({ data: { email: creds.email } });
             if (res.ok) {
-              const retry = await supabase.auth.signInWithPassword({ email, password });
+              const retry = await supabase.auth.signInWithPassword(creds);
               error = retry.error;
             }
           }
-          if (error) throw error;
+          if (error) {
+            if (walletFlow && ((error.message || "").toLowerCase().includes("invalid"))) {
+              throw new Error("WhatsApp não cadastrado. Toque em Criar conta.");
+            }
+            throw error;
+          }
         }
         const dest = await routeAfterAuth({ claim: search.claim, next: search.next });
         toast.success(dest.toast ?? "Bem-vindo de volta!");
@@ -283,42 +323,43 @@ function AuthPage() {
 
             <form onSubmit={handleSubmit} className={isSignup ? "space-y-3" : "space-y-4"}>
 
-              {isSignup && (
-                <div className="animate-fade-in">
-                  <div className="mb-1 ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">Sou</div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setRole("customer")}
-                      className={
-                        "flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all " +
-                        (role === "customer"
-                          ? "border-[#00ffff] bg-[#00ffff]/10 text-white shadow-[0_0_20px_-6px_rgba(0,255,255,0.6)]"
-                          : "border-white/10 bg-white/5 text-white/60 hover:text-white")
-                      }
-                    >
-                      <User className="h-3.5 w-3.5" /> Cliente
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setRole("establishment")}
-                      className={
-                        "flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all " +
-                        (role === "establishment"
-                          ? "border-[#00ffff] bg-[#00ffff]/10 text-white shadow-[0_0_20px_-6px_rgba(0,255,255,0.6)]"
-                          : "border-white/10 bg-white/5 text-white/60 hover:text-white")
-                      }
-                    >
-                      <Store className="h-3.5 w-3.5" /> Estabelecimento
-                    </button>
-                  </div>
+              {/* Toggle Cliente / Estabelecimento — disponível em signup e signin */}
+              <div className="animate-fade-in">
+                <div className="mb-1 ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">Sou</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setRole("customer")}
+                    className={
+                      "flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all " +
+                      (role === "customer"
+                        ? "border-[#00ffff] bg-[#00ffff]/10 text-white shadow-[0_0_20px_-6px_rgba(0,255,255,0.6)]"
+                        : "border-white/10 bg-white/5 text-white/60 hover:text-white")
+                    }
+                  >
+                    <User className="h-3.5 w-3.5" /> Cliente
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRole("establishment")}
+                    className={
+                      "flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all " +
+                      (role === "establishment"
+                        ? "border-[#00ffff] bg-[#00ffff]/10 text-white shadow-[0_0_20px_-6px_rgba(0,255,255,0.6)]"
+                        : "border-white/10 bg-white/5 text-white/60 hover:text-white")
+                    }
+                  >
+                    <Store className="h-3.5 w-3.5" /> Estabelecimento
+                  </button>
+                </div>
+                {isSignup && (
                   <p className="mt-1.5 ml-1 text-[10px] text-white/40">
                     {role === "customer"
                       ? "Acumule carimbos e recompensas em qualquer estabelecimento Fidelize."
                       : "Crie seu programa de fidelidade digital para o seu negócio."}
                   </p>
-                </div>
-              )}
+                )}
+              </div>
 
               {isSignup && (
                 <div className="animate-fade-in space-y-1.5">
@@ -326,25 +367,38 @@ function AuthPage() {
                   <input id="name" value={name} onChange={(e) => setName(e.target.value)} required minLength={2} className="auth-input" />
                 </div>
               )}
-              {isEstablishmentSignup && (
+
+              {/* WhatsApp: obrigatório para cliente (sempre) e para estabelecimento no signup */}
+              {(walletFlow || isEstablishmentSignup) && (
                 <div className="animate-fade-in space-y-1.5">
                   <label htmlFor="whatsapp" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">WhatsApp</label>
                   <input id="whatsapp" type="tel" inputMode="tel" autoComplete="tel" placeholder="(11) 91234-5678" value={whatsapp} onChange={(e) => setWhatsapp(formatWhatsapp(e.target.value))} required className="auth-input" />
-                </div>
-              )}
-              <div className="space-y-1.5">
-                <label htmlFor="email" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">E-mail</label>
-                <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" placeholder="voce@empresa.com" className="auth-input" />
-              </div>
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label htmlFor="password" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">Senha</label>
-                  {!isSignup && (
-                    <Link to="/auth/recuperar" className="text-[10px] uppercase tracking-widest text-[oklch(0.78_0.19_330)] hover:underline">Esqueci</Link>
+                  {walletFlow && (
+                    <p className="ml-1 text-[10px] text-white/40">
+                      {isSignup ? "Usaremos seu WhatsApp para você acessar sua carteira." : "Digite o mesmo WhatsApp usado no cadastro."}
+                    </p>
                   )}
                 </div>
-                <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete={isSignup ? "new-password" : "current-password"} placeholder="••••••••" className="auth-input" />
-              </div>
+              )}
+
+              {/* Email + senha somente para estabelecimento/admin */}
+              {!walletFlow && (
+                <>
+                  <div className="space-y-1.5">
+                    <label htmlFor="email" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">E-mail</label>
+                    <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" placeholder="voce@empresa.com" className="auth-input" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label htmlFor="password" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">Senha</label>
+                      {!isSignup && (
+                        <Link to="/auth/recuperar" className="text-[10px] uppercase tracking-widest text-[oklch(0.78_0.19_330)] hover:underline">Esqueci</Link>
+                      )}
+                    </div>
+                    <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete={isSignup ? "new-password" : "current-password"} placeholder="••••••••" className="auth-input" />
+                  </div>
+                </>
+              )}
 
               <button type="submit" disabled={loading} className="auth-cta group mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-[#00ffff] py-3 font-display text-sm font-bold uppercase tracking-widest text-black shadow-[0_0_30px_-4px_rgba(0,255,255,0.55)] transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60">
                 {loading ? (
