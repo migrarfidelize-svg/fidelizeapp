@@ -689,7 +689,7 @@ function Comparison() {
 
 
             {/* Stage: two cards stacked in the same slot */}
-            <div className="tear-scene relative z-30 mx-auto h-[340px] w-full max-w-[720px] md:h-[400px]">
+            <div className="tear-scene relative z-30 mx-auto h-[260px] w-full max-w-[560px] md:h-[300px]">
               {/* Digital card underneath */}
               <div className="tear-digital absolute inset-0 grid place-items-center">
 
