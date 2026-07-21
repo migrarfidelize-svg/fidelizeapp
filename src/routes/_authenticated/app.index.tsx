@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
 import { GoalsCard } from "@/components/GoalsCard";
 import { PageHero } from "@/components/PageHero";
+import { DashboardHeroVisual } from "@/components/DashboardHeroVisual";
 import { ErrorState, LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/app/")({
@@ -97,7 +98,16 @@ function Dashboard() {
           { label: "Recompensas", value: `${data.redeemedCount} resgatadas`, icon: Trophy },
           { label: "Meta do mês", value: data.goalMonth, icon: Clock },
         ]}
+        visual={
+          <DashboardHeroVisual
+            series={data.series}
+            todayStamps={today}
+            customers={data.customersCount}
+            redeemed={data.redeemedCount}
+          />
+        }
       />
+
 
 
       {/* KPI STRIP */}
