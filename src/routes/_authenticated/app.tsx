@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield,
   LifeBuoy, BookOpen, Package, Receipt, HeartHandshake, Bell, Star, Menu,
-  PanelLeftClose, PanelLeftOpen, Search,
+  PanelLeftClose, PanelLeftOpen, Search, Megaphone, UserCircle2,
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -335,41 +335,200 @@ function AppLayout() {
   };
 
   const closeMobile = () => setMobileOpen(false);
-  const sidebarWidth = collapsed ? 76 : 264;
+
+  const GROUP_ICONS: Record<string, any> = {
+    operacao: LayoutDashboard,
+    marketing: Megaphone,
+    conta: UserCircle2,
+    ajuda: LifeBuoy,
+  };
+  const [pinnedGroup, setPinnedGroup] = useState<string | null>(null);
+  const unreadByGroup: Record<string, number> = {
+    ajuda: unreadSupport,
+    operacao: 0,
+    marketing: 0,
+    conta: 0,
+  };
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen flex bg-[color-mix(in_oklab,var(--color-background)_92%,var(--color-primary)_4%)]">
-        {/* Desktop sidebar */}
-        <motion.aside
-          animate={{ width: sidebarWidth }}
-          transition={{ type: "spring", stiffness: 300, damping: 32 }}
-          className="hidden md:flex shrink-0 flex-col border-r bg-card/80 backdrop-blur-xl relative"
+      <div className="min-h-screen bg-[color-mix(in_oklab,var(--color-background)_92%,var(--color-primary)_4%)]">
+        {/* Desktop: floating dock */}
+        <aside
+          className="hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-30 flex-col items-center gap-1.5 rounded-2xl border border-cyan-400/25 bg-[#0b1219]/90 p-2 backdrop-blur-xl"
+          style={{
+            boxShadow:
+              "0 0 0 1px rgba(0,255,255,0.08), 0 24px 60px -20px rgba(0,255,255,0.35), inset 0 1px 0 rgba(255,255,255,0.04)",
+          }}
+          data-tour="sidebar-logo"
         >
-          <div className={`flex items-center border-b ${collapsed ? "justify-center p-3" : "justify-between p-4"}`} data-tour="sidebar-logo">
-            {collapsed ? <LogoMark size={38} /> : <Logo />}
-          </div>
-          {renderNav()}
-          {renderFooter()}
-
-          {/* Expand/collapse toggle — destaque com anel aurora */}
-          <button
-            type="button"
-            aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
-            onClick={() => setCollapsed((c) => !c)}
-            className="sidebar-toggle group"
+          <Link
+            to="/app"
+            className="mb-1 grid h-11 w-11 place-items-center rounded-xl bg-[#0e1620] ring-1 ring-cyan-400/40 shadow-[0_0_24px_-6px_rgba(0,255,255,0.5)]"
+            aria-label="Fidelize"
           >
-            <motion.span
-              animate={{ rotate: collapsed ? 0 : 180 }}
-              transition={{ type: "spring", stiffness: 260, damping: 20 }}
-              className="relative"
-            >
-              {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-            </motion.span>
-          </button>
-        </motion.aside>
+            <LogoMark size={22} className="text-cyan-300" />
+          </Link>
 
-        <div className="flex-1 flex flex-col min-w-0">
+          {NAV_GROUPS.map((g) => {
+            const Icon = GROUP_ICONS[g.key] ?? LayoutDashboard;
+            const isActive = g.items.some((it) =>
+              it.exact ? pathname === it.to : pathname.startsWith(it.to),
+            );
+            const isOpen = pinnedGroup === g.key;
+            const badge = unreadByGroup[g.key] ?? 0;
+            return (
+              <div
+                key={g.key}
+                className="group/dock relative"
+                onMouseEnter={() => setPinnedGroup(g.key)}
+                onMouseLeave={() =>
+                  setPinnedGroup((p) => (p === g.key ? null : p))
+                }
+              >
+                <button
+                  type="button"
+                  aria-label={g.label}
+                  onClick={() =>
+                    setPinnedGroup((p) => (p === g.key ? null : g.key))
+                  }
+                  className={[
+                    "relative grid h-11 w-11 place-items-center rounded-xl transition-all duration-200",
+                    isActive
+                      ? "bg-cyan-400/15 text-cyan-200 ring-1 ring-cyan-300/50 shadow-[0_0_18px_-2px_rgba(0,255,255,0.6)]"
+                      : "bg-white/[0.03] text-white/75 ring-1 ring-white/[0.06] hover:text-white hover:ring-cyan-300/40",
+                  ].join(" ")}
+                >
+                  <Icon className="h-[19px] w-[19px]" strokeWidth={1.8} />
+                  {badge > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-cyan-400 px-1 text-[9px] font-bold text-black ring-2 ring-[#0b1219]">
+                      {badge > 9 ? "9+" : badge}
+                    </span>
+                  )}
+                </button>
+
+                {/* Flyout */}
+                <div
+                  className={[
+                    "absolute left-full top-0 ml-3 min-w-[240px] origin-left rounded-2xl border border-cyan-400/25 bg-[#0b1219]/95 p-2 backdrop-blur-xl transition-all duration-200",
+                    isOpen
+                      ? "pointer-events-auto scale-100 opacity-100"
+                      : "pointer-events-none scale-95 opacity-0",
+                  ].join(" ")}
+                  style={{
+                    boxShadow:
+                      "0 0 0 1px rgba(0,255,255,0.08), 0 24px 60px -20px rgba(0,255,255,0.35)",
+                  }}
+                >
+                  <div className="px-2 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan-300/70">
+                    {g.label}
+                  </div>
+                  <ul className="space-y-0.5">
+                    {g.items.map((n) => {
+                      const active = isItemActive(n);
+                      const ItemIcon = n.icon;
+                      const itBadge =
+                        n.to === "/app/suporte" && unreadSupport > 0
+                          ? unreadSupport
+                          : 0;
+                      return (
+                        <li key={n.to}>
+                          <Link
+                            to={n.to}
+                            data-tour={`nav-${n.to}`}
+                            onClick={() => setPinnedGroup(null)}
+                            className={[
+                              "flex items-center gap-3 rounded-xl px-2 py-2 text-[13px] transition-all",
+                              active
+                                ? "bg-cyan-400/[0.12] text-white ring-1 ring-inset ring-cyan-300/25"
+                                : "text-white/70 hover:bg-white/[0.04] hover:text-white",
+                            ].join(" ")}
+                          >
+                            <span
+                              className={[
+                                "grid h-8 w-8 place-items-center rounded-lg transition-all",
+                                active
+                                  ? "bg-cyan-400/15 text-cyan-200 ring-1 ring-cyan-300/40 shadow-[0_0_14px_-2px_rgba(0,255,255,0.6)]"
+                                  : "bg-white/[0.03] text-white/75 ring-1 ring-white/[0.06]",
+                              ].join(" ")}
+                            >
+                              <ItemIcon className="h-[17px] w-[17px]" strokeWidth={1.8} />
+                            </span>
+                            <span className="flex-1">{n.label}</span>
+                            {itBadge > 0 && (
+                              <span className="rounded-full bg-cyan-400/15 px-2 py-0.5 text-[10px] font-semibold text-cyan-200 ring-1 ring-cyan-300/30">
+                                {itBadge > 9 ? "9+" : itBadge}
+                              </span>
+                            )}
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+
+                {/* Tooltip when closed */}
+                {!isOpen && (
+                  <span className="pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 whitespace-nowrap rounded-md bg-[#0b1219] px-2 py-1 text-[11px] font-medium text-white/80 opacity-0 ring-1 ring-cyan-400/25 transition-opacity group-hover/dock:opacity-100">
+                    {g.label}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Divider */}
+          <div className="my-1 h-px w-8 bg-white/[0.06]" />
+
+          {/* Theme + account */}
+          <div className="grid place-items-center">
+            <ThemeToggle />
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                aria-label="Conta"
+                className="grid h-11 w-11 place-items-center rounded-xl bg-cyan-400/10 text-[11px] font-bold text-cyan-200 ring-1 ring-cyan-300/30 transition-all hover:ring-cyan-300/60"
+              >
+                {activeEst?.name?.slice(0, 2).toUpperCase() ?? "FZ"}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="right" align="end" className="w-56">
+              <div className="px-2 py-1.5 text-xs text-muted-foreground truncate">
+                {activeEst?.name}
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/l/$slug" params={{ slug: activeEst!.slug }}>
+                  Ver página pública
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/lgpd">
+                  <Shield className="mr-2 h-4 w-4" />
+                  Meus Dados (LGPD)
+                </Link>
+              </DropdownMenuItem>
+              {adminStatus?.isAdmin && (
+                <DropdownMenuItem asChild>
+                  <Link to="/admin">
+                    <Shield className="mr-2 h-4 w-4" />
+                    Painel do administrador
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={signOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Sair
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </aside>
+
+
+        <div className="flex flex-col min-w-0 md:pl-24">
           {/* Top bar (desktop + mobile) */}
           <header className="sticky top-0 z-20 flex items-center justify-between gap-3 h-14 px-4 md:px-6 border-b bg-card/70 backdrop-blur-xl">
             <div className="flex items-center gap-3 min-w-0">
