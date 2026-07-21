@@ -30,11 +30,14 @@ export const Route = createFileRoute("/c/$token")({
   },
   head: () => ({ meta: [{ title: "Meu cartão — Fidelize" }, { name: "robots", content: "noindex" }] }),
   component: CustomerCard,
-  notFoundComponent: () => (
-    <div className="min-h-dvh grid place-items-center p-6 text-center text-muted-foreground">
-      Cartão não encontrado.
-    </div>
-  ),
+  notFoundComponent: () => {
+    const { InvalidQrState } = require("@/components/wallet/WalletStates");
+    return (
+      <div className="min-h-dvh grid place-items-center p-6">
+        <InvalidQrState onRetry={() => window.history.back()} />
+      </div>
+    );
+  },
 });
 
 function CustomerCard() {
