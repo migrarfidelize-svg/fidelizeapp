@@ -5,7 +5,7 @@ import { adminGetEstablishmentDetail, adminSetEstablishmentActive, adminSetEstab
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Ban, CheckCircle2, ExternalLink, AlertTriangle, Download, Users, Stamp, Gift, UserPlus } from "lucide-react";
+import { ArrowLeft, Ban, CheckCircle2, ExternalLink, AlertTriangle, Download, Users, Stamp, Gift, UserPlus, UserMinus } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { formatDate } from "@/lib/format";
 import { downloadCSV, downloadPDF } from "@/lib/export";
