@@ -195,7 +195,7 @@ function MoMCard({
     >
       <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className="mt-2 flex items-baseline justify-between gap-3">
-        <div className="metric-number text-3xl">{current.toLocaleString("pt-BR")}</div>
+        <div className="metric-solid text-3xl">{current.toLocaleString("pt-BR")}</div>
         <span className={`dash-delta ${cls}`}>
           <Icon className="h-3.5 w-3.5" />
           {previous === 0 && current === 0 ? "—" : `${pct >= 0 ? "+" : ""}${pct.toFixed(0)}%`}
