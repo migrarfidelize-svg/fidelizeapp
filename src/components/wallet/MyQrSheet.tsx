@@ -205,17 +205,13 @@ function RedeemFlow({ rewards }: { rewards: RewardItem[] }) {
   }, [selected?.cardId]);
 
   async function generate() {
-    if (!selected) return;
+    if (!selected?.rewardId) {
+      toast.error("Recompensa não disponível para resgate agora.");
+      return;
+    }
     setBusy(true);
     try {
-      // Precisamos do reward_id, mas getMyRewards devolve cardId. Buscamos via um fallback:
-      // o backend valida por reward_id, então usamos rewardId. `cardId` na verdade
-      // representa o loyalty_card; precisamos do reward. Como getMyRewards inclui
-      // apenas cards prontos, o reward_id não vem — vamos ajustar a função separada.
-      // Por ora chamamos com cardId como fallback: veja `issueRedeemToken` que aceita reward_id
-      // (esperamos que getMyRewards devolva rewardId — corrigido abaixo).
-      const rewardId = (selected as unknown as { rewardId?: string }).rewardId ?? selected.cardId;
-      const r = await issue({ data: { reward_id: rewardId } });
+      const r = await issue({ data: { reward_id: selected.rewardId } });
       setToken(r.token);
       setExpiresAt(r.expiresAt);
       const url = await QRCode.toDataURL(r.token, { width: 640, margin: 1, errorCorrectionLevel: "M" });
