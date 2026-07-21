@@ -73,6 +73,8 @@ function Dashboard() {
 
   return (
     <div className="space-y-8">
+      <GreetingVoice gender="female" scope="merchant" />
+
       <PageHero
         icon={LayoutDashboard}
         liveLabel="Ao vivo"
