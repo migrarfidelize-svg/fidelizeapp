@@ -750,15 +750,20 @@ function Comparison() {
 
               {/* Paper card on top — splits in two halves */}
               <div className="tear-paper absolute inset-0 grid place-items-center">
-                <div className="relative w-[86%] max-w-[520px]" style={{ height: 300 }}>
-                  {/* Pains floating out */}
+                <div className="relative w-[86%] max-w-[560px]" style={{ height: 340 }}>
+                  {/* Pains — margin notes in black ink, off-card */}
                   {pains.map((p, i) => (
                     <span
                       key={p}
-                      className="tear-pain absolute z-20 rounded-md border border-red-400/40 bg-red-500/10 px-2.5 py-1 text-[11px] font-semibold text-red-200"
-                      style={{ ["--i" as never]: i } as never}
+                      className="tear-pain absolute z-20 whitespace-nowrap text-[13px] font-semibold text-white/85"
+                      style={{
+                        ["--i" as never]: i,
+                        fontFamily: "'Caveat', 'Segoe Script', cursive",
+                        textShadow: "0 1px 8px rgba(0,0,0,0.6)",
+                      } as never}
                     >
-                      × {p}
+                      <span className="mr-1 text-red-400">✗</span>
+                      <span className="line-through decoration-red-400/80 decoration-2">{p}</span>
                     </span>
                   ))}
                   <PaperHalf side="left" />
@@ -785,6 +790,43 @@ function Comparison() {
   );
 }
 
+function InkStamp({ filled, rot, smudge }: { filled: boolean; rot: number; smudge?: boolean }) {
+  // Realistic hand-inked circular stamp (coffee cup) — heavy on filled, empty ring otherwise
+  return (
+    <div
+      className="relative grid h-12 w-12 place-items-center rounded-full"
+      style={{
+        transform: `rotate(${rot}deg)`,
+        border: filled ? "2.5px solid #0a0a0a" : "2px dashed rgba(10,10,10,0.55)",
+        boxShadow: filled
+          ? "inset 0 0 0 1px rgba(0,0,0,0.35), 0 1px 0 rgba(0,0,0,0.15)"
+          : "none",
+        background: filled
+          ? "radial-gradient(circle at 35% 30%, rgba(255,255,255,0.35), transparent 55%), rgba(10,10,10,0.06)"
+          : "transparent",
+        filter: filled ? "url(#inkbleed)" : "none",
+      }}
+    >
+      {filled ? (
+        <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="#0a0a0a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 8h13v6a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V8z" />
+          <path d="M17 10h2a2 2 0 0 1 0 4h-2" />
+          <path d="M7 3c.5 1-.5 2 0 3M11 3c.5 1-.5 2 0 3M15 3c.5 1-.5 2 0 3" />
+        </svg>
+      ) : (
+        <span className="text-[10px] font-bold uppercase tracking-wider text-black/40">nº</span>
+      )}
+      {smudge && filled && (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -right-3 top-3 h-3 w-6 rounded-full"
+          style={{ background: "rgba(10,10,10,0.35)", filter: "blur(2px)", transform: `rotate(${rot + 20}deg)` }}
+        />
+      )}
+    </div>
+  );
+}
+
 function PaperHalf({ side }: { side: "left" | "right" }) {
   const isLeft = side === "left";
   // Jagged tear edge — irregular fibers on the inner side of each half
@@ -792,75 +834,150 @@ function PaperHalf({ side }: { side: "left" | "right" }) {
     "polygon(0 0, 100% 0, 97% 3%, 99% 7%, 95% 12%, 98% 18%, 93% 23%, 99% 29%, 94% 35%, 100% 41%, 93% 47%, 99% 53%, 94% 59%, 100% 65%, 93% 71%, 98% 77%, 94% 83%, 99% 89%, 95% 95%, 98% 100%, 0 100%)";
   const tearRight =
     "polygon(0 0, 100% 0, 100% 100%, 2% 100%, 5% 95%, 1% 89%, 6% 83%, 2% 77%, 7% 71%, 0 65%, 6% 59%, 1% 53%, 7% 47%, 0 41%, 6% 35%, 1% 29%, 7% 23%, 2% 18%, 5% 12%, 1% 7%, 3% 3%)";
+
+  // 10-stamp grid split 5/5 across halves. 7 filled = 7 carimbos torto
+  // Left: stamps 1..5 (all filled). Right: stamps 6..10 (6-7 filled, 8-10 empty)
+  const leftStamps: Array<{ filled: boolean; rot: number; smudge?: boolean }> = [
+    { filled: true, rot: -8, smudge: true },
+    { filled: true, rot: 6 },
+    { filled: true, rot: -3 },
+    { filled: true, rot: 11, smudge: true },
+    { filled: true, rot: -6 },
+  ];
+  const rightStamps: Array<{ filled: boolean; rot: number; smudge?: boolean }> = [
+    { filled: true, rot: 4 },
+    { filled: true, rot: -9, smudge: true },
+    { filled: false, rot: 2 },
+    { filled: false, rot: -4 },
+    { filled: false, rot: 7 },
+  ];
+  const stamps = isLeft ? leftStamps : rightStamps;
+
   return (
     <div
       className={`tear-half tear-half-${side} absolute top-0 h-full w-1/2 ${isLeft ? "left-0" : "right-0"}`}
       style={{
-        // Paper fibers (subtle noise) over pure white
         background:
-          "radial-gradient(ellipse at 30% 20%, rgba(0,0,0,0.03), transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(0,0,0,0.04), transparent 65%), linear-gradient(180deg, #ffffff 0%, #f7f7f5 100%)",
+          // Paper fibers noise + subtle cream tint (kraft-like) so it doesn't look sterile
+          "repeating-linear-gradient(92deg, rgba(0,0,0,0.018) 0 1px, transparent 1px 3px), repeating-linear-gradient(6deg, rgba(0,0,0,0.014) 0 1px, transparent 1px 4px), radial-gradient(ellipse at 30% 20%, rgba(0,0,0,0.05), transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(0,0,0,0.06), transparent 65%), linear-gradient(180deg, #fbfaf5 0%, #f2ede0 100%)",
         boxShadow:
-          "0 30px 60px -20px rgba(0,0,0,0.55), inset 0 0 40px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.9)",
+          "0 30px 60px -20px rgba(0,0,0,0.6), inset 0 0 40px rgba(80,60,20,0.08), inset 0 1px 0 rgba(255,255,255,0.9)",
         color: "#0a0a0a",
         transformOrigin: isLeft ? "right center" : "left center",
         clipPath: isLeft ? tearLeft : tearRight,
-        borderRadius: isLeft ? "18px 0 0 18px" : "0 18px 18px 0",
+        borderRadius: isLeft ? "14px 0 0 14px" : "0 14px 14px 0",
       }}
     >
-      {/* Torn fiber shading along the ripped edge */}
+      {/* SVG filter for ink bleed effect */}
+      <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden>
+        <filter id="inkbleed">
+          <feGaussianBlur stdDeviation="0.35" />
+          <feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 12 -5" />
+        </filter>
+      </svg>
+
+      {/* Torn edge shading */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-y-0 w-6"
+        className="pointer-events-none absolute inset-y-0 w-6 z-10"
         style={{
           [isLeft ? "right" : "left"]: 0,
           background: isLeft
-            ? "linear-gradient(90deg, transparent, rgba(0,0,0,0.18))"
-            : "linear-gradient(-90deg, transparent, rgba(0,0,0,0.18))",
+            ? "linear-gradient(90deg, transparent, rgba(0,0,0,0.22))"
+            : "linear-gradient(-90deg, transparent, rgba(0,0,0,0.22))",
           mixBlendMode: "multiply",
         }}
       />
-      {/* Fine fiber highlights */}
+      {/* Torn fiber highlights */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-y-0 w-[3px]"
+        className="pointer-events-none absolute inset-y-0 w-[3px] z-10"
         style={{
           [isLeft ? "right" : "left"]: 0,
           background:
-            "repeating-linear-gradient(180deg, rgba(255,255,255,0.9) 0 1px, rgba(0,0,0,0.15) 1px 2px, transparent 2px 5px)",
+            "repeating-linear-gradient(180deg, rgba(255,255,255,0.9) 0 1px, rgba(0,0,0,0.2) 1px 2px, transparent 2px 5px)",
         }}
       />
+      {/* Fold crease across the card */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-1/2 h-px"
+        style={{ background: "linear-gradient(90deg, transparent, rgba(0,0,0,0.15), transparent)" }}
+      />
+
       <div className="relative h-full w-full p-5" style={{ fontFamily: "'Caveat', 'Segoe Script', cursive" }}>
-        {isLeft && (
+        {isLeft ? (
           <>
-            <div className="font-display text-xs font-black uppercase tracking-widest text-black/85">Cartão fidelidade</div>
-            <div className="mt-1 text-[11px] italic text-black/60">Café do Zé — desde 2011</div>
-            <div className="absolute left-4 top-16 grid grid-cols-3 gap-2">
-              {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="grid h-10 w-10 place-items-center rounded-full border-2 border-dashed border-black/75 text-lg font-black text-black" style={{ transform: `rotate(${(i % 2 ? -1 : 1) * (6 + i * 2)}deg)` }}>
-                  ✓
-                </div>
-              ))}
-            </div>
-            {/* Coffee stain */}
-            <div className="absolute bottom-3 left-4 h-14 w-14 rounded-full opacity-25" style={{ background: "radial-gradient(circle, #6b3a1e 0%, transparent 70%)" }} />
+            <div className="font-display text-[11px] font-black uppercase tracking-[0.2em] text-black/85">Cartão Fidelidade</div>
+            <div className="mt-0.5 text-[13px] italic text-black/70">Café do Zé — desde 2011</div>
+            <div className="mt-1 text-[11px] text-black/55">A cada 10 cafés, o próximo é por nossa conta ☕</div>
           </>
+        ) : (
+          <div className="flex items-start justify-between">
+            <div className="text-[12px] italic text-black/60">Cliente: <span className="font-bold text-black/80">Ana S.</span></div>
+            <div className="-mt-1 rotate-6 rounded border-2 border-dashed border-black/75 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.2em] text-black">
+              10 = grátis
+            </div>
+          </div>
         )}
-        {!isLeft && (
+
+        {/* Stamp grid — 5 stamps per half in a single row spanning both halves visually */}
+        <div className="absolute inset-x-4 bottom-16 flex items-center justify-between">
+          {stamps.map((s, i) => (
+            <InkStamp key={i} filled={s.filled} rot={s.rot} smudge={s.smudge} />
+          ))}
+        </div>
+
+        {/* Numbered slots under stamps */}
+        <div className="absolute inset-x-4 bottom-9 flex items-center justify-between">
+          {stamps.map((_, i) => (
+            <span key={i} className="w-12 text-center text-[10px] font-bold text-black/45">
+              {(isLeft ? i + 1 : i + 6).toString().padStart(2, "0")}
+            </span>
+          ))}
+        </div>
+
+        {isLeft ? (
           <>
-            <div className="flex justify-end">
-              <div className="rotate-6 rounded border border-dashed border-black/75 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-black">
-                10 = grátis
-              </div>
+            {/* Coffee ring stain */}
+            <div
+              aria-hidden
+              className="absolute -left-2 bottom-2 h-16 w-16 rounded-full"
+              style={{
+                border: "3px solid rgba(107,58,30,0.35)",
+                boxShadow: "inset 0 0 10px rgba(107,58,30,0.2)",
+                transform: "rotate(-8deg) scale(0.9, 1)",
+                filter: "blur(0.4px)",
+              }}
+            />
+            {/* Small ink splash */}
+            <div
+              aria-hidden
+              className="absolute right-8 top-4 h-2 w-2 rounded-full"
+              style={{ background: "rgba(10,10,10,0.55)", filter: "blur(0.4px)" }}
+            />
+          </>
+        ) : (
+          <>
+            {/* Tape at top edge */}
+            <div
+              aria-hidden
+              className="absolute -right-3 top-4 h-5 w-20 rotate-12"
+              style={{
+                background: "linear-gradient(180deg, rgba(240,235,215,0.85), rgba(220,215,195,0.7))",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.2), inset 0 0 8px rgba(255,255,255,0.4)",
+              }}
+            />
+            {/* Handwritten complaint */}
+            <div className="absolute bottom-2 right-4 text-[15px] italic text-black/85" style={{ transform: "rotate(-3deg)" }}>
+              "perdi um... hehe"
             </div>
-            <div className="absolute right-4 top-14 grid grid-cols-3 gap-2">
-              {[0, 1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="h-10 w-10 rounded-full border-2 border-dashed border-black/75" />
-              ))}
-            </div>
-            {/* Tape */}
-            <div className="absolute -right-2 top-6 h-5 w-16 rotate-12" style={{ background: "rgba(230,230,220,0.7)", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }} />
-            {/* Scribble */}
-            <div className="absolute bottom-3 right-4 text-[14px] italic text-black/85">"perdi um... hehe"</div>
+            {/* Coffee droplet */}
+            <div
+              aria-hidden
+              className="absolute right-16 top-10 h-3 w-3 rounded-full"
+              style={{ background: "rgba(107,58,30,0.45)", filter: "blur(0.5px)" }}
+            />
           </>
         )}
       </div>
