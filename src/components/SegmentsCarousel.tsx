@@ -72,9 +72,8 @@ export function SegmentsCarousel() {
       <svg width="0" height="0" className="absolute" aria-hidden>
         <defs>
           <linearGradient id="orbIconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#7dfcff" />
-            <stop offset="50%" stopColor="var(--primary)" />
-            <stop offset="100%" stopColor="var(--accent)" />
+            <stop offset="0%" stopColor="var(--primary)" />
+            <stop offset="100%" stopColor="var(--primary)" />
           </linearGradient>
           <filter id="orbGlow" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="2.5" result="b" />
