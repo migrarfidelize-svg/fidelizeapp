@@ -104,8 +104,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
-// Tema — respeita preferência salva, padrão dark (identidade Cyan Circuit).
-const THEME_INIT_SCRIPT = `(function(){try{var s=null;try{s=localStorage.getItem('theme');}catch(_){}var t=(s==='light'||s==='dark')?s:'dark';var r=document.documentElement;r.classList.toggle('dark',t==='dark');r.style.colorScheme=t;}catch(e){}})();`;
+// Tema por rota: painéis internos (/app, /admin) em claro; restante em dark.
+function themeForPath(p: string): "light" | "dark" {
+  return p.startsWith("/app") || p.startsWith("/admin") ? "light" : "dark";
+}
+const THEME_INIT_SCRIPT = `(function(){try{var p=location.pathname;var t=(p.indexOf('/app')===0||p.indexOf('/admin')===0)?'light':'dark';var r=document.documentElement;r.classList.toggle('dark',t==='dark');r.style.colorScheme=t;}catch(e){}})();`;
+
 
 
 function RootShell({ children }: { children: ReactNode }) {
