@@ -265,7 +265,7 @@ function AuthPage() {
                 <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete={isSignup ? "new-password" : "current-password"} placeholder="••••••••" className="auth-input" />
               </div>
 
-              <button type="submit" disabled={loading} className="auth-cta group mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#00ffff] py-4 font-display text-sm font-bold uppercase tracking-widest text-black shadow-[0_0_30px_-4px_rgba(0,255,255,0.55)] transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60">
+              <button type="submit" disabled={loading} className="auth-cta group mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-[#00ffff] py-3 font-display text-sm font-bold uppercase tracking-widest text-black shadow-[0_0_30px_-4px_rgba(0,255,255,0.55)] transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60">
                 {loading ? (
                   "Aguarde…"
                 ) : (
@@ -277,9 +277,10 @@ function AuthPage() {
               </button>
             </form>
 
-            <div className="mt-6 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/30">
+            <div className="mt-4 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/30">
               <Check className="h-3 w-3 text-[#00ffff]" /> Criptografia ativa · SSL
             </div>
+
           </div>
         </div>
       </div>
