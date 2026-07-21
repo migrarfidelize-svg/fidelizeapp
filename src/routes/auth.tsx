@@ -267,14 +267,14 @@ function AuthPage() {
               />
               <Link
                 to="/auth"
-                search={{ mode: "signin" }}
+                search={{ ...search, mode: "signin" }}
                 className={"relative z-10 rounded-full py-1.5 text-center font-display text-sm font-semibold transition-colors duration-300 " + (isSignup ? "text-white/60" : "text-black")}
               >
                 Entrar
               </Link>
               <Link
                 to="/auth"
-                search={{ mode: "signup" }}
+                search={{ ...search, mode: "signup" }}
                 className={"relative z-10 rounded-full py-1.5 text-center font-display text-sm font-semibold transition-colors duration-300 " + (isSignup ? "text-black" : "text-white/60")}
               >
                 Criar conta
