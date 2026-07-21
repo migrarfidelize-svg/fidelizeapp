@@ -56,7 +56,7 @@ export function SegmentsCarousel() {
   return (
     <div
       ref={wrapperRef}
-      className="relative mx-auto flex w-full items-center justify-center px-4 py-16 md:py-24"
+      className="relative mx-auto flex w-full items-center justify-center px-4 py-24 md:py-32"
     >
       {/* Ambient wash */}
       <div
