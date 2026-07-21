@@ -12,7 +12,9 @@ export const Route = createFileRoute("/preview-dock")({
   head: () => ({ meta: [{ title: "Preview · Dock lateral" }] }),
 });
 
-const GROUPS = [
+type Item = { label: string; icon: any; active?: boolean; badge?: string | null };
+type Group = { label: string; items: Item[] };
+const GROUPS: Group[] = [
   {
     label: "Operação",
     items: [
