@@ -1104,8 +1104,17 @@ function Pricing() {
   ];
 
   const [activeIdx, setActiveIdx] = useState(2);
+  const [prevIdx, setPrevIdx] = useState(2);
+  const [shockKey, setShockKey] = useState(0);
   const active = plans[activeIdx];
   const ActiveIcon = active.icon;
+  const direction = activeIdx >= prevIdx ? "right" : "left";
+  const selectPlan = (i: number) => {
+    if (i === activeIdx) return;
+    setPrevIdx(activeIdx);
+    setActiveIdx(i);
+    setShockKey((k) => k + 1);
+  };
 
   return (
     <section id="precos" className="relative py-24 overflow-hidden">
@@ -1122,14 +1131,12 @@ function Pricing() {
 
         {/* Featured card */}
         <div className="mt-14 flex justify-center">
-          <div key={active.name} className="relative w-full max-w-md animate-scale-in">
+          <div key={active.name} className={`relative w-full max-w-md ${direction === "right" ? "plan-swap-right" : "plan-swap-left"}`}>
+            {/* expanding halo on swap */}
+            <div className="pointer-events-none absolute inset-0 -z-10 rounded-[2rem] bg-primary/20 blur-3xl plan-halo" />
             {/* LED breathing gradient border */}
             <div className="relative rounded-[2rem] p-[2px] bg-gradient-to-b from-[#00ffff] via-[#00ffff]/20 to-transparent shadow-[0_0_40px_rgba(0,255,255,0.15)]">
-              <div className="rounded-[calc(2rem-2px)] bg-card p-8 md:p-10 relative overflow-hidden">
-                {/* decorative corner */}
-                <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-primary/10 blur-2xl" />
-
-                {/* header */}
+              <div className="rounded-[calc(2rem-2px)] bg-card p-8 md:p-10 relative overflow-hidden plan-sweep">
                 <div className="relative flex items-start justify-between">
                   <div>
                     {active.badge && (
@@ -1192,18 +1199,24 @@ function Pricing() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => setActiveIdx(i)}
+                    onClick={() => selectPlan(i)}
                     aria-pressed={isActive}
                     aria-label={p.name}
-                    className={`flex flex-col items-center justify-center gap-1 rounded-2xl border transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+                    className={`relative flex flex-col items-center justify-center gap-1 rounded-2xl border transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
                       isActive
                         ? "h-16 w-16 -translate-y-2 border-primary/40 bg-primary/10 text-primary shadow-[0_0_24px_rgba(0,255,255,0.25)]"
                         : "h-14 w-14 border-white/10 bg-white/5 text-muted-foreground hover:-translate-y-3 hover:scale-110 hover:border-white/25 hover:bg-white/10 hover:text-foreground"
                     }`}
                   >
-                    <Icon className={isActive ? "h-7 w-7" : "h-6 w-6"} />
+                    <Icon className={isActive ? "h-7 w-7 transition-transform duration-300" : "h-6 w-6 transition-transform duration-300"} />
                     {isActive && (
-                      <span className="absolute -bottom-1.5 h-1 w-1 rounded-full bg-primary shadow-[0_0_8px_#00ffff]" />
+                      <>
+                        <span className="absolute -bottom-1.5 h-1 w-1 rounded-full bg-primary shadow-[0_0_8px_#00ffff]" />
+                        <span
+                          key={shockKey}
+                          className="dock-shock pointer-events-none absolute left-1/2 top-1/2 h-full w-full rounded-2xl border border-primary/60"
+                        />
+                      </>
                     )}
                   </button>
                 </div>
