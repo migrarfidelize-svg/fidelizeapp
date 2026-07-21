@@ -31,10 +31,32 @@ export const Route = createFileRoute("/l/$slug")({
       // Só faz auto-attach para clientes; estabelecimento/admin veem a página pública.
       if (accType !== "customer") return;
       const r = await attachEstablishmentBySlug({ data: { slug: params.slug } });
+      // Toast contextual mostrado após o redirect (persistido só entre navegações).
+      try {
+        const msg = r.status === "created"
+          ? `Cartão de ${r.name} adicionado à sua carteira.`
+          : r.status === "adopted"
+          ? `Encontramos seu cadastro em ${r.name} e vinculamos à sua conta.`
+          : `Você já tinha cartão em ${r.name}. Bem-vindo de volta!`;
+        sessionStorage.setItem("wallet:flash", JSON.stringify({ kind: "success", msg }));
+      } catch { /* ignore */ }
       throw redirect({ to: `/carteira/${r.slug}` });
     } catch (e) {
-      // redirect() lança — deixa passar. Outros erros: cai no fluxo público.
+      // redirect() lança — deixa passar.
       if (e && typeof e === "object" && "to" in (e as object)) throw e;
+      // Erros de negócio (inativo/não encontrado): mostra toast e manda para a carteira.
+      const code = (e as { code?: string } | null)?.code;
+      const message = (e as { message?: string } | null)?.message;
+      if (code === "inactive" || code === "not_found") {
+        try {
+          sessionStorage.setItem(
+            "wallet:flash",
+            JSON.stringify({ kind: "error", msg: message ?? "Estabelecimento indisponível." }),
+          );
+        } catch { /* ignore */ }
+        throw redirect({ to: "/carteira" });
+      }
+      // Outros erros: cai no fluxo público.
     }
   },
   loader: async ({ params, context }) => {
