@@ -343,7 +343,6 @@ function AppLayout() {
     conta: UserCircle2,
     ajuda: LifeBuoy,
   };
-  const [pinnedGroup, setPinnedGroup] = useState<string | null>(null);
   const unreadByGroup: Record<string, number> = {
     ajuda: unreadSupport,
     operacao: 0,
