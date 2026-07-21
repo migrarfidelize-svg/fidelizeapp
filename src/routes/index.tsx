@@ -1131,14 +1131,12 @@ function Pricing() {
 
         {/* Featured card */}
         <div className="mt-14 flex justify-center">
-          <div key={active.name} className="relative w-full max-w-md animate-scale-in">
+          <div key={active.name} className={`relative w-full max-w-md ${direction === "right" ? "plan-swap-right" : "plan-swap-left"}`}>
+            {/* expanding halo on swap */}
+            <div className="pointer-events-none absolute inset-0 -z-10 rounded-[2rem] bg-primary/20 blur-3xl plan-halo" />
             {/* LED breathing gradient border */}
             <div className="relative rounded-[2rem] p-[2px] bg-gradient-to-b from-[#00ffff] via-[#00ffff]/20 to-transparent shadow-[0_0_40px_rgba(0,255,255,0.15)]">
-              <div className="rounded-[calc(2rem-2px)] bg-card p-8 md:p-10 relative overflow-hidden">
-                {/* decorative corner */}
-                <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-primary/10 blur-2xl" />
-
-                {/* header */}
+              <div className="rounded-[calc(2rem-2px)] bg-card p-8 md:p-10 relative overflow-hidden plan-sweep">
                 <div className="relative flex items-start justify-between">
                   <div>
                     {active.badge && (
