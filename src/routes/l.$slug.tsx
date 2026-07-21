@@ -118,7 +118,22 @@ function PublicPage() {
                 <h2 className="mt-3 font-display text-xl font-bold">{campaign.name}</h2>
                 <p className="mt-1 text-muted-foreground">Acumule {campaign.stamps_required} carimbos e ganhe <strong className="text-foreground">{campaign.reward_title}</strong>.</p>
 
-                <form onSubmit={submit} className="mt-6 space-y-4">
+                <Link
+                  to="/auth"
+                  search={{ mode: "signin", as: "customer", est_slug: slug }}
+                  className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary-soft/50 px-4 py-3 text-sm transition hover:bg-primary-soft"
+                >
+                  <span className="flex items-center gap-2 text-primary font-medium">
+                    <LogIn className="h-4 w-4" /> Já tenho conta Fidelize
+                  </span>
+                  <span className="text-xs text-muted-foreground">Entrar com WhatsApp</span>
+                </Link>
+
+                <div className="mt-4 flex items-center gap-3 text-[10px] uppercase tracking-widest text-muted-foreground">
+                  <div className="h-px flex-1 bg-border" /> ou crie sua conta <div className="h-px flex-1 bg-border" />
+                </div>
+
+                <form onSubmit={submit} className="mt-4 space-y-4">
                   <div>
                     <Label>Seu nome</Label>
                     <Input required minLength={2} maxLength={80} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
