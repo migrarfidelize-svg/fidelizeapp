@@ -119,7 +119,10 @@ function AuthPage() {
         }
         const uid = signUpData.user?.id ?? (await supabase.auth.getUser()).data.user?.id;
         if (uid) {
-          await supabase.from("profiles").upsert({ id: uid, full_name: name, phone: whatsapp }, { onConflict: "id" });
+          await supabase.from("profiles").upsert(
+            { id: uid, full_name: name, phone: whatsapp, account_type: isEstablishmentSignup ? "establishment" : "customer" },
+            { onConflict: "id" },
+          );
         }
         if (isEstablishmentSignup) {
           toast.success("Conta criada! Vamos configurar seu cartão.");

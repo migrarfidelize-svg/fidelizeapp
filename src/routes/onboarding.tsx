@@ -21,6 +21,21 @@ export const Route = createFileRoute("/onboarding")({
   beforeLoad: async () => {
     const { data } = await supabase.auth.getUser();
     if (!data.user) throw redirect({ to: "/auth" });
+    // Onboarding é exclusivo para donos de estabelecimento — clientes finais
+    // vão direto para /carteira. Consulta a coluna profiles.account_type
+    // (definida explicitamente), pois o RPC depende de memberships que ainda
+    // não existem no momento do primeiro onboarding do lojista.
+    try {
+      const { data: p } = await supabase
+        .from("profiles")
+        .select("account_type")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      if (p?.account_type === "customer") throw redirect({ to: "/carteira" });
+      if (p?.account_type === "super_admin") throw redirect({ to: "/admin" });
+    } catch (e) {
+      if (e && typeof e === "object" && ("isRedirect" in e || "to" in e)) throw e;
+    }
   },
   head: () => ({ meta: [{ title: "Configurar minha empresa — Fidelize" }] }),
   component: Onboarding,
