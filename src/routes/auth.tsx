@@ -323,42 +323,43 @@ function AuthPage() {
 
             <form onSubmit={handleSubmit} className={isSignup ? "space-y-3" : "space-y-4"}>
 
-              {isSignup && (
-                <div className="animate-fade-in">
-                  <div className="mb-1 ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">Sou</div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setRole("customer")}
-                      className={
-                        "flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all " +
-                        (role === "customer"
-                          ? "border-[#00ffff] bg-[#00ffff]/10 text-white shadow-[0_0_20px_-6px_rgba(0,255,255,0.6)]"
-                          : "border-white/10 bg-white/5 text-white/60 hover:text-white")
-                      }
-                    >
-                      <User className="h-3.5 w-3.5" /> Cliente
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setRole("establishment")}
-                      className={
-                        "flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all " +
-                        (role === "establishment"
-                          ? "border-[#00ffff] bg-[#00ffff]/10 text-white shadow-[0_0_20px_-6px_rgba(0,255,255,0.6)]"
-                          : "border-white/10 bg-white/5 text-white/60 hover:text-white")
-                      }
-                    >
-                      <Store className="h-3.5 w-3.5" /> Estabelecimento
-                    </button>
-                  </div>
+              {/* Toggle Cliente / Estabelecimento — disponível em signup e signin */}
+              <div className="animate-fade-in">
+                <div className="mb-1 ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">Sou</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setRole("customer")}
+                    className={
+                      "flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all " +
+                      (role === "customer"
+                        ? "border-[#00ffff] bg-[#00ffff]/10 text-white shadow-[0_0_20px_-6px_rgba(0,255,255,0.6)]"
+                        : "border-white/10 bg-white/5 text-white/60 hover:text-white")
+                    }
+                  >
+                    <User className="h-3.5 w-3.5" /> Cliente
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRole("establishment")}
+                    className={
+                      "flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all " +
+                      (role === "establishment"
+                        ? "border-[#00ffff] bg-[#00ffff]/10 text-white shadow-[0_0_20px_-6px_rgba(0,255,255,0.6)]"
+                        : "border-white/10 bg-white/5 text-white/60 hover:text-white")
+                    }
+                  >
+                    <Store className="h-3.5 w-3.5" /> Estabelecimento
+                  </button>
+                </div>
+                {isSignup && (
                   <p className="mt-1.5 ml-1 text-[10px] text-white/40">
                     {role === "customer"
                       ? "Acumule carimbos e recompensas em qualquer estabelecimento Fidelize."
                       : "Crie seu programa de fidelidade digital para o seu negócio."}
                   </p>
-                </div>
-              )}
+                )}
+              </div>
 
               {isSignup && (
                 <div className="animate-fade-in space-y-1.5">
@@ -366,25 +367,38 @@ function AuthPage() {
                   <input id="name" value={name} onChange={(e) => setName(e.target.value)} required minLength={2} className="auth-input" />
                 </div>
               )}
-              {isEstablishmentSignup && (
+
+              {/* WhatsApp: obrigatório para cliente (sempre) e para estabelecimento no signup */}
+              {(walletFlow || isEstablishmentSignup) && (
                 <div className="animate-fade-in space-y-1.5">
                   <label htmlFor="whatsapp" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">WhatsApp</label>
                   <input id="whatsapp" type="tel" inputMode="tel" autoComplete="tel" placeholder="(11) 91234-5678" value={whatsapp} onChange={(e) => setWhatsapp(formatWhatsapp(e.target.value))} required className="auth-input" />
-                </div>
-              )}
-              <div className="space-y-1.5">
-                <label htmlFor="email" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">E-mail</label>
-                <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" placeholder="voce@empresa.com" className="auth-input" />
-              </div>
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label htmlFor="password" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">Senha</label>
-                  {!isSignup && (
-                    <Link to="/auth/recuperar" className="text-[10px] uppercase tracking-widest text-[oklch(0.78_0.19_330)] hover:underline">Esqueci</Link>
+                  {walletFlow && (
+                    <p className="ml-1 text-[10px] text-white/40">
+                      {isSignup ? "Usaremos seu WhatsApp para você acessar sua carteira." : "Digite o mesmo WhatsApp usado no cadastro."}
+                    </p>
                   )}
                 </div>
-                <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete={isSignup ? "new-password" : "current-password"} placeholder="••••••••" className="auth-input" />
-              </div>
+              )}
+
+              {/* Email + senha somente para estabelecimento/admin */}
+              {!walletFlow && (
+                <>
+                  <div className="space-y-1.5">
+                    <label htmlFor="email" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">E-mail</label>
+                    <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" placeholder="voce@empresa.com" className="auth-input" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label htmlFor="password" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">Senha</label>
+                      {!isSignup && (
+                        <Link to="/auth/recuperar" className="text-[10px] uppercase tracking-widest text-[oklch(0.78_0.19_330)] hover:underline">Esqueci</Link>
+                      )}
+                    </div>
+                    <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete={isSignup ? "new-password" : "current-password"} placeholder="••••••••" className="auth-input" />
+                  </div>
+                </>
+              )}
 
               <button type="submit" disabled={loading} className="auth-cta group mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-[#00ffff] py-3 font-display text-sm font-bold uppercase tracking-widest text-black shadow-[0_0_30px_-4px_rgba(0,255,255,0.55)] transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60">
                 {loading ? (
