@@ -92,6 +92,7 @@ function AppLayout() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState<boolean>(false);
+  const [pinnedGroup, setPinnedGroup] = useState<string | null>(null);
 
   useEffect(() => {
     try {
