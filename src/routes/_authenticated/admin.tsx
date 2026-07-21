@@ -12,7 +12,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import {
-  Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock,
+  Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock, Wallet2,
   UsersRound, Settings, Mail, FileText, ListChecks, LifeBuoy, Package,
   DollarSign, Wallet, Megaphone, Cog, BookOpen, Menu, Star, Plug,
 } from "lucide-react";
