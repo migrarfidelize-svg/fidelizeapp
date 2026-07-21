@@ -56,6 +56,7 @@ import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppCarimbarRouteImport } from './routes/_authenticated/app.carimbar'
 import { Route as AuthenticatedAppCampanhasRouteImport } from './routes/_authenticated/app.campanhas'
 import { Route as AuthenticatedAppAvaliacoesRouteImport } from './routes/_authenticated/app.avaliacoes'
+import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin.usuarios'
 import { Route as AuthenticatedAdminPagamentosRouteImport } from './routes/_authenticated/admin.pagamentos'
 import { Route as AuthenticatedAdminNotificacoesRouteImport } from './routes/_authenticated/admin.notificacoes'
 import { Route as AuthenticatedAdminIntegracoesRouteImport } from './routes/_authenticated/admin.integracoes'
@@ -335,6 +336,12 @@ const AuthenticatedAppAvaliacoesRoute =
     path: '/avaliacoes',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAdminUsuariosRoute =
+  AuthenticatedAdminUsuariosRouteImport.update({
+    id: '/usuarios',
+    path: '/usuarios',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminPagamentosRoute =
   AuthenticatedAdminPagamentosRouteImport.update({
     id: '/pagamentos',
@@ -549,6 +556,7 @@ export interface FileRoutesByFullPath {
   '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/admin/notificacoes': typeof AuthenticatedAdminNotificacoesRoute
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
+  '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/app/avaliacoes': typeof AuthenticatedAppAvaliacoesRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
@@ -624,6 +632,7 @@ export interface FileRoutesByTo {
   '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/admin/notificacoes': typeof AuthenticatedAdminNotificacoesRoute
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
+  '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/app/avaliacoes': typeof AuthenticatedAppAvaliacoesRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
@@ -704,6 +713,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/_authenticated/admin/notificacoes': typeof AuthenticatedAdminNotificacoesRoute
   '/_authenticated/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
+  '/_authenticated/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/_authenticated/app/avaliacoes': typeof AuthenticatedAppAvaliacoesRoute
   '/_authenticated/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/_authenticated/app/carimbar': typeof AuthenticatedAppCarimbarRoute
@@ -784,6 +794,7 @@ export interface FileRouteTypes {
     | '/admin/integracoes'
     | '/admin/notificacoes'
     | '/admin/pagamentos'
+    | '/admin/usuarios'
     | '/app/avaliacoes'
     | '/app/campanhas'
     | '/app/carimbar'
@@ -859,6 +870,7 @@ export interface FileRouteTypes {
     | '/admin/integracoes'
     | '/admin/notificacoes'
     | '/admin/pagamentos'
+    | '/admin/usuarios'
     | '/app/avaliacoes'
     | '/app/campanhas'
     | '/app/carimbar'
@@ -938,6 +950,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/integracoes'
     | '/_authenticated/admin/notificacoes'
     | '/_authenticated/admin/pagamentos'
+    | '/_authenticated/admin/usuarios'
     | '/_authenticated/app/avaliacoes'
     | '/_authenticated/app/campanhas'
     | '/_authenticated/app/carimbar'
@@ -1344,6 +1357,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAvaliacoesRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/admin/usuarios': {
+      id: '/_authenticated/admin/usuarios'
+      path: '/usuarios'
+      fullPath: '/admin/usuarios'
+      preLoaderRoute: typeof AuthenticatedAdminUsuariosRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/pagamentos': {
       id: '/_authenticated/admin/pagamentos'
       path: '/pagamentos'
@@ -1573,6 +1593,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminIntegracoesRoute: typeof AuthenticatedAdminIntegracoesRoute
   AuthenticatedAdminNotificacoesRoute: typeof AuthenticatedAdminNotificacoesRoute
   AuthenticatedAdminPagamentosRoute: typeof AuthenticatedAdminPagamentosRoute
+  AuthenticatedAdminUsuariosRoute: typeof AuthenticatedAdminUsuariosRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminEmpresaIdRoute: typeof AuthenticatedAdminEmpresaIdRoute
   AuthenticatedAdminSuporteIdRoute: typeof AuthenticatedAdminSuporteIdRoute
@@ -1596,6 +1617,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminIntegracoesRoute: AuthenticatedAdminIntegracoesRoute,
   AuthenticatedAdminNotificacoesRoute: AuthenticatedAdminNotificacoesRoute,
   AuthenticatedAdminPagamentosRoute: AuthenticatedAdminPagamentosRoute,
+  AuthenticatedAdminUsuariosRoute: AuthenticatedAdminUsuariosRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminEmpresaIdRoute: AuthenticatedAdminEmpresaIdRoute,
   AuthenticatedAdminSuporteIdRoute: AuthenticatedAdminSuporteIdRoute,
