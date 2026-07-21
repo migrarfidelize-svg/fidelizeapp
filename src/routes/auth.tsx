@@ -28,9 +28,21 @@ async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: 
       return { to: `/carteira/${r.slug}`, toast: msg, toastKind: "success" };
     } catch (err) {
       const code = (err as { code?: string })?.code;
-      const message = (err as { message?: string })?.message;
-      if (code === "inactive" || code === "not_found") {
-        return { to: "/carteira", toast: message ?? "Estabelecimento indisponível.", toastKind: "error" };
+      const name = (err as { establishmentName?: string })?.establishmentName;
+      const slug = (err as { slug?: string })?.slug ?? opts.est_slug;
+      if (code === "inactive") {
+        return {
+          to: "/carteira",
+          toast: `${name ?? slug} está inativo/suspenso. Não vinculamos o cartão à sua carteira.`,
+          toastKind: "error" as const,
+        };
+      }
+      if (code === "not_found") {
+        return {
+          to: "/carteira",
+          toast: `Estabelecimento "${slug}" não encontrado. Verifique o QR ou peça um novo link.`,
+          toastKind: "error" as const,
+        };
       }
       // Segue fluxo padrão.
     }

@@ -46,13 +46,13 @@ export const Route = createFileRoute("/l/$slug")({
       if (e && typeof e === "object" && "to" in (e as object)) throw e;
       // Erros de negócio (inativo/não encontrado): mostra toast e manda para a carteira.
       const code = (e as { code?: string } | null)?.code;
-      const message = (e as { message?: string } | null)?.message;
+      const name = (e as { establishmentName?: string } | null)?.establishmentName;
       if (code === "inactive" || code === "not_found") {
+        const msg = code === "inactive"
+          ? `${name ?? params.slug} está inativo/suspenso. Não vinculamos o cartão à sua carteira.`
+          : `Estabelecimento "${params.slug}" não encontrado. Verifique o QR ou peça um novo link.`;
         try {
-          sessionStorage.setItem(
-            "wallet:flash",
-            JSON.stringify({ kind: "error", msg: message ?? "Estabelecimento indisponível." }),
-          );
+          sessionStorage.setItem("wallet:flash", JSON.stringify({ kind: "error", msg }));
         } catch { /* ignore */ }
         throw redirect({ to: "/carteira" });
       }
