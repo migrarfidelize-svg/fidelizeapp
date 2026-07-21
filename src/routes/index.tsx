@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
@@ -250,7 +251,7 @@ function HowItWorks() {
       },
       { threshold: 0.35, rootMargin: "0px 0px -10% 0px" },
     );
-    items.forEach((el) => io.observe(el));
+    items.forEach((el) => io.observe(el as Element));
     return () => io.disconnect();
   }, []);
 
