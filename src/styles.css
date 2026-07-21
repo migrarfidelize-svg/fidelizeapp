@@ -810,6 +810,21 @@
   .tear-digital > div:first-child { width: 92% !important; }
   .tear-cta { margin-top: 1.25rem !important; padding: 0 1rem; }
   .tear-cta-btn { width: 100%; max-width: 320px; justify-content: center; }
+  /* Paper halves fully leave the frame on mobile — no leftover fragments behind the digital card */
+  .tear-half-left {
+    transform:
+      translateX(calc(var(--p) * -140%))
+      translateY(calc(var(--p) * 80px))
+      rotate(calc(var(--p) * -26deg)) !important;
+    opacity: calc(1 - var(--p) * 1.4) !important;
+  }
+  .tear-half-right {
+    transform:
+      translateX(calc(var(--p) * 140%))
+      translateY(calc(var(--p) * 90px))
+      rotate(calc(var(--p) * 28deg)) !important;
+    opacity: calc(1 - var(--p) * 1.4) !important;
+  }
 }
 
 
