@@ -81,6 +81,7 @@ function CustomerCard() {
     >
       <div className="mx-auto max-w-xl px-3 pt-6 sm:px-6 sm:pt-10">
         <OfflineBanner />
+        <SaveToWalletCta token={token} establishmentName={est.name} />
         {multi ? (
           <>
             <div className="mb-3 flex items-center justify-between px-2 text-xs text-muted-foreground">
