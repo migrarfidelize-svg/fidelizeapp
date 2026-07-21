@@ -499,34 +499,34 @@ function Benefits() {
           <div aria-hidden className="fz-ring fz-ring-2" />
           <div aria-hidden className="fz-ring fz-ring-3" />
 
-          {/* Central logo — mesma logo do menu, sem bloco por trás */}
+          {/* Central logo — apenas o "F" grande em cyan, sem bloco por trás */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="fz-core grid place-items-center">
-              <svg viewBox="0 0 512 512" className="h-32 w-32 md:h-40 md:w-40" aria-hidden="true">
-                <defs>
-                  <linearGradient id="fzHeroG" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0" stopColor="#BEDCFF" />
-                    <stop offset="1" stopColor="#7FB4F0" />
-                  </linearGradient>
-                  <linearGradient id="fzHeroInk" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stopColor="#1E2A44" />
-                    <stop offset="1" stopColor="#2A3A5A" />
-                  </linearGradient>
-                </defs>
-                <rect width="512" height="512" rx="112" ry="112" fill="url(#fzHeroG)" />
-                <path d="M 384 256 A 128 128 0 1 1 256 128" fill="none" stroke="url(#fzHeroInk)" strokeWidth="28" strokeLinecap="round" opacity="0.75" />
-                <path d="M 236 108 L 268 128 L 236 148 Z" fill="url(#fzHeroInk)" />
-                <g fill="url(#fzHeroInk)">
-                  <rect x="196" y="156" width="40" height="216" rx="12" />
-                  <rect x="196" y="156" width="140" height="40" rx="12" />
-                  <rect x="196" y="244" width="104" height="36" rx="10" />
-                </g>
-                <g fill="#ffffff" opacity="0.35" style={{ mixBlendMode: "overlay" }}>
-                  <rect x="200" y="160" width="14" height="208" rx="7" />
-                  <rect x="200" y="160" width="132" height="10" rx="5" />
-                </g>
-              </svg>
-            </div>
+            <svg
+              viewBox="0 0 512 512"
+              className="fz-core-mark h-44 w-44 md:h-56 md:w-56"
+              aria-hidden="true"
+            >
+              <defs>
+                <linearGradient id="fzHeroCyan" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stopColor="#7dfcff" />
+                  <stop offset="1" stopColor="#00ffff" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M 384 256 A 128 128 0 1 1 256 128"
+                fill="none"
+                stroke="url(#fzHeroCyan)"
+                strokeWidth="28"
+                strokeLinecap="round"
+                opacity="0.85"
+              />
+              <path d="M 236 108 L 268 128 L 236 148 Z" fill="url(#fzHeroCyan)" />
+              <g fill="url(#fzHeroCyan)">
+                <rect x="196" y="156" width="40" height="216" rx="12" />
+                <rect x="196" y="156" width="140" height="40" rx="12" />
+                <rect x="196" y="244" width="104" height="36" rx="10" />
+              </g>
+            </svg>
           </div>
 
           {/* n8n-style connector — circular path around the logo linking every chip */}
