@@ -1,8 +1,10 @@
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { getEstablishmentBySlug, registerOrLoginCustomer } from "@/lib/loyalty.functions";
+import { attachEstablishmentBySlug } from "@/lib/my-wallet.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { StampCard } from "@/components/StampCard";
 import { PublicRatingBlock } from "@/components/PublicRatingBlock";
 import { toast } from "sonner";
-import { Sparkles, MapPin, Phone } from "lucide-react";
+import { Sparkles, MapPin, Phone, LogIn } from "lucide-react";
 
 const opts = (slug: string) => queryOptions({
   queryKey: ["est", slug],
@@ -18,6 +20,23 @@ const opts = (slug: string) => queryOptions({
 });
 
 export const Route = createFileRoute("/l/$slug")({
+  ssr: false,
+  beforeLoad: async ({ params }) => {
+    // Se o visitante já está logado, tenta vincular esta empresa à conta e
+    // manda direto para a carteira — sem re-preencher o formulário.
+    try {
+      const { data: sess } = await supabase.auth.getSession();
+      if (!sess.session) return;
+      const { data: accType } = await supabase.rpc("my_account_type");
+      // Só faz auto-attach para clientes; estabelecimento/admin veem a página pública.
+      if (accType !== "customer") return;
+      const r = await attachEstablishmentBySlug({ data: { slug: params.slug } });
+      throw redirect({ to: `/carteira/${r.slug}` });
+    } catch (e) {
+      // redirect() lança — deixa passar. Outros erros: cai no fluxo público.
+      if (e && typeof e === "object" && "to" in (e as object)) throw e;
+    }
+  },
   loader: async ({ params, context }) => {
     const d = await context.queryClient.ensureQueryData(opts(params.slug));
     if (!d) throw notFound();
@@ -70,6 +89,7 @@ function PublicPage() {
     } catch (err) { toast.error(err instanceof Error ? err.message : "Erro"); }
     finally { setLoading(false); }
   }
+
 
   return (
     <div className="min-h-dvh bg-muted/30">
