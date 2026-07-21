@@ -678,7 +678,7 @@ function Comparison() {
         >
           <div className="relative z-20 mx-auto w-full max-w-6xl px-6 pt-2 md:pt-3">
 
-            <div className="relative z-50 mb-6 text-center md:mb-8">
+            <div className="relative z-50 mb-6 -mt-16 text-center md:mb-8 md:-mt-24">
               <h2 className="font-display text-3xl font-extrabold leading-[1.15] tracking-tight text-white md:text-5xl pb-1">
                 O papel rasga. O digital escala.
               </h2>
