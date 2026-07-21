@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
@@ -212,21 +213,101 @@ function Segments() {
 
 function HowItWorks() {
   const steps = [
-    { n: "01", title: "Crie seu cartão", desc: "Escolha suas cores, adicione sua logo e defina a recompensa que seus clientes vão amar." },
-    { n: "02", title: "Compartilhe o QR", desc: "Coloque o QR Code no seu balcão ou envie o link. O cliente escaneia e já sai com o cartão no celular." },
-    { n: "03", title: "Carimbe e fidelize", desc: "A cada visita, você escaneia o cartão dele. Ele acumula, ganha e volta sempre." },
+    {
+      n: "01",
+      title: "Crie seu cartão",
+      desc: "Escolha suas cores, adicione sua logo e defina a recompensa que seus clientes vão amar.",
+      color: "#00ffff",
+    },
+    {
+      n: "02",
+      title: "Compartilhe o QR",
+      desc: "Coloque o QR Code no seu balcão ou envie o link. O cliente escaneia e já sai com o cartão no celular.",
+      color: "#ff2bd6",
+    },
+    {
+      n: "03",
+      title: "Carimbe e fidelize",
+      desc: "A cada visita, você escaneia o cartão dele. Ele acumula, ganha e volta sempre.",
+      color: "#a855f7",
+    },
   ];
+
+  const rootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const items = Array.from(root.querySelectorAll<HTMLElement>(".hiw-step"));
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            const idx = Number((e.target as HTMLElement).dataset.idx || 0);
+            (e.target as HTMLElement).style.animationDelay = `${idx * 180}ms`;
+            e.target.classList.add("is-in");
+            io.unobserve(e.target);
+          }
+        }
+      },
+      { threshold: 0.35, rootMargin: "0px 0px -10% 0px" },
+    );
+    items.forEach((el) => io.observe(el as Element));
+    return () => io.disconnect();
+  }, []);
+
   return (
-    <section id="como-funciona" className="py-24">
-      <div className="mx-auto max-w-6xl px-4 text-center">
-        <h2 className="font-display text-4xl font-bold">Três passos simples para seus clientes voltarem sempre</h2>
-        <p className="mt-3 text-muted-foreground">Do primeiro cadastro à recompensa, tudo funciona pelo navegador.</p>
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
-          {steps.map((s) => (
-            <div key={s.n} className="rounded-3xl border bg-card p-8 text-left shadow-sm">
-              <div className="font-display text-5xl font-black text-primary/20">{s.n}</div>
-              <h3 className="mt-4 font-display text-xl font-semibold">{s.title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{s.desc}</p>
+    <section id="como-funciona" className="relative overflow-hidden py-28">
+      {/* Ambient glows */}
+      <div aria-hidden className="pointer-events-none absolute -left-40 top-1/4 h-96 w-96 rounded-full bg-cyan-500/10 blur-[120px]" />
+      <div aria-hidden className="pointer-events-none absolute -right-40 bottom-1/4 h-96 w-96 rounded-full blur-[120px]" style={{ background: "rgba(255,43,214,0.10)" }} />
+
+      <div className="mx-auto max-w-3xl px-6">
+        <div className="mb-16 text-center">
+          <span className="font-display text-xs font-bold uppercase tracking-[0.25em]" style={{ color: "#00ffff" }}>
+            Fluxo de experiência
+          </span>
+          <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight text-white md:text-5xl">
+            Três <span className="bg-gradient-to-r from-[#00ffff] via-[#a855f7] to-[#ff2bd6] bg-clip-text text-transparent">passos simples</span> para seus clientes voltarem sempre
+          </h2>
+          <p className="mt-4 text-white/60">Do primeiro cadastro à recompensa, tudo funciona pelo navegador.</p>
+        </div>
+
+        <div ref={rootRef} className="relative flex flex-col gap-20 pl-2">
+          {/* Vertical rail with slow LED traveling down */}
+          <div aria-hidden className="pointer-events-none absolute left-[23px] top-2 bottom-2 w-[2px] overflow-hidden bg-white/5">
+            <div
+              className="absolute left-[-2px] h-40 w-[6px] rounded-full blur-[2px]"
+              style={{
+                background: "linear-gradient(to bottom, transparent, #00ffff, #a855f7, #ff2bd6, transparent)",
+                animation: "hiw-led-travel 6s linear infinite",
+              }}
+            />
+          </div>
+
+          {steps.map((s, i) => (
+            <div key={s.n} data-idx={i} className="hiw-step relative flex items-start gap-8">
+              <div className="relative z-10 flex-none">
+                <div
+                  className="relative grid h-12 w-12 place-items-center rounded-xl border bg-[#050505]"
+                  style={{
+                    borderColor: `${s.color}55`,
+                    boxShadow: `0 0 24px ${s.color}33, inset 0 0 12px ${s.color}22`,
+                  }}
+                >
+                  <span className="font-display text-lg font-extrabold tracking-tighter" style={{ color: s.color }}>
+                    {s.n}
+                  </span>
+                </div>
+                <div
+                  aria-hidden
+                  className="absolute inset-0 -z-10 rounded-full blur-xl"
+                  style={{ background: `${s.color}33`, animation: "hiw-node-pulse 3.5s ease-in-out infinite" }}
+                />
+              </div>
+              <div className="pt-1.5">
+                <h3 className="font-display text-2xl font-bold tracking-tight text-white md:text-3xl">{s.title}</h3>
+                <p className="mt-2 max-w-md text-white/60 md:text-lg">{s.desc}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -234,6 +315,7 @@ function HowItWorks() {
     </section>
   );
 }
+
 
 function Benefits() {
   const items = [
