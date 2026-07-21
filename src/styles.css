@@ -529,6 +529,96 @@
 .hiw-link g.hiw-root { transition: opacity 260ms ease-out, transform 260ms cubic-bezier(0.22,1,0.36,1); }
 .hiw-complete .hiw-node[data-idx="2"] { animation: hiw-card-glow 3s ease-in-out infinite; }
 
+/* ========== Fidelize Orbit (Benefits) ========== */
+@keyframes fz-rotor-spin      { to { transform: rotate(360deg); } }
+@keyframes fz-rotor-counter   { to { transform: rotate(-360deg); } }
+@keyframes fz-ring-spin       { to { transform: rotate(360deg); } }
+@keyframes fz-ring-spin-rev   { to { transform: rotate(-360deg); } }
+@keyframes fz-core-breathe {
+  0%, 100% { box-shadow: 0 0 40px -8px rgba(0,255,255,0.35), inset 0 0 20px rgba(0,255,255,0.15); }
+  50%      { box-shadow: 0 0 80px -6px rgba(255,43,214,0.45), inset 0 0 28px rgba(255,43,214,0.20); }
+}
 
+.fz-orbit { position: relative; }
 
+.fz-core {
+  animation: fz-core-breathe 5s ease-in-out infinite;
+}
+
+/* Outer LED rings — conic gradient masked into a ring, rotating in loop */
+.fz-ring {
+  position: absolute; inset: 0;
+  border-radius: 9999px;
+  pointer-events: none;
+  -webkit-mask: radial-gradient(circle, transparent calc(50% - 1.5px), #000 calc(50% - 1.5px) 50%, transparent 50%);
+          mask: radial-gradient(circle, transparent calc(50% - 1.5px), #000 calc(50% - 1.5px) 50%, transparent 50%);
+  filter: drop-shadow(0 0 8px rgba(0,255,255,0.35));
+}
+.fz-ring-1 {
+  inset: 8%;
+  background: conic-gradient(from 0deg, transparent 0 55%, #00ffff 65%, #ff2bd6 78%, transparent 90% 100%);
+  animation: fz-ring-spin 9s linear infinite;
+}
+.fz-ring-2 {
+  inset: 22%;
+  background: conic-gradient(from 180deg, transparent 0 60%, #a855f7 72%, #00ffff 88%, transparent 96%);
+  animation: fz-ring-spin-rev 13s linear infinite;
+  filter: drop-shadow(0 0 6px rgba(168,85,247,0.4));
+}
+.fz-ring-3 {
+  inset: -2%;
+  background: conic-gradient(from 90deg, transparent 0 70%, #ff2bd6 80%, transparent 92%);
+  animation: fz-ring-spin 22s linear infinite;
+  opacity: 0.55;
+}
+
+/* Rotor holds all 6 chips and spins slowly */
+.fz-rotor {
+  animation: fz-rotor-spin 44s linear infinite;
+  transform-origin: 50% 50%;
+}
+.fz-orbit:hover .fz-rotor { animation-play-state: paused; }
+
+/* Counter-rotate each chip so text stays upright */
+.fz-counter {
+  animation: fz-rotor-counter 44s linear infinite;
+  transform-origin: center;
+  transform: translate(-50%, -50%);
+  width: 220px;
+}
+.fz-orbit:hover .fz-counter { animation-play-state: paused; }
+
+.fz-chip {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(5,5,5,0.72);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 30px -12px rgba(0,0,0,0.6);
+  transition: transform 260ms ease, border-color 260ms ease;
+}
+.fz-chip:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--acc, #00ffff) 55%, transparent);
+}
+.fz-chip-icon {
+  flex: none;
+  display: grid; place-items: center;
+  height: 34px; width: 34px;
+  border-radius: 10px;
+  background: #050505;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.fz-chip-body { min-width: 0; }
+
+/* Responsive: shrink orbit radius on smaller screens */
+@media (max-width: 768px) {
+  .fz-rotor > div { transform: rotate(var(--a)) translateY(calc(-50% - 170px)) !important; }
+  .fz-counter { width: 180px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fz-rotor, .fz-counter, .fz-ring, .fz-core { animation: none !important; }
+}
 
