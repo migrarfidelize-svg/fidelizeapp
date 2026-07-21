@@ -1024,3 +1024,22 @@
   .dash-rise { animation: none; }
 }
 
+
+/* Auth cinematic input */
+@utility auth-input {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.35);
+  padding: 0.85rem 1rem;
+  color: #fff;
+  font-family: var(--font-sans);
+  outline: none;
+  transition: border-color 200ms, box-shadow 200ms, background 200ms;
+  &::placeholder { color: rgba(255,255,255,0.22); }
+  &:focus {
+    border-color: rgba(0,255,255,0.55);
+    box-shadow: 0 0 0 3px rgba(0,255,255,0.15);
+    background: rgba(0,0,0,0.5);
+  }
+}
