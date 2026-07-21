@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { adminGetEstablishmentDetail, adminSetEstablishmentActive, adminSetEstablishmentPlan, adminReportPaymentFailure } from "@/lib/admin.functions";
+import { adminGetEstablishmentDetail, adminSetEstablishmentActive, adminSetEstablishmentPlan, adminReportPaymentFailure, adminDemoteMemberToCustomer } from "@/lib/admin.functions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
