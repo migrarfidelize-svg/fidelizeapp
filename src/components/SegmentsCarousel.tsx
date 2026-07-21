@@ -404,7 +404,7 @@ function Constellation({
                   className="pointer-events-none absolute -inset-1 rounded-full"
                   style={{
                     background:
-                      "conic-gradient(from 0deg, transparent 0%, color-mix(in oklab, var(--primary) 60%, transparent) 25%, transparent 50%, color-mix(in oklab, var(--accent) 60%, transparent) 75%, transparent 100%)",
+                      "conic-gradient(from 0deg, transparent 0%, color-mix(in oklab, var(--primary) 65%, transparent) 25%, transparent 50%, color-mix(in oklab, var(--primary) 65%, transparent) 75%, transparent 100%)",
                     filter: "blur(6px)",
                     animation: "orbit-conic 3.6s linear infinite",
                     opacity: 0.55,
