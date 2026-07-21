@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
-import { getMyWallet } from "@/lib/my-wallet.functions";
-import { ChevronRight, Sparkles, Gift, Stamp } from "lucide-react";
+import { queryOptions, useSuspenseQuery, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getMyWallet, getMyHistory, getMyRewards } from "@/lib/my-wallet.functions";
+import { ChevronRight, Sparkles, Gift, Stamp, RotateCcw, Bell } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import {
   EmptyWalletState,
@@ -36,6 +36,20 @@ function WalletHome() {
     return i.card.stamps >= req;
   }).length;
 
+  const { data: history } = useQuery({
+    queryKey: ["my-history"],
+    queryFn: () => getMyHistory(),
+    staleTime: 15_000,
+  });
+  const { data: rewards } = useQuery({
+    queryKey: ["my-rewards"],
+    queryFn: () => getMyRewards(),
+    staleTime: 15_000,
+  });
+
+  // Feed unificado: recompensas prontas (topo) + carimbos + "faltam X" (aviso).
+  const feed = buildFeed(items, history ?? [], rewards ?? []);
+
   return (
     <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["my-wallet"] })}>
       <div className="space-y-5">
@@ -50,6 +64,25 @@ function WalletHome() {
           <EmptyWalletState />
         ) : (
           <>
+            {readyRewards > 0 && (
+              <Link
+                to="/carteira/recompensas"
+                className="group relative flex items-center gap-3 overflow-hidden rounded-3xl border border-primary/50 bg-gradient-to-br from-primary/15 to-primary/5 p-4 shadow-[0_0_0_1px_hsl(var(--primary)/0.15)] transition-all hover:from-primary/20"
+              >
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-md">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-primary">Pronto para resgatar</div>
+                  <div className="font-display text-sm font-bold">
+                    Você tem {readyRewards} {readyRewards === 1 ? "recompensa disponível" : "recompensas disponíveis"}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">Toque no botão <b>Meu QR</b> abaixo para retirar.</div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-primary transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            )}
+
             <div className="grid grid-cols-3 gap-3">
               <KpiTile label="Cartões" value={items.length} />
               <KpiTile label="Carimbos" value={totalStamps} icon={<Stamp className="h-3.5 w-3.5" />} />
@@ -69,10 +102,134 @@ function WalletHome() {
                 ))}
               </div>
             </section>
+
+            {feed.length > 0 && (
+              <section>
+                <div className="mb-2 flex items-center justify-between">
+                  <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                    <Bell className="mr-1 inline h-3.5 w-3.5" /> Atividade recente
+                  </h2>
+                  <Link to="/carteira/historico" className="text-xs font-medium text-primary hover:underline">
+                    Ver tudo →
+                  </Link>
+                </div>
+                <ol className="space-y-2 rounded-3xl border border-border/60 bg-card/30 p-2">
+                  {feed.map((f) => <FeedRow key={f.id} f={f} />)}
+                </ol>
+              </section>
+            )}
           </>
         )}
       </div>
     </WithOfflineFallback>
+  );
+}
+
+type FeedItem = {
+  id: string;
+  kind: "stamp" | "reverted" | "ready" | "close";
+  when: string | null;
+  primary: string;
+  secondary: string;
+  color: string | null;
+  logo: string | null;
+  slug: string | null;
+};
+
+function buildFeed(
+  items: Awaited<ReturnType<typeof getMyWallet>>,
+  history: Awaited<ReturnType<typeof getMyHistory>>,
+  rewards: Awaited<ReturnType<typeof getMyRewards>>,
+): FeedItem[] {
+  const out: FeedItem[] = [];
+
+  // Recompensas prontas (topo do feed).
+  for (const r of rewards.filter((r) => r.ready)) {
+    const est = r.establishment as { slug: string; name: string; logo_url: string | null; primary_color: string };
+    out.push({
+      id: `ready-${r.cardId}`,
+      kind: "ready",
+      when: null,
+      primary: `${r.reward} liberado`,
+      secondary: est.name,
+      color: est.primary_color,
+      logo: est.logo_url,
+      slug: est.slug,
+    });
+  }
+
+  // "Faltam X carimbos para..." em cartões próximos (70%+ mas não prontos).
+  for (const it of items) {
+    if (!it.card) continue;
+    const req = (it.card.campaign as { stamps_required: number }).stamps_required || 1;
+    const pct = it.card.stamps / req;
+    const missing = req - it.card.stamps;
+    if (pct >= 0.7 && missing > 0 && missing <= 2) {
+      const est = it.establishment as { slug: string; name: string; logo_url: string | null; primary_color: string };
+      const reward = (it.card.campaign as { reward_title: string }).reward_title;
+      out.push({
+        id: `close-${it.customer.id}`,
+        kind: "close",
+        when: null,
+        primary: `Faltam ${missing} para ${reward}`,
+        secondary: est.name,
+        color: est.primary_color,
+        logo: est.logo_url,
+        slug: est.slug,
+      });
+    }
+  }
+
+  // Últimos carimbos (limitado a 5).
+  for (const s of history.slice(0, 5)) {
+    const est = s.establishment as { slug: string; name: string; logo_url: string | null; primary_color: string } | null;
+    out.push({
+      id: `stamp-${s.id}`,
+      kind: s.reverted ? "reverted" : "stamp",
+      when: s.createdAt,
+      primary: s.reverted ? "Carimbo estornado" : "Novo carimbo",
+      secondary: `${est?.name ?? "Estabelecimento"} · ${s.campaignName ?? "Campanha"}`,
+      color: est?.primary_color ?? null,
+      logo: est?.logo_url ?? null,
+      slug: est?.slug ?? null,
+    });
+  }
+
+  return out.slice(0, 8);
+}
+
+function FeedRow({ f }: { f: FeedItem }) {
+  const Icon =
+    f.kind === "ready" ? Sparkles :
+    f.kind === "close" ? Gift :
+    f.kind === "reverted" ? RotateCcw : Stamp;
+  const tone =
+    f.kind === "ready" ? "bg-primary/15 text-primary border-primary/40" :
+    f.kind === "close" ? "bg-amber-500/10 text-amber-600 border-amber-500/40 dark:text-amber-300" :
+    f.kind === "reverted" ? "bg-destructive/10 text-destructive border-destructive/30" :
+    "bg-muted text-muted-foreground border-border/60";
+  const inner = (
+    <div className="flex items-center gap-3 rounded-2xl border border-border/40 bg-background/60 p-2.5">
+      <div className={"grid h-9 w-9 shrink-0 place-items-center rounded-xl border " + tone}>
+        <Icon className="h-4 w-4" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-sm font-semibold">{f.primary}</div>
+        <div className="truncate text-[11px] text-muted-foreground">
+          {f.secondary}{f.when ? ` · ${formatDate(f.when)}` : ""}
+        </div>
+      </div>
+      {f.slug && <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+    </div>
+  );
+  return (
+    <li>
+      {f.slug ? (
+        <Link to="/carteira/$slug" params={{ slug: f.slug }} className="block transition-colors hover:brightness-105">
+          {inner}
+        </Link>
+      ) : inner}
+    </li>
   );
 }
 
