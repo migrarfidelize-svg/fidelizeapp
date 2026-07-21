@@ -43,7 +43,9 @@ function AdminOverview() {
 
   return (
     <div className="space-y-8">
+      <GreetingVoice gender="male" scope="admin" />
       <PageHero
+
         icon={HeroIcon}
         eyebrow={"Super Admin · Global"}
         liveLabel={"Ao vivo"}
