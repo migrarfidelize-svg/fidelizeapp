@@ -187,6 +187,51 @@ function EmpresaDetail() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <h3 className="font-display font-semibold">Membros desta empresa</h3>
+              <p className="text-xs text-muted-foreground">Remover o acesso rebaixa o usuário para /carteira quando ele não tiver outro vínculo ativo.</p>
+            </div>
+            <span className="text-xs text-muted-foreground">{members.filter((m: any) => m.active).length} ativo(s) · {members.length} no total</span>
+          </div>
+          <div className="mt-4 divide-y">
+            {members.length === 0 && <div className="text-sm text-muted-foreground text-center py-6">Nenhum membro registrado.</div>}
+            {members.map((m: any) => (
+              <div key={m.user_id} className="flex items-center gap-3 py-3 flex-wrap">
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium truncate">{m.display_name || m.full_name || m.invited_email || m.user_id.slice(0, 8)}</div>
+                  <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
+                    <span className="uppercase tracking-wider">{m.role}</span>
+                    <span>·</span>
+                    <span>Conta: {m.account_type}</span>
+                    <span>·</span>
+                    <span className={m.active ? "text-success" : "text-destructive"}>{m.active ? "ativo" : "removido"}</span>
+                  </div>
+                </div>
+                {m.active ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={demote.isPending}
+                    onClick={() => {
+                      if (confirm(`Remover acesso de lojista deste usuário? Ele será enviado para /carteira no próximo login se não tiver outro vínculo ativo.`)) {
+                        demote.mutate(m.user_id);
+                      }
+                    }}
+                  >
+                    <UserMinus className="mr-2 h-4 w-4" />Remover acesso
+                  </Button>
+                ) : (
+                  <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded bg-muted text-muted-foreground">Sem acesso</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
