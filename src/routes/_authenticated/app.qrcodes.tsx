@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { Palette as HeroIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -639,6 +641,12 @@ function QRCodes() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Divulgação · Materiais"}
+        title={"QR & Materiais gráficos"}
+        subtitle={"Gere posters, artes de balcão e criativos prontos para redes sociais."}
+      />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="text-xs uppercase tracking-widest text-muted-foreground">Divulgação</div>

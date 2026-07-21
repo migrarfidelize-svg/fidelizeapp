@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { Banknote as HeroIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -143,6 +145,12 @@ function AdminPaymentsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Super Admin · Gateway"}
+        title={"Gateway de pagamentos"}
+        subtitle={"Transações, reconciliação e status dos provedores conectados."}
+      />
       <div>
         <h1 className="font-display text-3xl font-bold">Mercado Pago</h1>
         <p className="text-sm text-muted-foreground">Integração de pagamentos para as assinaturas da plataforma.</p>

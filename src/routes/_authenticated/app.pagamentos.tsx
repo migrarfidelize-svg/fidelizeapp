@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { CreditCard as HeroIcon } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -70,6 +72,12 @@ function PaymentsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Financeiro · Assinatura"}
+        title={"Meus pagamentos"}
+        subtitle={"Histórico de faturas, método de cobrança e próximas renovações."}
+      />
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-bold">Histórico de pagamentos</h1>

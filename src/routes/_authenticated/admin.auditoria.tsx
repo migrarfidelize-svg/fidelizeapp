@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { FileClock as HeroIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { adminListAuditLogs } from "@/lib/admin.functions";
@@ -50,6 +52,12 @@ function AdminAuditoria() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Super Admin · Compliance"}
+        title={"Trilha de auditoria"}
+        subtitle={"Todas as ações administrativas com quem, quando e o quê."}
+      />
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="text-xs uppercase tracking-widest text-muted-foreground">Administração</div>

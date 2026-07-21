@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { UserCog as HeroIcon } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -56,6 +58,12 @@ function EquipePage() {
 
   return (
     <div className="max-w-2xl space-y-5">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Equipe · Acessos"}
+        title={"Equipe & permissões"}
+        subtitle={"Convide atendentes, defina papéis e controle o que cada um vê."}
+      />
       <div>
         <div className="text-xs uppercase tracking-widest text-muted-foreground">Colaboradores</div>
         <h1 className="font-display text-2xl font-bold">Adicionar atendente</h1>

@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { BellRing as HeroIcon } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -67,6 +69,12 @@ function NotifPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-4 md:p-6">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Central · Alertas"}
+        title={"Notificações"}
+        subtitle={"Alertas de operação, cobrança, suporte e retenção em um só lugar."}
+      />
       <header>
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <Bell className="h-5 w-5" /> Notificações Push

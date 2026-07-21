@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { LifeBuoy as HeroIcon } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -54,6 +56,12 @@ function AgentInbox() {
 
   return (
     <div>
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Suporte · Tickets"}
+        title={"Meu suporte"}
+        subtitle={"Abra e acompanhe chamados com o time Fidelize em tempo real."}
+      />
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Central de Suporte</h1>

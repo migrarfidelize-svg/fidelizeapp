@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { ScrollText as HeroIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { adminGetOverview } from "@/lib/admin.functions";
@@ -41,6 +43,12 @@ function AdminAssinaturas() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Super Admin · Assinaturas"}
+        title={"Assinaturas ativas"}
+        subtitle={"Controle de ciclos, upgrades, downgrades e cancelamentos."}
+      />
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="text-xs uppercase tracking-widest text-muted-foreground">Administração</div>

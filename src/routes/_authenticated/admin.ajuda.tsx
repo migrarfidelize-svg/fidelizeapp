@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { BookMarked as HeroIcon } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -45,6 +47,12 @@ function AdminHelp() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Super Admin · Ajuda"}
+        title={"Ajuda interna"}
+        subtitle={"Documentação operacional para o time Fidelize."}
+      />
       <div>
         <h1 className="font-display text-2xl font-bold">Central de Ajuda</h1>
         <p className="text-sm text-muted-foreground">Gerencie categorias, artigos e acompanhe engajamento.</p>

@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { Plug as HeroIcon } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -88,6 +90,12 @@ function IntegrationsPage() {
 
   return (
     <div className="p-4 md:p-8 space-y-8">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Super Admin · Integrações"}
+        title={"Central de integrações"}
+        subtitle={"Provedores de IA, pagamentos e webhooks — Strategy/Factory unificado."}
+      />
       <SectionBanner
         title="Centro de Integrações"
         subtitle="Configure, teste e monitore todas as integrações (IA, Pagamentos e Webhooks) em um único painel. Credenciais editáveis e armazenadas apenas no backend."
