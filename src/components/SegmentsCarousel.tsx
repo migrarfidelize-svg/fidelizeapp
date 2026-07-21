@@ -183,8 +183,8 @@ function Constellation({
   onHover: (i: number | null) => void;
   focusedItem: (typeof ITEMS)[number];
 }) {
-  const SIZE = 560; // svg canvas
-  const R = 210; // orbit radius
+  const SIZE = 820; // svg canvas
+  const R = 320; // orbit radius
   const CENTER = SIZE / 2;
   const N = items.length;
 
