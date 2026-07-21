@@ -416,8 +416,8 @@ function Constellation({
               className="mt-1 whitespace-nowrap text-sm font-semibold tracking-tight transition-colors duration-300"
               style={{
                 color: isFocus
-                  ? "color-mix(in oklab, var(--primary) 85%, white)"
-                  : "rgba(226,232,240,0.7)",
+                  ? "color-mix(in oklab, var(--primary) 85%, var(--foreground))"
+                  : "color-mix(in oklab, var(--foreground) 78%, transparent)",
                 textShadow: isFocus
                   ? "0 0 12px color-mix(in oklab, var(--primary) 60%, transparent)"
                   : undefined,
@@ -425,6 +425,7 @@ function Constellation({
             >
               {n.label}
             </span>
+
           </button>
         );
       })}
