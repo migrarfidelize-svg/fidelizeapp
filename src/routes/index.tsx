@@ -1260,3 +1260,235 @@ function SiteFooter() {
     </footer>
   );
 }
+
+// ==================== FAQ + Chat com IA ====================
+
+type ChatMsg = { role: "user" | "assistant"; content: string; typing?: boolean };
+
+function useTypewriter(fullText: string, active: boolean, speed = 18) {
+  const [text, setText] = useState("");
+  useEffect(() => {
+    if (!active) { setText(fullText); return; }
+    setText("");
+    let i = 0;
+    const id = setInterval(() => {
+      i += 1;
+      setText(fullText.slice(0, i));
+      if (i >= fullText.length) clearInterval(id);
+    }, speed);
+    return () => clearInterval(id);
+  }, [fullText, active, speed]);
+  return text;
+}
+
+function TypingDots() {
+  return (
+    <span className="inline-flex items-center gap-1">
+      <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
+      <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
+      <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
+    </span>
+  );
+}
+
+function ChatBubble({ msg, animate }: { msg: ChatMsg; animate: boolean }) {
+  const shown = useTypewriter(msg.content, msg.role === "assistant" && animate, 14);
+  if (msg.role === "user") {
+    return (
+      <div className="flex justify-end">
+        <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-primary/15 border border-primary/30 px-4 py-2 text-sm text-foreground">
+          {msg.content}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-start gap-2">
+      <div className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary/20 border border-primary/40">
+        <Bot className="h-3.5 w-3.5 text-primary" />
+      </div>
+      <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-card/60 border border-white/10 px-4 py-2 text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
+        {msg.typing ? <TypingDots /> : shown}
+        {!msg.typing && animate && shown.length < msg.content.length && <span className="ml-0.5 inline-block h-3 w-0.5 bg-primary animate-pulse" />}
+      </div>
+    </div>
+  );
+}
+
+function FaqChatSection() {
+  return (
+    <section id="faq" className="relative border-y border-white/5 bg-gradient-to-b from-background via-card/20 to-background py-24">
+      <div className="mx-auto max-w-6xl px-4">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs uppercase tracking-wider text-primary">
+            <HelpCircle className="h-3.5 w-3.5" /> Suporte instantâneo
+          </div>
+          <h2 className="mt-4 font-display text-4xl md:text-5xl font-bold">
+            Dúvidas <span className="text-[#00ffff]">frequentes</span>
+          </h2>
+          <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
+            Clique numa dúvida ou converse com a <strong className="text-primary">Fidê</strong>, nossa assistente inteligente.
+          </p>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <FaqCannedPanel />
+          <FaqAIPanel />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FaqCannedPanel() {
+  const [selected, setSelected] = useState<number | null>(null);
+  const activeAnswer = selected !== null ? FAQ_ITEMS[selected][1] : "";
+  return (
+    <div className="rounded-3xl border border-white/10 bg-card/40 backdrop-blur-xl p-5 md:p-6 shadow-2xl shadow-cyan-500/5">
+      <div className="flex items-center gap-2 mb-4 pb-4 border-b border-white/10">
+        <div className="grid h-9 w-9 place-items-center rounded-full bg-primary/15 border border-primary/30">
+          <MessageCircle className="h-4 w-4 text-primary" />
+        </div>
+        <div>
+          <div className="text-sm font-semibold">Perguntas mais comuns</div>
+          <div className="text-xs text-muted-foreground">Toque numa pergunta para ver a resposta</div>
+        </div>
+      </div>
+
+      <div className="grid gap-2 mb-4">
+        {FAQ_ITEMS.map(([q], i) => (
+          <button
+            key={q}
+            onClick={() => setSelected(i)}
+            className={`text-left text-sm rounded-xl border px-4 py-3 transition-all ${
+              selected === i
+                ? "border-primary/60 bg-primary/10 text-foreground shadow-[0_0_20px_-5px_rgba(0,255,255,0.4)]"
+                : "border-white/10 bg-card/30 hover:border-primary/40 hover:bg-primary/5 text-foreground/90"
+            }`}
+          >
+            <span className="text-primary mr-2">›</span>{q}
+          </button>
+        ))}
+      </div>
+
+      <div className="min-h-[120px] rounded-2xl border border-white/10 bg-background/40 p-4">
+        {selected === null ? (
+          <div className="text-sm text-muted-foreground text-center py-6">
+            Escolha uma dúvida acima 👆
+          </div>
+        ) : (
+          <ChatBubble key={selected} msg={{ role: "assistant", content: activeAnswer }} animate />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function FaqAIPanel() {
+  const ask = useServerFn(askFaqAI);
+  const [messages, setMessages] = useState<ChatMsg[]>([
+    { role: "assistant", content: "Oi! Sou a Fidê 💛 Pergunta o que quiser sobre a Fidelize, tô aqui pra ajudar!" },
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [firstAnswer, setFirstAnswer] = useState(true);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages]);
+
+  async function send() {
+    const q = input.trim();
+    if (!q || loading) return;
+    setInput("");
+    setFirstAnswer(false);
+    const history = messages
+      .filter((m) => !m.typing)
+      .slice(-6)
+      .map((m) => ({ role: m.role, content: m.content }));
+    setMessages((m) => [...m, { role: "user", content: q }, { role: "assistant", content: "", typing: true }]);
+    setLoading(true);
+    try {
+      const { answer } = await ask({ data: { question: q, history } });
+      setMessages((m) => {
+        const copy = [...m];
+        copy[copy.length - 1] = { role: "assistant", content: answer };
+        return copy;
+      });
+    } catch {
+      setMessages((m) => {
+        const copy = [...m];
+        copy[copy.length - 1] = { role: "assistant", content: "Ops, tive um probleminha 🥲 tenta de novo?" };
+        return copy;
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const suggestions = ["Como funciona o QR Code?", "Posso testar grátis?", "Como recompenso meus clientes?"];
+
+  return (
+    <div className="relative rounded-3xl border border-primary/30 bg-gradient-to-br from-card/60 to-background/40 backdrop-blur-xl p-5 md:p-6 shadow-2xl shadow-cyan-500/10">
+      <div className="pointer-events-none absolute inset-0 rounded-3xl bg-[radial-gradient(circle_at_top,rgba(0,255,255,0.08),transparent_60%)]" />
+      <div className="relative">
+        <div className="flex items-center gap-3 mb-4 pb-4 border-b border-white/10">
+          <div className="relative">
+            <div className="grid h-10 w-10 place-items-center rounded-full bg-primary/20 border border-primary/50">
+              <Bot className="h-5 w-5 text-primary" />
+            </div>
+            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-background animate-pulse" />
+          </div>
+          <div className="flex-1">
+            <div className="text-sm font-semibold flex items-center gap-2">
+              Fidê <span className="text-[10px] font-normal rounded bg-primary/20 text-primary px-1.5 py-0.5">IA</span>
+            </div>
+            <div className="text-xs text-emerald-400">● online agora</div>
+          </div>
+          <div className="text-xs text-muted-foreground hidden sm:block">Não achou sua dúvida?</div>
+        </div>
+
+        <div ref={scrollRef} className="h-[280px] overflow-y-auto space-y-3 pr-1 mb-3 scroll-smooth">
+          {messages.map((m, i) => (
+            <ChatBubble key={i} msg={m} animate={i === messages.length - 1 && m.role === "assistant"} />
+          ))}
+        </div>
+
+        {firstAnswer && (
+          <div className="flex flex-wrap gap-2 mb-3">
+            {suggestions.map((s) => (
+              <button
+                key={s}
+                onClick={() => setInput(s)}
+                className="text-xs rounded-full border border-white/10 bg-card/40 hover:border-primary/50 hover:bg-primary/10 px-3 py-1.5 text-muted-foreground hover:text-foreground transition"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 rounded-full border border-white/10 bg-background/60 pl-4 pr-1.5 py-1.5 focus-within:border-primary/50 transition">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") send(); }}
+            placeholder="Pergunte qualquer coisa…"
+            disabled={loading}
+            className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/60 disabled:opacity-50"
+          />
+          <button
+            onClick={send}
+            disabled={loading || !input.trim()}
+            className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_0_15px_rgba(0,255,255,0.4)] hover:shadow-[0_0_20px_rgba(0,255,255,0.6)] disabled:opacity-40 disabled:shadow-none transition"
+            aria-label="Enviar"
+          >
+            <Send className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="mt-2 text-[10px] text-center text-muted-foreground/70">Powered by IA · respostas podem conter imprecisões</div>
+      </div>
+    </div>
+  );
+}
