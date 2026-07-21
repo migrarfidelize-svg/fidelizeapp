@@ -700,12 +700,13 @@ function Comparison() {
             <div className="tear-scene relative mx-auto h-[380px] w-full max-w-[720px] md:h-[440px]">
               {/* Digital card underneath */}
               <div className="tear-digital absolute inset-0 grid place-items-center">
-                <div className="relative w-[86%] max-w-[520px] overflow-hidden rounded-3xl border border-cyan-400/30 p-6 md:p-8"
+                <div className="relative w-[86%] max-w-[520px] overflow-hidden rounded-3xl border border-cyan-400/40 p-6 md:p-8"
                   style={{
-                    background: "linear-gradient(135deg, rgba(0,255,255,0.08), rgba(168,85,247,0.06) 50%, rgba(255,43,214,0.08))",
-                    boxShadow: "0 40px 120px -30px rgba(0,255,255,0.35), inset 0 1px 0 rgba(255,255,255,0.08)",
+                    background: "linear-gradient(135deg, #0a1420 0%, #0d1a28 50%, #0a0f1a 100%)",
+                    boxShadow: "0 40px 120px -20px rgba(0,255,255,0.45), 0 20px 60px -10px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.08)",
                   }}
                 >
+
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="grid h-9 w-9 place-items-center rounded-xl border border-cyan-400/40 bg-cyan-400/10">
