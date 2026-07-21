@@ -15,18 +15,23 @@ const searchSchema = z.object({
   next: z.string().optional(),
 });
 
-async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: string }): Promise<{ to: string; toast?: string }> {
+async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: string }): Promise<{ to: string; toast?: string; toastKind?: "success" | "error" | "info" }> {
   // Vindo de um QR de estabelecimento (usuário já tinha conta ou acabou de criar).
   if (opts.est_slug) {
     try {
       const r = await attachEstablishmentBySlug({ data: { slug: opts.est_slug } });
       const msg = r.status === "created"
-        ? `Bem-vindo à ${r.name}! Cartão adicionado à sua carteira.`
+        ? `Bem-vindo à ${r.name}! Um novo cartão foi criado na sua carteira.`
         : r.status === "adopted"
-        ? `Encontramos seu cadastro em ${r.name}. Cartão vinculado à sua conta.`
-        : `Você já tem cartão em ${r.name}.`;
-      return { to: `/carteira/${r.slug}`, toast: msg };
-    } catch {
+        ? `Encontramos um cadastro antigo em ${r.name} com o seu WhatsApp — vinculamos à sua conta e mantivemos seu histórico.`
+        : `Você já tinha cartão em ${r.name}. Nada mudou no seu cadastro anterior.`;
+      return { to: `/carteira/${r.slug}`, toast: msg, toastKind: "success" };
+    } catch (err) {
+      const code = (err as { code?: string })?.code;
+      const message = (err as { message?: string })?.message;
+      if (code === "inactive" || code === "not_found") {
+        return { to: "/carteira", toast: message ?? "Estabelecimento indisponível.", toastKind: "error" };
+      }
       // Segue fluxo padrão.
     }
   }
@@ -34,7 +39,7 @@ async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: 
   if (opts.claim) {
     try {
       const r = await claimCustomerByToken({ data: { token: opts.claim } });
-      return { to: `/carteira/${r.slug}`, toast: "Cartão salvo na sua carteira!" };
+      return { to: `/carteira/${r.slug}`, toast: "Cartão salvo na sua carteira!", toastKind: "success" };
     } catch {
       // Fall through to default routing.
     }
