@@ -22,11 +22,17 @@ export const Route = createFileRoute("/onboarding")({
     const { data } = await supabase.auth.getUser();
     if (!data.user) throw redirect({ to: "/auth" });
     // Onboarding é exclusivo para donos de estabelecimento — clientes finais
-    // vão direto para /carteira.
+    // vão direto para /carteira. Consulta a coluna profiles.account_type
+    // (definida explicitamente), pois o RPC depende de memberships que ainda
+    // não existem no momento do primeiro onboarding do lojista.
     try {
-      const { data: acct } = await supabase.rpc("my_account_type");
-      if (acct === "customer") throw redirect({ to: "/carteira" });
-      if (acct === "super_admin") throw redirect({ to: "/admin" });
+      const { data: p } = await supabase
+        .from("profiles")
+        .select("account_type")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      if (p?.account_type === "customer") throw redirect({ to: "/carteira" });
+      if (p?.account_type === "super_admin") throw redirect({ to: "/admin" });
     } catch (e) {
       if (e && typeof e === "object" && ("isRedirect" in e || "to" in e)) throw e;
     }
