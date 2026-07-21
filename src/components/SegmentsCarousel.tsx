@@ -322,7 +322,7 @@ function Constellation({
               background:
                 "radial-gradient(circle at 30% 25%, rgba(255,255,255,0.08), transparent 60%), #050b12",
               boxShadow:
-                "inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -25px 40px -10px rgba(0,255,255,0.25)",
+                "inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -25px 40px -10px color-mix(in oklab, var(--primary) 30%, transparent)",
             }}
           />
           <div className="relative z-10 flex w-full flex-col items-center justify-center gap-2 px-5 text-center">
