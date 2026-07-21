@@ -1075,3 +1075,65 @@
 @media (prefers-reduced-motion: reduce) {
   .auth-stamp, .auth-card-body * { animation: none !important; }
 }
+
+/* ============ Dock logo LED loop ============ */
+.dock-logo { isolation: isolate; }
+.dock-logo::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 18px;
+  padding: 2px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(0,255,255,0.95) 45deg,
+    rgba(0,255,255,0.15) 110deg,
+    transparent 180deg,
+    rgba(255,63,196,0.85) 250deg,
+    rgba(0,255,255,0.15) 320deg,
+    transparent 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  animation: dock-logo-spin 4.5s linear infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+.dock-logo-led {
+  position: absolute;
+  inset: -6px;
+  border-radius: 22px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 300deg,
+    rgba(0,255,255,0.9) 345deg,
+    #fff 360deg,
+    rgba(0,255,255,0.9) 375deg,
+    transparent 420deg
+  );
+  filter: blur(6px);
+  opacity: 0.85;
+  animation: dock-logo-spin 4.5s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+.dock-logo-halo {
+  position: absolute;
+  inset: -10px;
+  border-radius: 24px;
+  background: radial-gradient(closest-side, rgba(0,255,255,0.35), transparent 70%);
+  filter: blur(10px);
+  animation: dock-logo-breathe 3.2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes dock-logo-spin { to { transform: rotate(360deg); } }
+@keyframes dock-logo-breathe {
+  0%,100% { opacity: 0.35; transform: scale(0.95); }
+  50%     { opacity: 0.75; transform: scale(1.05); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dock-logo::before, .dock-logo-led, .dock-logo-halo { animation: none !important; }
+}
