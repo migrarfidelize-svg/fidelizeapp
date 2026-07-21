@@ -303,9 +303,14 @@ function Carimbar() {
                           <div className="text-xs text-muted-foreground">{formatPhone(c.phone)} · código {c.code}</div>
                         </div>
                       </div>
-                      <Button size="sm" variant="outline" onClick={() => loadByCustomerCode(c.code)}>
-                        <User className="h-4 w-4 mr-1" /> Abrir cartão
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button size="sm" variant="ghost" onClick={() => openCustomerQr(c)} title="Ver QR Code do cliente">
+                          <QrCode className="h-4 w-4 mr-1" /> Ver QR
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => loadByCustomerCode(c.code)}>
+                          <User className="h-4 w-4 mr-1" /> Abrir cartão
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
