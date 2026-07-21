@@ -104,13 +104,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
-// Tema: painéis internos (/app, /admin) travados em dark. Landing pública respeita
-// preferência salva (padrão dark) — o toggle sol/lua alterna entre "Cyan Circuit" dark e light.
+// Painéis internos (/app, /admin) travados em dark — foram construídos com estilos escuros
+// hardcoded (dock, PageHero, KPIs, tabelas). Landing respeita preferência salva, padrão dark.
 function forcedThemeForPath(p: string): "dark" | null {
   if (p.startsWith("/app") || p.startsWith("/admin")) return "dark";
   return null;
 }
 const THEME_INIT_SCRIPT = `(function(){try{var p=location.pathname;var forced=(p.indexOf('/app')===0||p.indexOf('/admin')===0)?'dark':null;var s=null;try{s=localStorage.getItem('theme');}catch(_){}var t=forced||((s==='light'||s==='dark')?s:'dark');var r=document.documentElement;r.classList.toggle('dark',t==='dark');r.style.colorScheme=t;}catch(e){}})();`;
+
+
 
 
 
@@ -154,10 +156,12 @@ function RootComponent() {
       r.classList.toggle("dark", t === "dark");
       r.style.colorScheme = t;
     };
+
     apply();
     const unsub = router.subscribe("onResolved", apply);
     return () => unsub();
   }, [router]);
+
 
 
 
