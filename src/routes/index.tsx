@@ -468,28 +468,84 @@ function HowItWorks() {
 
 function Benefits() {
   const items = [
-    { icon: Smartphone, title: "Sem app para baixar", desc: "O cliente acessa tudo direto pelo navegador do celular. Zero atrito." },
-    { icon: QrCode, title: "QR Code exclusivo", desc: "Cada empresa, campanha e cliente tem sua própria identificação segura." },
-    { icon: ShieldCheck, title: "Seguro contra fraude", desc: "Só a sua equipe autorizada pode carimbar. Cada ação fica registrada." },
-    { icon: BarChart3, title: "Painel completo", desc: "Clientes ativos, visitas, retorno, ranking e alertas — tudo num só lugar." },
-    { icon: Sparkles, title: "Página personalizada", desc: "Sua marca, suas cores, sua vitrine digital. Um link para chamar de seu." },
-    { icon: Store, title: "Multi-unidade", desc: "Uma empresa, várias lojas. Relatórios consolidados por unidade." },
+    { icon: Smartphone, title: "Sem app para baixar", desc: "Acesso direto pelo navegador. Zero atrito.", color: "#00ffff" },
+    { icon: QrCode, title: "QR Code exclusivo", desc: "Cada empresa, campanha e cliente com ID seguro.", color: "#22d3ee" },
+    { icon: ShieldCheck, title: "Anti-fraude", desc: "Só sua equipe carimba. Tudo registrado.", color: "#a855f7" },
+    { icon: BarChart3, title: "Painel completo", desc: "Clientes, visitas, retorno e alertas num só lugar.", color: "#ff2bd6" },
+    { icon: Sparkles, title: "Página personalizada", desc: "Sua marca, suas cores, sua vitrine digital.", color: "#f472b6" },
+    { icon: Store, title: "Multi-unidade", desc: "Uma empresa, várias lojas. Relatórios consolidados.", color: "#60a5fa" },
   ];
+  const N = items.length;
+
   return (
-    <section className="border-y bg-muted/40 py-24">
-      <div className="mx-auto max-w-6xl px-4">
+    <section className="relative overflow-hidden py-32">
+      <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,255,255,0.06),transparent_60%)]" />
+
+      <div className="mx-auto max-w-6xl px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="font-display text-4xl font-bold">Tudo o que você precisa para fidelizar</h2>
-          <p className="mt-3 text-muted-foreground">Ferramentas modernas, pensadas para quem atende cliente todos os dias.</p>
+          <span className="font-display text-xs font-bold uppercase tracking-[0.25em]" style={{ color: "#00ffff" }}>
+            Ecossistema Fidelize
+          </span>
+          <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight text-white md:text-5xl">
+            Tudo o que você precisa para fidelizar
+          </h2>
+          <p className="mt-3 text-white/60">Uma plataforma. Seis pilares girando em torno da sua marca.</p>
         </div>
-        <div className="mt-14 grid gap-4 md:grid-cols-3">
-          {items.map((b) => (
-            <div key={b.title} className="rounded-2xl border bg-card p-6">
-              <div className="grid h-11 w-11 place-items-center rounded-xl gradient-brand text-primary-foreground"><b.icon className="h-5 w-5" /></div>
-              <h3 className="mt-4 font-display font-semibold">{b.title}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{b.desc}</p>
+
+        {/* Orbit stage */}
+        <div className="fz-orbit relative mx-auto mt-16 aspect-square w-full max-w-[720px]">
+          {/* LED ring loops */}
+          <div aria-hidden className="fz-ring fz-ring-1" />
+          <div aria-hidden className="fz-ring fz-ring-2" />
+          <div aria-hidden className="fz-ring fz-ring-3" />
+
+          {/* Central logo (big, breathing) */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="fz-core relative grid h-40 w-40 place-items-center rounded-[2rem] border border-cyan-400/30 bg-[#050505] md:h-48 md:w-48">
+              <svg viewBox="0 0 512 512" className="h-24 w-24 md:h-28 md:w-28" aria-hidden="true">
+                <defs>
+                  <linearGradient id="fzHeroG" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stopColor="#00ffff" />
+                    <stop offset="1" stopColor="#ff2bd6" />
+                  </linearGradient>
+                </defs>
+                <rect width="512" height="512" rx="128" fill="url(#fzHeroG)" opacity="0.15" />
+                <g fill="url(#fzHeroG)">
+                  <rect x="176" y="140" width="52" height="240" rx="14" />
+                  <rect x="176" y="140" width="176" height="52" rx="14" />
+                  <rect x="176" y="238" width="132" height="46" rx="12" />
+                </g>
+              </svg>
+              <span className="mt-1 font-display text-xs font-bold uppercase tracking-[0.3em] text-white/70">Fidelize</span>
             </div>
-          ))}
+          </div>
+
+          {/* Rotating orbit — topics rotate; each card counter-rotates to stay upright */}
+          <div className="fz-rotor absolute inset-0">
+            {items.map((it, i) => {
+              const angle = (360 / N) * i;
+              const Icon = it.icon;
+              return (
+                <div
+                  key={it.title}
+                  className="absolute left-1/2 top-1/2 h-0 w-0"
+                  style={{ transform: `rotate(${angle}deg) translateY(calc(-50% - 260px))` }}
+                >
+                  <div className="fz-counter" style={{ ["--acc" as string]: it.color }}>
+                    <div className="fz-chip">
+                      <div className="fz-chip-icon" style={{ color: it.color, boxShadow: `0 0 22px ${it.color}55, inset 0 0 10px ${it.color}33`, borderColor: `${it.color}66` }}>
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <div className="fz-chip-body">
+                        <h3 className="font-display text-sm font-bold text-white">{it.title}</h3>
+                        <p className="mt-0.5 text-[11px] leading-snug text-white/60">{it.desc}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>
