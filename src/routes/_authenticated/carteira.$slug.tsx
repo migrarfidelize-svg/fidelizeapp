@@ -31,6 +31,7 @@ export const Route = createFileRoute("/_authenticated/carteira/$slug")({
     ],
   }),
   component: WalletEstablishment,
+  errorComponent: ({ error, reset }) => <WalletErrorState error={error} onRetry={reset} />,
   notFoundComponent: () => (
     <div className="pt-10 text-center">
       <p className="text-sm text-muted-foreground">Você ainda não participa deste programa.</p>
