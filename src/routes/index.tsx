@@ -102,7 +102,7 @@ function SiteHeader() {
         <nav className="hidden gap-7 md:flex text-sm text-muted-foreground">
           <a href="#como-funciona" className="hover:text-foreground transition-colors">Como funciona</a>
           <a href="#segmentos" className="hover:text-foreground transition-colors">Para quem é</a>
-          <Link to="/precos" className="hover:text-foreground transition-colors">Preços</Link>
+          <a href="#precos" className="hover:text-foreground transition-colors">Preços</a>
           <a href="#faq" className="hover:text-foreground transition-colors">Dúvidas</a>
         </nav>
         <div className="flex items-center gap-2">
