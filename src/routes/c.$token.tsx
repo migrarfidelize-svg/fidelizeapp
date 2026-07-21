@@ -56,7 +56,9 @@ function CustomerCard() {
     const channel = supabase
       .channel(`card-${token}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "loyalty_cards", filter: `customer_id=eq.${customerId}` }, invalidate)
-      .on("postgres_changes", { event: "*", schema: "public", table: "customers", filter: `id=eq.${customerId}` }, invalidate);
+      .on("postgres_changes", { event: "*", schema: "public", table: "customers", filter: `id=eq.${customerId}` }, invalidate)
+      .on("postgres_changes", { event: "*", schema: "public", table: "establishments", filter: `id=eq.${d.establishment!.id}` }, invalidate)
+      .on("postgres_changes", { event: "*", schema: "public", table: "campaigns", filter: `establishment_id=eq.${d.establishment!.id}` }, invalidate);
     if (cardIds.length) {
       const filter = `card_id=in.(${cardIds.join(",")})`;
       channel
@@ -65,7 +67,7 @@ function CustomerCard() {
     }
     channel.subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [token, customerId, cardIds.join(","), qc]);
+  }, [token, customerId, cardIds.join(","), qc, d.establishment?.id]);
 
 
   return (
