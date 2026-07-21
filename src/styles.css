@@ -635,3 +635,86 @@
   .fz-ring, .fz-core-mark, .fz-n8n-run, .fz-n8n-run-mobile { animation: none !important; }
 }
 
+
+/* ============ Paper × Fidelize tear scene ============ */
+.tear-stage { --p: 0; }
+
+/* Digital card: scales in as tear progresses */
+.tear-digital > div:first-child {
+  opacity: calc((var(--p) - 0.15) * 2.2);
+  transform: scale(calc(0.86 + var(--p) * 0.18));
+  transition: none;
+  filter: drop-shadow(0 0 calc(var(--p) * 40px) rgba(0,255,255,0.35));
+}
+
+/* Paper halves rip apart */
+.tear-half {
+  will-change: transform, opacity, filter;
+  transition: none;
+}
+.tear-half-left {
+  transform:
+    translateX(calc(var(--p) * -55%))
+    translateY(calc(var(--p) * 30px))
+    rotate(calc(var(--p) * -14deg));
+  opacity: calc(1 - var(--p) * 0.85);
+  filter: blur(calc(var(--p) * 2px));
+}
+.tear-half-right {
+  transform:
+    translateX(calc(var(--p) * 55%))
+    translateY(calc(var(--p) * 40px))
+    rotate(calc(var(--p) * 16deg));
+  opacity: calc(1 - var(--p) * 0.85);
+  filter: blur(calc(var(--p) * 2px));
+}
+
+/* Pain badges drift out with the paper */
+.tear-pain {
+  top: calc(20% + var(--i) * 18%);
+  left: calc(var(--i) * 8% - 6%);
+  transform:
+    translate(calc(var(--p) * (var(--i) - 1.5) * -60px), calc(var(--p) * -60px))
+    rotate(calc((var(--i) - 1.5) * -6deg));
+  opacity: calc(1 - var(--p) * 1.1);
+  transition: none;
+}
+.tear-pain:nth-child(2) { top: 8%; left: 62%; }
+.tear-pain:nth-child(3) { top: 42%; left: 8%; }
+.tear-pain:nth-child(4) { top: 78%; left: 58%; }
+
+/* Win badges fly in around the digital card */
+.tear-win {
+  opacity: calc((var(--p) - 0.35) * 2.5);
+  transition: none;
+  white-space: nowrap;
+}
+.tear-win:nth-child(2) { top: 8%; left: 4%;  transform: translate(calc((1 - var(--p)) * -40px), 0); }
+.tear-win:nth-child(3) { top: 12%; right: 4%; left: auto; transform: translate(calc((1 - var(--p)) * 40px), 0); }
+.tear-win:nth-child(4) { bottom: 12%; left: 6%; transform: translate(calc((1 - var(--p)) * -40px), calc((1 - var(--p)) * 20px)); }
+.tear-win:nth-child(5) { bottom: 8%; right: 6%; left: auto; transform: translate(calc((1 - var(--p)) * 40px), calc((1 - var(--p)) * 20px)); }
+
+/* CTA reveal at the very end of the scroll */
+.tear-cta {
+  opacity: calc((var(--p) - 0.7) * 3.3);
+  transform: translateY(calc((1 - var(--p)) * 24px));
+  transition: none;
+}
+.tear-cta-btn {
+  box-shadow: 0 0 0 0 rgba(0,255,255,0.4), 0 20px 60px -20px rgba(0,255,255,0.6);
+  animation: tear-cta-pulse 2.4s ease-in-out infinite;
+}
+@keyframes tear-cta-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,255,255,0.5), 0 20px 60px -20px rgba(0,255,255,0.6); }
+  50% { box-shadow: 0 0 0 14px rgba(0,255,255,0), 0 20px 60px -20px rgba(0,255,255,0.9); }
+}
+
+@media (max-width: 768px) {
+  .tear-scene { max-width: 92vw !important; }
+  .tear-win { font-size: 10px !important; padding: 4px 8px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tear-half, .tear-digital > div:first-child, .tear-win, .tear-pain, .tear-cta { transform: none !important; opacity: 1 !important; filter: none !important; }
+  .tear-cta-btn { animation: none !important; }
+}
