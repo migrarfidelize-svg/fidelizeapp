@@ -529,18 +529,50 @@ function Benefits() {
             </div>
           </div>
 
-          {/* Rotating orbit — topics rotate; each card counter-rotates to stay upright */}
-          <div className="fz-rotor absolute inset-0">
+          {/* n8n-style connector — circular path around the logo linking every chip */}
+          <svg
+            aria-hidden
+            className="pointer-events-none absolute inset-0 h-full w-full"
+            viewBox="0 0 720 720"
+            preserveAspectRatio="xMidYMid meet"
+          >
+            <defs>
+              <linearGradient id="fzLink" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stopColor="#00ffff" />
+                <stop offset="0.5" stopColor="#a855f7" />
+                <stop offset="1" stopColor="#ff2bd6" />
+              </linearGradient>
+              <filter id="fzLinkGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="4" result="b" />
+                <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+              </filter>
+            </defs>
+            {/* faint guide ring */}
+            <circle cx="360" cy="360" r="260" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+            {/* traveling n8n signal */}
+            <circle
+              cx="360" cy="360" r="260"
+              fill="none"
+              stroke="url(#fzLink)"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              filter="url(#fzLinkGlow)"
+              className="fz-n8n-run"
+            />
+          </svg>
+
+          {/* Static chips — só o efeito gira, o conteúdo fica fixo e legível */}
+          <div className="absolute inset-0">
             {items.map((it, i) => {
-              const angle = (360 / N) * i;
+              const angle = (360 / N) * i - 90; // start at top
               const Icon = it.icon;
               return (
                 <div
                   key={it.title}
-                  className="absolute left-1/2 top-1/2 h-0 w-0"
-                  style={{ transform: `rotate(${angle}deg) translateY(calc(-1 * var(--fz-radius)))` }}
+                  className="absolute left-1/2 top-1/2"
+                  style={{ transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(calc(-1 * var(--fz-radius))) rotate(${-angle}deg)` }}
                 >
-                  <div className="fz-counter" style={{ ["--acc" as string]: it.color }}>
+                  <div className="fz-chip-static" style={{ ["--acc" as string]: it.color }}>
                     <div className="fz-chip">
                       <div className="fz-chip-icon" style={{ color: it.color, boxShadow: `0 0 22px ${it.color}55, inset 0 0 10px ${it.color}33`, borderColor: `${it.color}66` }}>
                         <Icon className="h-5 w-5" />
