@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Wallet, Home, LogOut, User, Gift, History, CreditCard } from "lucide-react";
 import { toast } from "sonner";
@@ -6,6 +7,21 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/_authenticated/carteira")({
   component: WalletLayout,
 });
+
+/** Lê e consome uma flash message deixada por `l/$slug` ou pelo fluxo de auth. */
+function useWalletFlash() {
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("wallet:flash");
+      if (!raw) return;
+      sessionStorage.removeItem("wallet:flash");
+      const { kind, msg } = JSON.parse(raw) as { kind: "success" | "error" | "info"; msg: string };
+      if (kind === "error") toast.error(msg);
+      else if (kind === "info") toast.message(msg);
+      else toast.success(msg);
+    } catch { /* ignore */ }
+  }, []);
+}
 
 const TABS = [
   { to: "/carteira", label: "Início", icon: Home, exact: true },
