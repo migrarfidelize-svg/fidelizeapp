@@ -194,7 +194,8 @@ function Hero() {
             <Sparkles className="h-3 w-3" /> Cartão fidelidade digital para o seu negócio
           </span>
           <h1 className="mt-5 font-display text-5xl font-extrabold leading-[1.15] tracking-tight md:text-6xl md:leading-[1.1] pb-1">
-            Transforme visitantes em{" "}
+            Transforme<br />
+            visitantes em<br />
             <span style={{ color: CYAN, textShadow: `0 0 40px ${CYAN}55` }}>clientes fiéis</span>.
           </h1>
 
