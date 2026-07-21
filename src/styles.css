@@ -2143,17 +2143,19 @@ html:not(.dark) .landing-scope .landing-flip-btn:hover {
   background: #6d28d9 !important;
 }
 
-/* QR code em preto no tema claro — preserva os "olhos" (fill=none nas guias) */
-html:not(.dark) .landing-scope .landing-qr rect[fill="#00ffff"],
-html:not(.dark) .landing-scope .landing-qr rect:not([fill="none"]):not([fill="transparent"]) {
+/* QR code no tema claro — fundo branco, células pretas, olhos visíveis */
+html:not(.dark) .landing-scope .landing-qr rect[fill="transparent"] {
+  fill: #ffffff !important;
+}
+html:not(.dark) .landing-scope .landing-qr rect[fill="#020617"] {
+  fill: #ffffff !important;
+}
+html:not(.dark) .landing-scope .landing-qr rect[fill="#00ffff"] {
   fill: #0a0a0a !important;
 }
 html:not(.dark) .landing-scope .landing-qr rect[fill="none"] {
   fill: none !important;
   stroke: #0a0a0a !important;
-}
-html:not(.dark) .landing-scope .landing-qr rect[fill="transparent"] {
-  fill: transparent !important;
 }
 
 /* Nav dock + Logo no tema claro — borda e halo em roxo */
