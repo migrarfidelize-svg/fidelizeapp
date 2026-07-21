@@ -75,7 +75,7 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   return (
-    <div className="min-h-dvh bg-background text-foreground">
+    <div className="landing-scope min-h-dvh bg-background text-foreground">
       <SiteHeader />
       <main>
         <Hero />
