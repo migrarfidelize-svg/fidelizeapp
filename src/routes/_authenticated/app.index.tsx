@@ -111,7 +111,8 @@ function Dashboard() {
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{s.label}</div>
-                <div className="mt-2 metric-solid text-3xl sm:text-4xl">{s.value.toLocaleString("pt-BR")}</div>
+                <div className="mt-2 metric-solid text-3xl sm:text-4xl">{s.value}</div>
+                {s.hint && <div className="mt-1 text-[11px] text-muted-foreground truncate">{s.hint}</div>}
               </div>
               <span className={`card-icon ${s.accent ? "card-icon-accent" : ""}`} aria-hidden>
                 <s.icon />
