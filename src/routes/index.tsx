@@ -5,6 +5,7 @@ import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
 import { HeroStampCardLoop } from "@/components/HeroStampCardLoop";
 import { SegmentsCarousel } from "@/components/SegmentsCarousel";
+import { CursorTrail } from "@/components/CursorTrail";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ArrowRight, QrCode, Smartphone, ShieldCheck, BarChart3, Sparkles, Coffee, Scissors, Pizza, ShoppingBag, Wrench, IceCream, Store, PawPrint, Check } from "lucide-react";
