@@ -149,5 +149,7 @@ function WalletEstablishment() {
         </p>
       )}
     </div>
+    </WithOfflineFallback>
   );
 }
+
