@@ -154,6 +154,11 @@ function AdminPaymentsPage() {
         title={"Gateway de pagamentos"}
         subtitle={"Transações, reconciliação e status dos provedores conectados."}
       />
+      <PaymentsTable />
+      <div className="border-t border-border/60 pt-6">
+        <h2 className="font-display text-xl font-bold">Configuração do gateway</h2>
+        <p className="text-sm text-muted-foreground">Credenciais, webhook e diagnóstico do Mercado Pago.</p>
+      </div>
       <div>
         <h1 className="font-display text-3xl font-bold">Mercado Pago</h1>
         <p className="text-sm text-muted-foreground">Integração de pagamentos para as assinaturas da plataforma.</p>
