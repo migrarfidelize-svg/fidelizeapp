@@ -670,17 +670,13 @@ function Comparison() {
 
   return (
     <section id="comparativo" className="relative bg-[oklch(0.14_0.02_230)]">
-      <div ref={wrapRef} className="relative h-[220vh] pb-[25vh]">
+      <div ref={wrapRef} className="relative h-[220vh] min-h-[1460px] md:h-[215vh] md:min-h-[1580px]">
         <div
           ref={stageRef}
-          className="tear-stage sticky top-0 isolate flex h-screen items-center overflow-hidden"
+          className="tear-stage sticky top-0 isolate flex h-[100svh] min-h-[760px] items-center overflow-hidden"
           style={{ ["--p" as never]: 0 }}
         >
-          {/* Ambient glows */}
-          <div aria-hidden className="pointer-events-none absolute -left-40 top-1/3 z-0 h-96 w-96 rounded-full bg-cyan-500/[0.06] blur-[120px]" />
-          <div aria-hidden className="pointer-events-none absolute -right-40 bottom-1/4 z-0 h-96 w-96 rounded-full blur-[120px]" style={{ background: "rgba(255,43,214,0.05)" }} />
-
-          <div className="relative z-20 mx-auto w-full max-w-6xl px-6 pt-40 md:pt-48">
+          <div className="relative z-20 mx-auto w-full max-w-6xl px-6 pt-20 md:pt-24">
 
             <div className="relative z-50 mb-10 text-center md:mb-14">
               <h2 className="font-display text-3xl font-extrabold leading-[1.2] tracking-tight text-white md:text-5xl pb-1">
@@ -693,7 +689,7 @@ function Comparison() {
 
 
             {/* Stage: two cards stacked in the same slot */}
-            <div className="tear-scene relative z-30 mx-auto h-[380px] w-full max-w-[720px] md:h-[440px]">
+            <div className="tear-scene relative z-30 mx-auto h-[340px] w-full max-w-[720px] md:h-[400px]">
               {/* Digital card underneath */}
               <div className="tear-digital absolute inset-0 grid place-items-center">
 
@@ -774,7 +770,7 @@ function Comparison() {
             </div>
 
             {/* CTA reveal at the end */}
-            <div className="tear-cta relative z-40 mt-8 flex flex-col items-center gap-3 text-center md:mt-12">
+            <div className="tear-cta relative z-40 mt-6 flex flex-col items-center gap-3 text-center md:mt-8">
               <p className="relative z-40 max-w-xl text-white/70">
                 Chega de cartão perdido, carimbo torto e cliente esquecido. Ative o Fidelize em minutos.
               </p>
@@ -997,13 +993,10 @@ function Examples() {
 
 
   return (
-    <section className="relative overflow-hidden bg-[oklch(0.14_0.02_230)] pt-16 pb-16 md:pt-20 md:pb-20">
-      <div className="pointer-events-none absolute inset-0 opacity-60"
-        style={{
-          background:
-            "radial-gradient(60% 40% at 20% 10%, rgba(0,255,255,0.08), transparent 60%), radial-gradient(50% 40% at 85% 90%, rgba(255,43,214,0.08), transparent 60%)",
-        }}
-      />
+    <section
+      className="campaigns-section relative z-10 overflow-hidden bg-[oklch(0.14_0.02_230)] pt-20 pb-16 md:pt-24 md:pb-20"
+      style={{ marginTop: "-26svh" }}
+    >
       <div className="relative mx-auto max-w-6xl px-4">
         <div className="mx-auto max-w-2xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/5 px-3 py-1 text-[11px] font-bold uppercase tracking-widest" style={{ color: "#00ffff" }}>
