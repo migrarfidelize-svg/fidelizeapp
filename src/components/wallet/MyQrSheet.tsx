@@ -186,7 +186,7 @@ function RedeemFlow({ rewards }: { rewards: RewardItem[] }) {
   const [selectedId, setSelectedId] = useState<string>(rewards[0]?.cardId ?? "");
   const selected = useMemo(() => rewards.find((r) => r.cardId === selectedId) ?? rewards[0], [rewards, selectedId]);
 
-  const [token, setToken] = useState<string>("");
+  const [, setToken] = useState<string>("");
   const [expiresAt, setExpiresAt] = useState<number>(0);
   const [dataUrl, setDataUrl] = useState<string>("");
   const [busy, setBusy] = useState(false);
