@@ -170,105 +170,110 @@ function Clientes() {
       <PageHero
         icon={HeroIcon}
         eyebrow={"CRM · Base ativa"}
+        liveLabel={"Ao vivo"}
         title={"Base de clientes"}
         subtitle={"Segmente, importe e acompanhe o ciclo de vida de cada cliente."}
+        actions={
+          <>
+            <Button variant="outline" onClick={() => setImporting(true)}>
+              <Upload className="h-4 w-4 mr-2" /> Importar
+            </Button>
+            <Button variant="outline" onClick={() => downloadCsv(rows)} disabled={rows.length === 0}>
+              <Download className="h-4 w-4 mr-2" /> Exportar
+            </Button>
+            <Button onClick={() => setCreating(true)} className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_28px_-8px_var(--primary)]">
+              <Plus className="h-4 w-4 mr-2" /> Novo cliente
+            </Button>
+          </>
+        }
       />
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <div className="text-xs uppercase tracking-widest text-muted-foreground">Base</div>
-          <h1 className="font-display text-3xl font-bold">Clientes</h1>
-          <p className="text-sm text-muted-foreground mt-1">Gerencie sua base, acompanhe visitas e cartões fidelidade.</p>
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          <Button variant="outline" onClick={() => setImporting(true)}>
-            <Upload className="h-4 w-4 mr-2" /> Importar CSV
-          </Button>
-          <Button variant="outline" onClick={() => downloadCsv(rows)} disabled={rows.length === 0}>
-            <Download className="h-4 w-4 mr-2" /> Exportar CSV
-          </Button>
-          <Button onClick={() => setCreating(true)} className="gradient-brand text-primary-foreground">
-            <Plus className="h-4 w-4 mr-2" /> Novo cliente
-          </Button>
-        </div>
-      </div>
 
-
-      {/* Stats */}
+      {/* KPI strip — premium cinematic */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <StatCard icon={<Users className="h-4 w-4" />} label="Total" value={stats?.total ?? 0} />
-        <StatCard icon={<TrendingUp className="h-4 w-4" />} label="Ativos 30d" value={stats?.active_30d ?? 0} accent="text-success" />
-        <StatCard icon={<UserPlus className="h-4 w-4" />} label="Novos 30d" value={stats?.new_30d ?? 0} accent="text-primary" />
-        <StatCard icon={<MailCheck className="h-4 w-4" />} label="Opt-in" value={stats?.opt_in ?? 0} />
-        <StatCard icon={<Ban className="h-4 w-4" />} label="Bloqueados" value={stats?.blocked ?? 0} accent="text-destructive" />
+        <ProStat icon={Users} label="Base total" value={stats?.total ?? 0} hint="cadastros ativos" />
+        <ProStat icon={TrendingUp} label="Ativos 30d" value={stats?.active_30d ?? 0} hint="visitaram no mês" tone="success" />
+        <ProStat icon={UserPlus} label="Novos 30d" value={stats?.new_30d ?? 0} hint="entradas recentes" tone="primary" />
+        <ProStat icon={MailCheck} label="Opt-in marketing" value={stats?.opt_in ?? 0} hint="autorizaram contato" />
+        <ProStat icon={Ban} label="Bloqueados" value={stats?.blocked ?? 0} hint="sem carimbar" tone="danger" />
       </div>
 
-      {/* Toolbar */}
-      <Card>
-        <CardContent className="p-4 space-y-3">
-          <div className="flex flex-wrap gap-2">
-            <div className="relative flex-1 min-w-[220px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === "Enter" && applySearch()}
-                     placeholder="Buscar por nome, telefone, e-mail ou código" className="pl-9" />
-            </div>
-            <Button variant="outline" onClick={applySearch}><Search className="h-4 w-4 mr-2" />Buscar</Button>
-
-            <Select value={status} onValueChange={(v: any) => { setStatus(v); setPage(1); }}>
-              <SelectTrigger className="w-[170px]"><Filter className="h-4 w-4 mr-2" /><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="active">Ativos</SelectItem>
-                <SelectItem value="recent">Visitou nos 30d</SelectItem>
-                <SelectItem value="inactive">Inativos 60d+</SelectItem>
-                <SelectItem value="opt_in">Aceita marketing</SelectItem>
-                <SelectItem value="blocked">Bloqueados</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={campaignFilter} onValueChange={(v) => { setCampaignFilter(v); setPage(1); }}>
-              <SelectTrigger className="w-[180px]"><SelectValue placeholder="Campanha" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas campanhas</SelectItem>
-                {(campaigns ?? []).map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={`${sort}:${dir}`} onValueChange={(v) => {
-              const [s, d] = v.split(":") as [typeof sort, typeof dir];
-              setSort(s); setDir(d); setPage(1);
-            }}>
-              <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="last_visit:desc">Última visita ↓</SelectItem>
-                <SelectItem value="last_visit:asc">Última visita ↑</SelectItem>
-                <SelectItem value="created:desc">Cadastro (novos)</SelectItem>
-                <SelectItem value="created:asc">Cadastro (antigos)</SelectItem>
-                <SelectItem value="name:asc">Nome A–Z</SelectItem>
-                <SelectItem value="name:desc">Nome Z–A</SelectItem>
-                <SelectItem value="visits:desc">Mais visitas</SelectItem>
-                <SelectItem value="visits:asc">Menos visitas</SelectItem>
-              </SelectContent>
-            </Select>
+      {/* Command bar */}
+      <div className="rounded-2xl border border-primary/15 bg-[color:color-mix(in_oklab,var(--card)_65%,transparent)] backdrop-blur-sm p-4 space-y-3">
+        <div className="flex flex-wrap gap-2">
+          <div className="relative flex-1 min-w-[240px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/70" />
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && applySearch()}
+              placeholder="Buscar por nome, telefone, e-mail ou código…"
+              className="pl-9 h-10 bg-background/60 border-primary/20 focus-visible:ring-primary/40"
+            />
           </div>
-          {activeFilters.length > 0 && (
-            <div className="flex items-center gap-2 flex-wrap text-xs">
-              <span className="text-muted-foreground">Filtros:</span>
-              {activeFilters.map((f, i) => <Badge key={i} variant="secondary">{f}</Badge>)}
-              <button onClick={resetFilters} className="text-muted-foreground hover:text-foreground underline">Limpar</button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          <Button variant="outline" onClick={applySearch} className="h-10 border-primary/25">
+            <Search className="h-4 w-4 mr-2" />Buscar
+          </Button>
 
-      {/* Bulk action bar */}
+          <Select value={status} onValueChange={(v: any) => { setStatus(v); setPage(1); }}>
+            <SelectTrigger className="w-[180px] h-10 border-primary/20"><Filter className="h-4 w-4 mr-2 text-primary/70" /><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos status</SelectItem>
+              <SelectItem value="active">Ativos</SelectItem>
+              <SelectItem value="recent">Visitou nos 30d</SelectItem>
+              <SelectItem value="inactive">Inativos 60d+</SelectItem>
+              <SelectItem value="opt_in">Aceita marketing</SelectItem>
+              <SelectItem value="blocked">Bloqueados</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={campaignFilter} onValueChange={(v) => { setCampaignFilter(v); setPage(1); }}>
+            <SelectTrigger className="w-[190px] h-10 border-primary/20"><SelectValue placeholder="Campanha" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas campanhas</SelectItem>
+              {(campaigns ?? []).map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={`${sort}:${dir}`} onValueChange={(v) => {
+            const [s, d] = v.split(":") as [typeof sort, typeof dir];
+            setSort(s); setDir(d); setPage(1);
+          }}>
+            <SelectTrigger className="w-[200px] h-10 border-primary/20"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="last_visit:desc">Última visita ↓</SelectItem>
+              <SelectItem value="last_visit:asc">Última visita ↑</SelectItem>
+              <SelectItem value="created:desc">Cadastro (novos)</SelectItem>
+              <SelectItem value="created:asc">Cadastro (antigos)</SelectItem>
+              <SelectItem value="name:asc">Nome A–Z</SelectItem>
+              <SelectItem value="name:desc">Nome Z–A</SelectItem>
+              <SelectItem value="visits:desc">Mais visitas</SelectItem>
+              <SelectItem value="visits:asc">Menos visitas</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        {activeFilters.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap text-xs">
+            <span className="text-muted-foreground uppercase tracking-widest">Filtros ativos:</span>
+            {activeFilters.map((f, i) => (
+              <Badge key={i} variant="outline" className="border-primary/30 bg-primary/10 text-primary">{f}</Badge>
+            ))}
+            <button onClick={resetFilters} className="text-muted-foreground hover:text-primary underline">Limpar tudo</button>
+          </div>
+        )}
+      </div>
+
+      {/* Sticky bulk action bar */}
       {selected.size > 0 && (
-        <div className="sticky top-0 z-10 flex flex-wrap items-center gap-3 rounded-xl border bg-primary-soft/60 backdrop-blur px-4 py-2">
+        <div className="sticky top-2 z-20 flex flex-wrap items-center gap-3 rounded-2xl border border-primary/40 bg-[color:color-mix(in_oklab,var(--card)_92%,transparent)] backdrop-blur-md px-4 py-2.5 shadow-[0_0_32px_-8px_var(--primary)]">
+          <span className="grid h-7 w-7 place-items-center rounded-md border border-primary/40 bg-primary/15 text-primary text-xs font-bold">
+            {selected.size}
+          </span>
           <div className="text-sm font-medium">
-            {selected.size} selecionado{selected.size === 1 ? "" : "s"}
+            cliente{selected.size === 1 ? "" : "s"} selecionado{selected.size === 1 ? "" : "s"}
           </div>
-          <div className="ml-auto flex gap-2">
+          <div className="ml-auto flex gap-2 flex-wrap">
             <Button size="sm" variant="outline" onClick={() => setBulkAction("unblock")}>
               <ShieldCheck className="h-4 w-4 mr-1" />Desbloquear
             </Button>
@@ -278,61 +283,118 @@ function Clientes() {
             <Button size="sm" variant="destructive" onClick={() => setBulkAction("delete")}>
               <Trash2 className="h-4 w-4 mr-1" />Excluir
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>Limpar</Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>Limpar seleção</Button>
           </div>
         </div>
       )}
 
-      {/* Table */}
-      <Card>
-        <CardContent className="p-0">
-          {!isFetching && rows.length === 0 ? (
-            <div className="p-14 text-center text-muted-foreground">
-              <Users className="mx-auto h-8 w-8 mb-3 opacity-50" />
-              {searchTerm || status !== "all" || campaignFilter !== "all"
-                ? "Nenhum cliente com esses filtros."
-                : "Ainda sem clientes. Compartilhe seu QR Code para começar."}
+      {/* Data table — Command Table Pro */}
+      <div className="rounded-2xl border border-primary/15 bg-[color:color-mix(in_oklab,var(--card)_55%,transparent)] overflow-hidden">
+        {!isFetching && rows.length === 0 ? (
+          <div className="p-16 text-center text-muted-foreground">
+            <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl border border-primary/25 bg-primary/10 text-primary">
+              <Users className="h-6 w-6" />
             </div>
-          ) : (
-            <>
-              <div className="flex items-center gap-3 px-4 py-2 border-b bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground">
-                <Checkbox
-                  checked={allPageSelected}
-                  onCheckedChange={(v) => togglePage(!!v)}
-                  aria-label="Selecionar página"
-                />
-                <span>Selecionar página ({pageSelectedCount}/{rows.length})</span>
-              </div>
-              <div className="divide-y">
-                {rows.map((c) => (
-                  <div key={c.id} className="flex items-center gap-3 p-4 hover:bg-muted/30 transition-colors">
+            <div className="font-display text-lg text-foreground mb-1">
+              {searchTerm || status !== "all" || campaignFilter !== "all"
+                ? "Nenhum cliente com esses filtros"
+                : "Sua base ainda está vazia"}
+            </div>
+            <p className="text-sm">
+              {searchTerm || status !== "all" || campaignFilter !== "all"
+                ? "Ajuste os filtros ou limpe a busca para ver mais resultados."
+                : "Compartilhe seu QR Code ou importe uma planilha para começar."}
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Column header */}
+            <div className="hidden md:grid grid-cols-[36px_minmax(0,2.2fr)_1fr_120px_140px_44px] items-center gap-3 px-4 py-3 border-b border-primary/15 bg-[color:color-mix(in_oklab,var(--primary)_6%,transparent)] text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              <Checkbox
+                checked={allPageSelected}
+                onCheckedChange={(v) => togglePage(!!v)}
+                aria-label="Selecionar página"
+              />
+              <span>Cliente</span>
+              <span>Segmento</span>
+              <span className="text-right">Visitas</span>
+              <span className="text-right">Última visita</span>
+              <span className="text-right">Ações</span>
+            </div>
+
+            <div className="divide-y divide-primary/10">
+              {rows.map((c) => {
+                const seg = segmentOf(c);
+                const isSel = selected.has(c.id);
+                return (
+                  <div
+                    key={c.id}
+                    className={`group relative grid grid-cols-[36px_minmax(0,2.2fr)_1fr_120px_140px_44px] items-center gap-3 px-4 py-3.5 transition-colors ${
+                      isSel ? "bg-[color:color-mix(in_oklab,var(--primary)_10%,transparent)]" : "hover:bg-[color:color-mix(in_oklab,var(--primary)_5%,transparent)]"
+                    }`}
+                  >
+                    {/* left cyan indicator when selected */}
+                    <span
+                      aria-hidden
+                      className={`absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full transition-opacity ${
+                        isSel ? "bg-primary opacity-100 shadow-[0_0_12px_var(--primary)]" : "bg-primary opacity-0 group-hover:opacity-40"
+                      }`}
+                    />
                     <Checkbox
-                      checked={selected.has(c.id)}
+                      checked={isSel}
                       onCheckedChange={(v) => toggleOne(c.id, !!v)}
                       aria-label={`Selecionar ${c.name}`}
                     />
-                    <button onClick={() => setOpenId(c.id)} className="flex items-center gap-3 flex-1 text-left min-w-0">
-                      <div className="grid h-11 w-11 place-items-center rounded-full bg-primary-soft text-primary font-semibold text-sm shrink-0">
-                        {initialsOf(c.name)}
+
+                    {/* Cliente */}
+                    <button onClick={() => setOpenId(c.id)} className="flex items-center gap-3 text-left min-w-0">
+                      <div className="relative shrink-0">
+                        <div className="grid h-11 w-11 place-items-center rounded-full border border-primary/30 bg-primary/10 text-primary font-semibold text-sm">
+                          {initialsOf(c.name)}
+                        </div>
+                        {!c.blocked && (
+                          <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-success border-2 border-background" aria-hidden />
+                        )}
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <div className="font-medium truncate">{c.name}</div>
-                          {c.blocked && <Badge variant="destructive" className="text-[10px]">Bloqueado</Badge>}
-                          {c.marketing_opt_in && <Badge variant="secondary" className="text-[10px]">Opt-in</Badge>}
+                          {c.blocked && <Badge variant="destructive" className="text-[10px] h-4 px-1.5">Bloqueado</Badge>}
+                          {c.marketing_opt_in && (
+                            <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-primary/30 text-primary">Opt-in</Badge>
+                          )}
                         </div>
-                        <div className="text-xs text-muted-foreground truncate">
-                          {formatPhone(c.phone)}{c.email ? ` · ${c.email}` : ""} · código {c.code}
+                        <div className="text-xs text-muted-foreground truncate mt-0.5">
+                          {formatPhone(c.phone)}{c.email ? ` · ${c.email}` : ""} · #{c.code}
                         </div>
                       </div>
                     </button>
-                    <div className="hidden sm:block text-right shrink-0">
-                      <div className="text-sm font-semibold">{c.visits_count} visita{c.visits_count === 1 ? "" : "s"}</div>
-                      <div className="text-xs text-muted-foreground">Última: {formatDate(c.last_visit_at)}</div>
+
+                    {/* Segmento */}
+                    <div className="min-w-0">
+                      <span className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium ${seg.className}`}>
+                        <span className="h-1.5 w-1.5 rounded-full" style={{ background: "currentColor" }} />
+                        {seg.label}
+                      </span>
                     </div>
+
+                    {/* Visitas */}
+                    <div className="text-right">
+                      <div className="font-display text-lg leading-none tabular-nums text-foreground">{c.visits_count}</div>
+                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">visitas</div>
+                    </div>
+
+                    {/* Última visita */}
+                    <div className="text-right text-sm text-muted-foreground tabular-nums">
+                      {c.last_visit_at ? formatDate(c.last_visit_at) : <span className="italic">—</span>}
+                    </div>
+
+                    {/* Ações */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" aria-label="Ações do cliente" className="shrink-0"><MoreHorizontal className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" aria-label="Ações do cliente" className="shrink-0 hover:bg-primary/10 hover:text-primary">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => setOpenId(c.id)}>Abrir ficha</DropdownMenuItem>
@@ -348,18 +410,21 @@ function Clientes() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
-                ))}
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-
+                );
+              })}
+            </div>
+          </>
+        )}
+      </div>
 
       {/* Footer / pagination */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="text-xs text-muted-foreground">
-          {isFetching ? "Carregando…" : `${total} cliente${total === 1 ? "" : "s"} · página ${page} de ${totalPages}`}
+          {isFetching ? "Carregando…" : (
+            <>
+              <span className="text-foreground font-medium tabular-nums">{total}</span> cliente{total === 1 ? "" : "s"} · página <span className="tabular-nums">{page}</span> de <span className="tabular-nums">{totalPages}</span>
+            </>
+          )}
         </div>
         {totalPages > 1 && (
           <div className="flex items-center gap-2">
