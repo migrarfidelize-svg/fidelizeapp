@@ -95,23 +95,23 @@ function Landing() {
 function SiteHeader() {
   const { data: session } = useQuery({ queryKey: ["session"], queryFn: async () => (await supabase.auth.getSession()).data.session });
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link to="/"><Logo /></Link>
-        <nav className="hidden gap-8 md:flex text-sm text-muted-foreground">
-          <a href="#como-funciona" className="hover:text-foreground">Como funciona</a>
-          <a href="#segmentos" className="hover:text-foreground">Para quem é</a>
-          <Link to="/precos" className="hover:text-foreground">Preços</Link>
-          <a href="#faq" className="hover:text-foreground">Dúvidas</a>
+    <header className="sticky top-4 z-40 px-4">
+      <div className="nav-dock mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 rounded-full border border-cyan-400/20 bg-background/60 pl-5 pr-2 backdrop-blur-xl">
+        <Link to="/" className="shrink-0"><Logo /></Link>
+        <nav className="hidden gap-7 md:flex text-sm text-muted-foreground">
+          <a href="#como-funciona" className="hover:text-foreground transition-colors">Como funciona</a>
+          <a href="#segmentos" className="hover:text-foreground transition-colors">Para quem é</a>
+          <Link to="/precos" className="hover:text-foreground transition-colors">Preços</Link>
+          <a href="#faq" className="hover:text-foreground transition-colors">Dúvidas</a>
         </nav>
         <div className="flex items-center gap-2">
           <ThemeToggle />
           {session ? (
-            <Button asChild><Link to="/app">Meu painel</Link></Button>
+            <Button asChild size="sm" className="rounded-full"><Link to="/app">Meu painel</Link></Button>
           ) : (
             <>
-              <Button asChild variant="ghost"><Link to="/auth">Entrar</Link></Button>
-              <Button asChild><Link to="/auth" search={{ mode: "signup" }}>Testar grátis</Link></Button>
+              <Button asChild variant="ghost" size="sm" className="rounded-full hidden sm:inline-flex"><Link to="/auth">Entrar</Link></Button>
+              <Button asChild size="sm" className="rounded-full"><Link to="/auth" search={{ mode: "signup" }}>Testar grátis</Link></Button>
             </>
           )}
         </div>
