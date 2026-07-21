@@ -362,7 +362,7 @@ function StylizedQR() {
     "111111101101110110",
   ];
   return (
-    <svg width="150" height="150" viewBox={`0 0 ${pattern.length} ${pattern.length}`} className="block">
+    <svg width="150" height="150" viewBox={`0 0 ${pattern.length} ${pattern.length}`} className="landing-qr block">
       <rect width={pattern.length} height={pattern.length} fill="transparent" />
       {pattern.map((row, y) =>
         row.split("").map((c, x) =>
