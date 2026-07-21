@@ -13,13 +13,16 @@ const ITEMS = [
   { icon: Store, label: "Lojas" },
 ];
 
-// Each item takes this fraction of viewport height in scroll distance.
-const PER_ITEM_VH = 60;
+// chunk in groups of 3
+const GROUPS = Array.from({ length: Math.ceil(ITEMS.length / 3) }, (_, i) => ITEMS.slice(i * 3, i * 3 + 3));
+
+// Each group takes this fraction of viewport height in scroll distance.
+const PER_GROUP_VH = 70;
 
 export function SegmentsCarousel() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
-  const [progress, setProgress] = useState(0); // 0..1 within active item
+  const [progress, setProgress] = useState(0); // 0..1 within active group
 
   useEffect(() => {
     const compute = () => {
@@ -27,11 +30,11 @@ export function SegmentsCarousel() {
       if (!el) return;
       const rect = el.getBoundingClientRect();
       const vh = window.innerHeight;
-      const total = el.offsetHeight - vh; // scroll distance available inside sticky
+      const total = el.offsetHeight - vh;
       const scrolled = Math.min(Math.max(-rect.top, 0), total);
       const p = total > 0 ? scrolled / total : 0;
-      const raw = p * ITEMS.length;
-      const idx = Math.min(ITEMS.length - 1, Math.floor(raw));
+      const raw = p * GROUPS.length;
+      const idx = Math.min(GROUPS.length - 1, Math.floor(raw));
       setActive(idx);
       setProgress(raw - idx);
     };
@@ -44,16 +47,13 @@ export function SegmentsCarousel() {
     };
   }, []);
 
-  const ActiveIcon = ITEMS[active].icon;
-
   return (
     <div
       ref={wrapperRef}
       className="relative mx-auto w-full"
-      style={{ height: `${ITEMS.length * PER_ITEM_VH + 100}vh` }}
+      style={{ height: `${GROUPS.length * PER_GROUP_VH + 60}vh` }}
     >
       <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden">
-        {/* shared SVG defs for gradient strokes & filters */}
         <svg width="0" height="0" className="absolute" aria-hidden>
           <defs>
             <linearGradient id="segStrokeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -61,125 +61,91 @@ export function SegmentsCarousel() {
               <stop offset="55%" stopColor="var(--primary)" />
               <stop offset="100%" stopColor="var(--accent)" />
             </linearGradient>
-            <radialGradient id="segFillGrad" cx="50%" cy="45%" r="60%">
-              <stop offset="0%" stopColor="color-mix(in oklab, var(--primary) 30%, transparent)" />
-              <stop offset="100%" stopColor="transparent" />
-            </radialGradient>
           </defs>
         </svg>
 
-        {/* soft ambient glow */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(circle at 50% 45%, color-mix(in oklab, var(--primary) 20%, transparent), transparent 60%)",
+              "radial-gradient(circle at 50% 45%, color-mix(in oklab, var(--primary) 16%, transparent), transparent 60%)",
           }}
         />
 
-        <div className="relative flex flex-col items-center justify-center gap-10">
-          {/* Icon stage */}
-          <div className="relative flex h-[min(46vh,440px)] w-[min(46vh,440px)] items-center justify-center">
-            {/* Orbit rings behind icon */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 rounded-full"
-              style={{
-                background:
-                  "radial-gradient(circle, transparent 55%, color-mix(in oklab, var(--primary) 10%, transparent) 62%, transparent 66%)",
-                animation: "seg-breathe 4s ease-in-out infinite",
-              }}
-            />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-[8%] rounded-full border"
-              style={{
-                borderColor: "color-mix(in oklab, var(--primary) 22%, transparent)",
-                boxShadow:
-                  "0 0 0 1px color-mix(in oklab, var(--accent) 10%, transparent) inset",
-              }}
-            />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-[2%] rounded-full"
-              style={{
-                background:
-                  "conic-gradient(from 0deg, transparent 0deg, color-mix(in oklab, var(--primary) 60%, transparent) 30deg, transparent 60deg, transparent 360deg)",
-                mask: "radial-gradient(circle, transparent 47%, black 48%, black 50%, transparent 51%)",
-                WebkitMask: "radial-gradient(circle, transparent 47%, black 48%, black 50%, transparent 51%)",
-                animation: "seg-orbit 6s linear infinite",
-              }}
-            />
-
-            {ITEMS.map((it, i) => {
-              const Icon = it.icon;
-              const isActive = i === active;
-              let opacity = 0;
-              let scale = 0.6;
-              let y = 40;
-              let blur = 12;
-              if (isActive) {
-                const inP = Math.min(1, progress / 0.3);
-                const outP = Math.max(0, (progress - 0.8) / 0.2);
-                opacity = inP * (1 - outP);
-                scale = 0.85 + 0.15 * inP - 0.05 * outP;
-                y = (1 - inP) * 40 - outP * 30;
-                blur = (1 - inP) * 10 + outP * 8;
-              }
+        <div className="relative flex w-full flex-col items-center justify-center gap-12 px-6">
+          {/* Row of 3 icons */}
+          <div className="relative w-full max-w-5xl">
+            {GROUPS.map((group, gi) => {
+              const isActive = gi === active;
+              const inP = Math.min(1, progress / 0.25);
+              const outP = Math.max(0, (progress - 0.75) / 0.25);
+              const opacity = isActive ? inP * (1 - outP) : 0;
+              const y = isActive ? (1 - inP) * 30 - outP * 20 : 0;
               return (
                 <div
-                  key={it.label}
+                  key={gi}
                   aria-hidden={!isActive}
-                  className="absolute inset-0 flex items-center justify-center"
+                  className="absolute inset-0 grid grid-cols-3 items-center justify-items-center gap-6 md:gap-10"
                   style={{
                     opacity,
-                    transform: `translateY(${y}px) scale(${scale})`,
-                    filter: `blur(${blur}px)`,
-                    transition: "opacity 200ms linear, filter 200ms linear",
+                    transform: `translateY(${y}px)`,
+                    transition: "opacity 180ms linear",
+                    pointerEvents: isActive ? "auto" : "none",
                   }}
                 >
-                  {/* soft duplicate for aura */}
-                  <Icon
-                    strokeWidth={1.1}
-                    aria-hidden
-                    className="absolute h-[70%] w-[70%]"
-                    style={{
-                      color: "var(--primary)",
-                      opacity: 0.55,
-                      filter: "blur(18px)",
-                    }}
-                  />
-                  {/* premium gradient stroke icon */}
-                  <Icon
-                    strokeWidth={1.1}
-                    className="relative h-[74%] w-[74%]"
-                    style={{
-                      stroke: "url(#segStrokeGrad)",
-                      color: "transparent",
-                      filter:
-                        "drop-shadow(0 24px 44px color-mix(in oklab, var(--primary) 55%, transparent)) drop-shadow(0 0 22px color-mix(in oklab, var(--accent) 40%, transparent))",
-                    }}
-                  />
+                  {group.map((it, i) => {
+                    const Icon = it.icon;
+                    const delay = i * 80;
+                    return (
+                      <div key={it.label} className="flex flex-col items-center gap-4">
+                        <div
+                          className="relative flex h-[min(22vh,200px)] w-[min(22vh,200px)] items-center justify-center"
+                          style={{
+                            transform: `translateY(${(1 - inP) * 20}px)`,
+                            transition: `transform 350ms cubic-bezier(.2,.8,.2,1) ${delay}ms`,
+                          }}
+                        >
+                          <Icon
+                            strokeWidth={1.1}
+                            aria-hidden
+                            className="absolute h-[70%] w-[70%]"
+                            style={{ color: "var(--primary)", opacity: 0.5, filter: "blur(14px)" }}
+                          />
+                          <Icon
+                            strokeWidth={1.1}
+                            className="relative h-[78%] w-[78%]"
+                            style={{
+                              stroke: "url(#segStrokeGrad)",
+                              color: "transparent",
+                              filter:
+                                "drop-shadow(0 18px 32px color-mix(in oklab, var(--primary) 45%, transparent)) drop-shadow(0 0 18px color-mix(in oklab, var(--accent) 35%, transparent))",
+                            }}
+                          />
+                        </div>
+                        <div className="font-display text-lg font-bold tracking-tight text-foreground md:text-2xl">
+                          {it.label}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })}
-          </div>
-
-
-          {/* Label */}
-          <div className="relative h-14 overflow-hidden">
-            <div
-              key={active}
-              className="animate-fade-in font-display text-3xl font-bold tracking-tight text-foreground md:text-5xl"
-            >
-              {ITEMS[active].label}
+            {/* spacer to reserve height */}
+            <div className="invisible grid grid-cols-3 gap-6 md:gap-10">
+              {GROUPS[0].map((it) => (
+                <div key={it.label} className="flex flex-col items-center gap-4">
+                  <div className="h-[min(22vh,200px)] w-[min(22vh,200px)]" />
+                  <div className="font-display text-lg font-bold md:text-2xl">{it.label}</div>
+                </div>
+              ))}
             </div>
           </div>
 
           {/* Progress dots */}
           <div className="flex items-center gap-2">
-            {ITEMS.map((_, i) => (
+            {GROUPS.map((_, i) => (
               <span
                 key={i}
                 className="h-1.5 rounded-full transition-all duration-500"
@@ -197,7 +163,6 @@ export function SegmentsCarousel() {
             ))}
           </div>
 
-          {/* Active item progress bar */}
           <div className="h-[2px] w-40 overflow-hidden rounded-full bg-muted/40">
             <div
               className="h-full origin-left"

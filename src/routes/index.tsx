@@ -266,237 +266,190 @@ function HowItWorks() {
     },
   ];
 
-  const wrapRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const wrap = wrapRef.current;
-    const stage = stageRef.current;
-    if (!wrap || !stage) return;
-
-    const cards = Array.from(stage.querySelectorAll<HTMLElement>(".hiw-node"));
-    const links = Array.from(stage.querySelectorAll<SVGPathElement>(".hiw-link path.hiw-link-main"));
-    const roots = Array.from(stage.querySelectorAll<SVGGElement>(".hiw-link g.hiw-root"));
-    const heads = Array.from(stage.querySelectorAll<SVGCircleElement>(".hiw-link circle.hiw-head"));
-    const badge = stage.querySelector<HTMLElement>(".hiw-finish-badge");
-
-    // pre-compute path lengths (fallback 700)
-    const lengths = links.map((p) => {
-      try { return p.getTotalLength(); } catch { return 700; }
-    });
-    links.forEach((p, i) => {
-      p.style.strokeDasharray = String(lengths[i]);
-      p.style.strokeDashoffset = String(lengths[i]);
-    });
-
-    const clamp = (v: number, a = 0, b = 1) => Math.max(a, Math.min(b, v));
-    const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
-
-    let raf = 0;
-    const tick = () => {
-      raf = 0;
-      const rect = wrap.getBoundingClientRect();
-      const vh = window.innerHeight || 1;
-      const scrollable = Math.max(1, rect.height - vh);
-      const p = clamp(-rect.top / scrollable);
-
-      const c1 = ease(clamp(p / 0.08));
-      const c2 = ease(clamp((p - 0.28) / 0.14));
-      const c3 = ease(clamp((p - 0.62) / 0.14));
-      const cardProgress = [c1, c2, c3];
-      cards.forEach((el, i) => {
-        const v = cardProgress[i] ?? 0;
-        el.style.opacity = String(v);
-        el.style.transform = `translateY(${(1 - v) * 28}px)`;
-        el.style.filter = `blur(${(1 - v) * 6}px)`;
-      });
-
-      const l1 = ease(clamp((p - 0.10) / 0.22));
-      const l2 = ease(clamp((p - 0.44) / 0.22));
-      const lineProgress = [l1, l2];
-      links.forEach((path, i) => {
-        const v = lineProgress[i] ?? 0;
-        const len = lengths[i];
-        path.style.strokeDashoffset = String(len * (1 - v));
-        path.style.opacity = String(clamp(v * 1.6));
-
-        // moving glowing head at the tip
-        const head = heads[i];
-        if (head) {
-          if (v > 0.001 && v < 0.999) {
-            const pt = path.getPointAtLength(len * v);
-            head.setAttribute("cx", String(pt.x));
-            head.setAttribute("cy", String(pt.y));
-            head.style.opacity = "1";
-          } else {
-            head.style.opacity = "0";
+    const el = sectionRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            setVisible(true);
+            io.disconnect();
+            break;
           }
         }
-
-        // root branches: fade in after main line arrives
-        const root = roots[i];
-        if (root) {
-          const rv = clamp((v - 0.85) / 0.15);
-          root.style.opacity = String(rv);
-          root.style.transform = `scale(${0.6 + rv * 0.4})`;
-        }
-      });
-
-      if (p >= 0.82) {
-        stage.classList.add("hiw-complete");
-        if (badge) badge.style.opacity = "1";
-      } else {
-        stage.classList.remove("hiw-complete");
-        if (badge) badge.style.opacity = "0";
-      }
-    };
-
-    const onScroll = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(tick);
-    };
-    tick();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (raf) cancelAnimationFrame(raf);
-    };
+      },
+      { threshold: 0.25 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (!visible) return;
+    const stage = stageRef.current;
+    if (!stage) return;
+    const links = Array.from(stage.querySelectorAll<SVGPathElement>(".hiw-link path.hiw-link-main"));
+    const roots = Array.from(stage.querySelectorAll<SVGGElement>(".hiw-link g.hiw-root"));
+
+    links.forEach((p, i) => {
+      let len = 700;
+      try { len = p.getTotalLength(); } catch {}
+      p.style.strokeDasharray = String(len);
+      p.style.strokeDashoffset = String(len);
+      p.style.opacity = "1";
+      // trigger draw after cards start appearing
+      const delay = 350 + i * 500;
+      setTimeout(() => {
+        p.style.transition = "stroke-dashoffset 900ms cubic-bezier(.6,.05,.2,1)";
+        p.style.strokeDashoffset = "0";
+      }, delay);
+      const root = roots[i];
+      if (root) {
+        setTimeout(() => {
+          root.style.transition = "opacity 400ms ease, transform 400ms ease";
+          root.style.opacity = "1";
+          root.style.transform = "scale(1)";
+        }, delay + 850);
+      }
+    });
+  }, [visible]);
+
   return (
-    <section id="como-funciona" className="relative">
-      {/* Tall wrapper drives scroll progress; inner stage is sticky/pinned */}
-      <div ref={wrapRef} className="relative h-[260vh] md:h-[280vh]">
-        <div ref={stageRef} className="sticky top-0 flex h-screen items-center overflow-hidden">
-          <div aria-hidden className="pointer-events-none absolute -left-40 top-1/4 h-96 w-96 rounded-full bg-cyan-500/5 blur-[120px]" />
-          <div aria-hidden className="pointer-events-none absolute -right-40 bottom-1/4 h-96 w-96 rounded-full blur-[120px]" style={{ background: "rgba(255,43,214,0.05)" }} />
+    <section ref={sectionRef} id="como-funciona" className="relative py-24 md:py-32">
+      <div ref={stageRef} className="relative overflow-hidden">
+        <div aria-hidden className="pointer-events-none absolute -left-40 top-1/4 h-96 w-96 rounded-full bg-cyan-500/5 blur-[120px]" />
+        <div aria-hidden className="pointer-events-none absolute -right-40 bottom-1/4 h-96 w-96 rounded-full blur-[120px]" style={{ background: "rgba(255,43,214,0.05)" }} />
 
-          <div className="mx-auto w-full max-w-6xl px-6">
-            <div className="mb-14 text-center">
-              <span className="font-display text-xs font-bold uppercase tracking-[0.25em]" style={{ color: "#00ffff" }}>
-                Fluxo de experiência
-              </span>
-              <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight text-white md:text-5xl">
-                Três passos simples para seus clientes voltarem sempre
-              </h2>
-              <p className="mt-4 text-white/60">Do primeiro cadastro à recompensa, tudo funciona pelo navegador.</p>
-            </div>
+        <div className="mx-auto w-full max-w-6xl px-6">
+          <div className="mb-14 text-center">
+            <span className="font-display text-xs font-bold uppercase tracking-[0.25em]" style={{ color: "#00ffff" }}>
+              Fluxo de experiência
+            </span>
+            <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight text-white md:text-5xl">
+              Três passos simples para seus clientes voltarem sempre
+            </h2>
+            <p className="mt-4 text-white/60">Do primeiro cadastro à recompensa, tudo funciona pelo navegador.</p>
+          </div>
 
-            <div className="relative grid gap-10 md:grid-cols-3 md:gap-6">
-              {/* AI-style connectors between nodes (desktop only) */}
-              <svg
-                aria-hidden
-                className="hiw-link pointer-events-none absolute inset-0 hidden h-full w-full md:block"
-                viewBox="0 0 1000 400"
-                preserveAspectRatio="none"
+          <div className="relative grid gap-10 md:grid-cols-3 md:gap-6">
+            <svg
+              aria-hidden
+              className="hiw-link pointer-events-none absolute inset-0 hidden h-full w-full md:block"
+              viewBox="0 0 1000 400"
+              preserveAspectRatio="none"
+            >
+              <defs>
+                <linearGradient id="hiwLinkA" x1="0" x2="1" y1="0" y2="0">
+                  <stop offset="0%" stopColor="#00ffff" />
+                  <stop offset="100%" stopColor="#ff2bd6" />
+                </linearGradient>
+                <linearGradient id="hiwLinkB" x1="0" x2="1" y1="0" y2="0">
+                  <stop offset="0%" stopColor="#ff2bd6" />
+                  <stop offset="100%" stopColor="#a855f7" />
+                </linearGradient>
+                <filter id="hiwGlow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="3" result="b" />
+                  <feMerge>
+                    <feMergeNode in="b" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              <path
+                className="hiw-link-main"
+                d="M 260 110 C 340 110, 380 110, 500 110"
+                stroke="url(#hiwLinkA)"
+                strokeWidth="2.5"
+                fill="none"
+                filter="url(#hiwGlow)"
+                strokeLinecap="round"
+                style={{ opacity: 0 }}
+              />
+              <g className="hiw-root" style={{ opacity: 0, transform: "scale(0.6)", transformOrigin: "500px 110px" }}>
+                <path d="M 500 110 C 508 108, 514 100, 520 92" stroke="#ff2bd6" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
+                <path d="M 500 110 C 508 112, 514 120, 520 128" stroke="#ff2bd6" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
+                <path d="M 500 110 L 522 110" stroke="#ff2bd6" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
+              </g>
+              <path
+                className="hiw-link-main"
+                d="M 594 110 C 700 110, 750 110, 833 110"
+                stroke="url(#hiwLinkB)"
+                strokeWidth="2.5"
+                fill="none"
+                filter="url(#hiwGlow)"
+                strokeLinecap="round"
+                style={{ opacity: 0 }}
+              />
+              <g className="hiw-root" style={{ opacity: 0, transform: "scale(0.6)", transformOrigin: "833px 110px" }}>
+                <path d="M 833 110 C 841 108, 847 100, 853 92" stroke="#a855f7" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
+                <path d="M 833 110 C 841 112, 847 120, 853 128" stroke="#a855f7" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
+                <path d="M 833 110 L 855 110" stroke="#a855f7" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
+              </g>
+            </svg>
+
+            {steps.map((s, i) => (
+              <div
+                key={s.n}
+                data-idx={i}
+                className="hiw-node hiw-card relative rounded-2xl border border-white/10 bg-white/[0.02] p-8 backdrop-blur-sm"
+                style={{
+                  ["--acc" as string]: s.color,
+                  opacity: visible ? 1 : 0,
+                  transform: visible ? "translateY(0)" : "translateY(28px)",
+                  filter: visible ? "blur(0)" : "blur(6px)",
+                  transition: `opacity 520ms cubic-bezier(.2,.8,.2,1) ${i * 180}ms, transform 520ms cubic-bezier(.2,.8,.2,1) ${i * 180}ms, filter 520ms ease ${i * 180}ms`,
+                }}
               >
-                <defs>
-                  <linearGradient id="hiwLinkA" x1="0" x2="1" y1="0" y2="0">
-                    <stop offset="0%" stopColor="#00ffff" />
-                    <stop offset="100%" stopColor="#ff2bd6" />
-                  </linearGradient>
-                  <linearGradient id="hiwLinkB" x1="0" x2="1" y1="0" y2="0">
-                    <stop offset="0%" stopColor="#ff2bd6" />
-                    <stop offset="100%" stopColor="#a855f7" />
-                  </linearGradient>
-                  <filter id="hiwGlow" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur stdDeviation="3" result="b" />
-                    <feMerge>
-                      <feMergeNode in="b" />
-                      <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                  </filter>
-                </defs>
-                {/* Link 1: 01 → 02 (endpoint ~500,110) */}
-                <path
-                  className="hiw-link-main"
-                  d="M 260 110 C 340 110, 380 110, 500 110"
-                  stroke="url(#hiwLinkA)"
-                  strokeWidth="2.5"
-                  fill="none"
-                  filter="url(#hiwGlow)"
-                  strokeLinecap="round"
-                  style={{ opacity: 0 }}
-                />
-                <g className="hiw-root" style={{ opacity: 0, transformOrigin: "500px 110px" }}>
-                  <path d="M 500 110 C 508 108, 514 100, 520 92" stroke="#ff2bd6" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
-                  <path d="M 500 110 C 508 112, 514 120, 520 128" stroke="#ff2bd6" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
-                  <path d="M 500 110 L 522 110" stroke="#ff2bd6" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
-                </g>
-                <circle className="hiw-head" r="5" fill="#fff" filter="url(#hiwGlow)" style={{ opacity: 0 }} />
-
-                {/* Link 2: 02 → 03 (endpoint ~833,110) */}
-                <path
-                  className="hiw-link-main"
-                  d="M 594 110 C 700 110, 750 110, 833 110"
-                  stroke="url(#hiwLinkB)"
-                  strokeWidth="2.5"
-                  fill="none"
-                  filter="url(#hiwGlow)"
-                  strokeLinecap="round"
-                  style={{ opacity: 0 }}
-                />
-                <g className="hiw-root" style={{ opacity: 0, transformOrigin: "833px 110px" }}>
-                  <path d="M 833 110 C 841 108, 847 100, 853 92" stroke="#a855f7" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
-                  <path d="M 833 110 C 841 112, 847 120, 853 128" stroke="#a855f7" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
-                  <path d="M 833 110 L 855 110" stroke="#a855f7" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
-                </g>
-                <circle className="hiw-head" r="5" fill="#fff" filter="url(#hiwGlow)" style={{ opacity: 0 }} />
-              </svg>
-
-              {steps.map((s, i) => (
-                <div
-                  key={s.n}
-                  data-idx={i}
-                  className="hiw-node hiw-card relative rounded-2xl border border-white/10 bg-white/[0.02] p-8 backdrop-blur-sm"
-                  style={{ ["--acc" as string]: s.color, opacity: 0, transform: "translateY(28px)", filter: "blur(6px)" }}
-                >
-                  <div className="flex items-center gap-4">
-                    <div
-                      className="relative grid h-14 w-14 flex-none place-items-center rounded-xl border bg-[#050505]"
-                      style={{ borderColor: `${s.color}55`, boxShadow: `0 0 20px ${s.color}33, inset 0 0 10px ${s.color}22` }}
-                    >
-                      <span className="font-display text-xl font-extrabold tracking-tighter" style={{ color: s.color }}>
-                        {s.n}
-                      </span>
-                      {i > 0 && (
-                        <span
-                          aria-hidden
-                          className="absolute -left-[7px] top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full ring-2 ring-[#050505]"
-                          style={{ background: s.color, boxShadow: `0 0 10px ${s.color}` }}
-                        />
-                      )}
-                      {i < steps.length - 1 && (
-                        <span
-                          aria-hidden
-                          className="absolute -right-[7px] top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full ring-2 ring-[#050505]"
-                          style={{ background: s.color, boxShadow: `0 0 10px ${s.color}` }}
-                        />
-                      )}
-                    </div>
-                    <h3 className="font-display text-2xl font-bold tracking-tight text-white">{s.title}</h3>
-                  </div>
-                  <p className="mt-5 text-white/60 md:text-[15px]">{s.desc}</p>
-
-                  {i === steps.length - 1 && (
-                    <span
-                      aria-hidden
-                      className="hiw-finish-badge pointer-events-none absolute -top-3 right-4 rounded-full border border-cyan-400/40 bg-black px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-300 opacity-0 transition-opacity duration-500"
-                    >
-                      Pronto ✓
+                <div className="flex items-center gap-4">
+                  <div
+                    className="relative grid h-14 w-14 flex-none place-items-center rounded-xl border bg-[#050505]"
+                    style={{ borderColor: `${s.color}55`, boxShadow: `0 0 20px ${s.color}33, inset 0 0 10px ${s.color}22` }}
+                  >
+                    <span className="font-display text-xl font-extrabold tracking-tighter" style={{ color: s.color }}>
+                      {s.n}
                     </span>
-                  )}
+                    {i > 0 && (
+                      <span
+                        aria-hidden
+                        className="absolute -left-[7px] top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full ring-2 ring-[#050505]"
+                        style={{ background: s.color, boxShadow: `0 0 10px ${s.color}` }}
+                      />
+                    )}
+                    {i < steps.length - 1 && (
+                      <span
+                        aria-hidden
+                        className="absolute -right-[7px] top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full ring-2 ring-[#050505]"
+                        style={{ background: s.color, boxShadow: `0 0 10px ${s.color}` }}
+                      />
+                    )}
+                  </div>
+                  <h3 className="font-display text-2xl font-bold tracking-tight text-white">{s.title}</h3>
                 </div>
-              ))}
-            </div>
+                <p className="mt-5 text-white/60 md:text-[15px]">{s.desc}</p>
+
+                {i === steps.length - 1 && (
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute -top-3 right-4 rounded-full border border-cyan-400/40 bg-black px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-300 transition-opacity duration-500"
+                    style={{ opacity: visible ? 1 : 0, transitionDelay: "900ms" }}
+                  >
+                    Pronto ✓
+                  </span>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </div>
     </section>
   );
 }
+
 
 
 function Benefits() {
