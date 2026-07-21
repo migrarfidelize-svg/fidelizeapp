@@ -2249,10 +2249,10 @@ html:not(.dark) .landing-scope svg [stroke="url(#orbIconGrad)"] {
 /* Cap the largest display sizes on smaller viewports so they never
    spill past their container while keeping the cinematic feel on desktop. */
 @media (max-width: 768px) {
-  .landing-scope .text-6xl { font-size: 2.5rem !important; line-height: 1.1 !important; }
-  .landing-scope .text-7xl { font-size: 2.75rem !important; line-height: 1.05 !important; }
-  .landing-scope .text-5xl { font-size: 2.1rem !important; line-height: 1.1 !important; }
-  .landing-scope .text-4xl { font-size: 1.85rem !important; line-height: 1.15 !important; }
+  .landing-scope .text-6xl { font-size: 2.5rem !important; line-height: 1.2 !important; }
+  .landing-scope .text-7xl { font-size: 2.75rem !important; line-height: 1.15 !important; }
+  .landing-scope .text-5xl { font-size: 2.1rem !important; line-height: 1.2 !important; }
+  .landing-scope .text-4xl { font-size: 1.85rem !important; line-height: 1.25 !important; }
 }
 
 /* Homogenize vertical rhythm between landing sections.
