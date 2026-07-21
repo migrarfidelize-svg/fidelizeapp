@@ -2324,3 +2324,10 @@ html:not(.dark) .landing-scope .hero-3d-card .landing-flip-btn {
   filter: none !important;
 }
 
+
+/* Ícones dentro dos chips roxos (Cafe do centro / Recompensa) — brancos */
+html:not(.dark) .landing-scope .hero-3d-card [style*="background: #00ffff"] svg,
+html:not(.dark) .landing-scope .hero-3d-card [style*="background:#00ffff"] svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
