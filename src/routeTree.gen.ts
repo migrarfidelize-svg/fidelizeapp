@@ -28,16 +28,20 @@ import { Route as AvaliacoesSlugRouteImport } from './routes/avaliacoes.$slug'
 import { Route as AuthRecuperarRouteImport } from './routes/auth.recuperar'
 import { Route as AuthNovaSenhaRouteImport } from './routes/auth.nova-senha'
 import { Route as AuthenticatedLgpdRouteImport } from './routes/_authenticated/lgpd'
+import { Route as AuthenticatedCarteiraRouteImport } from './routes/_authenticated/carteira'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as SuporteSlugIndexRouteImport } from './routes/suporte.$slug.index'
 import { Route as AjudaCategoryIndexRouteImport } from './routes/ajuda.$category.index'
 import { Route as AuthenticatedSuporteIndexRouteImport } from './routes/_authenticated/suporte.index'
+import { Route as AuthenticatedCarteiraIndexRouteImport } from './routes/_authenticated/carteira.index'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as SuporteChamadoIdRouteImport } from './routes/suporte.chamado.$id'
 import { Route as SuporteSlugNovoRouteImport } from './routes/suporte.$slug.novo'
 import { Route as AjudaCategoryArticleRouteImport } from './routes/ajuda.$category.$article'
+import { Route as AuthenticatedCarteiraPerfilRouteImport } from './routes/_authenticated/carteira.perfil'
+import { Route as AuthenticatedCarteiraSlugRouteImport } from './routes/_authenticated/carteira.$slug'
 import { Route as AuthenticatedAppSuporteRouteImport } from './routes/_authenticated/app.suporte'
 import { Route as AuthenticatedAppRetencaoRouteImport } from './routes/_authenticated/app.retencao'
 import { Route as AuthenticatedAppQrcodesRouteImport } from './routes/_authenticated/app.qrcodes'
@@ -174,6 +178,11 @@ const AuthenticatedLgpdRoute = AuthenticatedLgpdRouteImport.update({
   path: '/lgpd',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCarteiraRoute = AuthenticatedCarteiraRouteImport.update({
+  id: '/carteira',
+  path: '/carteira',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   id: '/app',
   path: '/app',
@@ -200,6 +209,12 @@ const AuthenticatedSuporteIndexRoute =
     path: '/suporte/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCarteiraIndexRoute =
+  AuthenticatedCarteiraIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedCarteiraRoute,
+  } as any)
 const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -225,6 +240,18 @@ const AjudaCategoryArticleRoute = AjudaCategoryArticleRouteImport.update({
   path: '/ajuda/$category/$article',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCarteiraPerfilRoute =
+  AuthenticatedCarteiraPerfilRouteImport.update({
+    id: '/perfil',
+    path: '/perfil',
+    getParentRoute: () => AuthenticatedCarteiraRoute,
+  } as any)
+const AuthenticatedCarteiraSlugRoute =
+  AuthenticatedCarteiraSlugRouteImport.update({
+    id: '/$slug',
+    path: '/$slug',
+    getParentRoute: () => AuthenticatedCarteiraRoute,
+  } as any)
 const AuthenticatedAppSuporteRoute = AuthenticatedAppSuporteRouteImport.update({
   id: '/suporte',
   path: '/suporte',
@@ -474,6 +501,7 @@ export interface FileRoutesByFullPath {
   '/termos': typeof TermosRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/app': typeof AuthenticatedAppRouteWithChildren
+  '/carteira': typeof AuthenticatedCarteiraRouteWithChildren
   '/lgpd': typeof AuthenticatedLgpdRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
@@ -511,11 +539,14 @@ export interface FileRoutesByFullPath {
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/retencao': typeof AuthenticatedAppRetencaoRoute
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
+  '/carteira/$slug': typeof AuthenticatedCarteiraSlugRoute
+  '/carteira/perfil': typeof AuthenticatedCarteiraPerfilRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/app/': typeof AuthenticatedAppIndexRoute
+  '/carteira/': typeof AuthenticatedCarteiraIndexRoute
   '/suporte/': typeof AuthenticatedSuporteIndexRoute
   '/ajuda/$category/': typeof AjudaCategoryIndexRoute
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
@@ -580,11 +611,14 @@ export interface FileRoutesByTo {
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/retencao': typeof AuthenticatedAppRetencaoRoute
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
+  '/carteira/$slug': typeof AuthenticatedCarteiraSlugRoute
+  '/carteira/perfil': typeof AuthenticatedCarteiraPerfilRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/app': typeof AuthenticatedAppIndexRoute
+  '/carteira': typeof AuthenticatedCarteiraIndexRoute
   '/suporte': typeof AuthenticatedSuporteIndexRoute
   '/ajuda/$category': typeof AjudaCategoryIndexRoute
   '/suporte/$slug': typeof SuporteSlugIndexRoute
@@ -616,6 +650,7 @@ export interface FileRoutesById {
   '/termos': typeof TermosRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
+  '/_authenticated/carteira': typeof AuthenticatedCarteiraRouteWithChildren
   '/_authenticated/lgpd': typeof AuthenticatedLgpdRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
@@ -653,11 +688,14 @@ export interface FileRoutesById {
   '/_authenticated/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/_authenticated/app/retencao': typeof AuthenticatedAppRetencaoRoute
   '/_authenticated/app/suporte': typeof AuthenticatedAppSuporteRoute
+  '/_authenticated/carteira/$slug': typeof AuthenticatedCarteiraSlugRoute
+  '/_authenticated/carteira/perfil': typeof AuthenticatedCarteiraPerfilRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
+  '/_authenticated/carteira/': typeof AuthenticatedCarteiraIndexRoute
   '/_authenticated/suporte/': typeof AuthenticatedSuporteIndexRoute
   '/ajuda/$category/': typeof AjudaCategoryIndexRoute
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
@@ -689,6 +727,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/admin'
     | '/app'
+    | '/carteira'
     | '/lgpd'
     | '/auth/nova-senha'
     | '/auth/recuperar'
@@ -726,11 +765,14 @@ export interface FileRouteTypes {
     | '/app/qrcodes'
     | '/app/retencao'
     | '/app/suporte'
+    | '/carteira/$slug'
+    | '/carteira/perfil'
     | '/ajuda/$category/$article'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/admin/'
     | '/app/'
+    | '/carteira/'
     | '/suporte/'
     | '/ajuda/$category/'
     | '/suporte/$slug/'
@@ -795,11 +837,14 @@ export interface FileRouteTypes {
     | '/app/qrcodes'
     | '/app/retencao'
     | '/app/suporte'
+    | '/carteira/$slug'
+    | '/carteira/perfil'
     | '/ajuda/$category/$article'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/admin'
     | '/app'
+    | '/carteira'
     | '/suporte'
     | '/ajuda/$category'
     | '/suporte/$slug'
@@ -830,6 +875,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/_authenticated/admin'
     | '/_authenticated/app'
+    | '/_authenticated/carteira'
     | '/_authenticated/lgpd'
     | '/auth/nova-senha'
     | '/auth/recuperar'
@@ -867,11 +913,14 @@ export interface FileRouteTypes {
     | '/_authenticated/app/qrcodes'
     | '/_authenticated/app/retencao'
     | '/_authenticated/app/suporte'
+    | '/_authenticated/carteira/$slug'
+    | '/_authenticated/carteira/perfil'
     | '/ajuda/$category/$article'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/_authenticated/admin/'
     | '/_authenticated/app/'
+    | '/_authenticated/carteira/'
     | '/_authenticated/suporte/'
     | '/ajuda/$category/'
     | '/suporte/$slug/'
@@ -1060,6 +1109,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLgpdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/carteira': {
+      id: '/_authenticated/carteira'
+      path: '/carteira'
+      fullPath: '/carteira'
+      preLoaderRoute: typeof AuthenticatedCarteiraRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/app': {
       id: '/_authenticated/app'
       path: '/app'
@@ -1095,6 +1151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSuporteIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/carteira/': {
+      id: '/_authenticated/carteira/'
+      path: '/'
+      fullPath: '/carteira/'
+      preLoaderRoute: typeof AuthenticatedCarteiraIndexRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
+    }
     '/_authenticated/app/': {
       id: '/_authenticated/app/'
       path: '/'
@@ -1129,6 +1192,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/ajuda/$category/$article'
       preLoaderRoute: typeof AjudaCategoryArticleRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/carteira/perfil': {
+      id: '/_authenticated/carteira/perfil'
+      path: '/perfil'
+      fullPath: '/carteira/perfil'
+      preLoaderRoute: typeof AuthenticatedCarteiraPerfilRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
+    }
+    '/_authenticated/carteira/$slug': {
+      id: '/_authenticated/carteira/$slug'
+      path: '/$slug'
+      fullPath: '/carteira/$slug'
+      preLoaderRoute: typeof AuthenticatedCarteiraSlugRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
     }
     '/_authenticated/app/suporte': {
       id: '/_authenticated/app/suporte'
@@ -1504,9 +1581,27 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
 const AuthenticatedAppRouteWithChildren =
   AuthenticatedAppRoute._addFileChildren(AuthenticatedAppRouteChildren)
 
+interface AuthenticatedCarteiraRouteChildren {
+  AuthenticatedCarteiraSlugRoute: typeof AuthenticatedCarteiraSlugRoute
+  AuthenticatedCarteiraPerfilRoute: typeof AuthenticatedCarteiraPerfilRoute
+  AuthenticatedCarteiraIndexRoute: typeof AuthenticatedCarteiraIndexRoute
+}
+
+const AuthenticatedCarteiraRouteChildren: AuthenticatedCarteiraRouteChildren = {
+  AuthenticatedCarteiraSlugRoute: AuthenticatedCarteiraSlugRoute,
+  AuthenticatedCarteiraPerfilRoute: AuthenticatedCarteiraPerfilRoute,
+  AuthenticatedCarteiraIndexRoute: AuthenticatedCarteiraIndexRoute,
+}
+
+const AuthenticatedCarteiraRouteWithChildren =
+  AuthenticatedCarteiraRoute._addFileChildren(
+    AuthenticatedCarteiraRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
+  AuthenticatedCarteiraRoute: typeof AuthenticatedCarteiraRouteWithChildren
   AuthenticatedLgpdRoute: typeof AuthenticatedLgpdRoute
   AuthenticatedSuporteIndexRoute: typeof AuthenticatedSuporteIndexRoute
   AuthenticatedSuporteTicketIdRoute: typeof AuthenticatedSuporteTicketIdRoute
@@ -1515,6 +1610,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
+  AuthenticatedCarteiraRoute: AuthenticatedCarteiraRouteWithChildren,
   AuthenticatedLgpdRoute: AuthenticatedLgpdRoute,
   AuthenticatedSuporteIndexRoute: AuthenticatedSuporteIndexRoute,
   AuthenticatedSuporteTicketIdRoute: AuthenticatedSuporteTicketIdRoute,
@@ -1570,13 +1666,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

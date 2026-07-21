@@ -4,31 +4,67 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
-import { Coffee, Check, ArrowRight, Sparkles, Wifi } from "lucide-react";
+import { Coffee, Check, ArrowRight, Sparkles, Wifi, Store, User } from "lucide-react";
+import { claimCustomerByToken } from "@/lib/my-wallet.functions";
 
-const searchSchema = z.object({ mode: z.enum(["signin", "signup"]).default("signin") });
+const searchSchema = z.object({
+  mode: z.enum(["signin", "signup"]).default("signin"),
+  as: z.enum(["customer", "establishment"]).optional(),
+  claim: z.string().optional(),
+  next: z.string().optional(),
+});
+
+async function routeAfterAuth(opts: { claim?: string; next?: string }): Promise<{ to: string; toast?: string }> {
+  // If we were sent here from a QR link, always try to attach the card first.
+  if (opts.claim) {
+    try {
+      const r = await claimCustomerByToken({ data: { token: opts.claim } });
+      return { to: `/carteira/${r.slug}`, toast: "Cartão salvo na sua carteira!" };
+    } catch {
+      // Fall through to default routing.
+    }
+  }
+  if (opts.next && opts.next.startsWith("/")) return { to: opts.next };
+  try {
+    const { data } = await supabase.rpc("my_account_type");
+    if (data === "super_admin") return { to: "/admin" };
+    if (data === "establishment") return { to: "/app" };
+    return { to: "/carteira" };
+  } catch {
+    return { to: "/carteira" };
+  }
+}
 
 export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   ssr: false,
-  beforeLoad: async () => {
+  beforeLoad: async ({ search }) => {
     const { data } = await supabase.auth.getSession();
-    if (data.session) throw redirect({ to: "/app" });
+    if (data.session) {
+      const dest = await routeAfterAuth({ claim: search.claim, next: search.next });
+      throw redirect({ to: dest.to });
+    }
   },
   head: () => ({ meta: [{ title: "Entrar — Fidelize" }] }),
   component: AuthPage,
 });
 
 function AuthPage() {
-  const { mode } = Route.useSearch();
+  const search = Route.useSearch();
+  const { mode } = search;
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  // Cliente é o padrão. Se veio de /c/:token com ?claim=... também force customer.
+  const [role, setRole] = useState<"customer" | "establishment">(
+    search.as ?? (search.claim ? "customer" : "customer"),
+  );
 
   const isSignup = mode === "signup";
+  const isEstablishmentSignup = isSignup && role === "establishment";
 
   function formatWhatsapp(v: string) {
     const d = v.replace(/\D/g, "").slice(0, 11);
@@ -44,7 +80,7 @@ function AuthPage() {
     try {
       if (isSignup) {
         const digits = whatsapp.replace(/\D/g, "");
-        if (digits.length < 10) {
+        if (isEstablishmentSignup && digits.length < 10) {
           toast.error("Informe um WhatsApp válido com DDD.");
           setLoading(false);
           return;
@@ -53,7 +89,7 @@ function AuthPage() {
           email, password,
           options: {
             data: { full_name: name, phone: whatsapp, whatsapp },
-            emailRedirectTo: window.location.origin + "/app",
+            emailRedirectTo: window.location.origin + "/auth",
           },
         });
         if (error) throw error;
@@ -61,8 +97,15 @@ function AuthPage() {
         if (uid) {
           await supabase.from("profiles").upsert({ id: uid, full_name: name, phone: whatsapp }, { onConflict: "id" });
         }
-        toast.success("Conta criada! Vamos configurar seu cartão.");
-        navigate({ to: "/onboarding" });
+        if (isEstablishmentSignup) {
+          toast.success("Conta criada! Vamos configurar seu cartão.");
+          navigate({ to: "/onboarding" });
+        } else {
+          // Cliente: se veio de QR, vincula; senão, vai pra carteira.
+          const dest = await routeAfterAuth({ claim: search.claim, next: search.next });
+          toast.success(dest.toast ?? "Conta criada!");
+          navigate({ to: dest.to });
+        }
       } else {
         let { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
@@ -78,8 +121,9 @@ function AuthPage() {
           }
           if (error) throw error;
         }
-        toast.success("Bem-vindo de volta!");
-        navigate({ to: "/app" });
+        const dest = await routeAfterAuth({ claim: search.claim, next: search.next });
+        toast.success(dest.toast ?? "Bem-vindo de volta!");
+        navigate({ to: dest.to });
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao autenticar");
@@ -223,14 +267,14 @@ function AuthPage() {
               />
               <Link
                 to="/auth"
-                search={{ mode: "signin" }}
+                search={{ ...search, mode: "signin" }}
                 className={"relative z-10 rounded-full py-1.5 text-center font-display text-sm font-semibold transition-colors duration-300 " + (isSignup ? "text-white/60" : "text-black")}
               >
                 Entrar
               </Link>
               <Link
                 to="/auth"
-                search={{ mode: "signup" }}
+                search={{ ...search, mode: "signup" }}
                 className={"relative z-10 rounded-full py-1.5 text-center font-display text-sm font-semibold transition-colors duration-300 " + (isSignup ? "text-black" : "text-white/60")}
               >
                 Criar conta
@@ -240,12 +284,49 @@ function AuthPage() {
             <form onSubmit={handleSubmit} className={isSignup ? "space-y-3" : "space-y-4"}>
 
               {isSignup && (
+                <div className="animate-fade-in">
+                  <div className="mb-1 ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">Sou</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setRole("customer")}
+                      className={
+                        "flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all " +
+                        (role === "customer"
+                          ? "border-[#00ffff] bg-[#00ffff]/10 text-white shadow-[0_0_20px_-6px_rgba(0,255,255,0.6)]"
+                          : "border-white/10 bg-white/5 text-white/60 hover:text-white")
+                      }
+                    >
+                      <User className="h-3.5 w-3.5" /> Cliente
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRole("establishment")}
+                      className={
+                        "flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all " +
+                        (role === "establishment"
+                          ? "border-[#00ffff] bg-[#00ffff]/10 text-white shadow-[0_0_20px_-6px_rgba(0,255,255,0.6)]"
+                          : "border-white/10 bg-white/5 text-white/60 hover:text-white")
+                      }
+                    >
+                      <Store className="h-3.5 w-3.5" /> Estabelecimento
+                    </button>
+                  </div>
+                  <p className="mt-1.5 ml-1 text-[10px] text-white/40">
+                    {role === "customer"
+                      ? "Acumule carimbos e recompensas em qualquer estabelecimento Fidelize."
+                      : "Crie seu programa de fidelidade digital para o seu negócio."}
+                  </p>
+                </div>
+              )}
+
+              {isSignup && (
                 <div className="animate-fade-in space-y-1.5">
                   <label htmlFor="name" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">Seu nome</label>
                   <input id="name" value={name} onChange={(e) => setName(e.target.value)} required minLength={2} className="auth-input" />
                 </div>
               )}
-              {isSignup && (
+              {isEstablishmentSignup && (
                 <div className="animate-fade-in space-y-1.5">
                   <label htmlFor="whatsapp" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">WhatsApp</label>
                   <input id="whatsapp" type="tel" inputMode="tel" autoComplete="tel" placeholder="(11) 91234-5678" value={whatsapp} onChange={(e) => setWhatsapp(formatWhatsapp(e.target.value))} required className="auth-input" />
