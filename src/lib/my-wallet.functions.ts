@@ -1,6 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { attachEstablishmentCore, AttachEstablishmentError, type AttachDb } from "@/lib/my-wallet-core";
+
+// Reexporta o erro para consumidores existentes.
+export { AttachEstablishmentError };
 
 /** Returns the current user's account type using the DB helper. */
 export const getMyAccountType = createServerFn({ method: "GET" })
