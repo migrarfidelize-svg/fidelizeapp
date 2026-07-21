@@ -987,17 +987,8 @@
   100% { transform: translateX(30%); opacity: .5; }
 }
 
-/* Corner brackets — HUD style */
-.dash-hero > .hero-corner {
-  position: absolute; width: 22px; height: 22px;
-  border: 1.5px solid color-mix(in oklab, var(--primary) 70%, transparent);
-  filter: drop-shadow(0 0 6px color-mix(in oklab, var(--primary) 50%, transparent));
-  pointer-events: none; z-index: 2;
-}
-.hero-corner-tl { top: 12px; left: 12px; border-right: 0; border-bottom: 0; border-top-left-radius: 6px; }
-.hero-corner-tr { top: 12px; right: 12px; border-left: 0; border-bottom: 0; border-top-right-radius: 6px; }
-.hero-corner-bl { bottom: 12px; left: 12px; border-right: 0; border-top: 0; border-bottom-left-radius: 6px; }
-.hero-corner-br { bottom: 12px; right: 12px; border-left: 0; border-top: 0; border-bottom-right-radius: 6px; }
+/* Corner brackets removed by request */
+.dash-hero > .hero-corner { display: none !important; }
 
 /* Scan sweep vertical beam */
 .dash-hero > .hero-scan {
