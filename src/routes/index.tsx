@@ -1104,8 +1104,17 @@ function Pricing() {
   ];
 
   const [activeIdx, setActiveIdx] = useState(2);
+  const [prevIdx, setPrevIdx] = useState(2);
+  const [shockKey, setShockKey] = useState(0);
   const active = plans[activeIdx];
   const ActiveIcon = active.icon;
+  const direction = activeIdx >= prevIdx ? "right" : "left";
+  const selectPlan = (i: number) => {
+    if (i === activeIdx) return;
+    setPrevIdx(activeIdx);
+    setActiveIdx(i);
+    setShockKey((k) => k + 1);
+  };
 
   return (
     <section id="precos" className="relative py-24 overflow-hidden">
