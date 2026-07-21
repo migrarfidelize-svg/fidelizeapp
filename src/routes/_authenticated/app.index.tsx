@@ -1,24 +1,26 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { getMyEstablishments, getDashboardData } from "@/lib/loyalty.functions";
 import {
   Users, Stamp, Gift, ArrowRight, Sparkles,
-  ArrowUpRight, ArrowDownRight, Minus, Zap, Crown, Activity,
-  QrCode, TrendingUp, Trophy, Clock,
+  ArrowUpRight, ArrowDownRight, Minus, Zap, Crown,
+  QrCode, TrendingUp, Trophy, Clock, LayoutDashboard,
 } from "lucide-react";
 import {
-  LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid, Area, AreaChart,
+  XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid, Area, AreaChart,
 } from "recharts";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
 import { GoalsCard } from "@/components/GoalsCard";
+import { PageHero } from "@/components/PageHero";
 import { ErrorState, LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/app/")({
   component: Dashboard,
 });
+
 
 function Dashboard() {
   const getEsts = useServerFn(getMyEstablishments);
@@ -56,24 +58,14 @@ function Dashboard() {
 
   return (
     <div className="space-y-8">
-      {/* CINEMATIC HERO */}
-      <section className="dash-hero p-6 sm:p-8">
-        <div className="relative flex flex-wrap items-end justify-between gap-6">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="live-pulse">Ao vivo</span>
-              <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                {dayLabel} · {timeLabel}
-              </span>
-            </div>
-            <h1 className="mt-3 font-display text-3xl sm:text-4xl font-bold tracking-tight">
-              {est.name}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Comando de operações do seu programa de fidelidade.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
+      <PageHero
+        icon={LayoutDashboard}
+        liveLabel="Ao vivo"
+        eyebrow={`${dayLabel} · ${timeLabel}`}
+        title={est.name}
+        subtitle="Comando de operações do seu programa de fidelidade."
+        actions={
+          <>
             <Button asChild variant="outline" className="border-primary/30 hover:border-primary/60">
               <Link to="/l/$slug" params={{ slug: est.slug }}>
                 <QrCode className="mr-1 h-4 w-4" /> Página pública
@@ -85,17 +77,16 @@ function Dashboard() {
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
-          </div>
-        </div>
+          </>
+        }
+        ticker={[
+          { label: "Últimos 7 dias", value: `${last7Total} carimbos`, icon: TrendingUp },
+          { label: "Base ativa", value: `${data.customersCount} clientes`, icon: Users },
+          { label: "Recompensas", value: `${data.redeemedCount} resgatadas`, icon: Trophy },
+          { label: "Meta do mês", value: data.goalMonth, icon: Clock },
+        ]}
+      />
 
-        {/* Ticker strip inside hero */}
-        <div className="relative mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-          <TickerItem label="Últimos 7 dias" value={`${last7Total} carimbos`} icon={TrendingUp} />
-          <TickerItem label="Base ativa" value={`${data.customersCount} clientes`} icon={Users} />
-          <TickerItem label="Recompensas" value={`${data.redeemedCount} resgatadas`} icon={Trophy} />
-          <TickerItem label="Meta do mês" value={data.goalMonth} icon={Clock} />
-        </div>
-      </section>
 
       {/* KPI STRIP */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -222,19 +213,6 @@ function Dashboard() {
   );
 }
 
-function TickerItem({ label, value, icon: Icon }: { label: string; value: string | number; icon: any }) {
-  return (
-    <div className="flex items-center gap-3 rounded-lg border border-primary/15 bg-[color:color-mix(in_oklab,var(--card)_60%,transparent)] px-3 py-2.5 backdrop-blur-sm">
-      <span className="grid h-8 w-8 place-items-center rounded-md border border-primary/25 bg-primary/10 text-primary">
-        <Icon className="h-4 w-4" />
-      </span>
-      <div className="min-w-0">
-        <div className="text-[10px] uppercase tracking-widest text-muted-foreground truncate">{label}</div>
-        <div className="text-sm font-semibold truncate">{value}</div>
-      </div>
-    </div>
-  );
-}
 
 function MoMCard({
   label, current, previous, delay = 0, accent = false,
