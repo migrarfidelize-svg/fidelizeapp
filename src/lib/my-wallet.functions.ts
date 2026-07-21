@@ -177,22 +177,15 @@ export const attachEstablishmentBySlug = createServerFn({ method: "POST" })
     // 3) Caso ainda não haja linha, cria uma nova para este estabelecimento.
     let created = false;
     if (!mine) {
-      const insertRow: {
-        establishment_id: string;
-        user_id: string;
-        name: string;
-        marketing_opt_in: boolean;
-        phone?: string;
-      } = {
-        establishment_id: est.id,
-        user_id: context.userId,
-        name: profile?.full_name ?? "Cliente Fidelize",
-        marketing_opt_in: false,
-      };
-      if (phoneDigits) insertRow.phone = phoneDigits;
       const { data: nc, error: cErr } = await supabaseAdmin
         .from("customers")
-        .insert(insertRow)
+        .insert({
+          establishment_id: est.id,
+          user_id: context.userId,
+          name: profile?.full_name ?? "Cliente Fidelize",
+          phone: phoneDigits || "",
+          marketing_opt_in: false,
+        })
         .select("id")
         .single();
       if (cErr) throw cErr;
