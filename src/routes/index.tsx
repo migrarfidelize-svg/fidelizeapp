@@ -791,8 +791,8 @@ function PaperHalf({ side }: { side: "left" | "right" }) {
       className={`tear-half tear-half-${side} absolute top-0 h-full w-1/2 ${isLeft ? "left-0" : "right-0"}`}
       style={{
         background: "linear-gradient(180deg, #f6efdc 0%, #efe6c9 100%)",
-        boxShadow: "0 30px 60px -20px rgba(0,0,0,0.7), inset 0 0 60px rgba(120,90,40,0.08)",
-        color: "#3b2a15",
+        boxShadow: "0 30px 60px -20px rgba(0,0,0,0.7), inset 0 0 60px rgba(60,45,20,0.08)",
+        color: "#0a0a0a",
         transformOrigin: isLeft ? "right center" : "left center",
         clipPath: isLeft
           ? "polygon(0 0, 100% 0, 96% 8%, 100% 16%, 94% 24%, 100% 34%, 95% 44%, 100% 54%, 94% 64%, 100% 74%, 96% 86%, 100% 94%, 97% 100%, 0 100%)"
@@ -800,38 +800,38 @@ function PaperHalf({ side }: { side: "left" | "right" }) {
         borderRadius: isLeft ? "18px 4px 4px 18px" : "4px 18px 18px 4px",
       }}
     >
-      <div className="relative h-full w-full p-5">
+      <div className="relative h-full w-full p-5" style={{ fontFamily: "'Caveat', 'Segoe Script', cursive" }}>
         {isLeft && (
           <>
-            <div className="font-display text-xs font-black uppercase tracking-widest opacity-70">Cartão fidelidade</div>
-            <div className="mt-1 text-[10px] italic opacity-60">Café do Zé — desde 2011</div>
+            <div className="font-display text-xs font-black uppercase tracking-widest text-black/80">Cartão fidelidade</div>
+            <div className="mt-1 text-[10px] italic text-black/60">Café do Zé — desde 2011</div>
             <div className="absolute left-4 top-16 grid grid-cols-3 gap-2">
               {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="grid h-10 w-10 place-items-center rounded-full border-2 border-dashed border-[#8a5a1f]/60 text-lg font-black text-[#8a5a1f]" style={{ transform: `rotate(${(i % 2 ? -1 : 1) * (6 + i * 2)}deg)` }}>
+                <div key={i} className="grid h-10 w-10 place-items-center rounded-full border-2 border-dashed border-black/70 text-lg font-black text-black" style={{ transform: `rotate(${(i % 2 ? -1 : 1) * (6 + i * 2)}deg)` }}>
                   ✓
                 </div>
               ))}
             </div>
             {/* Coffee stain */}
-            <div className="absolute bottom-3 left-4 h-14 w-14 rounded-full opacity-40" style={{ background: "radial-gradient(circle, #6b3a1e 0%, transparent 70%)" }} />
+            <div className="absolute bottom-3 left-4 h-14 w-14 rounded-full opacity-30" style={{ background: "radial-gradient(circle, #6b3a1e 0%, transparent 70%)" }} />
           </>
         )}
         {!isLeft && (
           <>
             <div className="flex justify-end">
-              <div className="rotate-6 rounded border border-dashed border-[#8a5a1f]/50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-[#8a5a1f]">
+              <div className="rotate-6 rounded border border-dashed border-black/70 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-black">
                 10 = grátis
               </div>
             </div>
             <div className="absolute right-4 top-14 grid grid-cols-3 gap-2">
               {[0, 1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="h-10 w-10 rounded-full border-2 border-dashed border-[#8a5a1f]/60" />
+                <div key={i} className="h-10 w-10 rounded-full border-2 border-dashed border-black/70" />
               ))}
             </div>
             {/* Tape */}
             <div className="absolute -right-2 top-6 h-5 w-16 rotate-12 bg-white/50" style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }} />
             {/* Scribble */}
-            <div className="absolute bottom-3 right-4 font-mono text-[10px] italic opacity-60">"perdi um... hehe"</div>
+            <div className="absolute bottom-3 right-4 text-[13px] italic text-black/80">"perdi um... hehe"</div>
           </>
         )}
       </div>
