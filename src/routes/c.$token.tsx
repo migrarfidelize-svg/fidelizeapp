@@ -213,7 +213,7 @@ function SaveToWalletCta({ token, establishmentName }: { token: string; establis
       const { data: c } = await supabase
         .from("customers")
         .select("user_id")
-        .eq("token", token)
+        .eq("access_token", token)
         .maybeSingle();
       if (cancelled) return;
       if (c?.user_id === session.user.id) setState("linked");
