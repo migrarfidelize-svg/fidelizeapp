@@ -779,10 +779,10 @@
   white-space: nowrap;
   z-index: 30;
 }
-.tear-win:nth-child(2) { top: -14px;    left: -8px;   transform: translate(calc((1 - var(--p)) * -40px), 0); }
-.tear-win:nth-child(3) { top: -14px;    right: -8px;  left: auto; transform: translate(calc((1 - var(--p)) * 40px), 0); }
-.tear-win:nth-child(4) { bottom: -14px; left: -8px;   transform: translate(calc((1 - var(--p)) * -40px), calc((1 - var(--p)) * 20px)); }
-.tear-win:nth-child(5) { bottom: -14px; right: -8px;  left: auto; transform: translate(calc((1 - var(--p)) * 40px), calc((1 - var(--p)) * 20px)); }
+.tear-win:nth-child(2) { top: 28%;  left: -14px;  right: auto; transform: translate(calc((1 - var(--p)) * -60px), -50%); }
+.tear-win:nth-child(3) { top: 28%;  right: -14px; left: auto;  transform: translate(calc((1 - var(--p)) * 60px), -50%); }
+.tear-win:nth-child(4) { top: 68%;  left: -14px;  right: auto; transform: translate(calc((1 - var(--p)) * -60px), -50%); }
+.tear-win:nth-child(5) { top: 68%;  right: -14px; left: auto;  transform: translate(calc((1 - var(--p)) * 60px), -50%); }
 
 /* CTA reveal at the very end of the scroll */
 .tear-cta {
