@@ -771,7 +771,7 @@ function Comparison() {
             </div>
 
             {/* CTA reveal at the end */}
-            <div className="tear-cta relative z-40 mt-3 flex flex-col items-center gap-2 text-center md:mt-4">
+            <div className="tear-cta relative z-40 mt-10 flex flex-col items-center gap-3 text-center md:mt-14">
               <p className="relative z-40 max-w-xl text-white/70">
                 Chega de cartão perdido, carimbo torto e cliente esquecido. Ative o Fidelize em minutos.
               </p>
