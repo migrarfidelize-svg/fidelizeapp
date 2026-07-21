@@ -104,67 +104,101 @@ function AuthPage() {
       <div className="relative z-10 mx-auto grid min-h-[calc(100vh-8rem)] max-w-6xl grid-cols-1 items-center gap-16 lg:grid-cols-2">
         {/* Protagonist: Premium loyalty stamp card */}
         <div className="flex flex-col items-center space-y-8 lg:items-start">
-          <div className="group [perspective:2000px]">
-            <div className="auth-loyalty-card relative h-[300px] w-[440px] max-w-full transform-gpu shadow-[0_60px_120px_-30px_rgba(0,0,0,0.7)] transition-transform duration-700 [transform:rotateY(-14deg)_rotateX(9deg)] group-hover:[transform:rotateY(-4deg)_rotateX(3deg)]">
-              {/* Card body */}
-              <div className="relative h-full w-full overflow-hidden rounded-[28px] border border-white/10 bg-[oklch(0.16_0.03_235)]">
-                {/* Circuit dot pattern */}
-                <div className="absolute inset-0 opacity-[0.18]" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, #00ffff 1px, transparent 0)", backgroundSize: "22px 22px" }} />
-                {/* Corner glow */}
-                <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-[#00ffff]/25 blur-3xl" />
-                <div className="absolute -bottom-24 -left-16 h-48 w-48 rounded-full bg-[oklch(0.78_0.19_330)]/25 blur-3xl" />
+          <div className="auth-card-stage group [perspective:2200px]">
+            {/* Floating ambient chips behind card */}
+            <div className="pointer-events-none absolute -left-8 -top-6 h-24 w-24 rounded-full bg-[#00ffff]/20 blur-2xl animate-[auth-float_9s_ease-in-out_infinite]" />
+            <div className="pointer-events-none absolute -bottom-10 -right-6 h-32 w-32 rounded-full bg-[oklch(0.78_0.19_330)]/25 blur-3xl animate-[auth-float_11s_ease-in-out_infinite_reverse]" />
 
-                {/* Header */}
-                <div className="relative flex items-start justify-between px-7 pt-6">
-                  <div>
-                    <div className="text-[10px] uppercase tracking-[0.28em] text-white/40">Cartão fidelidade</div>
-                    <div className="font-display text-2xl font-bold tracking-tight text-white">
-                      Café <span className="text-[#00ffff]">Aurora</span>
+            <div className="auth-loyalty-card relative aspect-[1.6/1] w-[min(460px,88vw)] transform-gpu transition-transform duration-700 will-change-transform [transform:rotateY(-14deg)_rotateX(9deg)] group-hover:[transform:rotateY(-4deg)_rotateX(3deg)]">
+              {/* Card body */}
+              <div className="auth-card-body relative h-full w-full overflow-hidden rounded-[26px] border border-white/12">
+                {/* Layered background */}
+                <div className="absolute inset-0 bg-[radial-gradient(120%_80%_at_0%_0%,oklch(0.22_0.06_235)_0%,oklch(0.14_0.03_235)_55%,oklch(0.11_0.02_240)_100%)]" />
+                <div className="absolute inset-0 opacity-[0.14]" style={{ backgroundImage: "radial-gradient(circle at 1.5px 1.5px, #00ffff 1px, transparent 0)", backgroundSize: "18px 18px" }} />
+                {/* Corner glows */}
+                <div className="absolute -top-24 -right-20 h-56 w-56 rounded-full bg-[#00ffff]/22 blur-3xl" />
+                <div className="absolute -bottom-24 -left-16 h-48 w-48 rounded-full bg-[oklch(0.78_0.19_330)]/22 blur-3xl" />
+
+                {/* Content grid — locks alignment */}
+                <div className="relative grid h-full grid-rows-[auto_1fr_auto] gap-3 p-5 sm:p-6">
+                  {/* Header row */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      {/* Holo chip */}
+                      <div className="relative h-9 w-11 shrink-0 overflow-hidden rounded-md border border-[#00ffff]/40 bg-gradient-to-br from-[#00ffff]/30 via-white/10 to-[oklch(0.78_0.19_330)]/30">
+                        <div className="absolute inset-0 animate-[auth-holo_3s_linear_infinite] bg-[linear-gradient(115deg,transparent_35%,rgba(255,255,255,0.55)_50%,transparent_65%)]" />
+                        <div className="absolute inset-1 rounded-[3px] border border-white/30" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-[9px] uppercase tracking-[0.28em] text-white/45">Cartão fidelidade</div>
+                        <div className="font-display text-lg font-bold leading-tight tracking-tight text-white truncate">
+                          Café <span className="text-[#00ffff]">Aurora</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1.5 rounded-md border border-[#00ffff]/35 bg-[#00ffff]/10 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-[#00ffff]">
+                      <Sparkles className="h-3 w-3" /> Ouro
                     </div>
                   </div>
-                  <div className="rounded-lg border border-[#00ffff]/30 bg-[#00ffff]/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-[#00ffff]">
-                    <Sparkles className="mr-1 inline h-3 w-3" /> ouro
-                  </div>
-                </div>
 
-                {/* Stamp grid */}
-                <div className="relative mt-6 grid grid-cols-5 gap-3 px-7">
-                  {Array.from({ length: 10 }).map((_, i) => {
-                    const filled = i < 7;
-                    return (
-                      <div
-                        key={i}
-                        className={
-                          "relative flex aspect-square items-center justify-center rounded-full border " +
-                          (filled
-                            ? "border-[#00ffff]/60 bg-[#00ffff]/15 text-[#00ffff] shadow-[0_0_18px_rgba(0,255,255,0.35)]"
-                            : "border-dashed border-white/15 text-white/20")
-                        }
-                      >
-                        {filled ? <Coffee className="h-4 w-4" /> : <span className="text-[10px]">{i + 1}</span>}
-                        {filled && i === 6 && (
-                          <span className="absolute inset-0 animate-ping rounded-full bg-[#00ffff]/30" />
-                        )}
+                  {/* Stamp grid — perfectly aligned */}
+                  <div className="grid grid-cols-5 grid-rows-2 gap-2 sm:gap-2.5">
+                    {Array.from({ length: 10 }).map((_, i) => {
+                      const filled = i < 7;
+                      const isNext = i === 7;
+                      return (
+                        <div
+                          key={i}
+                          style={{ animationDelay: `${i * 110}ms` }}
+                          className={
+                            "auth-stamp relative flex aspect-square items-center justify-center rounded-full border text-[10px] " +
+                            (filled
+                              ? "auth-stamp-filled border-[#00ffff]/55 bg-[#00ffff]/12 text-[#00ffff]"
+                              : isNext
+                              ? "border-[oklch(0.78_0.19_330)]/50 border-dashed text-[oklch(0.78_0.19_330)]"
+                              : "border-dashed border-white/12 text-white/25")
+                          }
+                        >
+                          {filled ? (
+                            <Coffee className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                          ) : (
+                            <span className="font-display font-bold">{i + 1}</span>
+                          )}
+                          {isNext && (
+                            <span className="pointer-events-none absolute inset-0 animate-ping rounded-full bg-[oklch(0.78_0.19_330)]/25" />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Footer row */}
+                  <div className="flex items-end justify-between gap-3 border-t border-white/8 pt-3">
+                    <div className="min-w-0">
+                      <div className="text-[9px] uppercase tracking-[0.22em] text-white/40">Faltam</div>
+                      <div className="font-display text-sm font-bold leading-tight text-white">
+                        3 carimbos · <span className="text-[oklch(0.85_0.19_330)]">café grátis</span>
                       </div>
-                    );
-                  })}
-                </div>
-
-                {/* Footer */}
-                <div className="relative mt-5 flex items-end justify-between px-7 pb-6">
-                  <div>
-                    <div className="text-[9px] uppercase tracking-[0.24em] text-white/40">Faltam</div>
-                    <div className="font-display text-lg font-bold text-white">3 carimbos · <span className="text-[oklch(0.78_0.19_330)]">1 café grátis</span></div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[9px] uppercase tracking-[0.24em] text-white/40">Membro</div>
-                    <div className="font-display text-sm font-semibold text-white">Ana R.</div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <Wifi className="h-3.5 w-3.5 rotate-90 text-[#00ffff]/70" />
+                      <div className="text-right">
+                        <div className="text-[9px] uppercase tracking-[0.22em] text-white/40">Membro</div>
+                        <div className="font-display text-xs font-semibold text-white">Ana R.</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Sheen */}
-                <div className="pointer-events-none absolute -inset-full rotate-45 bg-gradient-to-tr from-transparent via-white/5 to-transparent transition-transform duration-1000 group-hover:translate-x-1/2" />
+                {/* Cinematic sheen sweep — infinite */}
+                <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[26px]">
+                  <div className="absolute -inset-y-8 -left-1/3 w-1/3 rotate-[18deg] bg-gradient-to-r from-transparent via-white/12 to-transparent animate-[auth-sheen_4.5s_ease-in-out_infinite]" />
+                </div>
+                {/* Top hairline highlight */}
+                <div className="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
               </div>
+              {/* Ground shadow */}
+              <div className="pointer-events-none absolute -bottom-8 left-1/2 h-8 w-4/5 -translate-x-1/2 rounded-[50%] bg-black/60 blur-2xl" />
             </div>
           </div>
 
@@ -175,6 +209,7 @@ function AuthPage() {
             <p className="mt-3 text-white/50">Cartão fidelidade digital, carimbos em tempo real e clientes que voltam sempre.</p>
           </div>
         </div>
+
 
         {/* Form panel */}
         <div className="mx-auto w-full max-w-md">
