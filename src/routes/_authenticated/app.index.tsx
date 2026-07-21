@@ -59,14 +59,18 @@ function Dashboard() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((s) => (
+        {stats.map((s, i) => (
           <Card key={s.label}>
             <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{s.label}</div>
-                <s.icon className={`h-4 w-4 ${s.color}`} />
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{s.label}</div>
+                  <div className="mt-2 metric-number text-3xl">{s.value.toLocaleString("pt-BR")}</div>
+                </div>
+                <span className={`card-icon ${i % 2 === 1 ? "card-icon-accent" : ""}`} aria-hidden>
+                  <s.icon />
+                </span>
               </div>
-              <div className="mt-2 font-display text-3xl font-bold">{s.value.toLocaleString("pt-BR")}</div>
             </CardContent>
           </Card>
         ))}
