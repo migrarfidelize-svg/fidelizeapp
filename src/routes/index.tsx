@@ -790,9 +790,6 @@ function Comparison() {
   );
 }
 
-function PaperHalf({ side }: { side: "left" | "right" }) {
-  const isLeft = side === "left";
-  // Jagged tear edge — irregular fibers on the inner side of each half
 function InkStamp({ filled, rot, smudge }: { filled: boolean; rot: number; smudge?: boolean }) {
   // Realistic hand-inked circular stamp (coffee cup) — heavy on filled, empty ring otherwise
   return (
