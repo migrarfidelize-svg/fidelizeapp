@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { adminListUsers, adminSetUserAccountType } from "@/lib/admin.functions";
+import { adminListUsers, adminSetUserAccountType, adminListOrphanCustomers } from "@/lib/admin.functions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,8 +16,9 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { UsersRound, Search, Shield, Building2, User as UserIcon, Loader2 } from "lucide-react";
+import { UsersRound, Search, Shield, Building2, User as UserIcon, Loader2, UserX } from "lucide-react";
 import { formatPhone } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin/usuarios")({
