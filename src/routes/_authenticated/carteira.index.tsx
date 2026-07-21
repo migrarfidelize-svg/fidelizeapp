@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { getMyWallet } from "@/lib/wallet.functions";
+import { getMyWallet } from "@/lib/my-wallet.functions";
 import { QrCode, ChevronRight, Sparkles } from "lucide-react";
 import { formatDate } from "@/lib/format";
 
