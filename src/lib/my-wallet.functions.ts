@@ -123,6 +123,16 @@ export const claimCustomerByToken = createServerFn({ method: "POST" })
  * `loyalty_card` na primeira campanha ativa quando ainda não existir.
  * Idempotente — pode ser chamado várias vezes sem efeitos colaterais.
  */
+/** Erro estruturado para o cliente exibir mensagens amigáveis. */
+export class AttachEstablishmentError extends Error {
+  code: "not_found" | "inactive";
+  constructor(code: "not_found" | "inactive", message: string) {
+    super(message);
+    this.code = code;
+    this.name = "AttachEstablishmentError";
+  }
+}
+
 export const attachEstablishmentBySlug = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1).max(80) }).parse(d))
@@ -135,7 +145,27 @@ export const attachEstablishmentBySlug = createServerFn({ method: "POST" })
       .eq("slug", data.slug)
       .maybeSingle();
     if (eErr) throw eErr;
-    if (!est || !est.active) throw new Error("Estabelecimento indisponível.");
+    if (!est) {
+      throw new AttachEstablishmentError(
+        "not_found",
+        "Estabelecimento não encontrado. Verifique o QR ou o link.",
+      );
+    }
+    if (!est.active) {
+      // Auditoria: tentativa bloqueada por estabelecimento inativo/suspenso.
+      await supabaseAdmin.from("audit_logs").insert({
+        establishment_id: est.id,
+        user_id: context.userId,
+        action: "wallet.attach_blocked_inactive",
+        entity_type: "establishment",
+        entity_id: est.id,
+        metadata: { slug: est.slug, reason: "inactive_or_suspended" } as never,
+      });
+      throw new AttachEstablishmentError(
+        "inactive",
+        `${est.name} está temporariamente indisponível. Tente novamente mais tarde ou contate o estabelecimento.`,
+      );
+    }
 
     const { data: profile } = await supabaseAdmin
       .from("profiles")
@@ -155,6 +185,7 @@ export const attachEstablishmentBySlug = createServerFn({ method: "POST" })
     // 2) Se não, tenta adotar uma linha órfã com o mesmo telefone (criada
     //    manualmente pelo lojista antes do cliente ter conta).
     let adopted = false;
+    let adoptedCustomerId: string | null = null;
     if (!mine && phoneDigits.length >= 10) {
       const { data: orphan } = await supabaseAdmin
         .from("customers")
@@ -171,6 +202,7 @@ export const attachEstablishmentBySlug = createServerFn({ method: "POST" })
         if (linkErr) throw linkErr;
         mine = { id: orphan.id };
         adopted = true;
+        adoptedCustomerId = orphan.id;
       }
     }
 
@@ -226,11 +258,34 @@ export const attachEstablishmentBySlug = createServerFn({ method: "POST" })
       }
     }
 
+    const status = created ? ("created" as const) : adopted ? ("adopted" as const) : ("existing" as const);
+
+    // Auditoria: vínculo cliente ↔ estabelecimento via QR/link. Não bloqueia
+    // o fluxo em caso de falha do log.
+    try {
+      await supabaseAdmin.from("audit_logs").insert({
+        establishment_id: est.id,
+        user_id: context.userId,
+        action: "wallet.attach_establishment",
+        entity_type: "customer",
+        entity_id: mine.id,
+        metadata: {
+          slug: est.slug,
+          status,
+          via: "qr_or_link",
+          adopted_customer_id: adoptedCustomerId,
+          phone_matched: adopted,
+        } as never,
+      });
+    } catch {
+      /* auditoria best-effort */
+    }
+
     return {
       ok: true as const,
       slug: est.slug,
       name: est.name,
-      status: created ? ("created" as const) : adopted ? ("adopted" as const) : ("existing" as const),
+      status,
     };
   });
 
