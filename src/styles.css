@@ -505,3 +505,8 @@
     transparent);
   border: 0;
 }
+
+@keyframes seg-led-run {
+  0%   { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -1490; }
+}
