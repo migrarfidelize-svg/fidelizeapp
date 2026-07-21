@@ -2089,3 +2089,24 @@ html:not(.dark) .landing-scope .bg-\[\#00ffff\].rotate-45,
 html:not(.dark) .landing-scope .rotate-45.bg-\[\#00ffff\] {
   background: #7c3aed !important;
 }
+
+/* Botão "Girar cartão" em roxo sólido no tema claro */
+html:not(.dark) .landing-scope .landing-flip-btn {
+  background: #7c3aed !important;
+  color: #ffffff !important;
+  border-color: #7c3aed !important;
+  box-shadow: 0 8px 24px -8px rgba(124, 58, 237, 0.55) !important;
+}
+html:not(.dark) .landing-scope .landing-flip-btn:hover {
+  background: #6d28d9 !important;
+}
+
+/* QR code em preto no tema claro */
+html:not(.dark) .landing-scope .landing-qr rect,
+html:not(.dark) .landing-scope .landing-qr g rect {
+  fill: #0a0a0a !important;
+  stroke: #0a0a0a !important;
+}
+html:not(.dark) .landing-scope .landing-qr rect[fill="transparent"] {
+  fill: transparent !important;
+}
