@@ -1,0 +1,1 @@
+GRANT UPDATE (name) ON public.campaigns TO sandbox_exec;
