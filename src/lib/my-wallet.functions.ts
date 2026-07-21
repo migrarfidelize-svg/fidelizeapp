@@ -36,7 +36,7 @@ export const getMyWallet = createServerFn({ method: "GET" })
       .from("loyalty_cards")
       .select(
         `id, customer_id, stamps, cycle, updated_at,
-         campaign:campaigns!inner(id, name, stamps_required, reward, active, icon, color)`,
+         campaign:campaigns!inner(id, name, stamps_required, reward_title, reward_description, active, stamp_icon, primary_color, accent_color)`,
       )
       .in("customer_id", customerIds);
 
@@ -140,7 +140,7 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
       .from("loyalty_cards")
       .select(
         `id, stamps, cycle, updated_at, created_at,
-         campaign:campaigns!inner(id, name, stamps_required, reward, active, icon, color, rules)`,
+         campaign:campaigns!inner(id, name, stamps_required, reward_title, reward_description, active, stamp_icon, primary_color, accent_color, rules)`,
       )
       .eq("customer_id", row.id)
       .order("updated_at", { ascending: false });
