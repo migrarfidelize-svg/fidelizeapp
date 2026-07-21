@@ -6,7 +6,7 @@ import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
 import { HeroStampCard3D } from "@/components/HeroStampCard3D";
 import { SegmentsCarousel } from "@/components/SegmentsCarousel";
-import { CursorTrail } from "@/components/CursorTrail";
+
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ArrowRight, QrCode, Smartphone, ShieldCheck, BarChart3, Sparkles, Coffee, Scissors, Pizza, ShoppingBag, Wrench, IceCream, Store, PawPrint, Check, Cake, Clock, UserPlus, Crown, Gift, MessageCircle, Bell, Mail, Sprout, Zap, Building2, type LucideIcon } from "lucide-react";
