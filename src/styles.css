@@ -710,12 +710,12 @@
 /* ============ Paper × Fidelize tear scene ============ */
 .tear-stage { --p: 0; }
 
-/* Layering: paper starts on top, digital rises above once the rip progresses */
+/* Layering: paper starts on top, digital sits behind and rises via opacity/scale */
 .tear-digital {
-  position: absolute !important;
-  inset: 0 !important;
+  position: absolute;
+  inset: 0;
   isolation: isolate;
-  z-index: calc(1 + var(--p) * 20) !important;
+  z-index: 1;
 }
 .tear-digital::before {
   content: "";
@@ -723,16 +723,18 @@
   inset: 10% 2%;
   z-index: 0;
   border-radius: 2rem;
-  background: radial-gradient(closest-side, rgba(0,255,255,0.22), transparent 74%);
+  background: radial-gradient(closest-side, rgba(0,255,255,0.18), transparent 74%);
   filter: blur(48px);
   pointer-events: none;
+  opacity: calc((var(--p) - 0.3) * 1.8);
 }
 .tear-paper {
-  position: absolute !important;
-  inset: 0 !important;
-  z-index: 2 !important;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
   pointer-events: none;
 }
+
 
 /* Digital card: scales in, overlaps the torn paper with a strong halo */
 .tear-digital > div:first-child {
