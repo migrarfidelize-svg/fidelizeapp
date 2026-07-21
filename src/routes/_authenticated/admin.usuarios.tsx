@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { adminListUsers, adminSetUserAccountType } from "@/lib/admin.functions";
+import { adminListUsers, adminSetUserAccountType, adminListOrphanCustomers } from "@/lib/admin.functions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,8 +16,9 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { UsersRound, Search, Shield, Building2, User as UserIcon, Loader2 } from "lucide-react";
+import { UsersRound, Search, Shield, Building2, User as UserIcon, Loader2, UserX } from "lucide-react";
 import { formatPhone } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin/usuarios")({
@@ -98,6 +99,13 @@ function AdminUsers() {
         </div>
       </div>
 
+      <Tabs defaultValue="accounts">
+        <TabsList>
+          <TabsTrigger value="accounts" className="gap-2"><UsersRound className="h-4 w-4" /> Usuários da plataforma</TabsTrigger>
+          <TabsTrigger value="orphans" className="gap-2"><UserX className="h-4 w-4" /> Clientes sem conta</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="accounts" className="mt-4">
       <Card>
         <CardContent className="p-4 sm:p-6 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto_auto] gap-2">
@@ -209,6 +217,12 @@ function AdminUsers() {
           )}
         </CardContent>
       </Card>
+        </TabsContent>
+
+        <TabsContent value="orphans" className="mt-4">
+          <OrphanCustomers />
+        </TabsContent>
+      </Tabs>
 
       <Dialog open={!!target} onOpenChange={(o) => !o && setTarget(null)}>
         <DialogContent className="sm:max-w-md">
@@ -271,5 +285,111 @@ function AdminUsers() {
         Precisa gerenciar vínculos específicos de uma empresa? Acesse <Link to="/admin/empresas" className="underline">Empresas</Link>.
       </div>
     </div>
+  );
+}
+
+function OrphanCustomers() {
+  const listFn = useServerFn(adminListOrphanCustomers);
+  const [q, setQ] = useState("");
+  const [term, setTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
+
+  const { data, isFetching } = useQuery({
+    queryKey: ["admin-orphan-customers", term, page],
+    queryFn: () => listFn({ data: { query: term, page, page_size: pageSize } }),
+  });
+
+  const rows = data?.customers ?? [];
+  const total = data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  function doSearch() { setPage(1); setTerm(q.trim()); }
+
+  return (
+    <Card>
+      <CardContent className="p-4 sm:p-6 space-y-4">
+        <div className="rounded-lg border border-warning/40 bg-warning/10 p-3 text-xs">
+          Clientes cadastrados por lojistas (via <strong>/carimbar</strong> ou importação CSV) que <strong>ainda não criaram uma conta</strong> na plataforma. Eles só passam a aparecer em "Usuários da plataforma" após escanear o QR code do estabelecimento e concluir o cadastro em <strong>/auth</strong>.
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={q} onChange={(e) => setQ(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && doSearch()}
+              placeholder="Buscar por nome, telefone ou e-mail…" className="pl-9"
+            />
+          </div>
+          <Button onClick={doSearch}>Buscar</Button>
+        </div>
+
+        <div className="rounded-xl border overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Cliente</TableHead>
+                <TableHead className="hidden md:table-cell">Estabelecimento</TableHead>
+                <TableHead className="hidden md:table-cell">Visitas</TableHead>
+                <TableHead className="hidden lg:table-cell">Última visita</TableHead>
+                <TableHead className="hidden lg:table-cell">Cadastrado em</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isFetching && rows.length === 0 && (
+                <TableRow><TableCell colSpan={5} className="text-center py-10 text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> Carregando…
+                </TableCell></TableRow>
+              )}
+              {!isFetching && rows.length === 0 && (
+                <TableRow><TableCell colSpan={5} className="text-center py-10 text-muted-foreground">
+                  Nenhum cliente sem conta encontrado.
+                </TableCell></TableRow>
+              )}
+              {rows.map((c) => (
+                <TableRow key={c.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <div className="grid h-9 w-9 place-items-center rounded-full bg-muted text-muted-foreground text-xs font-semibold shrink-0">
+                        {initialsOf(c.name, c.email ?? "")}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-medium truncate">{c.name ?? "Sem nome"}</div>
+                        <div className="text-xs text-muted-foreground truncate">
+                          {c.phone ? formatPhone(c.phone) : "—"}{c.email ? ` · ${c.email}` : ""}
+                        </div>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell text-sm">
+                    {c.establishment_name ? (
+                      <Link to="/admin/empresa/$id" params={{ id: c.establishment_id }} className="underline hover:text-primary">
+                        {c.establishment_name}
+                      </Link>
+                    ) : <span className="text-muted-foreground">—</span>}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell text-sm">{c.visits_count}</TableCell>
+                  <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">
+                    {c.last_visit_at ? new Date(c.last_visit_at).toLocaleDateString("pt-BR") : "—"}
+                  </TableCell>
+                  <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">
+                    {new Date(c.created_at).toLocaleDateString("pt-BR")}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between gap-2 pt-2">
+            <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1 || isFetching}>Anterior</Button>
+            <div className="text-xs text-muted-foreground">Página {page} de {totalPages} · {total} cliente(s)</div>
+            <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages || isFetching}>Próxima</Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
