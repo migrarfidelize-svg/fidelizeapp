@@ -49,6 +49,7 @@ function Carimbar() {
   const undoFn = useServerFn(undoLastStamp);
   const getCard = useServerFn(getCardByToken);
   const redeem = useServerFn(redeemReward);
+  const consumeRedeem = useServerFn(consumeRedeemToken);
 
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
   const est = memberships?.[0]?.establishment as { id: string; name: string } | undefined;
@@ -123,7 +124,24 @@ function Carimbar() {
 
   async function onQrDetected(text: string) {
     if (scanBusy || confirmOpen) return;
-    const token = extractToken(text);
+    const raw = text.trim();
+
+    // QR de resgate temporário emitido pela /carteira do cliente.
+    if (raw.startsWith("RDM1.")) {
+      setScanBusy(true);
+      setScanError("");
+      try {
+        const r = await consumeRedeem({ data: { token: raw } });
+        toast.success(`🎁 ${r.reward} entregue${r.customerName ? ` para ${r.customerName}` : ""}!`);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Não foi possível resgatar.";
+        setScanError(msg);
+        toast.error(msg);
+      } finally { setScanBusy(false); }
+      return;
+    }
+
+    const token = extractToken(raw);
     if (!token) { setScanError("QR Code inválido. Peça o cartão fidelidade do cliente."); return; }
     setScanBusy(true);
     try { await loadByToken(token, { openDialog: true }); }
