@@ -641,7 +641,7 @@
 
 /* Digital card: scales in as tear progresses */
 .tear-digital > div:first-child {
-  opacity: calc((var(--p) - 0.15) * 2.2);
+  opacity: calc((var(--p) - 0.35) * 2.5);
   transform: scale(calc(0.86 + var(--p) * 0.18));
   transition: none;
   filter: drop-shadow(0 0 calc(var(--p) * 40px) rgba(0,255,255,0.35));
@@ -654,18 +654,18 @@
 }
 .tear-half-left {
   transform:
-    translateX(calc(var(--p) * -55%))
-    translateY(calc(var(--p) * 30px))
-    rotate(calc(var(--p) * -14deg));
-  opacity: calc(1 - var(--p) * 0.85);
+    translateX(calc(var(--p) * -60%))
+    translateY(calc(var(--p) * 40px))
+    rotate(calc(var(--p) * -18deg));
+  opacity: calc(1 - var(--p) * 0.95);
   filter: blur(calc(var(--p) * 2px));
 }
 .tear-half-right {
   transform:
-    translateX(calc(var(--p) * 55%))
-    translateY(calc(var(--p) * 40px))
-    rotate(calc(var(--p) * 16deg));
-  opacity: calc(1 - var(--p) * 0.85);
+    translateX(calc(var(--p) * 60%))
+    translateY(calc(var(--p) * 50px))
+    rotate(calc(var(--p) * 20deg));
+  opacity: calc(1 - var(--p) * 0.95);
   filter: blur(calc(var(--p) * 2px));
 }
 
@@ -685,7 +685,7 @@
 
 /* Win badges fly in around the digital card */
 .tear-win {
-  opacity: calc((var(--p) - 0.35) * 2.5);
+  opacity: calc((var(--p) - 0.6) * 2.5);
   transition: none;
   white-space: nowrap;
 }
@@ -696,7 +696,7 @@
 
 /* CTA reveal at the very end of the scroll */
 .tear-cta {
-  opacity: calc((var(--p) - 0.7) * 3.3);
+  opacity: calc((var(--p) - 0.85) * 6.6);
   transform: translateY(calc((1 - var(--p)) * 24px));
   transition: none;
 }
