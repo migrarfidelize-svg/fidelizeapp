@@ -1957,6 +1957,48 @@ html:not(.dark) .landing-scope .tear-half {
     inset 0 1px 0 rgba(255,255,255,0.9) !important;
 }
 
+/* Cartão DIGITAL (tear) no tema claro:
+   O container tem shadow inline com rgba(0,255,255,...) e por isso caia no
+   hue-rotate global, que virava LARANJA (dupla rotação sobre filhos já
+   remapeados para roxo). Anulamos o filter e aplicamos halo roxo direto. */
+html:not(.dark) .landing-scope .tear-digital > div:first-child,
+html:not(.dark) .landing-scope .tear-digital > div:first-child * {
+  filter: none !important;
+}
+html:not(.dark) .landing-scope .tear-digital > div:first-child {
+  box-shadow:
+    0 40px 120px -20px rgba(124,58,237,0.45),
+    0 20px 60px -10px rgba(0,0,0,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.9) !important;
+  border-color: rgba(124,58,237,0.35) !important;
+}
+html:not(.dark) .landing-scope .tear-digital [class*="border-cyan-"] {
+  border-color: rgba(124,58,237,0.55) !important;
+  background-color: rgba(124,58,237,0.14) !important;
+  box-shadow: 0 0 18px rgba(124,58,237,0.35) !important;
+}
+html:not(.dark) .landing-scope .tear-digital svg { color: #7c3aed !important; }
+
+/* Wins flutuantes: contraste real no branco */
+html:not(.dark) .landing-scope .tear-win {
+  color: #1a1030 !important;
+  background: #ffffff !important;
+  border-color: rgba(124,58,237,0.45) !important;
+  box-shadow: 0 10px 24px -10px rgba(124,58,237,0.45) !important;
+}
+html:not(.dark) .landing-scope .tear-win svg { color: #7c3aed !important; }
+
+/* CTA final do bloco: pulso roxo em vez de cyan */
+html:not(.dark) .landing-scope .tear-cta-btn {
+  background: #7c3aed !important;
+  color: #ffffff !important;
+  animation: tear-cta-pulse-purple 2.4s ease-in-out infinite !important;
+}
+@keyframes tear-cta-pulse-purple {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(124,58,237,0.5), 0 20px 60px -20px rgba(124,58,237,0.55); }
+  50% { box-shadow: 0 0 0 14px rgba(124,58,237,0), 0 20px 60px -20px rgba(124,58,237,0.85); }
+}
+
 /* Templates "Campanhas que funcionam" — fundo escuro → branco transparente + roxo */
 html:not(.dark) .landing-scope section.bg-\[oklch\(0\.14_0\.02_230\)\] {
   background: var(--background) !important;
