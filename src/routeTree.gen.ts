@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as PreviewDockRouteImport } from './routes/preview-dock'
 import { Route as PrecosRouteImport } from './routes/precos'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -87,6 +88,11 @@ const TermosRoute = TermosRouteImport.update({
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
   id: '/privacidade',
   path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PreviewDockRoute = PreviewDockRouteImport.update({
+  id: '/preview-dock',
+  path: '/preview-dock',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrecosRoute = PrecosRouteImport.update({
@@ -463,6 +469,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/precos': typeof PrecosRoute
+  '/preview-dock': typeof PreviewDockRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
@@ -533,6 +540,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/precos': typeof PrecosRoute
+  '/preview-dock': typeof PreviewDockRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
   '/lgpd': typeof AuthenticatedLgpdRoute
@@ -603,6 +611,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/precos': typeof PrecosRoute
+  '/preview-dock': typeof PreviewDockRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
@@ -675,6 +684,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/onboarding'
     | '/precos'
+    | '/preview-dock'
     | '/privacidade'
     | '/termos'
     | '/admin'
@@ -745,6 +755,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/onboarding'
     | '/precos'
+    | '/preview-dock'
     | '/privacidade'
     | '/termos'
     | '/lgpd'
@@ -814,6 +825,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/onboarding'
     | '/precos'
+    | '/preview-dock'
     | '/privacidade'
     | '/termos'
     | '/_authenticated/admin'
@@ -886,6 +898,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
   PrecosRoute: typeof PrecosRoute
+  PreviewDockRoute: typeof PreviewDockRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   TermosRoute: typeof TermosRoute
   AvaliacoesSlugRoute: typeof AvaliacoesSlugRoute
@@ -926,6 +939,13 @@ declare module '@tanstack/react-router' {
       path: '/privacidade'
       fullPath: '/privacidade'
       preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/preview-dock': {
+      id: '/preview-dock'
+      path: '/preview-dock'
+      fullPath: '/preview-dock'
+      preLoaderRoute: typeof PreviewDockRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/precos': {
@@ -1521,6 +1541,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
   PrecosRoute: PrecosRoute,
+  PreviewDockRoute: PreviewDockRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   TermosRoute: TermosRoute,
   AvaliacoesSlugRoute: AvaliacoesSlugRoute,
