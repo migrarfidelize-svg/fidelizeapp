@@ -104,8 +104,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
-// Tema dark premium (cyan) travado — força modo escuro em toda a aplicação.
-const THEME_INIT_SCRIPT = `(function(){try{var r=document.documentElement;r.classList.add('dark');r.style.colorScheme='dark';try{localStorage.setItem('theme','dark');}catch(_){}}catch(e){}})();`;
+// Tema — respeita preferência salva, padrão dark (identidade Cyan Circuit).
+const THEME_INIT_SCRIPT = `(function(){try{var s=null;try{s=localStorage.getItem('theme');}catch(_){}var t=(s==='light'||s==='dark')?s:'dark';var r=document.documentElement;r.classList.toggle('dark',t==='dark');r.style.colorScheme=t;}catch(e){}})();`;
+
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
