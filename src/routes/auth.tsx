@@ -149,7 +149,8 @@ function AuthPage() {
           navigate({ to: "/onboarding" });
         } else {
           const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
-          toast.success(dest.toast ?? "Conta criada!");
+          if (dest.toastKind === "error") toast.error(dest.toast ?? "Não foi possível vincular seu cartão.");
+          else toast.success(dest.toast ?? "Conta criada!");
           navigate({ to: dest.to });
         }
       } else {
