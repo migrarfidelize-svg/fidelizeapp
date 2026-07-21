@@ -91,7 +91,7 @@ export function SegmentsCarousel() {
                   opacity: isActive ? 1 : 0,
                   transition: "opacity 500ms ease",
                   background:
-                    "radial-gradient(closest-side, color-mix(in oklab, hsl(var(--primary)) 28%, transparent), transparent 72%)",
+                    "radial-gradient(closest-side, color-mix(in oklab, var(--primary) 28%, transparent), transparent 72%)",
                 }}
               />
               {/* glass frame with strong cyan border */}
@@ -101,11 +101,11 @@ export function SegmentsCarousel() {
                 style={{
                   opacity: isActive ? 1 : 0,
                   transition: "opacity 500ms ease",
-                  border: "2px solid hsl(var(--primary))",
+                  border: "2px solid var(--primary)",
                   boxShadow:
-                    "inset 0 0 0 1px color-mix(in oklab, hsl(var(--primary)) 35%, transparent), inset 0 0 40px color-mix(in oklab, hsl(var(--primary)) 15%, transparent), 0 30px 80px -20px color-mix(in oklab, hsl(var(--primary)) 70%, transparent), 0 0 120px -10px color-mix(in oklab, hsl(var(--primary)) 55%, transparent)",
+                    "inset 0 0 0 1px color-mix(in oklab, var(--primary) 35%, transparent), inset 0 0 40px color-mix(in oklab, var(--primary) 15%, transparent), 0 30px 80px -20px color-mix(in oklab, var(--primary) 70%, transparent), 0 0 120px -10px color-mix(in oklab, var(--primary) 55%, transparent)",
                   background:
-                    "linear-gradient(180deg, color-mix(in oklab, hsl(var(--card)) 75%, transparent), color-mix(in oklab, hsl(var(--background)) 45%, transparent))",
+                    "linear-gradient(180deg, color-mix(in oklab, var(--card) 75%, transparent), color-mix(in oklab, var(--background) 45%, transparent))",
                   backdropFilter: "blur(6px)",
                 }}
               />
@@ -118,7 +118,7 @@ export function SegmentsCarousel() {
                   transition: "opacity 500ms ease",
                   padding: 2,
                   background:
-                    "conic-gradient(from 0deg, transparent 0deg, hsl(var(--primary)) 90deg, transparent 200deg, hsl(var(--primary)) 300deg, transparent 360deg)",
+                    "conic-gradient(from 0deg, transparent 0deg, var(--primary) 90deg, transparent 200deg, var(--primary) 300deg, transparent 360deg)",
                   WebkitMask:
                     "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
                   WebkitMaskComposite: "xor",
@@ -145,7 +145,7 @@ export function SegmentsCarousel() {
                 style={{
                   animation: isActive ? "seg-float 3.5s ease-in-out infinite" : undefined,
                   filter: isActive
-                    ? "drop-shadow(0 18px 30px color-mix(in oklab, hsl(var(--primary)) 45%, transparent))"
+                    ? "drop-shadow(0 18px 30px color-mix(in oklab, var(--primary) 45%, transparent))"
                     : undefined,
                 }}
               />
@@ -175,7 +175,7 @@ export function SegmentsCarousel() {
             className="h-1.5 rounded-full transition-all"
             style={{
               width: i === active ? 22 : 6,
-              background: i === active ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.35)",
+              background: i === active ? "var(--primary)" : "color-mix(in oklab, var(--muted-foreground) 35%, transparent)",
             }}
           />
         ))}
