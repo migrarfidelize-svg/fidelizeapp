@@ -376,7 +376,7 @@ function AppLayout() {
         >
           <Link
             to="/app"
-            className="dock-logo relative mb-1 grid h-12 w-12 place-items-center rounded-2xl bg-[#0e1620]"
+            className="dock-logo relative mb-1 grid h-12 w-12 place-items-center rounded-full bg-[#0e1620]"
             aria-label="Fidelize"
           >
             <span aria-hidden className="dock-logo-led" />
