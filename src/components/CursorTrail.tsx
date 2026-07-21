@@ -89,21 +89,17 @@ export function CursorTrail() {
 
     const onMove = (e: PointerEvent) => {
       const r = parent.getBoundingClientRect();
-      const x = e.clientX - r.left;
-      const y = e.clientY - r.top;
-      if (x < 0 || y < 0 || x > r.width || y > r.height) {
-        visible = false;
-        return;
-      }
-      target.x = x;
-      target.y = y;
+      // Track globally — even outside the hero — so the ribbons keep
+      // flowing toward the cursor and appear to pass *underneath* the
+      // menu and next sections (the hero clips overflow).
+      target.x = e.clientX - r.left;
+      target.y = e.clientY - r.top;
       visible = true;
       lastMove = performance.now();
     };
-    const onLeave = () => { visible = false; };
+    const onBlur = () => { visible = false; };
     window.addEventListener("pointermove", onMove, { passive: true });
-    parent.addEventListener("pointerleave", onLeave);
-    window.addEventListener("blur", onLeave);
+    window.addEventListener("blur", onBlur);
 
     let raf = 0;
     let t0 = performance.now();
@@ -178,8 +174,7 @@ export function CursorTrail() {
       window.removeEventListener("resize", resize);
       ro.disconnect();
       window.removeEventListener("pointermove", onMove);
-      parent.removeEventListener("pointerleave", onLeave);
-      window.removeEventListener("blur", onLeave);
+      window.removeEventListener("blur", onBlur);
     };
   }, []);
 
