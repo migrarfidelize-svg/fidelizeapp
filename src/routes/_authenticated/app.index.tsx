@@ -7,6 +7,7 @@ import {
   Users, Stamp, Gift, ArrowRight, Sparkles,
   ArrowUpRight, ArrowDownRight, Minus, Zap, Crown,
   QrCode, TrendingUp, Trophy, Clock, LayoutDashboard,
+  Activity, Percent, Gauge,
 } from "lucide-react";
 import {
   XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid, Area, AreaChart,
@@ -44,15 +45,26 @@ function Dashboard() {
     return <LoadingSkeleton variant="page" />;
   }
 
-  const stats = [
-    { label: "Clientes", value: data.customersCount, icon: Users, accent: false },
-    { label: "Carimbos", value: data.stampsCount, icon: Stamp, accent: true },
-    { label: "Recompensas", value: data.rewardsCount, icon: Gift, accent: false },
-    { label: "Resgatadas", value: data.redeemedCount, icon: Crown, accent: true },
-  ];
-
   const last7 = data.series.slice(-7);
   const last7Total = last7.reduce((a, d) => a + (d.carimbos || 0), 0);
+  const today = data.series[data.series.length - 1]?.carimbos ?? 0;
+  const avgPerCustomer = data.customersCount > 0
+    ? (data.stampsCount / data.customersCount)
+    : 0;
+  const conversionPct = data.rewardsCount > 0
+    ? Math.round((data.redeemedCount / data.rewardsCount) * 100)
+    : 0;
+  const monthStampsCurrent = data.mom.stamps.current;
+  const daysElapsed = Math.max(1, now.getDate());
+  const dailyPace = monthStampsCurrent / daysElapsed;
+
+  const stats = [
+    { label: "Carimbos hoje", value: today.toLocaleString("pt-BR"), hint: "atualiza a cada 30s", icon: Activity, accent: true },
+    { label: "Média por cliente", value: avgPerCustomer.toFixed(1), hint: "carimbos por cliente ativo", icon: TrendingUp, accent: false },
+    { label: "Conversão recompensas", value: `${conversionPct}%`, hint: `${data.redeemedCount}/${data.rewardsCount} resgatadas`, icon: Percent, accent: true },
+    { label: "Ritmo diário do mês", value: dailyPace.toFixed(1), hint: `média em ${daysElapsed} dias`, icon: Gauge, accent: false },
+  ];
+
   const dayLabel = now.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" });
   const timeLabel = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
@@ -99,7 +111,8 @@ function Dashboard() {
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{s.label}</div>
-                <div className="mt-2 metric-solid text-3xl sm:text-4xl">{s.value.toLocaleString("pt-BR")}</div>
+                <div className="mt-2 metric-solid text-3xl sm:text-4xl">{s.value}</div>
+                {s.hint && <div className="mt-1 text-[11px] text-muted-foreground truncate">{s.hint}</div>}
               </div>
               <span className={`card-icon ${s.accent ? "card-icon-accent" : ""}`} aria-hidden>
                 <s.icon />
