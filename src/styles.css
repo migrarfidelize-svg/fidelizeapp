@@ -2267,3 +2267,27 @@ html:not(.dark) .landing-scope svg [stroke="url(#orbIconGrad)"] {
    stacked sections/blocks that used space-y-24+ or my-24+. */
 main .space-y-24 > * + * { margin-top: 4rem !important; }
 main .space-y-32 > * + * { margin-top: 4.5rem !important; }
+
+/* ============================================================
+   HERO 3D CARD — tema claro: cyan → roxo (predominante)
+   Aplica hue-rotate ~90° para converter #00ffff (cyan) em roxo,
+   sem tocar no tema escuro.
+   ============================================================ */
+html:not(.dark) .landing-scope .hero-3d-card {
+  filter: hue-rotate(90deg) saturate(1.1);
+}
+/* Contra-rotaciona conteúdos que já são neutros (branco/preto) — não precisa,
+   hue-rotate não afeta grayscale. Mas o texto branco vira levemente esverdeado
+   apenas em cores saturadas; brancos puros ficam intactos. */
+
+/* Ajuste fino: garante que o botão "Girar cartão" continue roxo sólido
+   mesmo após o hue-rotate (o botão já tem override anterior baseado em
+   .landing-flip-btn — reforçamos aqui com !important). */
+html:not(.dark) .landing-scope .hero-3d-card .landing-flip-btn {
+  filter: hue-rotate(-90deg) !important;
+}
+/* Sombra projetada / halo ambient (blobs cyan em rgba) — vira roxo */
+html:not(.dark) .landing-scope .hero-3d-card [style*="#00ffff33"],
+html:not(.dark) .landing-scope .hero-3d-card [style*="#00ffff22"] {
+  /* já cobertos pelo hue-rotate global do card; nada extra necessário */
+}

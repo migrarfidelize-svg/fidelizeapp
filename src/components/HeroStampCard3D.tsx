@@ -77,7 +77,7 @@ export function HeroStampCard3D() {
   };
 
   return (
-    <div className="relative w-full max-w-md select-none">
+    <div className="hero-3d-card relative w-full max-w-md select-none">
       {/* Sombra projetada / pedestal */}
       <div
         aria-hidden
