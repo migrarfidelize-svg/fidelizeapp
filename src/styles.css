@@ -2012,9 +2012,11 @@ html:not(.dark) .landing-scope .tear-digital > div:first-child,
 html:not(.dark) .landing-scope .tear-digital > div:first-child * {
   filter: none !important;
 }
+html:not(.dark) .landing-scope .tear-digital::before {
+  background: radial-gradient(closest-side, rgba(124,58,237,0.24), transparent 74%) !important;
+}
 html:not(.dark) .landing-scope .tear-digital > div:first-child {
   box-shadow:
-    0 40px 120px -20px rgba(124,58,237,0.45),
     0 20px 60px -10px rgba(0,0,0,0.18),
     inset 0 1px 0 rgba(255,255,255,0.9) !important;
   border-color: rgba(124,58,237,0.35) !important;
@@ -2041,9 +2043,12 @@ html:not(.dark) .landing-scope .tear-cta-btn {
   color: #ffffff !important;
   animation: tear-cta-pulse-purple 2.8s ease-in-out infinite !important;
 }
+html:not(.dark) .landing-scope .tear-cta-btn::before {
+  background: rgba(124,58,237,0.22) !important;
+}
 @keyframes tear-cta-pulse-purple {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(124,58,237,0.28), 0 12px 34px -18px rgba(124,58,237,0.45); }
-  50%      { box-shadow: 0 0 0 6px rgba(124,58,237,0),    0 14px 40px -18px rgba(124,58,237,0.55); }
+  0%, 100% { box-shadow: 0 12px 34px -18px rgba(124,58,237,0.45); }
+  50%      { box-shadow: 0 14px 40px -18px rgba(124,58,237,0.55); }
 }
 
 /* Templates "Campanhas que funcionam" — fundo escuro → branco transparente + roxo */
