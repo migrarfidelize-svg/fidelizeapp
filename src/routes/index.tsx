@@ -750,15 +750,20 @@ function Comparison() {
 
               {/* Paper card on top — splits in two halves */}
               <div className="tear-paper absolute inset-0 grid place-items-center">
-                <div className="relative w-[86%] max-w-[520px]" style={{ height: 300 }}>
-                  {/* Pains floating out */}
+                <div className="relative w-[86%] max-w-[560px]" style={{ height: 340 }}>
+                  {/* Pains — margin notes in black ink, off-card */}
                   {pains.map((p, i) => (
                     <span
                       key={p}
-                      className="tear-pain absolute z-20 rounded-md border border-red-400/40 bg-red-500/10 px-2.5 py-1 text-[11px] font-semibold text-red-200"
-                      style={{ ["--i" as never]: i } as never}
+                      className="tear-pain absolute z-20 whitespace-nowrap text-[13px] font-semibold text-white/85"
+                      style={{
+                        ["--i" as never]: i,
+                        fontFamily: "'Caveat', 'Segoe Script', cursive",
+                        textShadow: "0 1px 8px rgba(0,0,0,0.6)",
+                      } as never}
                     >
-                      × {p}
+                      <span className="mr-1 text-red-400">✗</span>
+                      <span className="line-through decoration-red-400/80 decoration-2">{p}</span>
                     </span>
                   ))}
                   <PaperHalf side="left" />
