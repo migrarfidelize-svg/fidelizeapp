@@ -59,12 +59,19 @@ export function GuidedTour({
   useEffect(() => {
     if (typeof window === "undefined") return;
     const done = window.localStorage.getItem(storageKey);
+    let cleanup: (() => void) | undefined;
     if (!done) {
-      // Wait a moment for the layout to settle
       const t = window.setTimeout(() => setOpen(true), 500);
-      return () => window.clearTimeout(t);
+      cleanup = () => window.clearTimeout(t);
     }
+    const onStart = () => { setI(0); setOpen(true); };
+    window.addEventListener("fidelize:start-tour", onStart);
+    return () => {
+      cleanup?.();
+      window.removeEventListener("fidelize:start-tour", onStart);
+    };
   }, [storageKey]);
+
 
   const step = steps[i];
   const rect = useTargetRect(step?.target ?? "");
