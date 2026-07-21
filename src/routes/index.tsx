@@ -1010,7 +1010,7 @@ function Examples() {
             <Sparkles className="h-3 w-3" /> Templates prontos
           </span>
           <h2 className="mt-4 font-display text-3xl font-bold text-white md:text-4xl">
-            Campanhas <span style={{ background: "linear-gradient(90deg, #00ffff, #ff2bd6)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>que funcionam</span>
+            Campanhas <span style={{ color: "#00ffff" }}>que funcionam</span>
           </h2>
           <p className="mt-3 text-sm text-white/60">5 templates prontos. Ative em 1 clique.</p>
         </div>
