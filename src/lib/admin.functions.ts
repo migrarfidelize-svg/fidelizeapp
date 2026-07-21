@@ -501,3 +501,78 @@ export const adminGetFinancial = createServerFn({ method: "GET" })
       revenue30, revenue12m,
     };
   });
+
+// ============ Admin: Payments listing (pagination, search, sort) ============
+export const adminListPayments = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    q: z.string().trim().max(120).optional(),
+    status: z.string().max(40).optional(),
+    provider: z.string().max(40).optional(),
+    method: z.string().max(40).optional(),
+    from: z.string().optional(),
+    to: z.string().optional(),
+    sort: z.enum(["created_at", "amount", "status", "approved_at"]).default("created_at"),
+    dir: z.enum(["asc", "desc"]).default("desc"),
+    page: z.number().int().min(1).default(1),
+    page_size: z.number().int().min(1).max(100).default(25),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertSuperAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    let q = supabaseAdmin.from("payments")
+      .select("id, establishment_id, plan_slug, amount, currency, method, status, status_detail, provider, mp_payment_id, provider_payment_id, payer_email, payer_doc, card_last4, card_brand, installments, created_at, approved_at", { count: "exact" });
+    if (data.status && data.status !== "all") q = q.eq("status", data.status);
+    if (data.provider && data.provider !== "all") q = q.eq("provider", data.provider);
+    if (data.method && data.method !== "all") q = q.eq("method", data.method);
+    if (data.from) q = q.gte("created_at", data.from);
+    if (data.to) q = q.lte("created_at", data.to);
+    if (data.q) {
+      const term = data.q.replace(/[%,()]/g, " ").trim();
+      q = q.or([
+        `payer_email.ilike.%${term}%`,
+        `payer_doc.ilike.%${term}%`,
+        `mp_payment_id.ilike.%${term}%`,
+        `provider_payment_id.ilike.%${term}%`,
+        `plan_slug.ilike.%${term}%`,
+      ].join(","));
+    }
+    q = q.order(data.sort, { ascending: data.dir === "asc", nullsFirst: false });
+    const fromIdx = (data.page - 1) * data.page_size;
+    const toIdx = fromIdx + data.page_size - 1;
+    const { data: rows, count, error } = await q.range(fromIdx, toIdx);
+    if (error) throw new Error(error.message);
+    const estIds = Array.from(new Set((rows ?? []).map((r: any) => r.establishment_id).filter(Boolean)));
+    let ests: Record<string, { id: string; name: string; slug: string }> = {};
+    if (estIds.length) {
+      const { data: er } = await supabaseAdmin.from("establishments").select("id, name, slug").in("id", estIds);
+      (er ?? []).forEach((e: any) => { ests[e.id] = e; });
+    }
+    return { rows: rows ?? [], total: count ?? 0, page: data.page, page_size: data.page_size, establishments: ests };
+  });
+
+export const adminGetPayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertSuperAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: pay, error } = await supabaseAdmin.from("payments").select("*").eq("id", data.id).maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!pay) throw new Error("Pagamento não encontrado");
+    const { data: est } = pay.establishment_id
+      ? await supabaseAdmin.from("establishments").select("id, name, slug, plan").eq("id", pay.establishment_id).maybeSingle()
+      : { data: null };
+    const { data: sub } = pay.subscription_id
+      ? await supabaseAdmin.from("subscriptions").select("id, status, plan_slug, current_period_start, current_period_end").eq("id", pay.subscription_id).maybeSingle()
+      : { data: null };
+    const mpKey = pay.mp_payment_id ?? pay.provider_payment_id ?? null;
+    const { data: logs } = mpKey
+      ? await supabaseAdmin.from("payment_logs")
+          .select("id, created_at, event_type, action, mp_id, response_status, signature_valid, processed, reason, error, mode, live_mode, provider")
+          .eq("mp_id", String(mpKey)).order("created_at", { ascending: false }).limit(50)
+      : { data: [] as any[] };
+    return { payment: pay, establishment: est, subscription: sub, logs: logs ?? [] };
+  });
