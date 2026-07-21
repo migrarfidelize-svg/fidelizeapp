@@ -1199,18 +1199,24 @@ function Pricing() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => setActiveIdx(i)}
+                    onClick={() => selectPlan(i)}
                     aria-pressed={isActive}
                     aria-label={p.name}
-                    className={`flex flex-col items-center justify-center gap-1 rounded-2xl border transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+                    className={`relative flex flex-col items-center justify-center gap-1 rounded-2xl border transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
                       isActive
                         ? "h-16 w-16 -translate-y-2 border-primary/40 bg-primary/10 text-primary shadow-[0_0_24px_rgba(0,255,255,0.25)]"
                         : "h-14 w-14 border-white/10 bg-white/5 text-muted-foreground hover:-translate-y-3 hover:scale-110 hover:border-white/25 hover:bg-white/10 hover:text-foreground"
                     }`}
                   >
-                    <Icon className={isActive ? "h-7 w-7" : "h-6 w-6"} />
+                    <Icon className={isActive ? "h-7 w-7 transition-transform duration-300" : "h-6 w-6 transition-transform duration-300"} />
                     {isActive && (
-                      <span className="absolute -bottom-1.5 h-1 w-1 rounded-full bg-primary shadow-[0_0_8px_#00ffff]" />
+                      <>
+                        <span className="absolute -bottom-1.5 h-1 w-1 rounded-full bg-primary shadow-[0_0_8px_#00ffff]" />
+                        <span
+                          key={shockKey}
+                          className="dock-shock pointer-events-none absolute left-1/2 top-1/2 h-full w-full rounded-2xl border border-primary/60"
+                        />
+                      </>
                     )}
                   </button>
                 </div>
