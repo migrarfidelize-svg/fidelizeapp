@@ -91,7 +91,9 @@ function WalletEstablishment() {
         </div>
       )}
 
-      {card ? (
+      {card && !campaignActive ? (
+        <ExpiredCardState establishmentName={est.name} />
+      ) : card ? (
         <LoyaltyVoucher
           brandName={est.name}
           logoUrl={est.logo_url}
@@ -112,6 +114,7 @@ function WalletEstablishment() {
           Você ainda não possui carimbos aqui. Mostre seu QR Code no próximo atendimento.
         </div>
       )}
+
 
       {card && (card.campaign as { rules: string | null }).rules && (
         <section className="rounded-2xl border border-border/60 bg-card/40 p-4">
