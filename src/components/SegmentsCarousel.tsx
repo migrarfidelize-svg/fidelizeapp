@@ -296,14 +296,14 @@ function Constellation({
 
       {/* Central hub — Fidelize mark */}
       <div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+        className="pointer-events-none absolute left-1/2 top-1/2"
         style={{
           transform: `translate(-50%, -50%) scale(${visible ? 1 : 0.85})`,
           opacity: visible ? 1 : 0,
           transition: "all 700ms cubic-bezier(.2,.85,.2,1)",
         }}
       >
-        <div className="relative flex h-40 w-40 items-center justify-center">
+        <div className="relative flex h-44 w-44 items-center justify-center">
           <span
             aria-hidden
             className="absolute inset-0 rounded-full"
@@ -325,19 +325,14 @@ function Constellation({
                 "inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -25px 40px -10px rgba(0,255,255,0.25)",
             }}
           />
-          <div className="relative z-10 flex flex-col items-center gap-1">
+          <div className="relative z-10 flex w-full flex-col items-center justify-center gap-1 px-3 text-center">
             <div
-              className="font-display text-xl font-black tracking-tight"
-              style={{
-                background:
-                  "linear-gradient(135deg, #7dfcff 0%, var(--primary) 50%, var(--accent) 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
+              className="font-display text-lg font-black leading-none tracking-tight"
+              style={{ color: "var(--primary)" }}
             >
               Fidelize
             </div>
-            <div className="max-w-[110px] text-center text-[10px] font-semibold uppercase tracking-widest text-cyan-300/80">
+            <div className="text-[10px] font-semibold uppercase leading-tight tracking-widest text-cyan-300/80">
               {focusedItem.label}
             </div>
             <span
