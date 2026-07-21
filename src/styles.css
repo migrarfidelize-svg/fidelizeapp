@@ -2009,19 +2009,13 @@ html:not(.dark) .landing-scope .tear-win {
 }
 html:not(.dark) .landing-scope .tear-win svg { color: #7c3aed !important; }
 
-/* CTA final do bloco: pulso roxo em vez de cyan */
+/* CTA final do bloco: roxo estático no tema claro */
 html:not(.dark) .landing-scope .tear-cta-btn {
   background: #7c3aed !important;
   color: #ffffff !important;
-  animation: tear-cta-pulse-purple 2.8s ease-in-out infinite !important;
+  box-shadow: 0 12px 34px -18px rgba(124,58,237,0.55) !important;
 }
-html:not(.dark) .landing-scope .tear-cta-btn::before {
-  background: rgba(124,58,237,0.22) !important;
-}
-@keyframes tear-cta-pulse-purple {
-  0%, 100% { box-shadow: 0 12px 34px -18px rgba(124,58,237,0.45); }
-  50%      { box-shadow: 0 14px 40px -18px rgba(124,58,237,0.55); }
-}
+
 
 /* Templates "Campanhas que funcionam" — fundo escuro → branco transparente + roxo */
 html:not(.dark) .landing-scope section.bg-\[oklch\(0\.14_0\.02_230\)\] {
