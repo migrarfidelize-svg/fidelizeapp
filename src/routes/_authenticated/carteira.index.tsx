@@ -87,7 +87,7 @@ function EmptyWallet() {
   );
 }
 
-type WalletItem = ReturnType<typeof useSuspenseQuery<typeof walletOpts>>["data"][number];
+type WalletItem = Awaited<ReturnType<typeof getMyWallet>>[number];
 
 function WalletCard({ item }: { item: WalletItem }) {
   const est = item.establishment as { slug: string; name: string; logo_url: string | null; primary_color: string; active: boolean };
@@ -96,7 +96,7 @@ function WalletCard({ item }: { item: WalletItem }) {
   const stamps = card?.stamps ?? 0;
   const pct = Math.min(100, Math.round((stamps / req) * 100));
   const missing = Math.max(0, req - stamps);
-  const reward = card ? (card.campaign as { reward: string }).reward : null;
+  const reward = card ? (card.campaign as { reward_title: string }).reward_title : null;
 
   return (
     <Link
