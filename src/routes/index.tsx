@@ -673,14 +673,14 @@ function Comparison() {
       <div ref={wrapRef} className="relative h-[220vh] pb-[25vh]">
         <div
           ref={stageRef}
-          className="tear-stage sticky top-0 flex h-screen items-center overflow-hidden"
+          className="tear-stage sticky top-0 isolate flex h-screen items-center overflow-hidden"
           style={{ ["--p" as never]: 0 }}
         >
           {/* Ambient glows */}
-          <div aria-hidden className="pointer-events-none absolute -left-40 top-1/3 h-96 w-96 rounded-full bg-cyan-500/[0.06] blur-[120px]" />
-          <div aria-hidden className="pointer-events-none absolute -right-40 bottom-1/4 h-96 w-96 rounded-full blur-[120px]" style={{ background: "rgba(255,43,214,0.05)" }} />
+          <div aria-hidden className="pointer-events-none absolute -left-40 top-1/3 z-0 h-96 w-96 rounded-full bg-cyan-500/[0.06] blur-[120px]" />
+          <div aria-hidden className="pointer-events-none absolute -right-40 bottom-1/4 z-0 h-96 w-96 rounded-full blur-[120px]" style={{ background: "rgba(255,43,214,0.05)" }} />
 
-          <div className="mx-auto w-full max-w-6xl px-6 pt-40 md:pt-48">
+          <div className="relative z-20 mx-auto w-full max-w-6xl px-6 pt-40 md:pt-48">
 
             <div className="relative z-50 mb-10 text-center md:mb-14">
               <h2 className="font-display text-3xl font-extrabold leading-[1.2] tracking-tight text-white md:text-5xl pb-1">
@@ -693,13 +693,13 @@ function Comparison() {
 
 
             {/* Stage: two cards stacked in the same slot */}
-            <div className="tear-scene relative mx-auto h-[380px] w-full max-w-[720px] md:h-[440px]">
+            <div className="tear-scene relative z-30 mx-auto h-[380px] w-full max-w-[720px] md:h-[440px]">
               {/* Digital card underneath */}
-              <div className="tear-digital absolute inset-0 grid place-items-center">
-                <div className="relative w-[86%] max-w-[520px] overflow-hidden rounded-3xl border border-cyan-400/40 p-6 md:p-8"
+              <div className="tear-digital absolute inset-0 z-20 grid place-items-center">
+                <div className="tear-digital-card relative z-20 w-[86%] max-w-[520px] overflow-hidden rounded-3xl border border-cyan-400/40 p-6 md:p-8"
                   style={{
                     background: "linear-gradient(135deg, #0a1420 0%, #0d1a28 50%, #0a0f1a 100%)",
-                    boxShadow: "0 40px 120px -20px rgba(0,255,255,0.45), 0 20px 60px -10px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.08)",
+                    boxShadow: "0 20px 60px -10px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.08)",
                   }}
                 >
 
@@ -746,7 +746,7 @@ function Comparison() {
               </div>
 
               {/* Paper card on top — splits in two halves */}
-              <div className="tear-paper absolute inset-0 grid place-items-center">
+              <div className="tear-paper absolute inset-0 z-30 grid place-items-center">
                 <div className="relative w-[86%] max-w-[560px]" style={{ height: 340 }}>
                   {/* Pains — margin notes in black ink, off-card */}
                   {pains.map((p, i) => (
@@ -770,8 +770,8 @@ function Comparison() {
             </div>
 
             {/* CTA reveal at the end */}
-            <div className="tear-cta mt-8 flex flex-col items-center gap-3 text-center md:mt-12">
-              <p className="max-w-xl text-white/70">
+            <div className="tear-cta relative z-40 mt-8 flex flex-col items-center gap-3 text-center md:mt-12">
+              <p className="relative z-40 max-w-xl text-white/70">
                 Chega de cartão perdido, carimbo torto e cliente esquecido. Ative o Fidelize em minutos.
               </p>
               <Button asChild size="lg" className="tear-cta-btn rounded-full px-8 font-bold" style={{ background: "#00ffff", color: "#001010" }}>
