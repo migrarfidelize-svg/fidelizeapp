@@ -18,6 +18,8 @@ import { GoalsCard } from "@/components/GoalsCard";
 import { PageHero } from "@/components/PageHero";
 import { DashboardHeroVisual } from "@/components/DashboardHeroVisual";
 import { ErrorState, LoadingSkeleton } from "@/components/states";
+import { GreetingVoice } from "@/components/GreetingVoice";
+
 
 export const Route = createFileRoute("/_authenticated/app/")({
   component: Dashboard,
@@ -71,6 +73,8 @@ function Dashboard() {
 
   return (
     <div className="space-y-8">
+      <GreetingVoice gender="female" scope="merchant" />
+
       <PageHero
         icon={LayoutDashboard}
         liveLabel="Ao vivo"

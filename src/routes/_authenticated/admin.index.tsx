@@ -12,6 +12,8 @@ import {
   AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid,
 } from "recharts";
 import { formatBRL, formatDate } from "@/lib/format";
+import { GreetingVoice } from "@/components/GreetingVoice";
+
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   component: AdminOverview,
@@ -41,7 +43,9 @@ function AdminOverview() {
 
   return (
     <div className="space-y-8">
+      <GreetingVoice gender="male" scope="admin" />
       <PageHero
+
         icon={HeroIcon}
         eyebrow={"Super Admin · Global"}
         liveLabel={"Ao vivo"}
