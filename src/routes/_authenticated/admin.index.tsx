@@ -12,7 +12,7 @@ import {
   AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid,
 } from "recharts";
 import { formatBRL, formatDate } from "@/lib/format";
-import { GreetingVoice } from "@/components/GreetingVoice";
+
 
 
 export const Route = createFileRoute("/_authenticated/admin/")({
