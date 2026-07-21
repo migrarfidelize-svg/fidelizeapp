@@ -93,6 +93,18 @@ function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const [pinnedGroup, setPinnedGroup] = useState<string | null>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const openGroup = (key: string) => {
+    if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null; }
+    setPinnedGroup(key);
+  };
+  const scheduleCloseGroup = () => {
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = setTimeout(() => setPinnedGroup(null), 180);
+  };
+  useEffect(() => () => { if (closeTimerRef.current) clearTimeout(closeTimerRef.current); }, []);
+  // fecha ao trocar de rota para evitar submenu "preso"
+  useEffect(() => { setPinnedGroup(null); }, [pathname]);
 
   useEffect(() => {
     try {
