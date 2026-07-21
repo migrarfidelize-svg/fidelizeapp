@@ -1,13 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { useEffect, useMemo, useState } from "react";
 import { getMyEstablishments, getDashboardData } from "@/lib/loyalty.functions";
 import {
   Users, Stamp, Gift, ArrowRight, Sparkles,
   ArrowUpRight, ArrowDownRight, Minus, Zap, Crown, Activity,
+  QrCode, TrendingUp, Trophy, Clock,
 } from "lucide-react";
 import {
-  LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid,
+  LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid, Area, AreaChart,
 } from "recharts";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
@@ -29,6 +31,12 @@ function Dashboard() {
     queryFn: () => getData({ data: { establishment_id: est!.id } }),
   });
 
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 30_000);
+    return () => clearInterval(t);
+  }, []);
+
   if (!est || isLoading || !data) {
     if (isError) return <ErrorState title="Não foi possível carregar o painel" error={error} onRetry={() => refetch()} />;
     return <LoadingSkeleton variant="page" />;
@@ -41,25 +49,35 @@ function Dashboard() {
     { label: "Resgatadas", value: data.redeemedCount, icon: Crown, accent: true },
   ];
 
+  const last7 = data.series.slice(-7);
+  const last7Total = last7.reduce((a, d) => a + (d.carimbos || 0), 0);
+  const dayLabel = now.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" });
+  const timeLabel = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
   return (
     <div className="space-y-8">
-      {/* HERO */}
+      {/* CINEMATIC HERO */}
       <section className="dash-hero p-6 sm:p-8">
         <div className="relative flex flex-wrap items-end justify-between gap-6">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-primary/80">
-              <Activity className="h-3.5 w-3.5" /> Painel Fidelize
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="live-pulse">Ao vivo</span>
+              <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                {dayLabel} · {timeLabel}
+              </span>
             </div>
-            <h1 className="mt-2 font-display text-3xl sm:text-4xl font-bold tracking-tight">
+            <h1 className="mt-3 font-display text-3xl sm:text-4xl font-bold tracking-tight">
               {est.name}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Métricas em tempo real do seu programa de fidelidade.
+              Comando de operações do seu programa de fidelidade.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="outline" className="border-primary/30 hover:border-primary/60">
-              <Link to="/l/$slug" params={{ slug: est.slug }}>Ver página pública</Link>
+              <Link to="/l/$slug" params={{ slug: est.slug }}>
+                <QrCode className="mr-1 h-4 w-4" /> Página pública
+              </Link>
             </Button>
             <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_-6px_var(--primary)]">
               <Link to="/app/carimbar">
@@ -69,15 +87,23 @@ function Dashboard() {
             </Button>
           </div>
         </div>
+
+        {/* Ticker strip inside hero */}
+        <div className="relative mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+          <TickerItem label="Últimos 7 dias" value={`${last7Total} carimbos`} icon={TrendingUp} />
+          <TickerItem label="Base ativa" value={`${data.customersCount} clientes`} icon={Users} />
+          <TickerItem label="Recompensas" value={`${data.redeemedCount} resgatadas`} icon={Trophy} />
+          <TickerItem label="Meta do mês" value={data.goalMonth} icon={Clock} />
+        </div>
       </section>
 
-      {/* KPI GRID */}
+      {/* KPI STRIP */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s, i) => (
           <div
             key={s.label}
             className={`dash-card dash-rise ${s.accent ? "dash-card-accent" : ""} p-5`}
-            style={{ animationDelay: `${i * 80}ms`, ["--sweep" as any]: `${i * 90}deg` }}
+            style={{ animationDelay: `${i * 80}ms` }}
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -90,6 +116,89 @@ function Dashboard() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* MAIN GRID — Chart (2 cols) + Top clients rail */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="dash-card p-6 lg:col-span-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-xs uppercase tracking-widest text-muted-foreground">Últimos 30 dias</div>
+              <h3 className="sec-title mt-1 text-lg">Fluxo de carimbos</h3>
+            </div>
+            <span className="card-icon" aria-hidden><Sparkles /></span>
+          </div>
+          <div className="mt-6 h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data.series} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="stampFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.12} />
+                <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke="currentColor" opacity={0.5} />
+                <YAxis tick={{ fontSize: 11 }} allowDecimals={false} stroke="currentColor" opacity={0.5} />
+                <Tooltip
+                  contentStyle={{
+                    background: "color-mix(in oklab, var(--card) 92%, transparent)",
+                    border: "1px solid color-mix(in oklab, var(--primary) 40%, transparent)",
+                    borderRadius: 12,
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="carimbos"
+                  stroke="var(--color-primary)"
+                  strokeWidth={2.5}
+                  fill="url(#stampFill)"
+                  activeDot={{ r: 5 }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="dash-card p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-xs uppercase tracking-widest text-muted-foreground">Fidelidade</div>
+              <h3 className="sec-title mt-1 text-lg">Top clientes</h3>
+            </div>
+            <span className="card-icon card-icon-accent" aria-hidden><Crown /></span>
+          </div>
+          <div className="mt-4 space-y-4">
+            {data.topCustomers.length === 0 && (
+              <div className="text-sm text-muted-foreground py-6 text-center">
+                Nenhum cliente ainda. Compartilhe seu QR Code!
+              </div>
+            )}
+            {data.topCustomers.slice(0, 6).map((c, i) => {
+              const max = data.topCustomers[0]?.visits_count || 1;
+              const pct = Math.max(6, Math.round((c.visits_count / max) * 100));
+              return (
+                <div key={c.id} className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="inline-grid h-7 w-7 place-items-center rounded-full border border-primary/30 bg-primary/10 text-primary font-semibold text-xs shrink-0">
+                        {i + 1}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium truncate">{c.name}</div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {formatDate(c.last_visit_at)}
+                        </div>
+                      </div>
+                    </div>
+                    <span className="text-xs font-mono text-primary shrink-0">{c.visits_count}</span>
+                  </div>
+                  <div className="rank-bar"><span style={{ width: `${pct}%` }} /></div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* MoM */}
@@ -109,72 +218,19 @@ function Dashboard() {
           rewards: data.mom.rewards.current,
         }}
       />
+    </div>
+  );
+}
 
-      {/* CHART */}
-      <div className="dash-card p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-xs uppercase tracking-widest text-muted-foreground">Últimos 30 dias</div>
-            <h3 className="font-display text-lg font-semibold">Carimbos aplicados</h3>
-          </div>
-          <span className="card-icon" aria-hidden><Sparkles /></span>
-        </div>
-        <div className="mt-6 h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data.series} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.12} />
-              <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke="currentColor" opacity={0.5} />
-              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} stroke="currentColor" opacity={0.5} />
-              <Tooltip
-                contentStyle={{
-                  background: "color-mix(in oklab, var(--card) 92%, transparent)",
-                  border: "1px solid color-mix(in oklab, var(--primary) 40%, transparent)",
-                  borderRadius: 12,
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="carimbos"
-                stroke="var(--color-primary)"
-                strokeWidth={2.5}
-                dot={{ r: 3, fill: "var(--color-primary)", strokeWidth: 0 }}
-                activeDot={{ r: 5 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* TOP CUSTOMERS */}
-      <div className="dash-card p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-xs uppercase tracking-widest text-muted-foreground">Fidelidade</div>
-            <h3 className="font-display text-lg font-semibold">Top clientes</h3>
-          </div>
-          <span className="card-icon card-icon-accent" aria-hidden><Crown /></span>
-        </div>
-        <div className="mt-4 divide-y divide-border/50">
-          {data.topCustomers.length === 0 && (
-            <div className="text-sm text-muted-foreground py-6 text-center">
-              Nenhum cliente ainda. Compartilhe seu QR Code!
-            </div>
-          )}
-          {data.topCustomers.map((c, i) => (
-            <div key={c.id} className="flex items-center justify-between py-3 gap-3">
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="inline-grid h-9 w-9 place-items-center rounded-full border border-primary/30 bg-primary/10 text-primary font-semibold text-sm">
-                  {i + 1}
-                </span>
-                <div className="min-w-0">
-                  <div className="font-medium truncate">{c.name}</div>
-                  <div className="text-xs text-muted-foreground">Última visita: {formatDate(c.last_visit_at)}</div>
-                </div>
-              </div>
-              <div className="text-sm font-mono text-primary">{c.visits_count} visitas</div>
-            </div>
-          ))}
-        </div>
+function TickerItem({ label, value, icon: Icon }: { label: string; value: string | number; icon: any }) {
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-primary/15 bg-[color:color-mix(in_oklab,var(--card)_60%,transparent)] px-3 py-2.5 backdrop-blur-sm">
+      <span className="grid h-8 w-8 place-items-center rounded-md border border-primary/25 bg-primary/10 text-primary">
+        <Icon className="h-4 w-4" />
+      </span>
+      <div className="min-w-0">
+        <div className="text-[10px] uppercase tracking-widest text-muted-foreground truncate">{label}</div>
+        <div className="text-sm font-semibold truncate">{value}</div>
       </div>
     </div>
   );
