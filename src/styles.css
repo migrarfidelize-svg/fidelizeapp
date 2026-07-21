@@ -1737,3 +1737,131 @@
   }
 }
 
+
+/* ============================================================
+   LANDING — Light theme adaptation
+   Escopo: apenas quando .dark NÃO está no <html> e dentro de
+   .landing-scope. NÃO altera o tema escuro (padrão).
+   ============================================================ */
+html:not(.dark) .landing-scope {
+  color: var(--foreground);
+}
+
+/* Hero: substitui o obsidian por superfície clara com grade suave */
+html:not(.dark) .landing-scope section[style*="rgb(2, 6, 23)"],
+html:not(.dark) .landing-scope section[style*="#020617"] {
+  background: var(--background) !important;
+}
+html:not(.dark) .landing-scope .hero-bg-aurora-circuit {
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 35%,
+      color-mix(in oklab, var(--primary) 10%, transparent) 0%,
+      transparent 70%),
+    linear-gradient(180deg,
+      color-mix(in oklab, var(--primary) 4%, var(--background)) 0%,
+      var(--background) 100%) !important;
+}
+html:not(.dark) .landing-scope .hero-bg-aurora-circuit .hero-bokeh {
+  opacity: 0.55;
+  filter: blur(28px) saturate(1.1);
+}
+html:not(.dark) .landing-scope .hero-bg-aurora-circuit .hero-vignette {
+  background: radial-gradient(ellipse 70% 60% at 50% 55%,
+    transparent 25%,
+    color-mix(in oklab, var(--background) 88%, transparent) 100%) !important;
+}
+html:not(.dark) .landing-scope .hero-pcb {
+  opacity: 0.55;
+}
+
+/* Superfícies escuras hardcoded → superfícies claras */
+html:not(.dark) .landing-scope .bg-black,
+html:not(.dark) .landing-scope [class*="bg-black/"],
+html:not(.dark) .landing-scope .bg-\[\#050505\],
+html:not(.dark) .landing-scope .bg-\[\#08090f\],
+html:not(.dark) .landing-scope .bg-\[\#0f1218\],
+html:not(.dark) .landing-scope section.bg-\[\#08090f\] {
+  background-color: color-mix(in oklab, var(--foreground) 4%, var(--card)) !important;
+  color: var(--foreground);
+}
+html:not(.dark) .landing-scope .bg-white\/5,
+html:not(.dark) .landing-scope .bg-white\/10 {
+  background-color: color-mix(in oklab, var(--foreground) 5%, transparent) !important;
+}
+
+/* Textos brancos → tokens de foreground */
+html:not(.dark) .landing-scope .text-white {
+  color: var(--foreground) !important;
+}
+html:not(.dark) .landing-scope [class*="text-white/"] {
+  color: color-mix(in oklab, var(--foreground) 72%, transparent) !important;
+}
+html:not(.dark) .landing-scope .text-white\/40,
+html:not(.dark) .landing-scope .text-white\/45,
+html:not(.dark) .landing-scope .text-white\/55,
+html:not(.dark) .landing-scope .text-white\/60 {
+  color: var(--muted-foreground) !important;
+}
+
+/* Bordas brancas → bordas tokenizadas */
+html:not(.dark) .landing-scope [class*="border-white/"] {
+  border-color: color-mix(in oklab, var(--foreground) 15%, transparent) !important;
+}
+
+/* Botão outline "Ver como funciona" */
+html:not(.dark) .landing-scope .bg-transparent.text-white {
+  color: var(--foreground) !important;
+  border-color: color-mix(in oklab, var(--foreground) 20%, transparent) !important;
+}
+html:not(.dark) .landing-scope .hover\:bg-white\/10:hover {
+  background-color: color-mix(in oklab, var(--foreground) 8%, transparent) !important;
+}
+html:not(.dark) .landing-scope .hover\:text-white:hover {
+  color: var(--foreground) !important;
+}
+
+/* Botão CTA cyan mantém, mas sombra suavizada em claro */
+html:not(.dark) .landing-scope [style*="box-shadow: rgb(0, 255, 255)"],
+html:not(.dark) .landing-scope [style*="0 0 30px rgba(0,255,255"] {
+  /* leave as-is; funciona bem sobre branco */
+}
+
+/* Ícone-chip com fundo #050505 no HowItWorks */
+html:not(.dark) .landing-scope .bg-\[\#050505\] {
+  background-color: color-mix(in oklab, var(--foreground) 92%, var(--background)) !important;
+}
+
+/* Selo "01/02/03" com bg-black no HowItWorks */
+html:not(.dark) .landing-scope .border-cyan-400\/40.bg-black {
+  background-color: var(--card) !important;
+  border-color: color-mix(in oklab, var(--primary) 45%, transparent) !important;
+}
+
+/* Radiais decorativos muito escuros ficam sutis */
+html:not(.dark) .landing-scope .bg-cyan-500\/5 {
+  background-color: color-mix(in oklab, var(--primary) 10%, transparent) !important;
+}
+
+/* Chips do Ecossistema, tear-pain/tear-win e headings do Benefits em tema claro */
+html:not(.dark) .landing-scope .fz-chip {
+  background: color-mix(in oklab, var(--card) 92%, transparent);
+  border-color: color-mix(in oklab, var(--foreground) 12%, transparent);
+  box-shadow: 0 10px 30px -18px color-mix(in oklab, var(--foreground) 40%, transparent);
+}
+html:not(.dark) .landing-scope .fz-chip-icon {
+  background: color-mix(in oklab, var(--foreground) 5%, var(--card));
+  border-color: color-mix(in oklab, var(--foreground) 12%, transparent);
+}
+html:not(.dark) .landing-scope .fz-chip h3 { color: var(--foreground) !important; }
+html:not(.dark) .landing-scope .fz-chip p  { color: var(--muted-foreground) !important; }
+
+/* Comparativo: fundo escuro → superfície clara */
+html:not(.dark) .landing-scope section#comparativo {
+  background: color-mix(in oklab, var(--foreground) 3%, var(--background)) !important;
+}
+html:not(.dark) .landing-scope .tear-win,
+html:not(.dark) .landing-scope .tear-pain {
+  color: var(--foreground) !important;
+  background: color-mix(in oklab, var(--card) 92%, transparent) !important;
+  border-color: color-mix(in oklab, var(--primary) 40%, transparent) !important;
+}
