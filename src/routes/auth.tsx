@@ -4,7 +4,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
-import { Coffee, Check, ArrowRight, Sparkles } from "lucide-react";
+import { Coffee, Check, ArrowRight, Sparkles, Wifi } from "lucide-react";
 
 const searchSchema = z.object({ mode: z.enum(["signin", "signup"]).default("signin") });
 
