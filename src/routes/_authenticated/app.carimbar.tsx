@@ -192,13 +192,8 @@ function Carimbar() {
         eyebrow={"Operação · Fidelização"}
         liveLabel={"Ao vivo"}
         title={"Carimbar cliente"}
-        subtitle={"Registre visitas por busca, código ou leitura de QR em segundos."}
+        subtitle={"Registre visitas por leitura de QR ou busca em segundos."}
       />
-      <div>
-        <div className="text-xs uppercase tracking-widest text-muted-foreground">Ação</div>
-        <h1 className="font-display text-3xl font-bold">Carimbar cliente</h1>
-        <p className="text-sm text-muted-foreground mt-1">Escaneie o QR Code do cartão ou pesquise o cliente.</p>
-      </div>
 
       <Tabs defaultValue="scan" className="w-full">
         <TabsList className="grid w-full grid-cols-2 max-w-md">
@@ -207,23 +202,57 @@ function Carimbar() {
         </TabsList>
 
         <TabsContent value="scan" className="mt-4">
-          <Card>
-            <CardContent className="p-5">
-              <QrScanner onDetected={onQrDetected} paused={confirmOpen} />
-              {scanBusy && (
-                <div className="mt-3 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" /> Identificando cliente…
-                </div>
-              )}
-              {scanError && !confirmOpen && (
-                <div className="mt-3 text-center text-sm text-destructive">{scanError}</div>
-              )}
-              <div className="mt-4 text-center text-xs text-muted-foreground">
-                Se a câmera não funcionar, use a aba <strong>Pesquisar</strong> ou envie uma imagem do QR.
+          <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-[color:color-mix(in_oklab,var(--card)_55%,transparent)] p-6 sm:p-8 backdrop-blur-sm">
+            {/* ambient background */}
+            <span aria-hidden className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-64 w-[80%] rounded-full bg-primary/20 blur-3xl opacity-60" />
+            <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+
+            <div className="relative grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] items-center">
+              <div>
+                <QrScanner onDetected={onQrDetected} paused={confirmOpen} />
+                {scanBusy && (
+                  <div className="mt-4 flex items-center justify-center gap-2 text-sm text-primary">
+                    <Loader2 className="h-4 w-4 animate-spin" /> Identificando cliente…
+                  </div>
+                )}
+                {scanError && !confirmOpen && (
+                  <div className="mt-3 text-center text-sm text-destructive">{scanError}</div>
+                )}
               </div>
-            </CardContent>
-          </Card>
+
+              <div className="space-y-4">
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.24em] text-primary/80">Modo scanner</div>
+                  <h2 className="font-display text-2xl sm:text-3xl font-bold mt-1 leading-tight">
+                    Mira ativa. <span className="text-primary">Aproxime o QR.</span>
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Detecção automática em tempo real. Confirme os dados no diálogo antes de finalizar o carimbo.
+                  </p>
+                </div>
+
+                <ol className="space-y-2.5 text-sm">
+                  {[
+                    { n: "01", t: "Peça o cartão fidelidade do cliente" },
+                    { n: "02", t: "Centralize o QR dentro da mira" },
+                    { n: "03", t: "Revise os dados e confirme o carimbo" },
+                  ].map((s) => (
+                    <li key={s.n} className="flex items-center gap-3 rounded-xl border border-primary/15 bg-background/40 px-3 py-2.5">
+                      <span className="font-mono text-[11px] text-primary/80 tracking-widest">{s.n}</span>
+                      <span className="text-foreground/90">{s.t}</span>
+                    </li>
+                  ))}
+                </ol>
+
+                <div className="rounded-xl border border-primary/15 bg-primary/5 px-3 py-2.5 text-xs text-muted-foreground flex items-center gap-2">
+                  <QrCode className="h-4 w-4 text-primary shrink-0" />
+                  Sem câmera? Use <strong className="text-foreground">Pesquisar</strong> ou <strong className="text-foreground">Enviar imagem</strong>.
+                </div>
+              </div>
+            </div>
+          </div>
         </TabsContent>
+
 
         <TabsContent value="search" className="mt-4">
           <Card>
