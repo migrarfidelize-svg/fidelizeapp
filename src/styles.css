@@ -715,7 +715,7 @@
   position: absolute !important;
   inset: 0 !important;
   isolation: isolate;
-  z-index: calc(1 + var(--p) * 10);
+  z-index: calc(1 + var(--p) * 20) !important;
 }
 .tear-digital::before {
   content: "";
@@ -730,7 +730,7 @@
 .tear-paper {
   position: absolute !important;
   inset: 0 !important;
-  z-index: 2;
+  z-index: 2 !important;
   pointer-events: none;
 }
 
@@ -825,8 +825,8 @@
   position: relative;
 }
 .tear-stage .tear-scene { z-index: 30; }
-.tear-stage .tear-digital { z-index: calc(1 + var(--p) * 20); }
-.tear-stage .tear-paper { z-index: 2; }
+.tear-stage .tear-digital { z-index: calc(1 + var(--p) * 20) !important; }
+.tear-stage .tear-paper { z-index: 2 !important; }
 .tear-stage .tear-cta { z-index: 40; }
 .tear-stage .tear-cta-btn { z-index: 45; }
 @keyframes tear-cta-pulse {
