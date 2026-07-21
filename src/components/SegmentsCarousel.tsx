@@ -325,19 +325,19 @@ function Constellation({
                 "inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -25px 40px -10px rgba(0,255,255,0.25)",
             }}
           />
-          <div className="relative z-10 flex w-full flex-col items-center justify-center gap-1 px-3 text-center">
+          <div className="relative z-10 flex w-full flex-col items-center justify-center gap-2 px-5 text-center">
             <div
-              className="font-display text-lg font-black leading-none tracking-tight"
+              className="font-display text-3xl font-black leading-none tracking-tight"
               style={{ color: "var(--primary)" }}
             >
               Fidelize
             </div>
-            <div className="text-[10px] font-semibold uppercase leading-tight tracking-widest text-cyan-300/80">
+            <div className="text-xs font-semibold uppercase leading-tight tracking-widest text-cyan-300/80">
               {focusedItem.label}
             </div>
             <span
               key={focused}
-              className="mt-1 rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider animate-fade-in"
+              className="mt-1 rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-wider animate-fade-in"
               style={{
                 borderColor:
                   "color-mix(in oklab, var(--primary) 40%, transparent)",
