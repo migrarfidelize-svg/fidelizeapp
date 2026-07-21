@@ -75,6 +75,13 @@ function Carimbar() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [scanError, setScanError] = useState<string>("");
 
+  // Per-customer QR modal
+  const [qrOpen, setQrOpen] = useState(false);
+  const [qrLoading, setQrLoading] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState<string>("");
+  const [qrCustomer, setQrCustomer] = useState<{ name: string; code: string; phone: string | null } | null>(null);
+  const [qrUrl, setQrUrl] = useState<string>("");
+
   const { data: listData, isFetching: listFetching } = useQuery({
     enabled: !!est,
     queryKey: ["carimbar-customers", est?.id, searchTerm, page],
