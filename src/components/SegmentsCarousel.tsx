@@ -1,223 +1,157 @@
-import { useEffect, useState } from "react";
-import coffee from "@/assets/segments/coffee.png";
-import barber from "@/assets/segments/barber.png";
-import salon from "@/assets/segments/salon.png";
-import pizza from "@/assets/segments/pizza.png";
-import icecream from "@/assets/segments/icecream.png";
-import bakery from "@/assets/segments/bakery.png";
-import petshop from "@/assets/segments/petshop.png";
-import workshop from "@/assets/segments/workshop.png";
-import store from "@/assets/segments/store.png";
+import { useEffect, useRef, useState } from "react";
+import { Coffee, Scissors, Sparkles, Pizza, IceCream2, Croissant, PawPrint, Wrench, Store } from "lucide-react";
 
 const ITEMS = [
-  { src: coffee, label: "Cafeterias" },
-  { src: barber, label: "Barbearias" },
-  { src: salon, label: "Salões" },
-  { src: pizza, label: "Pizzarias" },
-  { src: icecream, label: "Sorveterias" },
-  { src: bakery, label: "Padarias" },
-  { src: petshop, label: "Pet Shops" },
-  { src: workshop, label: "Oficinas" },
-  { src: store, label: "Lojas" },
+  { icon: Coffee, label: "Cafeterias" },
+  { icon: Scissors, label: "Barbearias" },
+  { icon: Sparkles, label: "Salões" },
+  { icon: Pizza, label: "Pizzarias" },
+  { icon: IceCream2, label: "Sorveterias" },
+  { icon: Croissant, label: "Padarias" },
+  { icon: PawPrint, label: "Pet Shops" },
+  { icon: Wrench, label: "Oficinas" },
+  { icon: Store, label: "Lojas" },
 ];
 
-const CENTER_SIZE = 340;
-const SIDE_OFFSET = 260; // horizontal distance from center to neighbors
+// Each item takes this fraction of viewport height in scroll distance.
+const PER_ITEM_VH = 60;
 
 export function SegmentsCarousel() {
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [progress, setProgress] = useState(0); // 0..1 within active item
 
   useEffect(() => {
-    if (paused) return;
-    const id = setInterval(() => setActive((a) => (a + 1) % ITEMS.length), 2600);
-    return () => clearInterval(id);
-  }, [paused]);
+    const compute = () => {
+      const el = wrapperRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const total = el.offsetHeight - vh; // scroll distance available inside sticky
+      const scrolled = Math.min(Math.max(-rect.top, 0), total);
+      const p = total > 0 ? scrolled / total : 0;
+      const raw = p * ITEMS.length;
+      const idx = Math.min(ITEMS.length - 1, Math.floor(raw));
+      setActive(idx);
+      setProgress(raw - idx);
+    };
+    compute();
+    window.addEventListener("scroll", compute, { passive: true });
+    window.addEventListener("resize", compute);
+    return () => {
+      window.removeEventListener("scroll", compute);
+      window.removeEventListener("resize", compute);
+    };
+  }, []);
+
+  const ActiveIcon = ITEMS[active].icon;
 
   return (
     <div
-      className="relative mx-auto w-full overflow-hidden"
-      style={{ height: CENTER_SIZE + 110 }}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      ref={wrapperRef}
+      className="relative mx-auto w-full"
+      style={{ height: `${ITEMS.length * PER_ITEM_VH + 100}vh` }}
     >
-      {/* edge fade */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-40 bg-gradient-to-r from-background to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-20 w-40 bg-gradient-to-l from-background to-transparent" />
-
-      {/* Stage — vertically anchored above label */}
-      <div className="absolute inset-x-0 top-0" style={{ height: CENTER_SIZE }}>
-        {ITEMS.map((it, i) => {
-          // signed distance -N..+N with wrap-around for shortest path
-          let d = i - active;
-          const n = ITEMS.length;
-          if (d > n / 2) d -= n;
-          if (d < -n / 2) d += n;
-
-          const abs = Math.abs(d);
-          const isActive = abs === 0;
-          const scale = isActive ? 1 : abs === 1 ? 0.55 : 0.4;
-          const blur = isActive ? 0 : abs === 1 ? 4 : 10;
-          const opacity = isActive ? 1 : abs === 1 ? 0.55 : abs === 2 ? 0.25 : 0;
-          const x = d * SIDE_OFFSET;
-          const z = 100 - abs;
-
-          return (
-            <button
-              key={it.label}
-              type="button"
-              onClick={() => setActive(i)}
-              aria-label={it.label}
-              className="absolute left-1/2 top-1/2 focus:outline-none"
-              style={{
-                width: CENTER_SIZE,
-                height: CENTER_SIZE,
-                marginLeft: -CENTER_SIZE / 2,
-                marginTop: -CENTER_SIZE / 2,
-                transform: `translateX(${x}px) scale(${scale})`,
-                opacity,
-                filter: `blur(${blur}px)`,
-                zIndex: z,
-                transition:
-                  "transform 700ms cubic-bezier(0.22, 1, 0.36, 1), filter 700ms ease, opacity 700ms ease",
-                pointerEvents: opacity < 0.05 ? "none" : "auto",
-              }}
-            >
-              {/* halo */}
-              <div
-                aria-hidden
-                className="absolute inset-0 rounded-[36px]"
-                style={{
-                  opacity: isActive ? 1 : 0,
-                  transition: "opacity 500ms ease",
-                  background:
-                    "radial-gradient(closest-side, color-mix(in oklab, var(--primary) 28%, transparent), transparent 72%)",
-                }}
-              />
-              {/* custom block with notched corners */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  opacity: isActive ? 1 : 0,
-                  transition: "opacity 500ms ease",
-                  clipPath:
-                    "polygon(28px 0, calc(100% - 28px) 0, 100% 28px, 100% calc(100% - 28px), calc(100% - 28px) 100%, 28px 100%, 0 calc(100% - 28px), 0 28px)",
-                  border: "1.5px solid color-mix(in oklab, var(--primary) 55%, transparent)",
-                  boxShadow:
-                    "inset 0 0 0 1px color-mix(in oklab, var(--primary) 22%, transparent), inset 0 0 60px color-mix(in oklab, var(--primary) 12%, transparent), 0 30px 80px -20px color-mix(in oklab, var(--primary) 60%, transparent), 0 0 120px -10px color-mix(in oklab, var(--primary) 45%, transparent)",
-                  background:
-                    "linear-gradient(180deg, color-mix(in oklab, var(--card) 78%, transparent), color-mix(in oklab, var(--background) 50%, transparent))",
-                  backdropFilter: "blur(6px)",
-                }}
-              />
-              {/* LED trail traveling around the block */}
-              {isActive && (
-                <svg
-                  aria-hidden
-                  className="pointer-events-none absolute inset-0 h-full w-full"
-                  viewBox={`0 0 ${CENTER_SIZE} ${CENTER_SIZE}`}
-                  preserveAspectRatio="none"
-                >
-                  <defs>
-                    <filter id="seg-led-glow" x="-20%" y="-20%" width="140%" height="140%">
-                      <feGaussianBlur stdDeviation="3" result="b" />
-                      <feMerge>
-                        <feMergeNode in="b" />
-                        <feMergeNode in="SourceGraphic" />
-                      </feMerge>
-                    </filter>
-                  </defs>
-                  {/* notched octagon path matching clipPath (28px chamfer) */}
-                  <path
-                    d={`M28 0 L${CENTER_SIZE - 28} 0 L${CENTER_SIZE} 28 L${CENTER_SIZE} ${CENTER_SIZE - 28} L${CENTER_SIZE - 28} ${CENTER_SIZE} L28 ${CENTER_SIZE} L0 ${CENTER_SIZE - 28} L0 28 Z`}
-                    fill="none"
-                    stroke="var(--primary)"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeDasharray="90 1400"
-                    filter="url(#seg-led-glow)"
-                    style={{
-                      animation: "seg-led-run 4.5s linear infinite",
-                    }}
-                  />
-                </svg>
-              )}
-              {/* corner chips on the chamfers */}
-              {isActive && (
-                <>
-                  <span
-                    className="absolute -top-[1px] left-1/2 h-[3px] w-16 -translate-x-1/2 rounded-full"
-                    style={{
-                      background: "var(--primary)",
-                      boxShadow: "0 0 14px var(--primary)",
-                    }}
-                  />
-                  <span
-                    className="absolute -bottom-[1px] left-1/2 h-[3px] w-16 -translate-x-1/2 rounded-full"
-                    style={{
-                      background: "var(--primary)",
-                      boxShadow: "0 0 14px var(--primary)",
-                    }}
-                  />
-                </>
-              )}
-              <img
-                src={it.src}
-                alt={it.label}
-                width={CENTER_SIZE}
-                height={CENTER_SIZE}
-                loading="lazy"
-                className="relative h-full w-full object-contain p-6"
-                style={{
-                  animation: isActive ? "seg-float 3.5s ease-in-out infinite" : undefined,
-                  filter: isActive
-                    ? "drop-shadow(0 18px 30px color-mix(in oklab, var(--primary) 45%, transparent))"
-                    : undefined,
-                }}
-              />
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Active label — sits right below the card */}
-      <div className="pointer-events-none absolute inset-x-0 z-30 text-center" style={{ top: CENTER_SIZE + 24 }}>
+      <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden">
+        {/* soft ambient glow */}
         <div
-          key={active}
-          className="inline-block font-display text-2xl font-bold text-foreground animate-fade-in md:text-3xl"
-        >
-          {ITEMS[active].label}
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 45%, color-mix(in oklab, var(--primary) 18%, transparent), transparent 60%)",
+          }}
+        />
+
+        <div className="relative flex flex-col items-center justify-center gap-10">
+          {/* Icon stage */}
+          <div className="relative flex h-[min(46vh,420px)] w-[min(46vh,420px)] items-center justify-center">
+            {ITEMS.map((it, i) => {
+              const Icon = it.icon;
+              const isActive = i === active;
+              // enter: current progress (0->1), previous items already gone, future items waiting
+              let opacity = 0;
+              let scale = 0.6;
+              let y = 40;
+              let blur = 12;
+              if (isActive) {
+                // fade in during first 30%, fade out during last 20%
+                const inP = Math.min(1, progress / 0.3);
+                const outP = Math.max(0, (progress - 0.8) / 0.2);
+                opacity = inP * (1 - outP);
+                scale = 0.85 + 0.15 * inP - 0.05 * outP;
+                y = (1 - inP) * 40 - outP * 30;
+                blur = (1 - inP) * 10 + outP * 8;
+              }
+              return (
+                <div
+                  key={it.label}
+                  aria-hidden={!isActive}
+                  className="absolute inset-0 flex items-center justify-center"
+                  style={{
+                    opacity,
+                    transform: `translateY(${y}px) scale(${scale})`,
+                    filter: `blur(${blur}px)`,
+                    transition: "opacity 200ms linear, filter 200ms linear",
+                    color: "var(--primary)",
+                  }}
+                >
+                  <Icon
+                    strokeWidth={1.25}
+                    className="h-full w-full"
+                    style={{
+                      filter:
+                        "drop-shadow(0 20px 40px color-mix(in oklab, var(--primary) 55%, transparent)) drop-shadow(0 0 30px color-mix(in oklab, var(--primary) 40%, transparent))",
+                    }}
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Label */}
+          <div className="relative h-14 overflow-hidden">
+            <div
+              key={active}
+              className="animate-fade-in font-display text-3xl font-bold tracking-tight text-foreground md:text-5xl"
+            >
+              {ITEMS[active].label}
+            </div>
+          </div>
+
+          {/* Progress dots */}
+          <div className="flex items-center gap-2">
+            {ITEMS.map((_, i) => (
+              <span
+                key={i}
+                className="h-1.5 rounded-full transition-all duration-500"
+                style={{
+                  width: i === active ? 32 : 8,
+                  background:
+                    i < active
+                      ? "color-mix(in oklab, var(--primary) 80%, transparent)"
+                      : i === active
+                      ? "var(--primary)"
+                      : "color-mix(in oklab, var(--muted-foreground) 30%, transparent)",
+                  boxShadow: i === active ? "0 0 12px var(--primary)" : undefined,
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Active item progress bar */}
+          <div className="h-[2px] w-40 overflow-hidden rounded-full bg-muted/40">
+            <div
+              className="h-full origin-left"
+              style={{
+                width: `${progress * 100}%`,
+                background: "var(--primary)",
+                boxShadow: "0 0 10px var(--primary)",
+              }}
+            />
+          </div>
         </div>
       </div>
-
-      {/* Dots */}
-      <div className="absolute inset-x-0 bottom-1 z-30 flex justify-center gap-1.5">
-        {ITEMS.map((_, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => setActive(i)}
-            aria-label={`Ir para ${ITEMS[i].label}`}
-            className="h-1.5 rounded-full transition-all"
-            style={{
-              width: i === active ? 22 : 6,
-              background: i === active ? "var(--primary)" : "color-mix(in oklab, var(--muted-foreground) 35%, transparent)",
-            }}
-          />
-        ))}
-      </div>
-
-
-      <style>{`
-        @keyframes seg-float {
-          0%, 100% { transform: translateY(0) rotate(-1deg); }
-          50% { transform: translateY(-10px) rotate(1deg); }
-        }
-        @keyframes seg-ring {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 }
