@@ -139,6 +139,19 @@ function RootComponent() {
     });
     return () => subscription.unsubscribe();
   }, [router, queryClient]);
+  // Aplica tema conforme a rota atual (/app e /admin em claro, resto em dark).
+  useEffect(() => {
+    const apply = () => {
+      const t = themeForPath(window.location.pathname);
+      const r = document.documentElement;
+      r.classList.toggle("dark", t === "dark");
+      r.style.colorScheme = t;
+    };
+    apply();
+    const unsub = router.subscribe("onResolved", apply);
+    return () => unsub();
+  }, [router]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
