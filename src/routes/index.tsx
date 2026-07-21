@@ -242,8 +242,19 @@ function HowItWorks() {
     if (!wrap || !stage) return;
 
     const cards = Array.from(stage.querySelectorAll<HTMLElement>(".hiw-node"));
-    const links = Array.from(stage.querySelectorAll<SVGPathElement>(".hiw-link path"));
+    const links = Array.from(stage.querySelectorAll<SVGPathElement>(".hiw-link path.hiw-link-main"));
+    const roots = Array.from(stage.querySelectorAll<SVGGElement>(".hiw-link g.hiw-root"));
+    const heads = Array.from(stage.querySelectorAll<SVGCircleElement>(".hiw-link circle.hiw-head"));
     const badge = stage.querySelector<HTMLElement>(".hiw-finish-badge");
+
+    // pre-compute path lengths (fallback 700)
+    const lengths = links.map((p) => {
+      try { return p.getTotalLength(); } catch { return 700; }
+    });
+    links.forEach((p, i) => {
+      p.style.strokeDasharray = String(lengths[i]);
+      p.style.strokeDashoffset = String(lengths[i]);
+    });
 
     const clamp = (v: number, a = 0, b = 1) => Math.max(a, Math.min(b, v));
     const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
@@ -253,11 +264,9 @@ function HowItWorks() {
       raf = 0;
       const rect = wrap.getBoundingClientRect();
       const vh = window.innerHeight || 1;
-      // progress: 0 when top hits viewport top, 1 when we've scrolled (height - vh) past.
       const scrollable = Math.max(1, rect.height - vh);
       const p = clamp(-rect.top / scrollable);
 
-      // Card reveals (staggered windows over the pinned range)
       const c1 = ease(clamp(p / 0.08));
       const c2 = ease(clamp((p - 0.28) / 0.14));
       const c3 = ease(clamp((p - 0.62) / 0.14));
@@ -269,18 +278,37 @@ function HowItWorks() {
         el.style.filter = `blur(${(1 - v) * 6}px)`;
       });
 
-      // AI-line draws: link0 during 0.10 → 0.32, link1 during 0.44 → 0.66
       const l1 = ease(clamp((p - 0.10) / 0.22));
       const l2 = ease(clamp((p - 0.44) / 0.22));
       const lineProgress = [l1, l2];
       links.forEach((path, i) => {
         const v = lineProgress[i] ?? 0;
-        const len = 700;
+        const len = lengths[i];
         path.style.strokeDashoffset = String(len * (1 - v));
-        path.style.opacity = String(clamp(v * 1.4));
+        path.style.opacity = String(clamp(v * 1.6));
+
+        // moving glowing head at the tip
+        const head = heads[i];
+        if (head) {
+          if (v > 0.001 && v < 0.999) {
+            const pt = path.getPointAtLength(len * v);
+            head.setAttribute("cx", String(pt.x));
+            head.setAttribute("cy", String(pt.y));
+            head.style.opacity = "1";
+          } else {
+            head.style.opacity = "0";
+          }
+        }
+
+        // root branches: fade in after main line arrives
+        const root = roots[i];
+        if (root) {
+          const rv = clamp((v - 0.85) / 0.15);
+          root.style.opacity = String(rv);
+          root.style.transform = `scale(${0.6 + rv * 0.4})`;
+        }
       });
 
-      // Finish state
       if (p >= 0.82) {
         stage.classList.add("hiw-complete");
         if (badge) badge.style.opacity = "1";
@@ -348,28 +376,41 @@ function HowItWorks() {
                     </feMerge>
                   </filter>
                 </defs>
+                {/* Link 1: 01 → 02 (endpoint ~500,110) */}
                 <path
+                  className="hiw-link-main"
                   d="M 260 110 C 340 110, 380 110, 500 110"
                   stroke="url(#hiwLinkA)"
                   strokeWidth="2.5"
                   fill="none"
                   filter="url(#hiwGlow)"
                   strokeLinecap="round"
-                  strokeDasharray="700"
-                  strokeDashoffset="700"
                   style={{ opacity: 0 }}
                 />
+                <g className="hiw-root" style={{ opacity: 0, transformOrigin: "500px 110px" }}>
+                  <path d="M 500 110 C 508 108, 514 100, 520 92" stroke="#ff2bd6" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
+                  <path d="M 500 110 C 508 112, 514 120, 520 128" stroke="#ff2bd6" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
+                  <path d="M 500 110 L 522 110" stroke="#ff2bd6" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
+                </g>
+                <circle className="hiw-head" r="5" fill="#fff" filter="url(#hiwGlow)" style={{ opacity: 0 }} />
+
+                {/* Link 2: 02 → 03 (endpoint ~833,110) */}
                 <path
+                  className="hiw-link-main"
                   d="M 594 110 C 700 110, 750 110, 833 110"
                   stroke="url(#hiwLinkB)"
                   strokeWidth="2.5"
                   fill="none"
                   filter="url(#hiwGlow)"
                   strokeLinecap="round"
-                  strokeDasharray="700"
-                  strokeDashoffset="700"
                   style={{ opacity: 0 }}
                 />
+                <g className="hiw-root" style={{ opacity: 0, transformOrigin: "833px 110px" }}>
+                  <path d="M 833 110 C 841 108, 847 100, 853 92" stroke="#a855f7" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
+                  <path d="M 833 110 C 841 112, 847 120, 853 128" stroke="#a855f7" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
+                  <path d="M 833 110 L 855 110" stroke="#a855f7" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
+                </g>
+                <circle className="hiw-head" r="5" fill="#fff" filter="url(#hiwGlow)" style={{ opacity: 0 }} />
               </svg>
 
               {steps.map((s, i) => (

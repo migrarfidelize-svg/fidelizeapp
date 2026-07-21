@@ -524,7 +524,9 @@
   50%      { box-shadow: 0 0 0 1px color-mix(in oklab, var(--acc, #00ffff) 55%, transparent), 0 0 64px -6px color-mix(in oklab, var(--acc, #00ffff) 70%, transparent); }
 }
 .hiw-node { transition: opacity 220ms linear, transform 220ms linear, filter 220ms linear; }
-.hiw-link path { transition: stroke-dashoffset 220ms linear, opacity 220ms linear; }
+.hiw-link path.hiw-link-main { transition: stroke-dashoffset 180ms linear, opacity 180ms linear; }
+.hiw-link circle.hiw-head { transition: opacity 160ms linear; filter: drop-shadow(0 0 6px #fff) drop-shadow(0 0 14px #00ffff); }
+.hiw-link g.hiw-root { transition: opacity 260ms ease-out, transform 260ms cubic-bezier(0.22,1,0.36,1); }
 .hiw-complete .hiw-node[data-idx="2"] { animation: hiw-card-glow 3s ease-in-out infinite; }
 
 
