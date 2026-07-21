@@ -715,7 +715,7 @@
   position: absolute;
   inset: 0;
   isolation: isolate;
-  z-index: 1;
+  z-index: 3;
 }
 .tear-paper {
   position: absolute;
@@ -728,11 +728,12 @@
 /* Digital card: scales in, overlaps the torn paper with a strong halo */
 .tear-digital > div:first-child {
   position: relative;
-  z-index: 2;
+  z-index: 4;
   opacity: calc((var(--p) - 0.25) * 2.2);
   transform: scale(calc(0.9 + var(--p) * 0.28));
   transition: none;
   filter: drop-shadow(0 calc(var(--p) * 40px) calc(var(--p) * 80px) rgba(0,0,0,0.75));
+  background: linear-gradient(135deg, #0a1420 0%, #0d1a28 50%, #0a0f1a 100%) !important;
 }
 
 /* Paper halves rip apart and drop behind the digital card */
@@ -1977,6 +1978,7 @@ html:not(.dark) .landing-scope .tear-digital > div:first-child * {
   filter: none !important;
 }
 html:not(.dark) .landing-scope .tear-digital > div:first-child {
+  background: linear-gradient(135deg, #ffffff 0%, #f5f0ff 60%, #ede4ff 100%) !important;
   box-shadow:
     0 20px 60px -10px rgba(0,0,0,0.18),
     inset 0 1px 0 rgba(255,255,255,0.9) !important;
