@@ -695,10 +695,8 @@ function Comparison() {
             {/* Stage: two cards stacked in the same slot */}
             <div className="tear-scene relative z-30 mx-auto h-[380px] w-full max-w-[720px] md:h-[440px]">
               {/* Digital card underneath */}
-              <div
-                className="tear-digital absolute inset-0 grid place-items-center"
-                style={{ zIndex: "calc(1 + var(--p) * 20)" }}
-              >
+              <div className="tear-digital absolute inset-0 grid place-items-center">
+
                 <div className="tear-digital-card relative z-20 w-[86%] max-w-[520px] overflow-hidden rounded-3xl border border-cyan-400/40 p-6 md:p-8"
                   style={{
                     background: "linear-gradient(135deg, #0a1420 0%, #0d1a28 50%, #0a0f1a 100%)",

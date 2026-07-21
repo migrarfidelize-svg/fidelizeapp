@@ -710,12 +710,12 @@
 /* ============ Paper × Fidelize tear scene ============ */
 .tear-stage { --p: 0; }
 
-/* Layering: paper starts on top, digital rises above once the rip progresses */
+/* Layering: paper starts on top, digital sits behind and rises via opacity/scale */
 .tear-digital {
-  position: absolute !important;
-  inset: 0 !important;
+  position: absolute;
+  inset: 0;
   isolation: isolate;
-  z-index: calc(1 + var(--p) * 20) !important;
+  z-index: 1;
 }
 .tear-digital::before {
   content: "";
@@ -723,16 +723,18 @@
   inset: 10% 2%;
   z-index: 0;
   border-radius: 2rem;
-  background: radial-gradient(closest-side, rgba(0,255,255,0.22), transparent 74%);
+  background: radial-gradient(closest-side, rgba(0,255,255,0.18), transparent 74%);
   filter: blur(48px);
   pointer-events: none;
+  opacity: calc((var(--p) - 0.3) * 1.8);
 }
 .tear-paper {
-  position: absolute !important;
-  inset: 0 !important;
-  z-index: 2 !important;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
   pointer-events: none;
 }
+
 
 /* Digital card: scales in, overlaps the torn paper with a strong halo */
 .tear-digital > div:first-child {
@@ -802,41 +804,12 @@
   position: relative;
   z-index: 45;
   box-shadow: 0 12px 34px -18px rgba(0,255,255,0.45);
-  animation: tear-cta-pulse 2.8s ease-in-out infinite;
 }
-.tear-cta-btn::before {
-  content: "";
-  position: absolute;
-  inset: -8px;
-  z-index: -1;
-  border-radius: inherit;
-  background: rgba(0,255,255,0.22);
-  filter: blur(12px);
-  opacity: 0.65;
-  animation: tear-cta-breath 2.8s ease-in-out infinite;
-  pointer-events: none;
-}
-.tear-stage > [aria-hidden] {
-  z-index: 0 !important;
-}
-.tear-stage .tear-scene,
-.tear-stage .tear-cta,
-.tear-stage .tear-cta-btn {
-  position: relative;
-}
-.tear-stage .tear-scene { z-index: 30; }
-.tear-stage .tear-digital { z-index: calc(1 + var(--p) * 20) !important; }
-.tear-stage .tear-paper { z-index: 2 !important; }
-.tear-stage .tear-cta { z-index: 40; }
+.tear-stage > [aria-hidden] { z-index: 0 !important; }
+.tear-stage .tear-scene { position: relative; z-index: 30; }
+.tear-stage .tear-cta { position: relative; z-index: 40; }
 .tear-stage .tear-cta-btn { z-index: 45; }
-@keyframes tear-cta-pulse {
-  0%, 100% { box-shadow: 0 12px 34px -18px rgba(0,255,255,0.45); }
-  50%      { box-shadow: 0 14px 40px -18px rgba(0,255,255,0.55); }
-}
-@keyframes tear-cta-breath {
-  0%, 100% { transform: scale(0.98); opacity: 0.45; }
-  50% { transform: scale(1.08); opacity: 0.75; }
-}
+
 
 @media (max-width: 768px) {
   .tear-scene { max-width: 92vw !important; height: 320px !important; }
@@ -2038,19 +2011,13 @@ html:not(.dark) .landing-scope .tear-win {
 }
 html:not(.dark) .landing-scope .tear-win svg { color: #7c3aed !important; }
 
-/* CTA final do bloco: pulso roxo em vez de cyan */
+/* CTA final do bloco: roxo estático no tema claro */
 html:not(.dark) .landing-scope .tear-cta-btn {
   background: #7c3aed !important;
   color: #ffffff !important;
-  animation: tear-cta-pulse-purple 2.8s ease-in-out infinite !important;
+  box-shadow: 0 12px 34px -18px rgba(124,58,237,0.55) !important;
 }
-html:not(.dark) .landing-scope .tear-cta-btn::before {
-  background: rgba(124,58,237,0.22) !important;
-}
-@keyframes tear-cta-pulse-purple {
-  0%, 100% { box-shadow: 0 12px 34px -18px rgba(124,58,237,0.45); }
-  50%      { box-shadow: 0 14px 40px -18px rgba(124,58,237,0.55); }
-}
+
 
 /* Templates "Campanhas que funcionam" — fundo escuro → branco transparente + roxo */
 html:not(.dark) .landing-scope section.bg-\[oklch\(0\.14_0\.02_230\)\] {
