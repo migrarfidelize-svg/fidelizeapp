@@ -251,10 +251,21 @@ export const adminGetEstablishmentDetail = createServerFn({ method: "POST" })
       series.push({ day: d.slice(5), carimbos: map.get(d) ?? 0 });
     }
 
-    const [{ data: events }, { data: audits }] = await Promise.all([
+    const memberIds = Array.from(new Set((members ?? []).map((m: any) => m.user_id)));
+    const [{ data: events }, { data: audits }, { data: memberProfiles }] = await Promise.all([
       supabase.from("subscription_events").select("id, event_type, from_plan, to_plan, message, created_at, acknowledged_at").eq("establishment_id", data.establishment_id).order("created_at", { ascending: false }).limit(30),
       supabase.from("audit_logs").select("id, action, entity_type, entity_id, metadata, created_at, user_id").or(`establishment_id.eq.${data.establishment_id},entity_id.eq.${data.establishment_id}`).order("created_at", { ascending: false }).limit(30),
+      memberIds.length > 0
+        ? supabase.from("profiles").select("id, full_name, account_type").in("id", memberIds)
+        : Promise.resolve({ data: [] as any[] }),
     ]);
+    const pmap = new Map<string, { full_name: string | null; account_type: string }>();
+    (memberProfiles ?? []).forEach((p: any) => pmap.set(p.id, { full_name: p.full_name, account_type: p.account_type }));
+    const membersEnriched = (members ?? []).map((m: any) => ({
+      ...m,
+      full_name: pmap.get(m.user_id)?.full_name ?? null,
+      account_type: pmap.get(m.user_id)?.account_type ?? "customer",
+    }));
 
     return {
       establishment: est,
