@@ -15,6 +15,7 @@ import { initSentryClient, captureClientError } from "../lib/sentry-client";
 import { registerPWA } from "../lib/pwa-register";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
+import { CursorTrail } from "@/components/CursorTrail";
 
 if (typeof window !== "undefined") {
   initSentryClient();
@@ -136,6 +137,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <CursorTrail />
       <Toaster richColors position="top-center" />
     </QueryClientProvider>
   );
