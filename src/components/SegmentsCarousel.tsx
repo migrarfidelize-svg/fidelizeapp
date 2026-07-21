@@ -303,7 +303,7 @@ function Constellation({
           transition: "all 700ms cubic-bezier(.2,.85,.2,1)",
         }}
       >
-        <div className="relative flex h-44 w-44 items-center justify-center">
+        <div className="relative flex h-64 w-64 items-center justify-center">
           <span
             aria-hidden
             className="absolute inset-0 rounded-full"
