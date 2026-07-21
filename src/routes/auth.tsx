@@ -56,7 +56,7 @@ export const Route = createFileRoute("/auth")({
   beforeLoad: async ({ search }) => {
     const { data } = await supabase.auth.getSession();
     if (data.session) {
-      const dest = await routeAfterAuth({ claim: search.claim, next: search.next });
+      const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
       throw redirect({ to: dest.to });
     }
   },
@@ -143,7 +143,7 @@ function AuthPage() {
           toast.success("Conta criada! Vamos configurar seu cartão.");
           navigate({ to: "/onboarding" });
         } else {
-          const dest = await routeAfterAuth({ claim: search.claim, next: search.next });
+          const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
           toast.success(dest.toast ?? "Conta criada!");
           navigate({ to: dest.to });
         }
@@ -179,7 +179,7 @@ function AuthPage() {
             throw error;
           }
         }
-        const dest = await routeAfterAuth({ claim: search.claim, next: search.next });
+        const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
         toast.success(dest.toast ?? "Bem-vindo de volta!");
         navigate({ to: dest.to });
       }
