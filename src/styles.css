@@ -56,11 +56,80 @@
 }
 
 /* ============================================================
-   TEMA — Dark Premium "Cyan Circuit" (#00ffff)
+   TEMA CLARO — "Cyan Circuit Light"
+   Fundo porcelain frio, cyan profundo como cor-mãe, magenta como acento.
+   Mantém a identidade sem clichês de IA (sem roxo/índigo).
+   ============================================================ */
+:root {
+  --radius: 1rem;
+
+  --background: oklch(0.985 0.005 220);
+  --foreground: oklch(0.18 0.03 232);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.03 232);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.03 232);
+
+  --primary: oklch(0.62 0.14 210);
+  --primary-foreground: oklch(0.98 0.01 210);
+  --primary-soft: oklch(0.92 0.05 200);
+
+  --secondary: oklch(0.95 0.01 220);
+  --secondary-foreground: oklch(0.22 0.03 232);
+
+  --muted: oklch(0.96 0.008 220);
+  --muted-foreground: oklch(0.45 0.03 232);
+
+  --accent: oklch(0.62 0.19 330);
+  --accent-foreground: oklch(0.98 0.01 330);
+  --accent-soft: oklch(0.94 0.05 330);
+
+  --destructive: oklch(0.6 0.22 20);
+  --destructive-foreground: oklch(0.98 0.01 20);
+  --success: oklch(0.62 0.16 165);
+  --success-foreground: oklch(0.98 0.01 165);
+
+  --border: oklch(0.18 0.03 232 / 10%);
+  --input: oklch(0.18 0.03 232 / 14%);
+  --ring: oklch(0.62 0.14 210);
+
+  --chart-1: oklch(0.62 0.14 210);
+  --chart-2: oklch(0.62 0.19 330);
+  --chart-3: oklch(0.62 0.16 165);
+  --chart-4: oklch(0.7 0.16 90);
+  --chart-5: oklch(0.55 0.18 260);
+
+  --sidebar: oklch(0.98 0.005 220);
+  --sidebar-foreground: oklch(0.22 0.03 232);
+  --sidebar-primary: oklch(0.62 0.14 210);
+  --sidebar-primary-foreground: oklch(0.98 0.01 210);
+  --sidebar-accent: oklch(0.95 0.01 220);
+  --sidebar-accent-foreground: oklch(0.22 0.03 232);
+  --sidebar-border: oklch(0.18 0.03 232 / 10%);
+  --sidebar-ring: oklch(0.62 0.14 210);
+
+  --grid-line: color-mix(in oklab, var(--primary) 10%, transparent);
+  --glass-bg: color-mix(in oklab, var(--card) 82%, transparent);
+  --glass-border: color-mix(in oklab, var(--primary) 24%, transparent);
+  --glow-primary: color-mix(in oklab, var(--primary) 40%, transparent);
+  --glow-accent: color-mix(in oklab, var(--accent) 35%, transparent);
+  --hairline: color-mix(in oklab, var(--primary) 22%, transparent);
+  --gradient-hero:
+    radial-gradient(1200px 600px at 15% -10%, color-mix(in oklab, var(--primary) 18%, transparent), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, color-mix(in oklab, var(--accent) 14%, transparent), transparent 60%),
+    radial-gradient(700px 500px at 50% 120%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 60%);
+  --gradient-line: linear-gradient(135deg,
+    color-mix(in oklab, var(--primary) 70%, transparent),
+    color-mix(in oklab, var(--accent) 55%, transparent));
+}
+
+/* ============================================================
+   TEMA ESCURO — Dark Premium "Cyan Circuit" (#00ffff)
    Fundo obsidian profundo, cyan elétrico como cor-mãe,
    detalhes em magenta iridescente. Sem clichês de IA.
    ============================================================ */
-:root, .dark {
+.dark {
   --radius: 1rem;
 
   --background: oklch(0.14 0.02 230);
@@ -123,6 +192,7 @@
     color-mix(in oklab, var(--primary) 85%, transparent),
     color-mix(in oklab, var(--accent) 70%, transparent));
 }
+
 
 @layer base {
   * { border-color: var(--color-border); }
