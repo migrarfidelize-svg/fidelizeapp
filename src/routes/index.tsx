@@ -676,13 +676,13 @@ function Comparison() {
           className="tear-stage sticky top-0 isolate flex h-[100svh] min-h-[760px] items-center overflow-hidden"
           style={{ ["--p" as never]: 0 }}
         >
-          <div className="relative z-20 mx-auto w-full max-w-6xl px-6 pt-8 md:pt-10">
+          <div className="relative z-20 mx-auto w-full max-w-6xl px-6 pt-2 md:pt-3">
 
-            <div className="relative z-50 mb-4 text-center md:mb-6">
-              <h2 className="font-display text-2xl font-extrabold leading-[1.15] tracking-tight text-white md:text-4xl pb-1">
+            <div className="relative z-50 mb-6 text-center md:mb-8">
+              <h2 className="font-display text-3xl font-extrabold leading-[1.15] tracking-tight text-white md:text-5xl pb-1">
                 O papel rasga. O digital escala.
               </h2>
-              <p className="mt-2 text-sm text-white/70 md:text-base">Role para ver o que muda quando você troca o cartão de papel.</p>
+              <p className="mt-3 text-base text-white/70 md:text-lg">Role para ver o que muda quando você troca o cartão de papel.</p>
             </div>
 
 
