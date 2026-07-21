@@ -429,13 +429,72 @@ function Carimbar() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Per-customer QR dialog */}
+      <Dialog open={qrOpen} onOpenChange={setQrOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>QR Code do cliente</DialogTitle>
+            <DialogDescription>
+              Cada cliente tem seu próprio QR. Ao ler, ele abre a carteira digital do próprio cliente.
+            </DialogDescription>
+          </DialogHeader>
+          {qrCustomer && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="grid h-12 w-12 place-items-center rounded-full bg-primary-soft text-primary font-semibold">
+                  {initialsOf(qrCustomer.name)}
+                </div>
+                <div>
+                  <div className="font-display text-lg font-bold">{qrCustomer.name}</div>
+                  <div className="text-xs text-muted-foreground">{formatPhone(qrCustomer.phone)} · código {qrCustomer.code}</div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border p-4 grid place-items-center bg-white">
+                {qrLoading || !qrDataUrl ? (
+                  <div className="h-64 w-64 grid place-items-center text-muted-foreground">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                ) : (
+                  <img src={qrDataUrl} alt={`QR de ${qrCustomer.name}`} className="h-64 w-64" />
+                )}
+              </div>
+
+              <div className="rounded-xl bg-muted/50 p-3 text-xs">
+                <div className="text-muted-foreground mb-1">Link do cliente</div>
+                <div className="font-mono break-all">{qrUrl || "—"}</div>
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-2 sm:gap-2 flex-wrap">
+            <Button variant="outline" onClick={() => { navigator.clipboard.writeText(qrUrl); toast.success("Link copiado"); }} disabled={!qrUrl}>
+              <Copy className="h-4 w-4 mr-1" /> Copiar link
+            </Button>
+            <Button variant="outline" onClick={() => qrUrl && window.open(qrUrl, "_blank", "noopener,noreferrer")} disabled={!qrUrl}>
+              <ExternalLink className="h-4 w-4 mr-1" /> Abrir
+            </Button>
+            <Button
+              onClick={() => {
+                if (!qrDataUrl || !qrCustomer) return;
+                const a = document.createElement("a");
+                a.href = qrDataUrl;
+                a.download = `qr-${qrCustomer.code}.png`;
+                a.click();
+              }}
+              disabled={!qrDataUrl}
+              className="gradient-brand text-primary-foreground"
+            >
+              <Download className="h-4 w-4 mr-1" /> Baixar PNG
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 
   // Helpers scoped after render
   async function loadByCustomerCode(code: string) {
-    // We need the access_token — use a server call. Fastest: query directly via a small server fn.
-    // Fallback path: reuse searchCustomer + a token lookup via getCustomerToken (defined server-side).
     try {
       const { getCustomerTokenByCode } = await import("@/lib/loyalty.functions");
       const token = await getCustomerTokenByCode({ data: { establishment_id: est!.id, code } });
@@ -443,6 +502,33 @@ function Carimbar() {
       await loadByToken(token);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao abrir cartão");
+    }
+  }
+
+  async function openCustomerQr(c: { name: string; code: string; phone: string | null }) {
+    setQrCustomer(c);
+    setQrDataUrl("");
+    setQrUrl("");
+    setQrOpen(true);
+    setQrLoading(true);
+    try {
+      const { getCustomerTokenByCode } = await import("@/lib/loyalty.functions");
+      const token = await getCustomerTokenByCode({ data: { establishment_id: est!.id, code: c.code } });
+      if (!token) { toast.error("Cliente não encontrado"); setQrOpen(false); return; }
+      const url = `${window.location.origin}/c/${token}`;
+      setQrUrl(url);
+      const dataUrl = await QRCode.toDataURL(url, {
+        width: 1024,
+        margin: 1,
+        errorCorrectionLevel: "H",
+        color: { dark: "#000000", light: "#ffffff" },
+      });
+      setQrDataUrl(dataUrl);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao gerar QR");
+      setQrOpen(false);
+    } finally {
+      setQrLoading(false);
     }
   }
 }
