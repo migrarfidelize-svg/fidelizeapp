@@ -6,6 +6,7 @@ import { claimCustomerByToken } from "@/lib/my-wallet.functions";
 import { LoyaltyVoucher } from "@/components/LoyaltyVoucher";
 import { InstallAppButton } from "@/components/InstallAppButton";
 import { OfflineBanner, OfflineBadge, RequiresOnlineAlert } from "@/components/OfflineIndicator";
+import { InvalidQrState } from "@/components/wallet/WalletStates";
 import { PushOptIn } from "@/components/PushOptIn";
 import { ReferralBlock } from "@/components/ReferralBlock";
 import { RatingPrompt } from "@/components/RatingPrompt";
@@ -30,14 +31,11 @@ export const Route = createFileRoute("/c/$token")({
   },
   head: () => ({ meta: [{ title: "Meu cartão — Fidelize" }, { name: "robots", content: "noindex" }] }),
   component: CustomerCard,
-  notFoundComponent: () => {
-    const { InvalidQrState } = require("@/components/wallet/WalletStates");
-    return (
-      <div className="min-h-dvh grid place-items-center p-6">
-        <InvalidQrState onRetry={() => window.history.back()} />
-      </div>
-    );
-  },
+  notFoundComponent: () => (
+    <div className="min-h-dvh grid place-items-center p-6">
+      <InvalidQrState onRetry={() => window.history.back()} />
+    </div>
+  ),
 });
 
 function CustomerCard() {
