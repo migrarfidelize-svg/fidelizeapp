@@ -1226,6 +1226,109 @@
   .live-pulse::before, .act-dot::after, .rank-bar > span { animation: none !important; }
 }
 
+/* ============ Floating Dock (tema-aware) ============
+   Surface + itens adaptam-se ao claro/escuro. Em dark mantém obsidian+cyan;
+   em light usa card branco com anel/halo cyan. */
+:root {
+  --dock-surface: color-mix(in oklab, var(--card) 96%, var(--primary) 3%);
+  --dock-border: color-mix(in oklab, var(--primary) 32%, transparent);
+  --dock-halo: 0 0 0 1px color-mix(in oklab, var(--primary) 14%, transparent),
+               0 24px 60px -22px color-mix(in oklab, var(--primary) 45%, transparent),
+               inset 0 1px 0 color-mix(in oklab, #fff 60%, transparent);
+  --dock-logo-bg: color-mix(in oklab, var(--card) 100%, var(--primary) 6%);
+  --dock-item-idle-bg: color-mix(in oklab, var(--foreground) 4%, transparent);
+  --dock-item-idle-ring: color-mix(in oklab, var(--foreground) 10%, transparent);
+  --dock-item-idle-text: color-mix(in oklab, var(--foreground) 78%, transparent);
+  --dock-item-hover-text: var(--foreground);
+  --dock-item-active-bg: color-mix(in oklab, var(--primary) 14%, transparent);
+  --dock-item-active-text: color-mix(in oklab, var(--primary) 70%, var(--foreground));
+  --dock-item-active-ring: color-mix(in oklab, var(--primary) 55%, transparent);
+  --dock-item-active-glow: 0 0 18px -2px color-mix(in oklab, var(--primary) 60%, transparent);
+  --dock-badge-bg: var(--primary);
+  --dock-badge-text: var(--primary-foreground);
+  --dock-divider: color-mix(in oklab, var(--foreground) 10%, transparent);
+  --dock-tooltip-bg: color-mix(in oklab, var(--card) 96%, transparent);
+  --dock-tooltip-text: color-mix(in oklab, var(--foreground) 85%, transparent);
+  --dock-flyout-title: color-mix(in oklab, var(--primary) 70%, var(--foreground));
+}
+.dark {
+  --dock-surface: rgba(11, 18, 25, 0.9);
+  --dock-border: color-mix(in oklab, var(--primary) 25%, transparent);
+  --dock-halo: 0 0 0 1px color-mix(in oklab, var(--primary) 8%, transparent),
+               0 24px 60px -20px color-mix(in oklab, var(--primary) 35%, transparent),
+               inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --dock-logo-bg: #0e1620;
+  --dock-item-idle-bg: rgba(255, 255, 255, 0.03);
+  --dock-item-idle-ring: rgba(255, 255, 255, 0.06);
+  --dock-item-idle-text: rgba(255, 255, 255, 0.75);
+  --dock-item-hover-text: #ffffff;
+  --dock-item-active-bg: color-mix(in oklab, var(--primary) 15%, transparent);
+  --dock-item-active-text: color-mix(in oklab, var(--primary) 55%, #ffffff);
+  --dock-item-active-ring: color-mix(in oklab, var(--primary) 50%, transparent);
+  --dock-item-active-glow: 0 0 18px -2px color-mix(in oklab, var(--primary) 60%, transparent);
+  --dock-badge-bg: var(--primary);
+  --dock-badge-text: #000000;
+  --dock-divider: rgba(255, 255, 255, 0.06);
+  --dock-tooltip-bg: #0b1219;
+  --dock-tooltip-text: rgba(255, 255, 255, 0.8);
+  --dock-flyout-title: color-mix(in oklab, var(--primary) 60%, #ffffff);
+}
+@utility dock-surface {
+  background: var(--dock-surface);
+  border: 1px solid var(--dock-border);
+  box-shadow: var(--dock-halo);
+  backdrop-filter: blur(16px);
+}
+@utility dock-logo-bg { background: var(--dock-logo-bg); }
+@utility dock-item {
+  background: var(--dock-item-idle-bg);
+  color: var(--dock-item-idle-text);
+  box-shadow: inset 0 0 0 1px var(--dock-item-idle-ring);
+  transition: color .2s ease, background .2s ease, box-shadow .2s ease;
+}
+.dock-item:hover {
+  color: var(--dock-item-hover-text);
+  box-shadow: inset 0 0 0 1px var(--dock-item-active-ring);
+}
+@utility dock-item-active {
+  background: var(--dock-item-active-bg);
+  color: var(--dock-item-active-text);
+  box-shadow: inset 0 0 0 1px var(--dock-item-active-ring), var(--dock-item-active-glow);
+}
+@utility dock-badge { background: var(--dock-badge-bg); color: var(--dock-badge-text); }
+@utility dock-flyout {
+  background: var(--dock-surface);
+  border: 1px solid var(--dock-border);
+  box-shadow: var(--dock-halo);
+  backdrop-filter: blur(16px);
+}
+@utility dock-flyout-title { color: var(--dock-flyout-title); }
+@utility dock-flyout-item {
+  color: var(--dock-item-idle-text);
+  transition: color .18s ease, background .18s ease;
+}
+.dock-flyout-item:hover {
+  color: var(--dock-item-hover-text);
+  background: color-mix(in oklab, var(--foreground) 4%, transparent);
+}
+@utility dock-flyout-item-active {
+  background: var(--dock-item-active-bg);
+  color: var(--dock-item-active-text);
+  box-shadow: inset 0 0 0 1px var(--dock-item-active-ring);
+}
+@utility dock-divider { background: var(--dock-divider); }
+@utility dock-tooltip {
+  background: var(--dock-tooltip-bg);
+  color: var(--dock-tooltip-text);
+  border: 1px solid var(--dock-border);
+}
+@utility dock-page-bg {
+  background:
+    radial-gradient(1200px 500px at 12% -10%, color-mix(in oklab, var(--primary) 6%, transparent), transparent 60%),
+    radial-gradient(900px 400px at 100% 100%, color-mix(in oklab, var(--accent) 5%, transparent), transparent 55%),
+    var(--background);
+}
+
 
 /* Auth cinematic input */
 @utility auth-input {
