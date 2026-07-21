@@ -1,8 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { getMyWallet } from "@/lib/my-wallet.functions";
-import { QrCode, ChevronRight, Sparkles } from "lucide-react";
+import { ChevronRight, Sparkles, Gift, Stamp } from "lucide-react";
 import { formatDate } from "@/lib/format";
+import {
+  EmptyWalletState,
+  WalletErrorState,
+  WithOfflineFallback,
+} from "@/components/wallet/WalletStates";
 
 const walletOpts = queryOptions({
   queryKey: ["my-wallet"],
@@ -13,83 +18,80 @@ const walletOpts = queryOptions({
 export const Route = createFileRoute("/_authenticated/carteira/")({
   ssr: false,
   loader: ({ context }) => context.queryClient.ensureQueryData(walletOpts),
-  head: () => ({ meta: [{ title: "Minha carteira — Fidelize" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Início — Carteira Fidelize" }, { name: "robots", content: "noindex" }] }),
   component: WalletHome,
-  errorComponent: ({ error }) => (
-    <div className="mt-10 rounded-2xl border border-destructive/40 bg-destructive/10 p-6 text-sm text-destructive">
-      Não foi possível carregar sua carteira. {error.message}
-    </div>
-  ),
+  errorComponent: ({ error, reset }) => {
+    return <WalletErrorState error={error} onRetry={reset} />;
+  },
 });
 
 function WalletHome() {
+  const qc = useQueryClient();
   const { data } = useSuspenseQuery(walletOpts);
   const items = data ?? [];
   const totalStamps = items.reduce((sum, i) => sum + (i.card?.stamps ?? 0), 0);
-  const closeToComplete = items.filter((i) => {
+  const readyRewards = items.filter((i) => {
     if (!i.card) return false;
     const req = (i.card.campaign as { stamps_required: number }).stamps_required || 1;
-    return i.card.stamps / req >= 0.6;
+    return i.card.stamps >= req;
   }).length;
 
   return (
-    <div className="space-y-5">
-      <div className="pt-2">
-        <h1 className="font-display text-2xl font-bold tracking-tight">Seus cartões fidelidade</h1>
-        <p className="text-sm text-muted-foreground">
-          Todos os estabelecimentos onde você acumula carimbos, em um só lugar.
-        </p>
+    <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["my-wallet"] })}>
+      <div className="space-y-5">
+        <div className="pt-2">
+          <h1 className="font-display text-2xl font-bold tracking-tight">Bem-vindo(a) de volta</h1>
+          <p className="text-sm text-muted-foreground">
+            Um resumo dos seus cartões e recompensas Fidelize.
+          </p>
+        </div>
+
+        {items.length === 0 ? (
+          <EmptyWalletState />
+        ) : (
+          <>
+            <div className="grid grid-cols-3 gap-3">
+              <KpiTile label="Cartões" value={items.length} />
+              <KpiTile label="Carimbos" value={totalStamps} icon={<Stamp className="h-3.5 w-3.5" />} />
+              <KpiTile label="Prontas" value={readyRewards} accent={readyRewards > 0 ? "primary" : undefined} icon={<Gift className="h-3.5 w-3.5" />} />
+            </div>
+
+            <section>
+              <div className="mb-2 flex items-center justify-between">
+                <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Em destaque</h2>
+                <Link to="/carteira/cartoes" className="text-xs font-medium text-primary hover:underline">
+                  Ver todos →
+                </Link>
+              </div>
+              <div className="space-y-3">
+                {items.slice(0, 3).map((i) => (
+                  <WalletCard key={i.customer.id} item={i} />
+                ))}
+              </div>
+            </section>
+          </>
+        )}
       </div>
-
-      {items.length > 0 && (
-        <div className="grid grid-cols-2 gap-3">
-          <KpiTile label="Cartões ativos" value={items.length} />
-          <KpiTile label="Carimbos totais" value={totalStamps} accent={closeToComplete > 0 ? "primary" : undefined} />
-        </div>
-      )}
-
-      {items.length === 0 ? <EmptyWallet /> : (
-        <div className="space-y-3">
-          {items.map((i) => (
-            <WalletCard key={i.customer.id} item={i} />
-          ))}
-        </div>
-      )}
-    </div>
+    </WithOfflineFallback>
   );
 }
 
-function KpiTile({ label, value, accent }: { label: string; value: number; accent?: "primary" }) {
+function KpiTile({ label, value, accent, icon }: { label: string; value: number; accent?: "primary"; icon?: React.ReactNode }) {
   return (
-    <div className={"rounded-2xl border border-border/60 bg-card/40 p-4 backdrop-blur"}>
-      <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{label}</div>
-      <div className={"mt-1 font-display text-3xl font-bold " + (accent === "primary" ? "text-primary" : "")}>
+    <div className="rounded-2xl border border-border/60 bg-card/40 p-3 backdrop-blur">
+      <div className="flex items-center gap-1 text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
+        {icon}{label}
+      </div>
+      <div className={"mt-1 font-display text-2xl font-bold " + (accent === "primary" ? "text-primary" : "")}>
         {value}
       </div>
     </div>
   );
 }
 
-function EmptyWallet() {
-  return (
-    <div className="mt-6 rounded-3xl border border-dashed border-border/70 bg-card/30 p-8 text-center">
-      <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-primary">
-        <QrCode className="h-7 w-7" />
-      </div>
-      <h2 className="mt-4 font-display text-lg font-semibold">Você ainda não possui cartões fidelidade</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Leia o QR Code de um estabelecimento Fidelize para começar a acumular carimbos.
-      </p>
-      <p className="mt-4 text-xs text-muted-foreground">
-        Já tem o link do seu cartão? Abra-o e toque em "Salvar na minha carteira".
-      </p>
-    </div>
-  );
-}
-
 type WalletItem = Awaited<ReturnType<typeof getMyWallet>>[number];
 
-function WalletCard({ item }: { item: WalletItem }) {
+export function WalletCard({ item }: { item: WalletItem }) {
   const est = item.establishment as { slug: string; name: string; logo_url: string | null; primary_color: string; active: boolean };
   const card = item.card;
   const req = card ? (card.campaign as { stamps_required: number }).stamps_required || 1 : 1;
@@ -97,6 +99,7 @@ function WalletCard({ item }: { item: WalletItem }) {
   const pct = Math.min(100, Math.round((stamps / req) * 100));
   const missing = Math.max(0, req - stamps);
   const reward = card ? (card.campaign as { reward_title: string }).reward_title : null;
+  const campaignActive = card ? (card.campaign as { active: boolean }).active : true;
 
   return (
     <Link
@@ -120,11 +123,16 @@ function WalletCard({ item }: { item: WalletItem }) {
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <h3 className="truncate font-display text-base font-semibold">{est.name}</h3>
             {!est.active && (
               <span className="rounded-full border border-border px-2 py-0.5 text-[9px] uppercase tracking-widest text-muted-foreground">
                 inativo
+              </span>
+            )}
+            {!campaignActive && (
+              <span className="rounded-full border border-amber-500/50 bg-amber-500/10 px-2 py-0.5 text-[9px] uppercase tracking-widest text-amber-600 dark:text-amber-300">
+                expirado
               </span>
             )}
           </div>

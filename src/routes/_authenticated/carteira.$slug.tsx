@@ -1,9 +1,10 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { getMyEstablishmentCard } from "@/lib/my-wallet.functions";
 import { LoyaltyVoucher } from "@/components/LoyaltyVoucher";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Phone, MessageCircle, Instagram, MapPin } from "lucide-react";
+import { ExpiredCardState, WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
 
 const opts = (slug: string) =>
   queryOptions({
@@ -30,6 +31,7 @@ export const Route = createFileRoute("/_authenticated/carteira/$slug")({
     ],
   }),
   component: WalletEstablishment,
+  errorComponent: ({ error, reset }) => <WalletErrorState error={error} onRetry={reset} />,
   notFoundComponent: () => (
     <div className="pt-10 text-center">
       <p className="text-sm text-muted-foreground">Você ainda não participa deste programa.</p>
@@ -41,7 +43,9 @@ export const Route = createFileRoute("/_authenticated/carteira/$slug")({
 });
 
 function WalletEstablishment() {
-  const { data } = useSuspenseQuery(opts(Route.useParams().slug));
+  const qc = useQueryClient();
+  const slug = Route.useParams().slug;
+  const { data } = useSuspenseQuery(opts(slug));
   const d = data!;
   const est = d.establishment as {
     name: string; logo_url: string | null; primary_color: string; address: string | null;
@@ -52,8 +56,11 @@ function WalletEstablishment() {
   const card = d.cards[0];
   const req = card ? (card.campaign as { stamps_required: number }).stamps_required || 1 : 1;
   const stamps = card?.stamps ?? 0;
+  const campaignActive = card ? (card.campaign as { active: boolean }).active : true;
 
   return (
+    <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["my-wallet", slug] })}>
+
     <div className="space-y-5 pb-6">
       <Link to="/carteira" className="inline-flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground">
         <ArrowLeft className="h-3.5 w-3.5" /> Minha carteira
@@ -84,7 +91,9 @@ function WalletEstablishment() {
         </div>
       )}
 
-      {card ? (
+      {card && !campaignActive ? (
+        <ExpiredCardState establishmentName={est.name} />
+      ) : card ? (
         <LoyaltyVoucher
           brandName={est.name}
           logoUrl={est.logo_url}
@@ -105,6 +114,7 @@ function WalletEstablishment() {
           Você ainda não possui carimbos aqui. Mostre seu QR Code no próximo atendimento.
         </div>
       )}
+
 
       {card && (card.campaign as { rules: string | null }).rules && (
         <section className="rounded-2xl border border-border/60 bg-card/40 p-4">
@@ -139,5 +149,7 @@ function WalletEstablishment() {
         </p>
       )}
     </div>
+    </WithOfflineFallback>
   );
 }
+
