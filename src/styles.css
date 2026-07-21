@@ -776,11 +776,12 @@
   opacity: calc((var(--p) - 0.6) * 2.5);
   transition: none;
   white-space: nowrap;
+  z-index: 30;
 }
-.tear-win:nth-child(2) { top: 8%; left: 4%;  transform: translate(calc((1 - var(--p)) * -40px), 0); }
-.tear-win:nth-child(3) { top: 12%; right: 4%; left: auto; transform: translate(calc((1 - var(--p)) * 40px), 0); }
-.tear-win:nth-child(4) { bottom: 12%; left: 6%; transform: translate(calc((1 - var(--p)) * -40px), calc((1 - var(--p)) * 20px)); }
-.tear-win:nth-child(5) { bottom: 8%; right: 6%; left: auto; transform: translate(calc((1 - var(--p)) * 40px), calc((1 - var(--p)) * 20px)); }
+.tear-win:nth-child(2) { top: -14px;    left: -8px;   transform: translate(calc((1 - var(--p)) * -40px), 0); }
+.tear-win:nth-child(3) { top: -14px;    right: -8px;  left: auto; transform: translate(calc((1 - var(--p)) * 40px), 0); }
+.tear-win:nth-child(4) { bottom: -14px; left: -8px;   transform: translate(calc((1 - var(--p)) * -40px), calc((1 - var(--p)) * 20px)); }
+.tear-win:nth-child(5) { bottom: -14px; right: -8px;  left: auto; transform: translate(calc((1 - var(--p)) * 40px), calc((1 - var(--p)) * 20px)); }
 
 /* CTA reveal at the very end of the scroll */
 .tear-cta {

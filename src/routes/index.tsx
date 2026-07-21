@@ -692,8 +692,8 @@ function Comparison() {
             <div className="tear-scene relative z-30 mx-auto h-[260px] w-full max-w-[560px] md:h-[300px]">
               {/* Digital card underneath */}
               <div className="tear-digital absolute inset-0 grid place-items-center">
-
-                <div className="tear-digital-card relative z-20 w-[80%] max-w-[420px] overflow-hidden rounded-3xl border border-cyan-400/40 p-4 md:p-5"
+                <div className="relative w-[80%] max-w-[420px]">
+                <div className="tear-digital-card relative z-20 overflow-hidden rounded-3xl border border-cyan-400/40 p-4 md:p-5"
                   style={{
                     background: "linear-gradient(135deg, #0a1420 0%, #0d1a28 50%, #0a0f1a 100%)",
                     boxShadow: "0 20px 60px -10px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.08)",
@@ -726,7 +726,7 @@ function Comparison() {
                   </div>
                 </div>
 
-                {/* Wins flying in */}
+                {/* Wins flying in — anchored to card corners */}
                 {wins.map((w, i) => (
                   <span
                     key={w}
@@ -740,6 +740,7 @@ function Comparison() {
                     <Check className="mr-1 inline h-3 w-3" style={{ color: "#00ffff" }} /> {w}
                   </span>
                 ))}
+                </div>
               </div>
 
               {/* Paper card on top — splits in two halves */}
