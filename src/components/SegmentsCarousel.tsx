@@ -37,7 +37,7 @@ export function SegmentsCarousel() {
   return (
     <div
       className="relative mx-auto w-full overflow-hidden"
-      style={{ height: CENTER_SIZE + 180 }}
+      style={{ height: CENTER_SIZE + 240 }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
