@@ -680,7 +680,7 @@ function Comparison() {
           <div aria-hidden className="pointer-events-none absolute -left-40 top-1/3 h-96 w-96 rounded-full bg-cyan-500/[0.06] blur-[120px]" />
           <div aria-hidden className="pointer-events-none absolute -right-40 bottom-1/4 h-96 w-96 rounded-full blur-[120px]" style={{ background: "rgba(255,43,214,0.05)" }} />
 
-          <div className="mx-auto w-full max-w-6xl px-6 pt-28 md:pt-32">
+          <div className="mx-auto w-full max-w-6xl px-6 pt-40 md:pt-48">
 
             <div className="relative z-50 mb-10 text-center md:mb-14">
               <span className="font-display text-xs font-bold uppercase tracking-[0.25em]" style={{ color: "#00ffff" }}>
