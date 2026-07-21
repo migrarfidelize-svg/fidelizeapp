@@ -104,13 +104,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
-// Tema por rota: painéis internos (/app, /admin) travados em dark (design cinematográfico).
-// Landing pública respeita preferência salva, padrão dark.
-function themeForPath(p: string): "light" | "dark" | null {
-  if (p.startsWith("/app") || p.startsWith("/admin")) return "dark";
-  return null;
-}
-const THEME_INIT_SCRIPT = `(function(){try{var p=location.pathname;var forced=(p.indexOf('/app')===0||p.indexOf('/admin')===0)?'dark':null;var s=null;try{s=localStorage.getItem('theme');}catch(_){}var t=forced||((s==='light'||s==='dark')?s:'dark');var r=document.documentElement;r.classList.toggle('dark',t==='dark');r.style.colorScheme=t;}catch(e){}})();`;
+// Tema travado em dark ("Cyan Circuit") em todas as rotas — landing e painéis.
+const THEME_INIT_SCRIPT = `(function(){try{var r=document.documentElement;r.classList.add('dark');r.style.colorScheme='dark';try{localStorage.setItem('theme','dark');}catch(_){ }}catch(e){}})();`;
 
 
 
@@ -141,24 +136,19 @@ function RootComponent() {
     });
     return () => subscription.unsubscribe();
   }, [router, queryClient]);
-  // Trava tema em dark para /app e /admin; landing respeita preferência do usuário.
+  // Força dark em todas as rotas (identidade Cyan Circuit).
   useEffect(() => {
     const apply = () => {
-      const forced = themeForPath(window.location.pathname);
-      let t: "light" | "dark" = "dark";
-      if (forced) t = forced;
-      else {
-        const s = (() => { try { return localStorage.getItem("theme"); } catch { return null; } })();
-        t = s === "light" || s === "dark" ? s : "dark";
-      }
       const r = document.documentElement;
-      r.classList.toggle("dark", t === "dark");
-      r.style.colorScheme = t;
+      r.classList.add("dark");
+      r.style.colorScheme = "dark";
+      try { localStorage.setItem("theme", "dark"); } catch { /* ignore */ }
     };
     apply();
     const unsub = router.subscribe("onResolved", apply);
     return () => unsub();
   }, [router]);
+
 
 
   return (
