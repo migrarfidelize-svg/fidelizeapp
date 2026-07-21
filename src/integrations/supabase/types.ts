@@ -1952,6 +1952,30 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles_account_type_backup: {
+        Row: {
+          account_type: Database["public"]["Enums"]["account_type"] | null
+          backed_up_at: string
+          backup_batch: string
+          id: string
+          profile_id: string
+        }
+        Insert: {
+          account_type?: Database["public"]["Enums"]["account_type"] | null
+          backed_up_at?: string
+          backup_batch: string
+          id?: string
+          profile_id: string
+        }
+        Update: {
+          account_type?: Database["public"]["Enums"]["account_type"] | null
+          backed_up_at?: string
+          backup_batch?: string
+          id?: string
+          profile_id?: string
+        }
+        Relationships: []
+      }
       push_logs: {
         Row: {
           body: string | null
