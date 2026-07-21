@@ -384,8 +384,8 @@ function Constellation({
                 background:
                   "radial-gradient(circle at 30% 25%, rgba(255,255,255,0.08), transparent 60%), rgba(5,11,18,0.85)",
                 boxShadow: isFocus
-                  ? "0 0 0 5px color-mix(in oklab, var(--primary) 18%, transparent), 0 26px 55px -18px rgba(0,255,255,0.6)"
-                  : "0 12px 30px -14px rgba(0,255,255,0.4)",
+                  ? "0 0 0 5px color-mix(in oklab, var(--primary) 18%, transparent), 0 26px 55px -18px color-mix(in oklab, var(--primary) 55%, transparent)"
+                  : "0 12px 30px -14px color-mix(in oklab, var(--primary) 35%, transparent)",
               }}
             >
               <Icon
