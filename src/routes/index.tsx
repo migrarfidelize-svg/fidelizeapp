@@ -185,7 +185,7 @@ function Hero() {
       
 
       
-      <div className="relative z-10 mx-auto grid max-w-6xl gap-12 px-4 py-20 md:grid-cols-2 md:items-center md:py-28">
+      <div className="relative z-10 mx-auto grid max-w-6xl gap-12 px-4 py-16 md:grid-cols-2 md:items-center md:py-20">
         <div className="text-white">
           <span
             className="landing-hero-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
@@ -239,11 +239,11 @@ function Hero() {
 
 function Segments() {
   return (
-    <section id="segmentos" className="border-y bg-background py-20">
+    <section id="segmentos" className="border-y bg-background py-14 md:py-16">
       <div className="mx-auto max-w-6xl px-4 text-center">
         <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Feito para</div>
         <h2 className="mt-2 font-display text-3xl font-bold md:text-4xl">Negócios que vivem de clientes que voltam</h2>
-        <div className="mt-14">
+        <div className="mt-8">
           <SegmentsCarousel />
         </div>
       </div>
@@ -327,7 +327,7 @@ function HowItWorks() {
   }, [visible]);
 
   return (
-    <section ref={sectionRef} id="como-funciona" className="relative py-24 md:py-32">
+    <section ref={sectionRef} id="como-funciona" className="relative py-16 md:py-20">
       <div ref={stageRef} className="relative overflow-hidden">
         <div aria-hidden className="pointer-events-none absolute -left-40 top-1/4 h-96 w-96 rounded-full bg-cyan-500/5 blur-[120px]" />
         <div aria-hidden className="pointer-events-none absolute -right-40 bottom-1/4 h-96 w-96 rounded-full blur-[120px]" style={{ background: "rgba(255,43,214,0.05)" }} />
@@ -471,7 +471,7 @@ function Benefits() {
   const N = items.length;
 
   return (
-    <section className="relative overflow-hidden py-20 md:py-32">
+    <section className="relative overflow-hidden py-16 md:py-20">
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,255,255,0.06),transparent_60%)]" />
 
       <div className="mx-auto max-w-6xl px-5 md:px-6">
@@ -486,7 +486,7 @@ function Benefits() {
         </div>
 
         {/* ============ DESKTOP / TABLET: orbit stage ============ */}
-        <div className="fz-orbit relative mx-auto mt-16 hidden aspect-square w-full max-w-[720px] md:block">
+        <div className="fz-orbit relative mx-auto mt-10 hidden aspect-square w-full max-w-[720px] md:block">
           {/* LED ring loops */}
           <div aria-hidden className="fz-ring fz-ring-1" />
           <div aria-hidden className="fz-ring fz-ring-2" />
@@ -668,7 +668,7 @@ function Comparison() {
 
   return (
     <section id="comparativo" className="relative bg-[#08090f]">
-      <div ref={wrapRef} className="relative h-[240vh]">
+      <div ref={wrapRef} className="relative h-[200vh]">
         <div
           ref={stageRef}
           className="tear-stage sticky top-0 flex h-screen items-center overflow-hidden"
@@ -678,7 +678,7 @@ function Comparison() {
           <div aria-hidden className="pointer-events-none absolute -left-40 top-1/3 h-96 w-96 rounded-full bg-cyan-500/[0.06] blur-[120px]" />
           <div aria-hidden className="pointer-events-none absolute -right-40 bottom-1/4 h-96 w-96 rounded-full blur-[120px]" style={{ background: "rgba(255,43,214,0.05)" }} />
 
-          <div className="mx-auto w-full max-w-6xl px-6 pt-24 md:pt-28">
+          <div className="mx-auto w-full max-w-6xl px-6 pt-16 md:pt-20">
 
             <div className="mb-10 text-center md:mb-14">
               <span className="font-display text-xs font-bold uppercase tracking-[0.25em]" style={{ color: "#00ffff" }}>
@@ -993,7 +993,7 @@ function Examples() {
 
 
   return (
-    <section className="relative overflow-hidden border-y border-white/5 bg-[oklch(0.14_0.02_230)] py-20">
+    <section className="relative overflow-hidden border-y border-white/5 bg-[oklch(0.14_0.02_230)] py-16 md:py-20">
       <div className="pointer-events-none absolute inset-0 opacity-60"
         style={{
           background:
@@ -1113,7 +1113,7 @@ function Pricing() {
   };
 
   return (
-    <section id="precos" className="relative py-24 overflow-hidden">
+    <section id="precos" className="relative py-16 md:py-20 overflow-hidden">
       {/* ambient glow */}
       <div className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-[120px]" />
 
@@ -1126,7 +1126,7 @@ function Pricing() {
         </div>
 
         {/* Featured card */}
-        <div className="mt-14 flex justify-center">
+        <div className="mt-10 flex justify-center">
           <div key={active.name} className={`relative w-full max-w-md ${direction === "right" ? "plan-swap-right" : "plan-swap-left"}`}>
             {/* expanding halo on swap */}
             <div className="pointer-events-none absolute inset-0 -z-10 rounded-[2rem] bg-primary/20 blur-3xl plan-halo" />
@@ -1236,8 +1236,8 @@ function FAQ() {
 
 function CTA() {
   return (
-    <section className="w-full flex items-center justify-center bg-background px-6 py-24 md:py-32">
-      <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-0 items-stretch border-t border-primary/10 pt-16">
+    <section className="w-full flex items-center justify-center bg-background px-6 py-16 md:py-20">
+      <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-0 items-stretch border-t border-primary/10 pt-10">
         {/* Left: message */}
         <div className="lg:col-span-7 pr-0 lg:pr-16 flex flex-col justify-between">
           <div className="space-y-6">
@@ -1250,7 +1250,7 @@ function CTA() {
               <span className="text-[#00ffff]">voltarem sempre?</span>
             </h2>
           </div>
-          <div className="hidden lg:block mt-24">
+          <div className="hidden lg:block mt-12">
             <div className="w-24 h-px bg-[#00ffff]" />
           </div>
         </div>
@@ -1367,7 +1367,7 @@ function ChatBubble({ msg, animate }: { msg: ChatMsg; animate: boolean }) {
 
 function FaqChatSection() {
   return (
-    <section id="faq" className="relative border-y border-white/5 bg-gradient-to-b from-background via-card/20 to-background py-24">
+    <section id="faq" className="relative border-y border-white/5 bg-gradient-to-b from-background via-card/20 to-background py-16 md:py-20">
       <div className="mx-auto max-w-6xl px-4">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs uppercase tracking-wider text-primary">

@@ -2231,3 +2231,39 @@ html:not(.dark) .landing-scope svg [stroke="url(#orbIconGrad)"] {
   stroke: #7c3aed !important;
   filter: drop-shadow(0 6px 14px rgba(124,58,237,0.55));
 }
+
+/* ============================================================
+   SPACING & TEXT OVERFLOW NORMALIZATION (landing + system)
+   Applies to both light and dark themes without touching logic.
+   ============================================================ */
+
+/* Prevent long headings and paragraphs from overflowing their block */
+.landing-scope h1,
+.landing-scope h2,
+.landing-scope h3 {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+/* Cap the largest display sizes on smaller viewports so they never
+   spill past their container while keeping the cinematic feel on desktop. */
+@media (max-width: 768px) {
+  .landing-scope .text-6xl { font-size: 2.5rem !important; line-height: 1.1 !important; }
+  .landing-scope .text-7xl { font-size: 2.75rem !important; line-height: 1.05 !important; }
+  .landing-scope .text-5xl { font-size: 2.1rem !important; line-height: 1.1 !important; }
+  .landing-scope .text-4xl { font-size: 1.85rem !important; line-height: 1.15 !important; }
+}
+
+/* Homogenize vertical rhythm between landing sections.
+   Any section that still declares py-24/py-28/py-32 is clamped. */
+.landing-scope section.py-32,
+.landing-scope section.md\:py-32 {
+  padding-top: clamp(3.5rem, 6vw, 5rem) !important;
+  padding-bottom: clamp(3.5rem, 6vw, 5rem) !important;
+}
+
+/* Global (app + admin) — kill accidental huge vertical gaps between
+   stacked sections/blocks that used space-y-24+ or my-24+. */
+main .space-y-24 > * + * { margin-top: 4rem !important; }
+main .space-y-32 > * + * { margin-top: 4.5rem !important; }
