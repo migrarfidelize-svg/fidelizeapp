@@ -1,7 +1,8 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getCardByToken } from "@/lib/loyalty.functions";
+import { claimCustomerByToken } from "@/lib/my-wallet.functions";
 import { LoyaltyVoucher } from "@/components/LoyaltyVoucher";
 import { InstallAppButton } from "@/components/InstallAppButton";
 import { OfflineBanner, OfflineBadge, RequiresOnlineAlert } from "@/components/OfflineIndicator";
@@ -9,8 +10,9 @@ import { PushOptIn } from "@/components/PushOptIn";
 import { ReferralBlock } from "@/components/ReferralBlock";
 import { RatingPrompt } from "@/components/RatingPrompt";
 import { formatDate } from "@/lib/format";
-import { Clock } from "lucide-react";
+import { Clock, Wallet, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const opts = (token: string) => queryOptions({
   queryKey: ["card", token],
