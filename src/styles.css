@@ -617,6 +617,14 @@
   stroke-dashoffset: 0;
   animation: fz-n8n-run 6s linear infinite;
 }
+@keyframes fz-n8n-run-mobile {
+  to { stroke-dashoffset: -1885; } /* ≈ 2π·300 */
+}
+.fz-n8n-run-mobile {
+  stroke-dasharray: 140 1745;
+  stroke-dashoffset: 0;
+  animation: fz-n8n-run-mobile 6s linear infinite;
+}
 
 @media (max-width: 768px) {
   .fz-chip-static { width: 170px; }
@@ -624,6 +632,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fz-ring, .fz-core, .fz-n8n-run { animation: none !important; }
+  .fz-ring, .fz-core-mark, .fz-n8n-run, .fz-n8n-run-mobile { animation: none !important; }
 }
 

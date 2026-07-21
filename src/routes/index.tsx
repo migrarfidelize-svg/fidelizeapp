@@ -478,48 +478,37 @@ function Benefits() {
   const N = items.length;
 
   return (
-    <section className="relative overflow-hidden py-32">
+    <section className="relative overflow-hidden py-20 md:py-32">
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,255,255,0.06),transparent_60%)]" />
 
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-6xl px-5 md:px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="font-display text-xs font-bold uppercase tracking-[0.25em]" style={{ color: "#00ffff" }}>
+          <span className="font-display text-[11px] font-bold uppercase tracking-[0.25em] md:text-xs" style={{ color: "#00ffff" }}>
             Ecossistema Fidelize
           </span>
-          <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight text-white md:text-5xl">
+          <h2 className="mt-3 font-display text-3xl font-extrabold leading-tight tracking-tight text-white md:text-5xl">
             Tudo o que você precisa para fidelizar
           </h2>
-          <p className="mt-3 text-white/60">Uma plataforma. Seis pilares girando em torno da sua marca.</p>
+          <p className="mt-3 text-sm text-white/60 md:text-base">Uma plataforma. Seis pilares girando em torno da sua marca.</p>
         </div>
 
-        {/* Orbit stage */}
-        <div className="fz-orbit relative mx-auto mt-16 aspect-square w-full max-w-[720px]">
+        {/* ============ DESKTOP / TABLET: orbit stage ============ */}
+        <div className="fz-orbit relative mx-auto mt-16 hidden aspect-square w-full max-w-[720px] md:block">
           {/* LED ring loops */}
           <div aria-hidden className="fz-ring fz-ring-1" />
           <div aria-hidden className="fz-ring fz-ring-2" />
           <div aria-hidden className="fz-ring fz-ring-3" />
 
-          {/* Central logo — apenas o "F" grande em cyan, sem bloco por trás */}
+          {/* Central logo */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <svg
-              viewBox="0 0 512 512"
-              className="fz-core-mark h-44 w-44 md:h-56 md:w-56"
-              aria-hidden="true"
-            >
+            <svg viewBox="0 0 512 512" className="fz-core-mark h-56 w-56" aria-hidden="true">
               <defs>
                 <linearGradient id="fzHeroCyan" x1="0" y1="0" x2="1" y2="1">
                   <stop offset="0" stopColor="#7dfcff" />
                   <stop offset="1" stopColor="#00ffff" />
                 </linearGradient>
               </defs>
-              <path
-                d="M 384 256 A 128 128 0 1 1 256 128"
-                fill="none"
-                stroke="url(#fzHeroCyan)"
-                strokeWidth="28"
-                strokeLinecap="round"
-                opacity="0.85"
-              />
+              <path d="M 384 256 A 128 128 0 1 1 256 128" fill="none" stroke="url(#fzHeroCyan)" strokeWidth="28" strokeLinecap="round" opacity="0.85" />
               <path d="M 236 108 L 268 128 L 236 148 Z" fill="url(#fzHeroCyan)" />
               <g fill="url(#fzHeroCyan)">
                 <rect x="196" y="156" width="40" height="216" rx="12" />
@@ -529,13 +518,8 @@ function Benefits() {
             </svg>
           </div>
 
-          {/* n8n-style connector — circular path around the logo linking every chip */}
-          <svg
-            aria-hidden
-            className="pointer-events-none absolute inset-0 h-full w-full"
-            viewBox="0 0 720 720"
-            preserveAspectRatio="xMidYMid meet"
-          >
+          {/* n8n connector */}
+          <svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 720 720" preserveAspectRatio="xMidYMid meet">
             <defs>
               <linearGradient id="fzLink" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0" stopColor="#00ffff" />
@@ -547,24 +531,14 @@ function Benefits() {
                 <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
               </filter>
             </defs>
-            {/* faint guide ring */}
             <circle cx="360" cy="360" r="260" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
-            {/* traveling n8n signal */}
-            <circle
-              cx="360" cy="360" r="260"
-              fill="none"
-              stroke="url(#fzLink)"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              filter="url(#fzLinkGlow)"
-              className="fz-n8n-run"
-            />
+            <circle cx="360" cy="360" r="260" fill="none" stroke="url(#fzLink)" strokeWidth="2.5" strokeLinecap="round" filter="url(#fzLinkGlow)" className="fz-n8n-run" />
           </svg>
 
-          {/* Static chips — só o efeito gira, o conteúdo fica fixo e legível */}
+          {/* Static chips positioned around */}
           <div className="absolute inset-0">
             {items.map((it, i) => {
-              const angle = (360 / N) * i - 90; // start at top
+              const angle = (360 / N) * i - 90;
               const Icon = it.icon;
               return (
                 <div
@@ -582,6 +556,66 @@ function Benefits() {
                         <p className="mt-0.5 text-[11px] leading-snug text-white/60">{it.desc}</p>
                       </div>
                     </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ============ MOBILE: logo em destaque + grid 2 colunas ============ */}
+        <div className="mt-10 md:hidden">
+          {/* Centro: logo + rings + n8n */}
+          <div className="relative mx-auto aspect-square w-full max-w-[280px]">
+            <div aria-hidden className="fz-ring fz-ring-1" />
+            <div aria-hidden className="fz-ring fz-ring-2" />
+            <div aria-hidden className="fz-ring fz-ring-3" />
+            <svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 720 720">
+              <circle cx="360" cy="360" r="300" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+              <circle cx="360" cy="360" r="300" fill="none" stroke="url(#fzLink)" strokeWidth="3" strokeLinecap="round" filter="url(#fzLinkGlow)" className="fz-n8n-run-mobile" />
+              <defs>
+                <linearGradient id="fzLink" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stopColor="#00ffff" />
+                  <stop offset="0.5" stopColor="#a855f7" />
+                  <stop offset="1" stopColor="#ff2bd6" />
+                </linearGradient>
+                <filter id="fzLinkGlow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="4" result="b" />
+                  <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+                </filter>
+              </defs>
+            </svg>
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+              <svg viewBox="0 0 512 512" className="fz-core-mark h-40 w-40" aria-hidden="true">
+                <defs>
+                  <linearGradient id="fzHeroCyanM" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stopColor="#7dfcff" />
+                    <stop offset="1" stopColor="#00ffff" />
+                  </linearGradient>
+                </defs>
+                <path d="M 384 256 A 128 128 0 1 1 256 128" fill="none" stroke="url(#fzHeroCyanM)" strokeWidth="28" strokeLinecap="round" opacity="0.85" />
+                <path d="M 236 108 L 268 128 L 236 148 Z" fill="url(#fzHeroCyanM)" />
+                <g fill="url(#fzHeroCyanM)">
+                  <rect x="196" y="156" width="40" height="216" rx="12" />
+                  <rect x="196" y="156" width="140" height="40" rx="12" />
+                  <rect x="196" y="244" width="104" height="36" rx="10" />
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          {/* Grid dos 6 pilares */}
+          <div className="mt-8 grid grid-cols-2 gap-3">
+            {items.map((it) => {
+              const Icon = it.icon;
+              return (
+                <div key={it.title} className="fz-chip" style={{ ["--acc" as string]: it.color }}>
+                  <div className="fz-chip-icon shrink-0" style={{ color: it.color, boxShadow: `0 0 18px ${it.color}55, inset 0 0 8px ${it.color}33`, borderColor: `${it.color}66` }}>
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-display text-[13px] font-bold leading-tight text-white">{it.title}</h3>
+                    <p className="mt-0.5 text-[11px] leading-snug text-white/60">{it.desc}</p>
                   </div>
                 </div>
               );
