@@ -49,6 +49,16 @@ function EmpresaDetail() {
     onSuccess: () => { toast.success("Falha registrada"); invalidate(); },
     onError: (e: any) => toast.error(e.message ?? "Falha"),
   });
+  const demote = useMutation({
+    mutationFn: (user_id: string) => demoteFn({ data: { establishment_id: id, user_id } }),
+    onSuccess: (r: any) => {
+      toast.success(r?.profile_updated
+        ? "Acesso removido. Usuário agora vai para /carteira no próximo login."
+        : "Acesso removido desta empresa. Usuário ainda é lojista em outra empresa.");
+      invalidate();
+    },
+    onError: (e: any) => toast.error(e.message ?? "Falha"),
+  });
 
   if (isLoading || !data) return <LoadingSkeleton variant="page" />;
   const { establishment: e, metrics, series, events, audits, campaigns, members } = data;
