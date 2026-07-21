@@ -642,7 +642,10 @@ function Comparison() {
         raf = 0;
         const rect = wrap.getBoundingClientRect();
         const total = rect.height - window.innerHeight;
-        const p = Math.min(1, Math.max(0, -rect.top / Math.max(1, total)));
+        const raw = Math.min(1, Math.max(0, -rect.top / Math.max(1, total)));
+        // Anima até 70% e segura no 100% pelos 30% restantes para o usuário
+        // ver a cena totalmente montada antes de sair para a próxima âncora.
+        const p = Math.min(1, raw / 0.7);
         stage.style.setProperty("--p", String(p));
       });
     };
