@@ -670,7 +670,7 @@ function Comparison() {
 
   return (
     <section id="comparativo" className="relative bg-[oklch(0.14_0.02_230)]">
-      <div ref={wrapRef} className="relative h-[220vh]">
+      <div ref={wrapRef} className="relative h-[220vh] pb-[25vh]">
         <div
           ref={stageRef}
           className="tear-stage sticky top-0 flex h-screen items-center overflow-hidden"
