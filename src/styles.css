@@ -717,17 +717,6 @@
   isolation: isolate;
   z-index: 1;
 }
-.tear-digital::before {
-  content: "";
-  position: absolute;
-  inset: 10% 2%;
-  z-index: 0;
-  border-radius: 2rem;
-  background: radial-gradient(closest-side, rgba(0,255,255,0.18), transparent 74%);
-  filter: blur(48px);
-  pointer-events: none;
-  opacity: calc((var(--p) - 0.3) * 1.8);
-}
 .tear-paper {
   position: absolute;
   inset: 0;
@@ -1985,9 +1974,6 @@ html:not(.dark) .landing-scope .tear-half {
 html:not(.dark) .landing-scope .tear-digital > div:first-child,
 html:not(.dark) .landing-scope .tear-digital > div:first-child * {
   filter: none !important;
-}
-html:not(.dark) .landing-scope .tear-digital::before {
-  background: radial-gradient(closest-side, rgba(124,58,237,0.24), transparent 74%) !important;
 }
 html:not(.dark) .landing-scope .tear-digital > div:first-child {
   box-shadow:
