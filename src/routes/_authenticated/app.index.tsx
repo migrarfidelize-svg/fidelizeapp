@@ -82,7 +82,7 @@ function Dashboard() {
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{s.label}</div>
-                <div className="mt-2 metric-number text-3xl sm:text-4xl">{s.value.toLocaleString("pt-BR")}</div>
+                <div className="mt-2 metric-solid text-3xl sm:text-4xl">{s.value.toLocaleString("pt-BR")}</div>
               </div>
               <span className={`card-icon ${s.accent ? "card-icon-accent" : ""}`} aria-hidden>
                 <s.icon />
@@ -121,14 +121,8 @@ function Dashboard() {
         </div>
         <div className="mt-6 h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data.series}>
-              <defs>
-                <linearGradient id="carArea" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.55} />
-                  <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
+            <LineChart data={data.series} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.12} />
               <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke="currentColor" opacity={0.5} />
               <YAxis tick={{ fontSize: 11 }} allowDecimals={false} stroke="currentColor" opacity={0.5} />
               <Tooltip
@@ -138,8 +132,15 @@ function Dashboard() {
                   borderRadius: 12,
                 }}
               />
-              <Area type="monotone" dataKey="carimbos" stroke="var(--color-primary)" strokeWidth={2.5} fill="url(#carArea)" />
-            </AreaChart>
+              <Line
+                type="monotone"
+                dataKey="carimbos"
+                stroke="var(--color-primary)"
+                strokeWidth={2.5}
+                dot={{ r: 3, fill: "var(--color-primary)", strokeWidth: 0 }}
+                activeDot={{ r: 5 }}
+              />
+            </LineChart>
           </ResponsiveContainer>
         </div>
       </div>
