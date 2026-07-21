@@ -869,28 +869,12 @@
 
 
 
-/* Floating nav dock — breathing cyan halo */
+/* Floating nav dock — fixed cyan border, no breathing */
 .nav-dock {
   position: relative;
   box-shadow:
     0 10px 40px -12px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(0, 255, 255, 0.08) inset;
-  animation: nav-dock-breathe 4.5s ease-in-out infinite;
+    0 0 24px -6px rgba(0, 255, 255, 0.35),
+    0 0 0 1px rgba(0, 255, 255, 0.35) inset;
 }
-@keyframes nav-dock-breathe {
-  0%, 100% {
-    box-shadow:
-      0 10px 40px -12px rgba(0, 0, 0, 0.5),
-      0 0 22px -4px rgba(0, 255, 255, 0.25),
-      0 0 0 1px rgba(0, 255, 255, 0.08) inset;
-  }
-  50% {
-    box-shadow:
-      0 10px 40px -12px rgba(0, 0, 0, 0.5),
-      0 0 40px -2px rgba(0, 255, 255, 0.5),
-      0 0 0 1px rgba(0, 255, 255, 0.18) inset;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .nav-dock { animation: none; }
-}
+
