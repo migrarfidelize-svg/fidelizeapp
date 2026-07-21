@@ -126,8 +126,10 @@ function Hero() {
   return (
     <section className="relative overflow-hidden" style={{ background: OBSIDIAN }}>
       <div aria-hidden className="hero-bg-aurora-circuit">
-        <span className="hero-pulse" />
-        <span className="hero-pulse delay" />
+        <span className="hero-bokeh" />
+        <span className="hero-floor" />
+        <span className="hero-horizon" />
+        <span className="hero-vignette" />
       </div>
       
 
