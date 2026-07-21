@@ -58,24 +58,14 @@ function Dashboard() {
 
   return (
     <div className="space-y-8">
-      {/* CINEMATIC HERO */}
-      <section className="dash-hero p-6 sm:p-8">
-        <div className="relative flex flex-wrap items-end justify-between gap-6">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="live-pulse">Ao vivo</span>
-              <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                {dayLabel} · {timeLabel}
-              </span>
-            </div>
-            <h1 className="mt-3 font-display text-3xl sm:text-4xl font-bold tracking-tight">
-              {est.name}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Comando de operações do seu programa de fidelidade.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
+      <PageHero
+        icon={LayoutDashboard}
+        liveLabel="Ao vivo"
+        eyebrow={`${dayLabel} · ${timeLabel}`}
+        title={est.name}
+        subtitle="Comando de operações do seu programa de fidelidade."
+        actions={
+          <>
             <Button asChild variant="outline" className="border-primary/30 hover:border-primary/60">
               <Link to="/l/$slug" params={{ slug: est.slug }}>
                 <QrCode className="mr-1 h-4 w-4" /> Página pública
@@ -87,17 +77,16 @@ function Dashboard() {
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
-          </div>
-        </div>
+          </>
+        }
+        ticker={[
+          { label: "Últimos 7 dias", value: `${last7Total} carimbos`, icon: TrendingUp },
+          { label: "Base ativa", value: `${data.customersCount} clientes`, icon: Users },
+          { label: "Recompensas", value: `${data.redeemedCount} resgatadas`, icon: Trophy },
+          { label: "Meta do mês", value: data.goalMonth, icon: Clock },
+        ]}
+      />
 
-        {/* Ticker strip inside hero */}
-        <div className="relative mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-          <TickerItem label="Últimos 7 dias" value={`${last7Total} carimbos`} icon={TrendingUp} />
-          <TickerItem label="Base ativa" value={`${data.customersCount} clientes`} icon={Users} />
-          <TickerItem label="Recompensas" value={`${data.redeemedCount} resgatadas`} icon={Trophy} />
-          <TickerItem label="Meta do mês" value={data.goalMonth} icon={Clock} />
-        </div>
-      </section>
 
       {/* KPI STRIP */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
