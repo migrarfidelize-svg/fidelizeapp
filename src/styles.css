@@ -2131,3 +2131,12 @@ html:not(.dark) .landing-scope .nav-dock .surface-glow {
 html:not(.dark) .landing-scope .nav-dock .shadow-\[0_0_0_1px_rgba\(0\,255\,255\,0\.4\)\,0_0_24px_-4px_rgba\(0\,255\,255\,0\.65\)\] {
   box-shadow: 0 0 0 1px rgba(124,58,237,0.5), 0 0 24px -4px rgba(124,58,237,0.65) !important;
 }
+/* Badge do hero — tema claro: fundo roxo mais opaco e texto preto */
+html:not(.dark) .landing-scope .landing-hero-badge {
+  background: color-mix(in oklab, var(--primary) 22%, transparent) !important;
+  border-color: color-mix(in oklab, var(--primary) 60%, transparent) !important;
+  color: #000 !important;
+}
+html:not(.dark) .landing-scope .landing-hero-badge svg {
+  color: #000 !important;
+}
