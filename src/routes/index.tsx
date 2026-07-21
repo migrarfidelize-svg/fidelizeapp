@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
 import { HeroStampCardLoop } from "@/components/HeroStampCardLoop";
+import { SegmentsCarousel } from "@/components/SegmentsCarousel";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ArrowRight, QrCode, Smartphone, ShieldCheck, BarChart3, Sparkles, Coffee, Scissors, Pizza, ShoppingBag, Wrench, IceCream, Store, PawPrint, Check } from "lucide-react";
@@ -193,31 +194,14 @@ function Hero() {
   );
 }
 
-const SEGMENTS = [
-  { icon: Coffee, label: "Cafeterias" },
-  { icon: Scissors, label: "Barbearias" },
-  { icon: Sparkles, label: "Salões" },
-  { icon: Pizza, label: "Pizzarias" },
-  { icon: IceCream, label: "Sorveterias" },
-  { icon: Store, label: "Padarias" },
-  { icon: PawPrint, label: "Pet Shops" },
-  { icon: Wrench, label: "Oficinas" },
-  { icon: ShoppingBag, label: "Lojas" },
-];
-
 function Segments() {
   return (
-    <section id="segmentos" className="border-y bg-muted/40 py-16">
+    <section id="segmentos" className="border-y bg-background py-20">
       <div className="mx-auto max-w-6xl px-4 text-center">
         <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Feito para</div>
-        <h2 className="mt-2 font-display text-3xl font-bold">Negócios que vivem de clientes que voltam</h2>
-        <div className="mt-10 grid grid-cols-3 gap-6 md:grid-cols-9">
-          {SEGMENTS.map((s) => (
-            <div key={s.label} className="flex flex-col items-center gap-2 text-muted-foreground">
-              <div className="grid h-14 w-14 place-items-center rounded-2xl bg-card border shadow-sm"><s.icon className="h-6 w-6" /></div>
-              <div className="text-xs font-medium">{s.label}</div>
-            </div>
-          ))}
+        <h2 className="mt-2 font-display text-3xl font-bold md:text-4xl">Negócios que vivem de clientes que voltam</h2>
+        <div className="mt-14">
+          <SegmentsCarousel />
         </div>
       </div>
     </section>
