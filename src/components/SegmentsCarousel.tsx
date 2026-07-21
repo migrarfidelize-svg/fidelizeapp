@@ -72,9 +72,8 @@ export function SegmentsCarousel() {
       <svg width="0" height="0" className="absolute" aria-hidden>
         <defs>
           <linearGradient id="orbIconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#7dfcff" />
-            <stop offset="50%" stopColor="var(--primary)" />
-            <stop offset="100%" stopColor="var(--accent)" />
+            <stop offset="0%" stopColor="var(--primary)" />
+            <stop offset="100%" stopColor="var(--primary)" />
           </linearGradient>
           <filter id="orbGlow" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="2.5" result="b" />
@@ -240,7 +239,7 @@ function Constellation({
             cy={CENTER}
             r={R + 32}
             fill="none"
-            stroke="color-mix(in oklab, var(--accent) 25%, transparent)"
+            stroke="color-mix(in oklab, var(--primary) 20%, transparent)"
             strokeOpacity="0.12"
             strokeDasharray="1 6"
             strokeWidth="1"
@@ -283,7 +282,7 @@ function Constellation({
         {(() => {
           const n = nodes[focused];
           return (
-            <circle r="3.5" fill="#7dfcff" filter="url(#orbGlow)">
+            <circle r="3.5" fill="var(--primary)" filter="url(#orbGlow)">
               <animateMotion
                 key={focused}
                 dur="1.4s"
@@ -297,14 +296,14 @@ function Constellation({
 
       {/* Central hub — Fidelize mark */}
       <div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+        className="pointer-events-none absolute left-1/2 top-1/2"
         style={{
           transform: `translate(-50%, -50%) scale(${visible ? 1 : 0.85})`,
           opacity: visible ? 1 : 0,
           transition: "all 700ms cubic-bezier(.2,.85,.2,1)",
         }}
       >
-        <div className="relative flex h-40 w-40 items-center justify-center">
+        <div className="relative flex h-44 w-44 items-center justify-center">
           <span
             aria-hidden
             className="absolute inset-0 rounded-full"
@@ -326,19 +325,14 @@ function Constellation({
                 "inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -25px 40px -10px rgba(0,255,255,0.25)",
             }}
           />
-          <div className="relative z-10 flex flex-col items-center gap-1">
+          <div className="relative z-10 flex w-full flex-col items-center justify-center gap-1 px-3 text-center">
             <div
-              className="font-display text-xl font-black tracking-tight"
-              style={{
-                background:
-                  "linear-gradient(135deg, #7dfcff 0%, var(--primary) 50%, var(--accent) 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
+              className="font-display text-lg font-black leading-none tracking-tight"
+              style={{ color: "var(--primary)" }}
             >
               Fidelize
             </div>
-            <div className="max-w-[110px] text-center text-[10px] font-semibold uppercase tracking-widest text-cyan-300/80">
+            <div className="text-[10px] font-semibold uppercase leading-tight tracking-widest text-cyan-300/80">
               {focusedItem.label}
             </div>
             <span
@@ -410,7 +404,7 @@ function Constellation({
                   className="pointer-events-none absolute -inset-1 rounded-full"
                   style={{
                     background:
-                      "conic-gradient(from 0deg, transparent 0%, color-mix(in oklab, var(--primary) 60%, transparent) 25%, transparent 50%, color-mix(in oklab, var(--accent) 60%, transparent) 75%, transparent 100%)",
+                      "conic-gradient(from 0deg, transparent 0%, color-mix(in oklab, var(--primary) 65%, transparent) 25%, transparent 50%, color-mix(in oklab, var(--primary) 65%, transparent) 75%, transparent 100%)",
                     filter: "blur(6px)",
                     animation: "orbit-conic 3.6s linear infinite",
                     opacity: 0.55,
