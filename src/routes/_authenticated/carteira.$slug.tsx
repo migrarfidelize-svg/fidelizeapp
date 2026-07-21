@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { getMyEstablishmentCard } from "@/lib/wallet.functions";
+import { getMyEstablishmentCard } from "@/lib/my-wallet.functions";
 import { LoyaltyVoucher } from "@/components/LoyaltyVoucher";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Phone, MessageCircle, Instagram, MapPin } from "lucide-react";
