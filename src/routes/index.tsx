@@ -689,11 +689,11 @@ function Comparison() {
 
 
             {/* Stage: two cards stacked in the same slot */}
-            <div className="tear-scene relative z-30 mx-auto h-[340px] w-full max-w-[720px] md:h-[400px]">
+            <div className="tear-scene relative z-30 mx-auto h-[260px] w-full max-w-[560px] md:h-[300px]">
               {/* Digital card underneath */}
               <div className="tear-digital absolute inset-0 grid place-items-center">
 
-                <div className="tear-digital-card relative z-20 w-[86%] max-w-[520px] overflow-hidden rounded-3xl border border-cyan-400/40 p-6 md:p-8"
+                <div className="tear-digital-card relative z-20 w-[80%] max-w-[420px] overflow-hidden rounded-3xl border border-cyan-400/40 p-4 md:p-5"
                   style={{
                     background: "linear-gradient(135deg, #0a1420 0%, #0d1a28 50%, #0a0f1a 100%)",
                     boxShadow: "0 20px 60px -10px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.08)",
@@ -747,7 +747,7 @@ function Comparison() {
                 className="tear-paper absolute inset-0 grid place-items-center"
                 style={{ zIndex: 2, pointerEvents: "none" }}
               >
-                <div className="relative w-[86%] max-w-[560px]" style={{ height: 340 }}>
+                <div className="relative w-[80%] max-w-[440px]" style={{ height: 260 }}>
                   {/* Pains — margin notes in black ink, off-card */}
                   {pains.map((p, i) => (
                     <span
