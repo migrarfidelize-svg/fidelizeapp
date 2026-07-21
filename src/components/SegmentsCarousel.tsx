@@ -37,7 +37,7 @@ export function SegmentsCarousel() {
   return (
     <div
       className="relative mx-auto w-full overflow-hidden"
-      style={{ height: CENTER_SIZE + 240 }}
+      style={{ height: CENTER_SIZE + 80 }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -46,7 +46,7 @@ export function SegmentsCarousel() {
       <div className="pointer-events-none absolute inset-y-0 right-0 z-20 w-40 bg-gradient-to-l from-background to-transparent" />
 
       {/* Stage — vertically anchored above label */}
-      <div className="absolute inset-x-0 top-0" style={{ height: CENTER_SIZE + 40 }}>
+      <div className="absolute inset-x-0 top-0" style={{ height: CENTER_SIZE }}>
         {ITEMS.map((it, i) => {
           // signed distance -N..+N with wrap-around for shortest path
           let d = i - active;
@@ -181,8 +181,8 @@ export function SegmentsCarousel() {
         })}
       </div>
 
-      {/* Active label */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-8 z-30 text-center">
+      {/* Active label — sits right below the card */}
+      <div className="pointer-events-none absolute inset-x-0 z-30 text-center" style={{ top: CENTER_SIZE + 4 }}>
         <div
           key={active}
           className="inline-block font-display text-2xl font-bold text-foreground animate-fade-in md:text-3xl"
@@ -192,7 +192,7 @@ export function SegmentsCarousel() {
       </div>
 
       {/* Dots */}
-      <div className="absolute inset-x-0 bottom-2 z-30 flex justify-center gap-1.5">
+      <div className="absolute inset-x-0 bottom-1 z-30 flex justify-center gap-1.5">
         {ITEMS.map((_, i) => (
           <button
             key={i}
@@ -207,6 +207,7 @@ export function SegmentsCarousel() {
           />
         ))}
       </div>
+
 
       <style>{`
         @keyframes seg-float {
