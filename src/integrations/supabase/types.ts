@@ -446,6 +446,7 @@ export type Database = {
           referred_by: string | null
           tier: Database["public"]["Enums"]["customer_tier"]
           updated_at: string
+          user_id: string | null
           visits_count: number
         }
         Insert: {
@@ -466,6 +467,7 @@ export type Database = {
           referred_by?: string | null
           tier?: Database["public"]["Enums"]["customer_tier"]
           updated_at?: string
+          user_id?: string | null
           visits_count?: number
         }
         Update: {
@@ -486,6 +488,7 @@ export type Database = {
           referred_by?: string | null
           tier?: Database["public"]["Enums"]["customer_tier"]
           updated_at?: string
+          user_id?: string | null
           visits_count?: number
         }
         Relationships: [
@@ -1921,6 +1924,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_type: Database["public"]["Enums"]["account_type"]
           avatar_url: string | null
           created_at: string
           full_name: string | null
@@ -1929,6 +1933,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          account_type?: Database["public"]["Enums"]["account_type"]
           avatar_url?: string | null
           created_at?: string
           full_name?: string | null
@@ -1937,6 +1942,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          account_type?: Database["public"]["Enums"]["account_type"]
           avatar_url?: string | null
           created_at?: string
           full_name?: string | null
@@ -3468,6 +3474,7 @@ export type Database = {
         Args: { _est: string; _feature: string }
         Returns: boolean
       }
+      is_establishment_user: { Args: { _user: string }; Returns: boolean }
       is_helpdesk_admin: {
         Args: { _est: string; _user: string }
         Returns: boolean
@@ -3484,8 +3491,13 @@ export type Database = {
           marked_past_due: number
         }[]
       }
+      my_account_type: {
+        Args: never
+        Returns: Database["public"]["Enums"]["account_type"]
+      }
     }
     Enums: {
+      account_type: "customer" | "establishment" | "super_admin"
       campaign_type: "stamps" | "points"
       customer_tier: "bronze" | "prata" | "ouro" | "diamante"
       helpdesk_role: "hd_admin" | "hd_agent"
@@ -3664,6 +3676,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      account_type: ["customer", "establishment", "super_admin"],
       campaign_type: ["stamps", "points"],
       customer_tier: ["bronze", "prata", "ouro", "diamante"],
       helpdesk_role: ["hd_admin", "hd_agent"],
