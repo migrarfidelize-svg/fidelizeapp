@@ -1077,12 +1077,12 @@
 }
 
 /* ============ Dock logo LED loop ============ */
-.dock-logo { isolation: isolate; }
+.dock-logo { isolation: isolate; border-radius: 9999px; }
 .dock-logo::before {
   content: "";
   position: absolute;
   inset: -3px;
-  border-radius: 18px;
+  border-radius: 9999px;
   padding: 2px;
   background: conic-gradient(
     from 0deg,
@@ -1104,7 +1104,7 @@
 .dock-logo-led {
   position: absolute;
   inset: -6px;
-  border-radius: 22px;
+  border-radius: 9999px;
   background: conic-gradient(
     from 0deg,
     transparent 300deg,
@@ -1122,7 +1122,7 @@
 .dock-logo-halo {
   position: absolute;
   inset: -10px;
-  border-radius: 24px;
+  border-radius: 9999px;
   background: radial-gradient(closest-side, rgba(0,255,255,0.35), transparent 70%);
   filter: blur(10px);
   animation: dock-logo-breathe 3.2s ease-in-out infinite;
