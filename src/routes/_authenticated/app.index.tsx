@@ -3,11 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getMyEstablishments, getDashboardData } from "@/lib/loyalty.functions";
 import {
-  Users, Stamp, Gift, TrendingUp, ArrowRight, Sparkles,
+  Users, Stamp, Gift, ArrowRight, Sparkles,
   ArrowUpRight, ArrowDownRight, Minus, Zap, Crown, Activity,
 } from "lucide-react";
 import {
-  AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid,
+  LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid,
 } from "recharts";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
@@ -61,7 +61,7 @@ function Dashboard() {
             <Button asChild variant="outline" className="border-primary/30 hover:border-primary/60">
               <Link to="/l/$slug" params={{ slug: est.slug }}>Ver página pública</Link>
             </Button>
-            <Button asChild className="gradient-brand text-primary-foreground shadow-[0_0_24px_-6px_var(--primary)]">
+            <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_-6px_var(--primary)]">
               <Link to="/app/carimbar">
                 <Zap className="mr-1 h-4 w-4" /> Carimbar cliente
                 <ArrowRight className="ml-1 h-4 w-4" />
