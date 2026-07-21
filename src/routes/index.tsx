@@ -682,7 +682,7 @@ function Comparison() {
 
           <div className="mx-auto w-full max-w-6xl px-6 pt-28 md:pt-32">
 
-            <div className="relative z-50 mb-10 text-center md:mb-14 [text-shadow:0_2px_20px_rgba(0,0,0,0.9)]">
+            <div className="relative z-50 mb-10 text-center md:mb-14">
               <span className="font-display text-xs font-bold uppercase tracking-[0.25em]" style={{ color: "#00ffff" }}>
                 Papel × Fidelize
               </span>
