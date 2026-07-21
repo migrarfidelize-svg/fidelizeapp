@@ -11,10 +11,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Search, Stamp as StampIcon, Undo2, Gift, User, QrCode, Loader2, CheckCircle2 } from "lucide-react";
+import { Search, Stamp as StampIcon, Undo2, Gift, User, QrCode, Loader2, CheckCircle2, Copy, ExternalLink, Download } from "lucide-react";
 import { formatPhone } from "@/lib/format";
 import { QrScanner } from "@/components/QrScanner";
 import { supabase } from "@/integrations/supabase/client";
+import QRCode from "qrcode";
 
 export const Route = createFileRoute("/_authenticated/app/carimbar")({
   head: () => ({ meta: [{ title: "Carimbar cliente — Fidelize" }] }),
