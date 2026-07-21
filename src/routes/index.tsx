@@ -1078,7 +1078,7 @@ function Examples() {
   );
 }
 
-}
+
 
 
 function Pricing() {
