@@ -645,7 +645,8 @@ function Comparison() {
         const raw = Math.min(1, Math.max(0, -rect.top / Math.max(1, total)));
         // Anima até 70% e segura no 100% pelos 30% restantes para o usuário
         // ver a cena totalmente montada antes de sair para a próxima âncora.
-        const p = Math.min(1, raw / 0.7);
+        // Anima até 45% do scroll e segura totalmente montado nos 55% restantes.
+        const p = Math.min(1, raw / 0.45);
         stage.style.setProperty("--p", String(p));
       });
     };
