@@ -579,14 +579,10 @@
 }
 .fz-orbit:hover .fz-rotor { animation-play-state: paused; }
 
-/* Counter-rotate each chip so text stays upright */
-.fz-counter {
-  animation: fz-rotor-counter 44s linear infinite;
-  transform-origin: center;
-  transform: translate(-50%, -50%);
+/* Static chip wrapper — mantém o conteúdo legível, sem rotação */
+.fz-chip-static {
   width: 220px;
 }
-.fz-orbit:hover .fz-counter { animation-play-state: paused; }
 
 .fz-chip {
   display: flex; gap: 12px; align-items: flex-start;
@@ -612,13 +608,22 @@
 }
 .fz-chip-body { min-width: 0; }
 
-/* Responsive: chip width scales down on smaller screens */
+/* n8n traveling signal around the logo */
+@keyframes fz-n8n-run {
+  to { stroke-dashoffset: -1634; } /* ≈ 2π·260 */
+}
+.fz-n8n-run {
+  stroke-dasharray: 120 1514;
+  stroke-dashoffset: 0;
+  animation: fz-n8n-run 6s linear infinite;
+}
+
 @media (max-width: 768px) {
-  .fz-counter { width: 170px; }
+  .fz-chip-static { width: 170px; }
   .fz-chip { padding: 10px 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fz-rotor, .fz-counter, .fz-ring, .fz-core { animation: none !important; }
+  .fz-ring, .fz-core, .fz-n8n-run { animation: none !important; }
 }
 
