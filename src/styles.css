@@ -2110,3 +2110,24 @@ html:not(.dark) .landing-scope .landing-qr g rect {
 html:not(.dark) .landing-scope .landing-qr rect[fill="transparent"] {
   fill: transparent !important;
 }
+
+/* Nav dock + Logo no tema claro — borda e halo em roxo */
+html:not(.dark) .landing-scope .nav-dock {
+  border-color: rgba(124, 58, 237, 0.55) !important;
+  box-shadow:
+    0 10px 40px -12px rgba(124, 58, 237, 0.25),
+    0 0 24px -6px rgba(124, 58, 237, 0.35),
+    0 0 0 1px rgba(124, 58, 237, 0.40) inset !important;
+}
+html:not(.dark) .landing-scope .nav-dock .surface-glow {
+  box-shadow: 0 12px 30px -12px rgba(124, 58, 237, 0.55),
+              0 0 0 1px rgba(124, 58, 237, 0.35) !important;
+}
+/* Ladrilho da logo em fundo roxo suave */
+html:not(.dark) .landing-scope .nav-dock .surface-glow {
+  background: linear-gradient(135deg, #f5efff, #ede4ff) !important;
+}
+/* Botão "Meu painel" no header — troca halo cyan por roxo */
+html:not(.dark) .landing-scope .nav-dock .shadow-\[0_0_0_1px_rgba\(0\,255\,255\,0\.4\)\,0_0_24px_-4px_rgba\(0\,255\,255\,0\.65\)\] {
+  box-shadow: 0 0 0 1px rgba(124,58,237,0.5), 0 0 24px -4px rgba(124,58,237,0.65) !important;
+}
