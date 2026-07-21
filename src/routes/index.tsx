@@ -680,15 +680,16 @@ function Comparison() {
 
           <div className="mx-auto w-full max-w-6xl px-6 pt-16 md:pt-20">
 
-            <div className="mb-10 text-center md:mb-14">
+            <div className="relative z-40 mb-10 text-center md:mb-14">
               <span className="font-display text-xs font-bold uppercase tracking-[0.25em]" style={{ color: "#00ffff" }}>
                 Papel × Fidelize
               </span>
-              <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-white md:text-5xl">
+              <h2 className="mt-3 font-display text-3xl font-extrabold leading-[1.15] tracking-tight text-white md:text-5xl">
                 O papel rasga. O digital escala.
               </h2>
               <p className="mt-4 text-white/60">Role para ver o que muda quando você troca o cartão de papel.</p>
             </div>
+
 
 
 
