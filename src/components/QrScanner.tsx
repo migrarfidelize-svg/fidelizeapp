@@ -74,38 +74,65 @@ export function QrScanner({ onDetected, paused }: Props) {
   }
 
   return (
-    <div className="space-y-3">
-      <div className="relative aspect-square w-full max-w-sm mx-auto rounded-2xl overflow-hidden bg-black">
-        <video ref={videoRef} className="h-full w-full object-cover" muted playsInline />
-        {state !== "running" && (
-          <div className="absolute inset-0 grid place-items-center text-white text-center p-4">
-            {state === "requesting" && <div className="flex items-center gap-2 text-sm"><RefreshCw className="h-4 w-4 animate-spin" /> Solicitando câmera…</div>}
-            {state === "denied" && (
-              <div className="space-y-2">
-                <AlertTriangle className="h-8 w-8 mx-auto text-warning" />
-                <div className="text-sm">Acesso à câmera negado. Ative a permissão no navegador.</div>
-                <Button size="sm" variant="secondary" onClick={start}>Tentar novamente</Button>
-              </div>
-            )}
-            {state === "unavailable" && (
-              <div className="space-y-2">
-                <Camera className="h-8 w-8 mx-auto opacity-60" />
-                <div className="text-sm">Câmera indisponível neste dispositivo.</div>
-              </div>
-            )}
-            {state === "error" && (
-              <div className="space-y-2">
-                <AlertTriangle className="h-8 w-8 mx-auto text-destructive" />
-                <div className="text-sm">Erro: {errMsg || "não foi possível iniciar."}</div>
-                <Button size="sm" variant="secondary" onClick={start}>Tentar novamente</Button>
-              </div>
-            )}
+    <div className="space-y-4">
+      <div className="scanner-stage mx-auto max-w-md">
+        <div className="scanner-viewport">
+          <video ref={videoRef} muted playsInline />
+
+          {/* HUD overlays */}
+          <div className="scanner-grid" aria-hidden />
+          <div className="scanner-vignette" aria-hidden />
+          <span className="scan-corner scan-corner-tl" aria-hidden />
+          <span className="scan-corner scan-corner-tr" aria-hidden />
+          <span className="scan-corner scan-corner-bl" aria-hidden />
+          <span className="scan-corner scan-corner-br" aria-hidden />
+          <div className="scan-reticle" aria-hidden />
+          {state === "running" && <div className="scan-beam" aria-hidden />}
+
+          <div className="scan-hud scan-hud-top" aria-hidden>
+            <span className="scan-hud-dot" />
+            {state === "running" ? "SCANNING · LIVE" : state === "requesting" ? "INITIALIZING" : "STANDBY"}
           </div>
-        )}
+          <div className="scan-hud scan-hud-bot" aria-hidden>QR · FIDELIZE</div>
+
+          {state !== "running" && (
+            <div className="scan-overlay">
+              {state === "requesting" && (
+                <div className="flex items-center gap-2 text-sm">
+                  <RefreshCw className="h-4 w-4 animate-spin" /> Solicitando câmera…
+                </div>
+              )}
+              {state === "denied" && (
+                <div className="space-y-3">
+                  <AlertTriangle className="h-8 w-8 mx-auto text-warning" />
+                  <div className="text-sm">Acesso à câmera negado. Ative a permissão no navegador.</div>
+                  <Button size="sm" variant="secondary" onClick={start}>Tentar novamente</Button>
+                </div>
+              )}
+              {state === "unavailable" && (
+                <div className="space-y-3">
+                  <Camera className="h-8 w-8 mx-auto opacity-60" />
+                  <div className="text-sm">Câmera indisponível neste dispositivo.</div>
+                </div>
+              )}
+              {state === "error" && (
+                <div className="space-y-3">
+                  <AlertTriangle className="h-8 w-8 mx-auto text-destructive" />
+                  <div className="text-sm">Erro: {errMsg || "não foi possível iniciar."}</div>
+                  <Button size="sm" variant="secondary" onClick={start}>Tentar novamente</Button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-      <div className="text-center text-xs text-muted-foreground">Aponte para o QR do cartão do cliente</div>
+
+      <div className="text-center text-[11px] uppercase tracking-[0.24em] text-primary/80">
+        Aponte a câmera para o QR do cartão
+      </div>
+
       <div className="flex gap-2 justify-center">
-        <Button size="sm" variant="outline" onClick={() => fileInput.current?.click()}>
+        <Button size="sm" variant="outline" onClick={() => fileInput.current?.click()} className="border-primary/30 hover:bg-primary/10">
           <ImageIcon className="h-4 w-4 mr-1" /> Enviar imagem
         </Button>
         <input ref={fileInput} type="file" accept="image/*" className="hidden" onChange={onFile} />
@@ -114,3 +141,4 @@ export function QrScanner({ onDetected, paused }: Props) {
     </div>
   );
 }
+
