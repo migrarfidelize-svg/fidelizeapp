@@ -174,8 +174,7 @@ export function CursorTrail() {
       window.removeEventListener("resize", resize);
       ro.disconnect();
       window.removeEventListener("pointermove", onMove);
-      parent.removeEventListener("pointerleave", onLeave);
-      window.removeEventListener("blur", onLeave);
+      window.removeEventListener("blur", onBlur);
     };
   }, []);
 
