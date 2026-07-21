@@ -747,7 +747,7 @@ function Comparison() {
                 className="tear-paper absolute inset-0 grid place-items-center"
                 style={{ zIndex: 2, pointerEvents: "none" }}
               >
-                <div className="relative w-[86%] max-w-[560px]" style={{ height: 340 }}>
+                <div className="relative w-[80%] max-w-[440px]" style={{ height: 260 }}>
                   {/* Pains — margin notes in black ink, off-card */}
                   {pains.map((p, i) => (
                     <span
