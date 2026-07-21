@@ -639,35 +639,45 @@
 /* ============ Paper × Fidelize tear scene ============ */
 .tear-stage { --p: 0; }
 
-/* Digital card: scales in as tear progresses */
-.tear-digital > div:first-child {
-  opacity: calc((var(--p) - 0.35) * 2.5);
-  transform: scale(calc(0.86 + var(--p) * 0.18));
-  transition: none;
-  filter: drop-shadow(0 0 calc(var(--p) * 40px) rgba(0,255,255,0.35));
+/* Layering: paper starts on top, digital rises above once the rip progresses */
+.tear-digital {
+  z-index: calc(1 + var(--p) * 10);
+}
+.tear-paper {
+  z-index: 2;
 }
 
-/* Paper halves rip apart */
+/* Digital card: scales in, overlaps the torn paper with a strong halo */
+.tear-digital > div:first-child {
+  opacity: calc((var(--p) - 0.25) * 2.2);
+  transform: scale(calc(0.9 + var(--p) * 0.28));
+  transition: none;
+  filter:
+    drop-shadow(0 0 calc(var(--p) * 60px) rgba(0,255,255,0.55))
+    drop-shadow(0 calc(var(--p) * 40px) calc(var(--p) * 80px) rgba(0,0,0,0.75));
+}
+
+/* Paper halves rip apart and drop behind the digital card */
 .tear-half {
   will-change: transform, opacity, filter;
   transition: none;
+  filter: drop-shadow(0 calc(var(--p) * 30px) calc(var(--p) * 40px) rgba(0,0,0,0.55));
 }
 .tear-half-left {
   transform:
-    translateX(calc(var(--p) * -60%))
-    translateY(calc(var(--p) * 40px))
-    rotate(calc(var(--p) * -18deg));
-  opacity: calc(1 - var(--p) * 0.95);
-  filter: blur(calc(var(--p) * 2px));
+    translateX(calc(var(--p) * -70%))
+    translateY(calc(var(--p) * 60px))
+    rotate(calc(var(--p) * -22deg));
+  opacity: calc(1 - var(--p) * 0.85);
 }
 .tear-half-right {
   transform:
-    translateX(calc(var(--p) * 60%))
-    translateY(calc(var(--p) * 50px))
-    rotate(calc(var(--p) * 20deg));
-  opacity: calc(1 - var(--p) * 0.95);
-  filter: blur(calc(var(--p) * 2px));
+    translateX(calc(var(--p) * 70%))
+    translateY(calc(var(--p) * 70px))
+    rotate(calc(var(--p) * 24deg));
+  opacity: calc(1 - var(--p) * 0.85);
 }
+
 
 /* Pain badges drift out with the paper */
 .tear-pain {
