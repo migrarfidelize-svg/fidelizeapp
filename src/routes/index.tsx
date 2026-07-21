@@ -1227,21 +1227,7 @@ function Pricing() {
 }
 
 function FAQ() {
-  return (
-    <section id="faq" className="border-y bg-muted/40 py-24">
-      <div className="mx-auto max-w-3xl px-4">
-        <h2 className="text-center font-display text-4xl font-bold">Dúvidas frequentes</h2>
-        <Accordion type="single" collapsible className="mt-10">
-          {FAQ_ITEMS.map(([q, a]) => (
-            <AccordionItem key={q} value={q}>
-              <AccordionTrigger className="text-left font-medium">{q}</AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">{a}</AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-      </div>
-    </section>
-  );
+  return <FaqChatSection />;
 }
 
 function CTA() {
