@@ -510,3 +510,11 @@
   0%   { stroke-dashoffset: 0; }
   100% { stroke-dashoffset: -1490; }
 }
+@keyframes seg-orbit {
+  to { transform: rotate(360deg); }
+}
+@keyframes seg-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50%      { transform: scale(1.05); opacity: 1; }
+}
+
