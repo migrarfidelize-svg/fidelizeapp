@@ -145,12 +145,18 @@ function RootComponent() {
   }, [router, queryClient]);
   useEffect(() => {
     const apply = () => {
-      const s = (() => { try { return localStorage.getItem("theme"); } catch { return null; } })();
-      const t: "light" | "dark" = s === "light" || s === "dark" ? s : "dark";
+      const forced = forcedThemeForPath(window.location.pathname);
+      let t: "light" | "dark" = "dark";
+      if (forced) t = forced;
+      else {
+        const s = (() => { try { return localStorage.getItem("theme"); } catch { return null; } })();
+        t = s === "light" || s === "dark" ? s : "dark";
+      }
       const r = document.documentElement;
       r.classList.toggle("dark", t === "dark");
       r.style.colorScheme = t;
     };
+
     apply();
     const unsub = router.subscribe("onResolved", apply);
     return () => unsub();
