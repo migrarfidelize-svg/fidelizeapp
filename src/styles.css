@@ -612,10 +612,10 @@
 }
 .fz-chip-body { min-width: 0; }
 
-/* Responsive: shrink orbit radius on smaller screens */
+/* Responsive: chip width scales down on smaller screens */
 @media (max-width: 768px) {
-  .fz-rotor > div { transform: rotate(var(--a)) translateY(calc(-50% - 170px)) !important; }
-  .fz-counter { width: 180px; }
+  .fz-counter { width: 170px; }
+  .fz-chip { padding: 10px 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
