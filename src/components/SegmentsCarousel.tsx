@@ -108,8 +108,8 @@ export function SegmentsCarousel() {
               className="group relative flex flex-col items-center gap-2 rounded-2xl border border-cyan-400/15 bg-white/[0.03] p-3 backdrop-blur-md transition"
               style={{
                 boxShadow: isActive
-                  ? "0 12px 40px -12px rgba(0,255,255,0.45), inset 0 1px 0 rgba(255,255,255,0.06)"
-                  : "0 6px 20px -12px rgba(0,255,255,0.15)",
+                  ? "0 12px 40px -12px color-mix(in oklab, var(--primary) 45%, transparent), inset 0 1px 0 rgba(255,255,255,0.06)"
+                  : "0 6px 20px -12px color-mix(in oklab, var(--primary) 20%, transparent)",
                 borderColor: isActive
                   ? "color-mix(in oklab, var(--primary) 55%, transparent)"
                   : undefined,
