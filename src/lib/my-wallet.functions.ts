@@ -127,170 +127,100 @@ export const claimCustomerByToken = createServerFn({ method: "POST" })
  * `loyalty_card` na primeira campanha ativa quando ainda não existir.
  * Idempotente — pode ser chamado várias vezes sem efeitos colaterais.
  */
-/** Erro estruturado para o cliente exibir mensagens amigáveis. */
-export class AttachEstablishmentError extends Error {
-  code: "not_found" | "inactive";
-  constructor(code: "not_found" | "inactive", message: string) {
-    super(message);
-    this.code = code;
-    this.name = "AttachEstablishmentError";
-  }
-}
-
 export const attachEstablishmentBySlug = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1).max(80) }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: est, error: eErr } = await supabaseAdmin
-      .from("establishments")
-      .select("id, slug, name, active")
-      .eq("slug", data.slug)
-      .maybeSingle();
-    if (eErr) throw eErr;
-    if (!est) {
-      throw new AttachEstablishmentError(
-        "not_found",
-        "Estabelecimento não encontrado. Verifique o QR ou o link.",
-      );
-    }
-    if (!est.active) {
-      // Auditoria: tentativa bloqueada por estabelecimento inativo/suspenso.
-      await supabaseAdmin.from("audit_logs").insert({
-        establishment_id: est.id,
-        user_id: context.userId,
-        action: "wallet.attach_blocked_inactive",
-        entity_type: "establishment",
-        entity_id: est.id,
-        metadata: { slug: est.slug, reason: "inactive_or_suspended" } as never,
-      });
-      throw new AttachEstablishmentError(
-        "inactive",
-        `${est.name} está temporariamente indisponível. Tente novamente mais tarde ou contate o estabelecimento.`,
-      );
-    }
-
-    const { data: profile } = await supabaseAdmin
-      .from("profiles")
-      .select("full_name, phone")
-      .eq("id", context.userId)
-      .maybeSingle();
-    const phoneDigits = (profile?.phone ?? "").replace(/\D/g, "").slice(0, 11);
-
-    // 1) Já existe customer deste user neste estabelecimento?
-    let { data: mine } = await supabaseAdmin
-      .from("customers")
-      .select("id")
-      .eq("establishment_id", est.id)
-      .eq("user_id", context.userId)
-      .maybeSingle();
-
-    // 2) Se não, tenta adotar uma linha órfã com o mesmo telefone (criada
-    //    manualmente pelo lojista antes do cliente ter conta).
-    let adopted = false;
-    let adoptedCustomerId: string | null = null;
-    if (!mine && phoneDigits.length >= 10) {
-      const { data: orphan } = await supabaseAdmin
-        .from("customers")
-        .select("id, user_id")
-        .eq("establishment_id", est.id)
-        .eq("phone", phoneDigits)
-        .is("user_id", null)
-        .maybeSingle();
-      if (orphan) {
-        const { error: linkErr } = await supabaseAdmin
+    // Adapter fino: converte as chamadas do core em queries do supabaseAdmin.
+    const db: AttachDb = {
+      async getEstablishmentBySlug(slug) {
+        const { data, error } = await supabaseAdmin
+          .from("establishments").select("id, slug, name, active").eq("slug", slug).maybeSingle();
+        if (error) throw error;
+        return data ?? null;
+      },
+      async getProfile(userId) {
+        const { data } = await supabaseAdmin
+          .from("profiles").select("full_name, phone").eq("id", userId).maybeSingle();
+        return data ?? null;
+      },
+      async getMyCustomer(userId, estId) {
+        const { data } = await supabaseAdmin
+          .from("customers").select("id")
+          .eq("establishment_id", estId).eq("user_id", userId).maybeSingle();
+        return data ?? null;
+      },
+      async findOrphanByPhone(estId, phoneDigits) {
+        const { data } = await supabaseAdmin
+          .from("customers").select("id")
+          .eq("establishment_id", estId).eq("phone", phoneDigits).is("user_id", null).maybeSingle();
+        return data ?? null;
+      },
+      async linkOrphan(customerId, userId) {
+        const { error } = await supabaseAdmin
+          .from("customers").update({ user_id: userId }).eq("id", customerId);
+        if (error) throw error;
+      },
+      async createCustomer(input) {
+        const { data, error } = await supabaseAdmin
           .from("customers")
-          .update({ user_id: context.userId })
-          .eq("id", orphan.id);
-        if (linkErr) throw linkErr;
-        mine = { id: orphan.id };
-        adopted = true;
-        adoptedCustomerId = orphan.id;
-      }
-    }
-
-    // 3) Caso ainda não haja linha, cria uma nova para este estabelecimento.
-    let created = false;
-    if (!mine) {
-      const { data: nc, error: cErr } = await supabaseAdmin
-        .from("customers")
-        .insert({
-          establishment_id: est.id,
-          user_id: context.userId,
-          name: profile?.full_name ?? "Cliente Fidelize",
-          phone: phoneDigits || "",
+          .insert({
+            establishment_id: input.establishmentId,
+            user_id: input.userId,
+            name: input.name,
+            phone: input.phone,
+            marketing_opt_in: false,
+          })
+          .select("id")
+          .single();
+        if (error) throw error;
+        return data;
+      },
+      async createConsent(input) {
+        await supabaseAdmin.from("consents").insert({
+          customer_id: input.customerId,
+          establishment_id: input.establishmentId,
           marketing_opt_in: false,
-        })
-        .select("id")
-        .single();
-      if (cErr) throw cErr;
-      mine = nc;
-      created = true;
-      await supabaseAdmin.from("consents").insert({
-        customer_id: mine.id,
-        establishment_id: est.id,
-        marketing_opt_in: false,
-      });
-    }
-
-    // 4) Garante um cartão na campanha ativa mais antiga.
-    const { data: campaign } = await supabaseAdmin
-      .from("campaigns")
-      .select("id")
-      .eq("establishment_id", est.id)
-      .eq("active", true)
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .maybeSingle();
-
-    if (campaign) {
-      const { data: existingCard } = await supabaseAdmin
-        .from("loyalty_cards")
-        .select("id")
-        .eq("customer_id", mine.id)
-        .eq("campaign_id", campaign.id)
-        .maybeSingle();
-      if (!existingCard) {
-        await supabaseAdmin.from("loyalty_cards").insert({
-          customer_id: mine.id,
-          campaign_id: campaign.id,
-          establishment_id: est.id,
+        });
+      },
+      async getFirstActiveCampaign(estId) {
+        const { data } = await supabaseAdmin
+          .from("campaigns").select("id")
+          .eq("establishment_id", estId).eq("active", true)
+          .order("created_at", { ascending: true }).limit(1).maybeSingle();
+        return data ?? null;
+      },
+      async getCard(customerId, campaignId) {
+        const { data } = await supabaseAdmin
+          .from("loyalty_cards").select("id")
+          .eq("customer_id", customerId).eq("campaign_id", campaignId).maybeSingle();
+        return data ?? null;
+      },
+      async createCard(input) {
+        const { error } = await supabaseAdmin.from("loyalty_cards").insert({
+          customer_id: input.customerId,
+          campaign_id: input.campaignId,
+          establishment_id: input.establishmentId,
           stamps: 0,
           cycle: 1,
         });
-      }
-    }
-
-    const status = created ? ("created" as const) : adopted ? ("adopted" as const) : ("existing" as const);
-
-    // Auditoria: vínculo cliente ↔ estabelecimento via QR/link. Não bloqueia
-    // o fluxo em caso de falha do log.
-    try {
-      await supabaseAdmin.from("audit_logs").insert({
-        establishment_id: est.id,
-        user_id: context.userId,
-        action: "wallet.attach_establishment",
-        entity_type: "customer",
-        entity_id: mine.id,
-        metadata: {
-          slug: est.slug,
-          status,
-          via: "qr_or_link",
-          adopted_customer_id: adoptedCustomerId,
-          phone_matched: adopted,
-        } as never,
-      });
-    } catch {
-      /* auditoria best-effort */
-    }
-
-    return {
-      ok: true as const,
-      slug: est.slug,
-      name: est.name,
-      status,
+        if (error) throw error;
+      },
+      async insertAuditLog(row) {
+        await supabaseAdmin.from("audit_logs").insert({
+          establishment_id: row.establishmentId,
+          user_id: row.userId,
+          action: row.action,
+          entity_type: row.entityType,
+          entity_id: row.entityId,
+          metadata: row.metadata as never,
+        });
+      },
     };
+
+    return attachEstablishmentCore(db, { userId: context.userId, slug: data.slug });
   });
 
 /** Wallet detail: one establishment's card for the current user. */
