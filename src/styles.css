@@ -792,8 +792,6 @@
   z-index: 0 !important;
 }
 .tear-stage .tear-scene,
-.tear-stage .tear-digital,
-.tear-stage .tear-paper,
 .tear-stage .tear-cta,
 .tear-stage .tear-cta-btn {
   position: relative;
