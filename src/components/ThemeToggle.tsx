@@ -5,8 +5,16 @@ import { Button } from "@/components/ui/button";
 type Theme = "light" | "dark";
 
 function getInitialTheme(): Theme {
-  if (typeof document === "undefined") return "light";
-  return document.documentElement.classList.contains("dark") ? "dark" : "light";
+  if (typeof window !== "undefined") {
+    try {
+      const s = window.localStorage.getItem("theme");
+      if (s === "light" || s === "dark") return s;
+    } catch { /* storage disabled */ }
+  }
+  if (typeof document !== "undefined") {
+    return document.documentElement.classList.contains("dark") ? "dark" : "light";
+  }
+  return "dark";
 }
 
 function applyTheme(theme: Theme) {

@@ -18,6 +18,9 @@ import {
   adminSendWebhookDualTest,
   adminGetHmacTelemetry,
 } from "@/lib/mercadopago.functions";
+import { adminListPayments, adminGetPayment } from "@/lib/admin.functions";
+import { Link } from "@tanstack/react-router";
+import { Search, ArrowUpDown, ChevronLeft, ChevronRight, Eye, User, Receipt, Building2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -151,6 +154,11 @@ function AdminPaymentsPage() {
         title={"Gateway de pagamentos"}
         subtitle={"Transações, reconciliação e status dos provedores conectados."}
       />
+      <PaymentsTable />
+      <div className="border-t border-border/60 pt-6">
+        <h2 className="font-display text-xl font-bold">Configuração do gateway</h2>
+        <p className="text-sm text-muted-foreground">Credenciais, webhook e diagnóstico do Mercado Pago.</p>
+      </div>
       <div>
         <h1 className="font-display text-3xl font-bold">Mercado Pago</h1>
         <p className="text-sm text-muted-foreground">Integração de pagamentos para as assinaturas da plataforma.</p>
@@ -1051,6 +1059,286 @@ function MetricBox({ label, value, tone }: { label: string; value: number; tone:
     <div className="rounded-lg border p-3">
       <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
       <div className={`mt-1 text-2xl font-semibold tabular-nums ${toneCls}`}>{value}</div>
+    </div>
+  );
+}
+
+// ============ Payments transactions table (pagination, search, sort, detail) ============
+const fmtBRL = (n: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(n || 0);
+const fmtDate = (s: string | null) => s ? new Date(s).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "—";
+const payStatusColor: Record<string, string> = {
+  approved: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
+  paid: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
+  pending: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
+  in_process: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
+  rejected: "bg-destructive/15 text-destructive",
+  cancelled: "bg-muted text-muted-foreground",
+  refunded: "bg-blue-500/15 text-blue-700 dark:text-blue-400",
+  charged_back: "bg-destructive/15 text-destructive",
+};
+const payStatusLabel: Record<string, string> = {
+  approved: "Aprovado", paid: "Pago", pending: "Pendente", in_process: "Em análise",
+  rejected: "Recusado", cancelled: "Cancelado", refunded: "Reembolsado", charged_back: "Chargeback",
+};
+
+function PaymentsTable() {
+  const listFn = useServerFn(adminListPayments);
+  const [q, setQ] = useState("");
+  const [qDebounced, setQDebounced] = useState("");
+  const [status, setStatus] = useState("all");
+  const [provider, setProvider] = useState("all");
+  const [method, setMethod] = useState("all");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [sort, setSort] = useState<"created_at" | "amount" | "status" | "approved_at">("created_at");
+  const [dir, setDir] = useState<"asc" | "desc">("desc");
+  const [page, setPage] = useState(1);
+  const [detailId, setDetailId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const t = setTimeout(() => { setQDebounced(q); setPage(1); }, 350);
+    return () => clearTimeout(t);
+  }, [q]);
+
+  const { data, isLoading, refetch, isFetching } = useQuery({
+    queryKey: ["admin-payments", qDebounced, status, provider, method, from, to, sort, dir, page],
+    queryFn: () => listFn({ data: {
+      q: qDebounced || undefined, status, provider, method,
+      from: from ? new Date(from).toISOString() : undefined,
+      to: to ? new Date(to + "T23:59:59").toISOString() : undefined,
+      sort, dir, page, page_size: 25,
+    } }),
+    refetchOnWindowFocus: false,
+  });
+
+  const rows = (data?.rows ?? []) as any[];
+  const ests = data?.establishments ?? {};
+  const total = data?.total ?? 0;
+  const pageSize = data?.page_size ?? 25;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  function toggleSort(k: typeof sort) {
+    if (sort === k) setDir(d => d === "asc" ? "desc" : "asc");
+    else { setSort(k); setDir("desc"); }
+    setPage(1);
+  }
+
+  const SortH = ({ k, children }: { k: typeof sort; children: React.ReactNode }) => (
+    <TableHead>
+      <button onClick={() => toggleSort(k)} className="inline-flex items-center gap-1 hover:text-foreground">
+        {children}
+        <ArrowUpDown className={`h-3 w-3 ${sort === k ? "text-primary" : "text-muted-foreground/60"}`} />
+      </button>
+    </TableHead>
+  );
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2"><Receipt className="h-5 w-5" /> Transações</CardTitle>
+            <CardDescription>Todas as cobranças processadas pelos gateways da plataforma.</CardDescription>
+          </div>
+          <Badge variant="outline">{total.toLocaleString("pt-BR")} registros</Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-6">
+          <div className="relative lg:col-span-2">
+            <Search className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="E-mail, CPF, ID MP, plano…" className="pl-8" />
+          </div>
+          <Select value={status} onValueChange={(v) => { setStatus(v); setPage(1); }}>
+            <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os status</SelectItem>
+              <SelectItem value="approved">Aprovado</SelectItem>
+              <SelectItem value="pending">Pendente</SelectItem>
+              <SelectItem value="in_process">Em análise</SelectItem>
+              <SelectItem value="rejected">Recusado</SelectItem>
+              <SelectItem value="cancelled">Cancelado</SelectItem>
+              <SelectItem value="refunded">Reembolsado</SelectItem>
+              <SelectItem value="charged_back">Chargeback</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={provider} onValueChange={(v) => { setProvider(v); setPage(1); }}>
+            <SelectTrigger><SelectValue placeholder="Provedor" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos provedores</SelectItem>
+              <SelectItem value="mercadopago">Mercado Pago</SelectItem>
+              <SelectItem value="asaas">Asaas</SelectItem>
+              <SelectItem value="stripe">Stripe</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={method} onValueChange={(v) => { setMethod(v); setPage(1); }}>
+            <SelectTrigger><SelectValue placeholder="Método" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos métodos</SelectItem>
+              <SelectItem value="pix">PIX</SelectItem>
+              <SelectItem value="credit_card">Cartão</SelectItem>
+              <SelectItem value="boleto">Boleto</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="grid grid-cols-2 gap-2">
+            <Input type="date" value={from} onChange={(e) => { setFrom(e.target.value); setPage(1); }} title="De" />
+            <Input type="date" value={to} onChange={(e) => { setTo(e.target.value); setPage(1); }} title="Até" />
+          </div>
+        </div>
+
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <SortH k="created_at">Data</SortH>
+                <TableHead>Empresa</TableHead>
+                <TableHead>Comprador</TableHead>
+                <TableHead>Método</TableHead>
+                <SortH k="amount">Valor</SortH>
+                <SortH k="status">Status</SortH>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow><TableCell colSpan={7} className="py-10 text-center text-muted-foreground"><Loader2 className="mx-auto h-5 w-5 animate-spin" /></TableCell></TableRow>
+              ) : rows.length === 0 ? (
+                <TableRow><TableCell colSpan={7} className="py-10 text-center text-muted-foreground">Nenhuma transação encontrada com esses filtros.</TableCell></TableRow>
+              ) : rows.map((r) => {
+                const est = ests[r.establishment_id];
+                return (
+                  <TableRow key={r.id} className="cursor-pointer hover:bg-muted/40" onClick={() => setDetailId(r.id)}>
+                    <TableCell className="whitespace-nowrap text-xs tabular-nums">{fmtDate(r.created_at)}</TableCell>
+                    <TableCell className="max-w-[220px] truncate">{est?.name ?? <span className="text-muted-foreground">—</span>}</TableCell>
+                    <TableCell className="max-w-[220px] truncate">{r.payer_email ?? <span className="text-muted-foreground">—</span>}</TableCell>
+                    <TableCell><Badge variant="outline" className="uppercase">{r.method ?? "—"}</Badge></TableCell>
+                    <TableCell className="whitespace-nowrap font-semibold tabular-nums">{fmtBRL(Number(r.amount ?? 0))}</TableCell>
+                    <TableCell><Badge className={payStatusColor[r.status] ?? "bg-muted text-muted-foreground"}>{payStatusLabel[r.status] ?? r.status ?? "—"}</Badge></TableCell>
+                    <TableCell className="text-right">
+                      <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); setDetailId(r.id); }}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+          <div className="text-muted-foreground">
+            Página {page} de {totalPages} · {rows.length} nesta página
+            {isFetching && <Loader2 className="ml-2 inline h-3 w-3 animate-spin" />}
+          </div>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="sm" onClick={() => refetch()}><RefreshCw className="h-4 w-4" /></Button>
+            <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}><ChevronLeft className="h-4 w-4" /></Button>
+            <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}><ChevronRight className="h-4 w-4" /></Button>
+          </div>
+        </div>
+      </CardContent>
+      <PaymentDetailDialog id={detailId} onClose={() => setDetailId(null)} />
+    </Card>
+  );
+}
+
+function PaymentDetailDialog({ id, onClose }: { id: string | null; onClose: () => void }) {
+  const getFn = useServerFn(adminGetPayment);
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-payment", id],
+    queryFn: () => getFn({ data: { id: id! } }),
+    enabled: !!id,
+  });
+  const p = data?.payment as any;
+  const est = data?.establishment as any;
+  const sub = data?.subscription as any;
+  const logs = (data?.logs ?? []) as any[];
+
+  return (
+    <Dialog open={!!id} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2"><Receipt className="h-5 w-5" /> Detalhes do pagamento</DialogTitle>
+          <DialogDescription>Histórico completo, status atual e dados do comprador.</DialogDescription>
+        </DialogHeader>
+        {isLoading || !p ? (
+          <div className="grid place-items-center py-10"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+        ) : (
+          <ScrollArea className="max-h-[70vh] pr-3">
+            <div className="space-y-5">
+              <div className="flex flex-wrap items-center gap-3">
+                <Badge className={payStatusColor[p.status] ?? "bg-muted text-muted-foreground"}>{payStatusLabel[p.status] ?? p.status}</Badge>
+                {p.status_detail && <span className="text-xs text-muted-foreground">{p.status_detail}</span>}
+                <span className="ml-auto text-2xl font-bold tabular-nums">{fmtBRL(Number(p.amount ?? 0))}</span>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <InfoRow icon={Building2} label="Empresa" value={est?.name ?? "—"} sub={est?.plan ? `Plano ${est.plan}` : undefined} />
+                <InfoRow icon={User} label="Comprador" value={p.payer_email ?? "—"} sub={p.payer_doc ?? undefined} />
+                <InfoRow icon={CreditCardIcon} label="Método" value={String(p.method ?? "—").toUpperCase()} sub={p.card_brand ? `${p.card_brand.toUpperCase()} •••• ${p.card_last4 ?? ""}${p.installments ? ` · ${p.installments}x` : ""}` : undefined} />
+                <InfoRow icon={Radio} label="Provedor" value={String(p.provider ?? "mercadopago").toUpperCase()} sub={p.mp_payment_id ?? p.provider_payment_id ?? undefined} />
+                <InfoRow icon={Activity} label="Plano" value={p.plan_slug ?? "—"} sub={sub?.status ? `Assinatura: ${sub.status}` : undefined} />
+                <InfoRow icon={CheckCircle2} label="Criado" value={fmtDate(p.created_at)} sub={p.approved_at ? `Aprovado em ${fmtDate(p.approved_at)}` : undefined} />
+              </div>
+
+              {(p.pix_copy_paste || p.boleto_url || p.receipt_url) && (
+                <div className="flex flex-wrap gap-2 border-t pt-3">
+                  {p.receipt_url && <a href={p.receipt_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs hover:bg-muted"><ExternalLink className="h-3.5 w-3.5" /> Comprovante</a>}
+                  {p.boleto_url && <a href={p.boleto_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs hover:bg-muted"><ExternalLink className="h-3.5 w-3.5" /> Boleto</a>}
+                  {p.pix_copy_paste && <button onClick={() => { navigator.clipboard.writeText(p.pix_copy_paste); toast.success("Copia-cola PIX copiado"); }} className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs hover:bg-muted"><Copy className="h-3.5 w-3.5" /> Copia-cola PIX</button>}
+                </div>
+              )}
+
+              <div className="border-t pt-3">
+                <div className="mb-2 text-sm font-semibold">Histórico de eventos ({logs.length})</div>
+                {logs.length === 0 ? (
+                  <div className="text-xs text-muted-foreground">Nenhum evento de webhook associado.</div>
+                ) : (
+                  <div className="space-y-1.5">
+                    {logs.map((l) => (
+                      <div key={l.id} className="flex items-start gap-3 rounded-md border bg-muted/30 p-2 text-xs">
+                        <span className="tabular-nums text-muted-foreground">{fmtDate(l.created_at)}</span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-medium">{l.event_type ?? l.action ?? "—"}</span>
+                            {l.mode && <Badge variant="outline" className="uppercase">{l.mode}</Badge>}
+                            {l.signature_valid === true && <span className="text-emerald-600">HMAC ok</span>}
+                            {l.signature_valid === false && <span className="text-destructive">HMAC inválido</span>}
+                            {typeof l.response_status === "number" && <span className={l.response_status >= 400 ? "text-destructive" : "text-muted-foreground"}>HTTP {l.response_status}</span>}
+                          </div>
+                          {(l.reason || l.error) && <div className="text-muted-foreground">{l.reason ?? l.error}</div>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {est?.slug && (
+                <div className="border-t pt-3 text-right">
+                  <Link to="/admin/empresas" className="text-xs text-primary underline-offset-4 hover:underline">Ver empresa →</Link>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function CreditCardIcon(props: any) { return <CreditCard {...props} />; }
+function CreditCard(props: any) { return <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>; }
+
+function InfoRow({ icon: Icon, label, value, sub }: { icon: any; label: string; value: string; sub?: string }) {
+  return (
+    <div className="rounded-md border bg-muted/20 p-3">
+      <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-muted-foreground">
+        <Icon className="h-3.5 w-3.5" /> {label}
+      </div>
+      <div className="mt-1 truncate text-sm font-medium">{value}</div>
+      {sub && <div className="mt-0.5 truncate text-xs text-muted-foreground">{sub}</div>}
     </div>
   );
 }
