@@ -127,8 +127,52 @@ function Hero() {
     <section className="relative overflow-hidden" style={{ background: OBSIDIAN }}>
       <div aria-hidden className="hero-bg-aurora-circuit">
         <span className="hero-bokeh" />
-        <span className="hero-floor" />
-        <span className="hero-horizon" />
+        <svg className="hero-pcb" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <filter id="pcbGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="2.5" result="b" />
+              <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
+            <filter id="pcbNodeGlow" x="-100%" y="-100%" width="300%" height="300%">
+              <feGaussianBlur stdDeviation="4" />
+            </filter>
+          </defs>
+          {/* base traces (dim) */}
+          <g stroke="rgba(0,255,255,0.14)" strokeWidth="1.2" fill="none">
+            <path d="M0,720 L280,720 L320,680 L560,680 L600,640 L900,640 L940,600 L1600,600" />
+            <path d="M0,540 L200,540 L240,500 L520,500 L560,460 L860,460 L900,420 L1600,420" />
+            <path d="M0,300 L340,300 L380,340 L640,340 L680,380 L1600,380" />
+            <path d="M120,900 L120,760 L160,720" />
+            <path d="M420,900 L420,700 L460,680" />
+            <path d="M780,900 L780,660 L820,640" />
+            <path d="M1140,900 L1140,620 L1180,600" />
+            <path d="M300,0 L300,180 L340,220 L340,300" />
+            <path d="M760,0 L760,240 L800,280 L800,340" />
+            <path d="M1220,0 L1220,300 L1260,340 L1260,380" />
+          </g>
+          {/* animated bright traces */}
+          <g stroke="#00ffff" strokeWidth="1.6" fill="none" filter="url(#pcbGlow)" strokeDasharray="140 900" strokeLinecap="round">
+            <path className="pcb-trace pcb-t1" d="M0,720 L280,720 L320,680 L560,680 L600,640 L900,640 L940,600 L1600,600" />
+            <path className="pcb-trace pcb-t2" d="M0,540 L200,540 L240,500 L520,500 L560,460 L860,460 L900,420 L1600,420" />
+            <path className="pcb-trace pcb-t3" d="M1600,380 L680,380 L640,340 L380,340 L340,300 L0,300" />
+            <path className="pcb-trace pcb-t4" d="M420,900 L420,700 L460,680" />
+            <path className="pcb-trace pcb-t5" d="M1140,900 L1140,620 L1180,600" />
+            <path className="pcb-trace pcb-t6" d="M760,0 L760,240 L800,280 L800,340" />
+          </g>
+          {/* nodes with pulsing glow */}
+          <g fill="#00ffff" filter="url(#pcbNodeGlow)">
+            <circle className="pcb-node pcb-n1" cx="320" cy="680" r="3.5" />
+            <circle className="pcb-node pcb-n2" cx="600" cy="640" r="3.5" />
+            <circle className="pcb-node pcb-n3" cx="940" cy="600" r="3.5" />
+            <circle className="pcb-node pcb-n4" cx="240" cy="500" r="3.5" />
+            <circle className="pcb-node pcb-n5" cx="900" cy="420" r="3.5" />
+            <circle className="pcb-node pcb-n6" cx="680" cy="380" r="3.5" />
+            <circle className="pcb-node pcb-n7" cx="340" cy="300" r="3.5" />
+            <circle className="pcb-node pcb-n1" cx="460" cy="680" r="3" fill="#d946ef" />
+            <circle className="pcb-node pcb-n3" cx="1180" cy="600" r="3" fill="#d946ef" />
+            <circle className="pcb-node pcb-n5" cx="800" cy="340" r="3" fill="#d946ef" />
+          </g>
+        </svg>
         <span className="hero-vignette" />
       </div>
       
