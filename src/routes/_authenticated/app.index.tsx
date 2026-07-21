@@ -3,11 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getMyEstablishments, getDashboardData } from "@/lib/loyalty.functions";
 import {
-  Users, Stamp, Gift, TrendingUp, ArrowRight, Sparkles,
+  Users, Stamp, Gift, ArrowRight, Sparkles,
   ArrowUpRight, ArrowDownRight, Minus, Zap, Crown, Activity,
 } from "lucide-react";
 import {
-  AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid,
+  LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid,
 } from "recharts";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
@@ -61,7 +61,7 @@ function Dashboard() {
             <Button asChild variant="outline" className="border-primary/30 hover:border-primary/60">
               <Link to="/l/$slug" params={{ slug: est.slug }}>Ver página pública</Link>
             </Button>
-            <Button asChild className="gradient-brand text-primary-foreground shadow-[0_0_24px_-6px_var(--primary)]">
+            <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_-6px_var(--primary)]">
               <Link to="/app/carimbar">
                 <Zap className="mr-1 h-4 w-4" /> Carimbar cliente
                 <ArrowRight className="ml-1 h-4 w-4" />
@@ -82,7 +82,7 @@ function Dashboard() {
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{s.label}</div>
-                <div className="mt-2 metric-number text-3xl sm:text-4xl">{s.value.toLocaleString("pt-BR")}</div>
+                <div className="mt-2 metric-solid text-3xl sm:text-4xl">{s.value.toLocaleString("pt-BR")}</div>
               </div>
               <span className={`card-icon ${s.accent ? "card-icon-accent" : ""}`} aria-hidden>
                 <s.icon />
@@ -121,14 +121,8 @@ function Dashboard() {
         </div>
         <div className="mt-6 h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data.series}>
-              <defs>
-                <linearGradient id="carArea" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.55} />
-                  <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
+            <LineChart data={data.series} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.12} />
               <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke="currentColor" opacity={0.5} />
               <YAxis tick={{ fontSize: 11 }} allowDecimals={false} stroke="currentColor" opacity={0.5} />
               <Tooltip
@@ -138,8 +132,15 @@ function Dashboard() {
                   borderRadius: 12,
                 }}
               />
-              <Area type="monotone" dataKey="carimbos" stroke="var(--color-primary)" strokeWidth={2.5} fill="url(#carArea)" />
-            </AreaChart>
+              <Line
+                type="monotone"
+                dataKey="carimbos"
+                stroke="var(--color-primary)"
+                strokeWidth={2.5}
+                dot={{ r: 3, fill: "var(--color-primary)", strokeWidth: 0 }}
+                activeDot={{ r: 5 }}
+              />
+            </LineChart>
           </ResponsiveContainer>
         </div>
       </div>
@@ -194,7 +195,7 @@ function MoMCard({
     >
       <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className="mt-2 flex items-baseline justify-between gap-3">
-        <div className="metric-number text-3xl">{current.toLocaleString("pt-BR")}</div>
+        <div className="metric-solid text-3xl">{current.toLocaleString("pt-BR")}</div>
         <span className={`dash-delta ${cls}`}>
           <Icon className="h-3.5 w-3.5" />
           {previous === 0 && current === 0 ? "—" : `${pct >= 0 ? "+" : ""}${pct.toFixed(0)}%`}

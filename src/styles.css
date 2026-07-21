@@ -935,120 +935,71 @@
 .dash-hero {
   position: relative;
   overflow: hidden;
-  border-radius: 1.25rem;
-  border: 1px solid color-mix(in oklab, var(--primary) 28%, transparent);
-  background:
-    radial-gradient(80% 120% at 0% 0%, color-mix(in oklab, var(--primary) 22%, transparent), transparent 55%),
-    radial-gradient(70% 120% at 100% 0%, color-mix(in oklab, var(--accent) 18%, transparent), transparent 55%),
-    linear-gradient(180deg, color-mix(in oklab, var(--card) 92%, transparent), color-mix(in oklab, var(--background) 96%, transparent));
+  border-radius: 1.1rem;
+  border: 1px solid color-mix(in oklab, var(--primary) 30%, transparent);
+  background: color-mix(in oklab, var(--card) 96%, transparent);
   box-shadow:
-    inset 0 1px 0 color-mix(in oklab, #fff 8%, transparent),
-    0 30px 80px -40px color-mix(in oklab, var(--primary) 60%, transparent);
+    inset 0 1px 0 color-mix(in oklab, #fff 6%, transparent),
+    0 24px 60px -40px color-mix(in oklab, var(--primary) 55%, transparent);
 }
 .dash-hero::before {
   content: "";
   position: absolute; inset: 0;
   background-image:
-    linear-gradient(color-mix(in oklab, var(--primary) 14%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in oklab, var(--primary) 14%, transparent) 1px, transparent 1px);
-  background-size: 44px 44px;
+    linear-gradient(color-mix(in oklab, var(--primary) 10%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--primary) 10%, transparent) 1px, transparent 1px);
+  background-size: 40px 40px;
   mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 70%);
-  opacity: 0.35;
+  opacity: 0.28;
   pointer-events: none;
 }
+/* Thin cyan top accent bar — no rotating orbit */
 .dash-hero::after {
   content: "";
-  position: absolute; inset: -2px;
-  border-radius: inherit;
-  padding: 1px;
-  background: conic-gradient(from 0deg,
-    color-mix(in oklab, var(--primary) 80%, transparent),
-    transparent 25%, transparent 65%,
-    color-mix(in oklab, var(--accent) 70%, transparent),
-    transparent 90%);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-          mask-composite: exclude;
-  animation: dash-hero-spin 14s linear infinite;
+  position: absolute; left: 0; right: 0; top: 0;
+  height: 2px;
+  background: var(--primary);
+  opacity: .85;
+  box-shadow: 0 0 18px 0 color-mix(in oklab, var(--primary) 70%, transparent);
   pointer-events: none;
-  opacity: 0.7;
 }
-@keyframes dash-hero-spin { to { transform: rotate(360deg); } }
 
-/* Premium KPI card with LED sweep border + lift */
+/* Premium KPI card — static cyan hairline, lift on hover, no orbit */
 @utility dash-card {
   position: relative;
   isolation: isolate;
-  border-radius: 1rem;
-  background:
-    linear-gradient(180deg,
-      color-mix(in oklab, var(--card) 96%, transparent),
-      color-mix(in oklab, var(--background) 94%, transparent));
-  border: 1px solid color-mix(in oklab, var(--primary) 18%, transparent);
+  border-radius: .95rem;
+  background: color-mix(in oklab, var(--card) 97%, transparent);
+  border: 1px solid color-mix(in oklab, var(--primary) 22%, transparent);
   box-shadow:
-    inset 0 1px 0 color-mix(in oklab, #fff 6%, transparent),
-    0 12px 30px -22px color-mix(in oklab, var(--primary) 55%, transparent);
-  transition: transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s ease, border-color .35s ease;
+    inset 0 1px 0 color-mix(in oklab, #fff 5%, transparent),
+    0 10px 28px -22px color-mix(in oklab, var(--primary) 55%, transparent);
+  transition: transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .3s ease, border-color .3s ease;
   overflow: hidden;
-}
-.dash-card:hover {
-  transform: translateY(-3px);
-  border-color: color-mix(in oklab, var(--primary) 45%, transparent);
-  box-shadow:
-    inset 0 1px 0 color-mix(in oklab, #fff 10%, transparent),
-    0 22px 60px -22px color-mix(in oklab, var(--primary) 75%, transparent),
-    0 0 0 1px color-mix(in oklab, var(--primary) 22%, transparent);
 }
 .dash-card::before {
   content: "";
-  position: absolute; inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: conic-gradient(from var(--sweep, 0deg),
-    transparent 0deg,
-    color-mix(in oklab, var(--primary) 90%, transparent) 40deg,
-    transparent 90deg,
-    transparent 360deg);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-          mask-composite: exclude;
-  animation: dash-card-sweep 6s linear infinite;
-  opacity: .55;
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--primary);
+  opacity: .7;
+  box-shadow: 0 0 14px 0 color-mix(in oklab, var(--primary) 60%, transparent);
   pointer-events: none;
 }
-.dash-card::after {
-  content: "";
-  position: absolute;
-  inset: auto -30% -60% -30%;
-  height: 120%;
-  background: radial-gradient(ellipse at 50% 0%,
-    color-mix(in oklab, var(--primary) 22%, transparent),
-    transparent 60%);
-  opacity: 0;
-  transition: opacity .4s ease;
-  pointer-events: none;
-  z-index: -1;
+.dash-card-accent::before { background: var(--accent); box-shadow: 0 0 14px 0 color-mix(in oklab, var(--accent) 60%, transparent); }
+.dash-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--primary) 55%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, #fff 8%, transparent),
+    0 16px 40px -22px color-mix(in oklab, var(--primary) 80%, transparent);
 }
-.dash-card:hover::after { opacity: 1; }
-@keyframes dash-card-sweep {
-  to { transform: rotate(360deg); }
-}
+.dash-card-accent:hover { border-color: color-mix(in oklab, var(--accent) 55%, transparent); }
 
-/* Accent variant */
-.dash-card-accent::before {
-  background: conic-gradient(from var(--sweep, 0deg),
-    transparent 0deg,
-    color-mix(in oklab, var(--accent) 90%, transparent) 40deg,
-    transparent 90deg,
-    transparent 360deg);
-}
-
-/* Fade+rise entrance for KPI grid */
-.dash-rise { animation: dash-rise .55s cubic-bezier(.2,.7,.2,1) both; }
+/* Fade+rise entrance */
+.dash-rise { animation: dash-rise .5s cubic-bezier(.2,.7,.2,1) both; }
 @keyframes dash-rise {
-  from { opacity: 0; transform: translateY(14px); }
+  from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -1061,7 +1012,15 @@
   background: color-mix(in oklab, currentColor 12%, transparent);
 }
 
+/* Solid numeric — sem degrade */
+@utility metric-solid {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--foreground);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .dash-card::before, .dash-hero::after { animation: none; }
   .dash-rise { animation: none; }
 }
+
