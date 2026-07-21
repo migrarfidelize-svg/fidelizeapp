@@ -678,7 +678,8 @@ function Comparison() {
           <div aria-hidden className="pointer-events-none absolute -left-40 top-1/3 h-96 w-96 rounded-full bg-cyan-500/[0.06] blur-[120px]" />
           <div aria-hidden className="pointer-events-none absolute -right-40 bottom-1/4 h-96 w-96 rounded-full blur-[120px]" style={{ background: "rgba(255,43,214,0.05)" }} />
 
-          <div className="mx-auto w-full max-w-6xl px-6">
+          <div className="mx-auto w-full max-w-6xl px-6 pt-24 md:pt-28">
+
             <div className="mb-10 text-center md:mb-14">
               <span className="font-display text-xs font-bold uppercase tracking-[0.25em]" style={{ color: "#00ffff" }}>
                 Papel × Fidelize
@@ -686,12 +687,9 @@ function Comparison() {
               <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-white md:text-5xl">
                 O papel rasga. O digital escala.
               </h2>
-              <p className="mx-auto mt-4 max-w-2xl text-base text-white/75 md:text-lg">
-                Cartão perdido, carimbo torto e cliente esquecido custam <span className="font-semibold text-white">até 40% da recompra</span>.
-                O Fidelize elimina o papel e coloca cada carimbo no bolso do seu cliente — em tempo real.
-              </p>
-              <p className="mt-3 text-sm text-white/50">Role para ver a troca acontecer.</p>
+              <p className="mt-4 text-white/60">Role para ver o que muda quando você troca o cartão de papel.</p>
             </div>
+
 
 
             {/* Stage: two cards stacked in the same slot */}
