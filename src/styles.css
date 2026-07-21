@@ -878,3 +878,47 @@
     0 0 0 1px rgba(0, 255, 255, 0.35) inset;
 }
 
+/* Segment cards — premium conic halo + sweep */
+.segment-card {
+  isolation: isolate;
+}
+.segment-ring {
+  padding: 1px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    rgba(0, 255, 255, 0.55) 20%,
+    transparent 40%,
+    rgba(236, 72, 153, 0.45) 62%,
+    transparent 82%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: 0.75;
+  animation: segment-ring-spin 8s linear infinite;
+}
+@keyframes segment-ring-spin {
+  to { transform: rotate(360deg); }
+}
+.segment-sweep {
+  overflow: hidden;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(0, 255, 255, 0.5) 30deg,
+    transparent 90deg,
+    transparent 360deg
+  );
+  -webkit-mask: radial-gradient(circle, transparent 44%, black 46%, black 50%, transparent 52%);
+          mask: radial-gradient(circle, transparent 44%, black 46%, black 50%, transparent 52%);
+  animation: segment-sweep-spin 4.5s linear infinite;
+  opacity: 0.9;
+}
+@keyframes segment-sweep-spin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .segment-ring, .segment-sweep { animation: none; }
+}
+
