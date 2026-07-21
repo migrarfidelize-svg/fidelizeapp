@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { Megaphone as HeroIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -188,6 +190,12 @@ function CampanhasPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Marketing · Ofertas"}
+        title={"Campanhas de fidelidade"}
+        subtitle={"Crie promoções sazonais com regras, cores e recompensas próprias."}
+      />
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <div className="text-xs uppercase tracking-widest text-muted-foreground">Programas</div>

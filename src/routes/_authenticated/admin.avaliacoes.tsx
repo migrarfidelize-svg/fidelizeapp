@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { MessageSquareWarning as HeroIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -31,6 +33,12 @@ export const Route = createFileRoute("/_authenticated/admin/avaliacoes")({
 function Stars({ n, size = 4 }: { n: number; size?: number }) {
   return (
     <div className="flex gap-0.5">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Super Admin · Moderação"}
+        title={"Moderação de avaliações"}
+        subtitle={"Aprovar, ocultar ou responder avaliações públicas de qualquer empresa."}
+      />
       {[1, 2, 3, 4, 5].map((i) => (
         <Star key={i} className={`h-${size} w-${size} ${i <= n ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/30"}`} />
       ))}

@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { BellDot as HeroIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -123,6 +125,12 @@ function AdminNotifPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-4 md:p-6">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Super Admin · Notificações"}
+        title={"Central de notificações"}
+        subtitle={"Push, e-mail e in-app disparados para operadores da plataforma."}
+      />
       <header>
         <h1 className="flex items-center gap-2 text-2xl font-bold">
           <Bell className="h-5 w-5" /> Notificações Push — Admin

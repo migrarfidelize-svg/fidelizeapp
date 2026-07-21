@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { Sparkles as HeroIcon } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
@@ -35,6 +37,12 @@ export const Route = createFileRoute("/_authenticated/app/avaliacoes")({
 function Stars({ n }: { n: number }) {
   return (
     <div className="flex gap-0.5">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Reputação · CSAT"}
+        title={"Avaliações do público"}
+        subtitle={"Colete estrelas, comentários e reaja em tempo real aos clientes."}
+      />
       {[1, 2, 3, 4, 5].map((i) => (
         <Star key={i} className={`h-4 w-4 ${i <= n ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/30"}`} />
       ))}

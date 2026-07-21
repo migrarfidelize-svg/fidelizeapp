@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { Layers as HeroIcon } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -76,6 +78,12 @@ function AdminPlansPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Super Admin · Planos"}
+        title={"Planos & preços"}
+        subtitle={"Tiers, limites por recurso e regras de upgrade da plataforma."}
+      />
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="font-display text-3xl font-bold">Planos e Preços</h1>

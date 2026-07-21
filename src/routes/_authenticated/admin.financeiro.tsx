@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { DollarSign as HeroIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { adminGetFinancial } from "@/lib/admin.functions";
@@ -60,6 +62,12 @@ function AdminFinanceiro() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Super Admin · Financeiro"}
+        title={"Receita & MRR"}
+        subtitle={"Faturamento consolidado, MRR, churn e projeções reais."}
+      />
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="text-xs uppercase tracking-widest text-muted-foreground">Administração</div>

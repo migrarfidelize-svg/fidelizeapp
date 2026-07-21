@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { ShieldCheck as HeroIcon } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
@@ -38,6 +40,12 @@ function EquipePage() {
 
   return (
     <div className="space-y-4">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Super Admin · Time interno"}
+        title={"Time interno Fidelize"}
+        subtitle={"Administradores, papéis e escopos de acesso da plataforma."}
+      />
       <div>
         <h1 className="text-2xl font-semibold">Equipe</h1>
         <p className="text-sm text-muted-foreground">Gerencie os membros e convites de {est.name}.</p>

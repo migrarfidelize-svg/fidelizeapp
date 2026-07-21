@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { BookOpen as HeroIcon } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
@@ -68,6 +70,12 @@ function KbManager() {
 
   return (
     <div>
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Ajuda · Base de conhecimento"}
+        title={"Base de conhecimento"}
+        subtitle={"74 artigos organizados por categoria com busca instantânea."}
+      />
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Base de conhecimento</h1>

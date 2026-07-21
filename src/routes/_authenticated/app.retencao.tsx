@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { HeartHandshake as HeroIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -116,6 +118,12 @@ function RetencaoPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-4 md:p-6">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Retenção · Automação"}
+        title={"Régua de retenção"}
+        subtitle={"Aniversário, reengajamento, níveis Bronze/Prata/Ouro e indicações."}
+      />
       <header>
         <h1 className="text-2xl font-bold">Retenção automática</h1>
         <p className="text-sm text-muted-foreground">

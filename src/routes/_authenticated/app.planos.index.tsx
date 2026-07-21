@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { Crown as HeroIcon } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -89,6 +91,12 @@ function MerchantPlansPage() {
 
   return (
     <div className="space-y-10">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Plano · Upgrade"}
+        title={"Planos & upgrade"}
+        subtitle={"Compare limites e mude de plano em um clique — sem burocracia."}
+      />
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}

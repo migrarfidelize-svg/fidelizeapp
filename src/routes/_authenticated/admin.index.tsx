@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { LayoutDashboard as HeroIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { adminGetOverview } from "@/lib/admin.functions";
@@ -39,6 +41,13 @@ function AdminOverview() {
 
   return (
     <div className="space-y-8">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Super Admin · Global"}
+        liveLabel={"Ao vivo"}
+        title={"Visão global da plataforma"}
+        subtitle={"Métricas consolidadas de empresas, receita e operação em tempo real."}
+      />
       {/* HERO */}
       <section className="dash-hero p-6 sm:p-8">
         <div className="relative flex flex-wrap items-end justify-between gap-6">

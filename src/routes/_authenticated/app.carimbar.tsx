@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { Zap as HeroIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -185,6 +187,13 @@ function Carimbar() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Operação · Fidelização"}
+        liveLabel={"Ao vivo"}
+        title={"Carimbar cliente"}
+        subtitle={"Registre visitas por busca, código ou leitura de QR em segundos."}
+      />
       <div>
         <div className="text-xs uppercase tracking-widest text-muted-foreground">Ação</div>
         <h1 className="font-display text-3xl font-bold">Carimbar cliente</h1>

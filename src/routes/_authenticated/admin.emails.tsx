@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { Mails as HeroIcon } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -118,6 +120,12 @@ function EmailsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Super Admin · E-mail"}
+        title={"E-mails transacionais"}
+        subtitle={"Logs de envio Resend, taxas de entrega e reprocessamento."}
+      />
       <div className="flex items-start gap-3">
         <div className="grid h-11 w-11 place-items-center rounded-xl bg-primary-soft text-primary">
           <Mail className="h-5 w-5" />

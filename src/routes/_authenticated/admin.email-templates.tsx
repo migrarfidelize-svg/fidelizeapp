@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { FileCode2 as HeroIcon } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
@@ -48,6 +50,12 @@ function TemplatesPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Super Admin · Templates"}
+        title={"Templates de e-mail"}
+        subtitle={"Modelos transacionais e de autenticação editáveis com preview."}
+      />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold flex items-center gap-2"><FileText className="h-5 w-5" /> Templates de e-mail</h1>

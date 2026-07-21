@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { SlidersHorizontal as HeroIcon } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
@@ -72,6 +74,12 @@ function ConfigInner({ establishmentId }: { establishmentId: string }) {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Super Admin · Configurações"}
+        title={"Configurações da plataforma"}
+        subtitle={"Feature flags, ambientes, chaves e parâmetros globais."}
+      />
       <div>
         <div className="text-xs uppercase tracking-widest text-muted-foreground">Ajustes</div>
         <h1 className="font-display text-3xl font-bold">Configurações</h1>

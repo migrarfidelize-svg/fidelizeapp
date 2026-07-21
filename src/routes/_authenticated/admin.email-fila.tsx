@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHero } from "@/components/PageHero";
+import { Inbox as HeroIcon } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -42,6 +44,12 @@ function QueuePage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Super Admin · Fila"}
+        title={"Fila de envio"}
+        subtitle={"E-mails pendentes, em retry e falhas do gateway Resend."}
+      />
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h1 className="text-xl font-semibold flex items-center gap-2"><ListChecks className="h-5 w-5" /> Fila de e-mails</h1>
