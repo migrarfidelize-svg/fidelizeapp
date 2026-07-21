@@ -214,9 +214,9 @@ function AuthPage() {
 
         {/* Form panel */}
         <div className="mx-auto w-full max-w-md">
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-8 backdrop-blur-xl">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl sm:p-7">
             {/* Sliding switch toggle */}
-            <div className="relative mb-8 grid grid-cols-2 rounded-full border border-white/10 bg-black/40 p-1">
+            <div className="relative mb-5 grid grid-cols-2 rounded-full border border-white/10 bg-black/40 p-1">
               <span
                 className="pointer-events-none absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full bg-[#00ffff] shadow-[0_0_24px_rgba(0,255,255,0.45)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
                 style={{ transform: isSignup ? "translateX(100%)" : "translateX(0%)" }}
@@ -224,20 +224,21 @@ function AuthPage() {
               <Link
                 to="/auth"
                 search={{ mode: "signin" }}
-                className={"relative z-10 rounded-full py-2 text-center font-display text-sm font-semibold transition-colors duration-300 " + (isSignup ? "text-white/60" : "text-black")}
+                className={"relative z-10 rounded-full py-1.5 text-center font-display text-sm font-semibold transition-colors duration-300 " + (isSignup ? "text-white/60" : "text-black")}
               >
                 Entrar
               </Link>
               <Link
                 to="/auth"
                 search={{ mode: "signup" }}
-                className={"relative z-10 rounded-full py-2 text-center font-display text-sm font-semibold transition-colors duration-300 " + (isSignup ? "text-black" : "text-white/60")}
+                className={"relative z-10 rounded-full py-1.5 text-center font-display text-sm font-semibold transition-colors duration-300 " + (isSignup ? "text-black" : "text-white/60")}
               >
                 Criar conta
               </Link>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className={isSignup ? "space-y-3" : "space-y-4"}>
+
               {isSignup && (
                 <div className="animate-fade-in space-y-1.5">
                   <label htmlFor="name" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">Seu nome</label>
