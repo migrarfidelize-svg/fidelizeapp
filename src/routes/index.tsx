@@ -188,7 +188,7 @@ function Hero() {
       <div className="relative z-10 mx-auto grid max-w-6xl gap-12 px-4 py-20 md:grid-cols-2 md:items-center md:py-28">
         <div className="text-white">
           <span
-            className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
+            className="landing-hero-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
             style={{ background: `${CYAN}14`, border: `1px solid ${CYAN}55`, color: CYAN }}
           >
             <Sparkles className="h-3 w-3" /> Cartão fidelidade digital para o seu negócio
