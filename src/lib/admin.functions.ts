@@ -631,3 +631,135 @@ export const adminGetPayment = createServerFn({ method: "POST" })
       : { data: [] as any[] };
     return { payment: pay, establishment: est, subscription: sub, logs: logs ?? [] };
   });
+
+// ─────────────── Users (system-wide) ───────────────
+export const adminListUsers = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    query: z.string().trim().default(""),
+    account_type: z.enum(["all", "customer", "establishment", "super_admin"]).default("all"),
+    page: z.number().int().min(1).default(1),
+    page_size: z.number().int().min(1).max(100).default(20),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertSuperAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const from = (data.page - 1) * data.page_size;
+    const to = from + data.page_size - 1;
+
+    let q = supabaseAdmin
+      .from("profiles")
+      .select("id, full_name, phone, avatar_url, account_type, created_at", { count: "exact" })
+      .order("created_at", { ascending: false })
+      .range(from, to);
+
+    if (data.account_type !== "all") q = q.eq("account_type", data.account_type);
+    if (data.query) {
+      const like = `%${data.query}%`;
+      q = q.or(`full_name.ilike.${like},phone.ilike.${like}`);
+    }
+
+    const { data: profiles, count, error } = await q;
+    if (error) throw new Error(error.message);
+
+    const ids = (profiles ?? []).map((p) => p.id);
+    let emails: Record<string, string> = {};
+    let memberships: Record<string, Array<{ establishment_id: string; role: string; active: boolean; name: string | null }>> = {};
+    let roles: Record<string, string[]> = {};
+
+    if (ids.length) {
+      // emails via auth.admin
+      const results = await Promise.all(
+        ids.map((id) => supabaseAdmin.auth.admin.getUserById(id).then((r) => ({ id, email: r.data.user?.email ?? null })).catch(() => ({ id, email: null })))
+      );
+      emails = Object.fromEntries(results.map((r) => [r.id, r.email ?? ""]));
+
+      const { data: mems } = await supabaseAdmin
+        .from("establishment_members")
+        .select("user_id, establishment_id, role, active, establishments!inner(name)")
+        .in("user_id", ids);
+      for (const m of (mems ?? []) as Array<{ user_id: string; establishment_id: string; role: string; active: boolean; establishments: { name: string | null } | null }>) {
+        (memberships[m.user_id] ??= []).push({
+          establishment_id: m.establishment_id,
+          role: m.role, active: m.active,
+          name: m.establishments?.name ?? null,
+        });
+      }
+
+      const { data: appRoles } = await supabaseAdmin
+        .from("app_roles").select("user_id, role").in("user_id", ids);
+      for (const r of (appRoles ?? []) as Array<{ user_id: string; role: string }>) {
+        (roles[r.user_id] ??= []).push(r.role);
+      }
+    }
+
+    const users = (profiles ?? []).map((p) => ({
+      id: p.id,
+      full_name: p.full_name,
+      phone: p.phone,
+      avatar_url: p.avatar_url,
+      account_type: p.account_type as "customer" | "establishment" | "super_admin",
+      created_at: p.created_at,
+      email: emails[p.id] ?? "",
+      memberships: memberships[p.id] ?? [],
+      app_roles: roles[p.id] ?? [],
+    }));
+
+    return { users, total: count ?? 0, page: data.page, page_size: data.page_size };
+  });
+
+export const adminSetUserAccountType = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    user_id: z.string().uuid(),
+    account_type: z.enum(["customer", "establishment", "super_admin"]),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertSuperAdmin(supabase, userId);
+    if (data.user_id === userId && data.account_type !== "super_admin") {
+      throw new Error("Você não pode remover seu próprio acesso de super administrador.");
+    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // read current state
+    const { data: prev, error: eR } = await supabaseAdmin
+      .from("profiles").select("account_type").eq("id", data.user_id).single();
+    if (eR) throw new Error(eR.message);
+    const previous = prev?.account_type as string | null;
+
+    // profile account_type
+    const { error: eU } = await supabaseAdmin
+      .from("profiles").update({ account_type: data.account_type }).eq("id", data.user_id);
+    if (eU) throw new Error(eU.message);
+
+    // when converting AWAY from establishment, deactivate memberships
+    if (data.account_type !== "establishment") {
+      await supabaseAdmin
+        .from("establishment_members")
+        .update({ active: false })
+        .eq("user_id", data.user_id)
+        .eq("active", true);
+    }
+
+    // super_admin role sync
+    if (data.account_type === "super_admin") {
+      await supabaseAdmin.from("app_roles")
+        .upsert({ user_id: data.user_id, role: "super_admin" }, { onConflict: "user_id,role" });
+    } else {
+      await supabaseAdmin.from("app_roles")
+        .delete().eq("user_id", data.user_id).eq("role", "super_admin");
+    }
+
+    await supabase.from("audit_logs").insert({
+      user_id: userId,
+      action: "admin_set_user_account_type",
+      entity_type: "user",
+      entity_id: data.user_id,
+      metadata: { from: previous, to: data.account_type } as never,
+    });
+
+    return { ok: true, from: previous, to: data.account_type };
+  });
