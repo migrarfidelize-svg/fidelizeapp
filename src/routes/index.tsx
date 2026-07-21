@@ -125,25 +125,12 @@ function Hero() {
   const OBSIDIAN = "#020617";
   return (
     <section className="relative overflow-hidden" style={{ background: OBSIDIAN }}>
-      {/* Fixed-color ambient — no gradients on text/CTA */}
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-10 opacity-70"
-        style={{
-          background:
-            `radial-gradient(ellipse at 20% 10%, ${CYAN}22, transparent 55%),` +
-            `radial-gradient(ellipse at 80% 90%, ${CYAN}18, transparent 60%)`,
-        }}
-      />
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-10 opacity-[0.06]"
-        style={{
-          backgroundImage:
-            `linear-gradient(${CYAN} 1px, transparent 1px), linear-gradient(90deg, ${CYAN} 1px, transparent 1px)`,
-          backgroundSize: "44px 44px",
-        }}
-      />
+      <div aria-hidden className="hero-bg-aurora-circuit">
+        <span className="hero-pulse" />
+        <span className="hero-pulse delay" />
+      </div>
+      
+
       
       <div className="relative z-10 mx-auto grid max-w-6xl gap-12 px-4 py-20 md:grid-cols-2 md:items-center md:py-28">
         <div className="text-white">
