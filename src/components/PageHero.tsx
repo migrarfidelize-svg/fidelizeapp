@@ -15,15 +15,17 @@ interface PageHeroProps {
   actions?: ReactNode;
   ticker?: HeroTicker[];
   icon?: LucideIcon;
+  visual?: ReactNode;
 }
 
 /**
  * Cabeçalho cinematográfico compartilhado entre todas as guias do painel.
  * - Grid drift + beam superior + scan lateral + brackets HUD.
  * - Cor cyan sólida, sem degradê no conteúdo.
+ * - Slot `visual` opcional para pré-visualização real da funcionalidade.
  */
 export function PageHero({
-  eyebrow, liveLabel, title, subtitle, actions, ticker, icon: Icon,
+  eyebrow, liveLabel, title, subtitle, actions, ticker, icon: Icon, visual,
 }: PageHeroProps) {
   return (
     <section className="dash-hero p-6 sm:p-8">
@@ -33,32 +35,38 @@ export function PageHero({
       <span className="hero-corner hero-corner-br" aria-hidden />
       <span className="hero-scan" aria-hidden />
 
-      <div className="hero-reveal relative flex flex-wrap items-end justify-between gap-6">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            {liveLabel && <span className="live-pulse">{liveLabel}</span>}
-            {eyebrow && (
-              <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                {eyebrow}
-              </span>
+      <div className={`hero-reveal relative grid gap-6 ${visual ? "lg:grid-cols-[1fr_minmax(280px,420px)] items-center" : ""}`}>
+        <div className="min-w-0 flex flex-wrap items-end justify-between gap-6">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              {liveLabel && <span className="live-pulse">{liveLabel}</span>}
+              {eyebrow && (
+                <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                  {eyebrow}
+                </span>
+              )}
+            </div>
+            <div className="mt-3 flex items-center gap-3">
+              {Icon && (
+                <span className="grid h-11 w-11 place-items-center rounded-xl border border-primary/40 bg-primary/10 text-primary shadow-[0_0_20px_-6px_var(--primary)] shrink-0">
+                  <Icon className="h-5 w-5" />
+                </span>
+              )}
+              <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight truncate">
+                {title}
+              </h1>
+            </div>
+            {subtitle && (
+              <p className="mt-1 text-sm text-muted-foreground max-w-2xl">{subtitle}</p>
             )}
           </div>
-          <div className="mt-3 flex items-center gap-3">
-            {Icon && (
-              <span className="grid h-11 w-11 place-items-center rounded-xl border border-primary/40 bg-primary/10 text-primary shadow-[0_0_20px_-6px_var(--primary)] shrink-0">
-                <Icon className="h-5 w-5" />
-              </span>
-            )}
-            <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight truncate">
-              {title}
-            </h1>
-          </div>
-          {subtitle && (
-            <p className="mt-1 text-sm text-muted-foreground max-w-2xl">{subtitle}</p>
-          )}
+          {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
         </div>
-        {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
+        {visual && (
+          <div className="hidden lg:block relative">{visual}</div>
+        )}
       </div>
+
 
       {ticker && ticker.length > 0 && (
         <div
