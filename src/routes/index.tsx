@@ -670,13 +670,13 @@ function Comparison() {
 
   return (
     <section id="comparativo" className="relative bg-[oklch(0.14_0.02_230)]">
-      <div ref={wrapRef} className="relative h-[260vh] min-h-[1720px] md:h-[250vh] md:min-h-[1840px]">
+      <div ref={wrapRef} className="relative h-[220vh] min-h-[1460px] md:h-[215vh] md:min-h-[1580px]">
         <div
           ref={stageRef}
           className="tear-stage sticky top-0 isolate flex h-[100svh] min-h-[760px] items-center overflow-hidden"
           style={{ ["--p" as never]: 0 }}
         >
-          <div className="relative z-20 mx-auto w-full max-w-6xl px-6 pt-24 md:pt-28">
+          <div className="relative z-20 mx-auto w-full max-w-6xl px-6 pt-20 md:pt-24">
 
             <div className="relative z-50 mb-10 text-center md:mb-14">
               <h2 className="font-display text-3xl font-extrabold leading-[1.2] tracking-tight text-white md:text-5xl pb-1">
@@ -993,7 +993,7 @@ function Examples() {
 
 
   return (
-    <section className="relative overflow-hidden bg-[oklch(0.14_0.02_230)] pt-28 pb-16 md:pt-32 md:pb-20">
+    <section className="relative overflow-hidden bg-[oklch(0.14_0.02_230)] pt-20 pb-16 md:pt-24 md:pb-20">
       <div className="relative mx-auto max-w-6xl px-4">
         <div className="mx-auto max-w-2xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/5 px-3 py-1 text-[11px] font-bold uppercase tracking-widest" style={{ color: "#00ffff" }}>
