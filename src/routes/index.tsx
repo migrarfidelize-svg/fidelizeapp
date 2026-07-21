@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
-import { HeroStampCardLoop } from "@/components/HeroStampCardLoop";
+import { HeroStampCard3D } from "@/components/HeroStampCard3D";
 import { SegmentsCarousel } from "@/components/SegmentsCarousel";
 import { CursorTrail } from "@/components/CursorTrail";
 import { Button } from "@/components/ui/button";
@@ -190,7 +190,7 @@ function Hero() {
           </div>
         </div>
         <div className="relative flex justify-center">
-          <HeroStampCardLoop />
+          <HeroStampCard3D />
         </div>
       </div>
     </section>
