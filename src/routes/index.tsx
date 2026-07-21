@@ -680,16 +680,16 @@ function Comparison() {
           <div aria-hidden className="pointer-events-none absolute -left-40 top-1/3 h-96 w-96 rounded-full bg-cyan-500/[0.06] blur-[120px]" />
           <div aria-hidden className="pointer-events-none absolute -right-40 bottom-1/4 h-96 w-96 rounded-full blur-[120px]" style={{ background: "rgba(255,43,214,0.05)" }} />
 
-          <div className="mx-auto w-full max-w-6xl px-6 pt-16 md:pt-20">
+          <div className="mx-auto w-full max-w-6xl px-6 pt-28 md:pt-32">
 
-            <div className="relative z-40 mb-10 text-center md:mb-14">
+            <div className="relative z-50 mb-10 text-center md:mb-14 [text-shadow:0_2px_20px_rgba(0,0,0,0.9)]">
               <span className="font-display text-xs font-bold uppercase tracking-[0.25em]" style={{ color: "#00ffff" }}>
                 Papel × Fidelize
               </span>
-              <h2 className="mt-3 font-display text-3xl font-extrabold leading-[1.15] tracking-tight text-white md:text-5xl">
+              <h2 className="mt-3 font-display text-3xl font-extrabold leading-[1.2] tracking-tight text-white md:text-5xl pb-1">
                 O papel rasga. O digital escala.
               </h2>
-              <p className="mt-4 text-white/60">Role para ver o que muda quando você troca o cartão de papel.</p>
+              <p className="mt-4 text-white/70">Role para ver o que muda quando você troca o cartão de papel.</p>
             </div>
 
 
