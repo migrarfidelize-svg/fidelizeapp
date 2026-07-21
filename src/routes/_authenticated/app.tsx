@@ -365,24 +365,20 @@ function AppLayout() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-[color-mix(in_oklab,var(--color-background)_92%,var(--color-primary)_4%)]">
+      <div className="min-h-screen dock-page-bg">
         {/* Desktop: floating dock */}
         <aside
-          className="hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-30 flex-col items-center gap-1.5 rounded-2xl border border-cyan-400/25 bg-[#0b1219]/90 p-2 backdrop-blur-xl"
-          style={{
-            boxShadow:
-              "0 0 0 1px rgba(0,255,255,0.08), 0 24px 60px -20px rgba(0,255,255,0.35), inset 0 1px 0 rgba(255,255,255,0.04)",
-          }}
+          className="dock-surface hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-30 flex-col items-center gap-1.5 rounded-2xl p-2"
           data-tour="sidebar-logo"
         >
           <Link
             to="/app"
-            className="dock-logo relative mb-1 grid h-12 w-12 place-items-center rounded-full bg-[#0e1620]"
+            className="dock-logo dock-logo-bg relative mb-1 grid h-12 w-12 place-items-center rounded-full"
             aria-label="Fidelize"
           >
             <span aria-hidden className="dock-logo-led" />
             <span aria-hidden className="dock-logo-halo" />
-            <LogoMark size={22} className="relative z-10 text-cyan-300" />
+            <LogoMark size={22} className="relative z-10 text-primary" />
           </Link>
 
           {NAV_GROUPS.map((g) => {
@@ -405,15 +401,13 @@ function AppLayout() {
                   aria-expanded={isOpen}
                   onClick={() => (isOpen ? setPinnedGroup(null) : openGroup(g.key))}
                   className={[
-                    "relative grid h-11 w-11 place-items-center rounded-xl transition-all duration-200",
-                    isActive || isOpen
-                      ? "bg-cyan-400/15 text-cyan-200 ring-1 ring-cyan-300/50 shadow-[0_0_18px_-2px_rgba(0,255,255,0.6)]"
-                      : "bg-white/[0.03] text-white/75 ring-1 ring-white/[0.06] hover:text-white hover:ring-cyan-300/40",
+                    "relative grid h-11 w-11 place-items-center rounded-xl",
+                    isActive || isOpen ? "dock-item-active" : "dock-item",
                   ].join(" ")}
                 >
                   <Icon className="h-[19px] w-[19px]" strokeWidth={1.8} />
                   {badge > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-cyan-400 px-1 text-[9px] font-bold text-black ring-2 ring-[#0b1219]">
+                    <span className="dock-badge absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-bold ring-2 ring-[color:var(--dock-surface)]">
                       {badge > 9 ? "9+" : badge}
                     </span>
                   )}
@@ -430,14 +424,8 @@ function AppLayout() {
                   onMouseEnter={() => openGroup(g.key)}
                   onMouseLeave={scheduleCloseGroup}
                 >
-                  <div
-                    className="min-w-[240px] rounded-2xl border border-cyan-400/25 bg-[#0b1219]/95 p-2 backdrop-blur-xl"
-                    style={{
-                      boxShadow:
-                        "0 0 0 1px rgba(0,255,255,0.08), 0 24px 60px -20px rgba(0,255,255,0.35)",
-                    }}
-                  >
-                    <div className="px-2 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan-300/70">
+                  <div className="dock-flyout min-w-[240px] rounded-2xl p-2">
+                    <div className="dock-flyout-title px-2 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em]">
                       {g.label}
                     </div>
                     <ul className="space-y-0.5">
@@ -455,25 +443,21 @@ function AppLayout() {
                               data-tour={`nav-${n.to}`}
                               onClick={() => setPinnedGroup(null)}
                               className={[
-                                "flex items-center gap-3 rounded-xl px-2 py-2 text-[13px] transition-all",
-                                active
-                                  ? "bg-cyan-400/[0.12] text-white ring-1 ring-inset ring-cyan-300/25"
-                                  : "text-white/70 hover:bg-white/[0.04] hover:text-white",
+                                "flex items-center gap-3 rounded-xl px-2 py-2 text-[13px]",
+                                active ? "dock-flyout-item-active" : "dock-flyout-item",
                               ].join(" ")}
                             >
                               <span
                                 className={[
-                                  "grid h-8 w-8 place-items-center rounded-lg transition-all",
-                                  active
-                                    ? "bg-cyan-400/15 text-cyan-200 ring-1 ring-cyan-300/40 shadow-[0_0_14px_-2px_rgba(0,255,255,0.6)]"
-                                    : "bg-white/[0.03] text-white/75 ring-1 ring-white/[0.06]",
+                                  "grid h-8 w-8 place-items-center rounded-lg",
+                                  active ? "dock-item-active" : "dock-item",
                                 ].join(" ")}
                               >
                                 <ItemIcon className="h-[17px] w-[17px]" strokeWidth={1.8} />
                               </span>
                               <span className="flex-1">{n.label}</span>
                               {itBadge > 0 && (
-                                <span className="rounded-full bg-cyan-400/15 px-2 py-0.5 text-[10px] font-semibold text-cyan-200 ring-1 ring-cyan-300/30">
+                                <span className="rounded-full bg-[color:var(--dock-item-active-bg)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--dock-item-active-text)] ring-1 ring-inset ring-[color:var(--dock-item-active-ring)]">
                                   {itBadge > 9 ? "9+" : itBadge}
                                 </span>
                               )}
@@ -487,7 +471,7 @@ function AppLayout() {
 
                 {/* Tooltip when closed */}
                 {!isOpen && (
-                  <span className="pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 whitespace-nowrap rounded-md bg-[#0b1219] px-2 py-1 text-[11px] font-medium text-white/80 opacity-0 ring-1 ring-cyan-400/25 transition-opacity group-hover/dock:opacity-100">
+                  <span className="dock-tooltip pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 whitespace-nowrap rounded-md px-2 py-1 text-[11px] font-medium opacity-0 transition-opacity group-hover/dock:opacity-100">
                     {g.label}
                   </span>
                 )}
@@ -496,7 +480,7 @@ function AppLayout() {
           })}
 
           {/* Divider */}
-          <div className="my-1 h-px w-8 bg-white/[0.06]" />
+          <div className="dock-divider my-1 h-px w-8" />
 
           {/* Theme + account */}
           <div className="grid place-items-center">
@@ -507,11 +491,12 @@ function AppLayout() {
               <button
                 type="button"
                 aria-label="Conta"
-                className="grid h-11 w-11 place-items-center rounded-xl bg-cyan-400/10 text-[11px] font-bold text-cyan-200 ring-1 ring-cyan-300/30 transition-all hover:ring-cyan-300/60"
+                className="dock-item grid h-11 w-11 place-items-center rounded-xl text-[11px] font-bold"
               >
                 {activeEst?.name?.slice(0, 2).toUpperCase() ?? "FZ"}
               </button>
             </DropdownMenuTrigger>
+
             <DropdownMenuContent side="right" align="end" className="w-56">
               <div className="px-2 py-1.5 text-xs text-muted-foreground truncate">
                 {activeEst?.name}
