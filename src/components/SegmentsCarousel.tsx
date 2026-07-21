@@ -239,7 +239,7 @@ function Constellation({
             cy={CENTER}
             r={R + 32}
             fill="none"
-            stroke="color-mix(in oklab, var(--accent) 25%, transparent)"
+            stroke="color-mix(in oklab, var(--primary) 20%, transparent)"
             strokeOpacity="0.12"
             strokeDasharray="1 6"
             strokeWidth="1"
