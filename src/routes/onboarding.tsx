@@ -21,6 +21,15 @@ export const Route = createFileRoute("/onboarding")({
   beforeLoad: async () => {
     const { data } = await supabase.auth.getUser();
     if (!data.user) throw redirect({ to: "/auth" });
+    // Onboarding é exclusivo para donos de estabelecimento — clientes finais
+    // vão direto para /carteira.
+    try {
+      const { data: acct } = await supabase.rpc("my_account_type");
+      if (acct === "customer") throw redirect({ to: "/carteira" });
+      if (acct === "super_admin") throw redirect({ to: "/admin" });
+    } catch (e) {
+      if (e && typeof e === "object" && ("isRedirect" in e || "to" in e)) throw e;
+    }
   },
   head: () => ({ meta: [{ title: "Configurar minha empresa — Fidelize" }] }),
   component: Onboarding,
