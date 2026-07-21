@@ -45,8 +45,8 @@ export function SegmentsCarousel() {
       <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-40 bg-gradient-to-r from-background to-transparent" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-20 w-40 bg-gradient-to-l from-background to-transparent" />
 
-      {/* Stage */}
-      <div className="absolute inset-0">
+      {/* Stage — vertically anchored above label */}
+      <div className="absolute inset-x-0 top-0" style={{ height: CENTER_SIZE + 40 }}>
         {ITEMS.map((it, i) => {
           // signed distance -N..+N with wrap-around for shortest path
           let d = i - active;
