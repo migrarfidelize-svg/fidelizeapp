@@ -282,7 +282,7 @@ function Constellation({
         {(() => {
           const n = nodes[focused];
           return (
-            <circle r="3.5" fill="#7dfcff" filter="url(#orbGlow)">
+            <circle r="3.5" fill="var(--primary)" filter="url(#orbGlow)">
               <animateMotion
                 key={focused}
                 dur="1.4s"
