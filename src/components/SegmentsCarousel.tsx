@@ -53,29 +53,73 @@ export function SegmentsCarousel() {
       style={{ height: `${ITEMS.length * PER_ITEM_VH + 100}vh` }}
     >
       <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden">
+        {/* shared SVG defs for gradient strokes & filters */}
+        <svg width="0" height="0" className="absolute" aria-hidden>
+          <defs>
+            <linearGradient id="segStrokeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="var(--primary)" />
+              <stop offset="55%" stopColor="var(--primary)" />
+              <stop offset="100%" stopColor="var(--accent)" />
+            </linearGradient>
+            <radialGradient id="segFillGrad" cx="50%" cy="45%" r="60%">
+              <stop offset="0%" stopColor="color-mix(in oklab, var(--primary) 30%, transparent)" />
+              <stop offset="100%" stopColor="transparent" />
+            </radialGradient>
+          </defs>
+        </svg>
+
         {/* soft ambient glow */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(circle at 50% 45%, color-mix(in oklab, var(--primary) 18%, transparent), transparent 60%)",
+              "radial-gradient(circle at 50% 45%, color-mix(in oklab, var(--primary) 20%, transparent), transparent 60%)",
           }}
         />
 
         <div className="relative flex flex-col items-center justify-center gap-10">
           {/* Icon stage */}
-          <div className="relative flex h-[min(46vh,420px)] w-[min(46vh,420px)] items-center justify-center">
+          <div className="relative flex h-[min(46vh,440px)] w-[min(46vh,440px)] items-center justify-center">
+            {/* Orbit rings behind icon */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 rounded-full"
+              style={{
+                background:
+                  "radial-gradient(circle, transparent 55%, color-mix(in oklab, var(--primary) 10%, transparent) 62%, transparent 66%)",
+                animation: "seg-breathe 4s ease-in-out infinite",
+              }}
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-[8%] rounded-full border"
+              style={{
+                borderColor: "color-mix(in oklab, var(--primary) 22%, transparent)",
+                boxShadow:
+                  "0 0 0 1px color-mix(in oklab, var(--accent) 10%, transparent) inset",
+              }}
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-[2%] rounded-full"
+              style={{
+                background:
+                  "conic-gradient(from 0deg, transparent 0deg, color-mix(in oklab, var(--primary) 60%, transparent) 30deg, transparent 60deg, transparent 360deg)",
+                mask: "radial-gradient(circle, transparent 47%, black 48%, black 50%, transparent 51%)",
+                WebkitMask: "radial-gradient(circle, transparent 47%, black 48%, black 50%, transparent 51%)",
+                animation: "seg-orbit 6s linear infinite",
+              }}
+            />
+
             {ITEMS.map((it, i) => {
               const Icon = it.icon;
               const isActive = i === active;
-              // enter: current progress (0->1), previous items already gone, future items waiting
               let opacity = 0;
               let scale = 0.6;
               let y = 40;
               let blur = 12;
               if (isActive) {
-                // fade in during first 30%, fade out during last 20%
                 const inP = Math.min(1, progress / 0.3);
                 const outP = Math.max(0, (progress - 0.8) / 0.2);
                 opacity = inP * (1 - outP);
@@ -93,21 +137,35 @@ export function SegmentsCarousel() {
                     transform: `translateY(${y}px) scale(${scale})`,
                     filter: `blur(${blur}px)`,
                     transition: "opacity 200ms linear, filter 200ms linear",
-                    color: "var(--primary)",
                   }}
                 >
+                  {/* soft duplicate for aura */}
                   <Icon
-                    strokeWidth={1.25}
-                    className="h-full w-full"
+                    strokeWidth={1.1}
+                    aria-hidden
+                    className="absolute h-[70%] w-[70%]"
                     style={{
+                      color: "var(--primary)",
+                      opacity: 0.55,
+                      filter: "blur(18px)",
+                    }}
+                  />
+                  {/* premium gradient stroke icon */}
+                  <Icon
+                    strokeWidth={1.1}
+                    className="relative h-[74%] w-[74%]"
+                    style={{
+                      stroke: "url(#segStrokeGrad)",
+                      color: "transparent",
                       filter:
-                        "drop-shadow(0 20px 40px color-mix(in oklab, var(--primary) 55%, transparent)) drop-shadow(0 0 30px color-mix(in oklab, var(--primary) 40%, transparent))",
+                        "drop-shadow(0 24px 44px color-mix(in oklab, var(--primary) 55%, transparent)) drop-shadow(0 0 22px color-mix(in oklab, var(--accent) 40%, transparent))",
                     }}
                   />
                 </div>
               );
             })}
           </div>
+
 
           {/* Label */}
           <div className="relative h-14 overflow-hidden">
