@@ -987,27 +987,189 @@ function PaperHalf({ side }: { side: "left" | "right" }) {
 }
 
 function Examples() {
-  const examples = [
-    "Compre 9 cafés e ganhe o 10º",
-    "A cada 5 cortes, um desconto",
-    "Complete 10 lavagens, uma grátis",
-    "4 pedidos, uma sobremesa",
-    "Complete o cartão e receba um cupom",
-    "Acumule pontos e troque por produtos",
-  ];
+  const ChannelBadge = ({ icon: Icon, label }: { icon: typeof MessageCircle; label: string }) => (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-white/70">
+      <Icon className="h-3 w-3" style={{ color: "#00ffff" }} />
+      {label}
+    </span>
+  );
+
+  const Spark = ({ variant = "up" }: { variant?: "up" | "wave" | "steps" }) => {
+    const paths = {
+      up: "M0 40 L20 34 L40 28 L60 20 L80 12 L100 6",
+      wave: "M0 30 Q20 10 40 24 T80 20 T100 12",
+      steps: "M0 40 L20 40 L20 28 L45 28 L45 18 L70 18 L70 8 L100 8",
+    };
+    return (
+      <svg viewBox="0 0 100 48" preserveAspectRatio="none" className="h-10 w-full opacity-80">
+        <defs>
+          <linearGradient id={`sp-${variant}`} x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stopColor="#00ffff" stopOpacity="0" />
+            <stop offset="50%" stopColor="#00ffff" stopOpacity="1" />
+            <stop offset="100%" stopColor="#ff2bd6" stopOpacity="1" />
+          </linearGradient>
+        </defs>
+        <path d={paths[variant]} fill="none" stroke={`url(#sp-${variant})`} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  };
+
+  const cardBase =
+    "group relative flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.01] p-6 backdrop-blur transition-all duration-300 hover:border-cyan-400/40 hover:-translate-y-1";
+
   return (
-    <section className="border-y bg-muted/40 py-20">
-      <div className="mx-auto max-w-5xl px-4 text-center">
-        <h2 className="font-display text-3xl font-bold">Exemplos de campanhas que funcionam</h2>
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
-          {examples.map((e) => (
-            <span key={e} className="rounded-full border bg-card px-4 py-2 text-sm">{e}</span>
-          ))}
+    <section className="relative overflow-hidden border-y border-white/5 bg-[oklch(0.14_0.02_230)] py-24">
+      {/* ambient glow */}
+      <div className="pointer-events-none absolute inset-0 opacity-60"
+        style={{
+          background:
+            "radial-gradient(60% 40% at 20% 10%, rgba(0,255,255,0.08), transparent 60%), radial-gradient(50% 40% at 85% 90%, rgba(255,43,214,0.08), transparent 60%)",
+        }}
+      />
+      <div className="relative mx-auto max-w-6xl px-4">
+        <div className="mx-auto max-w-2xl text-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/5 px-3 py-1 text-[11px] font-bold uppercase tracking-widest" style={{ color: "#00ffff" }}>
+            <Sparkles className="h-3 w-3" /> Templates prontos
+          </span>
+          <h2 className="mt-4 font-display text-3xl font-bold text-white md:text-4xl">
+            Exemplos de campanhas <span style={{ background: "linear-gradient(90deg, #00ffff, #ff2bd6)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>que funcionam</span>
+          </h2>
+          <p className="mt-3 text-white/60">Todas já vêm prontas. Você só ativa e vê o resultado.</p>
+        </div>
+
+        {/* Bento grid: 2 large hero cards + 4 compact */}
+        <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-3 md:grid-rows-2">
+          {/* HERO 1 — Aniversariante (2x1) */}
+          <article className={`${cardBase} md:col-span-2`}
+            style={{ boxShadow: "0 0 0 1px rgba(0,255,255,0.15), 0 30px 80px -30px rgba(0,255,255,0.35)" }}
+          >
+            <span className="pointer-events-none absolute inset-0 rounded-3xl"
+              style={{ background: "radial-gradient(80% 60% at 100% 0%, rgba(0,255,255,0.12), transparent 60%)" }}
+            />
+            <div className="relative flex items-start justify-between">
+              <div className="card-icon">
+                <Cake className="h-6 w-6" style={{ color: "#00ffff" }} />
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                <ChannelBadge icon={MessageCircle} label="WhatsApp" />
+                <ChannelBadge icon={Bell} label="Push" />
+              </div>
+            </div>
+            <h3 className="relative mt-5 font-display text-2xl font-bold text-white">Aniversariante do mês</h3>
+            <p className="relative mt-1 text-sm text-white/60">Dispara automaticamente 3 dias antes com um mimo exclusivo.</p>
+            <div className="relative mt-5 flex items-end justify-between gap-4">
+              <div>
+                <div className="metric-number text-4xl">+38%</div>
+                <span className="text-[11px] font-semibold uppercase tracking-widest text-white/50">retorno no mês</span>
+              </div>
+              <div className="w-40"><Spark variant="up" /></div>
+            </div>
+            <Link to="/auth" className="relative mt-5 inline-flex items-center gap-1 text-sm font-bold" style={{ color: "#00ffff" }}>
+              Usar este template <ArrowRight className="h-4 w-4" />
+            </Link>
+          </article>
+
+          {/* Compact — Inativo 15d */}
+          <article className={cardBase}>
+            <div className="card-icon"><Clock className="h-6 w-6" style={{ color: "#00ffff" }} /></div>
+            <h3 className="mt-4 font-display text-lg font-bold text-white">Reengajar inativos</h3>
+            <p className="mt-1 text-xs text-white/60">Cliente sem visita há 15 dias recebe um empurrãozinho.</p>
+            <div className="mt-4 flex items-end justify-between">
+              <div>
+                <div className="metric-number text-2xl">2.4x</div>
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-white/50">LTV médio</span>
+              </div>
+              <ChannelBadge icon={MessageCircle} label="WhatsApp" />
+            </div>
+            <Link to="/auth" className="mt-4 inline-flex items-center gap-1 text-xs font-bold" style={{ color: "#00ffff" }}>
+              Usar template <ArrowRight className="h-3 w-3" />
+            </Link>
+          </article>
+
+          {/* Compact — Boas-vindas */}
+          <article className={cardBase}>
+            <div className="card-icon"><Sparkles className="h-6 w-6" style={{ color: "#00ffff" }} /></div>
+            <h3 className="mt-4 font-display text-lg font-bold text-white">1º carimbo grátis</h3>
+            <p className="mt-1 text-xs text-white/60">Recompensa imediata pra ativar o cliente novo.</p>
+            <div className="mt-4 flex items-end justify-between">
+              <div>
+                <div className="metric-number text-2xl">73%</div>
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-white/50">ativação</span>
+              </div>
+              <ChannelBadge icon={Mail} label="E-mail" />
+            </div>
+            <Link to="/auth" className="mt-4 inline-flex items-center gap-1 text-xs font-bold" style={{ color: "#00ffff" }}>
+              Usar template <ArrowRight className="h-3 w-3" />
+            </Link>
+          </article>
+
+          {/* HERO 2 — Indicação (2x1) */}
+          <article className={`${cardBase} md:col-span-2`}
+            style={{ boxShadow: "0 0 0 1px rgba(255,43,214,0.15), 0 30px 80px -30px rgba(255,43,214,0.35)" }}
+          >
+            <span className="pointer-events-none absolute inset-0 rounded-3xl"
+              style={{ background: "radial-gradient(80% 60% at 0% 100%, rgba(255,43,214,0.14), transparent 60%)" }}
+            />
+            <div className="relative flex items-start justify-between">
+              <div className="card-icon">
+                <UserPlus className="h-6 w-6" style={{ color: "#00ffff" }} />
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                <ChannelBadge icon={QrCode} label="QR indicação" />
+                <ChannelBadge icon={MessageCircle} label="WhatsApp" />
+              </div>
+            </div>
+            <h3 className="relative mt-5 font-display text-2xl font-bold text-white">Indique e ganhe</h3>
+            <p className="relative mt-1 text-sm text-white/60">Cliente compartilha um QR próprio. Amigo cadastra, os dois ganham carimbo.</p>
+            <div className="relative mt-5 flex items-end justify-between gap-4">
+              <div>
+                <div className="metric-number text-4xl">4.1x</div>
+                <span className="text-[11px] font-semibold uppercase tracking-widest text-white/50">CAC mais barato</span>
+              </div>
+              <div className="w-40"><Spark variant="steps" /></div>
+            </div>
+            <Link to="/auth" className="relative mt-5 inline-flex items-center gap-1 text-sm font-bold" style={{ color: "#00ffff" }}>
+              Usar este template <ArrowRight className="h-4 w-4" />
+            </Link>
+          </article>
+
+          {/* Compact — VIP Ouro */}
+          <article className={cardBase}>
+            <div className="card-icon"><Crown className="h-6 w-6" style={{ color: "#00ffff" }} /></div>
+            <h3 className="mt-4 font-display text-lg font-bold text-white">Níveis VIP</h3>
+            <p className="mt-1 text-xs text-white/60">Bronze, Prata e Ouro com benefícios crescentes.</p>
+            <div className="mt-4 flex items-end justify-between">
+              <div>
+                <div className="metric-number text-2xl">+62%</div>
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-white/50">frequência</span>
+              </div>
+              <ChannelBadge icon={Bell} label="Push" />
+            </div>
+            <Link to="/auth" className="mt-4 inline-flex items-center gap-1 text-xs font-bold" style={{ color: "#00ffff" }}>
+              Usar template <ArrowRight className="h-3 w-3" />
+            </Link>
+          </article>
+        </div>
+
+        {/* Closing line */}
+        <div className="mx-auto mt-14 max-w-2xl text-center">
+          <p className="text-white/70">
+            <span className="font-semibold text-white">Todas as campanhas já vêm prontas.</span> Você só ativa.
+          </p>
+          <Button asChild size="lg" className="mt-5 rounded-full px-8 font-bold" style={{ background: "#00ffff", color: "#001010" }}>
+            <Link to="/auth">
+              Ativar campanhas grátis <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
+          </Button>
+          <p className="mt-3 text-[11px] uppercase tracking-widest text-white/40">
+            <Gift className="mr-1 inline h-3 w-3" style={{ color: "#00ffff" }} /> 14 dias grátis · sem cartão
+          </p>
         </div>
       </div>
     </section>
   );
 }
+
 
 function Pricing() {
   const plans = [
