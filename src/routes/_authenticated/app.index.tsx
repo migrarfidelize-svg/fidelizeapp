@@ -1,24 +1,26 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { getMyEstablishments, getDashboardData } from "@/lib/loyalty.functions";
 import {
   Users, Stamp, Gift, ArrowRight, Sparkles,
-  ArrowUpRight, ArrowDownRight, Minus, Zap, Crown, Activity,
-  QrCode, TrendingUp, Trophy, Clock,
+  ArrowUpRight, ArrowDownRight, Minus, Zap, Crown,
+  QrCode, TrendingUp, Trophy, Clock, LayoutDashboard,
 } from "lucide-react";
 import {
-  LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid, Area, AreaChart,
+  XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid, Area, AreaChart,
 } from "recharts";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
 import { GoalsCard } from "@/components/GoalsCard";
+import { PageHero } from "@/components/PageHero";
 import { ErrorState, LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/app/")({
   component: Dashboard,
 });
+
 
 function Dashboard() {
   const getEsts = useServerFn(getMyEstablishments);
