@@ -196,9 +196,19 @@ function Carimbar() {
       />
 
       <Tabs defaultValue="scan" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
-          <TabsTrigger value="scan"><QrCode className="h-4 w-4 mr-2" /> Escanear</TabsTrigger>
-          <TabsTrigger value="search"><Search className="h-4 w-4 mr-2" /> Pesquisar</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 max-w-md bg-[color:color-mix(in_oklab,var(--muted)_60%,transparent)] border border-border/60">
+          <TabsTrigger
+            value="scan"
+            className="data-[state=active]:bg-primary/15 data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-primary/40 data-[state=active]:shadow-[0_0_0_1px_color-mix(in_oklab,var(--primary)_25%,transparent),0_6px_18px_-8px_color-mix(in_oklab,var(--primary)_45%,transparent)] font-medium transition-all"
+          >
+            <QrCode className="h-4 w-4 mr-2" /> Escanear
+          </TabsTrigger>
+          <TabsTrigger
+            value="search"
+            className="data-[state=active]:bg-primary/15 data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-primary/40 data-[state=active]:shadow-[0_0_0_1px_color-mix(in_oklab,var(--primary)_25%,transparent),0_6px_18px_-8px_color-mix(in_oklab,var(--primary)_45%,transparent)] font-medium transition-all"
+          >
+            <Search className="h-4 w-4 mr-2" /> Pesquisar
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="scan" className="mt-4">
