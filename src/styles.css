@@ -2269,25 +2269,58 @@ main .space-y-24 > * + * { margin-top: 4rem !important; }
 main .space-y-32 > * + * { margin-top: 4.5rem !important; }
 
 /* ============================================================
-   HERO 3D CARD — tema claro: cyan → roxo (predominante)
-   Aplica hue-rotate ~90° para converter #00ffff (cyan) em roxo,
-   sem tocar no tema escuro.
+   HERO 3D CARD — tema claro: cyan (#00ffff) → roxo (#7c3aed)
+   Substitui diretamente as ocorrências inline sem hue-rotate
+   (o hue-rotate estava caindo em rosa por causa da matrix sRGB).
    ============================================================ */
-html:not(.dark) .landing-scope .hero-3d-card {
-  filter: hue-rotate(90deg) saturate(1.1);
-}
-/* Contra-rotaciona conteúdos que já são neutros (branco/preto) — não precisa,
-   hue-rotate não afeta grayscale. Mas o texto branco vira levemente esverdeado
-   apenas em cores saturadas; brancos puros ficam intactos. */
 
-/* Ajuste fino: garante que o botão "Girar cartão" continue roxo sólido
-   mesmo após o hue-rotate (o botão já tem override anterior baseado em
-   .landing-flip-btn — reforçamos aqui com !important). */
+/* Ícones/textos com color: #00ffff → roxo */
+html:not(.dark) .landing-scope .hero-3d-card [style*="color: #00ffff"],
+html:not(.dark) .landing-scope .hero-3d-card [style*="color:#00ffff"] {
+  color: #7c3aed !important;
+}
+/* Drop-shadows/box-shadows/backgrounds com #00ffff (qualquer alpha suffix) */
+html:not(.dark) .landing-scope .hero-3d-card [style*="#00ffff"] {
+  /* recolore glows cyan → glow roxo */
+  --hero-accent: #7c3aed;
+}
+html:not(.dark) .landing-scope .hero-3d-card [style*="#00ffff"] svg,
+html:not(.dark) .landing-scope .hero-3d-card svg[style*="#00ffff"] {
+  color: #7c3aed !important;
+}
+/* Backgrounds/borders/box-shadows inline com #00ffff — pinta por cima com pseudo overrides.
+   Como CSS não permite reescrever partes do style inline, usamos filtro localizado
+   apenas em containers cujos glows queremos re-tingir sem alterar cor do texto branco. */
+html:not(.dark) .landing-scope .hero-3d-card [style*="background: #00ffff"],
+html:not(.dark) .landing-scope .hero-3d-card [style*="background:#00ffff"],
+html:not(.dark) .landing-scope .hero-3d-card [style*="background: rgb(0, 255, 255)"] {
+  background: #7c3aed !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 30px rgba(124,58,237,0.55) !important;
+}
+/* Borders com #00ffff */
+html:not(.dark) .landing-scope .hero-3d-card [style*="border:"][style*="#00ffff"],
+html:not(.dark) .landing-scope .hero-3d-card [style*="borderColor"][style*="#00ffff"] {
+  border-color: rgba(124,58,237,0.55) !important;
+}
+
+/* Halos ambientais (sombra projetada + halo circular) — recolorir via
+   ::before/::after não funciona em <div>s com background inline; então
+   aplicamos um sutil hue-rotate SOMENTE nos halos externos identificados
+   pelas classes utilitárias blur-2xl/-3xl no primeiro nível do card. */
+html:not(.dark) .landing-scope .hero-3d-card > .blur-2xl,
+html:not(.dark) .landing-scope .hero-3d-card > .blur-3xl,
+html:not(.dark) .landing-scope .hero-3d-card > div[aria-hidden] {
+  filter: hue-rotate(140deg) saturate(1.3) !important;
+}
+
+/* Botão "Girar cartão" — força roxo sólido conforme .landing-flip-btn já
+   definido em regras anteriores (mantém padrão do restante do site). */
 html:not(.dark) .landing-scope .hero-3d-card .landing-flip-btn {
-  filter: hue-rotate(-90deg) !important;
+  background: #7c3aed !important;
+  color: #ffffff !important;
+  border-color: rgba(124,58,237,0.55) !important;
+  box-shadow: 0 10px 30px -8px rgba(124,58,237,0.55) !important;
+  filter: none !important;
 }
-/* Sombra projetada / halo ambient (blobs cyan em rgba) — vira roxo */
-html:not(.dark) .landing-scope .hero-3d-card [style*="#00ffff33"],
-html:not(.dark) .landing-scope .hero-3d-card [style*="#00ffff22"] {
-  /* já cobertos pelo hue-rotate global do card; nada extra necessário */
-}
+
