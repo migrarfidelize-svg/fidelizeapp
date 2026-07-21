@@ -235,7 +235,7 @@ export const adminGetEstablishmentDetail = createServerFn({ method: "POST" })
       supabase.from("rewards").select("*", { count: "exact", head: true }).eq("establishment_id", data.establishment_id).not("redeemed_at", "is", null).gte("redeemed_at", since),
       supabase.from("stamps").select("created_at").eq("establishment_id", data.establishment_id).is("reverted_at", null).gte("created_at", since),
       supabase.from("campaigns").select("id, name, stamps_required, active").eq("establishment_id", data.establishment_id),
-      supabase.from("establishment_members").select("user_id, role, active").eq("establishment_id", data.establishment_id),
+      supabase.from("establishment_members").select("user_id, role, active, display_name, invited_email, created_at").eq("establishment_id", data.establishment_id),
     ]);
 
     if (!est) throw new Error("Estabelecimento não encontrado");
@@ -251,10 +251,21 @@ export const adminGetEstablishmentDetail = createServerFn({ method: "POST" })
       series.push({ day: d.slice(5), carimbos: map.get(d) ?? 0 });
     }
 
-    const [{ data: events }, { data: audits }] = await Promise.all([
+    const memberIds = Array.from(new Set((members ?? []).map((m: any) => m.user_id)));
+    const [{ data: events }, { data: audits }, { data: memberProfiles }] = await Promise.all([
       supabase.from("subscription_events").select("id, event_type, from_plan, to_plan, message, created_at, acknowledged_at").eq("establishment_id", data.establishment_id).order("created_at", { ascending: false }).limit(30),
       supabase.from("audit_logs").select("id, action, entity_type, entity_id, metadata, created_at, user_id").or(`establishment_id.eq.${data.establishment_id},entity_id.eq.${data.establishment_id}`).order("created_at", { ascending: false }).limit(30),
+      memberIds.length > 0
+        ? supabase.from("profiles").select("id, full_name, account_type").in("id", memberIds)
+        : Promise.resolve({ data: [] as any[] }),
     ]);
+    const pmap = new Map<string, { full_name: string | null; account_type: string }>();
+    (memberProfiles ?? []).forEach((p: any) => pmap.set(p.id, { full_name: p.full_name, account_type: p.account_type }));
+    const membersEnriched = (members ?? []).map((m: any) => ({
+      ...m,
+      full_name: pmap.get(m.user_id)?.full_name ?? null,
+      account_type: pmap.get(m.user_id)?.account_type ?? "customer",
+    }));
 
     return {
       establishment: est,
@@ -267,11 +278,55 @@ export const adminGetEstablishmentDetail = createServerFn({ method: "POST" })
       },
       series,
       campaigns: campaigns ?? [],
-      members: members ?? [],
+      members: membersEnriched,
       events: events ?? [],
       audits: audits ?? [],
     };
   });
+
+// ─────────────── Membership management ───────────────
+export const adminDemoteMemberToCustomer = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    establishment_id: z.string().uuid(),
+    user_id: z.string().uuid(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertSuperAdmin(supabase, userId);
+
+    const { error: e1 } = await supabase
+      .from("establishment_members")
+      .update({ active: false })
+      .eq("establishment_id", data.establishment_id)
+      .eq("user_id", data.user_id);
+    if (e1) throw new Error(e1.message);
+
+    const { count } = await supabase
+      .from("establishment_members")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", data.user_id)
+      .eq("active", true);
+
+    let profileUpdated = false;
+    if ((count ?? 0) === 0) {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { error: e2 } = await supabaseAdmin
+        .from("profiles")
+        .update({ account_type: "customer" })
+        .eq("id", data.user_id);
+      if (e2) throw new Error(e2.message);
+      profileUpdated = true;
+    }
+
+    await supabase.from("audit_logs").insert({
+      establishment_id: data.establishment_id, user_id: userId,
+      action: "admin_demote_member_to_customer", entity_type: "user", entity_id: data.user_id,
+      metadata: { profile_updated: profileUpdated } as never,
+    });
+    return { ok: true, profile_updated: profileUpdated };
+  });
+
 
 // ─────────────── Alerts / events ───────────────
 export const adminListSubscriptionEvents = createServerFn({ method: "POST" })
