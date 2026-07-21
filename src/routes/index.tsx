@@ -529,7 +529,7 @@ function Benefits() {
                 <div
                   key={it.title}
                   className="absolute left-1/2 top-1/2 h-0 w-0"
-                  style={{ transform: `rotate(${angle}deg) translateY(calc(-50% - 260px))` }}
+                  style={{ transform: `rotate(${angle}deg) translateY(calc(-1 * var(--fz-radius)))` }}
                 >
                   <div className="fz-counter" style={{ ["--acc" as string]: it.color }}>
                     <div className="fz-chip">
