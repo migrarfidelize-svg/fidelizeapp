@@ -669,8 +669,8 @@ function Comparison() {
   ];
 
   return (
-    <section id="comparativo" className="relative bg-[#08090f]">
-      <div ref={wrapRef} className="relative h-[240vh] pb-[20vh]">
+    <section id="comparativo" className="relative bg-[oklch(0.14_0.02_230)]">
+      <div ref={wrapRef} className="relative h-[220vh]">
         <div
           ref={stageRef}
           className="tear-stage sticky top-0 flex h-screen items-center overflow-hidden"
@@ -683,10 +683,7 @@ function Comparison() {
           <div className="mx-auto w-full max-w-6xl px-6 pt-40 md:pt-48">
 
             <div className="relative z-50 mb-10 text-center md:mb-14">
-              <span className="font-display text-xs font-bold uppercase tracking-[0.25em]" style={{ color: "#00ffff" }}>
-                Papel × Fidelize
-              </span>
-              <h2 className="mt-3 font-display text-3xl font-extrabold leading-[1.2] tracking-tight text-white md:text-5xl pb-1">
+              <h2 className="font-display text-3xl font-extrabold leading-[1.2] tracking-tight text-white md:text-5xl pb-1">
                 O papel rasga. O digital escala.
               </h2>
               <p className="mt-4 text-white/70">Role para ver o que muda quando você troca o cartão de papel.</p>
