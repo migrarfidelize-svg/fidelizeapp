@@ -376,7 +376,7 @@ function Constellation({
             }}
           >
             <div
-              className="relative flex h-16 w-16 items-center justify-center rounded-full border backdrop-blur-md transition-all duration-300"
+              className="relative flex h-24 w-24 items-center justify-center rounded-full border backdrop-blur-md transition-all duration-300"
               style={{
                 borderColor: isFocus
                   ? "color-mix(in oklab, var(--primary) 65%, transparent)"
@@ -384,18 +384,18 @@ function Constellation({
                 background:
                   "radial-gradient(circle at 30% 25%, rgba(255,255,255,0.08), transparent 60%), rgba(5,11,18,0.85)",
                 boxShadow: isFocus
-                  ? "0 0 0 4px color-mix(in oklab, var(--primary) 18%, transparent), 0 20px 45px -15px rgba(0,255,255,0.55)"
-                  : "0 10px 25px -12px rgba(0,255,255,0.35)",
+                  ? "0 0 0 5px color-mix(in oklab, var(--primary) 18%, transparent), 0 26px 55px -18px rgba(0,255,255,0.6)"
+                  : "0 12px 30px -14px rgba(0,255,255,0.4)",
               }}
             >
               <Icon
-                strokeWidth={1.25}
-                className="h-8 w-8 transition-transform duration-300 group-hover:scale-110"
+                strokeWidth={1.2}
+                className="h-12 w-12 transition-transform duration-300 group-hover:scale-110"
                 style={{
                   stroke: "url(#orbIconGrad)",
                   color: "transparent",
                   filter:
-                    "drop-shadow(0 6px 14px color-mix(in oklab, var(--primary) 55%, transparent))",
+                    "drop-shadow(0 8px 18px color-mix(in oklab, var(--primary) 60%, transparent))",
                 }}
               />
               {isFocus && (
