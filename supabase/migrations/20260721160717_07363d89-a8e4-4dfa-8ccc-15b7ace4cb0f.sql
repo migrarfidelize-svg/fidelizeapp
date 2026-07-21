@@ -1,0 +1,1 @@
+REVOKE UPDATE (name) ON public.campaigns FROM sandbox_exec;
