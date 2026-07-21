@@ -187,6 +187,9 @@ export function SegmentsCarousel() {
           0%, 100% { transform: translateY(0) rotate(-1deg); }
           50% { transform: translateY(-10px) rotate(1deg); }
         }
+        @keyframes seg-ring {
+          to { transform: rotate(360deg); }
+        }
       `}</style>
     </div>
   );
