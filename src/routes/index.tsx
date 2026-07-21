@@ -4,9 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
-import { HeroStampCardLoop } from "@/components/HeroStampCardLoop";
+import { HeroStampCard3D } from "@/components/HeroStampCard3D";
 import { SegmentsCarousel } from "@/components/SegmentsCarousel";
-import { CursorTrail } from "@/components/CursorTrail";
+
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ArrowRight, QrCode, Smartphone, ShieldCheck, BarChart3, Sparkles, Coffee, Scissors, Pizza, ShoppingBag, Wrench, IceCream, Store, PawPrint, Check, Cake, Clock, UserPlus, Crown, Gift, MessageCircle, Bell, Mail, Sprout, Zap, Building2, type LucideIcon } from "lucide-react";
@@ -144,7 +144,7 @@ function Hero() {
           backgroundSize: "44px 44px",
         }}
       />
-      <CursorTrail />
+      
       <div className="relative z-10 mx-auto grid max-w-6xl gap-12 px-4 py-20 md:grid-cols-2 md:items-center md:py-28">
         <div className="text-white">
           <span
@@ -190,7 +190,7 @@ function Hero() {
           </div>
         </div>
         <div className="relative flex justify-center">
-          <HeroStampCardLoop />
+          <HeroStampCard3D />
         </div>
       </div>
     </section>
