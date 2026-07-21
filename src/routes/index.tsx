@@ -995,8 +995,8 @@ function Examples() {
 
   return (
     <section
-      className="campaigns-section relative z-10 overflow-hidden bg-[oklch(0.14_0.02_230)] pt-20 pb-16 md:pt-24 md:pb-20"
-      style={{ marginTop: "-26svh" }}
+      className="campaigns-section relative z-10 overflow-hidden bg-[oklch(0.14_0.02_230)] pt-10 pb-16 md:pt-14 md:pb-20"
+      style={{ marginTop: "0" }}
     >
       <div className="relative mx-auto max-w-6xl px-4">
         <div className="mx-auto max-w-2xl text-center">
