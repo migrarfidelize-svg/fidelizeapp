@@ -2311,8 +2311,10 @@ html:not(.dark) .landing-scope .hero-3d-card [style*="borderColor"][style*="#00f
 html:not(.dark) .landing-scope .hero-3d-card > .blur-2xl,
 html:not(.dark) .landing-scope .hero-3d-card > .blur-3xl,
 html:not(.dark) .landing-scope .hero-3d-card > div[aria-hidden] {
-  filter: hue-rotate(140deg) saturate(1.3) !important;
+  background: radial-gradient(circle at 50% 50%, rgba(124,58,237,0.35), transparent 65%) !important;
+  filter: blur(28px) !important;
 }
+
 
 /* Botão "Girar cartão" — força roxo sólido conforme .landing-flip-btn já
    definido em regras anteriores (mantém padrão do restante do site). */
