@@ -1233,13 +1233,60 @@ function FAQ() {
 
 function CTA() {
   return (
-    <section className="py-24">
-      <div className="mx-auto max-w-4xl rounded-[2.5rem] gradient-brand p-12 text-center text-primary-foreground surface-glow">
-        <h2 className="font-display text-4xl font-bold">Pronto para seus clientes voltarem sempre?</h2>
-        <p className="mt-3 text-primary-foreground/80">Crie seu cartão fidelidade digital em minutos. Sem cartão de crédito.</p>
-        <Button asChild size="lg" variant="secondary" className="mt-8">
-          <Link to="/auth" search={{ mode: "signup" }}>Começar de graça agora <ArrowRight className="ml-1 h-4 w-4" /></Link>
-        </Button>
+    <section className="w-full flex items-center justify-center bg-background px-6 py-24 md:py-32">
+      <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-0 items-stretch border-t border-primary/10 pt-16">
+        {/* Left: message */}
+        <div className="lg:col-span-7 pr-0 lg:pr-16 flex flex-col justify-between">
+          <div className="space-y-6">
+            <span className="inline-block px-3 py-1 border border-primary/30 text-primary text-[11px] font-bold tracking-widest uppercase font-display">
+              Comece agora
+            </span>
+            <h2 className="font-display text-5xl md:text-7xl font-extrabold text-foreground leading-[0.95] tracking-tighter">
+              Pronto para <br />
+              seus clientes <br />
+              <span className="text-[#00ffff]">voltarem sempre?</span>
+            </h2>
+          </div>
+          <div className="hidden lg:block mt-24">
+            <div className="w-24 h-px bg-[#00ffff]" />
+          </div>
+        </div>
+
+        {/* Vertical divider */}
+        <div className="hidden lg:block lg:col-span-1 relative">
+          <div className="absolute inset-y-0 left-1/2 w-px bg-primary/20" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#00ffff] rotate-45" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#00ffff] rotate-45" />
+        </div>
+
+        {/* Right: action */}
+        <div className="lg:col-span-4 flex flex-col justify-center gap-8">
+          <p className="text-muted-foreground text-lg leading-relaxed max-w-sm">
+            Crie seu cartão fidelidade digital em minutos. Sem cartão de crédito, sem fidelidade — cancele quando quiser.
+          </p>
+
+          <div className="flex flex-col gap-3">
+            <Button asChild size="lg" className="h-14 rounded-none bg-[#00ffff] text-background hover:bg-white font-bold uppercase tracking-widest text-sm justify-between shadow-[0_0_30px_rgba(0,255,255,0.25)]">
+              <Link to="/auth" search={{ mode: "signup" }}>
+                Começar de graça
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="h-14 rounded-none border-primary/20 hover:bg-primary/5 font-semibold uppercase tracking-widest text-sm">
+              <Link to="/precos">Ver planos</Link>
+            </Button>
+          </div>
+
+          <div className="flex gap-3 items-center opacity-60">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00ffff] opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00ffff]" />
+            </span>
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
+              14 dias grátis · sem cartão · cancele quando quiser
+            </span>
+          </div>
+        </div>
       </div>
     </section>
   );
