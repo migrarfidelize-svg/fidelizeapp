@@ -37,7 +37,7 @@ export function SegmentsCarousel() {
   return (
     <div
       className="relative mx-auto w-full overflow-hidden"
-      style={{ height: CENTER_SIZE + 240 }}
+      style={{ height: CENTER_SIZE + 80 }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -46,7 +46,7 @@ export function SegmentsCarousel() {
       <div className="pointer-events-none absolute inset-y-0 right-0 z-20 w-40 bg-gradient-to-l from-background to-transparent" />
 
       {/* Stage — vertically anchored above label */}
-      <div className="absolute inset-x-0 top-0" style={{ height: CENTER_SIZE + 40 }}>
+      <div className="absolute inset-x-0 top-0" style={{ height: CENTER_SIZE }}>
         {ITEMS.map((it, i) => {
           // signed distance -N..+N with wrap-around for shortest path
           let d = i - active;
