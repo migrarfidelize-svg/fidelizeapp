@@ -821,6 +821,7 @@ export const adminListOrphanCustomers = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z.object({
       query: z.string().optional().default(""),
+      establishment_id: z.string().uuid().optional().nullable(),
       page: z.number().int().min(1).default(1),
       page_size: z.number().int().min(1).max(100).default(20),
     }).parse(d)
@@ -840,6 +841,7 @@ export const adminListOrphanCustomers = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false })
       .range(from, to);
 
+    if (data.establishment_id) q = q.eq("establishment_id", data.establishment_id);
     if (data.query.trim()) {
       const term = `%${data.query.trim()}%`;
       q = q.or(`name.ilike.${term},phone.ilike.${term},email.ilike.${term}`);
@@ -861,5 +863,89 @@ export const adminListOrphanCustomers = createServerFn({ method: "POST" })
         created_at: r.created_at,
       })),
       total: count ?? 0,
+    };
+  });
+
+/**
+ * Cria (ou reaproveita) uma conta de login para um cliente órfão
+ * usando as credenciais sintéticas do fluxo /carteira (WhatsApp = PIN).
+ * Retorna e-mail sintético + senha para o admin repassar ao cliente.
+ */
+export const adminLinkOrphanCustomerToAccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ customer_id: z.string().uuid() }).parse(d)
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertSuperAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: cust, error: cErr } = await supabaseAdmin
+      .from("customers")
+      .select("id, name, phone, email, user_id, establishment_id")
+      .eq("id", data.customer_id)
+      .maybeSingle();
+    if (cErr) throw new Error(cErr.message);
+    if (!cust) throw new Error("Cliente não encontrado.");
+    if (cust.user_id) throw new Error("Este cliente já possui conta de login.");
+    const digits = String(cust.phone ?? "").replace(/\D/g, "");
+    if (digits.length < 10) throw new Error("Cliente sem WhatsApp válido (DDD + número).");
+
+    const syntheticEmail = `wa${digits}@carteira.fidelize.app`;
+    const syntheticPassword = `wa_${digits}_fidelize_v1`;
+
+    // Reaproveita usuário existente com o mesmo WhatsApp, se houver
+    let targetUserId: string | null = null;
+    {
+      const { data: existing } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .eq("phone", cust.phone ?? "")
+        .maybeSingle();
+      if (existing?.id) targetUserId = existing.id;
+    }
+    let createdNow = false;
+    if (!targetUserId) {
+      const { data: created, error: uErr } = await supabaseAdmin.auth.admin.createUser({
+        email: syntheticEmail,
+        password: syntheticPassword,
+        email_confirm: true,
+        user_metadata: { full_name: cust.name ?? "", phone: cust.phone ?? "", whatsapp: cust.phone ?? "" },
+      });
+      if (uErr || !created?.user?.id) throw new Error(uErr?.message ?? "Falha ao criar login.");
+      targetUserId = created.user.id;
+      createdNow = true;
+    }
+
+    const { error: pErr } = await supabaseAdmin
+      .from("profiles")
+      .upsert({
+        id: targetUserId,
+        full_name: cust.name ?? "",
+        phone: cust.phone ?? "",
+        account_type: "customer",
+      }, { onConflict: "id" });
+    if (pErr) throw new Error(pErr.message);
+
+    const { error: linkErr } = await supabaseAdmin
+      .from("customers")
+      .update({ user_id: targetUserId })
+      .eq("id", cust.id);
+    if (linkErr) throw new Error(linkErr.message);
+
+    await supabase.from("audit_logs").insert({
+      user_id: userId,
+      action: "admin_link_orphan_customer",
+      entity_type: "customer",
+      entity_id: cust.id,
+      metadata: { user_id: targetUserId, created_new_user: createdNow, establishment_id: cust.establishment_id } as never,
+    });
+
+    return {
+      ok: true,
+      user_id: targetUserId,
+      created_new_user: createdNow,
+      credentials: { email: syntheticEmail, password: syntheticPassword },
     };
   });
