@@ -51,7 +51,7 @@ export function SegmentsCarousel() {
       <div
         className="absolute top-1/2 left-1/2 flex items-center"
         style={{
-          transform: `translate(calc(-50% - ${active * SLOT}px), -50%)`,
+          transform: `translate(${-(active * SLOT + SLOT / 2)}px, -50%)`,
           transition: "transform 700ms cubic-bezier(0.22, 1, 0.36, 1)",
           gap: 0,
         }}
