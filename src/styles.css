@@ -535,13 +535,13 @@
 @keyframes fz-ring-spin       { to { transform: rotate(360deg); } }
 @keyframes fz-ring-spin-rev   { to { transform: rotate(-360deg); } }
 @keyframes fz-core-breathe {
-  0%, 100% { box-shadow: 0 0 40px -8px rgba(0,255,255,0.35), inset 0 0 20px rgba(0,255,255,0.15); }
-  50%      { box-shadow: 0 0 80px -6px rgba(255,43,214,0.45), inset 0 0 28px rgba(255,43,214,0.20); }
+  0%, 100% { filter: drop-shadow(0 0 24px rgba(0,255,255,0.55)) drop-shadow(0 0 60px rgba(0,255,255,0.25)); }
+  50%      { filter: drop-shadow(0 0 40px rgba(0,255,255,0.85)) drop-shadow(0 0 90px rgba(0,255,255,0.4)); }
 }
 
 .fz-orbit { position: relative; --fz-radius: clamp(150px, 38vw, 300px); }
 
-.fz-core {
+.fz-core-mark {
   animation: fz-core-breathe 5s ease-in-out infinite;
 }
 
