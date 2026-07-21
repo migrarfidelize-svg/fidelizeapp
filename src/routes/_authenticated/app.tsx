@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield,
   LifeBuoy, BookOpen, Package, Receipt, HeartHandshake, Bell, Star, Menu,
-  PanelLeftClose, PanelLeftOpen, Search, Megaphone, UserCircle2,
+  PanelLeftClose, PanelLeftOpen, Compass, Megaphone, UserCircle2,
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -585,11 +585,16 @@ function AppLayout() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" className="hidden lg:inline-flex text-muted-foreground gap-2 h-9">
-                <Search className="h-4 w-4" />
-                <span className="text-xs">Buscar</span>
-                <kbd className="ml-2 rounded border bg-muted/60 px-1.5 py-0.5 text-[10px] font-mono">⌘K</kbd>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => window.dispatchEvent(new CustomEvent("fidelize:start-tour"))}
+                className="hidden lg:inline-flex text-primary hover:text-primary hover:bg-primary/10 gap-2 h-9 border border-primary/25"
+              >
+                <Compass className="h-4 w-4" />
+                <span className="text-xs font-medium">Fazer tour</span>
               </Button>
+
               <div className="hidden md:block"><ThemeToggle /></div>
             </div>
           </header>
