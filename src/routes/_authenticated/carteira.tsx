@@ -34,6 +34,7 @@ const TABS = [
 function WalletLayout() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  useWalletFlash();
 
   async function signOut() {
     await supabase.auth.signOut();
