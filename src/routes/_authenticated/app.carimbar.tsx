@@ -447,7 +447,7 @@ function Carimbar() {
                 </div>
                 <div>
                   <div className="font-display text-lg font-bold">{qrCustomer.name}</div>
-                  <div className="text-xs text-muted-foreground">{formatPhone(qrCustomer.phone)} · código {qrCustomer.code}</div>
+                  <div className="text-xs text-muted-foreground">{formatPhone(qrCustomer.phone ?? "")} · código {qrCustomer.code}</div>
                 </div>
               </div>
 
