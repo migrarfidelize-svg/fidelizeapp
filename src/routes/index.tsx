@@ -628,43 +628,211 @@ function Benefits() {
 }
 
 function Comparison() {
-  const rows = [
-    ["Precisa baixar aplicativo", "Não", "Sim"],
-    ["O cliente perde o cartão", "Nunca", "Sempre"],
-    ["Rastreamento de visitas", "Automático", "Manual e falho"],
-    ["Análise de clientes", "Painel completo", "Nenhuma"],
-    ["Fraude com carimbos", "Bloqueada", "Fácil"],
-    ["Custo por cliente", "Zero", "Impressão e reposição"],
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    const stage = stageRef.current;
+    if (!wrap || !stage) return;
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const rect = wrap.getBoundingClientRect();
+        const total = rect.height - window.innerHeight;
+        const p = Math.min(1, Math.max(0, -rect.top / Math.max(1, total)));
+        stage.style.setProperty("--p", String(p));
+      });
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  const pains = [
+    "Cartão perdido",
+    "Carimbo falso",
+    "Zero dados do cliente",
+    "Custo de reimpressão",
   ];
+  const wins = [
+    "100% na nuvem",
+    "Anti-fraude nativo",
+    "CRM + campanhas",
+    "Zero custo por cartão",
+  ];
+
   return (
-    <section className="py-24">
-      <div className="mx-auto max-w-4xl px-4">
-        <div className="text-center">
-          <h2 className="font-display text-4xl font-bold">Cartão de papel × Fidelize</h2>
-          <p className="mt-3 text-muted-foreground">Por que empresas modernas já trocaram.</p>
-        </div>
-        <div className="mt-10 overflow-hidden rounded-3xl border">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-muted/50">
-              <tr>
-                <th className="p-4 font-medium"></th>
-                <th className="p-4 font-display font-semibold text-primary">Fidelize</th>
-                <th className="p-4 font-medium text-muted-foreground">Cartão de papel</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map(([k, a, b]) => (
-                <tr key={k} className="border-t">
-                  <td className="p-4 font-medium">{k}</td>
-                  <td className="p-4 text-primary font-semibold">{a}</td>
-                  <td className="p-4 text-muted-foreground">{b}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+    <section id="comparativo" className="relative bg-[#08090f]">
+      <div ref={wrapRef} className="relative h-[260vh]">
+        <div
+          ref={stageRef}
+          className="tear-stage sticky top-0 flex h-screen items-center overflow-hidden"
+          style={{ ["--p" as never]: 0 }}
+        >
+          {/* Ambient glows */}
+          <div aria-hidden className="pointer-events-none absolute -left-40 top-1/3 h-96 w-96 rounded-full bg-cyan-500/[0.06] blur-[120px]" />
+          <div aria-hidden className="pointer-events-none absolute -right-40 bottom-1/4 h-96 w-96 rounded-full blur-[120px]" style={{ background: "rgba(255,43,214,0.05)" }} />
+
+          <div className="mx-auto w-full max-w-6xl px-6">
+            <div className="mb-10 text-center md:mb-14">
+              <span className="font-display text-xs font-bold uppercase tracking-[0.25em]" style={{ color: "#00ffff" }}>
+                Papel × Fidelize
+              </span>
+              <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-white md:text-5xl">
+                O papel rasga. O digital escala.
+              </h2>
+              <p className="mt-4 text-white/60">Role para ver o que muda quando você troca o cartão de papel.</p>
+            </div>
+
+            {/* Stage: two cards stacked in the same slot */}
+            <div className="tear-scene relative mx-auto h-[380px] w-full max-w-[720px] md:h-[440px]">
+              {/* Digital card underneath */}
+              <div className="tear-digital absolute inset-0 grid place-items-center">
+                <div className="relative w-[86%] max-w-[520px] overflow-hidden rounded-3xl border border-cyan-400/30 p-6 md:p-8"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(0,255,255,0.08), rgba(168,85,247,0.06) 50%, rgba(255,43,214,0.08))",
+                    boxShadow: "0 40px 120px -30px rgba(0,255,255,0.35), inset 0 1px 0 rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="grid h-9 w-9 place-items-center rounded-xl border border-cyan-400/40 bg-cyan-400/10">
+                        <Sparkles className="h-4 w-4" style={{ color: "#00ffff" }} />
+                      </div>
+                      <span className="font-display text-sm font-bold uppercase tracking-widest text-white">Fidelize</span>
+                    </div>
+                    <span className="rounded-full border border-cyan-400/40 bg-cyan-400/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest" style={{ color: "#00ffff" }}>
+                      Ativo
+                    </span>
+                  </div>
+                  <div className="mt-5 grid grid-cols-5 gap-2">
+                    {Array.from({ length: 10 }).map((_, i) => (
+                      <div key={i} className={`aspect-square rounded-xl border ${i < 7 ? "border-cyan-400/60 bg-cyan-400/15" : "border-white/10 bg-white/[0.02]"}`}
+                        style={i < 7 ? { boxShadow: "0 0 18px rgba(0,255,255,0.35)" } : undefined}
+                      >
+                        {i < 7 && <div className="grid h-full w-full place-items-center"><Check className="h-4 w-4" style={{ color: "#00ffff" }} /></div>}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-5 flex items-center justify-between text-xs">
+                    <span className="text-white/60">7 / 10 carimbos</span>
+                    <span className="rounded-full bg-white/5 px-2 py-1 text-white/70">Cliente Ana Souza</span>
+                  </div>
+                </div>
+
+                {/* Wins flying in */}
+                {wins.map((w, i) => (
+                  <span
+                    key={w}
+                    className="tear-win absolute rounded-full border border-cyan-400/40 bg-black/40 px-3 py-1.5 text-[11px] font-semibold text-white backdrop-blur"
+                    style={{
+                      ["--i" as never]: i,
+                      boxShadow: "0 0 24px rgba(0,255,255,0.25)",
+                      color: "#e6ffff",
+                    } as never}
+                  >
+                    <Check className="mr-1 inline h-3 w-3" style={{ color: "#00ffff" }} /> {w}
+                  </span>
+                ))}
+              </div>
+
+              {/* Paper card on top — splits in two halves */}
+              <div className="tear-paper absolute inset-0 grid place-items-center">
+                <div className="relative w-[86%] max-w-[520px]" style={{ height: 300 }}>
+                  {/* Pains floating out */}
+                  {pains.map((p, i) => (
+                    <span
+                      key={p}
+                      className="tear-pain absolute z-20 rounded-md border border-red-400/40 bg-red-500/10 px-2.5 py-1 text-[11px] font-semibold text-red-200"
+                      style={{ ["--i" as never]: i } as never}
+                    >
+                      × {p}
+                    </span>
+                  ))}
+                  <PaperHalf side="left" />
+                  <PaperHalf side="right" />
+                </div>
+              </div>
+            </div>
+
+            {/* CTA reveal at the end */}
+            <div className="tear-cta mt-8 flex flex-col items-center gap-3 text-center md:mt-12">
+              <p className="max-w-xl text-white/70">
+                Chega de cartão perdido, carimbo torto e cliente esquecido. Ative o Fidelize em minutos.
+              </p>
+              <Button asChild size="lg" className="tear-cta-btn rounded-full px-8 font-bold" style={{ background: "#00ffff", color: "#001010" }}>
+                <Link to="/auth">
+                  Começar grátis <ArrowRight className="ml-1 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
+  );
+}
+
+function PaperHalf({ side }: { side: "left" | "right" }) {
+  const isLeft = side === "left";
+  return (
+    <div
+      className={`tear-half tear-half-${side} absolute top-0 h-full w-1/2 ${isLeft ? "left-0" : "right-0"}`}
+      style={{
+        background: "linear-gradient(180deg, #f6efdc 0%, #efe6c9 100%)",
+        boxShadow: "0 30px 60px -20px rgba(0,0,0,0.7), inset 0 0 60px rgba(120,90,40,0.08)",
+        color: "#3b2a15",
+        transformOrigin: isLeft ? "right center" : "left center",
+        clipPath: isLeft
+          ? "polygon(0 0, 100% 0, 96% 8%, 100% 16%, 94% 24%, 100% 34%, 95% 44%, 100% 54%, 94% 64%, 100% 74%, 96% 86%, 100% 94%, 97% 100%, 0 100%)"
+          : "polygon(0 0, 100% 0, 100% 100%, 3% 100%, 0 94%, 4% 86%, 0 74%, 6% 64%, 0 54%, 5% 44%, 0 34%, 6% 24%, 0 16%, 4% 8%)",
+        borderRadius: isLeft ? "18px 4px 4px 18px" : "4px 18px 18px 4px",
+      }}
+    >
+      <div className="relative h-full w-full p-5">
+        {isLeft && (
+          <>
+            <div className="font-display text-xs font-black uppercase tracking-widest opacity-70">Cartão fidelidade</div>
+            <div className="mt-1 text-[10px] italic opacity-60">Café do Zé — desde 2011</div>
+            <div className="absolute left-4 top-16 grid grid-cols-3 gap-2">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="grid h-10 w-10 place-items-center rounded-full border-2 border-dashed border-[#8a5a1f]/60 text-lg font-black text-[#8a5a1f]" style={{ transform: `rotate(${(i % 2 ? -1 : 1) * (6 + i * 2)}deg)` }}>
+                  ✓
+                </div>
+              ))}
+            </div>
+            {/* Coffee stain */}
+            <div className="absolute bottom-3 left-4 h-14 w-14 rounded-full opacity-40" style={{ background: "radial-gradient(circle, #6b3a1e 0%, transparent 70%)" }} />
+          </>
+        )}
+        {!isLeft && (
+          <>
+            <div className="flex justify-end">
+              <div className="rotate-6 rounded border border-dashed border-[#8a5a1f]/50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-[#8a5a1f]">
+                10 = grátis
+              </div>
+            </div>
+            <div className="absolute right-4 top-14 grid grid-cols-3 gap-2">
+              {[0, 1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="h-10 w-10 rounded-full border-2 border-dashed border-[#8a5a1f]/60" />
+              ))}
+            </div>
+            {/* Tape */}
+            <div className="absolute -right-2 top-6 h-5 w-16 rotate-12 bg-white/50" style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }} />
+            {/* Scribble */}
+            <div className="absolute bottom-3 right-4 font-mono text-[10px] italic opacity-60">"perdi um... hehe"</div>
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 
