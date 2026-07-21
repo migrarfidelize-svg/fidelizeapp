@@ -96,7 +96,7 @@ function SiteHeader() {
   const { data: session } = useQuery({ queryKey: ["session"], queryFn: async () => (await supabase.auth.getSession()).data.session });
   return (
     <header className="sticky top-4 z-40 px-4">
-      <div className="nav-dock mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 rounded-full border border-cyan-400/20 bg-background/60 pl-5 pr-2 backdrop-blur-xl">
+      <div className="nav-dock mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 rounded-full border border-cyan-400/60 bg-background/60 pl-5 pr-2 backdrop-blur-xl">
         <Link to="/" className="shrink-0"><Logo /></Link>
         <nav className="hidden gap-7 md:flex text-sm text-muted-foreground">
           <a href="#como-funciona" className="hover:text-foreground transition-colors">Como funciona</a>
@@ -105,9 +105,14 @@ function SiteHeader() {
           <a href="#faq" className="hover:text-foreground transition-colors">Dúvidas</a>
         </nav>
         <div className="flex items-center gap-2">
-          <ThemeToggle />
           {session ? (
-            <Button asChild size="sm" className="rounded-full"><Link to="/app">Meu painel</Link></Button>
+            <Button
+              asChild
+              size="sm"
+              className="rounded-full bg-primary text-primary-foreground font-semibold px-5 shadow-[0_0_0_1px_rgba(0,255,255,0.4),0_0_24px_-4px_rgba(0,255,255,0.65)] hover:brightness-110"
+            >
+              <Link to="/app">Meu painel <ArrowRight className="ml-1 h-4 w-4" /></Link>
+            </Button>
           ) : (
             <>
               <Button asChild variant="ghost" size="sm" className="rounded-full hidden sm:inline-flex"><Link to="/auth">Entrar</Link></Button>
@@ -119,6 +124,7 @@ function SiteHeader() {
     </header>
   );
 }
+
 
 function Hero() {
   const CYAN = "#00ffff";
