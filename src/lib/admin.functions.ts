@@ -763,3 +763,51 @@ export const adminSetUserAccountType = createServerFn({ method: "POST" })
 
     return { ok: true, from: previous, to: data.account_type };
   });
+
+export const adminListOrphanCustomers = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      query: z.string().optional().default(""),
+      page: z.number().int().min(1).default(1),
+      page_size: z.number().int().min(1).max(100).default(20),
+    }).parse(d)
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertSuperAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const from = (data.page - 1) * data.page_size;
+    const to = from + data.page_size - 1;
+
+    let q = supabaseAdmin
+      .from("customers")
+      .select("id, name, phone, email, establishment_id, visits_count, last_visit_at, created_at, establishments(name)", { count: "exact" })
+      .is("user_id", null)
+      .order("created_at", { ascending: false })
+      .range(from, to);
+
+    if (data.query.trim()) {
+      const term = `%${data.query.trim()}%`;
+      q = q.or(`name.ilike.${term},phone.ilike.${term},email.ilike.${term}`);
+    }
+
+    const { data: rows, count, error } = await q;
+    if (error) throw new Error(error.message);
+
+    return {
+      customers: (rows ?? []).map((r: any) => ({
+        id: r.id,
+        name: r.name,
+        phone: r.phone,
+        email: r.email,
+        establishment_id: r.establishment_id,
+        establishment_name: r.establishments?.name ?? null,
+        visits_count: r.visits_count ?? 0,
+        last_visit_at: r.last_visit_at,
+        created_at: r.created_at,
+      })),
+      total: count ?? 0,
+    };
+  });
