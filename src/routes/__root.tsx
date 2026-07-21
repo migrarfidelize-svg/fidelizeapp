@@ -76,7 +76,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Transforme visitantes em clientes fiéis. Sem app, sem cartão de papel." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "theme-color", content: "#7c3aed" },
+      { name: "theme-color", content: "#00ffff" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { name: "apple-mobile-web-app-title", content: "Fidelize" },
@@ -103,7 +103,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
-const THEME_INIT_SCRIPT = `(function(){try{var s=localStorage.getItem('theme');var m=window.matchMedia('(prefers-color-scheme: dark)').matches;var d=s==='dark'||(!s&&m);var r=document.documentElement;if(d)r.classList.add('dark');r.style.colorScheme=d?'dark':'light';}catch(e){}})();`;
+// Tema dark premium (cyan) travado — força modo escuro em toda a aplicação.
+const THEME_INIT_SCRIPT = `(function(){try{var r=document.documentElement;r.classList.add('dark');r.style.colorScheme='dark';try{localStorage.setItem('theme','dark');}catch(_){}}catch(e){}})();`;
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
