@@ -247,9 +247,9 @@ function Carimbar() {
                     { n: "02", t: "Centralize o QR dentro da mira" },
                     { n: "03", t: "Revise os dados e confirme o carimbo" },
                   ].map((s) => (
-                    <li key={s.n} className="flex items-center gap-3 rounded-xl border border-primary/15 bg-background/40 px-3 py-2.5">
-                      <span className="font-mono text-[11px] text-primary/80 tracking-widest">{s.n}</span>
-                      <span className="text-foreground/90">{s.t}</span>
+                    <li key={s.n} className="flex items-center gap-3 rounded-xl border border-primary/25 bg-[color:color-mix(in_oklab,var(--primary)_6%,var(--card))] px-3 py-2.5">
+                      <span className="inline-flex items-center justify-center h-6 min-w-[1.75rem] rounded-md bg-primary/15 text-primary font-mono text-[11px] font-semibold tracking-widest">{s.n}</span>
+                      <span className="text-foreground font-medium">{s.t}</span>
                     </li>
                   ))}
                 </ol>
