@@ -499,24 +499,33 @@ function Benefits() {
           <div aria-hidden className="fz-ring fz-ring-2" />
           <div aria-hidden className="fz-ring fz-ring-3" />
 
-          {/* Central logo (big, breathing) */}
+          {/* Central logo — mesma logo do menu, sem bloco por trás */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="fz-core relative grid h-40 w-40 place-items-center rounded-[2rem] border border-cyan-400/30 bg-[#050505] md:h-48 md:w-48">
-              <svg viewBox="0 0 512 512" className="h-24 w-24 md:h-28 md:w-28" aria-hidden="true">
+            <div className="fz-core grid place-items-center">
+              <svg viewBox="0 0 512 512" className="h-32 w-32 md:h-40 md:w-40" aria-hidden="true">
                 <defs>
                   <linearGradient id="fzHeroG" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0" stopColor="#00ffff" />
-                    <stop offset="1" stopColor="#ff2bd6" />
+                    <stop offset="0" stopColor="#BEDCFF" />
+                    <stop offset="1" stopColor="#7FB4F0" />
+                  </linearGradient>
+                  <linearGradient id="fzHeroInk" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor="#1E2A44" />
+                    <stop offset="1" stopColor="#2A3A5A" />
                   </linearGradient>
                 </defs>
-                <rect width="512" height="512" rx="128" fill="url(#fzHeroG)" opacity="0.15" />
-                <g fill="url(#fzHeroG)">
-                  <rect x="176" y="140" width="52" height="240" rx="14" />
-                  <rect x="176" y="140" width="176" height="52" rx="14" />
-                  <rect x="176" y="238" width="132" height="46" rx="12" />
+                <rect width="512" height="512" rx="112" ry="112" fill="url(#fzHeroG)" />
+                <path d="M 384 256 A 128 128 0 1 1 256 128" fill="none" stroke="url(#fzHeroInk)" strokeWidth="28" strokeLinecap="round" opacity="0.75" />
+                <path d="M 236 108 L 268 128 L 236 148 Z" fill="url(#fzHeroInk)" />
+                <g fill="url(#fzHeroInk)">
+                  <rect x="196" y="156" width="40" height="216" rx="12" />
+                  <rect x="196" y="156" width="140" height="40" rx="12" />
+                  <rect x="196" y="244" width="104" height="36" rx="10" />
+                </g>
+                <g fill="#ffffff" opacity="0.35" style={{ mixBlendMode: "overlay" }}>
+                  <rect x="200" y="160" width="14" height="208" rx="7" />
+                  <rect x="200" y="160" width="132" height="10" rx="5" />
                 </g>
               </svg>
-              <span className="mt-1 font-display text-xs font-bold uppercase tracking-[0.3em] text-white/70">Fidelize</span>
             </div>
           </div>
 
