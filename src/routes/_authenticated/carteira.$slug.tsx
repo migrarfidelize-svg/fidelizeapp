@@ -43,7 +43,9 @@ export const Route = createFileRoute("/_authenticated/carteira/$slug")({
 });
 
 function WalletEstablishment() {
-  const { data } = useSuspenseQuery(opts(Route.useParams().slug));
+  const qc = useQueryClient();
+  const slug = Route.useParams().slug;
+  const { data } = useSuspenseQuery(opts(slug));
   const d = data!;
   const est = d.establishment as {
     name: string; logo_url: string | null; primary_color: string; address: string | null;
@@ -54,8 +56,11 @@ function WalletEstablishment() {
   const card = d.cards[0];
   const req = card ? (card.campaign as { stamps_required: number }).stamps_required || 1 : 1;
   const stamps = card?.stamps ?? 0;
+  const campaignActive = card ? (card.campaign as { active: boolean }).active : true;
 
   return (
+    <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["my-wallet", slug] })}>
+
     <div className="space-y-5 pb-6">
       <Link to="/carteira" className="inline-flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground">
         <ArrowLeft className="h-3.5 w-3.5" /> Minha carteira
