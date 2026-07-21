@@ -72,13 +72,14 @@ export function CursorTrail() {
     const cy = height / 2;
     const ribbons: Ribbon[] = Array.from({ length: RIBBONS }, (_, i) => ({
       nodes: Array.from({ length: NODES }, () => ({ x: cx, y: cy })),
-      // Much slower than before (was 0.28 / 0.35).
-      head: 0.08 + i * 0.012,
-      chain: 0.14 + i * 0.02,
-      spread: 22 + i * 14,
+      // Slower easing = longer, softer lag.
+      head: 0.045 + i * 0.006,
+      chain: 0.10 + i * 0.012,
+      // Tighter fan-out so the ribbons stay close together.
+      spread: 6 + i * 4,
       phase: (i * Math.PI * 2) / RIBBONS,
-      width: 3 + i * 0.4,
-      opacity: 0.9 - i * 0.08,
+      width: 2 + i * 0.25,
+      opacity: 0.85 - i * 0.07,
       colors: PALETTE[i % PALETTE.length],
     }));
 
@@ -112,7 +113,7 @@ export function CursorTrail() {
       // Fan-out targets: each ribbon aims at a slowly rotating point
       // near the cursor so the group feels wide and breathing.
       for (const rb of ribbons) {
-        const ang = rb.phase + dt * 0.4;
+        const ang = rb.phase + dt * 0.25;
         const tx = target.x + Math.cos(ang) * rb.spread;
         const ty = target.y + Math.sin(ang) * rb.spread * 0.75;
         rb.nodes[0].x += (tx - rb.nodes[0].x) * rb.head;
@@ -162,24 +163,10 @@ export function CursorTrail() {
           ctx.restore();
         };
 
-        drawStroke(rb.width * 9, 0.10, 34, grad); // outer bloom (bigger)
-        drawStroke(rb.width * 4, 0.22, 20, grad); // mid glow
-        drawStroke(rb.width,     0.85, 10, grad); // bright core
+        drawStroke(rb.width * 7, 0.09, 26, grad); // outer bloom
+        drawStroke(rb.width * 3, 0.20, 16, grad); // mid glow
+        drawStroke(rb.width,     0.80, 8,  grad); // bright core
       }
-
-      // Cursor head glow
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      const r = 22;
-      const hg = ctx.createRadialGradient(target.x, target.y, 0, target.x, target.y, r);
-      hg.addColorStop(0, "#ffffff");
-      hg.addColorStop(0.5, "#00ffff");
-      hg.addColorStop(1, "transparent");
-      ctx.fillStyle = hg;
-      ctx.beginPath();
-      ctx.arc(target.x, target.y, r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
 
       ctx.globalCompositeOperation = "source-over";
       raf = requestAnimationFrame(tick);
