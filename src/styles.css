@@ -1865,3 +1865,124 @@ html:not(.dark) .landing-scope .tear-pain {
   background: color-mix(in oklab, var(--card) 92%, transparent) !important;
   border-color: color-mix(in oklab, var(--primary) 40%, transparent) !important;
 }
+
+/* ============================================================
+   LANDING — Light theme: cyan → purple accent remap + surfaces
+   Escopo: html:not(.dark) .landing-scope
+   ============================================================ */
+
+/* Recolorir cyan hardcoded (#00ffff) para roxo predominante */
+html:not(.dark) .landing-scope [style*="#00ffff"],
+html:not(.dark) .landing-scope [style*="rgb(0, 255, 255)"] {
+  --_purple: #7c3aed;
+}
+html:not(.dark) .landing-scope [style*="color: #00ffff"],
+html:not(.dark) .landing-scope [style*="color:#00ffff"] {
+  color: #7c3aed !important;
+}
+html:not(.dark) .landing-scope [style*="background: #00ffff"],
+html:not(.dark) .landing-scope [style*="background:#00ffff"],
+html:not(.dark) .landing-scope [style*="background-color: #00ffff"] {
+  background: #7c3aed !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 30px -12px rgba(124,58,237,0.55) !important;
+}
+html:not(.dark) .landing-scope [style*="border-color: #00ffff"] {
+  border-color: rgba(124,58,237,0.45) !important;
+}
+html:not(.dark) .landing-scope [style*="stroke: #00ffff"],
+html:not(.dark) .landing-scope [style*="stroke:#00ffff"] {
+  stroke: #7c3aed !important;
+}
+
+/* Tailwind cyan utilities → roxo */
+html:not(.dark) .landing-scope [class*="text-cyan-"] { color: #7c3aed !important; }
+html:not(.dark) .landing-scope [class*="border-cyan-"] { border-color: rgba(124,58,237,0.4) !important; }
+html:not(.dark) .landing-scope [class*="bg-cyan-"] { background-color: rgba(124,58,237,0.10) !important; }
+html:not(.dark) .landing-scope [class*="from-cyan-"] { --tw-gradient-from: rgba(124,58,237,0.10) !important; }
+html:not(.dark) .landing-scope [class*="to-cyan-"] { --tw-gradient-to: rgba(124,58,237,0.02) !important; }
+
+/* Halos e sombras cyan hardcoded → roxo suave */
+html:not(.dark) .landing-scope [style*="rgba(0,255,255"],
+html:not(.dark) .landing-scope [style*="rgba(0, 255, 255"] {
+  filter: hue-rotate(100deg) saturate(1.05);
+}
+
+/* Hero 3D card face: fundo obsidian → branco premium */
+html:not(.dark) .landing-scope [style*="rgba(2,6,23"],
+html:not(.dark) .landing-scope [style*="rgba(6,14,32"] {
+  background: linear-gradient(160deg, #ffffff 0%, #faf6ff 100%) !important;
+  color: var(--foreground) !important;
+}
+/* Tear digital card (linear com #0a1420 / #0d1a28) */
+html:not(.dark) .landing-scope [style*="#0a1420"],
+html:not(.dark) .landing-scope [style*="#0d1a28"],
+html:not(.dark) .landing-scope [style*="#0a0f1a"] {
+  background: linear-gradient(135deg, #ffffff 0%, #f6f0ff 50%, #ffffff 100%) !important;
+  border-color: rgba(124,58,237,0.3) !important;
+  box-shadow: 0 30px 80px -20px rgba(124,58,237,0.28), 0 12px 28px -8px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.8) !important;
+}
+
+/* Constelação orbital (SegmentsCarousel) — círculos escuros → cinza transparente */
+html:not(.dark) .landing-scope [style*="rgba(5,11,18"],
+html:not(.dark) .landing-scope [style*="#050b12"] {
+  background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.95), transparent 60%), rgba(245,242,255,0.92) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 12px 30px -14px rgba(124,58,237,0.35) !important;
+}
+/* Ícones dos orbitais precisam ficar pretos/roxos em cima do fundo claro */
+html:not(.dark) .landing-scope svg[width][height] [stroke="url(#orbIconGrad)"],
+html:not(.dark) .landing-scope [style*="url(#orbIconGrad)"] {
+  filter: none !important;
+}
+
+/* Logo central "Fidelize" (SegmentsCarousel + Ecossistema SVG) — hue-rotate cyan→purple */
+html:not(.dark) .landing-scope .fz-core-mark {
+  filter: hue-rotate(110deg) saturate(1.15);
+}
+html:not(.dark) .landing-scope .fz-ring,
+html:not(.dark) .landing-scope .fz-n8n-run {
+  filter: hue-rotate(110deg);
+}
+
+/* Cartão rasgado (paper) — sombreamento pronunciado no fundo branco */
+html:not(.dark) .landing-scope .tear-paper > div {
+  filter:
+    drop-shadow(0 24px 40px rgba(0,0,0,0.28))
+    drop-shadow(0 8px 16px rgba(0,0,0,0.18));
+}
+html:not(.dark) .landing-scope .tear-half {
+  box-shadow:
+    0 18px 40px -12px rgba(0,0,0,0.35),
+    inset 0 0 40px rgba(80,60,20,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.9) !important;
+}
+
+/* Templates "Campanhas que funcionam" — fundo escuro → branco transparente + roxo */
+html:not(.dark) .landing-scope section.bg-\[oklch\(0\.14_0\.02_230\)\] {
+  background: var(--background) !important;
+}
+html:not(.dark) .landing-scope .metric-number {
+  color: #7c3aed !important;
+  background: none !important;
+  -webkit-text-fill-color: #7c3aed !important;
+}
+
+/* Textos cyan-300 remanescentes */
+html:not(.dark) .landing-scope .text-cyan-300\/80,
+html:not(.dark) .landing-scope .text-cyan-300 {
+  color: #7c3aed !important;
+}
+
+/* Chip "Ao vivo" / badges com background cyan translúcido */
+html:not(.dark) .landing-scope [style*="#00ffff14"],
+html:not(.dark) .landing-scope [style*="#00ffff18"],
+html:not(.dark) .landing-scope [style*="#00ffff1a"],
+html:not(.dark) .landing-scope [style*="#00ffff10"] {
+  background: rgba(124,58,237,0.10) !important;
+}
+html:not(.dark) .landing-scope [style*="#00ffff44"],
+html:not(.dark) .landing-scope [style*="#00ffff55"],
+html:not(.dark) .landing-scope [style*="#00ffff66"],
+html:not(.dark) .landing-scope [style*="#00ffff33"] {
+  border-color: rgba(124,58,237,0.4) !important;
+}
