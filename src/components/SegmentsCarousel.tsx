@@ -83,15 +83,70 @@ export function SegmentsCarousel() {
                     "transform 700ms cubic-bezier(0.22, 1, 0.36, 1), filter 700ms ease, opacity 700ms ease",
                 }}
               >
+                {/* Active stage — glow halo */}
+                <div
+                  aria-hidden
+                  className="absolute inset-0 rounded-[36px]"
+                  style={{
+                    opacity: isActive ? 1 : 0,
+                    transition: "opacity 500ms ease",
+                    background:
+                      "radial-gradient(closest-side, color-mix(in oklab, hsl(var(--primary)) 22%, transparent), transparent 72%)",
+                  }}
+                />
+                {/* Glass frame with primary border */}
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 rounded-[36px]"
+                  style={{
+                    opacity: isActive ? 1 : 0,
+                    transition: "opacity 500ms ease",
+                    border: "1px solid color-mix(in oklab, hsl(var(--primary)) 55%, transparent)",
+                    boxShadow:
+                      "inset 0 0 0 1px color-mix(in oklab, hsl(var(--primary)) 22%, transparent), 0 20px 60px -20px color-mix(in oklab, hsl(var(--primary)) 55%, transparent), 0 0 80px -10px color-mix(in oklab, hsl(var(--primary)) 40%, transparent)",
+                    background:
+                      "linear-gradient(180deg, color-mix(in oklab, hsl(var(--card)) 55%, transparent), color-mix(in oklab, hsl(var(--background)) 25%, transparent))",
+                    backdropFilter: "blur(8px)",
+                  }}
+                />
+                {/* Rotating conic ring */}
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute -inset-2 rounded-[44px]"
+                  style={{
+                    opacity: isActive ? 0.9 : 0,
+                    transition: "opacity 500ms ease",
+                    padding: 2,
+                    background:
+                      "conic-gradient(from 0deg, transparent 0deg, hsl(var(--primary)) 90deg, transparent 200deg, hsl(var(--primary)) 300deg, transparent 360deg)",
+                    WebkitMask:
+                      "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+                    WebkitMaskComposite: "xor",
+                    maskComposite: "exclude",
+                    animation: isActive ? "seg-ring 6s linear infinite" : undefined,
+                  }}
+                />
+                {/* HUD corner ticks */}
+                {isActive && (
+                  <>
+                    <span className="absolute left-2 top-2 h-4 w-4 rounded-tl-md border-l-2 border-t-2 border-primary" />
+                    <span className="absolute right-2 top-2 h-4 w-4 rounded-tr-md border-r-2 border-t-2 border-primary" />
+                    <span className="absolute bottom-2 left-2 h-4 w-4 rounded-bl-md border-b-2 border-l-2 border-primary" />
+                    <span className="absolute bottom-2 right-2 h-4 w-4 rounded-br-md border-b-2 border-r-2 border-primary" />
+                  </>
+                )}
                 <img
                   src={it.src}
                   alt={it.label}
                   width={CENTER_SIZE}
                   height={CENTER_SIZE}
                   loading="lazy"
-                  className="h-full w-full object-contain"
+                  className="relative h-full w-full object-contain"
                   style={{
                     animation: isActive ? "seg-float 3.5s ease-in-out infinite" : undefined,
+                    filter: isActive
+                      ? "drop-shadow(0 18px 30px color-mix(in oklab, hsl(var(--primary)) 45%, transparent))"
+                      : undefined,
                   }}
                 />
               </div>
