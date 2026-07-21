@@ -1268,3 +1268,116 @@
 @media (prefers-reduced-motion: reduce) {
   .dock-logo::before, .dock-logo-led, .dock-logo-halo { animation: none !important; }
 }
+
+/* ============ GOALS CARD — Premium mira reveal ============ */
+.goals-premium {
+  color: var(--foreground);
+  min-height: 340px;
+}
+.goals-premium .goals-grid {
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--primary) 8%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--primary) 8%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(ellipse at center, #000 40%, transparent 80%);
+  opacity: .6;
+}
+.goals-premium .goals-scan {
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    color-mix(in oklab, var(--primary) 12%, transparent) 50%,
+    transparent 100%);
+  height: 60%;
+  animation: goals-scan 6s ease-in-out infinite;
+  opacity: .35;
+}
+@keyframes goals-scan {
+  0%, 100% { transform: translateY(-30%); }
+  50% { transform: translateY(120%); }
+}
+
+/* Mira overlay */
+.goals-mira {
+  position: absolute; inset: 0; z-index: 5;
+  display: grid; place-items: center;
+  color: var(--primary);
+  filter: drop-shadow(0 0 12px color-mix(in oklab, var(--primary) 60%, transparent));
+  pointer-events: none;
+}
+.goals-mira.is-in {
+  animation: mira-in 900ms cubic-bezier(.2,.8,.2,1) both;
+}
+.goals-mira.is-out {
+  animation: mira-out 700ms cubic-bezier(.6,0,.4,1) forwards;
+}
+@keyframes mira-in {
+  0%   { opacity: 0; transform: scale(1.6) rotate(-8deg); }
+  60%  { opacity: 1; transform: scale(.98) rotate(1deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+@keyframes mira-out {
+  0%   { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(.6); filter: blur(6px) drop-shadow(0 0 20px color-mix(in oklab, var(--primary) 80%, transparent)); }
+}
+.mira-rot { transform-origin: 200px 200px; animation: mira-spin 8s linear infinite; }
+@keyframes mira-spin { to { transform: rotate(360deg); } }
+.mira-pulse {
+  transform-origin: 200px 200px;
+  animation: mira-ping 1.6s cubic-bezier(.2,.8,.2,1) infinite;
+  opacity: 0;
+}
+.mira-pulse-2 { animation-delay: .8s; }
+@keyframes mira-ping {
+  0%   { transform: scale(.5); opacity: .9; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+
+/* Content reveal AFTER mira fades */
+.goals-premium .goals-content {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1);
+}
+.goals-premium .goals-content.is-shown {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Goal rows */
+.goals-row {
+  transition: transform .35s ease, border-color .35s ease, box-shadow .35s ease;
+}
+.goals-row:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--primary) 45%, transparent);
+  box-shadow: 0 12px 28px -18px color-mix(in oklab, var(--primary) 60%, transparent);
+}
+.goals-track {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--primary) 12%, transparent);
+  overflow: hidden;
+}
+.goals-fill {
+  position: absolute; inset: 0 auto 0 0;
+  background: linear-gradient(90deg,
+    color-mix(in oklab, var(--primary) 60%, transparent),
+    var(--primary));
+  border-radius: 999px;
+  box-shadow: 0 0 12px color-mix(in oklab, var(--primary) 65%, transparent);
+  animation: goals-fill-shimmer 2.4s ease-in-out infinite;
+}
+@keyframes goals-fill-shimmer {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.25); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .goals-premium .goals-scan,
+  .mira-rot, .mira-pulse,
+  .goals-fill { animation: none !important; }
+  .goals-mira.is-in, .goals-mira.is-out { animation-duration: 1ms !important; }
+}
