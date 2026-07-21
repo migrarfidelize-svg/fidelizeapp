@@ -720,9 +720,15 @@
 }
 
 @media (max-width: 768px) {
-  .tear-scene { max-width: 92vw !important; }
-  .tear-win { font-size: 10px !important; padding: 4px 8px !important; }
+  .tear-scene { max-width: 92vw !important; height: 320px !important; }
+  /* Hide floating wins on mobile — they overlap the card and misalign */
+  .tear-win { display: none !important; }
+  .tear-pain { display: none !important; }
+  .tear-digital > div:first-child { width: 92% !important; }
+  .tear-cta { margin-top: 1.25rem !important; padding: 0 1rem; }
+  .tear-cta-btn { width: 100%; max-width: 320px; justify-content: center; }
 }
+
 
 @media (prefers-reduced-motion: reduce) {
   .tear-half, .tear-digital > div:first-child, .tear-win, .tear-pain, .tear-cta { transform: none !important; opacity: 1 !important; filter: none !important; }
