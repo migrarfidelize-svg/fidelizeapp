@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
+import { HeroStampCardLoop } from "@/components/HeroStampCardLoop";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ArrowRight, QrCode, Smartphone, ShieldCheck, BarChart3, Sparkles, Coffee, Scissors, Pizza, ShoppingBag, Wrench, IceCream, Store, PawPrint, Check } from "lucide-react";
@@ -117,34 +118,75 @@ function SiteHeader() {
 }
 
 function Hero() {
+  const CYAN = "#00ffff";
+  const OBSIDIAN = "#020617";
   return (
-    <section className="relative overflow-hidden">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,var(--color-primary-soft),transparent_60%)]" />
+    <section className="relative overflow-hidden" style={{ background: OBSIDIAN }}>
+      {/* Fixed-color ambient — no gradients on text/CTA */}
+      <div
+        aria-hidden
+        className="absolute inset-0 -z-10 opacity-70"
+        style={{
+          background:
+            `radial-gradient(ellipse at 20% 10%, ${CYAN}22, transparent 55%),` +
+            `radial-gradient(ellipse at 80% 90%, ${CYAN}18, transparent 60%)`,
+        }}
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0 -z-10 opacity-[0.06]"
+        style={{
+          backgroundImage:
+            `linear-gradient(${CYAN} 1px, transparent 1px), linear-gradient(90deg, ${CYAN} 1px, transparent 1px)`,
+          backgroundSize: "44px 44px",
+        }}
+      />
       <div className="mx-auto grid max-w-6xl gap-12 px-4 py-20 md:grid-cols-2 md:items-center md:py-28">
-        <div>
-          <span className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-            <Sparkles className="h-3 w-3 text-accent" /> Cartão fidelidade digital para o seu negócio
+        <div className="text-white">
+          <span
+            className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
+            style={{ background: `${CYAN}14`, border: `1px solid ${CYAN}55`, color: CYAN }}
+          >
+            <Sparkles className="h-3 w-3" /> Cartão fidelidade digital para o seu negócio
           </span>
           <h1 className="mt-5 font-display text-5xl font-extrabold leading-[1.05] tracking-tight md:text-6xl">
-            Transforme visitantes em <span className="bg-clip-text text-transparent gradient-brand">clientes fiéis</span>.
+            Transforme visitantes em{" "}
+            <span style={{ color: CYAN, textShadow: `0 0 40px ${CYAN}55` }}>clientes fiéis</span>.
           </h1>
-          <p className="mt-5 max-w-xl text-lg text-muted-foreground">
+          <p className="mt-5 max-w-xl text-lg text-white/70">
             Crie seu cartão fidelidade digital, compartilhe por QR Code e faça seus clientes voltarem mais vezes. Sem aplicativo, sem cartão de papel.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button asChild size="lg" className="gradient-brand text-primary-foreground surface-glow">
-              <Link to="/auth" search={{ mode: "signup" }}>Criar meu cartão grátis <ArrowRight className="ml-1 h-4 w-4" /></Link>
+            <Button
+              asChild
+              size="lg"
+              className="font-bold hover:brightness-110 transition-all"
+              style={{ background: CYAN, color: OBSIDIAN, boxShadow: `0 0 30px ${CYAN}55` }}
+            >
+              <Link to="/auth" search={{ mode: "signup" }}>
+                Criar meu cartão grátis <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
             </Button>
-            <Button asChild size="lg" variant="outline"><a href="#como-funciona">Ver como funciona</a></Button>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="bg-transparent text-white border-white/20 hover:bg-white/10 hover:text-white"
+            >
+              <a href="#como-funciona">Ver como funciona</a>
+            </Button>
           </div>
-          <div className="mt-6 flex items-center gap-6 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5"><Check className="h-4 w-4 text-success" /> Sem cartão de crédito</span>
-            <span className="flex items-center gap-1.5"><Check className="h-4 w-4 text-success" /> Configure em 5 minutos</span>
+          <div className="mt-6 flex items-center gap-6 text-xs text-white/60">
+            <span className="flex items-center gap-1.5">
+              <Check className="h-4 w-4" style={{ color: CYAN }} /> Sem cartão de crédito
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Check className="h-4 w-4" style={{ color: CYAN }} /> Configure em 5 minutos
+            </span>
           </div>
         </div>
         <div className="relative flex justify-center">
-          <div className="absolute -inset-8 -z-10 rounded-[3rem] bg-[radial-gradient(circle,var(--color-accent-soft),transparent_70%)]" />
-          <StampCard brandName="Café do Centro" customerName="Ana Silva" stamps={7} required={10} reward="Um café especial grátis" primary="#7C2D12" accent="#F59E0B" icon="coffee" code="CDC7A2" />
+          <HeroStampCardLoop />
         </div>
       </div>
     </section>
