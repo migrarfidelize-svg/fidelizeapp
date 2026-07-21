@@ -99,6 +99,13 @@ function AdminUsers() {
         </div>
       </div>
 
+      <Tabs defaultValue="accounts">
+        <TabsList>
+          <TabsTrigger value="accounts" className="gap-2"><UsersRound className="h-4 w-4" /> Usuários da plataforma</TabsTrigger>
+          <TabsTrigger value="orphans" className="gap-2"><UserX className="h-4 w-4" /> Clientes sem conta</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="accounts" className="mt-4">
       <Card>
         <CardContent className="p-4 sm:p-6 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto_auto] gap-2">
@@ -210,6 +217,12 @@ function AdminUsers() {
           )}
         </CardContent>
       </Card>
+        </TabsContent>
+
+        <TabsContent value="orphans" className="mt-4">
+          <OrphanCustomers />
+        </TabsContent>
+      </Tabs>
 
       <Dialog open={!!target} onOpenChange={(o) => !o && setTarget(null)}>
         <DialogContent className="sm:max-w-md">
