@@ -56,7 +56,7 @@ export function SegmentsCarousel() {
   return (
     <div
       ref={wrapperRef}
-      className="relative mx-auto flex w-full items-center justify-center px-4 py-16 md:py-24"
+      className="relative mx-auto flex w-full items-center justify-center px-4 py-24 md:py-32"
     >
       {/* Ambient wash */}
       <div
@@ -183,8 +183,8 @@ function Constellation({
   onHover: (i: number | null) => void;
   focusedItem: (typeof ITEMS)[number];
 }) {
-  const SIZE = 560; // svg canvas
-  const R = 210; // orbit radius
+  const SIZE = 820; // svg canvas
+  const R = 320; // orbit radius
   const CENTER = SIZE / 2;
   const N = items.length;
 
@@ -303,7 +303,7 @@ function Constellation({
           transition: "all 700ms cubic-bezier(.2,.85,.2,1)",
         }}
       >
-        <div className="relative flex h-44 w-44 items-center justify-center">
+        <div className="relative flex h-64 w-64 items-center justify-center">
           <span
             aria-hidden
             className="absolute inset-0 rounded-full"
@@ -325,19 +325,19 @@ function Constellation({
                 "inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -25px 40px -10px rgba(0,255,255,0.25)",
             }}
           />
-          <div className="relative z-10 flex w-full flex-col items-center justify-center gap-1 px-3 text-center">
+          <div className="relative z-10 flex w-full flex-col items-center justify-center gap-2 px-5 text-center">
             <div
-              className="font-display text-lg font-black leading-none tracking-tight"
+              className="font-display text-3xl font-black leading-none tracking-tight"
               style={{ color: "var(--primary)" }}
             >
               Fidelize
             </div>
-            <div className="text-[10px] font-semibold uppercase leading-tight tracking-widest text-cyan-300/80">
+            <div className="text-xs font-semibold uppercase leading-tight tracking-widest text-cyan-300/80">
               {focusedItem.label}
             </div>
             <span
               key={focused}
-              className="mt-1 rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider animate-fade-in"
+              className="mt-1 rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-wider animate-fade-in"
               style={{
                 borderColor:
                   "color-mix(in oklab, var(--primary) 40%, transparent)",
@@ -376,7 +376,7 @@ function Constellation({
             }}
           >
             <div
-              className="relative flex h-16 w-16 items-center justify-center rounded-full border backdrop-blur-md transition-all duration-300"
+              className="relative flex h-24 w-24 items-center justify-center rounded-full border backdrop-blur-md transition-all duration-300"
               style={{
                 borderColor: isFocus
                   ? "color-mix(in oklab, var(--primary) 65%, transparent)"
@@ -384,18 +384,18 @@ function Constellation({
                 background:
                   "radial-gradient(circle at 30% 25%, rgba(255,255,255,0.08), transparent 60%), rgba(5,11,18,0.85)",
                 boxShadow: isFocus
-                  ? "0 0 0 4px color-mix(in oklab, var(--primary) 18%, transparent), 0 20px 45px -15px rgba(0,255,255,0.55)"
-                  : "0 10px 25px -12px rgba(0,255,255,0.35)",
+                  ? "0 0 0 5px color-mix(in oklab, var(--primary) 18%, transparent), 0 26px 55px -18px rgba(0,255,255,0.6)"
+                  : "0 12px 30px -14px rgba(0,255,255,0.4)",
               }}
             >
               <Icon
-                strokeWidth={1.25}
-                className="h-8 w-8 transition-transform duration-300 group-hover:scale-110"
+                strokeWidth={1.2}
+                className="h-12 w-12 transition-transform duration-300 group-hover:scale-110"
                 style={{
                   stroke: "url(#orbIconGrad)",
                   color: "transparent",
                   filter:
-                    "drop-shadow(0 6px 14px color-mix(in oklab, var(--primary) 55%, transparent))",
+                    "drop-shadow(0 8px 18px color-mix(in oklab, var(--primary) 60%, transparent))",
                 }}
               />
               {isFocus && (
@@ -413,7 +413,7 @@ function Constellation({
               )}
             </div>
             <span
-              className="whitespace-nowrap text-[11px] font-semibold tracking-tight transition-colors duration-300"
+              className="mt-1 whitespace-nowrap text-sm font-semibold tracking-tight transition-colors duration-300"
               style={{
                 color: isFocus
                   ? "color-mix(in oklab, var(--primary) 85%, white)"
