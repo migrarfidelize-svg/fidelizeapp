@@ -787,52 +787,80 @@ function Comparison() {
 
 function PaperHalf({ side }: { side: "left" | "right" }) {
   const isLeft = side === "left";
+  // Jagged tear edge — irregular fibers on the inner side of each half
+  const tearLeft =
+    "polygon(0 0, 100% 0, 97% 3%, 99% 7%, 95% 12%, 98% 18%, 93% 23%, 99% 29%, 94% 35%, 100% 41%, 93% 47%, 99% 53%, 94% 59%, 100% 65%, 93% 71%, 98% 77%, 94% 83%, 99% 89%, 95% 95%, 98% 100%, 0 100%)";
+  const tearRight =
+    "polygon(0 0, 100% 0, 100% 100%, 2% 100%, 5% 95%, 1% 89%, 6% 83%, 2% 77%, 7% 71%, 0 65%, 6% 59%, 1% 53%, 7% 47%, 0 41%, 6% 35%, 1% 29%, 7% 23%, 2% 18%, 5% 12%, 1% 7%, 3% 3%)";
   return (
     <div
       className={`tear-half tear-half-${side} absolute top-0 h-full w-1/2 ${isLeft ? "left-0" : "right-0"}`}
       style={{
-        background: "linear-gradient(180deg, #f6efdc 0%, #efe6c9 100%)",
-        boxShadow: "0 30px 60px -20px rgba(0,0,0,0.7), inset 0 0 60px rgba(60,45,20,0.08)",
+        // Paper fibers (subtle noise) over pure white
+        background:
+          "radial-gradient(ellipse at 30% 20%, rgba(0,0,0,0.03), transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(0,0,0,0.04), transparent 65%), linear-gradient(180deg, #ffffff 0%, #f7f7f5 100%)",
+        boxShadow:
+          "0 30px 60px -20px rgba(0,0,0,0.55), inset 0 0 40px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.9)",
         color: "#0a0a0a",
         transformOrigin: isLeft ? "right center" : "left center",
-        clipPath: isLeft
-          ? "polygon(0 0, 100% 0, 96% 8%, 100% 16%, 94% 24%, 100% 34%, 95% 44%, 100% 54%, 94% 64%, 100% 74%, 96% 86%, 100% 94%, 97% 100%, 0 100%)"
-          : "polygon(0 0, 100% 0, 100% 100%, 3% 100%, 0 94%, 4% 86%, 0 74%, 6% 64%, 0 54%, 5% 44%, 0 34%, 6% 24%, 0 16%, 4% 8%)",
-        borderRadius: isLeft ? "18px 4px 4px 18px" : "4px 18px 18px 4px",
+        clipPath: isLeft ? tearLeft : tearRight,
+        borderRadius: isLeft ? "18px 0 0 18px" : "0 18px 18px 0",
       }}
     >
+      {/* Torn fiber shading along the ripped edge */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 w-6"
+        style={{
+          [isLeft ? "right" : "left"]: 0,
+          background: isLeft
+            ? "linear-gradient(90deg, transparent, rgba(0,0,0,0.18))"
+            : "linear-gradient(-90deg, transparent, rgba(0,0,0,0.18))",
+          mixBlendMode: "multiply",
+        }}
+      />
+      {/* Fine fiber highlights */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 w-[3px]"
+        style={{
+          [isLeft ? "right" : "left"]: 0,
+          background:
+            "repeating-linear-gradient(180deg, rgba(255,255,255,0.9) 0 1px, rgba(0,0,0,0.15) 1px 2px, transparent 2px 5px)",
+        }}
+      />
       <div className="relative h-full w-full p-5" style={{ fontFamily: "'Caveat', 'Segoe Script', cursive" }}>
         {isLeft && (
           <>
-            <div className="font-display text-xs font-black uppercase tracking-widest text-black/80">Cartão fidelidade</div>
-            <div className="mt-1 text-[10px] italic text-black/60">Café do Zé — desde 2011</div>
+            <div className="font-display text-xs font-black uppercase tracking-widest text-black/85">Cartão fidelidade</div>
+            <div className="mt-1 text-[11px] italic text-black/60">Café do Zé — desde 2011</div>
             <div className="absolute left-4 top-16 grid grid-cols-3 gap-2">
               {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="grid h-10 w-10 place-items-center rounded-full border-2 border-dashed border-black/70 text-lg font-black text-black" style={{ transform: `rotate(${(i % 2 ? -1 : 1) * (6 + i * 2)}deg)` }}>
+                <div key={i} className="grid h-10 w-10 place-items-center rounded-full border-2 border-dashed border-black/75 text-lg font-black text-black" style={{ transform: `rotate(${(i % 2 ? -1 : 1) * (6 + i * 2)}deg)` }}>
                   ✓
                 </div>
               ))}
             </div>
             {/* Coffee stain */}
-            <div className="absolute bottom-3 left-4 h-14 w-14 rounded-full opacity-30" style={{ background: "radial-gradient(circle, #6b3a1e 0%, transparent 70%)" }} />
+            <div className="absolute bottom-3 left-4 h-14 w-14 rounded-full opacity-25" style={{ background: "radial-gradient(circle, #6b3a1e 0%, transparent 70%)" }} />
           </>
         )}
         {!isLeft && (
           <>
             <div className="flex justify-end">
-              <div className="rotate-6 rounded border border-dashed border-black/70 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-black">
+              <div className="rotate-6 rounded border border-dashed border-black/75 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-black">
                 10 = grátis
               </div>
             </div>
             <div className="absolute right-4 top-14 grid grid-cols-3 gap-2">
               {[0, 1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="h-10 w-10 rounded-full border-2 border-dashed border-black/70" />
+                <div key={i} className="h-10 w-10 rounded-full border-2 border-dashed border-black/75" />
               ))}
             </div>
             {/* Tape */}
-            <div className="absolute -right-2 top-6 h-5 w-16 rotate-12 bg-white/50" style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }} />
+            <div className="absolute -right-2 top-6 h-5 w-16 rotate-12" style={{ background: "rgba(230,230,220,0.7)", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }} />
             {/* Scribble */}
-            <div className="absolute bottom-3 right-4 text-[13px] italic text-black/80">"perdi um... hehe"</div>
+            <div className="absolute bottom-3 right-4 text-[14px] italic text-black/85">"perdi um... hehe"</div>
           </>
         )}
       </div>
