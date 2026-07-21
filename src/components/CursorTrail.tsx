@@ -1,9 +1,13 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Fiber-style glowing cursor trail with lag.
- * Cyan → magenta gradient, large radius, additive blending.
- * Skipped on touch / reduced-motion / coarse pointers.
+ * Multi-ribbon fiber cursor trail, scoped to a container.
+ * Renders as an absolutely-positioned canvas that fills its parent.
+ * The parent MUST be `position: relative` and clip overflow if desired.
+ *
+ * Multiple ribbons follow the pointer with different lag/curl so the
+ * effect feels expansive and organic. Palette mixes cyan, magenta,
+ * violet and soft white to stay on-brand without being monotone.
  */
 export function CursorTrail() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -16,59 +20,113 @@ export function CursorTrail() {
 
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const parent = canvas.parentElement;
+    if (!parent) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     let dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let width = 0;
+    let height = 0;
+    let rect = parent.getBoundingClientRect();
+
     const resize = () => {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = window.innerWidth * dpr;
-      canvas.height = window.innerHeight * dpr;
-      canvas.style.width = window.innerWidth + "px";
-      canvas.style.height = window.innerHeight + "px";
+      rect = parent.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
+      canvas.width = Math.max(1, Math.floor(width * dpr));
+      canvas.height = Math.max(1, Math.floor(height * dpr));
+      canvas.style.width = width + "px";
+      canvas.style.height = height + "px";
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     resize();
     window.addEventListener("resize", resize);
+    const ro = new ResizeObserver(resize);
+    ro.observe(parent);
 
-    // Read theme colors from CSS variables (fallback to cyan/magenta).
-    const styles = getComputedStyle(document.documentElement);
-    const primary = styles.getPropertyValue("--primary").trim() || "oklch(0.91 0.15 195)";
-    const accent = styles.getPropertyValue("--accent").trim() || "oklch(0.78 0.19 330)";
+    // Brand-aligned palette (cyan → magenta → violet → soft white).
+    const PALETTE: Array<[string, string]> = [
+      ["#00ffff", "#ff2bd6"], // cyan → magenta
+      ["#7cf5ff", "#a855f7"], // aqua → violet
+      ["#00e0ff", "#ffffff"], // cyan → white
+      ["#ff5cf0", "#00ffff"], // magenta → cyan
+      ["#8b5cf6", "#00ffff"], // violet → cyan
+    ];
 
-    // Trail chain: each node lags behind the previous via lerp.
-    const NODES = 26;
-    const target = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-    const nodes = Array.from({ length: NODES }, () => ({ x: target.x, y: target.y }));
+    type Ribbon = {
+      nodes: { x: number; y: number }[];
+      head: number;   // lerp toward cursor (slower = smaller)
+      chain: number;  // lerp along the chain
+      spread: number; // px offset from cursor (expansive fan-out)
+      phase: number;  // radians offset for spread direction
+      width: number;
+      opacity: number;
+      colors: [string, string];
+    };
+
+    const NODES = 42; // longer chain
+    const RIBBONS = 5;
+    const cx = width / 2;
+    const cy = height / 2;
+    const ribbons: Ribbon[] = Array.from({ length: RIBBONS }, (_, i) => ({
+      nodes: Array.from({ length: NODES }, () => ({ x: cx, y: cy })),
+      // Much slower than before (was 0.28 / 0.35).
+      head: 0.08 + i * 0.012,
+      chain: 0.14 + i * 0.02,
+      spread: 22 + i * 14,
+      phase: (i * Math.PI * 2) / RIBBONS,
+      width: 3 + i * 0.4,
+      opacity: 0.9 - i * 0.08,
+      colors: PALETTE[i % PALETTE.length],
+    }));
+
+    const target = { x: cx, y: cy };
     let visible = false;
     let lastMove = 0;
 
     const onMove = (e: PointerEvent) => {
-      target.x = e.clientX;
-      target.y = e.clientY;
+      const r = parent.getBoundingClientRect();
+      const x = e.clientX - r.left;
+      const y = e.clientY - r.top;
+      if (x < 0 || y < 0 || x > r.width || y > r.height) {
+        visible = false;
+        return;
+      }
+      target.x = x;
+      target.y = y;
       visible = true;
       lastMove = performance.now();
     };
     const onLeave = () => { visible = false; };
     window.addEventListener("pointermove", onMove, { passive: true });
-    window.addEventListener("pointerleave", onLeave);
+    parent.addEventListener("pointerleave", onLeave);
     window.addEventListener("blur", onLeave);
 
     let raf = 0;
-    const tick = () => {
-      // ease head node toward cursor
-      nodes[0].x += (target.x - nodes[0].x) * 0.28;
-      nodes[0].y += (target.y - nodes[0].y) * 0.28;
-      for (let i = 1; i < NODES; i++) {
-        nodes[i].x += (nodes[i - 1].x - nodes[i].x) * 0.35;
-        nodes[i].y += (nodes[i - 1].y - nodes[i].y) * 0.35;
+    let t0 = performance.now();
+    const tick = (now: number) => {
+      const dt = (now - t0) / 1000;
+
+      // Fan-out targets: each ribbon aims at a slowly rotating point
+      // near the cursor so the group feels wide and breathing.
+      for (const rb of ribbons) {
+        const ang = rb.phase + dt * 0.4;
+        const tx = target.x + Math.cos(ang) * rb.spread;
+        const ty = target.y + Math.sin(ang) * rb.spread * 0.75;
+        rb.nodes[0].x += (tx - rb.nodes[0].x) * rb.head;
+        rb.nodes[0].y += (ty - rb.nodes[0].y) * rb.head;
+        for (let i = 1; i < NODES; i++) {
+          rb.nodes[i].x += (rb.nodes[i - 1].x - rb.nodes[i].x) * rb.chain;
+          rb.nodes[i].y += (rb.nodes[i - 1].y - rb.nodes[i].y) * rb.chain;
+        }
       }
 
-      ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+      ctx.clearRect(0, 0, width, height);
 
-      // fade out after inactivity
       const idle = performance.now() - lastMove;
-      const alpha = visible ? Math.max(0, 1 - idle / 900) : 0;
+      const alpha = visible ? Math.max(0, 1 - idle / 1400) : 0;
       if (alpha <= 0.01) {
         raf = requestAnimationFrame(tick);
         return;
@@ -76,45 +134,50 @@ export function CursorTrail() {
 
       ctx.globalCompositeOperation = "lighter";
 
-      // Draw the ribbon in 3 stacked passes for a fiber-like glow.
-      const grad = ctx.createLinearGradient(nodes[0].x, nodes[0].y, nodes[NODES - 1].x, nodes[NODES - 1].y);
-      grad.addColorStop(0, primary);
-      grad.addColorStop(1, accent);
+      for (const rb of ribbons) {
+        const grad = ctx.createLinearGradient(
+          rb.nodes[0].x, rb.nodes[0].y,
+          rb.nodes[NODES - 1].x, rb.nodes[NODES - 1].y,
+        );
+        grad.addColorStop(0, rb.colors[0]);
+        grad.addColorStop(1, rb.colors[1]);
 
-      const drawStroke = (width: number, opacity: number, blur: number) => {
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(nodes[0].x, nodes[0].y);
-        for (let i = 1; i < NODES - 1; i++) {
-          const midX = (nodes[i].x + nodes[i + 1].x) / 2;
-          const midY = (nodes[i].y + nodes[i + 1].y) / 2;
-          ctx.quadraticCurveTo(nodes[i].x, nodes[i].y, midX, midY);
-        }
-        ctx.lineWidth = width;
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-        ctx.globalAlpha = opacity * alpha;
-        ctx.shadowBlur = blur;
-        ctx.shadowColor = primary;
-        ctx.strokeStyle = grad;
-        ctx.stroke();
-        ctx.restore();
-      };
+        const drawStroke = (w: number, op: number, blur: number, color: string | CanvasGradient) => {
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(rb.nodes[0].x, rb.nodes[0].y);
+          for (let i = 1; i < NODES - 1; i++) {
+            const midX = (rb.nodes[i].x + rb.nodes[i + 1].x) / 2;
+            const midY = (rb.nodes[i].y + rb.nodes[i + 1].y) / 2;
+            ctx.quadraticCurveTo(rb.nodes[i].x, rb.nodes[i].y, midX, midY);
+          }
+          ctx.lineWidth = w;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          ctx.globalAlpha = op * alpha * rb.opacity;
+          ctx.shadowBlur = blur;
+          ctx.shadowColor = rb.colors[0];
+          ctx.strokeStyle = color;
+          ctx.stroke();
+          ctx.restore();
+        };
 
-      drawStroke(28, 0.18, 30); // outer bloom
-      drawStroke(14, 0.35, 18); // mid glow
-      drawStroke(4, 0.9, 10);   // bright core
+        drawStroke(rb.width * 9, 0.10, 34, grad); // outer bloom (bigger)
+        drawStroke(rb.width * 4, 0.22, 20, grad); // mid glow
+        drawStroke(rb.width,     0.85, 10, grad); // bright core
+      }
 
       // Cursor head glow
       ctx.save();
       ctx.globalAlpha = alpha;
-      const r = 18;
-      const hg = ctx.createRadialGradient(nodes[0].x, nodes[0].y, 0, nodes[0].x, nodes[0].y, r);
-      hg.addColorStop(0, primary);
+      const r = 22;
+      const hg = ctx.createRadialGradient(target.x, target.y, 0, target.x, target.y, r);
+      hg.addColorStop(0, "#ffffff");
+      hg.addColorStop(0.5, "#00ffff");
       hg.addColorStop(1, "transparent");
       ctx.fillStyle = hg;
       ctx.beginPath();
-      ctx.arc(nodes[0].x, nodes[0].y, r, 0, Math.PI * 2);
+      ctx.arc(target.x, target.y, r, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
 
@@ -126,8 +189,9 @@ export function CursorTrail() {
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
+      ro.disconnect();
       window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerleave", onLeave);
+      parent.removeEventListener("pointerleave", onLeave);
       window.removeEventListener("blur", onLeave);
     };
   }, []);
@@ -136,7 +200,7 @@ export function CursorTrail() {
     <canvas
       ref={canvasRef}
       aria-hidden
-      className="pointer-events-none fixed inset-0 z-[9999]"
+      className="pointer-events-none absolute inset-0 h-full w-full"
     />
   );
 }

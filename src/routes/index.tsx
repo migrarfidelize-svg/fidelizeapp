@@ -5,6 +5,7 @@ import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
 import { HeroStampCardLoop } from "@/components/HeroStampCardLoop";
 import { SegmentsCarousel } from "@/components/SegmentsCarousel";
+import { CursorTrail } from "@/components/CursorTrail";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ArrowRight, QrCode, Smartphone, ShieldCheck, BarChart3, Sparkles, Coffee, Scissors, Pizza, ShoppingBag, Wrench, IceCream, Store, PawPrint, Check } from "lucide-react";
@@ -142,7 +143,8 @@ function Hero() {
           backgroundSize: "44px 44px",
         }}
       />
-      <div className="mx-auto grid max-w-6xl gap-12 px-4 py-20 md:grid-cols-2 md:items-center md:py-28">
+      <CursorTrail />
+      <div className="relative z-10 mx-auto grid max-w-6xl gap-12 px-4 py-20 md:grid-cols-2 md:items-center md:py-28">
         <div className="text-white">
           <span
             className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
