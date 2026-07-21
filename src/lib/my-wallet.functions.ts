@@ -278,7 +278,7 @@ export const getMyRewards = createServerFn({ method: "GET" })
     if (cErr) throw cErr;
     const ids = (customers ?? []).map((c) => c.id);
     if (!ids.length) return [] as Array<{
-      cardId: string; stamps: number; required: number; reward: string;
+      cardId: string; rewardId: string | null; stamps: number; required: number; reward: string;
       campaignName: string; icon: string; establishment: any; ready: boolean; pct: number;
     }>;
 
@@ -289,6 +289,21 @@ export const getMyRewards = createServerFn({ method: "GET" })
       .in("customer_id", ids);
     if (error) throw error;
 
+    // Pending rewards (unlocked, not redeemed) — used to obtain reward_id for temp redeem QR.
+    const cardIds = (cards ?? []).map((c) => c.id);
+    const pendingByCard = new Map<string, string>();
+    if (cardIds.length) {
+      const { data: rewardsRows } = await context.supabase
+        .from("rewards")
+        .select("id, card_id, redeemed_at, unlocked_at")
+        .in("card_id", cardIds)
+        .is("redeemed_at", null)
+        .order("unlocked_at", { ascending: false });
+      for (const r of rewardsRows ?? []) {
+        if (!pendingByCard.has(r.card_id)) pendingByCard.set(r.card_id, r.id);
+      }
+    }
+
     const custMap = new Map((customers ?? []).map((c) => [c.id, c.establishment]));
     return (cards ?? [])
       .filter((c) => (c.campaign as { active: boolean }).active)
@@ -297,6 +312,7 @@ export const getMyRewards = createServerFn({ method: "GET" })
         const pct = Math.min(100, Math.round((c.stamps / req) * 100));
         return {
           cardId: c.id,
+          rewardId: pendingByCard.get(c.id) ?? null,
           stamps: c.stamps,
           required: req,
           pct,
