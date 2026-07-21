@@ -213,19 +213,6 @@ function Dashboard() {
   );
 }
 
-function TickerItem({ label, value, icon: Icon }: { label: string; value: string | number; icon: any }) {
-  return (
-    <div className="flex items-center gap-3 rounded-lg border border-primary/15 bg-[color:color-mix(in_oklab,var(--card)_60%,transparent)] px-3 py-2.5 backdrop-blur-sm">
-      <span className="grid h-8 w-8 place-items-center rounded-md border border-primary/25 bg-primary/10 text-primary">
-        <Icon className="h-4 w-4" />
-      </span>
-      <div className="min-w-0">
-        <div className="text-[10px] uppercase tracking-widest text-muted-foreground truncate">{label}</div>
-        <div className="text-sm font-semibold truncate">{value}</div>
-      </div>
-    </div>
-  );
-}
 
 function MoMCard({
   label, current, previous, delay = 0, accent = false,
