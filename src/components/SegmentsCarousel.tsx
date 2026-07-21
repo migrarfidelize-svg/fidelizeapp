@@ -94,45 +94,72 @@ export function SegmentsCarousel() {
                     "radial-gradient(closest-side, color-mix(in oklab, var(--primary) 28%, transparent), transparent 72%)",
                 }}
               />
-              {/* glass frame with strong cyan border */}
+              {/* custom block with notched corners */}
               <div
                 aria-hidden
-                className="pointer-events-none absolute inset-0 rounded-[36px]"
+                className="pointer-events-none absolute inset-0"
                 style={{
                   opacity: isActive ? 1 : 0,
                   transition: "opacity 500ms ease",
-                  border: "2px solid var(--primary)",
+                  clipPath:
+                    "polygon(28px 0, calc(100% - 28px) 0, 100% 28px, 100% calc(100% - 28px), calc(100% - 28px) 100%, 28px 100%, 0 calc(100% - 28px), 0 28px)",
+                  border: "1.5px solid color-mix(in oklab, var(--primary) 55%, transparent)",
                   boxShadow:
-                    "inset 0 0 0 1px color-mix(in oklab, var(--primary) 35%, transparent), inset 0 0 40px color-mix(in oklab, var(--primary) 15%, transparent), 0 30px 80px -20px color-mix(in oklab, var(--primary) 70%, transparent), 0 0 120px -10px color-mix(in oklab, var(--primary) 55%, transparent)",
+                    "inset 0 0 0 1px color-mix(in oklab, var(--primary) 22%, transparent), inset 0 0 60px color-mix(in oklab, var(--primary) 12%, transparent), 0 30px 80px -20px color-mix(in oklab, var(--primary) 60%, transparent), 0 0 120px -10px color-mix(in oklab, var(--primary) 45%, transparent)",
                   background:
-                    "linear-gradient(180deg, color-mix(in oklab, var(--card) 75%, transparent), color-mix(in oklab, var(--background) 45%, transparent))",
+                    "linear-gradient(180deg, color-mix(in oklab, var(--card) 78%, transparent), color-mix(in oklab, var(--background) 50%, transparent))",
                   backdropFilter: "blur(6px)",
                 }}
               />
-              {/* rotating conic ring */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -inset-2 rounded-[44px]"
-                style={{
-                  opacity: isActive ? 0.85 : 0,
-                  transition: "opacity 500ms ease",
-                  padding: 2,
-                  background:
-                    "conic-gradient(from 0deg, transparent 0deg, var(--primary) 90deg, transparent 200deg, var(--primary) 300deg, transparent 360deg)",
-                  WebkitMask:
-                    "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
-                  WebkitMaskComposite: "xor",
-                  maskComposite: "exclude",
-                  animation: isActive ? "seg-ring 6s linear infinite" : undefined,
-                }}
-              />
-              {/* HUD corners */}
+              {/* LED trail traveling around the block */}
+              {isActive && (
+                <svg
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 h-full w-full"
+                  viewBox={`0 0 ${CENTER_SIZE} ${CENTER_SIZE}`}
+                  preserveAspectRatio="none"
+                >
+                  <defs>
+                    <filter id="seg-led-glow" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="3" result="b" />
+                      <feMerge>
+                        <feMergeNode in="b" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                  </defs>
+                  {/* notched octagon path matching clipPath (28px chamfer) */}
+                  <path
+                    d={`M28 0 L${CENTER_SIZE - 28} 0 L${CENTER_SIZE} 28 L${CENTER_SIZE} ${CENTER_SIZE - 28} L${CENTER_SIZE - 28} ${CENTER_SIZE} L28 ${CENTER_SIZE} L0 ${CENTER_SIZE - 28} L0 28 Z`}
+                    fill="none"
+                    stroke="var(--primary)"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeDasharray="90 1400"
+                    filter="url(#seg-led-glow)"
+                    style={{
+                      animation: "seg-led-run 4.5s linear infinite",
+                    }}
+                  />
+                </svg>
+              )}
+              {/* corner chips on the chamfers */}
               {isActive && (
                 <>
-                  <span className="absolute left-3 top-3 h-4 w-4 rounded-tl-md border-l-2 border-t-2 border-primary" />
-                  <span className="absolute right-3 top-3 h-4 w-4 rounded-tr-md border-r-2 border-t-2 border-primary" />
-                  <span className="absolute bottom-3 left-3 h-4 w-4 rounded-bl-md border-b-2 border-l-2 border-primary" />
-                  <span className="absolute bottom-3 right-3 h-4 w-4 rounded-br-md border-b-2 border-r-2 border-primary" />
+                  <span
+                    className="absolute -top-[1px] left-1/2 h-[3px] w-16 -translate-x-1/2 rounded-full"
+                    style={{
+                      background: "var(--primary)",
+                      boxShadow: "0 0 14px var(--primary)",
+                    }}
+                  />
+                  <span
+                    className="absolute -bottom-[1px] left-1/2 h-[3px] w-16 -translate-x-1/2 rounded-full"
+                    style={{
+                      background: "var(--primary)",
+                      boxShadow: "0 0 14px var(--primary)",
+                    }}
+                  />
                 </>
               )}
               <img
