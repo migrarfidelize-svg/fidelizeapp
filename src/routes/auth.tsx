@@ -58,13 +58,15 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
-  // Cliente é o padrão. Se veio de /c/:token com ?claim=... também force customer.
   const [role, setRole] = useState<"customer" | "establishment">(
     search.as ?? (search.claim ? "customer" : "customer"),
   );
 
   const isSignup = mode === "signup";
+  const isCustomer = role === "customer";
   const isEstablishmentSignup = isSignup && role === "establishment";
+  // Cliente (carteira) usa apenas WhatsApp — cadastro exige nome + WhatsApp, login exige só WhatsApp.
+  const walletFlow = isCustomer;
 
   function formatWhatsapp(v: string) {
     const d = v.replace(/\D/g, "").slice(0, 11);
@@ -74,26 +76,48 @@ function AuthPage() {
     return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
   }
 
+  /**
+   * Credenciais sintéticas para clientes que usam apenas o WhatsApp.
+   * O número (com DDD) atua como identificador único e como PIN — trade-off
+   * consciente pedido pelo usuário: "só o WhatsApp para acessar".
+   */
+  function walletCredentials(digits: string) {
+    return {
+      email: `wa${digits}@carteira.fidelize.app`,
+      password: `wa_${digits}_fidelize_v1`,
+    };
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     try {
       if (isSignup) {
         const digits = whatsapp.replace(/\D/g, "");
-        if (isEstablishmentSignup && digits.length < 10) {
+        if (digits.length < 10) {
           toast.error("Informe um WhatsApp válido com DDD.");
           setLoading(false);
           return;
         }
+        const creds = walletFlow ? walletCredentials(digits) : { email, password };
         const { data: signUpData, error } = await supabase.auth.signUp({
-          email, password,
+          email: creds.email,
+          password: creds.password,
           options: {
             data: { full_name: name, phone: whatsapp, whatsapp },
             emailRedirectTo: window.location.origin + "/auth",
           },
         });
-        if (error) throw error;
-        const uid = signUpData.user?.id;
+        if (error) {
+          const msg = (error.message || "").toLowerCase();
+          if (walletFlow && (msg.includes("already") || msg.includes("registered") || msg.includes("exists"))) {
+            const retry = await supabase.auth.signInWithPassword(creds);
+            if (retry.error) throw new Error("Este WhatsApp já tem cadastro. Toque em Entrar.");
+          } else {
+            throw error;
+          }
+        }
+        const uid = signUpData.user?.id ?? (await supabase.auth.getUser()).data.user?.id;
         if (uid) {
           await supabase.from("profiles").upsert({ id: uid, full_name: name, phone: whatsapp }, { onConflict: "id" });
         }
@@ -101,25 +125,41 @@ function AuthPage() {
           toast.success("Conta criada! Vamos configurar seu cartão.");
           navigate({ to: "/onboarding" });
         } else {
-          // Cliente: se veio de QR, vincula; senão, vai pra carteira.
           const dest = await routeAfterAuth({ claim: search.claim, next: search.next });
           toast.success(dest.toast ?? "Conta criada!");
           navigate({ to: dest.to });
         }
       } else {
-        let { error } = await supabase.auth.signInWithPassword({ email, password });
+        let creds: { email: string; password: string };
+        if (walletFlow) {
+          const digits = whatsapp.replace(/\D/g, "");
+          if (digits.length < 10) {
+            toast.error("Informe seu WhatsApp com DDD.");
+            setLoading(false);
+            return;
+          }
+          creds = walletCredentials(digits);
+        } else {
+          creds = { email, password };
+        }
+        let { error } = await supabase.auth.signInWithPassword(creds);
         if (error) {
           const msg = (error.message || "").toLowerCase();
           const code = (error as { code?: string }).code ?? "";
           if (msg.includes("not confirmed") || msg.includes("email not confirmed") || code === "email_not_confirmed") {
             const { confirmEmailByAddress } = await import("@/lib/auth-confirm.functions");
-            const res = await confirmEmailByAddress({ data: { email } });
+            const res = await confirmEmailByAddress({ data: { email: creds.email } });
             if (res.ok) {
-              const retry = await supabase.auth.signInWithPassword({ email, password });
+              const retry = await supabase.auth.signInWithPassword(creds);
               error = retry.error;
             }
           }
-          if (error) throw error;
+          if (error) {
+            if (walletFlow && ((error.message || "").toLowerCase().includes("invalid"))) {
+              throw new Error("WhatsApp não cadastrado. Toque em Criar conta.");
+            }
+            throw error;
+          }
         }
         const dest = await routeAfterAuth({ claim: search.claim, next: search.next });
         toast.success(dest.toast ?? "Bem-vindo de volta!");
