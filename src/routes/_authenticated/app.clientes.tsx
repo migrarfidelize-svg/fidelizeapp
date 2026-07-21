@@ -544,15 +544,49 @@ function Clientes() {
 }
 
 
-function StatCard({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: number; accent?: string }) {
+function ProStat({
+  icon: Icon, label, value, hint, tone,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string; value: number; hint?: string;
+  tone?: "primary" | "success" | "danger";
+}) {
+  const toneClass =
+    tone === "success" ? "text-success"
+    : tone === "danger" ? "text-destructive"
+    : tone === "primary" ? "text-primary"
+    : "text-foreground";
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">{icon}{label}</div>
-        <div className={`text-2xl font-display font-bold mt-1 ${accent ?? ""}`}>{value.toLocaleString("pt-BR")}</div>
-      </CardContent>
-    </Card>
+    <div className="relative overflow-hidden rounded-2xl border border-primary/15 bg-[color:color-mix(in_oklab,var(--card)_65%,transparent)] p-4 backdrop-blur-sm">
+      <span aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent opacity-70" />
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{label}</div>
+          <div className={`metric-number mt-1 tabular-nums ${toneClass}`}>{value.toLocaleString("pt-BR")}</div>
+          {hint && <div className="text-[11px] text-muted-foreground mt-0.5 truncate">{hint}</div>}
+        </div>
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-primary/30 bg-primary/10 text-primary shadow-[0_0_18px_-6px_var(--primary)]">
+          <Icon className="h-4 w-4" />
+        </span>
+      </div>
+    </div>
   );
+}
+
+function segmentOf(c: CustomerRow): { label: string; className: string } {
+  if (c.blocked) return { label: "Bloqueado", className: "border-destructive/40 bg-destructive/10 text-destructive" };
+  const now = Date.now();
+  const lastMs = c.last_visit_at ? new Date(c.last_visit_at).getTime() : 0;
+  const daysSince = lastMs ? Math.floor((now - lastMs) / 86400000) : Infinity;
+  const createdMs = new Date(c.created_at).getTime();
+  const daysOld = Math.floor((now - createdMs) / 86400000);
+
+  if (c.visits_count >= 10 && daysSince <= 30) return { label: "VIP", className: "border-primary/50 bg-primary/15 text-primary" };
+  if (daysOld <= 14 && c.visits_count <= 1) return { label: "Novo", className: "border-accent/40 bg-accent/10 text-accent" };
+  if (daysSince <= 30) return { label: "Ativo", className: "border-success/40 bg-success/10 text-success" };
+  if (daysSince <= 60) return { label: "Morno", className: "border-warning/40 bg-warning/10 text-warning" };
+  if (daysSince <= 120) return { label: "Em risco", className: "border-orange-500/40 bg-orange-500/10 text-orange-400" };
+  return { label: "Perdido", className: "border-muted-foreground/30 bg-muted/40 text-muted-foreground" };
 }
 
 function BlockToggleItem({ c, onDone }: { c: CustomerRow; onDone: () => void }) {
