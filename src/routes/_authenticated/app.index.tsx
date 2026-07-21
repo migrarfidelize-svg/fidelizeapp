@@ -7,6 +7,7 @@ import {
   Users, Stamp, Gift, ArrowRight, Sparkles,
   ArrowUpRight, ArrowDownRight, Minus, Zap, Crown,
   QrCode, TrendingUp, Trophy, Clock, LayoutDashboard,
+  Activity, Percent, Gauge,
 } from "lucide-react";
 import {
   XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid, Area, AreaChart,
