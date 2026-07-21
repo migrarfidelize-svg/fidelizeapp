@@ -413,7 +413,7 @@ function Constellation({
               )}
             </div>
             <span
-              className="whitespace-nowrap text-[11px] font-semibold tracking-tight transition-colors duration-300"
+              className="mt-1 whitespace-nowrap text-sm font-semibold tracking-tight transition-colors duration-300"
               style={{
                 color: isFocus
                   ? "color-mix(in oklab, var(--primary) 85%, white)"
