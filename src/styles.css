@@ -935,34 +935,97 @@
 .dash-hero {
   position: relative;
   overflow: hidden;
-  border-radius: 1.1rem;
+  border-radius: 1.25rem;
   border: 1px solid color-mix(in oklab, var(--primary) 30%, transparent);
-  background: color-mix(in oklab, var(--card) 96%, transparent);
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 0%, color-mix(in oklab, var(--primary) 14%, transparent), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 100% 100%, color-mix(in oklab, var(--accent) 10%, transparent), transparent 55%),
+    color-mix(in oklab, var(--card) 96%, transparent);
   box-shadow:
-    inset 0 1px 0 color-mix(in oklab, #fff 6%, transparent),
-    0 24px 60px -40px color-mix(in oklab, var(--primary) 55%, transparent);
+    inset 0 1px 0 color-mix(in oklab, #fff 7%, transparent),
+    0 30px 70px -40px color-mix(in oklab, var(--primary) 60%, transparent);
+  isolation: isolate;
 }
+/* Layer 1 — drifting circuit grid */
 .dash-hero::before {
   content: "";
-  position: absolute; inset: 0;
+  position: absolute; inset: -1px;
   background-image:
-    linear-gradient(color-mix(in oklab, var(--primary) 10%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in oklab, var(--primary) 10%, transparent) 1px, transparent 1px);
-  background-size: 40px 40px;
-  mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 70%);
-  opacity: 0.28;
+    linear-gradient(color-mix(in oklab, var(--primary) 12%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--primary) 12%, transparent) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 75%);
+  opacity: 0.32;
+  animation: hero-grid-drift 22s linear infinite;
   pointer-events: none;
+  z-index: 0;
 }
-/* Thin cyan top accent bar — no rotating orbit */
+/* Layer 2 — traveling top progress line */
 .dash-hero::after {
   content: "";
-  position: absolute; left: 0; right: 0; top: 0;
+  position: absolute; left: -20%; right: -20%; top: 0;
   height: 2px;
-  background: var(--primary);
-  opacity: .85;
-  box-shadow: 0 0 18px 0 color-mix(in oklab, var(--primary) 70%, transparent);
+  background: linear-gradient(90deg,
+    transparent 0%,
+    color-mix(in oklab, var(--primary) 20%, transparent) 20%,
+    var(--primary) 50%,
+    color-mix(in oklab, var(--primary) 20%, transparent) 80%,
+    transparent 100%
+  );
+  box-shadow: 0 0 22px 0 color-mix(in oklab, var(--primary) 80%, transparent);
+  animation: hero-beam-x 6s linear infinite;
   pointer-events: none;
+  z-index: 1;
 }
+@keyframes hero-grid-drift {
+  from { background-position: 0 0, 0 0; }
+  to   { background-position: 44px 44px, 44px 44px; }
+}
+@keyframes hero-beam-x {
+  0%   { transform: translateX(-30%); opacity: .5; }
+  50%  { opacity: 1; }
+  100% { transform: translateX(30%); opacity: .5; }
+}
+
+/* Corner brackets — HUD style */
+.dash-hero > .hero-corner {
+  position: absolute; width: 22px; height: 22px;
+  border: 1.5px solid color-mix(in oklab, var(--primary) 70%, transparent);
+  filter: drop-shadow(0 0 6px color-mix(in oklab, var(--primary) 50%, transparent));
+  pointer-events: none; z-index: 2;
+}
+.hero-corner-tl { top: 12px; left: 12px; border-right: 0; border-bottom: 0; border-top-left-radius: 6px; }
+.hero-corner-tr { top: 12px; right: 12px; border-left: 0; border-bottom: 0; border-top-right-radius: 6px; }
+.hero-corner-bl { bottom: 12px; left: 12px; border-right: 0; border-top: 0; border-bottom-left-radius: 6px; }
+.hero-corner-br { bottom: 12px; right: 12px; border-left: 0; border-top: 0; border-bottom-right-radius: 6px; }
+
+/* Scan sweep vertical beam */
+.dash-hero > .hero-scan {
+  position: absolute; top: 0; bottom: 0; width: 140px;
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--primary) 22%, transparent), transparent);
+  filter: blur(6px);
+  animation: hero-scan-x 7s ease-in-out infinite;
+  pointer-events: none; z-index: 1;
+  mix-blend-mode: screen;
+}
+@keyframes hero-scan-x {
+  0%,100% { transform: translateX(-20%); opacity: 0; }
+  15%     { opacity: .8; }
+  50%     { transform: translateX(calc(100vw - 200px)); opacity: .9; }
+  85%     { opacity: .6; }
+}
+
+/* Reveal-in for hero content */
+.hero-reveal { animation: hero-reveal .7s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes hero-reveal {
+  from { opacity: 0; transform: translateY(14px); filter: blur(6px); }
+  to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-hero::before, .dash-hero::after, .dash-hero > .hero-scan, .hero-reveal { animation: none !important; }
+}
+
 
 /* Premium KPI card — static cyan hairline, lift on hover, no orbit */
 @utility dash-card {
