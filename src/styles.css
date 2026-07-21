@@ -781,3 +781,73 @@
   100% { transform: scale(1) rotate(0); opacity: 1; }
 }
 .hero-stamp-in { animation: hero-stamp-in 0.55s cubic-bezier(0.34,1.56,0.64,1) both; }
+
+/* ============================================================
+   HERO — Aurora + Circuit background
+   ============================================================ */
+.hero-bg-aurora-circuit {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: #020617;
+}
+/* Aurora blobs */
+.hero-bg-aurora-circuit::before {
+  content: "";
+  position: absolute;
+  inset: -15%;
+  background:
+    radial-gradient(38% 42% at 18% 22%, rgba(0,255,255,0.28), transparent 62%),
+    radial-gradient(32% 36% at 82% 78%, rgba(217,70,239,0.22), transparent 65%),
+    radial-gradient(28% 30% at 60% 40%, rgba(0,255,255,0.12), transparent 70%);
+  filter: blur(60px);
+  animation: hero-aurora-drift 22s ease-in-out infinite alternate;
+}
+/* Circuit grid + vignette + traveling pulse container */
+.hero-bg-aurora-circuit::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,255,255,0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,255,0.055) 1px, transparent 1px),
+    radial-gradient(ellipse 80% 60% at 50% 50%, transparent 40%, rgba(2,6,23,0.85) 100%);
+  background-size: 52px 52px, 52px 52px, 100% 100%;
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 50%, black 40%, transparent 100%);
+}
+/* Traveling cyan pulse — thin horizontal line sweeping */
+.hero-bg-aurora-circuit .hero-pulse {
+  position: absolute;
+  top: 62%;
+  left: -20%;
+  width: 22%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #00ffff, transparent);
+  box-shadow: 0 0 12px #00ffff, 0 0 24px rgba(0,255,255,0.5);
+  animation: hero-pulse-run 7s linear infinite;
+}
+.hero-bg-aurora-circuit .hero-pulse.delay {
+  top: 34%;
+  animation-delay: 3.5s;
+  animation-duration: 9s;
+  opacity: 0.7;
+}
+
+@keyframes hero-aurora-drift {
+  0%   { transform: translate3d(0,0,0) scale(1); }
+  50%  { transform: translate3d(2%, -1.5%, 0) scale(1.06); }
+  100% { transform: translate3d(-2%, 1.5%, 0) scale(1.02); }
+}
+@keyframes hero-pulse-run {
+  0%   { left: -20%; opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { left: 120%; opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-bg-aurora-circuit::before,
+  .hero-bg-aurora-circuit .hero-pulse { animation: none; }
+}
+
