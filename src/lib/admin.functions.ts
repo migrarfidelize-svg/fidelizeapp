@@ -638,6 +638,8 @@ export const adminListUsers = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({
     query: z.string().trim().default(""),
     account_type: z.enum(["all", "customer", "establishment", "super_admin"]).default("all"),
+    establishment_id: z.string().uuid().optional().nullable(),
+    status: z.enum(["all", "with_wallet", "no_activity", "active_member", "onboarding_pending"]).default("all"),
     page: z.number().int().min(1).default(1),
     page_size: z.number().int().min(1).max(100).default(20),
   }).parse(d))
@@ -645,6 +647,17 @@ export const adminListUsers = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertSuperAdmin(supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Pre-filter user_ids when establishment_id is set
+    let restrictIds: string[] | null = null;
+    if (data.establishment_id) {
+      const { data: mems } = await supabaseAdmin
+        .from("establishment_members")
+        .select("user_id")
+        .eq("establishment_id", data.establishment_id);
+      restrictIds = Array.from(new Set((mems ?? []).map((m: any) => m.user_id).filter(Boolean)));
+      if (!restrictIds.length) return { users: [], total: 0, page: data.page, page_size: data.page_size };
+    }
 
     const from = (data.page - 1) * data.page_size;
     const to = from + data.page_size - 1;
@@ -656,6 +669,7 @@ export const adminListUsers = createServerFn({ method: "POST" })
       .range(from, to);
 
     if (data.account_type !== "all") q = q.eq("account_type", data.account_type);
+    if (restrictIds) q = q.in("id", restrictIds);
     if (data.query) {
       const like = `%${data.query}%`;
       q = q.or(`full_name.ilike.${like},phone.ilike.${like}`);
@@ -668,18 +682,19 @@ export const adminListUsers = createServerFn({ method: "POST" })
     let emails: Record<string, string> = {};
     let memberships: Record<string, Array<{ establishment_id: string; role: string; active: boolean; name: string | null }>> = {};
     let roles: Record<string, string[]> = {};
+    let walletCounts: Record<string, number> = {};
 
     if (ids.length) {
-      // emails via auth.admin
       const results = await Promise.all(
         ids.map((id) => supabaseAdmin.auth.admin.getUserById(id).then((r) => ({ id, email: r.data.user?.email ?? null })).catch(() => ({ id, email: null })))
       );
       emails = Object.fromEntries(results.map((r) => [r.id, r.email ?? ""]));
 
-      const { data: mems } = await supabaseAdmin
-        .from("establishment_members")
-        .select("user_id, establishment_id, role, active, establishments!inner(name)")
-        .in("user_id", ids);
+      const [{ data: mems }, { data: appRoles }, { data: cust }] = await Promise.all([
+        supabaseAdmin.from("establishment_members").select("user_id, establishment_id, role, active, establishments!inner(name)").in("user_id", ids),
+        supabaseAdmin.from("app_roles").select("user_id, role").in("user_id", ids),
+        supabaseAdmin.from("customers").select("id, user_id").in("user_id", ids),
+      ]);
       for (const m of (mems ?? []) as Array<{ user_id: string; establishment_id: string; role: string; active: boolean; establishments: { name: string | null } | null }>) {
         (memberships[m.user_id] ??= []).push({
           establishment_id: m.establishment_id,
@@ -687,27 +702,64 @@ export const adminListUsers = createServerFn({ method: "POST" })
           name: m.establishments?.name ?? null,
         });
       }
-
-      const { data: appRoles } = await supabaseAdmin
-        .from("app_roles").select("user_id, role").in("user_id", ids);
       for (const r of (appRoles ?? []) as Array<{ user_id: string; role: string }>) {
         (roles[r.user_id] ??= []).push(r.role);
       }
+
+      const custByUser = new Map<string, string[]>();
+      for (const c of (cust ?? []) as Array<{ id: string; user_id: string | null }>) {
+        if (c.user_id) {
+          const arr = custByUser.get(c.user_id) ?? [];
+          arr.push(c.id);
+          custByUser.set(c.user_id, arr);
+        }
+      }
+      const custIds = Array.from(custByUser.values()).flat();
+      if (custIds.length) {
+        const { data: cards } = await supabaseAdmin.from("loyalty_cards").select("customer_id").in("customer_id", custIds);
+        const cardByCust = new Set((cards ?? []).map((c: any) => c.customer_id));
+        for (const [uid, cs] of custByUser.entries()) {
+          walletCounts[uid] = cs.filter((id) => cardByCust.has(id)).length;
+        }
+      }
     }
 
-    const users = (profiles ?? []).map((p) => ({
-      id: p.id,
-      full_name: p.full_name,
-      phone: p.phone,
-      avatar_url: p.avatar_url,
-      account_type: p.account_type as "customer" | "establishment" | "super_admin",
-      created_at: p.created_at,
-      email: emails[p.id] ?? "",
-      memberships: memberships[p.id] ?? [],
-      app_roles: roles[p.id] ?? [],
-    }));
+    function deriveStatus(p: { id: string; account_type: string }): {
+      code: "with_wallet" | "no_activity" | "active_member" | "onboarding_pending" | "admin";
+      label: string;
+    } {
+      if (p.account_type === "super_admin") return { code: "admin", label: "Super admin" };
+      if (p.account_type === "establishment") {
+        const hasActive = (memberships[p.id] ?? []).some((m) => m.active);
+        return hasActive
+          ? { code: "active_member", label: "Estabelecimento ativo" }
+          : { code: "onboarding_pending", label: "Onboarding pendente" };
+      }
+      return (walletCounts[p.id] ?? 0) > 0
+        ? { code: "with_wallet", label: "Carteira ativa" }
+        : { code: "no_activity", label: "Login sem atividade" };
+    }
 
-    return { users, total: count ?? 0, page: data.page, page_size: data.page_size };
+    const enriched = (profiles ?? []).map((p) => {
+      const st = deriveStatus(p);
+      return {
+        id: p.id,
+        full_name: p.full_name,
+        phone: p.phone,
+        avatar_url: p.avatar_url,
+        account_type: p.account_type as "customer" | "establishment" | "super_admin",
+        created_at: p.created_at,
+        email: emails[p.id] ?? "",
+        memberships: memberships[p.id] ?? [],
+        app_roles: roles[p.id] ?? [],
+        status: st.code,
+        status_label: st.label,
+      };
+    });
+
+    const users = data.status === "all" ? enriched : enriched.filter((u) => u.status === data.status);
+
+    return { users, total: data.status === "all" ? (count ?? 0) : users.length, page: data.page, page_size: data.page_size };
   });
 
 export const adminSetUserAccountType = createServerFn({ method: "POST" })
