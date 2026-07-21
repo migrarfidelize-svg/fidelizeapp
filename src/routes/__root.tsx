@@ -141,10 +141,16 @@ function RootComponent() {
     });
     return () => subscription.unsubscribe();
   }, [router, queryClient]);
-  // Aplica tema conforme a rota atual (/app e /admin em claro, resto em dark).
+  // Trava tema em dark para /app e /admin; landing respeita preferência do usuário.
   useEffect(() => {
     const apply = () => {
-      const t = themeForPath(window.location.pathname);
+      const forced = themeForPath(window.location.pathname);
+      let t: "light" | "dark" = "dark";
+      if (forced) t = forced;
+      else {
+        const s = (() => { try { return localStorage.getItem("theme"); } catch { return null; } })();
+        t = s === "light" || s === "dark" ? s : "dark";
+      }
       const r = document.documentElement;
       r.classList.toggle("dark", t === "dark");
       r.style.colorScheme = t;
@@ -153,6 +159,7 @@ function RootComponent() {
     const unsub = router.subscribe("onResolved", apply);
     return () => unsub();
   }, [router]);
+
 
   return (
     <QueryClientProvider client={queryClient}>
