@@ -86,19 +86,19 @@ function WalletEstablishment() {
 
       {card ? (
         <LoyaltyVoucher
-          establishmentName={est.name}
+          brandName={est.name}
           logoUrl={est.logo_url}
-          primaryColor={est.primary_color}
+          campaignName={(card.campaign as { name: string }).name}
           customerName={d.customer.name}
           customerCode={d.customer.code}
-          stamps={stamps}
-          stampsRequired={req}
-          reward={(card.campaign as { reward: string }).reward}
-          campaignIcon={(card.campaign as { icon: string | null }).icon}
-          campaignColor={(card.campaign as { color: string | null }).color}
-          cycle={card.cycle}
           qrValue={typeof window !== "undefined" ? `${window.location.origin}/c/${d.customer.token}` : `/c/${d.customer.token}`}
-          tier={d.customer.tier}
+          stamps={stamps}
+          required={req}
+          reward={(card.campaign as { reward_title: string }).reward_title}
+          primary={(card.campaign as { primary_color: string | null }).primary_color || est.primary_color}
+          accent={(card.campaign as { accent_color: string | null }).accent_color || undefined}
+          icon={(card.campaign as { stamp_icon: string }).stamp_icon}
+          lastStampAt={card.updated_at}
         />
       ) : (
         <div className="rounded-3xl border border-dashed border-border/70 bg-card/30 p-6 text-center text-sm text-muted-foreground">
