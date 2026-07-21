@@ -4,31 +4,67 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
-import { Coffee, Check, ArrowRight, Sparkles, Wifi } from "lucide-react";
+import { Coffee, Check, ArrowRight, Sparkles, Wifi, Store, User } from "lucide-react";
+import { claimCustomerByToken } from "@/lib/my-wallet.functions";
 
-const searchSchema = z.object({ mode: z.enum(["signin", "signup"]).default("signin") });
+const searchSchema = z.object({
+  mode: z.enum(["signin", "signup"]).default("signin"),
+  as: z.enum(["customer", "establishment"]).optional(),
+  claim: z.string().optional(),
+  next: z.string().optional(),
+});
+
+async function routeAfterAuth(opts: { claim?: string; next?: string }): Promise<{ to: string; toast?: string }> {
+  // If we were sent here from a QR link, always try to attach the card first.
+  if (opts.claim) {
+    try {
+      const r = await claimCustomerByToken({ data: { token: opts.claim } });
+      return { to: `/carteira/${r.slug}`, toast: "Cartão salvo na sua carteira!" };
+    } catch {
+      // Fall through to default routing.
+    }
+  }
+  if (opts.next && opts.next.startsWith("/")) return { to: opts.next };
+  try {
+    const { data } = await supabase.rpc("my_account_type");
+    if (data === "super_admin") return { to: "/admin" };
+    if (data === "establishment") return { to: "/app" };
+    return { to: "/carteira" };
+  } catch {
+    return { to: "/carteira" };
+  }
+}
 
 export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   ssr: false,
-  beforeLoad: async () => {
+  beforeLoad: async ({ search }) => {
     const { data } = await supabase.auth.getSession();
-    if (data.session) throw redirect({ to: "/app" });
+    if (data.session) {
+      const dest = await routeAfterAuth({ claim: search.claim, next: search.next });
+      throw redirect({ to: dest.to });
+    }
   },
   head: () => ({ meta: [{ title: "Entrar — Fidelize" }] }),
   component: AuthPage,
 });
 
 function AuthPage() {
-  const { mode } = Route.useSearch();
+  const search = Route.useSearch();
+  const { mode } = search;
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  // Cliente é o padrão. Se veio de /c/:token com ?claim=... também force customer.
+  const [role, setRole] = useState<"customer" | "establishment">(
+    search.as ?? (search.claim ? "customer" : "customer"),
+  );
 
   const isSignup = mode === "signup";
+  const isEstablishmentSignup = isSignup && role === "establishment";
 
   function formatWhatsapp(v: string) {
     const d = v.replace(/\D/g, "").slice(0, 11);
@@ -44,7 +80,7 @@ function AuthPage() {
     try {
       if (isSignup) {
         const digits = whatsapp.replace(/\D/g, "");
-        if (digits.length < 10) {
+        if (isEstablishmentSignup && digits.length < 10) {
           toast.error("Informe um WhatsApp válido com DDD.");
           setLoading(false);
           return;
@@ -53,7 +89,7 @@ function AuthPage() {
           email, password,
           options: {
             data: { full_name: name, phone: whatsapp, whatsapp },
-            emailRedirectTo: window.location.origin + "/app",
+            emailRedirectTo: window.location.origin + "/auth",
           },
         });
         if (error) throw error;
@@ -61,8 +97,15 @@ function AuthPage() {
         if (uid) {
           await supabase.from("profiles").upsert({ id: uid, full_name: name, phone: whatsapp }, { onConflict: "id" });
         }
-        toast.success("Conta criada! Vamos configurar seu cartão.");
-        navigate({ to: "/onboarding" });
+        if (isEstablishmentSignup) {
+          toast.success("Conta criada! Vamos configurar seu cartão.");
+          navigate({ to: "/onboarding" });
+        } else {
+          // Cliente: se veio de QR, vincula; senão, vai pra carteira.
+          const dest = await routeAfterAuth({ claim: search.claim, next: search.next });
+          toast.success(dest.toast ?? "Conta criada!");
+          navigate({ to: dest.to });
+        }
       } else {
         let { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
@@ -78,8 +121,9 @@ function AuthPage() {
           }
           if (error) throw error;
         }
-        toast.success("Bem-vindo de volta!");
-        navigate({ to: "/app" });
+        const dest = await routeAfterAuth({ claim: search.claim, next: search.next });
+        toast.success(dest.toast ?? "Bem-vindo de volta!");
+        navigate({ to: dest.to });
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao autenticar");

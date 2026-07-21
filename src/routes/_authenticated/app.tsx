@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, redirect, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
@@ -35,6 +35,18 @@ const MERCHANT_TOUR_STEPS: TourStep[] = [
 
 
 export const Route = createFileRoute("/_authenticated/app")({
+  beforeLoad: async () => {
+    // Block customer accounts from the merchant panel.
+    // `_authenticated` is ssr:false, so it's safe to use the browser client here.
+    try {
+      const { data } = await supabase.rpc("my_account_type");
+      if (data === "customer") throw redirect({ to: "/carteira" });
+      if (data === "super_admin") throw redirect({ to: "/admin" });
+    } catch (e) {
+      if (e && typeof e === "object" && ("isRedirect" in e || "to" in e)) throw e;
+      // Fail-open on transient RPC errors — layout still renders; auth gate protects.
+    }
+  },
   component: AppLayout,
 });
 
