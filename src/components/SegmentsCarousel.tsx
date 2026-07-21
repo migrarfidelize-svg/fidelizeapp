@@ -108,8 +108,8 @@ export function SegmentsCarousel() {
               className="group relative flex flex-col items-center gap-2 rounded-2xl border border-cyan-400/15 bg-white/[0.03] p-3 backdrop-blur-md transition"
               style={{
                 boxShadow: isActive
-                  ? "0 12px 40px -12px rgba(0,255,255,0.45), inset 0 1px 0 rgba(255,255,255,0.06)"
-                  : "0 6px 20px -12px rgba(0,255,255,0.15)",
+                  ? "0 12px 40px -12px color-mix(in oklab, var(--primary) 45%, transparent), inset 0 1px 0 rgba(255,255,255,0.06)"
+                  : "0 6px 20px -12px color-mix(in oklab, var(--primary) 20%, transparent)",
                 borderColor: isActive
                   ? "color-mix(in oklab, var(--primary) 55%, transparent)"
                   : undefined,
@@ -322,7 +322,7 @@ function Constellation({
               background:
                 "radial-gradient(circle at 30% 25%, rgba(255,255,255,0.08), transparent 60%), #050b12",
               boxShadow:
-                "inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -25px 40px -10px rgba(0,255,255,0.25)",
+                "inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -25px 40px -10px color-mix(in oklab, var(--primary) 30%, transparent)",
             }}
           />
           <div className="relative z-10 flex w-full flex-col items-center justify-center gap-2 px-5 text-center">
@@ -384,8 +384,8 @@ function Constellation({
                 background:
                   "radial-gradient(circle at 30% 25%, rgba(255,255,255,0.08), transparent 60%), rgba(5,11,18,0.85)",
                 boxShadow: isFocus
-                  ? "0 0 0 5px color-mix(in oklab, var(--primary) 18%, transparent), 0 26px 55px -18px rgba(0,255,255,0.6)"
-                  : "0 12px 30px -14px rgba(0,255,255,0.4)",
+                  ? "0 0 0 5px color-mix(in oklab, var(--primary) 18%, transparent), 0 26px 55px -18px color-mix(in oklab, var(--primary) 55%, transparent)"
+                  : "0 12px 30px -14px color-mix(in oklab, var(--primary) 35%, transparent)",
               }}
             >
               <Icon
