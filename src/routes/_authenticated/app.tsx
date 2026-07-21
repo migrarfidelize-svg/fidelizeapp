@@ -376,10 +376,12 @@ function AppLayout() {
         >
           <Link
             to="/app"
-            className="mb-1 grid h-11 w-11 place-items-center rounded-xl bg-[#0e1620] ring-1 ring-cyan-400/40 shadow-[0_0_24px_-6px_rgba(0,255,255,0.5)]"
+            className="dock-logo relative mb-1 grid h-12 w-12 place-items-center rounded-2xl bg-[#0e1620]"
             aria-label="Fidelize"
           >
-            <LogoMark size={22} className="text-cyan-300" />
+            <span aria-hidden className="dock-logo-led" />
+            <span aria-hidden className="dock-logo-halo" />
+            <LogoMark size={22} className="relative z-10 text-cyan-300" />
           </Link>
 
           {NAV_GROUPS.map((g) => {
@@ -393,20 +395,17 @@ function AppLayout() {
               <div
                 key={g.key}
                 className="group/dock relative"
-                onMouseEnter={() => setPinnedGroup(g.key)}
-                onMouseLeave={() =>
-                  setPinnedGroup((p) => (p === g.key ? null : p))
-                }
+                onMouseEnter={() => openGroup(g.key)}
+                onMouseLeave={scheduleCloseGroup}
               >
                 <button
                   type="button"
                   aria-label={g.label}
-                  onClick={() =>
-                    setPinnedGroup((p) => (p === g.key ? null : g.key))
-                  }
+                  aria-expanded={isOpen}
+                  onClick={() => (isOpen ? setPinnedGroup(null) : openGroup(g.key))}
                   className={[
                     "relative grid h-11 w-11 place-items-center rounded-xl transition-all duration-200",
-                    isActive
+                    isActive || isOpen
                       ? "bg-cyan-400/15 text-cyan-200 ring-1 ring-cyan-300/50 shadow-[0_0_18px_-2px_rgba(0,255,255,0.6)]"
                       : "bg-white/[0.03] text-white/75 ring-1 ring-white/[0.06] hover:text-white hover:ring-cyan-300/40",
                   ].join(" ")}
@@ -419,64 +418,70 @@ function AppLayout() {
                   )}
                 </button>
 
-                {/* Flyout */}
+                {/* Flyout — com ponte de hover (pl-3) para eliminar o gap morto */}
                 <div
                   className={[
-                    "absolute left-full top-0 ml-3 min-w-[240px] origin-left rounded-2xl border border-cyan-400/25 bg-[#0b1219]/95 p-2 backdrop-blur-xl transition-all duration-200",
+                    "absolute left-full top-0 pl-3 origin-left transition-all duration-200",
                     isOpen
                       ? "pointer-events-auto scale-100 opacity-100"
                       : "pointer-events-none scale-95 opacity-0",
                   ].join(" ")}
-                  style={{
-                    boxShadow:
-                      "0 0 0 1px rgba(0,255,255,0.08), 0 24px 60px -20px rgba(0,255,255,0.35)",
-                  }}
+                  onMouseEnter={() => openGroup(g.key)}
+                  onMouseLeave={scheduleCloseGroup}
                 >
-                  <div className="px-2 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan-300/70">
-                    {g.label}
-                  </div>
-                  <ul className="space-y-0.5">
-                    {g.items.map((n) => {
-                      const active = isItemActive(n);
-                      const ItemIcon = n.icon;
-                      const itBadge =
-                        n.to === "/app/suporte" && unreadSupport > 0
-                          ? unreadSupport
-                          : 0;
-                      return (
-                        <li key={n.to}>
-                          <Link
-                            to={n.to}
-                            data-tour={`nav-${n.to}`}
-                            onClick={() => setPinnedGroup(null)}
-                            className={[
-                              "flex items-center gap-3 rounded-xl px-2 py-2 text-[13px] transition-all",
-                              active
-                                ? "bg-cyan-400/[0.12] text-white ring-1 ring-inset ring-cyan-300/25"
-                                : "text-white/70 hover:bg-white/[0.04] hover:text-white",
-                            ].join(" ")}
-                          >
-                            <span
+                  <div
+                    className="min-w-[240px] rounded-2xl border border-cyan-400/25 bg-[#0b1219]/95 p-2 backdrop-blur-xl"
+                    style={{
+                      boxShadow:
+                        "0 0 0 1px rgba(0,255,255,0.08), 0 24px 60px -20px rgba(0,255,255,0.35)",
+                    }}
+                  >
+                    <div className="px-2 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan-300/70">
+                      {g.label}
+                    </div>
+                    <ul className="space-y-0.5">
+                      {g.items.map((n) => {
+                        const active = isItemActive(n);
+                        const ItemIcon = n.icon;
+                        const itBadge =
+                          n.to === "/app/suporte" && unreadSupport > 0
+                            ? unreadSupport
+                            : 0;
+                        return (
+                          <li key={n.to}>
+                            <Link
+                              to={n.to}
+                              data-tour={`nav-${n.to}`}
+                              onClick={() => setPinnedGroup(null)}
                               className={[
-                                "grid h-8 w-8 place-items-center rounded-lg transition-all",
+                                "flex items-center gap-3 rounded-xl px-2 py-2 text-[13px] transition-all",
                                 active
-                                  ? "bg-cyan-400/15 text-cyan-200 ring-1 ring-cyan-300/40 shadow-[0_0_14px_-2px_rgba(0,255,255,0.6)]"
-                                  : "bg-white/[0.03] text-white/75 ring-1 ring-white/[0.06]",
+                                  ? "bg-cyan-400/[0.12] text-white ring-1 ring-inset ring-cyan-300/25"
+                                  : "text-white/70 hover:bg-white/[0.04] hover:text-white",
                               ].join(" ")}
                             >
-                              <ItemIcon className="h-[17px] w-[17px]" strokeWidth={1.8} />
-                            </span>
-                            <span className="flex-1">{n.label}</span>
-                            {itBadge > 0 && (
-                              <span className="rounded-full bg-cyan-400/15 px-2 py-0.5 text-[10px] font-semibold text-cyan-200 ring-1 ring-cyan-300/30">
-                                {itBadge > 9 ? "9+" : itBadge}
+                              <span
+                                className={[
+                                  "grid h-8 w-8 place-items-center rounded-lg transition-all",
+                                  active
+                                    ? "bg-cyan-400/15 text-cyan-200 ring-1 ring-cyan-300/40 shadow-[0_0_14px_-2px_rgba(0,255,255,0.6)]"
+                                    : "bg-white/[0.03] text-white/75 ring-1 ring-white/[0.06]",
+                                ].join(" ")}
+                              >
+                                <ItemIcon className="h-[17px] w-[17px]" strokeWidth={1.8} />
                               </span>
-                            )}
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
+                              <span className="flex-1">{n.label}</span>
+                              {itBadge > 0 && (
+                                <span className="rounded-full bg-cyan-400/15 px-2 py-0.5 text-[10px] font-semibold text-cyan-200 ring-1 ring-cyan-300/30">
+                                  {itBadge > 9 ? "9+" : itBadge}
+                                </span>
+                              )}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
                 </div>
 
                 {/* Tooltip when closed */}
