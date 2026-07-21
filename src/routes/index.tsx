@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
@@ -9,7 +9,7 @@ import { SegmentsCarousel } from "@/components/SegmentsCarousel";
 import { CursorTrail } from "@/components/CursorTrail";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { ArrowRight, QrCode, Smartphone, ShieldCheck, BarChart3, Sparkles, Coffee, Scissors, Pizza, ShoppingBag, Wrench, IceCream, Store, PawPrint, Check, Cake, Clock, UserPlus, Crown, Gift, MessageCircle, Bell, Mail } from "lucide-react";
+import { ArrowRight, QrCode, Smartphone, ShieldCheck, BarChart3, Sparkles, Coffee, Scissors, Pizza, ShoppingBag, Wrench, IceCream, Store, PawPrint, Check, Cake, Clock, UserPlus, Crown, Gift, MessageCircle, Bell, Mail, Sprout, Zap, Building2, type LucideIcon } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const SITE_URL = "https://warm-hug-genie.lovable.app";
@@ -1082,38 +1082,140 @@ function Examples() {
 
 
 
+type Plan = {
+  name: string;
+  short: string;
+  price: string;
+  numeric: number;
+  desc: string;
+  tagline: string;
+  features: string[];
+  cta: string;
+  badge?: string;
+  icon: LucideIcon;
+};
+
 function Pricing() {
-  const plans = [
-    { name: "Gratuito", price: "R$ 0", desc: "Para começar a testar", features: ["Até 100 clientes", "1 campanha", "1 funcionário", "Relatórios básicos"] },
-    { name: "Inicial", price: "R$ 49", desc: "Para o dia a dia", features: ["Até 1.000 clientes", "2 campanhas", "3 funcionários", "Exportação de dados"], highlight: false },
-    { name: "Profissional", price: "R$ 129", desc: "Para negócios em crescimento", features: ["Até 10.000 clientes", "5 campanhas", "10 funcionários", "Segmentação e relatórios avançados", "Sem marca Fidelize"], highlight: true },
-    { name: "Empresarial", price: "R$ 349", desc: "Para redes e franquias", features: ["Clientes ilimitados", "Multi-unidade", "Suporte prioritário", "Limites personalizados"] },
+  const plans: Plan[] = [
+    { name: "Gratuito", short: "Grátis", price: "R$ 0", numeric: 0, desc: "Para começar a testar", tagline: "Ideal pra validar a ideia sem risco.", features: ["Até 100 clientes", "1 campanha ativa", "1 funcionário", "Relatórios básicos"], cta: "Começar grátis", icon: Sprout },
+    { name: "Inicial", short: "Inicial", price: "R$ 49", numeric: 49, desc: "Para o dia a dia", tagline: "Perfeito pra pequenos negócios que já vendem todo dia.", features: ["Até 1.000 clientes", "2 campanhas ativas", "3 funcionários", "Exportação de dados", "Suporte por e-mail"], cta: "Começar agora", icon: Zap },
+    { name: "Profissional", short: "Pro", price: "R$ 129", numeric: 129, desc: "Para negócios em crescimento", tagline: "O favorito de quem quer escalar retenção com automações.", features: ["Até 10.000 clientes", "5 campanhas ativas", "10 funcionários", "Segmentação e relatórios avançados", "Sem marca Fidelize"], cta: "Começar agora", badge: "Mais popular", icon: Sparkles },
+    { name: "Empresarial", short: "Corp", price: "R$ 349", numeric: 349, desc: "Para redes e franquias", tagline: "Multi-unidade, SLA e time de suporte dedicado.", features: ["Clientes ilimitados", "Multi-unidade", "Suporte prioritário 24/7", "Limites personalizados", "Gerente de contas"], cta: "Falar com vendas", icon: Building2 },
   ];
+
+  const [activeIdx, setActiveIdx] = useState(2);
+  const active = plans[activeIdx];
+  const ActiveIcon = active.icon;
+
   return (
-    <section id="precos" className="py-24">
+    <section id="precos" className="relative py-24 overflow-hidden">
+      {/* ambient glow */}
+      <div className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-[120px]" />
+
       <div className="mx-auto max-w-6xl px-4">
         <div className="text-center">
-          <h2 className="font-display text-4xl font-bold">Planos simples e transparentes</h2>
-          <p className="mt-3 text-muted-foreground">Comece grátis e evolua quando fizer sentido para o seu negócio.</p>
+          <h2 className="font-display text-4xl font-bold">
+            Planos <span style={{ color: "#00ffff" }}>simples</span> e transparentes
+          </h2>
+          <p className="mt-3 text-muted-foreground">Escolha na dock abaixo. O plano em destaque troca ao vivo.</p>
         </div>
-        <div className="mt-12 grid gap-5 md:grid-cols-4">
-          {plans.map((p) => (
-            <div key={p.name} className={`relative rounded-3xl border p-6 ${p.highlight ? "border-primary bg-card surface-glow" : "bg-card"}`}>
-              {p.highlight && <span className="absolute -top-3 left-6 rounded-full gradient-brand px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-primary-foreground">Mais popular</span>}
-              <div className="font-display font-semibold">{p.name}</div>
-              <div className="mt-2 font-display text-3xl font-bold">{p.price}<span className="text-sm font-normal text-muted-foreground">/mês</span></div>
-              <div className="text-sm text-muted-foreground">{p.desc}</div>
-              <ul className="mt-5 space-y-2 text-sm">
-                {p.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 text-success shrink-0" />{f}</li>
-                ))}
-              </ul>
-              <Button asChild className="mt-6 w-full" variant={p.highlight ? "default" : "outline"}>
-                <Link to="/auth" search={{ mode: "signup" }}>Começar agora</Link>
-              </Button>
+
+        {/* Featured card */}
+        <div className="mt-14 flex justify-center">
+          <div key={active.name} className="relative w-full max-w-md animate-scale-in">
+            {/* LED breathing gradient border */}
+            <div className="relative rounded-[2rem] p-[2px] bg-gradient-to-b from-[#00ffff] via-[#00ffff]/20 to-transparent shadow-[0_0_40px_rgba(0,255,255,0.15)]">
+              <div className="rounded-[calc(2rem-2px)] bg-card p-8 md:p-10 relative overflow-hidden">
+                {/* decorative corner */}
+                <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-primary/10 blur-2xl" />
+
+                {/* header */}
+                <div className="relative flex items-start justify-between">
+                  <div>
+                    {active.badge && (
+                      <span className="mb-2 inline-block rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+                        {active.badge}
+                      </span>
+                    )}
+                    <h3 className="font-display text-4xl font-bold">{active.name}</h3>
+                    <p className="mt-2 text-sm text-muted-foreground max-w-xs">{active.tagline}</p>
+                  </div>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-primary shrink-0">
+                    <ActiveIcon className="h-6 w-6" />
+                  </div>
+                </div>
+
+                {/* price */}
+                <div className="mt-8 flex items-baseline gap-2">
+                  <span className="font-display text-6xl font-extrabold tracking-tight" style={{ textShadow: "0 0 20px rgba(0,255,255,0.35)" }}>
+                    {active.price}
+                  </span>
+                  <span className="text-sm text-muted-foreground">/mês</span>
+                </div>
+
+                {/* features */}
+                <ul className="mt-8 space-y-4">
+                  {active.features.map((f) => (
+                    <li key={f} className="flex items-center gap-3 text-sm">
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full border border-primary/30 bg-primary/10 shrink-0">
+                        <Check className="h-3 w-3 text-primary" />
+                      </span>
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* CTA */}
+                <Button asChild size="lg" className="mt-10 w-full">
+                  <Link to="/auth" search={{ mode: "signup" }}>{active.cta}</Link>
+                </Button>
+              </div>
             </div>
-          ))}
+          </div>
         </div>
+
+        {/* Object Dock */}
+        <div className="mt-12 flex justify-center">
+          <div className="flex items-end gap-3 rounded-[28px] border border-white/10 bg-white/5 p-3 backdrop-blur-2xl shadow-2xl">
+            {plans.map((p, i) => {
+              const Icon = p.icon;
+              const isActive = i === activeIdx;
+              return (
+                <div key={p.name} className="group relative">
+                  {/* tooltip */}
+                  <div
+                    className={`absolute -top-11 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/10 px-3 py-1 text-[10px] font-semibold transition-opacity ${
+                      isActive ? "opacity-100 border-primary/30 bg-primary/10 text-primary" : "opacity-0 group-hover:opacity-100 bg-black/80 text-white"
+                    }`}
+                  >
+                    {p.name}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveIdx(i)}
+                    aria-pressed={isActive}
+                    aria-label={p.name}
+                    className={`flex flex-col items-center justify-center gap-1 rounded-2xl border transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+                      isActive
+                        ? "h-16 w-16 -translate-y-2 border-primary/40 bg-primary/10 text-primary shadow-[0_0_24px_rgba(0,255,255,0.25)]"
+                        : "h-14 w-14 border-white/10 bg-white/5 text-muted-foreground hover:-translate-y-3 hover:scale-110 hover:border-white/25 hover:bg-white/10 hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className={isActive ? "h-7 w-7" : "h-6 w-6"} />
+                    {isActive && (
+                      <span className="absolute -bottom-1.5 h-1 w-1 rounded-full bg-primary shadow-[0_0_8px_#00ffff]" />
+                    )}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* trust line */}
+        <p className="mt-8 text-center text-xs uppercase tracking-[0.3em] text-muted-foreground">
+          14 dias grátis · sem cartão · cancele quando quiser
+        </p>
       </div>
     </section>
   );
