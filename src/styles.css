@@ -1986,3 +1986,106 @@ html:not(.dark) .landing-scope [style*="#00ffff66"],
 html:not(.dark) .landing-scope [style*="#00ffff33"] {
   border-color: rgba(124,58,237,0.4) !important;
 }
+
+/* ==========================================================
+   Light theme extras — request patch
+   Escopo: html:not(.dark) .landing-scope
+   - Aura roxa no cartão 3D
+   - Sombreamento nos ícones de carimbo do cartão
+   - Orbitais transparentes com borda/ícone roxo
+   - Sombra nos fz-chip
+   - FAQ + CTA: ciano -> roxo, sombra no painel
+   ========================================================== */
+
+/* Cartão 3D: aura externa (era #00ffff33 / #00ffff22) */
+html:not(.dark) .landing-scope [style*="#00ffff33"],
+html:not(.dark) .landing-scope [style*="#00ffff22"],
+html:not(.dark) .landing-scope [style*="#00ffff88"] {
+  background: color-mix(in oklab, #7c3aed 22%, transparent) !important;
+}
+html:not(.dark) .landing-scope [style*="radial-gradient(circle at 50% 50%, #00ffff22"] {
+  background: radial-gradient(circle at 50% 50%, color-mix(in oklab, #7c3aed 22%, transparent), transparent 65%) !important;
+}
+
+/* Ícones marcados dos slots de carimbo: destaque com sombra */
+html:not(.dark) .landing-scope [style*="drop-shadow(0 0 6px #00ffff"] {
+  filter: drop-shadow(0 0 10px rgba(124,58,237,0.85)) drop-shadow(0 2px 6px rgba(124,58,237,0.35)) !important;
+}
+html:not(.dark) .landing-scope [style*="inset 0 0 12px #00ffff33"] {
+  box-shadow:
+    inset 0 0 12px rgba(124,58,237,0.35),
+    0 6px 14px -6px rgba(124,58,237,0.45) !important;
+}
+
+/* Sombras cyan em rgba(0,255,255,...) viram sombra roxa
+   Reforço com maior especificidade para vencer a regra anterior. */
+html:not(.dark) .landing-scope [style*="rgba(0,255,255,0.6)"],
+html:not(.dark) .landing-scope [style*="rgba(0,255,255,0.4)"],
+html:not(.dark) .landing-scope [style*="rgba(0, 255, 255, 0.6)"],
+html:not(.dark) .landing-scope [style*="rgba(0, 255, 255, 0.4)"] {
+  background: transparent !important;
+}
+
+/* Orbitais (Negócios que vivem): fundo escuro rgba(5,11,18,...) -> transparente */
+html:not(.dark) .landing-scope [style*="rgba(5,11,18"],
+html:not(.dark) .landing-scope [style*="rgba(5, 11, 18"] {
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.6), transparent 60%),
+    rgba(255,255,255,0.75) !important;
+  border-color: color-mix(in oklab, #7c3aed 55%, transparent) !important;
+  box-shadow:
+    0 0 0 3px color-mix(in oklab, #7c3aed 12%, transparent),
+    0 18px 40px -18px rgba(124,58,237,0.45) !important;
+  backdrop-filter: blur(8px);
+}
+
+/* Ícones dos orbitais em roxo sólido */
+html:not(.dark) .landing-scope svg [stroke="url(#orbIconGrad)"] {
+  stroke: #7c3aed !important;
+  filter: drop-shadow(0 6px 14px rgba(124,58,237,0.5));
+}
+
+/* fz-chip: sombreamento para destaque no tema claro */
+html:not(.dark) .landing-scope .fz-chip {
+  background: #ffffff !important;
+  border-color: rgba(124,58,237,0.18) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.9) inset,
+    0 14px 32px -18px rgba(124,58,237,0.45),
+    0 6px 14px -8px rgba(15,23,42,0.12) !important;
+}
+html:not(.dark) .landing-scope .fz-chip-icon {
+  box-shadow: 0 8px 20px -10px rgba(124,58,237,0.55) !important;
+}
+
+/* FAQ / CTA: cor ciano arbitrária (#00ffff via Tailwind arbitrary) */
+html:not(.dark) .landing-scope .text-\[\#00ffff\] {
+  color: #7c3aed !important;
+}
+html:not(.dark) .landing-scope .bg-\[\#00ffff\] {
+  background-color: #7c3aed !important;
+  color: #ffffff !important;
+}
+html:not(.dark) .landing-scope .shadow-\[0_0_30px_rgba\(0\,255\,255\,0\.25\)\] {
+  box-shadow: 0 0 30px rgba(124,58,237,0.35) !important;
+}
+
+/* FAQ painel: sombreamento premium */
+html:not(.dark) .landing-scope #faq .rounded-3xl {
+  background: rgba(255,255,255,0.9) !important;
+  border-color: rgba(124,58,237,0.15) !important;
+  box-shadow:
+    0 30px 60px -30px rgba(124,58,237,0.35),
+    0 10px 24px -12px rgba(15,23,42,0.12) !important;
+}
+html:not(.dark) .landing-scope #faq .shadow-cyan-500\/5 {
+  box-shadow:
+    0 30px 60px -30px rgba(124,58,237,0.35),
+    0 10px 24px -12px rgba(15,23,42,0.12) !important;
+}
+
+/* CTA: separadores/diamantes ciano -> roxo */
+html:not(.dark) .landing-scope .bg-\[\#00ffff\].rotate-45,
+html:not(.dark) .landing-scope .rotate-45.bg-\[\#00ffff\] {
+  background: #7c3aed !important;
+}
