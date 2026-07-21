@@ -18,6 +18,8 @@ import { GoalsCard } from "@/components/GoalsCard";
 import { PageHero } from "@/components/PageHero";
 import { DashboardHeroVisual } from "@/components/DashboardHeroVisual";
 import { ErrorState, LoadingSkeleton } from "@/components/states";
+import { GreetingVoice } from "@/components/GreetingVoice";
+
 
 export const Route = createFileRoute("/_authenticated/app/")({
   component: Dashboard,
