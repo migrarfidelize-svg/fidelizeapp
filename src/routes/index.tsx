@@ -993,7 +993,10 @@ function Examples() {
 
 
   return (
-    <section className="campaigns-section relative z-10 -mt-[18svh] overflow-hidden bg-[oklch(0.14_0.02_230)] pt-20 pb-16 md:pt-24 md:pb-20">
+    <section
+      className="campaigns-section relative z-10 overflow-hidden bg-[oklch(0.14_0.02_230)] pt-20 pb-16 md:pt-24 md:pb-20"
+      style={{ marginTop: "-26svh" }}
+    >
       <div className="relative mx-auto max-w-6xl px-4">
         <div className="mx-auto max-w-2xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/5 px-3 py-1 text-[11px] font-bold uppercase tracking-widest" style={{ color: "#00ffff" }}>
