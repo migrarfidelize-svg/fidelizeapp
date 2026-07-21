@@ -28,6 +28,7 @@ function EmpresaDetail() {
   const setActive = useServerFn(adminSetEstablishmentActive);
   const setPlan = useServerFn(adminSetEstablishmentPlan);
   const reportFail = useServerFn(adminReportPaymentFailure);
+  const demoteFn = useServerFn(adminDemoteMemberToCustomer);
 
   const { data, isLoading } = useQuery({ queryKey: ["admin-est-detail", id], queryFn: () => fn({ data: { establishment_id: id } }) });
 
