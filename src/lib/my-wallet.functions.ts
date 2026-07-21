@@ -159,3 +159,92 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
       cards: cards ?? [],
     };
   });
+
+/** Rewards ready to redeem for the current user (across all cards). */
+export const getMyRewards = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: customers, error: cErr } = await context.supabase
+      .from("customers")
+      .select(`id, establishment:establishments!inner(id, slug, name, logo_url, primary_color, active)`)
+      .eq("user_id", context.userId);
+    if (cErr) throw cErr;
+    const ids = (customers ?? []).map((c) => c.id);
+    if (!ids.length) return [] as Array<{
+      cardId: string; stamps: number; required: number; reward: string;
+      campaignName: string; icon: string; establishment: any; ready: boolean; pct: number;
+    }>;
+
+    const { data: cards, error } = await context.supabase
+      .from("loyalty_cards")
+      .select(`id, customer_id, stamps, updated_at,
+        campaign:campaigns!inner(id, name, stamps_required, reward_title, active, stamp_icon, primary_color)`)
+      .in("customer_id", ids);
+    if (error) throw error;
+
+    const custMap = new Map((customers ?? []).map((c) => [c.id, c.establishment]));
+    return (cards ?? [])
+      .filter((c) => (c.campaign as { active: boolean }).active)
+      .map((c) => {
+        const req = (c.campaign as { stamps_required: number }).stamps_required || 1;
+        const pct = Math.min(100, Math.round((c.stamps / req) * 100));
+        return {
+          cardId: c.id,
+          stamps: c.stamps,
+          required: req,
+          pct,
+          ready: c.stamps >= req,
+          reward: (c.campaign as { reward_title: string }).reward_title,
+          campaignName: (c.campaign as { name: string }).name,
+          icon: (c.campaign as { stamp_icon: string }).stamp_icon,
+          establishment: custMap.get(c.customer_id),
+        };
+      })
+      .sort((a, b) => Number(b.ready) - Number(a.ready) || b.pct - a.pct);
+  });
+
+/** Chronological history of stamps across all cards for the current user. */
+export const getMyHistory = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: customers, error: cErr } = await context.supabase
+      .from("customers")
+      .select(`id, establishment:establishments!inner(id, slug, name, logo_url, primary_color)`)
+      .eq("user_id", context.userId);
+    if (cErr) throw cErr;
+    const custIds = (customers ?? []).map((c) => c.id);
+    if (!custIds.length) return [] as Array<{
+      id: string; createdAt: string; reverted: boolean; establishment: any; campaignName: string | null;
+    }>;
+
+    const { data: cards } = await context.supabase
+      .from("loyalty_cards")
+      .select(`id, customer_id, campaign:campaigns!inner(name)`)
+      .in("customer_id", custIds);
+    const cardMap = new Map((cards ?? []).map((c) => [c.id, {
+      customerId: c.customer_id,
+      campaignName: (c.campaign as { name: string }).name,
+    }]));
+    const cardIds = (cards ?? []).map((c) => c.id);
+    if (!cardIds.length) return [];
+
+    const { data: stamps, error } = await context.supabase
+      .from("stamps")
+      .select(`id, card_id, created_at, reverted_at`)
+      .in("card_id", cardIds)
+      .order("created_at", { ascending: false })
+      .limit(120);
+    if (error) throw error;
+
+    const custEstMap = new Map((customers ?? []).map((c) => [c.id, c.establishment]));
+    return (stamps ?? []).map((s) => {
+      const c = cardMap.get(s.card_id);
+      return {
+        id: s.id,
+        createdAt: s.created_at,
+        reverted: !!s.reverted_at,
+        establishment: c ? custEstMap.get(c.customerId) : null,
+        campaignName: c?.campaignName ?? null,
+      };
+    });
+  });
