@@ -278,11 +278,55 @@ export const adminGetEstablishmentDetail = createServerFn({ method: "POST" })
       },
       series,
       campaigns: campaigns ?? [],
-      members: members ?? [],
+      members: membersEnriched,
       events: events ?? [],
       audits: audits ?? [],
     };
   });
+
+// ─────────────── Membership management ───────────────
+export const adminDemoteMemberToCustomer = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    establishment_id: z.string().uuid(),
+    user_id: z.string().uuid(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertSuperAdmin(supabase, userId);
+
+    const { error: e1 } = await supabase
+      .from("establishment_members")
+      .update({ active: false })
+      .eq("establishment_id", data.establishment_id)
+      .eq("user_id", data.user_id);
+    if (e1) throw new Error(e1.message);
+
+    const { count } = await supabase
+      .from("establishment_members")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", data.user_id)
+      .eq("active", true);
+
+    let profileUpdated = false;
+    if ((count ?? 0) === 0) {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { error: e2 } = await supabaseAdmin
+        .from("profiles")
+        .update({ account_type: "customer" })
+        .eq("id", data.user_id);
+      if (e2) throw new Error(e2.message);
+      profileUpdated = true;
+    }
+
+    await supabase.from("audit_logs").insert({
+      establishment_id: data.establishment_id, user_id: userId,
+      action: "admin_demote_member_to_customer", entity_type: "user", entity_id: data.user_id,
+      metadata: { profile_updated: profileUpdated } as never,
+    });
+    return { ok: true, profile_updated: profileUpdated };
+  });
+
 
 // ─────────────── Alerts / events ───────────────
 export const adminListSubscriptionEvents = createServerFn({ method: "POST" })
