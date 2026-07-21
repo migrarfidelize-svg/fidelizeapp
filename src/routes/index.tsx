@@ -376,28 +376,41 @@ function HowItWorks() {
                     </feMerge>
                   </filter>
                 </defs>
+                {/* Link 1: 01 → 02 (endpoint ~500,110) */}
                 <path
+                  className="hiw-link-main"
                   d="M 260 110 C 340 110, 380 110, 500 110"
                   stroke="url(#hiwLinkA)"
                   strokeWidth="2.5"
                   fill="none"
                   filter="url(#hiwGlow)"
                   strokeLinecap="round"
-                  strokeDasharray="700"
-                  strokeDashoffset="700"
                   style={{ opacity: 0 }}
                 />
+                <g className="hiw-root" style={{ opacity: 0, transformOrigin: "500px 110px" }}>
+                  <path d="M 500 110 C 508 108, 514 100, 520 92" stroke="#ff2bd6" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
+                  <path d="M 500 110 C 508 112, 514 120, 520 128" stroke="#ff2bd6" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
+                  <path d="M 500 110 L 522 110" stroke="#ff2bd6" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
+                </g>
+                <circle className="hiw-head" r="5" fill="#fff" filter="url(#hiwGlow)" style={{ opacity: 0 }} />
+
+                {/* Link 2: 02 → 03 (endpoint ~833,110) */}
                 <path
+                  className="hiw-link-main"
                   d="M 594 110 C 700 110, 750 110, 833 110"
                   stroke="url(#hiwLinkB)"
                   strokeWidth="2.5"
                   fill="none"
                   filter="url(#hiwGlow)"
                   strokeLinecap="round"
-                  strokeDasharray="700"
-                  strokeDashoffset="700"
                   style={{ opacity: 0 }}
                 />
+                <g className="hiw-root" style={{ opacity: 0, transformOrigin: "833px 110px" }}>
+                  <path d="M 833 110 C 841 108, 847 100, 853 92" stroke="#a855f7" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
+                  <path d="M 833 110 C 841 112, 847 120, 853 128" stroke="#a855f7" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
+                  <path d="M 833 110 L 855 110" stroke="#a855f7" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
+                </g>
+                <circle className="hiw-head" r="5" fill="#fff" filter="url(#hiwGlow)" style={{ opacity: 0 }} />
               </svg>
 
               {steps.map((s, i) => (
