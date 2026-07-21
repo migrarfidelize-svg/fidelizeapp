@@ -174,23 +174,17 @@ function AdminLayout() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-[color-mix(in_oklab,var(--color-background)_92%,var(--color-primary)_4%)]">
+      <div className="min-h-screen dock-page-bg">
         {/* Desktop: floating dock */}
-        <aside
-          className="hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-30 flex-col items-center gap-1.5 rounded-2xl border border-cyan-400/25 bg-[#0b1219]/90 p-2 backdrop-blur-xl"
-          style={{
-            boxShadow:
-              "0 0 0 1px rgba(0,255,255,0.08), 0 24px 60px -20px rgba(0,255,255,0.35), inset 0 1px 0 rgba(255,255,255,0.04)",
-          }}
-        >
+        <aside className="dock-surface hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-30 flex-col items-center gap-1.5 rounded-2xl p-2 backdrop-blur-xl">
           <Link
             to="/admin"
-            className="dock-logo relative mb-1 grid h-12 w-12 place-items-center rounded-full bg-[#0e1620]"
+            className="dock-logo dock-logo-bg relative mb-1 grid h-12 w-12 place-items-center rounded-full"
             aria-label="Fidelize Admin"
           >
             <span aria-hidden className="dock-logo-led" />
             <span aria-hidden className="dock-logo-halo" />
-            <LogoMark size={22} className="relative z-10 text-cyan-300" />
+            <LogoMark size={22} className="relative z-10 text-[color:var(--color-primary)]" />
           </Link>
 
           {/* Overview quick-link */}
@@ -202,13 +196,11 @@ function AdminLayout() {
                 aria-label={OVERVIEW.label}
                 className={[
                   "relative grid h-11 w-11 place-items-center rounded-xl transition-all duration-200 group/dock",
-                  active
-                    ? "bg-cyan-400/15 text-cyan-200 ring-1 ring-cyan-300/50 shadow-[0_0_18px_-2px_rgba(0,255,255,0.6)]"
-                    : "bg-white/[0.03] text-white/75 ring-1 ring-white/[0.06] hover:text-white hover:ring-cyan-300/40",
+                  active ? "dock-item-active" : "dock-item",
                 ].join(" ")}
               >
                 <OVERVIEW.icon className="h-[19px] w-[19px]" strokeWidth={1.8} />
-                <span className="pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 whitespace-nowrap rounded-md bg-[#0b1219] px-2 py-1 text-[11px] font-medium text-white/80 opacity-0 ring-1 ring-cyan-400/25 transition-opacity group-hover/dock:opacity-100">
+                <span className="dock-tooltip pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 whitespace-nowrap rounded-md px-2 py-1 text-[11px] font-medium opacity-0 transition-opacity group-hover/dock:opacity-100">
                   {OVERVIEW.label}
                 </span>
               </Link>
@@ -233,9 +225,7 @@ function AdminLayout() {
                   onClick={() => (isOpen ? setPinnedGroup(null) : openGroup(g.key))}
                   className={[
                     "relative grid h-11 w-11 place-items-center rounded-xl transition-all duration-200",
-                    isActive || isOpen
-                      ? "bg-cyan-400/15 text-cyan-200 ring-1 ring-cyan-300/50 shadow-[0_0_18px_-2px_rgba(0,255,255,0.6)]"
-                      : "bg-white/[0.03] text-white/75 ring-1 ring-white/[0.06] hover:text-white hover:ring-cyan-300/40",
+                    isActive || isOpen ? "dock-item-active" : "dock-item",
                   ].join(" ")}
                 >
                   <Icon className="h-[19px] w-[19px]" strokeWidth={1.8} />
@@ -244,21 +234,13 @@ function AdminLayout() {
                 <div
                   className={[
                     "absolute left-full top-0 pl-3 origin-left transition-all duration-200",
-                    isOpen
-                      ? "pointer-events-auto scale-100 opacity-100"
-                      : "pointer-events-none scale-95 opacity-0",
+                    isOpen ? "pointer-events-auto scale-100 opacity-100" : "pointer-events-none scale-95 opacity-0",
                   ].join(" ")}
                   onMouseEnter={() => openGroup(g.key)}
                   onMouseLeave={scheduleCloseGroup}
                 >
-                  <div
-                    className="min-w-[240px] rounded-2xl border border-cyan-400/25 bg-[#0b1219]/95 p-2 backdrop-blur-xl"
-                    style={{
-                      boxShadow:
-                        "0 0 0 1px rgba(0,255,255,0.08), 0 24px 60px -20px rgba(0,255,255,0.35)",
-                    }}
-                  >
-                    <div className="px-2 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan-300/70">
+                  <div className="dock-flyout min-w-[240px] rounded-2xl p-2 backdrop-blur-xl">
+                    <div className="dock-flyout-title px-2 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em]">
                       {g.label}
                     </div>
                     <ul className="space-y-0.5">
@@ -272,17 +254,13 @@ function AdminLayout() {
                               onClick={() => setPinnedGroup(null)}
                               className={[
                                 "flex items-center gap-3 rounded-xl px-2 py-2 text-[13px] transition-all",
-                                active
-                                  ? "bg-cyan-400/[0.12] text-white ring-1 ring-inset ring-cyan-300/25"
-                                  : "text-white/70 hover:bg-white/[0.04] hover:text-white",
+                                active ? "dock-flyout-item-active" : "dock-flyout-item",
                               ].join(" ")}
                             >
                               <span
                                 className={[
                                   "grid h-8 w-8 place-items-center rounded-lg transition-all",
-                                  active
-                                    ? "bg-cyan-400/15 text-cyan-200 ring-1 ring-cyan-300/40 shadow-[0_0_14px_-2px_rgba(0,255,255,0.6)]"
-                                    : "bg-white/[0.03] text-white/75 ring-1 ring-white/[0.06]",
+                                  active ? "dock-item-active" : "dock-item",
                                 ].join(" ")}
                               >
                                 <ItemIcon className="h-[17px] w-[17px]" strokeWidth={1.8} />
@@ -297,7 +275,7 @@ function AdminLayout() {
                 </div>
 
                 {!isOpen && (
-                  <span className="pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 whitespace-nowrap rounded-md bg-[#0b1219] px-2 py-1 text-[11px] font-medium text-white/80 opacity-0 ring-1 ring-cyan-400/25 transition-opacity group-hover/dock:opacity-100">
+                  <span className="dock-tooltip pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 whitespace-nowrap rounded-md px-2 py-1 text-[11px] font-medium opacity-0 transition-opacity group-hover/dock:opacity-100">
                     {g.label}
                   </span>
                 )}
@@ -305,7 +283,7 @@ function AdminLayout() {
             );
           })}
 
-          <div className="my-1 h-px w-8 bg-white/[0.06]" />
+          <div className="dock-divider my-1 h-px w-8" />
 
           <div className="grid place-items-center">
             <ThemeToggle />
@@ -313,10 +291,10 @@ function AdminLayout() {
           <Link
             to="/app"
             aria-label="Voltar ao painel do lojista"
-            className="group/dock relative grid h-11 w-11 place-items-center rounded-xl bg-white/[0.03] text-white/75 ring-1 ring-white/[0.06] transition-all hover:text-white hover:ring-cyan-300/40"
+            className="dock-item group/dock relative grid h-11 w-11 place-items-center rounded-xl transition-all"
           >
             <ArrowLeft className="h-[18px] w-[18px]" strokeWidth={1.8} />
-            <span className="pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 whitespace-nowrap rounded-md bg-[#0b1219] px-2 py-1 text-[11px] font-medium text-white/80 opacity-0 ring-1 ring-cyan-400/25 transition-opacity group-hover/dock:opacity-100">
+            <span className="dock-tooltip pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 whitespace-nowrap rounded-md px-2 py-1 text-[11px] font-medium opacity-0 transition-opacity group-hover/dock:opacity-100">
               Painel do lojista
             </span>
           </Link>
