@@ -198,3 +198,79 @@ function VoucherFor({
     />
   );
 }
+
+function SaveToWalletCta({ token, establishmentName }: { token: string; establishmentName: string }) {
+  const [state, setState] = useState<"idle" | "checking" | "signed_out" | "linked" | "unlinked" | "hidden">("checking");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (cancelled) return;
+      if (!session) { setState("signed_out"); return; }
+      // Check if this token already belongs to the current user.
+      const { data: c } = await supabase
+        .from("customers")
+        .select("user_id")
+        .eq("token", token)
+        .maybeSingle();
+      if (cancelled) return;
+      if (c?.user_id === session.user.id) setState("linked");
+      else if (c?.user_id && c.user_id !== session.user.id) setState("hidden");
+      else setState("unlinked");
+    })();
+    return () => { cancelled = true; };
+  }, [token]);
+
+  if (state === "checking" || state === "hidden" || state === "linked") return null;
+
+  if (state === "signed_out") {
+    return (
+      <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-primary/30 bg-primary/5 px-4 py-3 backdrop-blur">
+        <div className="flex items-center gap-2 text-sm">
+          <Wallet className="h-4 w-4 text-primary" />
+          <span>Salve <b>{establishmentName}</b> na sua carteira Fidelize.</span>
+        </div>
+        <Link
+          to="/auth"
+          search={{ mode: "signup", as: "customer", claim: token, next: `/c/${token}` }}
+          className="rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:opacity-90"
+        >
+          Salvar
+        </Link>
+      </div>
+    );
+  }
+
+  // Signed in but customer has no user_id yet — claim in-place.
+  async function claim() {
+    setBusy(true);
+    try {
+      const r = await claimCustomerByToken({ data: { token } });
+      toast.success("Cartão salvo na sua carteira!");
+      setState("linked");
+      window.location.href = `/carteira/${r.slug}`;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Não foi possível salvar");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-primary/30 bg-primary/5 px-4 py-3 backdrop-blur">
+      <div className="flex items-center gap-2 text-sm">
+        <Wallet className="h-4 w-4 text-primary" />
+        <span>Salve este cartão na sua carteira Fidelize.</span>
+      </div>
+      <button
+        onClick={claim}
+        disabled={busy}
+        className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:opacity-90 disabled:opacity-60"
+      >
+        {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+        Salvar
+      </button>
+    </div>
+  );
+}
