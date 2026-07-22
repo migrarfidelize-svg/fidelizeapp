@@ -535,8 +535,8 @@ function ReviewQrPage() {
       if (!primaryUntouched && !secondaryUntouched) return prev;
       return {
         ...prev,
-        primaryQr: primaryUntouched ? { x: 30, y: 58 } : prev.primaryQr,
-        secondaryQr: secondaryUntouched ? { x: 70, y: 58 } : prev.secondaryQr,
+        primaryQr: primaryUntouched ? { x: 22, y: 58 } : prev.primaryQr,
+        secondaryQr: secondaryUntouched ? { x: 78, y: 58 } : prev.secondaryQr,
       };
     });
     QRCode.toDataURL(qrEncodedSecondaryUrl, {
