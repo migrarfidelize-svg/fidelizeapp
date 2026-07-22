@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useMemo } from "react";
 import { listMyInbox, markMessagesRead } from "@/lib/inbox.functions";
 import { WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
 import { EmptyState } from "@/components/states/EmptyState";
 import { Megaphone, Tag, Bell, ExternalLink, Inbox } from "lucide-react";
+import { useAutoMarkRead } from "@/hooks/useAutoMarkRead";
 
 const opts = queryOptions({
   queryKey: ["my-inbox"],
@@ -38,18 +38,10 @@ function InboxPage() {
   const items = data ?? [];
   const markFn = useServerFn(markMessagesRead);
 
-  const unreadIds = useMemo(() => items.filter((m) => !m.read).map((m) => m.id), [items]);
-
-  useEffect(() => {
-    if (!unreadIds.length) return;
-    // marca como lidas sempre que chegarem novas mensagens não lidas
-    markFn({ data: { ids: unreadIds } })
-      .then(() => {
-        qc.invalidateQueries({ queryKey: ["inbox-unread"] });
-        qc.invalidateQueries({ queryKey: ["my-inbox"] });
-      })
-      .catch(() => {});
-  }, [unreadIds.join(","), markFn, qc]);
+  useAutoMarkRead(items, markFn, () => {
+    qc.invalidateQueries({ queryKey: ["inbox-unread"] });
+    qc.invalidateQueries({ queryKey: ["my-inbox"] });
+  });
 
   return (
     <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["my-inbox"] })}>
