@@ -67,6 +67,7 @@ export function PushOptIn({ token }: { token: string }) {
   const [showUnblockGuide, setShowUnblockGuide] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [errorHint, setErrorHint] = useState<string | null>(null);
+  const [showEnableGuide, setShowEnableGuide] = useState(false);
 
 
   const subscribe = useServerFn(subscribeCustomerPush);
