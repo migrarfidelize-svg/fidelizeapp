@@ -567,14 +567,47 @@ function ReviewQrPage() {
         {/* PREVIEW */}
         <div className="min-w-0">
           <div className="sticky top-4 flex flex-col items-center gap-3">
-            <div className="relative w-full max-w-[420px]">
+            {/* Display toggle */}
+            <div className="flex w-full max-w-[420px] items-center justify-between rounded-xl border bg-card/70 p-2 backdrop-blur-xl">
+              <span className="flex items-center gap-2 pl-2 text-xs font-semibold">
+                <Eye className="h-3.5 w-3.5 text-primary" />
+                Ver no display de balcão
+              </span>
+              <Switch checked={displayMode} onCheckedChange={setDisplayMode} />
+            </div>
+
+            <div
+              className="relative w-full max-w-[420px]"
+              style={displayMode ? { perspective: "1400px" } : undefined}
+            >
               <div className="pointer-events-none absolute -inset-8 rounded-3xl bg-gradient-to-br from-primary/15 via-transparent to-transparent blur-3xl" />
+
+              {/* Acrylic holder overlay (only in display mode) */}
+              {displayMode && (
+                <div
+                  className="pointer-events-none absolute inset-0 z-20 rounded-lg"
+                  style={{
+                    transform: "rotateX(-10deg)",
+                    transformOrigin: "bottom center",
+                    background:
+                      "linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.03) 30%, rgba(255,255,255,0) 60%, rgba(255,255,255,0.08) 100%)",
+                    boxShadow:
+                      "inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -1px 0 rgba(255,255,255,0.15), 0 30px 60px -30px rgba(0,0,0,0.6)",
+                  }}
+                />
+              )}
+
               <div
-                className="relative overflow-hidden rounded-lg shadow-2xl ring-1 ring-primary/20"
-                style={{ aspectRatio: dims.aspect }}
+                className="relative overflow-hidden rounded-lg shadow-2xl ring-1 ring-primary/20 transition-transform duration-500"
+                style={{
+                  aspectRatio: dims.aspect,
+                  transform: displayMode ? "rotateX(-10deg)" : undefined,
+                  transformOrigin: "bottom center",
+                }}
               >
                 <PosterCanvas
                   ref={posterRef}
+                  template={template}
                   format={format}
                   title={title}
                   subtitle={subtitle}
@@ -592,12 +625,27 @@ function ReviewQrPage() {
                   nfcMode={nfcMode}
                 />
               </div>
+
+              {/* Reflection under counter */}
+              {displayMode && (
+                <div
+                  className="pointer-events-none mx-auto mt-1 h-16 w-[85%] rounded-[50%]"
+                  style={{
+                    background:
+                      "radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.15) 40%, transparent 70%)",
+                    filter: "blur(6px)",
+                  }}
+                />
+              )}
             </div>
             <p className="text-center text-xs text-muted-foreground">
-              Preview em escala. Exportação usa {dims.mm.w}×{dims.mm.h}mm ({dims.orientation === "landscape" ? "paisagem" : dims.orientation === "square" ? "quadrado" : "retrato"}).
+              {displayMode
+                ? "Visualização como estará no display acrílico de balcão (inclinado 10°)."
+                : `Preview em escala. Exportação usa ${dims.mm.w}×${dims.mm.h}mm (${dims.orientation === "landscape" ? "paisagem" : dims.orientation === "square" ? "quadrado" : "retrato"}).`}
             </p>
           </div>
         </div>
+
       </div>
     </div>
   );
