@@ -30,7 +30,20 @@ function RetencaoPage() {
   const statsFn = useServerFn(listReferralStats);
 
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
-  const activeEst = memberships?.[0]?.establishment as { id: string; name: string } | undefined;
+  const ests = (memberships ?? [])
+    .map((m) => m.establishment as { id: string; name: string } | null)
+    .filter((e): e is { id: string; name: string } => !!e);
+
+  const [selectedEstId, setSelectedEstId] = useState<string | null>(null);
+  const activeEst = ests.find((e) => e.id === selectedEstId) ?? ests[0];
+  useEffect(() => {
+    if (!selectedEstId && ests[0]) setSelectedEstId(ests[0].id);
+  }, [ests, selectedEstId]);
+
+  const [periodDays, setPeriodDays] = useState<number>(90);
+  const ALL_EVENTS = ["referral_click", "referral_share", "referral_signup", "referral_reward"] as const;
+  type EvType = (typeof ALL_EVENTS)[number];
+  const [eventTypes, setEventTypes] = useState<EvType[]>([...ALL_EVENTS]);
 
   const { data: settings, refetch } = useQuery({
     queryKey: ["retention_settings", activeEst?.id],
@@ -39,10 +52,18 @@ function RetencaoPage() {
   });
 
   const { data: stats } = useQuery({
-    queryKey: ["referral_stats", activeEst?.id],
-    queryFn: () => statsFn({ data: { establishment_id: activeEst!.id } }),
+    queryKey: ["referral_stats", activeEst?.id, periodDays, eventTypes.join(",")],
+    queryFn: () =>
+      statsFn({
+        data: {
+          establishment_id: activeEst!.id,
+          days: periodDays,
+          event_types: eventTypes,
+        },
+      }),
     enabled: !!activeEst?.id,
   });
+
 
   type RetForm = {
     establishment_id: string;
