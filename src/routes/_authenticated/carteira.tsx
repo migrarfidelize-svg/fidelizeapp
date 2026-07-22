@@ -1,15 +1,18 @@
 import { createFileRoute, Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Wallet, Home, LogOut, User, Gift, History, Compass, QrCode, Bell } from "lucide-react";
+import { Wallet, Home, LogOut, User, Gift, History, Compass, QrCode } from "lucide-react";
 import { toast } from "sonner";
 import { MyQrSheet } from "@/components/wallet/MyQrSheet";
 import { countUnread } from "@/lib/inbox.functions";
+import { getMyWallet } from "@/lib/my-wallet.functions";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AchievementUnlockListener } from "@/components/wallet/AchievementUnlockListener";
 import { PostStampReviewSheet } from "@/components/wallet/PostStampReviewSheet";
 import { InboxBellBadge } from "@/components/wallet/InboxBellBadge";
+import { haptic } from "@/lib/haptics";
+
 
 export const Route = createFileRoute("/_authenticated/carteira")({
   head: () => ({
