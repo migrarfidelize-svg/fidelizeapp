@@ -384,43 +384,52 @@ function AuthPage() {
 
             <form onSubmit={handleSubmit} className={isSignup ? "space-y-3" : "space-y-4"}>
 
-              {/* Toggle Cliente / Estabelecimento — disponível em signup e signin */}
-              <div className="animate-fade-in">
-                <div className="mb-1 ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">Sou</div>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setRole("customer")}
-                    className={
-                      "flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all " +
-                      (role === "customer"
-                        ? "border-[#00ffff] bg-[#00ffff]/10 text-white shadow-[0_0_20px_-6px_rgba(0,255,255,0.6)]"
-                        : "border-white/10 bg-white/5 text-white/60 hover:text-white")
-                    }
-                  >
-                    <User className="h-3.5 w-3.5" /> Cliente
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRole("establishment")}
-                    className={
-                      "flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all " +
-                      (role === "establishment"
-                        ? "border-[#00ffff] bg-[#00ffff]/10 text-white shadow-[0_0_20px_-6px_rgba(0,255,255,0.6)]"
-                        : "border-white/10 bg-white/5 text-white/60 hover:text-white")
-                    }
-                  >
-                    <Store className="h-3.5 w-3.5" /> Estabelecimento
-                  </button>
+              {/* Toggle Cliente / Estabelecimento — oculto quando o fluxo veio da carteira */}
+              {search.source !== "wallet" && (
+                <div className="animate-fade-in">
+                  <div className="mb-1 ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">Sou</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setRole("customer")}
+                      className={
+                        "flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all " +
+                        (role === "customer"
+                          ? "border-[#00ffff] bg-[#00ffff]/10 text-white shadow-[0_0_20px_-6px_rgba(0,255,255,0.6)]"
+                          : "border-white/10 bg-white/5 text-white/60 hover:text-white")
+                      }
+                    >
+                      <User className="h-3.5 w-3.5" /> Cliente
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRole("establishment")}
+                      className={
+                        "flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all " +
+                        (role === "establishment"
+                          ? "border-[#00ffff] bg-[#00ffff]/10 text-white shadow-[0_0_20px_-6px_rgba(0,255,255,0.6)]"
+                          : "border-white/10 bg-white/5 text-white/60 hover:text-white")
+                      }
+                    >
+                      <Store className="h-3.5 w-3.5" /> Estabelecimento
+                    </button>
+                  </div>
+                  {isSignup && (
+                    <p className="mt-1.5 ml-1 text-[10px] text-white/40">
+                      {role === "customer"
+                        ? "Acumule carimbos e recompensas em qualquer estabelecimento Fidelize."
+                        : "Crie seu programa de fidelidade digital para o seu negócio."}
+                    </p>
+                  )}
                 </div>
-                {isSignup && (
-                  <p className="mt-1.5 ml-1 text-[10px] text-white/40">
-                    {role === "customer"
-                      ? "Acumule carimbos e recompensas em qualquer estabelecimento Fidelize."
-                      : "Crie seu programa de fidelidade digital para o seu negócio."}
-                  </p>
-                )}
-              </div>
+              )}
+              {search.source === "wallet" && (
+                <div className="animate-fade-in rounded-xl border border-[#00ffff]/25 bg-[#00ffff]/5 px-3 py-2.5 text-[11px] text-white/70 flex items-center gap-2">
+                  <User className="h-3.5 w-3.5 text-[#00ffff]" />
+                  Acesso à carteira do cliente. Use seu WhatsApp para entrar.
+                </div>
+              )}
+
 
               {isSignup && (
                 <div className="animate-fade-in space-y-1.5">
