@@ -36,8 +36,38 @@ const FORMATS: Record<FormatKey, { label: string; aspect: string; mm: { w: numbe
 };
 
 type Destination = "fidelize" | "google";
+type TemplateKey = "glass" | "minimal" | "bold" | "editorial";
+
+const TEMPLATES: Record<TemplateKey, { label: string; description: string; defaults: { primaryColor: string; backgroundColor: string; textColor: string } }> = {
+  glass:     { label: "Glass Cyan",  description: "Fundo escuro com brilho cyan (padrão)", defaults: { primaryColor: "#00c2c7", backgroundColor: "#0d1117", textColor: "#ffffff" } },
+  minimal:   { label: "Minimal",     description: "Branco limpo, tipografia sóbria",       defaults: { primaryColor: "#111827", backgroundColor: "#ffffff", textColor: "#111827" } },
+  bold:      { label: "Bold",        description: "Cor cheia, contraste alto",             defaults: { primaryColor: "#ffffff", backgroundColor: "#ff5b3d", textColor: "#ffffff" } },
+  editorial: { label: "Editorial",   description: "Sépia sofisticado, estilo revista",     defaults: { primaryColor: "#8b6f3a", backgroundColor: "#f4ede0", textColor: "#2a1f14" } },
+};
+
+type SavedDesign = {
+  id: string;
+  name: string;
+  createdAt: number;
+  data: {
+    template: TemplateKey;
+    format: FormatKey;
+    destination: Destination;
+    googleUrl: string;
+    showGoogleLogo: boolean;
+    nfcMode: boolean;
+    title: string;
+    subtitle: string;
+    ctaNearQR: string;
+    ctaFooter: string;
+    primaryColor: string;
+    backgroundColor: string;
+    textColor: string;
+  };
+};
 
 function ReviewQrPage() {
+
   const getEsts = useServerFn(getMyEstablishments);
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
   const est = memberships?.[0]?.establishment as
