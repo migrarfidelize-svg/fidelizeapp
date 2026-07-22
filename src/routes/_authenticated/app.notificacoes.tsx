@@ -322,7 +322,7 @@ function NotifPage() {
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5"><Link2 className="h-3.5 w-3.5" /> Destino ao tocar</Label>
             <div className="flex flex-wrap gap-2">
-              {DEEP_LINKS.map((d) => {
+              {deepLinks.map((d: typeof deepLinks[number]) => {
                 const Icon = d.icon;
                 const full = typeof window !== "undefined" ? `${window.location.origin}${d.path}` : d.path;
                 const active = url === full;
