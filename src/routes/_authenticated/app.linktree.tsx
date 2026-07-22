@@ -261,16 +261,23 @@ function LinkTreeEditor() {
         </div>
       </header>
 
-      {published && (
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm">
-          <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="font-medium">Publicada em</span>
-          <code className="rounded bg-muted px-2 py-0.5 text-xs">{publicUrl}</code>
-          <span className="text-muted-foreground text-xs ml-auto">
-            Aponte o QR do seu estabelecimento para esta página em <a href="/app/avaliacoes/qr" className="underline">QR de avaliação</a>.
-          </span>
+      {/* URL pública sempre visível */}
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-3 text-sm">
+        <span className={`inline-flex h-2 w-2 rounded-full ${published ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
+        <span className="font-medium shrink-0">{published ? "Publicada em:" : "Endereço público (após publicar):"}</span>
+        <code className="rounded bg-muted px-2 py-1 text-xs break-all flex-1 min-w-[220px]">{publicUrl}</code>
+        <div className="flex items-center gap-1 ml-auto">
+          <Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success("Link copiado!"); }}>
+            <Copy className="h-4 w-4 mr-1.5" /> Copiar
+          </Button>
+          {published && (
+            <Button variant="outline" size="sm" asChild>
+              <a href={publicUrl} target="_blank" rel="noreferrer"><Eye className="h-4 w-4 mr-1.5" /> Abrir</a>
+            </Button>
+          )}
         </div>
-      )}
+      </div>
+
 
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="space-y-6">
