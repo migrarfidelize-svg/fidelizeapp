@@ -327,7 +327,30 @@ function addDays(d: Date, days: number): Date {
   return c;
 }
 
-function StreakCard({ weeks, lastVisit }: { weeks: number; lastVisit: string | null }) {
+function StreakCard({ weeks, lastVisit, atRisk, daysLeft }: { weeks: number; lastVisit: string | null; atRisk: boolean; daysLeft: number }) {
+  if (atRisk) {
+    return (
+      <div className="relative overflow-hidden rounded-3xl border border-destructive/50 bg-gradient-to-br from-destructive/15 via-amber-500/10 to-orange-500/10 p-4">
+        <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-destructive/25 blur-3xl" />
+        <div className="relative flex items-center gap-3">
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-destructive to-orange-600 text-white shadow-lg">
+            <Flame className="wallet-streak-flame h-6 w-6" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] font-black uppercase tracking-widest text-destructive">
+              Sua sequência está em risco
+            </div>
+            <div className="font-display text-base font-bold">
+              Faltam <span className="text-destructive">{daysLeft} {daysLeft === 1 ? "dia" : "dias"}</span> para quebrar {weeks} {weeks === 1 ? "semana" : "semanas"} 🔥
+            </div>
+            <div className="text-[11px] text-muted-foreground">
+              Passe em uma loja essa semana para manter o combo vivo.
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="relative overflow-hidden rounded-3xl border border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-primary/10 p-4">
       <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-orange-500/20 blur-3xl" />
