@@ -524,9 +524,10 @@ function ReviewQrPage() {
   useEffect(() => {
      if (!secondaryEnabled) {
       setSecondaryQrDataUrl("");
-      setLayout((prev) => (prev.primaryQr.x === 22 && prev.primaryQr.y === 58
-        ? { ...prev, primaryQr: DEFAULT_LAYOUT.primaryQr }
-        : prev));
+      // Com apenas 1 QR, centralizamos automaticamente o QR principal.
+      setLayout((prev) => (prev.primaryQr.x === DEFAULT_LAYOUT.primaryQr.x && prev.primaryQr.y === DEFAULT_LAYOUT.primaryQr.y
+        ? prev
+        : { ...prev, primaryQr: { ...DEFAULT_LAYOUT.primaryQr } }));
       return;
     }
     setLayout((prev) => {
