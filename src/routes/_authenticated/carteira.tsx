@@ -9,8 +9,22 @@ import { countUnread } from "@/lib/inbox.functions";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const Route = createFileRoute("/_authenticated/carteira")({
+  head: () => ({
+    meta: [
+      { name: "theme-color", content: "#00ffff" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "Carteira" },
+    ],
+    links: [
+      { rel: "manifest", href: "/carteira.webmanifest" },
+      { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
+    ],
+  }),
   component: WalletLayout,
 });
+
 
 /** Lê e consome uma flash message deixada por `l/$slug` ou pelo fluxo de auth. */
 function useWalletFlash() {
