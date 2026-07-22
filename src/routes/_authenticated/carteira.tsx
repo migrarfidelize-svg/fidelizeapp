@@ -142,3 +142,35 @@ function NavItem({ tab, pathname }: { tab: (typeof TABS)[number]; pathname: stri
     </Link>
   );
 }
+
+function InboxBell({ pathname }: { pathname: string }) {
+  const active = pathname.startsWith("/carteira/mensagens");
+  const { data: unread = 0 } = useQuery({
+    queryKey: ["inbox-unread"],
+    queryFn: () => countUnread(),
+    staleTime: 30_000,
+    refetchInterval: 90_000,
+  });
+  return (
+    <Link
+      to="/carteira/mensagens"
+      className={
+        "relative grid h-9 w-9 place-items-center rounded-full border transition-colors " +
+        (active
+          ? "border-primary/50 bg-primary/10 text-primary"
+          : "border-border/60 text-muted-foreground hover:text-foreground")
+      }
+      aria-label={unread > 0 ? `${unread} mensagens não lidas` : "Mensagens"}
+    >
+      <Bell className="h-4 w-4" />
+      {unread > 0 && (
+        <span
+          className="absolute -right-1 -top-1 grid min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[10px] font-black leading-[18px] text-primary-foreground shadow-[0_0_8px_color-mix(in_oklab,var(--primary)_55%,transparent)]"
+          aria-hidden
+        >
+          {unread > 9 ? "9+" : unread}
+        </span>
+      )}
+    </Link>
+  );
+}
