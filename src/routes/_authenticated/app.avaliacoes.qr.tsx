@@ -1260,7 +1260,7 @@ function LabeledQr({ qr, label, primary, text, badge, size }: { qr: string; labe
         )}
       </div>
       {label && (
-        <div className="max-w-[16ch] text-[10px] font-bold leading-tight" style={{ color: text }}>
+        <div className="max-w-[16ch] text-center text-[10px] font-bold leading-tight" style={{ color: text }}>
           {label}
         </div>
       )}
