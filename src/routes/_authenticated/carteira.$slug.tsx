@@ -26,6 +26,7 @@ import { useState } from "react";
 import { ExpiredCardState, WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
 import { PushOptIn } from "@/components/PushOptIn";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { filterByRating, sortReviews } from "@/lib/reviews-sort";
 
 
 const opts = (slug: string) =>
@@ -435,6 +436,10 @@ function WalletEstablishment() {
           onOpenChange={setReviewsOpen}
           establishmentName={est.name}
           data={reviewsQuery.data}
+          isLoading={reviewsQuery.isLoading}
+          isError={reviewsQuery.isError}
+          error={reviewsQuery.error as Error | null}
+          onRetry={() => reviewsQuery.refetch()}
         />
 
 
@@ -635,13 +640,27 @@ function ReviewsDialog({
   onOpenChange,
   establishmentName,
   data,
+  isLoading,
+  isError,
+  error,
+  onRetry,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   establishmentName: string;
   data: ReviewsData | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  error: Error | null;
+  onRetry: () => void;
 }) {
-  const reviews = data?.reviews ?? [];
+  const [ratingFilter, setRatingFilter] = useState<number | null>(null);
+  const [sortMode, setSortMode] = useState<import("@/lib/reviews-sort").SortMode>("recent");
+
+  const rawReviews = (data?.reviews ?? []) as import("@/lib/reviews-sort").PublicReview[];
+  const filtered = filterByRating(rawReviews, ratingFilter);
+  const visible = sortReviews(filtered, sortMode);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] overflow-hidden p-0 sm:max-w-lg">
@@ -657,14 +676,114 @@ function ReviewsDialog({
               <span>· {data.stats.count} no total</span>
             </div>
           )}
+          {(data?.reviews?.length ?? 0) > 0 && (
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1" role="group" aria-label="Filtrar por nota">
+                <button
+                  type="button"
+                  onClick={() => setRatingFilter(null)}
+                  aria-pressed={ratingFilter === null}
+                  className={
+                    "rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-colors " +
+                    (ratingFilter === null
+                      ? "border-primary/50 bg-primary/10 text-primary"
+                      : "border-border/60 text-muted-foreground hover:text-foreground")
+                  }
+                >
+                  Todas
+                </button>
+                {[5, 4, 3, 2, 1].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setRatingFilter(ratingFilter === n ? null : n)}
+                    aria-pressed={ratingFilter === n}
+                    aria-label={`Filtrar por ${n} estrela${n > 1 ? "s" : ""}`}
+                    className={
+                      "inline-flex items-center gap-0.5 rounded-full border px-2 py-1 text-[11px] font-semibold transition-colors " +
+                      (ratingFilter === n
+                        ? "border-amber-400/60 bg-amber-400/10 text-amber-400"
+                        : "border-border/60 text-muted-foreground hover:text-foreground")
+                    }
+                  >
+                    {n}
+                    <Star className="h-3 w-3 fill-current" />
+                  </button>
+                ))}
+              </div>
+              <div className="ml-auto flex items-center gap-1" role="group" aria-label="Ordenar avaliações">
+                <button
+                  type="button"
+                  onClick={() => setSortMode("recent")}
+                  aria-pressed={sortMode === "recent"}
+                  className={
+                    "rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-colors " +
+                    (sortMode === "recent"
+                      ? "border-primary/50 bg-primary/10 text-primary"
+                      : "border-border/60 text-muted-foreground hover:text-foreground")
+                  }
+                >
+                  Mais recentes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSortMode("helpful")}
+                  aria-pressed={sortMode === "helpful"}
+                  className={
+                    "rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-colors " +
+                    (sortMode === "helpful"
+                      ? "border-primary/50 bg-primary/10 text-primary"
+                      : "border-border/60 text-muted-foreground hover:text-foreground")
+                  }
+                >
+                  Mais úteis
+                </button>
+              </div>
+            </div>
+          )}
         </DialogHeader>
         <div className="max-h-[70vh] space-y-3 overflow-y-auto px-5 py-4">
-          {reviews.length === 0 && (
+          {isLoading && (
+            <div data-testid="reviews-loading" className="space-y-3" aria-busy="true">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="animate-pulse rounded-2xl border border-border/60 bg-background/50 p-3">
+                  <div className="mb-2 h-3 w-32 rounded bg-muted/50" />
+                  <div className="h-3 w-20 rounded bg-muted/40" />
+                  <div className="mt-3 h-3 w-full rounded bg-muted/40" />
+                  <div className="mt-2 h-3 w-3/4 rounded bg-muted/30" />
+                </div>
+              ))}
+            </div>
+          )}
+          {!isLoading && isError && (
+            <div
+              role="alert"
+              data-testid="reviews-error"
+              className="rounded-2xl border border-destructive/40 bg-destructive/5 p-4 text-center"
+            >
+              <p className="text-sm font-semibold text-destructive">
+                Não foi possível carregar as avaliações.
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {error?.message ?? "Verifique sua conexão e tente novamente."}
+              </p>
+              <button
+                type="button"
+                onClick={onRetry}
+                className="mt-3 rounded-full border border-border/60 bg-background px-3 py-1.5 text-xs font-semibold hover:bg-muted"
+              >
+                Tentar novamente
+              </button>
+            </div>
+          )}
+          {!isLoading && !isError && visible.length === 0 && (
             <p className="py-6 text-center text-sm text-muted-foreground">
-              Ainda não há avaliações públicas.
+              {rawReviews.length === 0
+                ? "Ainda não há avaliações públicas."
+                : "Nenhuma avaliação com esse filtro."}
             </p>
           )}
-          {reviews.map((r) => (
+          {!isLoading && !isError && visible.map((r) => (
             <article
               key={r.id}
               className="rounded-2xl border border-border/60 bg-background/50 p-3"
