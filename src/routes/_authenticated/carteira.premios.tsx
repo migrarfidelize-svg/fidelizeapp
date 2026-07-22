@@ -69,16 +69,16 @@ function RewardsHub() {
     >
       <div className="space-y-4">
         <div className="pt-2">
-          <h1 className="font-display text-2xl font-bold tracking-tight">Meus prêmios</h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">Meus cartões</h1>
           <p className="text-sm text-muted-foreground">
-            Todos os cartões e as recompensas prontas para resgate.
+            Todos os seus cartões e as recompensas prontas para resgate.
           </p>
         </div>
 
         {/* Sub-tabs no topo */}
         <div
           role="tablist"
-          aria-label="Filtrar prêmios"
+          aria-label="Filtrar cartões"
           className="relative flex gap-1 rounded-2xl border border-border/60 bg-card/40 p-1 backdrop-blur"
         >
           <SubTab
