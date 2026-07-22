@@ -337,6 +337,42 @@ function StackedCard({
   );
 }
 
+function PinToggle({ customerId, pinned }: { customerId: string; pinned: boolean }) {
+  const qc = useQueryClient();
+  const toggle = useServerFn(toggleCustomerPin);
+  const [busy, setBusy] = useState(false);
+  return (
+    <button
+      type="button"
+      disabled={busy}
+      onClick={async (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        setBusy(true);
+        try {
+          await toggle({ data: { customer_id: customerId, pinned: !pinned } });
+          toast.success(pinned ? "Cartão desafixado." : "Cartão fixado no topo.");
+          await qc.invalidateQueries({ queryKey: ["my-wallet"] });
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : "Falha ao fixar.");
+        } finally {
+          setBusy(false);
+        }
+      }}
+      aria-label={pinned ? "Desafixar cartão" : "Fixar cartão"}
+      aria-pressed={pinned}
+      className={
+        "grid h-8 w-8 place-items-center rounded-xl border transition-colors " +
+        (pinned
+          ? "border-primary/40 bg-primary/10 text-primary"
+          : "border-border/50 bg-background/50 text-muted-foreground hover:text-foreground")
+      }
+    >
+      {pinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
+    </button>
+  );
+}
+
 function StampsPreview({
   stamps,
   required,
