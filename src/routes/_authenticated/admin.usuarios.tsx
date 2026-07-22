@@ -27,7 +27,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import {
   UsersRound, Search, Shield, Building2, User as UserIcon, Loader2, UserX,
-  Wallet, KeyRound, CircleAlert, CircleCheck, Copy,
+  Wallet, KeyRound, CircleAlert, CircleCheck, Copy, Stamp,
 } from "lucide-react";
 import { formatPhone } from "@/lib/format";
 
