@@ -371,7 +371,7 @@ function ReviewQrPage() {
               <Label className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                 <Layers className="h-3.5 w-3.5" /> Modelo de cartaz
               </Label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-4 gap-1.5">
                 {(Object.keys(TEMPLATES) as TemplateKey[]).map((k) => {
                   const t = TEMPLATES[k];
                   const active = template === k;
@@ -380,15 +380,15 @@ function ReviewQrPage() {
                       key={k}
                       type="button"
                       onClick={() => applyTemplate(k)}
-                      className={`group relative overflow-hidden rounded-xl border-2 p-2.5 text-left transition ${active ? "border-primary ring-2 ring-primary/30" : "border-border/60 hover:border-primary/40"}`}
+                      title={`${t.label} — ${t.description}`}
+                      className={`group relative overflow-hidden rounded-lg border-2 p-1.5 text-left transition ${active ? "border-primary ring-2 ring-primary/30" : "border-border/60 hover:border-primary/40"}`}
                     >
-                      <div className="mb-2 grid h-10 grid-cols-3 gap-1 rounded-md p-1" style={{ background: t.defaults.backgroundColor }}>
-                        <div className="rounded-sm" style={{ background: t.defaults.primaryColor }} />
-                        <div className="rounded-sm" style={{ background: t.defaults.textColor, opacity: 0.6 }} />
-                        <div className="rounded-sm" style={{ background: t.defaults.primaryColor, opacity: 0.5 }} />
+                      <div className="mb-1 grid h-6 grid-cols-3 gap-0.5 rounded-sm p-0.5" style={{ background: t.defaults.backgroundColor }}>
+                        <div className="rounded-[2px]" style={{ background: t.defaults.primaryColor }} />
+                        <div className="rounded-[2px]" style={{ background: t.defaults.textColor, opacity: 0.6 }} />
+                        <div className="rounded-[2px]" style={{ background: t.defaults.primaryColor, opacity: 0.5 }} />
                       </div>
-                      <div className={`text-[11px] font-bold ${active ? "text-primary" : "text-foreground"}`}>{t.label}</div>
-                      <div className="text-[10px] leading-tight text-muted-foreground line-clamp-2">{t.description}</div>
+                      <div className={`text-[10px] font-bold leading-tight truncate ${active ? "text-primary" : "text-foreground"}`}>{t.label}</div>
                     </button>
                   );
                 })}
