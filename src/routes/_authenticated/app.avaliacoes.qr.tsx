@@ -241,6 +241,16 @@ function ReviewQrPage() {
     return () => window.clearInterval(id);
   }, []);
   const [printOpen, setPrintOpen] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [realScale, setRealScale] = useState(false);
+  useEffect(() => {
+    if (!fullscreen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setFullscreen(false); };
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
+  }, [fullscreen]);
   const posterRef = useRef<HTMLDivElement>(null);
 
   const qc = useQueryClient();
