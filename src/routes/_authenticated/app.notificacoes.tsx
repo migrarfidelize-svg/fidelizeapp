@@ -65,9 +65,16 @@ function NotifPage() {
       setBody("");
       setUrl("");
       refetch();
+      quotaQ.refetch();
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Falha no envio"),
   });
+
+  const quota = quotaQ.data;
+  const blockedByPlan = !!quota && !quota.allowed;
+  const limitReached =
+    !!quota && quota.daily_limit != null && quota.remaining != null && quota.remaining <= 0;
+  const canSend = !!quota && quota.allowed && !limitReached && title.trim().length >= 2;
 
   if (!activeEst) {
     return (
