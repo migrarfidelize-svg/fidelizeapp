@@ -250,9 +250,9 @@ function DiscoveryProfilePage() {
           </p>
         </div>
       ) : (
-        <ul className="space-y-4">
+        <ul className="grid gap-3 sm:grid-cols-2">
           {data.promotions.map((p) => (
-            <PromoCard key={p.id} promo={p} brand={brand} globalLinks={globalLinks} />
+            <PromoRow key={p.id} promo={p} brand={brand} globalLinks={globalLinks} />
           ))}
         </ul>
       )}
