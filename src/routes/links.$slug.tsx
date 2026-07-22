@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { getPublicLinkTreeBySlug } from "@/lib/linktree.functions";
 import { ExternalLink, Instagram, MessageCircle, Globe, MapPin, Youtube, Facebook, Music2, Mail, Phone, Star, Wifi, KeyRound, Copy, Check, Eye, EyeOff } from "lucide-react";
 
@@ -211,12 +212,16 @@ function WifiCard({
   const [showPwd, setShowPwd] = useState(false);
   const [copied, setCopied] = useState<"" | "ssid" | "pwd">("");
 
-  const copy = async (v: string, which: "ssid" | "pwd") => {
+  const copy = async (v: string, which: "ssid" | "pwd", labelPt: string) => {
+    if (!v || copied) return;
     try {
       await navigator.clipboard.writeText(v);
       setCopied(which);
+      toast.success(`${labelPt} copiada`, { description: v.length > 40 ? v.slice(0, 40) + "…" : v });
       setTimeout(() => setCopied(""), 1400);
-    } catch { /* noop */ }
+    } catch {
+      toast.error("Não foi possível copiar. Copie manualmente.");
+    }
   };
 
   const panelBg =
@@ -250,14 +255,14 @@ function WifiCard({
               k="Rede"
               v={ssid || "—"}
               copied={copied === "ssid"}
-              onCopy={() => ssid && copy(ssid, "ssid")}
+              onCopy={() => copy(ssid, "ssid", "Rede Wi-Fi")}
               text={text}
             />
             <FieldRow
               k="Senha"
               v={password ? (showPwd ? password : "•".repeat(Math.min(password.length, 12))) : "—"}
               copied={copied === "pwd"}
-              onCopy={() => password && copy(password, "pwd")}
+              onCopy={() => copy(password, "pwd", "Senha")}
               text={text}
               right={
                 password ? (
@@ -290,8 +295,10 @@ function FieldRow({
       <button
         type="button"
         onClick={onCopy}
-        className="opacity-70 hover:opacity-100 transition"
+        disabled={copied}
+        className="opacity-70 hover:opacity-100 transition disabled:cursor-not-allowed disabled:opacity-100"
         aria-label={`Copiar ${k}`}
+        aria-live="polite"
       >
         {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
       </button>
@@ -309,12 +316,16 @@ function PixCard({
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState<"" | "key" | "name">("");
 
-  const copy = async (v: string, which: "key" | "name") => {
+  const copy = async (v: string, which: "key" | "name", labelPt: string) => {
+    if (!v || copied) return;
     try {
       await navigator.clipboard.writeText(v);
       setCopied(which);
+      toast.success(`${labelPt} copiada`, { description: v.length > 40 ? v.slice(0, 40) + "…" : v });
       setTimeout(() => setCopied(""), 1400);
-    } catch { /* noop */ }
+    } catch {
+      toast.error("Não foi possível copiar. Copie manualmente.");
+    }
   };
 
   const panelBg =
@@ -351,7 +362,7 @@ function PixCard({
               k="Chave"
               v={key || "—"}
               copied={copied === "key"}
-              onCopy={() => key && copy(key, "key")}
+              onCopy={() => copy(key, "key", "Chave Pix")}
               text={text}
             />
             {name && (
@@ -359,7 +370,7 @@ function PixCard({
                 k="Nome"
                 v={name}
                 copied={copied === "name"}
-                onCopy={() => copy(name, "name")}
+                onCopy={() => copy(name, "name", "Nome do beneficiário")}
                 text={text}
               />
             )}
