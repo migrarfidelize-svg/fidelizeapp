@@ -1318,14 +1318,20 @@ function GoogleColorG() {
   );
 }
 
-function NfcBadge({ primary }: { primary: string }) {
+function NfcBadge({ primary, sizePct = 100 }: { primary: string; sizePct?: number }) {
+  const scale = Math.max(60, Math.min(180, sizePct)) / 100;
   return (
     <div
-      className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1"
-      style={{ background: `color-mix(in oklab, ${primary} 20%, transparent)`, border: `1px solid ${primary}` }}
+      className="inline-flex items-center gap-1.5 rounded-full"
+      style={{
+        background: `color-mix(in oklab, ${primary} 20%, transparent)`,
+        border: `1px solid ${primary}`,
+        padding: `${4 * scale}px ${10 * scale}px`,
+        gap: `${6 * scale}px`,
+      }}
     >
-      <Radio className="h-3 w-3" style={{ color: primary }} />
-      <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: primary }}>NFC</span>
+      <Radio style={{ color: primary, width: 12 * scale, height: 12 * scale }} />
+      <span className="font-bold uppercase tracking-widest" style={{ color: primary, fontSize: `${9 * scale}px` }}>NFC</span>
     </div>
   );
 }
