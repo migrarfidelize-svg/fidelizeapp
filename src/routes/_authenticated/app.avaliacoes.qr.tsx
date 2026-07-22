@@ -8,7 +8,7 @@ import { jsPDF } from "jspdf";
 import { toast } from "sonner";
 import {
   Star, Copy, Share2, FileImage, FileText, Lock, Sparkles, Radio, CheckCircle2, AlertTriangle,
-  Save, Layers, Eye, Trash2, Palette,
+  Save, Layers, Eye, Trash2, Palette, ShoppingBag,
 } from "lucide-react";
 
 import { PageHero } from "@/components/PageHero";
