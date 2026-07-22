@@ -41,6 +41,13 @@ function WalletHome() {
     return i.card.stamps >= req;
   }).length;
 
+  // Offline-first: persiste último estado da carteira para renderizar sem internet.
+  useEffect(() => {
+    if (items.length) saveWalletCache(items);
+  }, [items]);
+
+
+
   const { data: history } = useQuery({
     queryKey: ["my-history"],
     queryFn: () => getMyHistory(),
