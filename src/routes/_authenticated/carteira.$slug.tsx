@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useSuspenseQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMyEstablishmentCard } from "@/lib/my-wallet.functions";
+import { listPublicReviewsBySlug } from "@/lib/public-reviews.functions";
 import { LoyaltyVoucher } from "@/components/LoyaltyVoucher";
 import { formatDate } from "@/lib/format";
 import {
@@ -17,11 +18,14 @@ import {
   Share2,
   Copy,
   Check,
+  Star,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { ExpiredCardState, WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
 import { PushOptIn } from "@/components/PushOptIn";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 
 const opts = (slug: string) =>
@@ -30,6 +34,14 @@ const opts = (slug: string) =>
     queryFn: () => getMyEstablishmentCard({ data: { slug } }),
     staleTime: 10_000,
   });
+
+const reviewsOpts = (slug: string) =>
+  queryOptions({
+    queryKey: ["public-reviews", slug],
+    queryFn: () => listPublicReviewsBySlug({ data: { slug, limit: 50 } }),
+    staleTime: 60_000,
+  });
+
 
 export const Route = createFileRoute("/_authenticated/carteira/$slug")({
   ssr: false,
