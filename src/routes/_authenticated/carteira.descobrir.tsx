@@ -187,11 +187,7 @@ function DiscoverRow({
             <p className="mt-1 line-clamp-1 text-[11px] text-muted-foreground/80">{e.description}</p>
           )}
         </div>
-        {e.visited ? (
-          <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/60 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-            Visitado
-          </span>
-        ) : (
+        {!e.visited && (
           <span
             className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-primary-foreground shadow-sm"
             style={{ background: brand }}
