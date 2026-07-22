@@ -181,9 +181,23 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
       website: string | null;
       business_hours: string | null;
     };
-    const empty: { establishment: PublicEst | null; promotions: PublicPromo[] } = {
+    type PublicCampaign = {
+      id: string;
+      name: string;
+      stamps_required: number;
+      reward_title: string;
+      reward_description: string | null;
+      rules: string | null;
+      stamp_icon: string;
+      primary_color: string | null;
+      accent_color: string | null;
+      stamp_validity_days: number | null;
+      reward_validity_days: number | null;
+    };
+    const empty: { establishment: PublicEst | null; promotions: PublicPromo[]; campaigns: PublicCampaign[] } = {
       establishment: null,
       promotions: [],
+      campaigns: [],
     };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: est } = await supabaseAdmin
@@ -193,14 +207,22 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
       .maybeSingle();
     if (!est || !est.active) return empty;
     const nowIso = new Date().toISOString();
-    const { data: rows, error } = await supabaseAdmin
-      .from("promotions")
-      .select("id, title, body, media, external_links, starts_at, ends_at, created_at")
-      .eq("establishment_id", est.id)
-      .eq("active", true)
-      .or(`starts_at.is.null,starts_at.lte.${nowIso}`)
-      .or(`ends_at.is.null,ends_at.gte.${nowIso}`)
-      .order("created_at", { ascending: false });
+    const [{ data: rows, error }, { data: camps }] = await Promise.all([
+      supabaseAdmin
+        .from("promotions")
+        .select("id, title, body, media, external_links, starts_at, ends_at, created_at")
+        .eq("establishment_id", est.id)
+        .eq("active", true)
+        .or(`starts_at.is.null,starts_at.lte.${nowIso}`)
+        .or(`ends_at.is.null,ends_at.gte.${nowIso}`)
+        .order("created_at", { ascending: false }),
+      supabaseAdmin
+        .from("campaigns")
+        .select("id, name, stamps_required, reward_title, reward_description, rules, stamp_icon, primary_color, accent_color, stamp_validity_days, reward_validity_days")
+        .eq("establishment_id", est.id)
+        .eq("active", true)
+        .order("created_at", { ascending: false }),
+    ]);
     if (error) throw new Error(error.message);
     const storage = supabaseAdmin.storage.from("promotions");
     const promotions: PublicPromo[] = await Promise.all(
@@ -215,6 +237,19 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
         created_at: r.created_at as string,
       })),
     );
+    const campaigns: PublicCampaign[] = (camps ?? []).map((c) => ({
+      id: c.id as string,
+      name: c.name as string,
+      stamps_required: c.stamps_required as number,
+      reward_title: c.reward_title as string,
+      reward_description: (c.reward_description as string | null) ?? null,
+      rules: (c.rules as string | null) ?? null,
+      stamp_icon: (c.stamp_icon as string) ?? "star",
+      primary_color: (c.primary_color as string | null) ?? null,
+      accent_color: (c.accent_color as string | null) ?? null,
+      stamp_validity_days: (c.stamp_validity_days as number | null) ?? null,
+      reward_validity_days: (c.reward_validity_days as number | null) ?? null,
+    }));
     return {
       establishment: {
         id: est.id,
@@ -234,5 +269,6 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
         business_hours: (est.business_hours as string | null) ?? null,
       },
       promotions,
+      campaigns,
     };
   });
