@@ -22,6 +22,7 @@ import { Route as SuporteMeusRouteImport } from './routes/suporte.meus'
 import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
+import { Route as ESlugRouteImport } from './routes/e.$slug'
 import { Route as CTokenRouteImport } from './routes/c.$token'
 import { Route as AvaliarSlugRouteImport } from './routes/avaliar.$slug'
 import { Route as AvaliacoesSlugRouteImport } from './routes/avaliacoes.$slug'
@@ -159,6 +160,11 @@ const LSlugRoute = LSlugRouteImport.update({
 const InviteTokenRoute = InviteTokenRouteImport.update({
   id: '/invite/$token',
   path: '/invite/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ESlugRoute = ESlugRouteImport.update({
+  id: '/e/$slug',
+  path: '/e/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CTokenRoute = CTokenRouteImport.update({
@@ -598,6 +604,7 @@ export interface FileRoutesByFullPath {
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
   '/avaliar/$slug': typeof AvaliarSlugRoute
   '/c/$token': typeof CTokenRoute
+  '/e/$slug': typeof ESlugRoute
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
   '/r/$code': typeof RCodeRoute
@@ -683,6 +690,7 @@ export interface FileRoutesByTo {
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
   '/avaliar/$slug': typeof AvaliarSlugRoute
   '/c/$token': typeof CTokenRoute
+  '/e/$slug': typeof ESlugRoute
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
   '/r/$code': typeof RCodeRoute
@@ -773,6 +781,7 @@ export interface FileRoutesById {
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
   '/avaliar/$slug': typeof AvaliarSlugRoute
   '/c/$token': typeof CTokenRoute
+  '/e/$slug': typeof ESlugRoute
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
   '/r/$code': typeof RCodeRoute
@@ -863,6 +872,7 @@ export interface FileRouteTypes {
     | '/avaliacoes/$slug'
     | '/avaliar/$slug'
     | '/c/$token'
+    | '/e/$slug'
     | '/invite/$token'
     | '/l/$slug'
     | '/r/$code'
@@ -948,6 +958,7 @@ export interface FileRouteTypes {
     | '/avaliacoes/$slug'
     | '/avaliar/$slug'
     | '/c/$token'
+    | '/e/$slug'
     | '/invite/$token'
     | '/l/$slug'
     | '/r/$code'
@@ -1037,6 +1048,7 @@ export interface FileRouteTypes {
     | '/avaliacoes/$slug'
     | '/avaliar/$slug'
     | '/c/$token'
+    | '/e/$slug'
     | '/invite/$token'
     | '/l/$slug'
     | '/r/$code'
@@ -1121,6 +1133,7 @@ export interface RootRouteChildren {
   AvaliacoesSlugRoute: typeof AvaliacoesSlugRoute
   AvaliarSlugRoute: typeof AvaliarSlugRoute
   CTokenRoute: typeof CTokenRoute
+  ESlugRoute: typeof ESlugRoute
   InviteTokenRoute: typeof InviteTokenRoute
   LSlugRoute: typeof LSlugRoute
   RCodeRoute: typeof RCodeRoute
@@ -1234,6 +1247,13 @@ declare module '@tanstack/react-router' {
       path: '/invite/$token'
       fullPath: '/invite/$token'
       preLoaderRoute: typeof InviteTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/e/$slug': {
+      id: '/e/$slug'
+      path: '/e/$slug'
+      fullPath: '/e/$slug'
+      preLoaderRoute: typeof ESlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/c/$token': {
@@ -1940,6 +1960,7 @@ const rootRouteChildren: RootRouteChildren = {
   AvaliacoesSlugRoute: AvaliacoesSlugRoute,
   AvaliarSlugRoute: AvaliarSlugRoute,
   CTokenRoute: CTokenRoute,
+  ESlugRoute: ESlugRoute,
   InviteTokenRoute: InviteTokenRoute,
   LSlugRoute: LSlugRoute,
   RCodeRoute: RCodeRoute,

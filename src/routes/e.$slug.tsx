@@ -38,7 +38,11 @@ export const Route = createFileRoute("/e/$slug")({
       : est
       ? `Confira promoções, campanhas de fidelidade e novidades de ${est.name}.`
       : "Descubra estabelecimentos e promoções na Fidelize.";
-    const meta: { title?: string; name?: string; property?: string; content: string }[] = [
+    const meta: Array<
+      | { title: string }
+      | { name: string; content: string }
+      | { property: string; content: string }
+    > = [
       { title },
       { name: "description", content: desc },
       { property: "og:title", content: title },
