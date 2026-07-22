@@ -80,9 +80,10 @@ export const upsertLinkTree = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({
     establishment_id: z.string().uuid(),
     title: z.string().trim().max(120).nullable().optional(),
-    description: z.string().trim().max(500).nullable().optional(),
-    logo_url: z.string().trim().max(500).nullable().optional(),
-    cover_url: z.string().trim().max(500).nullable().optional(),
+    description: z.string().trim().max(1000).nullable().optional(),
+    // Aceita URLs longas e data-URLs base64 do recorte de logo.
+    logo_url: z.string().trim().max(2_500_000).nullable().optional(),
+    cover_url: z.string().trim().max(2_500_000).nullable().optional(),
     theme: ThemeInput.default({}),
     social: SocialInput.default({}),
     links: z.array(LinkInput).max(50),
