@@ -188,7 +188,7 @@ function ReviewQrPage() {
     if (typeof window === "undefined") return;
     try {
       window.localStorage.setItem(storageKey, JSON.stringify({
-        template, format, destination, googleUrl, showGoogleLogo, nfcMode,
+        template, format, destination, googleUrl, showGoogleLogo, nfcMode, nfcStyle,
         title, subtitle, ctaNearQR, ctaFooter,
         primaryColor, backgroundColor, textColor,
         primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel,
