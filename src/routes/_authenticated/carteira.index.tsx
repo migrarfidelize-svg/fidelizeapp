@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMyWallet, getMyHistory, getMyRewards } from "@/lib/my-wallet.functions";
-import { ChevronRight, Sparkles, Gift, Stamp, RotateCcw, Bell } from "lucide-react";
+import { ChevronRight, Sparkles, Gift, Stamp, RotateCcw, Bell, Flame } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import {
   EmptyWalletState,
@@ -9,6 +9,7 @@ import {
   WithOfflineFallback,
 } from "@/components/wallet/WalletStates";
 import { WalletStack } from "@/components/wallet/WalletStack";
+import { WalletHomeSkeleton } from "@/components/wallet/WalletCardSkeleton";
 
 const walletOpts = queryOptions({
   queryKey: ["my-wallet"],
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/_authenticated/carteira/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(walletOpts),
   head: () => ({ meta: [{ title: "Início — Carteira Fidelize" }, { name: "robots", content: "noindex" }] }),
   component: WalletHome,
+  pendingComponent: () => <WalletHomeSkeleton />,
   errorComponent: ({ error, reset }) => {
     return <WalletErrorState error={error} onRetry={reset} />;
   },
@@ -50,6 +52,7 @@ function WalletHome() {
 
   // Feed unificado: recompensas prontas (topo) + carimbos + "faltam X" (aviso).
   const feed = buildFeed(items, history ?? [], rewards ?? []);
+  const streak = computeWeeklyStreak(history ?? []);
 
   return (
     <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["my-wallet"] })}>
@@ -67,7 +70,8 @@ function WalletHome() {
           <>
             {readyRewards > 0 && (
               <Link
-                to="/carteira/recompensas"
+                to="/carteira/premios"
+                search={{ tab: "recompensas" }}
                 className="group relative flex items-center gap-3 overflow-hidden rounded-3xl border border-primary/50 bg-gradient-to-br from-primary/15 to-primary/5 p-4 shadow-[0_0_0_1px_hsl(var(--primary)/0.15)] transition-all hover:from-primary/20"
               >
                 <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-md">
@@ -84,6 +88,8 @@ function WalletHome() {
               </Link>
             )}
 
+            {streak.weeks >= 2 && <StreakCard weeks={streak.weeks} lastVisit={streak.lastVisit} />}
+
             <div className="grid grid-cols-3 gap-3">
               <KpiTile label="Cartões" value={items.length} />
               <KpiTile label="Carimbos" value={totalStamps} icon={<Stamp className="h-3.5 w-3.5" />} />
@@ -93,7 +99,7 @@ function WalletHome() {
             <section>
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Em destaque</h2>
-                <Link to="/carteira/cartoes" className="text-xs font-medium text-primary hover:underline">
+                <Link to="/carteira/premios" search={{ tab: "cartoes" }} className="text-xs font-medium text-primary hover:underline">
                   Ver todos →
                 </Link>
               </div>
@@ -238,6 +244,71 @@ function KpiTile({ label, value, accent, icon }: { label: string; value: number;
       </div>
       <div className={"mt-1 font-display text-2xl font-bold " + (accent === "primary" ? "text-primary" : "")}>
         {value}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Streak semanal: quantas semanas ISO consecutivas (contando esta semana)
+ * o usuário registrou ao menos um carimbo não estornado.
+ */
+function computeWeeklyStreak(
+  history: Awaited<ReturnType<typeof getMyHistory>>,
+): { weeks: number; lastVisit: string | null } {
+  const valid = history.filter((h) => !h.reverted && h.createdAt);
+  if (!valid.length) return { weeks: 0, lastVisit: null };
+  const weekKeys = new Set(valid.map((h) => isoWeekKey(new Date(h.createdAt))));
+  const now = new Date();
+  let cursor = now;
+  let weeks = 0;
+  // Só conta se a semana atual OU a anterior tem visita (não desqualifica logo).
+  if (!weekKeys.has(isoWeekKey(cursor))) {
+    cursor = addDays(cursor, -7);
+    if (!weekKeys.has(isoWeekKey(cursor))) return { weeks: 0, lastVisit: valid[0].createdAt };
+  }
+  while (weekKeys.has(isoWeekKey(cursor))) {
+    weeks++;
+    cursor = addDays(cursor, -7);
+  }
+  return { weeks, lastVisit: valid[0].createdAt };
+}
+
+function isoWeekKey(d: Date): string {
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+  const week = Math.ceil(((+t - +yearStart) / 86400000 + 1) / 7);
+  return `${t.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
+}
+function addDays(d: Date, days: number): Date {
+  const c = new Date(d);
+  c.setDate(c.getDate() + days);
+  return c;
+}
+
+function StreakCard({ weeks, lastVisit }: { weeks: number; lastVisit: string | null }) {
+  return (
+    <div className="relative overflow-hidden rounded-3xl border border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-primary/10 p-4">
+      <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-orange-500/20 blur-3xl" />
+      <div className="relative flex items-center gap-3">
+        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg">
+          <Flame className="wallet-streak-flame h-6 w-6" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-300">
+            Sequência semanal
+          </div>
+          <div className="font-display text-base font-bold">
+            Você visitou <span className="text-orange-600 dark:text-orange-400">{weeks} semanas seguidas</span> 🔥
+          </div>
+          {lastVisit && (
+            <div className="text-[11px] text-muted-foreground">
+              Última visita em {formatDate(lastVisit)} — não perca o ritmo.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -41,8 +41,10 @@ import { Route as SuporteChamadoIdRouteImport } from './routes/suporte.chamado.$
 import { Route as SuporteSlugNovoRouteImport } from './routes/suporte.$slug.novo'
 import { Route as AjudaCategoryArticleRouteImport } from './routes/ajuda.$category.$article'
 import { Route as AuthenticatedCarteiraRecompensasRouteImport } from './routes/_authenticated/carteira.recompensas'
+import { Route as AuthenticatedCarteiraPremiosRouteImport } from './routes/_authenticated/carteira.premios'
 import { Route as AuthenticatedCarteiraPerfilRouteImport } from './routes/_authenticated/carteira.perfil'
 import { Route as AuthenticatedCarteiraHistoricoRouteImport } from './routes/_authenticated/carteira.historico'
+import { Route as AuthenticatedCarteiraDescobrirRouteImport } from './routes/_authenticated/carteira.descobrir'
 import { Route as AuthenticatedCarteiraCartoesRouteImport } from './routes/_authenticated/carteira.cartoes'
 import { Route as AuthenticatedCarteiraSlugRouteImport } from './routes/_authenticated/carteira.$slug'
 import { Route as AuthenticatedAppSuporteRouteImport } from './routes/_authenticated/app.suporte'
@@ -250,6 +252,12 @@ const AuthenticatedCarteiraRecompensasRoute =
     path: '/recompensas',
     getParentRoute: () => AuthenticatedCarteiraRoute,
   } as any)
+const AuthenticatedCarteiraPremiosRoute =
+  AuthenticatedCarteiraPremiosRouteImport.update({
+    id: '/premios',
+    path: '/premios',
+    getParentRoute: () => AuthenticatedCarteiraRoute,
+  } as any)
 const AuthenticatedCarteiraPerfilRoute =
   AuthenticatedCarteiraPerfilRouteImport.update({
     id: '/perfil',
@@ -260,6 +268,12 @@ const AuthenticatedCarteiraHistoricoRoute =
   AuthenticatedCarteiraHistoricoRouteImport.update({
     id: '/historico',
     path: '/historico',
+    getParentRoute: () => AuthenticatedCarteiraRoute,
+  } as any)
+const AuthenticatedCarteiraDescobrirRoute =
+  AuthenticatedCarteiraDescobrirRouteImport.update({
+    id: '/descobrir',
+    path: '/descobrir',
     getParentRoute: () => AuthenticatedCarteiraRoute,
   } as any)
 const AuthenticatedCarteiraCartoesRoute =
@@ -570,8 +584,10 @@ export interface FileRoutesByFullPath {
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
   '/carteira/$slug': typeof AuthenticatedCarteiraSlugRoute
   '/carteira/cartoes': typeof AuthenticatedCarteiraCartoesRoute
+  '/carteira/descobrir': typeof AuthenticatedCarteiraDescobrirRoute
   '/carteira/historico': typeof AuthenticatedCarteiraHistoricoRoute
   '/carteira/perfil': typeof AuthenticatedCarteiraPerfilRoute
+  '/carteira/premios': typeof AuthenticatedCarteiraPremiosRoute
   '/carteira/recompensas': typeof AuthenticatedCarteiraRecompensasRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
@@ -646,8 +662,10 @@ export interface FileRoutesByTo {
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
   '/carteira/$slug': typeof AuthenticatedCarteiraSlugRoute
   '/carteira/cartoes': typeof AuthenticatedCarteiraCartoesRoute
+  '/carteira/descobrir': typeof AuthenticatedCarteiraDescobrirRoute
   '/carteira/historico': typeof AuthenticatedCarteiraHistoricoRoute
   '/carteira/perfil': typeof AuthenticatedCarteiraPerfilRoute
+  '/carteira/premios': typeof AuthenticatedCarteiraPremiosRoute
   '/carteira/recompensas': typeof AuthenticatedCarteiraRecompensasRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
@@ -727,8 +745,10 @@ export interface FileRoutesById {
   '/_authenticated/app/suporte': typeof AuthenticatedAppSuporteRoute
   '/_authenticated/carteira/$slug': typeof AuthenticatedCarteiraSlugRoute
   '/_authenticated/carteira/cartoes': typeof AuthenticatedCarteiraCartoesRoute
+  '/_authenticated/carteira/descobrir': typeof AuthenticatedCarteiraDescobrirRoute
   '/_authenticated/carteira/historico': typeof AuthenticatedCarteiraHistoricoRoute
   '/_authenticated/carteira/perfil': typeof AuthenticatedCarteiraPerfilRoute
+  '/_authenticated/carteira/premios': typeof AuthenticatedCarteiraPremiosRoute
   '/_authenticated/carteira/recompensas': typeof AuthenticatedCarteiraRecompensasRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
@@ -808,8 +828,10 @@ export interface FileRouteTypes {
     | '/app/suporte'
     | '/carteira/$slug'
     | '/carteira/cartoes'
+    | '/carteira/descobrir'
     | '/carteira/historico'
     | '/carteira/perfil'
+    | '/carteira/premios'
     | '/carteira/recompensas'
     | '/ajuda/$category/$article'
     | '/suporte/$slug/novo'
@@ -884,8 +906,10 @@ export interface FileRouteTypes {
     | '/app/suporte'
     | '/carteira/$slug'
     | '/carteira/cartoes'
+    | '/carteira/descobrir'
     | '/carteira/historico'
     | '/carteira/perfil'
+    | '/carteira/premios'
     | '/carteira/recompensas'
     | '/ajuda/$category/$article'
     | '/suporte/$slug/novo'
@@ -964,8 +988,10 @@ export interface FileRouteTypes {
     | '/_authenticated/app/suporte'
     | '/_authenticated/carteira/$slug'
     | '/_authenticated/carteira/cartoes'
+    | '/_authenticated/carteira/descobrir'
     | '/_authenticated/carteira/historico'
     | '/_authenticated/carteira/perfil'
+    | '/_authenticated/carteira/premios'
     | '/_authenticated/carteira/recompensas'
     | '/ajuda/$category/$article'
     | '/suporte/$slug/novo'
@@ -1252,6 +1278,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCarteiraRecompensasRouteImport
       parentRoute: typeof AuthenticatedCarteiraRoute
     }
+    '/_authenticated/carteira/premios': {
+      id: '/_authenticated/carteira/premios'
+      path: '/premios'
+      fullPath: '/carteira/premios'
+      preLoaderRoute: typeof AuthenticatedCarteiraPremiosRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
+    }
     '/_authenticated/carteira/perfil': {
       id: '/_authenticated/carteira/perfil'
       path: '/perfil'
@@ -1264,6 +1297,13 @@ declare module '@tanstack/react-router' {
       path: '/historico'
       fullPath: '/carteira/historico'
       preLoaderRoute: typeof AuthenticatedCarteiraHistoricoRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
+    }
+    '/_authenticated/carteira/descobrir': {
+      id: '/_authenticated/carteira/descobrir'
+      path: '/descobrir'
+      fullPath: '/carteira/descobrir'
+      preLoaderRoute: typeof AuthenticatedCarteiraDescobrirRouteImport
       parentRoute: typeof AuthenticatedCarteiraRoute
     }
     '/_authenticated/carteira/cartoes': {
@@ -1666,8 +1706,10 @@ const AuthenticatedAppRouteWithChildren =
 interface AuthenticatedCarteiraRouteChildren {
   AuthenticatedCarteiraSlugRoute: typeof AuthenticatedCarteiraSlugRoute
   AuthenticatedCarteiraCartoesRoute: typeof AuthenticatedCarteiraCartoesRoute
+  AuthenticatedCarteiraDescobrirRoute: typeof AuthenticatedCarteiraDescobrirRoute
   AuthenticatedCarteiraHistoricoRoute: typeof AuthenticatedCarteiraHistoricoRoute
   AuthenticatedCarteiraPerfilRoute: typeof AuthenticatedCarteiraPerfilRoute
+  AuthenticatedCarteiraPremiosRoute: typeof AuthenticatedCarteiraPremiosRoute
   AuthenticatedCarteiraRecompensasRoute: typeof AuthenticatedCarteiraRecompensasRoute
   AuthenticatedCarteiraIndexRoute: typeof AuthenticatedCarteiraIndexRoute
 }
@@ -1675,8 +1717,10 @@ interface AuthenticatedCarteiraRouteChildren {
 const AuthenticatedCarteiraRouteChildren: AuthenticatedCarteiraRouteChildren = {
   AuthenticatedCarteiraSlugRoute: AuthenticatedCarteiraSlugRoute,
   AuthenticatedCarteiraCartoesRoute: AuthenticatedCarteiraCartoesRoute,
+  AuthenticatedCarteiraDescobrirRoute: AuthenticatedCarteiraDescobrirRoute,
   AuthenticatedCarteiraHistoricoRoute: AuthenticatedCarteiraHistoricoRoute,
   AuthenticatedCarteiraPerfilRoute: AuthenticatedCarteiraPerfilRoute,
+  AuthenticatedCarteiraPremiosRoute: AuthenticatedCarteiraPremiosRoute,
   AuthenticatedCarteiraRecompensasRoute: AuthenticatedCarteiraRecompensasRoute,
   AuthenticatedCarteiraIndexRoute: AuthenticatedCarteiraIndexRoute,
 }
@@ -1754,13 +1798,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
