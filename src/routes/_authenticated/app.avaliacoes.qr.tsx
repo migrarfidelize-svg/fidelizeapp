@@ -648,14 +648,40 @@ function ReviewQrPage() {
             </label>
 
             {nfcMode && (
-              <div className="rounded-lg border border-primary/30 bg-primary-soft/40 p-3 text-xs">
-                <div className="font-semibold text-primary">URL para NFC</div>
-                <div className="mt-1 flex items-center gap-2">
-                  <code className="flex-1 truncate rounded bg-background/70 px-2 py-1">{targetUrl || "—"}</code>
-                  <Button size="sm" variant="ghost" className="h-7 px-2" onClick={copyNfcUrl}><Copy className="h-3.5 w-3.5" /></Button>
+              <div className="space-y-3 rounded-lg border border-primary/30 bg-primary-soft/40 p-3 text-xs">
+                <div>
+                  <div className="mb-1.5 font-semibold text-primary">Estilo NFC no cartaz</div>
+                  <div className="grid grid-cols-2 gap-1 rounded-md border bg-background/70 p-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setNfcStyle("block")}
+                      className={`rounded px-2 py-1.5 text-[11px] font-semibold transition ${nfcStyle === "block" ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
+                    >
+                      Bloco "Toque aqui"
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNfcStyle("badge")}
+                      className={`rounded px-2 py-1.5 text-[11px] font-semibold transition ${nfcStyle === "badge" ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
+                    >
+                      Só selo NFC
+                    </button>
+                  </div>
+                  <div className="mt-1 text-[10px] text-muted-foreground">
+                    {nfcStyle === "block"
+                      ? 'Mostra o chip "Toque aqui" ao lado do QR + selo NFC no rodapé.'
+                      : "Mostra apenas o selo NFC discreto no rodapé, sem o bloco no meio."}
+                  </div>
                 </div>
-                <div className="mt-1.5 text-[11px] text-muted-foreground">
-                  Use um app como <strong>NFC Tools</strong> (Android/iOS) para gravar essa URL na tag adesiva.
+                <div>
+                  <div className="font-semibold text-primary">URL para NFC</div>
+                  <div className="mt-1 flex items-center gap-2">
+                    <code className="flex-1 truncate rounded bg-background/70 px-2 py-1">{targetUrl || "—"}</code>
+                    <Button size="sm" variant="ghost" className="h-7 px-2" onClick={copyNfcUrl}><Copy className="h-3.5 w-3.5" /></Button>
+                  </div>
+                  <div className="mt-1.5 text-[11px] text-muted-foreground">
+                    Use um app como <strong>NFC Tools</strong> (Android/iOS) para gravar essa URL na tag adesiva.
+                  </div>
                 </div>
               </div>
             )}
