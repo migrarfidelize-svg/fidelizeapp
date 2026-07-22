@@ -120,7 +120,7 @@ const BADGE_KEYS = Object.keys(BADGE_CATALOG) as BadgeKey[];
 type BadgeInstance = { key: BadgeKey; x: number; y: number };
 const DEFAULT_BADGE_POS: Record<BadgeKey, { x: number; y: number }> = {
   stars5:   { x: 22, y: 46 },
-  wifi:     { x: 78, y: 46 },
+  wifi:     { x: 50, y: 18 },
   pix:      { x: 22, y: 72 },
   card:     { x: 78, y: 72 },
   pet:      { x: 22, y: 82 },
@@ -232,7 +232,7 @@ function ReviewQrPage() {
   const [designName, setDesignName] = useState("");
   const [layout, setLayout] = useState<PosterLayout>(DEFAULT_LAYOUT);
   const [editLayout, setEditLayout] = useState(false);
-  const [badges, setBadges] = useState<BadgeInstance[]>([]);
+  const [badges, setBadges] = useState<BadgeInstance[]>([{ key: "wifi", x: 50, y: 18 }]);
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [savedTarget, setSavedTarget] = useState<"ls" | "idb" | "fail">("ls");
   const [savedTick, setSavedTick] = useState(0);
