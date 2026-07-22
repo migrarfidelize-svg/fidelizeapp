@@ -78,8 +78,11 @@ function ReviewQrPage() {
 
   // Persisted preferences
   const storageKey = est ? `review-qr:${est.id}` : "review-qr:draft";
+  const designsKey = est ? `review-qr-designs:${est.id}` : "review-qr-designs:draft";
 
+  const [template, setTemplate] = useState<TemplateKey>("glass");
   const [format, setFormat] = useState<FormatKey>("counter15x10");
+
   const [destination, setDestination] = useState<Destination>("fidelize");
   const [googleUrl, setGoogleUrl] = useState("");
   const [showGoogleLogo, setShowGoogleLogo] = useState(true);
