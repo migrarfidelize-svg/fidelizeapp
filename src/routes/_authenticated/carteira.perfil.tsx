@@ -151,6 +151,10 @@ function WalletProfile() {
         </button>
       </form>
 
+      <PushPreferencesSection />
+
+
+
       {/* LGPD self-service em destaque */}
       <section className="rounded-3xl border border-border/60 bg-card/40 p-5">
         <div className="mb-3 flex items-center gap-2">
