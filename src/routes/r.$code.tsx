@@ -38,6 +38,7 @@ export const Route = createFileRoute("/r/$code")({
 function ReferralLanding() {
   const { code } = Route.useParams();
   const lookup = useServerFn(lookupReferralCode);
+  const track = useServerFn(trackReferralEvent);
   const navigate = useNavigate();
 
   const { data, isLoading } = useQuery({
@@ -49,11 +50,17 @@ function ReferralLanding() {
     if (typeof window !== "undefined") {
       try {
         sessionStorage.setItem("fidelize_referral_code", code.toUpperCase());
+        // De-dupe click tracking: only log once per code per session.
+        const key = `fidelize_ref_click_${code.toUpperCase()}`;
+        if (!sessionStorage.getItem(key)) {
+          sessionStorage.setItem(key, "1");
+          track({ data: { code, kind: "click" } }).catch(() => {});
+        }
       } catch {
         /* noop */
       }
     }
-  }, [code]);
+  }, [code, track]);
 
   if (isLoading) {
     return (
