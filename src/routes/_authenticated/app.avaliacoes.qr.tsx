@@ -98,7 +98,7 @@ const DEFAULT_LAYOUT: PosterLayout = {
   title:       { x: 50, y: 26 },
   subtitle:    { x: 50, y: 34 },
   primaryQr:   { x: 50, y: 58 },
-  secondaryQr: { x: 72, y: 58 },
+  secondaryQr: { x: 78, y: 58 },
   nfc:         { x: 50, y: 74 },
   ctaNear:     { x: 50, y: 86 },
   ctaFooter:   { x: 50, y: 93 },
@@ -524,7 +524,7 @@ function ReviewQrPage() {
   useEffect(() => {
     if (!secondaryEnabled) {
       setSecondaryQrDataUrl("");
-      setLayout((prev) => (prev.primaryQr.x === 30 && prev.primaryQr.y === 58
+      setLayout((prev) => (prev.primaryQr.x === 22 && prev.primaryQr.y === 58
         ? { ...prev, primaryQr: DEFAULT_LAYOUT.primaryQr }
         : prev));
       return;
@@ -535,8 +535,8 @@ function ReviewQrPage() {
       if (!primaryUntouched && !secondaryUntouched) return prev;
       return {
         ...prev,
-        primaryQr: primaryUntouched ? { x: 30, y: 58 } : prev.primaryQr,
-        secondaryQr: secondaryUntouched ? { x: 70, y: 58 } : prev.secondaryQr,
+        primaryQr: primaryUntouched ? { x: 22, y: 58 } : prev.primaryQr,
+        secondaryQr: secondaryUntouched ? { x: 78, y: 58 } : prev.secondaryQr,
       };
     });
     QRCode.toDataURL(qrEncodedSecondaryUrl, {
