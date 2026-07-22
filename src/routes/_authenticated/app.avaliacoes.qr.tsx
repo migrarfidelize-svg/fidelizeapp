@@ -291,9 +291,10 @@ function ReviewQrPage() {
   const fidelizeUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/avaliar/${est.slug}` : "";
   const rawTargetUrl = destination === "fidelize" ? fidelizeUrl : googleUrl.trim();
   const primaryIsPlaceholder = destination === "google" && !rawTargetUrl;
-  const targetUrl = rawTargetUrl || (destination === "google"
+  const baseTargetUrl = rawTargetUrl || (destination === "google"
     ? "https://g.page/exemplo-fidelize/review"
     : "https://fidelize.app/preview");
+  const targetUrl = utmEnabled ? withUtm(baseTargetUrl, est?.slug ?? "review") : baseTargetUrl;
 
   const googleCheck = useMemo(() => checkGoogleUrl(googleUrl), [googleUrl]);
   const secondaryRawUrl = secondaryUrl.trim();
@@ -303,26 +304,30 @@ function ReviewQrPage() {
   const secondaryReady = secondaryEnabled && secondaryCheck.level === "ok";
   const primaryBlocking = destination === "google" && (googleCheck.level === "error" || googleCheck.level === "empty");
   const secondaryBlocking = secondaryEnabled && (secondaryCheck.level === "error" || secondaryCheck.level === "empty");
+  const secondaryTargetUrl = useMemo(() => {
+    const raw = secondaryRawUrl || "https://fidelize.app/preview-cardapio";
+    return utmEnabled ? withUtm(raw, est?.slug ?? "review") : raw;
+  }, [secondaryRawUrl, utmEnabled, est?.slug]);
+
+  // Contrast / readability diagnostics
+  const textBgRatio = useMemo(() => contrastRatio(textColor, backgroundColor), [textColor, backgroundColor]);
+  const qrCodeRatio = contrastRatio("#111827", "#ffffff"); // QR dark vs light
 
   useEffect(() => {
     QRCode.toDataURL(targetUrl, {
-      width: 1200, margin: 1, errorCorrectionLevel: "H",
+      width: 1200, margin: 1, errorCorrectionLevel: ecc,
       color: { dark: "#111827", light: "#ffffff" },
     }).then(setQrDataUrl).catch(() => setQrDataUrl(""));
-  }, [targetUrl]);
+  }, [targetUrl, ecc]);
 
   useEffect(() => {
     if (!secondaryEnabled) {
       setSecondaryQrDataUrl("");
-      // restore centered primary QR when the second QR is turned off (only if
-      // it's still at the auto-shifted position — never override manual drags).
       setLayout((prev) => (prev.primaryQr.x === 30 && prev.primaryQr.y === 58
         ? { ...prev, primaryQr: DEFAULT_LAYOUT.primaryQr }
         : prev));
       return;
     }
-    // Auto-shift the two QRs side-by-side the moment the toggle is enabled,
-    // but only if the user hasn't manually repositioned them yet.
     setLayout((prev) => {
       const primaryUntouched = prev.primaryQr.x === DEFAULT_LAYOUT.primaryQr.x && prev.primaryQr.y === DEFAULT_LAYOUT.primaryQr.y;
       const secondaryUntouched = prev.secondaryQr.x === DEFAULT_LAYOUT.secondaryQr.x && prev.secondaryQr.y === DEFAULT_LAYOUT.secondaryQr.y;
@@ -333,12 +338,11 @@ function ReviewQrPage() {
         secondaryQr: secondaryUntouched ? { x: 70, y: 58 } : prev.secondaryQr,
       };
     });
-    const u = secondaryRawUrl || "https://fidelize.app/preview-cardapio";
-    QRCode.toDataURL(u, {
-      width: 1200, margin: 1, errorCorrectionLevel: "H",
+    QRCode.toDataURL(secondaryTargetUrl, {
+      width: 1200, margin: 1, errorCorrectionLevel: ecc,
       color: { dark: "#111827", light: "#ffffff" },
     }).then(setSecondaryQrDataUrl).catch(() => setSecondaryQrDataUrl(""));
-  }, [secondaryEnabled, secondaryRawUrl]);
+  }, [secondaryEnabled, secondaryTargetUrl, ecc]);
 
   const dims = FORMATS[format];
 
