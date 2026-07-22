@@ -36,7 +36,7 @@ const FORMATS: Record<FormatKey, { label: string; aspect: string; mm: { w: numbe
   story:        { label: "Story 9:16", aspect: "9 / 16", mm: { w: 108, h: 192 }, description: "Story/Reels", orientation: "portrait" },
 };
 
-type Destination = "fidelize" | "google";
+type Destination = "fidelize" | "google" | "menu";
 type TemplateKey = "glass" | "minimal" | "bold" | "editorial";
 
 const TEMPLATES: Record<TemplateKey, { label: string; description: string; defaults: { primaryColor: string; backgroundColor: string; textColor: string } }> = {
@@ -196,8 +196,9 @@ function ReviewQrPage() {
 
 
   const fidelizeUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/avaliar/${est.slug}` : "";
-  const targetUrl = destination === "google" ? googleUrl.trim() : fidelizeUrl;
+  const targetUrl = destination === "fidelize" ? fidelizeUrl : googleUrl.trim();
   const googleReady = destination === "google" && /^https?:\/\/(g\.page|maps\.app\.goo\.gl|search\.google\.com|www\.google\.com|goo\.gl)/i.test(targetUrl);
+  const menuReady = destination === "menu" && /^https?:\/\//i.test(targetUrl);
 
   useEffect(() => {
     if (!targetUrl) { setQrDataUrl(""); return; }
@@ -307,64 +308,97 @@ function ReviewQrPage() {
           <CardContent className="space-y-6 p-5">
             {/* Destination */}
             <div className="space-y-3">
-              <Label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Destino do QR</Label>
-              <div className="grid grid-cols-2 gap-1 rounded-xl border bg-background/60 p-1">
-                <button
-                  type="button"
-                  onClick={() => setDestination("fidelize")}
-                  className={`rounded-lg py-2.5 text-sm font-semibold transition ${destination === "fidelize" ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  Fidelize
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDestination("google")}
-                  className={`flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition ${destination === "google" ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  <GoogleG className="h-4 w-4" />
-                  Google Reviews
-                </button>
+              <Label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Destino do QR Code</Label>
+
+              {/* Pre-filled Fidelize review link */}
+              <div className={`rounded-lg border p-3 text-xs transition ${destination === "fidelize" ? "border-primary/50 bg-primary/5" : "border-border/60 bg-background/50"}`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 font-semibold text-foreground">
+                    <Star className="h-3.5 w-3.5 text-primary" /> Avaliação Fidelize
+                    <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary">padrão</span>
+                  </div>
+                  {destination !== "fidelize" && (
+                    <button type="button" onClick={() => setDestination("fidelize")} className="text-[11px] font-semibold text-primary hover:underline">Usar este</button>
+                  )}
+                </div>
+                <div className="mt-2 flex items-center gap-2">
+                  <code className="flex-1 truncate rounded bg-muted/60 px-2 py-1 text-primary">{fidelizeUrl}</code>
+                  <Button size="sm" variant="ghost" className="h-7 px-2" onClick={copyLink}><Copy className="h-3.5 w-3.5" /></Button>
+                </div>
               </div>
 
-              {destination === "fidelize" ? (
-                <div className="rounded-lg border bg-background/50 p-3 text-xs">
-                  <div className="text-muted-foreground">Link público</div>
-                  <div className="mt-1 flex items-center gap-2">
-                    <code className="flex-1 truncate rounded bg-muted/60 px-2 py-1 text-primary">{fidelizeUrl}</code>
-                    <Button size="sm" variant="ghost" className="h-7 px-2" onClick={copyLink}><Copy className="h-3.5 w-3.5" /></Button>
+              {/* Alternate destinations */}
+              <div className="space-y-2 rounded-lg border border-dashed border-border/60 p-3">
+                <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Ou use outro link</div>
+                <div className="grid grid-cols-2 gap-1 rounded-lg border bg-background/60 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setDestination("google")}
+                    className={`flex items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-semibold transition ${destination === "google" ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    <GoogleG className="h-3.5 w-3.5" /> Google
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDestination("menu")}
+                    className={`flex items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-semibold transition ${destination === "menu" ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    <FileText className="h-3.5 w-3.5" /> Cardápio
+                  </button>
+                </div>
+
+                {destination === "google" && (
+                  <div className="space-y-2 pt-1">
+                    <Input
+                      value={googleUrl}
+                      onChange={(e) => setGoogleUrl(e.target.value)}
+                      placeholder="https://g.page/r/XXXXXX/review"
+                      className="text-xs"
+                    />
+                    {googleReady ? (
+                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-500">
+                        <CheckCircle2 className="h-3.5 w-3.5" /> Link Google válido
+                      </div>
+                    ) : googleUrl ? (
+                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-amber-500">
+                        <AlertTriangle className="h-3.5 w-3.5" /> Confira se é um link do Google (g.page, maps.app.goo.gl, google.com)
+                      </div>
+                    ) : (
+                      <div className="text-[11px] text-muted-foreground">Copie o link "Deixe uma avaliação" do seu Google Business.</div>
+                    )}
+                    <label className="mt-1 flex cursor-pointer items-center justify-between gap-3 rounded-lg border bg-background/50 p-2.5">
+                      <span className="flex items-center gap-2 text-xs font-medium">
+                        <GoogleG className="h-4 w-4" /> Mostrar logo do Google no cartaz
+                      </span>
+                      <Switch checked={showGoogleLogo} onCheckedChange={setShowGoogleLogo} />
+                    </label>
                   </div>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Label className="text-xs">Link do Google Reviews (Place URL ou g.page)</Label>
-                  <Input
-                    value={googleUrl}
-                    onChange={(e) => setGoogleUrl(e.target.value)}
-                    placeholder="https://g.page/r/XXXXXX/review"
-                    className="text-xs"
-                  />
-                  {googleReady ? (
-                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-500">
-                      <CheckCircle2 className="h-3.5 w-3.5" /> Link Google válido
-                    </div>
-                  ) : googleUrl ? (
-                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-amber-500">
-                      <AlertTriangle className="h-3.5 w-3.5" /> Confira se é um link do Google (g.page, maps.app.goo.gl, google.com)
-                    </div>
-                  ) : (
-                    <div className="text-[11px] text-muted-foreground">
-                      Copie o link "Deixe uma avaliação" do seu perfil no Google Business.
-                    </div>
-                  )}
-                  <label className="mt-1 flex cursor-pointer items-center justify-between gap-3 rounded-lg border bg-background/50 p-2.5">
-                    <span className="flex items-center gap-2 text-xs font-medium">
-                      <GoogleG className="h-4 w-4" /> Mostrar logo do Google no cartaz
-                    </span>
-                    <Switch checked={showGoogleLogo} onCheckedChange={setShowGoogleLogo} />
-                  </label>
-                </div>
-              )}
+                )}
+
+                {destination === "menu" && (
+                  <div className="space-y-2 pt-1">
+                    <Input
+                      value={googleUrl}
+                      onChange={(e) => setGoogleUrl(e.target.value)}
+                      placeholder="https://seurestaurante.com/cardapio"
+                      className="text-xs"
+                    />
+                    {menuReady ? (
+                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-500">
+                        <CheckCircle2 className="h-3.5 w-3.5" /> Link do cardápio válido
+                      </div>
+                    ) : googleUrl ? (
+                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-amber-500">
+                        <AlertTriangle className="h-3.5 w-3.5" /> O link precisa começar com https://
+                      </div>
+                    ) : (
+                      <div className="text-[11px] text-muted-foreground">Cole o link do seu cardápio digital (iFood, PDF, site próprio, etc.).</div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
+
 
             {/* Templates */}
             <div className="space-y-3">
