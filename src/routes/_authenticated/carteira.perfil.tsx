@@ -1,12 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { exportMyData, deleteMyAccount } from "@/lib/lgpd.functions";
+import { getMyWallet } from "@/lib/my-wallet.functions";
 import { clearWalletCache } from "@/lib/offline-wallet-cache";
 import { PushStatusCard } from "@/components/wallet/PushStatusCard";
+import { TierBadge } from "@/components/wallet/TierBadge";
 import { toast } from "sonner";
-import { User, Download, Trash2, ShieldCheck, AlertTriangle, ChevronRight } from "lucide-react";
+import { User, Download, Trash2, ShieldCheck, AlertTriangle, ChevronRight, Trophy } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/carteira/perfil")({
   ssr: false,
@@ -151,7 +154,10 @@ function WalletProfile() {
         </button>
       </form>
 
+      <TierOverview />
+
       <PushStatusCard />
+
 
 
 
