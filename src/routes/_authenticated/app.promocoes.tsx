@@ -766,18 +766,21 @@ function GlobalLinksDialog({
   open,
   onOpenChange,
   initial,
+  suggestions,
   save,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   establishmentId: string;
   initial: Link[];
+  suggestions: Link[];
   save: (links: Link[]) => Promise<void>;
 }) {
-  const [links, setLinks] = useState<Link[]>(initial);
+  const seeded = initial.length > 0 ? initial : suggestions;
+  const [links, setLinks] = useState<Link[]>(seeded);
   const [busy, setBusy] = useState(false);
 
-  useMemo(() => setLinks(initial), [initial]);
+  useMemo(() => setLinks(initial.length > 0 ? initial : suggestions), [initial, suggestions]);
 
   async function commit() {
     for (const l of links) {
