@@ -362,7 +362,7 @@ function PixCard({
               k="Chave"
               v={key || "—"}
               copied={copied === "key"}
-              onCopy={() => key && copy(key, "key")}
+              onCopy={() => copy(key, "key", "Chave Pix")}
               text={text}
             />
             {name && (
@@ -370,7 +370,7 @@ function PixCard({
                 k="Nome"
                 v={name}
                 copied={copied === "name"}
-                onCopy={() => copy(name, "name")}
+                onCopy={() => copy(name, "name", "Nome do beneficiário")}
                 text={text}
               />
             )}
