@@ -372,3 +372,87 @@ export function PushOptIn({ token }: { token: string }) {
     </Card>
   );
 }
+
+function BlockedGuide({
+  browser,
+  open,
+  onToggle,
+}: {
+  browser: ReturnType<typeof detectBrowser>;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  const steps: Record<string, string[]> = {
+    chrome: [
+      "Toque no cadeado 🔒 (ou ícone de ajustes) ao lado do endereço do site.",
+      "Abra ‘Permissões do site’ → ‘Notificações’.",
+      "Troque de ‘Bloquear’ para ‘Permitir’ e recarregue esta página.",
+    ],
+    edge: [
+      "Toque no cadeado 🔒 ao lado do endereço do site.",
+      "Abra ‘Permissões para este site’ → ‘Notificações’.",
+      "Selecione ‘Permitir’ e recarregue a página.",
+    ],
+    firefox: [
+      "Toque no cadeado 🔒 ao lado do endereço.",
+      "Abra ‘Mais informações’ → ‘Permissões’ → ‘Enviar notificações’.",
+      "Desmarque ‘Usar padrão’ e escolha ‘Permitir’, depois recarregue.",
+    ],
+    safari: [
+      "Abra Ajustes do iPhone/iPad → ‘Notificações’.",
+      "Encontre este app (adicionado à tela de início) e ative ‘Permitir Notificações’.",
+      "Volte aqui e recarregue a página.",
+    ],
+    opera: [
+      "Toque no cadeado 🔒 ao lado do endereço.",
+      "Abra permissões do site → ‘Notificações’ → ‘Permitir’.",
+      "Recarregue a página.",
+    ],
+    samsung: [
+      "Toque no cadeado 🔒 ao lado do endereço.",
+      "Abra ‘Permissões’ → ‘Notificações’ → ‘Permitir’.",
+      "Recarregue a página.",
+    ],
+    other: [
+      "Abra as permissões deste site nas configurações do navegador.",
+      "Localize ‘Notificações’ e mude de ‘Bloquear’ para ‘Permitir’.",
+      "Recarregue esta página e tente novamente.",
+    ],
+  };
+  const list = steps[browser] ?? steps.other;
+  return (
+    <div className="space-y-2">
+      <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-xs">
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+        <div className="space-y-1">
+          <p className="font-medium text-destructive">Notificações bloqueadas neste navegador</p>
+          <p className="text-muted-foreground">
+            O navegador está recusando o pedido automaticamente. Para reativar, é preciso desbloquear
+            manualmente nas configurações do site.
+          </p>
+        </div>
+      </div>
+      <Button variant="outline" size="sm" onClick={onToggle} className="w-full">
+        <Info className="mr-2 h-4 w-4" />
+        {open ? "Ocultar passo a passo" : "Ver como desbloquear"}
+      </Button>
+      {open && (
+        <ol className="space-y-2 rounded-lg border border-border/60 bg-muted/30 p-3 text-xs text-foreground">
+          {list.map((step, i) => (
+            <li key={i} className="flex gap-2">
+              <span className="font-bold text-primary">{i + 1}.</span>
+              <span>{step}</span>
+            </li>
+          ))}
+          <li className="flex gap-2 border-t border-border/60 pt-2 text-muted-foreground">
+            <span>ℹ️</span>
+            <span>
+              Depois de permitir, recarregue esta página e toque em <strong>Receber notificações</strong> novamente.
+            </span>
+          </li>
+        </ol>
+      )}
+    </div>
+  );
+}
+
