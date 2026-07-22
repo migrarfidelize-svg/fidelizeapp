@@ -957,6 +957,9 @@ interface PosterProps {
   secondaryEnabled: boolean;
   secondaryQrDataUrl: string;
   secondaryLabel: string;
+  layout: PosterLayout;
+  setLayout: (updater: (prev: PosterLayout) => PosterLayout) => void;
+  editable: boolean;
 }
 
 const PosterCanvas = forwardRef<HTMLDivElement, PosterProps>(function PosterCanvas(props, ref) {
@@ -971,7 +974,7 @@ const PosterCanvas = forwardRef<HTMLDivElement, PosterProps>(function PosterCanv
   return (
     <div
       ref={ref}
-      className="absolute inset-0 flex flex-col"
+      className="absolute inset-0"
       style={{ background: bg, color: props.textColor }}
     >
       {overlay !== "none" && (
@@ -982,30 +985,128 @@ const PosterCanvas = forwardRef<HTMLDivElement, PosterProps>(function PosterCanv
   );
 });
 
+/**
+ * Renders a single draggable poster element positioned by percentage.
+ * When editable=true, the item shows a dashed guide and reacts to pointer drag,
+ * updating its (x, y) center coordinates in the shared layout state.
+ */
+function DraggableItem({
+  itemKey, layout, setLayout, editable, className = "", style, children,
+}: {
+  itemKey: LayoutKey;
+  layout: PosterLayout;
+  setLayout: (updater: (prev: PosterLayout) => PosterLayout) => void;
+  editable: boolean;
+  className?: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const draggingRef = useRef(false);
+  const pos = layout[itemKey];
 
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!editable) return;
+    const parent = ref.current?.parentElement;
+    if (!parent) return;
+    draggingRef.current = true;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    e.preventDefault();
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!editable || !draggingRef.current) return;
+    const parent = ref.current?.parentElement;
+    if (!parent) return;
+    const rect = parent.getBoundingClientRect();
+    const x = Math.max(2, Math.min(98, ((e.clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(2, Math.min(98, ((e.clientY - rect.top) / rect.height) * 100));
+    setLayout((prev) => ({ ...prev, [itemKey]: { x, y } }));
+  };
+  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    draggingRef.current = false;
+    try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch { /* ignore */ }
+  };
+
+  return (
+    <div
+      ref={ref}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      className={`absolute ${editable ? "cursor-move select-none" : ""} ${className}`}
+      style={{
+        left: `${pos.x}%`,
+        top: `${pos.y}%`,
+        transform: "translate(-50%, -50%)",
+        touchAction: editable ? "none" : undefined,
+        ...style,
+      }}
+    >
+      {editable && (
+        <div
+          data-export-ignore="true"
+          className="pointer-events-none absolute -inset-2 rounded-md border border-dashed border-primary/70 bg-primary/5"
+        >
+          <div className="absolute -top-4 left-0 whitespace-nowrap rounded bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-primary-foreground shadow">
+            {LAYOUT_LABELS[itemKey]}
+          </div>
+        </div>
+      )}
+      {children}
+    </div>
+  );
+}
+
+const LAYOUT_LABELS: Record<LayoutKey, string> = {
+  header: "Logo",
+  title: "Título",
+  subtitle: "Subtítulo",
+  primaryQr: "QR principal",
+  secondaryQr: "2º QR",
+  nfc: "NFC",
+  ctaNear: "Chamada",
+  ctaFooter: "Rodapé",
+};
 
 function PortraitBody(p: PosterProps) {
+  const primarySize = p.secondaryEnabled ? 104 : 128;
   return (
-    <div className="flex h-full w-full flex-col items-center justify-between p-6 text-center">
-      <div className="space-y-2">
-        <BrandLogo url={p.logoUrl} name={p.establishmentName} primary={p.primaryColor} />
-        <div className="text-sm font-bold" style={{ color: p.textColor }}>{p.establishmentName}</div>
-        <Stars color={p.primaryColor} size={16} center />
-        <h2 className="text-xl font-black leading-tight" style={{ color: p.textColor }}>{p.title}</h2>
-        <p className="mx-auto max-w-[26ch] text-[11px] opacity-70" style={{ color: p.textColor }}>{p.subtitle}</p>
-      </div>
+    <div className="relative h-full w-full">
+      {/* Header block (logo + name + stars) */}
+      <DraggableItem itemKey="header" layout={p.layout} setLayout={p.setLayout} editable={p.editable}>
+        <div className="flex flex-col items-center gap-1">
+          <BrandLogo url={p.logoUrl} name={p.establishmentName} primary={p.primaryColor} />
+          <div className="text-sm font-bold" style={{ color: p.textColor }}>{p.establishmentName}</div>
+          <Stars color={p.primaryColor} size={14} center />
+        </div>
+      </DraggableItem>
 
-      {/* QR area */}
-      {p.secondaryEnabled ? (
-        <div className="flex w-full items-start justify-center gap-4">
-          <LabeledQr
-            qr={p.qrDataUrl}
-            label={p.primaryLabel}
-            primary={p.primaryColor}
-            text={p.textColor}
-            badge={p.destination === "google" && p.showGoogleLogo ? "google" : null}
-            size={104}
-          />
+      {/* Title */}
+      <DraggableItem itemKey="title" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
+        <h2 className="text-center text-xl font-black leading-tight" style={{ color: p.textColor }}>{p.title}</h2>
+      </DraggableItem>
+
+      {/* Subtitle */}
+      <DraggableItem itemKey="subtitle" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[80%]">
+        <p className="text-center text-[11px] opacity-70" style={{ color: p.textColor }}>{p.subtitle}</p>
+      </DraggableItem>
+
+      {/* Primary QR */}
+      <DraggableItem itemKey="primaryQr" layout={p.layout} setLayout={p.setLayout} editable={p.editable}>
+        <LabeledQr
+          qr={p.qrDataUrl}
+          label={p.primaryLabel}
+          primary={p.primaryColor}
+          text={p.textColor}
+          badge={p.destination === "google" && p.showGoogleLogo ? "google" : null}
+          size={primarySize}
+        />
+      </DraggableItem>
+
+      {/* Secondary QR */}
+      {p.secondaryEnabled && (
+        <DraggableItem itemKey="secondaryQr" layout={p.layout} setLayout={p.setLayout} editable={p.editable}>
           <LabeledQr
             qr={p.secondaryQrDataUrl}
             label={p.secondaryLabel}
@@ -1014,25 +1115,56 @@ function PortraitBody(p: PosterProps) {
             badge={null}
             size={104}
           />
-        </div>
-      ) : p.nfcMode ? (
-        <div className="flex items-center justify-center gap-3">
-          <LabeledQr qr={p.qrDataUrl} label={p.primaryLabel} primary={p.primaryColor} text={p.textColor} badge={p.destination === "google" && p.showGoogleLogo ? "google" : null} size={128} />
-          <NfcBlock primary={p.primaryColor} />
-        </div>
-      ) : (
-        <LabeledQr qr={p.qrDataUrl} label={p.primaryLabel} primary={p.primaryColor} text={p.textColor} badge={p.destination === "google" && p.showGoogleLogo ? "google" : null} size={128} />
+        </DraggableItem>
       )}
 
-      <div className="space-y-2">
-        <div className="text-xs font-bold uppercase tracking-widest" style={{ color: p.primaryColor }}>
+      {/* NFC block (only when NFC mode + no secondary) */}
+      {p.nfcMode && !p.secondaryEnabled && (
+        <DraggableItem itemKey="nfc" layout={p.layout} setLayout={p.setLayout} editable={p.editable}>
+          <NfcBlock primary={p.primaryColor} />
+        </DraggableItem>
+      )}
+
+      {/* CTA near QR */}
+      <DraggableItem itemKey="ctaNear" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
+        <div className="text-center text-xs font-bold uppercase tracking-widest" style={{ color: p.primaryColor }}>
           {p.nfcMode ? "Aproxime o celular" : p.ctaNearQR}
         </div>
-        <div className="text-[10px] opacity-70" style={{ color: p.textColor }}>{p.ctaFooter}</div>
-        <div className="flex items-center justify-center gap-2">
+      </DraggableItem>
+
+      {/* CTA footer */}
+      <DraggableItem itemKey="ctaFooter" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
+        <div className="flex flex-col items-center gap-1">
+          <div className="text-center text-[10px] opacity-70" style={{ color: p.textColor }}>{p.ctaFooter}</div>
           {p.nfcMode && <NfcBadge primary={p.primaryColor} />}
         </div>
+      </DraggableItem>
+    </div>
+  );
+}
+
+/** Compact inline validation message for URL fields. */
+function ValidationLine({ check }: { check: UrlCheck }) {
+  if (check.level === "empty") {
+    return <div className="text-[11px] text-muted-foreground">{check.message}</div>;
+  }
+  if (check.level === "ok") {
+    return (
+      <div className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-500">
+        <CheckCircle2 className="h-3.5 w-3.5" /> {check.message}
       </div>
+    );
+  }
+  if (check.level === "warn") {
+    return (
+      <div className="flex items-center gap-1.5 text-[11px] font-medium text-amber-500">
+        <AlertTriangle className="h-3.5 w-3.5" /> {check.message}
+      </div>
+    );
+  }
+  return (
+    <div role="alert" className="flex items-center gap-1.5 text-[11px] font-semibold text-destructive">
+      <XCircle className="h-3.5 w-3.5" /> {check.message}
     </div>
   );
 }
