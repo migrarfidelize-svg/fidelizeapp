@@ -1167,7 +1167,7 @@ function ReviewQrPage() {
 
         {/* PREVIEW */}
         <div className="min-w-0">
-          <div className="sticky top-4 flex max-h-[calc(100vh-2rem)] flex-col items-center gap-3 overflow-y-auto overscroll-contain pr-1 [scrollbar-width:thin]">
+          <div className="sticky top-4 flex flex-col items-center gap-3">
             {/* CTA: Loja física */}
             <div className="flex w-full max-w-[420px] items-center gap-2">
               <button
