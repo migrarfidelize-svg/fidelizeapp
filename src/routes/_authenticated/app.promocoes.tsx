@@ -412,6 +412,7 @@ function PromocoesPage() {
         onOpenChange={setLinksOpen}
         establishmentId={activeEst.id}
         initial={linksQ.data ?? []}
+        suggestions={suggestFixedLinks(activeEst)}
         save={async (links) => {
           await updLinksFn({
             data: { establishment_id: activeEst.id, external_links: links },
