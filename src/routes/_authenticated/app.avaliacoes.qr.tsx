@@ -1394,8 +1394,9 @@ function ReviewQrPage() {
                 <Maximize2 className="h-3.5 w-3.5" />
                 <span className="font-semibold tracking-wider sm:[writing-mode:vertical-rl] sm:[transform:rotate(180deg)]">
                   Tela cheia
-
+                </span>
               </Button>
+
             </div>
 
             </div>
