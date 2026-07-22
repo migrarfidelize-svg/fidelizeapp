@@ -933,8 +933,45 @@ function ReviewQrPage() {
                   <Save className="mr-1.5 h-3.5 w-3.5" /> Salvar
                 </Button>
               </div>
-              {designs.length > 0 ? (
+              {/* Cloud designs (shared between establishment members) */}
+              {cloudDesigns && cloudDesigns.length > 0 && (
+                <div className="max-h-56 space-y-1 overflow-y-auto pr-1">
+                  {cloudDesigns.map((d) => (
+                    <div key={d.id} className="flex items-center gap-2 rounded-lg border bg-background/70 p-1.5">
+                      <button
+                        type="button"
+                        onClick={() => applyCloudDesign(d)}
+                        className="flex flex-1 items-center gap-2 rounded px-1.5 py-0.5 text-left hover:bg-primary/10"
+                      >
+                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/15 ring-1 ring-primary/30">
+                          <Cloud className="h-3.5 w-3.5 text-primary" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-xs font-semibold">{d.name}</div>
+                          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                            <UserCircle2 className="h-3 w-3" />
+                            <span className="truncate">{d.applied_by_name ?? d.created_by_name ?? "Equipe"}</span>
+                            {typeof d.times_applied === "number" && d.times_applied > 0 && (
+                              <span>· {d.times_applied}×</span>
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                        onClick={() => removeCloudDesign(d.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {designs.length > 0 && (
                 <div className="max-h-40 space-y-1 overflow-y-auto pr-1">
+                  <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Locais (offline)</div>
                   {designs.map((d) => (
                     <div key={d.id} className="flex items-center gap-2 rounded-lg border bg-background/70 p-1.5">
                       <button
@@ -964,12 +1001,101 @@ function ReviewQrPage() {
                     </div>
                   ))}
                 </div>
-              ) : (
+              )}
+              {(!cloudDesigns || cloudDesigns.length === 0) && designs.length === 0 && (
                 <div className="text-[11px] text-muted-foreground">
-                  Nenhum design salvo ainda. Ajuste as cores/textos e clique em Salvar para guardar variações.
+                  Nenhum design salvo ainda. Ajuste as cores/textos e clique em Salvar para guardar variações — ficam disponíveis para toda a equipe.
                 </div>
               )}
             </div>
+
+            {/* Emblemas / selos arrastáveis */}
+            <div className="space-y-2 rounded-xl border border-primary/20 bg-primary/5 p-3">
+              <div className="flex items-center justify-between gap-2 text-[11px] font-semibold uppercase tracking-widest text-primary">
+                <span className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5" /> Emblemas</span>
+                <span className="text-[10px] font-normal normal-case text-muted-foreground">Arraste após adicionar</span>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5">
+                {BADGE_KEYS.map((k) => {
+                  const meta = BADGE_CATALOG[k];
+                  const Icon = meta.Icon;
+                  const active = badges.some((b) => b.key === k);
+                  return (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => toggleBadge(k)}
+                      className={`flex items-center gap-1.5 rounded-lg border px-2 py-1.5 text-left text-[11px] transition ${
+                        active
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-background hover:border-primary/50"
+                      }`}
+                    >
+                      <Icon className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate font-semibold">{meta.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {badges.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setBadges([])}
+                  className="text-[10px] text-muted-foreground hover:text-destructive"
+                >
+                  Remover todos os emblemas
+                </button>
+              )}
+            </div>
+
+            {/* Estatísticas de scans */}
+            <div className="space-y-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                <ScanLine className="h-3.5 w-3.5" /> Scans do QR
+              </div>
+              {scanStats ? (
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="rounded-lg bg-background/70 p-2 text-center">
+                    <div className="text-lg font-bold tabular-nums">{scanStats.total}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Total</div>
+                  </div>
+                  <div className="rounded-lg bg-background/70 p-2 text-center">
+                    <div className="text-lg font-bold tabular-nums">{scanStats.last30d}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">30 dias</div>
+                  </div>
+                  <div className="rounded-lg bg-background/70 p-2 text-center">
+                    <div className="text-lg font-bold tabular-nums">{scanStats.last7d}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">7 dias</div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-[11px] text-muted-foreground">Aguardando primeiros scans do cartaz…</div>
+              )}
+              <div className="text-[10px] text-muted-foreground">
+                Cada leitura do QR passa por um redirecionador rastreado — o cliente é enviado ao destino imediatamente.
+              </div>
+            </div>
+
+            {/* Enviar para gráfica parceira */}
+            <div className="space-y-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-400">
+                <Printer className="h-3.5 w-3.5" /> Enviar para gráfica parceira
+              </div>
+              <div className="text-[11px] text-muted-foreground">
+                Recebemos o arquivo em alta resolução, revisamos e imprimimos no display. Você acompanha o pedido pelo painel.
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="w-full border-amber-500/50 text-amber-700 hover:bg-amber-500/10 dark:text-amber-300"
+                onClick={() => setPrintOpen(true)}
+                disabled={!qrDataUrl || primaryBlocking}
+              >
+                <Printer className="mr-1.5 h-3.5 w-3.5" /> Solicitar impressão
+              </Button>
+            </div>
+
 
             {/* QR avançado — tolerância a erro + rastreio UTM */}
             <div className="space-y-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
