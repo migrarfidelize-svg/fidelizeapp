@@ -1184,14 +1184,8 @@ function ReviewQrPage() {
             )}
             <div className="flex w-full max-w-[520px] flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-start">
             <div
-              className="relative mx-auto w-full flex-1"
-              style={{
-                // Fits inside the viewport so the full poster is always visible,
-                // even for tall formats like A5 e Balcão 10×15.
-                width: `min(100%, 420px, calc((100dvh - 220px) * ${dims.mm.w / dims.mm.h}))`,
-                maxHeight: "calc(100dvh - 220px)",
-                ...(displayMode ? { perspective: "1600px", perspectiveOrigin: "50% 65%" } : {}),
-              }}
+              className="relative w-full max-w-[420px] flex-1"
+              style={displayMode ? { perspective: "1600px", perspectiveOrigin: "50% 65%" } : undefined}
             >
               {/* Showroom backdrop — dark wall + wooden counter (only in display mode) */}
               {displayMode && (
