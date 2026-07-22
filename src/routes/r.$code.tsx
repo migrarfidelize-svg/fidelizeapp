@@ -49,18 +49,28 @@ function ReferralLanding() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
+        const url = new URL(window.location.href);
+        const utm = {
+          source: url.searchParams.get("utm_source") ?? undefined,
+          medium: url.searchParams.get("utm_medium") ?? undefined,
+          campaign: url.searchParams.get("utm_campaign") ?? undefined,
+          content: url.searchParams.get("utm_content") ?? undefined,
+        };
         sessionStorage.setItem("fidelize_referral_code", code.toUpperCase());
+        // Persist UTM so signup attribution can pick it up later.
+        sessionStorage.setItem("fidelize_referral_utm", JSON.stringify(utm));
         // De-dupe click tracking: only log once per code per session.
         const key = `fidelize_ref_click_${code.toUpperCase()}`;
         if (!sessionStorage.getItem(key)) {
           sessionStorage.setItem(key, "1");
-          track({ data: { code, kind: "click" } }).catch(() => {});
+          track({ data: { code, kind: "click", utm } }).catch(() => {});
         }
       } catch {
         /* noop */
       }
     }
   }, [code, track]);
+
 
   if (isLoading) {
     return (
