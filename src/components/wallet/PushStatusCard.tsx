@@ -284,6 +284,20 @@ export function PushStatusCard() {
             )}
             Desativar neste aparelho
           </button>
+        ) : (
+          <button
+            type="button"
+            onClick={enable}
+            disabled={busy !== null || permission === "denied" || supported === false}
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {busy === "enable" ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Bell className="h-4 w-4" />
+            )}
+            {subState === "error" ? "Tentar novamente" : "Ativar notificações"}
+          </button>
         )}
 
         {subState === "active" && (
@@ -299,19 +313,6 @@ export function PushStatusCard() {
               <BellRing className="h-4 w-4" />
             )}
             Enviar push de teste
-        ) : (
-          <button
-            type="button"
-            onClick={enable}
-            disabled={busy !== null || permission === "denied" || supported === false}
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {busy === "enable" ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Bell className="h-4 w-4" />
-            )}
-            {subState === "error" ? "Tentar novamente" : "Ativar notificações"}
           </button>
         )}
 
