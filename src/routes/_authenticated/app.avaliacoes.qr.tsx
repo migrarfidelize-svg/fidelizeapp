@@ -1169,18 +1169,31 @@ function ReviewQrPage() {
         <div className="min-w-0">
           <div className="sticky top-4 flex max-h-[calc(100vh-2rem)] flex-col items-center gap-3 overflow-y-auto overscroll-contain pr-1 [scrollbar-width:thin]">
             {/* CTA: Loja física */}
-            <button
-              type="button"
-              onClick={() => document.getElementById("loja-displays")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-              className="group relative flex w-full max-w-[420px] items-center justify-between overflow-hidden rounded-xl border border-primary/40 bg-gradient-to-r from-primary/15 via-primary/10 to-accent/15 p-3 text-left transition hover:border-primary hover:shadow-[0_0_30px_-8px_hsl(var(--primary)/0.6)]"
-            >
-              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-primary/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-              <span className="relative flex items-center gap-2 text-xs font-bold">
-                <ShoppingBag className="h-3.5 w-3.5 text-primary" />
-                Quero meu display físico de balcão
-              </span>
-              <span className="relative text-primary transition-transform group-hover:translate-x-1">→</span>
-            </button>
+            <div className="flex w-full max-w-[420px] items-center gap-2">
+              <button
+                type="button"
+                onClick={() => document.getElementById("loja-displays")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                className="group relative flex flex-1 items-center justify-between overflow-hidden rounded-xl border border-primary/40 bg-gradient-to-r from-primary/15 via-primary/10 to-accent/15 p-3 text-left transition hover:border-primary hover:shadow-[0_0_30px_-8px_hsl(var(--primary)/0.6)]"
+              >
+                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-primary/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                <span className="relative flex items-center gap-2 text-xs font-bold">
+                  <ShoppingBag className="h-3.5 w-3.5 text-primary" />
+                  Quero meu display físico de balcão
+                </span>
+                <span className="relative text-primary transition-transform group-hover:translate-x-1">→</span>
+              </button>
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                onClick={() => setFullscreen(true)}
+                aria-label="Inspecionar em tela cheia"
+                title="Tela cheia (inspecionar escala real)"
+                className="h-10 w-10 shrink-0 border-primary/40"
+              >
+                <Maximize2 className="h-4 w-4" />
+              </Button>
+            </div>
 
             {lastSavedAt !== null && (
               <div
