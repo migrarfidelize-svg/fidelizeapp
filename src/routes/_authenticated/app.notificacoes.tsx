@@ -25,12 +25,21 @@ function NotifPage() {
   const getEsts = useServerFn(getMyEstablishments);
   const listLogs = useServerFn(listPushLogs);
   const bcast = useServerFn(broadcastPush);
+  const quotaFn = useServerFn(getPushQuotaStatus);
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
   const activeEst = memberships?.[0]?.establishment as { id: string; name: string } | undefined;
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [url, setUrl] = useState("");
+
+  const quotaQ = useQuery({
+    queryKey: ["push_quota", activeEst?.id],
+    queryFn: () => quotaFn({ data: { establishment_id: activeEst!.id } }),
+    enabled: !!activeEst?.id,
+    refetchOnWindowFocus: true,
+    staleTime: 15_000,
+  });
 
   const { data: logs, refetch } = useQuery({
     queryKey: ["push_logs", activeEst?.id],
