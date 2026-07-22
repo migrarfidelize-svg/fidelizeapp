@@ -298,6 +298,19 @@ function PromocoesPage() {
           <Button variant="outline" onClick={() => setLinksOpen(true)}>
             <Link2 className="mr-2 h-4 w-4" /> Links fixos
           </Button>
+          <Button
+            variant="outline"
+            asChild
+            title="Abrir sua página pública de promoções em nova aba"
+          >
+            <a
+              href={`/l/${activeEst.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ExternalLink className="mr-2 h-4 w-4" /> Ver minha página
+            </a>
+          </Button>
           <Button onClick={openCreate}>
             <Plus className="mr-2 h-4 w-4" /> Nova promoção
           </Button>
