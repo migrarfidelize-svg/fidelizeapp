@@ -79,7 +79,7 @@ const DEFAULT_LAYOUT: PosterLayout = {
   primaryQr:   { x: 50, y: 58 },
   secondaryQr: { x: 72, y: 58 },
   nfc:         { x: 72, y: 58 },
-  ctaNear:     { x: 50, y: 86 },
+  ctaNear:     { x: 50, y: 74 },
   ctaFooter:   { x: 50, y: 93 },
 };
 
