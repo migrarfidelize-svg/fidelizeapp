@@ -81,12 +81,22 @@ interface Props {
   autoPrompt?: boolean;
   /** Ms antes do auto-prompt em iOS. */
   autoPromptDelayMs?: number;
+  /**
+   * Gate contextual: mínimo de carimbos do cliente para exibir o prompt.
+   * Evita "peça já instale" no primeiro acesso — só aparece depois do
+   * momento de valor comprovado (default: 2º carimbo).
+   */
+  minStamps?: number;
+  /** Total atual de carimbos do cliente. Comparado com minStamps. */
+  currentStamps?: number;
 }
 
 export function InstallAppButton({
   label = "Instalar aplicativo",
   autoPrompt = false,
   autoPromptDelayMs = 1400,
+  minStamps,
+  currentStamps,
 }: Props) {
   const [deferred, setDeferred] = useState<BIPEvent | null>(null);
   const [standalone, setStandalone] = useState(false);
