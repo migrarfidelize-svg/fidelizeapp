@@ -284,6 +284,21 @@ export function PushStatusCard() {
             )}
             Desativar neste aparelho
           </button>
+        )}
+
+        {subState === "active" && (
+          <button
+            type="button"
+            onClick={handleTest}
+            disabled={busy !== null || !endpoint}
+            className="inline-flex items-center gap-2 rounded-xl border border-primary/40 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/20 disabled:opacity-60"
+          >
+            {busy === "test" ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <BellRing className="h-4 w-4" />
+            )}
+            Enviar push de teste
         ) : (
           <button
             type="button"
