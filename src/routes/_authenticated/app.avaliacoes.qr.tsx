@@ -914,29 +914,41 @@ function ReviewQrPage() {
               )}
             </div>
 
-            {/* Layout editor controls — lateral */}
-            <div className="flex w-32 shrink-0 flex-col gap-2 pt-2">
+            {/* Layout editor controls — lateral (texto vertical) */}
+            <div className="flex w-10 shrink-0 flex-col gap-2 pt-2">
               <Button
                 type="button"
                 size="sm"
                 variant={editLayout ? "default" : "outline"}
                 onClick={() => setEditLayout((v) => !v)}
-                className="h-8 w-full gap-1.5 text-xs"
+                className="flex h-32 w-10 flex-col items-center justify-center gap-1.5 px-0 text-xs"
               >
                 <Move className="h-3.5 w-3.5" />
-                {editLayout ? "Concluir" : "Editar"}
+                <span
+                  className="font-semibold tracking-wider"
+                  style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+                >
+                  {editLayout ? "Concluir" : "Editar"}
+                </span>
               </Button>
               <Button
                 type="button"
                 size="sm"
                 variant="ghost"
                 onClick={() => { setLayout(DEFAULT_LAYOUT); toast.success("Posições restauradas"); }}
-                className="h-8 w-full gap-1.5 text-xs"
+                className="flex h-32 w-10 flex-col items-center justify-center gap-1.5 px-0 text-xs"
                 disabled={JSON.stringify(layout) === JSON.stringify(DEFAULT_LAYOUT)}
               >
-                <RotateCcw className="h-3.5 w-3.5" /> Resetar
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span
+                  className="font-semibold tracking-wider"
+                  style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+                >
+                  Resetar
+                </span>
               </Button>
             </div>
+
             </div>
 
             <p className="text-center text-xs text-muted-foreground">
