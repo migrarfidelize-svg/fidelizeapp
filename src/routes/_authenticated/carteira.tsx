@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Wallet, Home, LogOut, User, Gift, History, CreditCard, QrCode } from "lucide-react";
+import { Wallet, Home, LogOut, User, Gift, History, Compass, QrCode } from "lucide-react";
 import { toast } from "sonner";
 import { MyQrSheet } from "@/components/wallet/MyQrSheet";
 
@@ -27,9 +27,9 @@ function useWalletFlash() {
 /** 4 tabs laterais + slot central reservado ao FAB "Meu QR". */
 const TABS = [
   { to: "/carteira", label: "Início", icon: Home, exact: true },
-  { to: "/carteira/cartoes", label: "Cartões", icon: CreditCard, exact: false },
-  { to: "/carteira/recompensas", label: "Prêmios", icon: Gift, exact: false },
+  { to: "/carteira/premios", label: "Prêmios", icon: Gift, exact: false },
   { to: "/carteira/historico", label: "Histórico", icon: History, exact: false },
+  { to: "/carteira/descobrir", label: "Descobrir", icon: Compass, exact: false },
 ] as const;
 
 function WalletLayout() {
