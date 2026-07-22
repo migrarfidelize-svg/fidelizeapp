@@ -3,7 +3,18 @@ import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-
 import { getMyEstablishmentCard } from "@/lib/my-wallet.functions";
 import { LoyaltyVoucher } from "@/components/LoyaltyVoucher";
 import { formatDate } from "@/lib/format";
-import { ArrowLeft, Phone, MessageCircle, Instagram, MapPin } from "lucide-react";
+import {
+  ArrowLeft,
+  Phone,
+  MessageCircle,
+  Instagram,
+  MapPin,
+  Navigation,
+  Gift,
+  Stamp as StampIcon,
+  Trophy,
+  Clock,
+} from "lucide-react";
 import { ExpiredCardState, WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
 
 const opts = (slug: string) =>
@@ -42,114 +53,328 @@ export const Route = createFileRoute("/_authenticated/carteira/$slug")({
   ),
 });
 
+function relativeTime(iso: string) {
+  const d = new Date(iso).getTime();
+  const diff = Date.now() - d;
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return "agora";
+  if (min < 60) return `há ${min} min`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `há ${h} h`;
+  const days = Math.floor(h / 24);
+  if (days < 7) return `há ${days} d`;
+  return formatDate(iso);
+}
+
 function WalletEstablishment() {
   const qc = useQueryClient();
   const slug = Route.useParams().slug;
   const { data } = useSuspenseQuery(opts(slug));
   const d = data!;
   const est = d.establishment as {
-    name: string; logo_url: string | null; primary_color: string; address: string | null;
-    phone: string | null; whatsapp: string | null; instagram: string | null; description: string | null;
+    name: string;
+    logo_url: string | null;
+    primary_color: string;
+    address: string | null;
+    phone: string | null;
+    whatsapp: string | null;
+    instagram: string | null;
+    description: string | null;
     active: boolean;
   };
 
-  const card = d.cards[0];
-  const req = card ? (card.campaign as { stamps_required: number }).stamps_required || 1 : 1;
-  const stamps = card?.stamps ?? 0;
-  const campaignActive = card ? (card.campaign as { active: boolean }).active : true;
+  const activeCards = (d.cards ?? []).filter(
+    (c) => (c.campaign as { active: boolean }).active,
+  );
+  const primaryCard = activeCards[0] ?? d.cards?.[0];
+  const req = primaryCard
+    ? (primaryCard.campaign as { stamps_required: number }).stamps_required || 1
+    : 1;
+  const stamps = primaryCard?.stamps ?? 0;
+  const campaignActive = primaryCard
+    ? (primaryCard.campaign as { active: boolean }).active
+    : true;
+
+  const brand = est.primary_color || "hsl(var(--primary))";
+  const mapsUrl = est.address
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(est.address)}`
+    : null;
+  const waDigits = est.whatsapp?.replace(/\D/g, "");
+
+  const recent = d.recentStamps ?? [];
+  const redeemed = d.redeemedRewards ?? [];
+  const otherCards = activeCards.slice(1);
 
   return (
     <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["my-wallet", slug] })}>
+      <div className="space-y-5 pb-6">
+        <Link
+          to="/carteira"
+          className="inline-flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" /> Minha carteira
+        </Link>
 
-    <div className="space-y-5 pb-6">
-      <Link to="/carteira" className="inline-flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-3.5 w-3.5" /> Minha carteira
-      </Link>
-
-      <header className="rounded-3xl border border-border/60 bg-card/60 p-5 backdrop-blur">
-        <div className="flex items-center gap-4">
+        {/* Header enriquecido com halo da marca */}
+        <header
+          className="relative overflow-hidden rounded-3xl border border-border/60 bg-card/60 p-5 backdrop-blur"
+          style={{ ["--brand" as never]: brand }}
+        >
           <div
-            className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl border border-border/60 bg-muted text-xl font-bold uppercase"
-            style={{ color: est.primary_color || undefined }}
-          >
-            {est.logo_url ? (
-              <img src={est.logo_url} alt={est.name} className="h-full w-full object-cover" />
-            ) : (
-              est.name.slice(0, 2)
-            )}
+            className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full opacity-40 blur-3xl"
+            style={{ background: brand }}
+          />
+          <div className="relative flex items-center gap-4">
+            <div
+              className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl border border-border/60 bg-muted text-xl font-bold uppercase"
+              style={{ color: brand }}
+            >
+              {est.logo_url ? (
+                <img src={est.logo_url} alt={est.name} className="h-full w-full object-cover" />
+              ) : (
+                est.name.slice(0, 2)
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <h1 className="font-display text-xl font-bold leading-tight">{est.name}</h1>
+              {est.description && (
+                <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{est.description}</p>
+              )}
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                <span className="inline-flex items-center gap-1">
+                  <StampIcon className="h-3 w-3" /> {d.customer.visitsCount ?? 0} visitas
+                </span>
+                {redeemed.length > 0 && (
+                  <span className="inline-flex items-center gap-1 text-primary">
+                    <Trophy className="h-3 w-3" /> {redeemed.length} resgatado{redeemed.length > 1 ? "s" : ""}
+                  </span>
+                )}
+                {d.customer.lastVisitAt && (
+                  <span className="inline-flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> {relativeTime(d.customer.lastVisitAt)}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
-          <div className="min-w-0">
-            <h1 className="font-display text-xl font-bold leading-tight">{est.name}</h1>
-            {est.description && <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{est.description}</p>}
+
+          {/* Ações rápidas */}
+          {(mapsUrl || waDigits || est.phone) && (
+            <div className="relative mt-4 grid grid-cols-3 gap-2">
+              {mapsUrl && (
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex flex-col items-center gap-1 rounded-2xl border border-border/50 bg-background/50 px-2 py-2.5 text-[10px] font-bold uppercase tracking-widest text-foreground/80 transition-colors hover:border-primary/40 hover:text-primary"
+                >
+                  <Navigation className="h-4 w-4" />
+                  Como chegar
+                </a>
+              )}
+              {waDigits && (
+                <a
+                  href={`https://wa.me/${waDigits}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex flex-col items-center gap-1 rounded-2xl border border-border/50 bg-background/50 px-2 py-2.5 text-[10px] font-bold uppercase tracking-widest text-foreground/80 transition-colors hover:border-primary/40 hover:text-primary"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  WhatsApp
+                </a>
+              )}
+              {est.phone && (
+                <a
+                  href={`tel:${est.phone}`}
+                  className="flex flex-col items-center gap-1 rounded-2xl border border-border/50 bg-background/50 px-2 py-2.5 text-[10px] font-bold uppercase tracking-widest text-foreground/80 transition-colors hover:border-primary/40 hover:text-primary"
+                >
+                  <Phone className="h-4 w-4" />
+                  Ligar
+                </a>
+              )}
+            </div>
+          )}
+        </header>
+
+        {!est.active && (
+          <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-xs text-amber-600 dark:text-amber-300">
+            Este estabelecimento está temporariamente indisponível. Os carimbos ficam salvos.
           </div>
-        </div>
-      </header>
+        )}
 
-      {!est.active && (
-        <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-xs text-amber-600 dark:text-amber-300">
-          Este estabelecimento está temporariamente indisponível. Os carimbos ficam salvos.
-        </div>
-      )}
+        {primaryCard && !campaignActive ? (
+          <ExpiredCardState establishmentName={est.name} />
+        ) : primaryCard ? (
+          <LoyaltyVoucher
+            brandName={est.name}
+            logoUrl={est.logo_url}
+            campaignName={(primaryCard.campaign as { name: string }).name}
+            customerName={d.customer.name}
+            customerCode={d.customer.code}
+            qrValue={
+              typeof window !== "undefined"
+                ? `${window.location.origin}/c/${d.customer.token}`
+                : `/c/${d.customer.token}`
+            }
+            stamps={stamps}
+            required={req}
+            reward={(primaryCard.campaign as { reward_title: string }).reward_title}
+            primary={
+              (primaryCard.campaign as { primary_color: string | null }).primary_color ||
+              est.primary_color
+            }
+            accent={(primaryCard.campaign as { accent_color: string | null }).accent_color || undefined}
+            icon={(primaryCard.campaign as { stamp_icon: string }).stamp_icon}
+            lastStampAt={primaryCard.updated_at}
+          />
+        ) : (
+          <div className="rounded-3xl border border-dashed border-border/70 bg-card/30 p-6 text-center text-sm text-muted-foreground">
+            Você ainda não possui carimbos aqui. Mostre seu QR Code no próximo atendimento.
+          </div>
+        )}
 
-      {card && !campaignActive ? (
-        <ExpiredCardState establishmentName={est.name} />
-      ) : card ? (
-        <LoyaltyVoucher
-          brandName={est.name}
-          logoUrl={est.logo_url}
-          campaignName={(card.campaign as { name: string }).name}
-          customerName={d.customer.name}
-          customerCode={d.customer.code}
-          qrValue={typeof window !== "undefined" ? `${window.location.origin}/c/${d.customer.token}` : `/c/${d.customer.token}`}
-          stamps={stamps}
-          required={req}
-          reward={(card.campaign as { reward_title: string }).reward_title}
-          primary={(card.campaign as { primary_color: string | null }).primary_color || est.primary_color}
-          accent={(card.campaign as { accent_color: string | null }).accent_color || undefined}
-          icon={(card.campaign as { stamp_icon: string }).stamp_icon}
-          lastStampAt={card.updated_at}
-        />
-      ) : (
-        <div className="rounded-3xl border border-dashed border-border/70 bg-card/30 p-6 text-center text-sm text-muted-foreground">
-          Você ainda não possui carimbos aqui. Mostre seu QR Code no próximo atendimento.
-        </div>
-      )}
+        {/* Outros programas nesta loja (cascata de prêmios) */}
+        {otherCards.length > 0 && (
+          <section className="rounded-2xl border border-border/60 bg-card/40 p-4">
+            <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              <Gift className="h-3.5 w-3.5" /> Outros programas desta loja
+            </h2>
+            <ul className="space-y-2.5">
+              {otherCards.map((c) => {
+                const camp = c.campaign as {
+                  name: string;
+                  stamps_required: number;
+                  reward_title: string;
+                  primary_color: string | null;
+                };
+                const reqN = camp.stamps_required || 1;
+                const pct = Math.min(100, Math.round((c.stamps / reqN) * 100));
+                const cardBrand = camp.primary_color || brand;
+                return (
+                  <li key={c.id} className="rounded-xl border border-border/50 bg-background/40 p-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold">{camp.name}</p>
+                        <p className="truncate text-[11px] text-muted-foreground">
+                          Prêmio: {camp.reward_title}
+                        </p>
+                      </div>
+                      <span className="font-display text-sm font-bold text-primary">
+                        {c.stamps}
+                        <span className="text-xs text-muted-foreground">/{reqN}</span>
+                      </span>
+                    </div>
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-full border border-border/60 bg-background/50">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{ width: `${pct}%`, background: cardBrand }}
+                      />
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
 
+        {/* Linha do tempo dos carimbos nesta loja */}
+        {recent.length > 0 && (
+          <section className="rounded-2xl border border-border/60 bg-card/40 p-4">
+            <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              <StampIcon className="h-3.5 w-3.5" /> Últimos carimbos
+            </h2>
+            <ol className="relative space-y-3 pl-4">
+              <div className="absolute bottom-1 left-1 top-1 w-px bg-border/60" aria-hidden />
+              {recent.slice(0, 10).map((s) => (
+                <li key={s.id} className="relative">
+                  <span
+                    className={
+                      "absolute -left-3 top-1.5 h-2 w-2 rounded-full ring-2 ring-background " +
+                      (s.reverted ? "bg-muted-foreground/40" : "bg-primary")
+                    }
+                    aria-hidden
+                  />
+                  <div className="flex items-center justify-between gap-3">
+                    <p className={"text-sm " + (s.reverted ? "text-muted-foreground line-through" : "")}>
+                      {s.campaignName ?? "Carimbo"}
+                      {s.reverted && (
+                        <span className="ml-1 text-[10px] uppercase tracking-widest">(estornado)</span>
+                      )}
+                    </p>
+                    <span className="shrink-0 text-[11px] text-muted-foreground">
+                      {relativeTime(s.createdAt)}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
 
-      {card && (card.campaign as { rules: string | null }).rules && (
-        <section className="rounded-2xl border border-border/60 bg-card/40 p-4">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Regras do programa</h2>
-          <p className="mt-2 whitespace-pre-line text-sm">{(card.campaign as { rules: string }).rules}</p>
-        </section>
-      )}
+        {/* Histórico de recompensas resgatadas */}
+        {redeemed.length > 0 && (
+          <section className="rounded-2xl border border-primary/25 bg-primary/5 p-4">
+            <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary">
+              <Trophy className="h-3.5 w-3.5" /> Recompensas resgatadas
+            </h2>
+            <ul className="space-y-2">
+              {redeemed.slice(0, 10).map((r) => (
+                <li
+                  key={r.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-primary/20 bg-background/40 px-3 py-2"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">{r.rewardTitle}</p>
+                    <p className="truncate text-[11px] text-muted-foreground">{r.campaignName}</p>
+                  </div>
+                  <span className="shrink-0 text-[11px] text-muted-foreground">
+                    {formatDate(r.redeemedAt)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
-      {(est.phone || est.whatsapp || est.instagram || est.address) && (
-        <section className="rounded-2xl border border-border/60 bg-card/40 p-4">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Contato</h2>
-          <ul className="mt-3 space-y-2 text-sm">
-            {est.address && (
-              <li className="flex items-start gap-2"><MapPin className="mt-0.5 h-4 w-4 text-muted-foreground" /> {est.address}</li>
-            )}
-            {est.phone && (
-              <li><a href={`tel:${est.phone}`} className="flex items-center gap-2 hover:text-primary"><Phone className="h-4 w-4 text-muted-foreground" /> {est.phone}</a></li>
-            )}
-            {est.whatsapp && (
-              <li><a target="_blank" rel="noreferrer" href={`https://wa.me/${est.whatsapp.replace(/\D/g, "")}`} className="flex items-center gap-2 hover:text-primary"><MessageCircle className="h-4 w-4 text-muted-foreground" /> WhatsApp</a></li>
-            )}
-            {est.instagram && (
-              <li><a target="_blank" rel="noreferrer" href={`https://instagram.com/${est.instagram.replace(/^@/, "")}`} className="flex items-center gap-2 hover:text-primary"><Instagram className="h-4 w-4 text-muted-foreground" /> @{est.instagram.replace(/^@/, "")}</a></li>
-            )}
-          </ul>
-        </section>
-      )}
+        {primaryCard && (primaryCard.campaign as { rules: string | null }).rules && (
+          <section className="rounded-2xl border border-border/60 bg-card/40 p-4">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              Regras do programa
+            </h2>
+            <p className="mt-2 whitespace-pre-line text-sm">
+              {(primaryCard.campaign as { rules: string }).rules}
+            </p>
+          </section>
+        )}
 
-      {d.customer.lastVisitAt && (
-        <p className="text-center text-[11px] uppercase tracking-widest text-muted-foreground">
-          Última visita: {formatDate(d.customer.lastVisitAt)}
-        </p>
-      )}
-    </div>
+        {(est.address || est.instagram) && (
+          <section className="rounded-2xl border border-border/60 bg-card/40 p-4">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              Sobre a loja
+            </h2>
+            <ul className="mt-3 space-y-2 text-sm">
+              {est.address && (
+                <li className="flex items-start gap-2">
+                  <MapPin className="mt-0.5 h-4 w-4 text-muted-foreground" /> {est.address}
+                </li>
+              )}
+              {est.instagram && (
+                <li>
+                  <a
+                    target="_blank"
+                    rel="noreferrer"
+                    href={`https://instagram.com/${est.instagram.replace(/^@/, "")}`}
+                    className="flex items-center gap-2 hover:text-primary"
+                  >
+                    <Instagram className="h-4 w-4 text-muted-foreground" /> @
+                    {est.instagram.replace(/^@/, "")}
+                  </a>
+                </li>
+              )}
+            </ul>
+          </section>
+        )}
+      </div>
     </WithOfflineFallback>
   );
 }
-
