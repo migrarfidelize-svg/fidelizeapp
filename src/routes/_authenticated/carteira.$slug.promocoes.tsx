@@ -8,6 +8,13 @@ import {
   ExternalLink,
   ChevronLeft as PrevIcon,
   ChevronRight as NextIcon,
+  MapPin,
+  Phone,
+  MessageCircle,
+  Instagram,
+  Globe,
+  Clock,
+  CreditCard,
 } from "lucide-react";
 import { WalletErrorState } from "@/components/wallet/WalletStates";
 
@@ -61,39 +68,98 @@ function PromotionsListPage() {
   const brand = est.primary_color || "hsl(var(--primary))";
   const globalLinks = est.external_links ?? [];
 
+  const location = [est.address, est.city].filter(Boolean).join(" · ");
+  const contactLinks: { icon: typeof Phone; label: string; url: string }[] = [];
+  if (est.whatsapp) {
+    const num = est.whatsapp.replace(/\D/g, "");
+    contactLinks.push({ icon: MessageCircle, label: "WhatsApp", url: `https://wa.me/${num}` });
+  }
+  if (est.phone) contactLinks.push({ icon: Phone, label: est.phone, url: `tel:${est.phone}` });
+  if (est.instagram) {
+    const handle = est.instagram.replace(/^@/, "");
+    contactLinks.push({ icon: Instagram, label: `@${handle}`, url: `https://instagram.com/${handle}` });
+  }
+  if (est.website) contactLinks.push({ icon: Globe, label: "Site", url: est.website });
+
   return (
     <div className="space-y-4 pb-6">
       <Link
-        to="/carteira/$slug"
-        params={{ slug }}
+        to="/carteira/descobrir"
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
-        <ChevronLeft className="h-4 w-4" /> Voltar para {est.name}
+        <ChevronLeft className="h-4 w-4" /> Voltar para descobrir
       </Link>
 
-      <header className="flex items-center gap-3 pt-1">
+      <header
+        className="relative overflow-hidden rounded-3xl border border-border/60 bg-card/40 p-5"
+      >
         <div
-          className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl border border-border/60 bg-background text-sm font-bold uppercase"
-          style={{ color: brand }}
-        >
-          {est.logo_url ? (
-            <img src={est.logo_url} alt="" className="h-full w-full object-cover" />
-          ) : (
-            est.name.slice(0, 2)
-          )}
-        </div>
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <Megaphone className="h-4 w-4" style={{ color: brand }} />
-            <h1 className="truncate font-display text-xl font-bold tracking-tight">
-              Promoções de {est.name}
-            </h1>
+          className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full opacity-25 blur-3xl"
+          style={{ background: brand }}
+        />
+        <div className="relative flex items-start gap-4">
+          <div
+            className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl border border-border/60 bg-background text-lg font-black uppercase"
+            style={{ color: brand }}
+          >
+            {est.logo_url ? (
+              <img src={est.logo_url} alt="" className="h-full w-full object-cover" />
+            ) : (
+              est.name.slice(0, 2)
+            )}
           </div>
-          <p className="text-xs text-muted-foreground">
-            Ofertas, novidades e links diretos do estabelecimento.
-          </p>
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate font-display text-2xl font-black tracking-tight">
+              {est.name}
+            </h1>
+            {location && (
+              <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5" /> <span className="truncate">{location}</span>
+              </div>
+            )}
+            {est.business_hours && (
+              <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                <Clock className="h-3.5 w-3.5" /> <span className="truncate">{est.business_hours}</span>
+              </div>
+            )}
+            {est.description && (
+              <p className="mt-2 text-sm text-muted-foreground">{est.description}</p>
+            )}
+          </div>
+        </div>
+
+        <div className="relative mt-4 flex flex-wrap gap-2">
+          <Link
+            to="/carteira/$slug"
+            params={{ slug }}
+            className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-white shadow-sm transition-transform active:scale-95"
+            style={{ background: brand }}
+          >
+            <CreditCard className="h-3.5 w-3.5" /> Ver meu cartão
+          </Link>
+          {contactLinks.map((c, i) => {
+            const Icon = c.icon;
+            return (
+              <a
+                key={`${c.url}-${i}`}
+                href={c.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 bg-background/60 px-3 py-2 text-xs font-semibold transition hover:border-primary/40 hover:text-primary"
+              >
+                <Icon className="h-3.5 w-3.5" /> {c.label}
+              </a>
+            );
+          })}
         </div>
       </header>
+
+      <div className="flex items-center gap-2 pt-1">
+        <Megaphone className="h-4 w-4" style={{ color: brand }} />
+        <h2 className="font-display text-sm font-bold uppercase tracking-widest">
+          Promoções
+        </h2>
+      </div>
 
       {globalLinks.length > 0 && (
         <div className="flex flex-wrap gap-2">

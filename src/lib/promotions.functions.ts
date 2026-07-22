@@ -172,6 +172,14 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
       primary_color: string;
       accent_color: string;
       external_links: { label: string; url: string }[];
+      description: string | null;
+      address: string | null;
+      city: string | null;
+      phone: string | null;
+      whatsapp: string | null;
+      instagram: string | null;
+      website: string | null;
+      business_hours: string | null;
     };
     const empty: { establishment: PublicEst | null; promotions: PublicPromo[] } = {
       establishment: null,
@@ -180,7 +188,7 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: est } = await supabaseAdmin
       .from("establishments")
-      .select("id, name, slug, logo_url, primary_color, accent_color, external_links, active")
+      .select("id, name, slug, logo_url, primary_color, accent_color, external_links, active, description, address, city, phone, whatsapp, instagram, website, business_hours")
       .eq("slug", data.slug)
       .maybeSingle();
     if (!est || !est.active) return empty;
@@ -216,6 +224,14 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
         primary_color: (est.primary_color as string) ?? "#5B21B6",
         accent_color: (est.accent_color as string) ?? "#F97066",
         external_links: (est.external_links as unknown as { label: string; url: string }[]) ?? [],
+        description: (est.description as string | null) ?? null,
+        address: (est.address as string | null) ?? null,
+        city: (est.city as string | null) ?? null,
+        phone: (est.phone as string | null) ?? null,
+        whatsapp: (est.whatsapp as string | null) ?? null,
+        instagram: (est.instagram as string | null) ?? null,
+        website: (est.website as string | null) ?? null,
+        business_hours: (est.business_hours as string | null) ?? null,
       },
       promotions,
     };
