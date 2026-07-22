@@ -1441,15 +1441,23 @@ function ReviewQrPage() {
           open={printOpen}
           onOpenChange={setPrintOpen}
           establishmentId={est.id}
-          establishmentName={est.name}
+          establishmentSlug={est.slug}
           format={format}
-          posterRef={posterRef}
-          designSnapshot={{
-            template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale,
-            title, subtitle, ctaNearQR, ctaFooter,
-            primaryColor, backgroundColor, textColor,
-            primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel,
-            layout, badges,
+          getPngBlob={async () => {
+            try {
+              const dataUrl = await renderPosterPng();
+              const res = await fetch(dataUrl);
+              return await res.blob();
+            } catch { return null; }
+          }}
+          getSvgBlob={async () => {
+            try {
+              const svg = await QRCode.toString(qrEncodedPrimaryUrl, {
+                type: "svg", errorCorrectionLevel: ecc, margin: 1,
+                color: { dark: "#111827", light: "#ffffff" },
+              });
+              return new Blob([svg], { type: "image/svg+xml" });
+            } catch { return null; }
           }}
         />
       )}
