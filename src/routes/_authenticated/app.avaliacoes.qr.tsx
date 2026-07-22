@@ -1708,26 +1708,35 @@ const LAYOUT_LABELS: Record<LayoutKey, string> = {
 };
 
 function PortraitBody(p: PosterProps) {
-  const primarySize = p.secondaryEnabled ? 104 : 128;
+  // Format-aware multiplier: harmoniza tipografia e QRs quando o canvas
+  // muda drasticamente de proporção (Feed é quadrado/curto, Story é bem alto).
+  // Referência 1.0 = Balcão 10×15.
+  const formatMult =
+    p.format === "feed" ? 0.72 :
+    p.format === "story" ? 1.15 :
+    p.format === "a5" ? 0.95 :
+    1;
+  const effectiveScale = p.contentScale * formatMult;
+  const primarySize = Math.round((p.secondaryEnabled ? 104 : 128) * formatMult);
   return (
     <div className="relative h-full w-full">
       {/* Header block (logo + name + stars) */}
       <DraggableItem itemKey="header" layout={p.layout} setLayout={p.setLayout} editable={p.editable}>
         <div className="flex flex-col items-center gap-1">
-          <BrandLogo url={p.logoUrl} name={p.establishmentName} primary={p.primaryColor} />
-          <div className="text-sm font-bold" style={{ color: p.textColor }}>{p.establishmentName}</div>
-          <Stars color={p.primaryColor} size={14} center />
+          <BrandLogo url={p.logoUrl} name={p.establishmentName} primary={p.primaryColor} sizePx={Math.round(56 * formatMult)} />
+          <div className="font-bold" style={{ color: p.textColor, fontSize: `${14 * formatMult}px` }}>{p.establishmentName}</div>
+          <Stars color={p.primaryColor} size={Math.round(14 * formatMult)} center />
         </div>
       </DraggableItem>
 
       {/* Title */}
       <DraggableItem itemKey="title" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
-        <h2 className="text-center font-black leading-tight" style={{ color: p.textColor, fontSize: `${20 * (p.contentScale / 100)}px` }}>{p.title}</h2>
+        <h2 className="text-center font-black leading-tight" style={{ color: p.textColor, fontSize: `${20 * (effectiveScale / 100)}px` }}>{p.title}</h2>
       </DraggableItem>
 
       {/* Subtitle */}
       <DraggableItem itemKey="subtitle" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[80%]">
-        <p className="text-center opacity-70" style={{ color: p.textColor, fontSize: `${11 * (p.contentScale / 100)}px` }}>{p.subtitle}</p>
+        <p className="text-center opacity-70" style={{ color: p.textColor, fontSize: `${11 * (effectiveScale / 100)}px` }}>{p.subtitle}</p>
       </DraggableItem>
 
       {/* Primary QR */}
@@ -1739,7 +1748,7 @@ function PortraitBody(p: PosterProps) {
           text={p.textColor}
           badge={null}
           size={primarySize}
-          scale={p.contentScale}
+          scale={effectiveScale}
         />
       </DraggableItem>
 
@@ -1753,7 +1762,7 @@ function PortraitBody(p: PosterProps) {
             text={p.textColor}
             badge={null}
             size={primarySize}
-            scale={p.contentScale}
+            scale={effectiveScale}
           />
 
         </DraggableItem>
@@ -1761,7 +1770,7 @@ function PortraitBody(p: PosterProps) {
 
       {/* CTA near QR */}
       <DraggableItem itemKey="ctaNear" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
-        <div className="text-center font-bold uppercase tracking-widest" style={{ color: p.primaryColor, fontSize: `${12 * (p.contentScale / 100)}px` }}>
+        <div className="text-center font-bold uppercase tracking-widest" style={{ color: p.primaryColor, fontSize: `${12 * (effectiveScale / 100)}px` }}>
           {p.ctaNearQR}
         </div>
       </DraggableItem>
@@ -1769,10 +1778,11 @@ function PortraitBody(p: PosterProps) {
       {/* CTA footer */}
       <DraggableItem itemKey="ctaFooter" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
         <div className="flex flex-col items-center gap-1">
-          <div className="text-center opacity-70" style={{ color: p.textColor, fontSize: `${10 * (p.contentScale / 100)}px` }}>{p.ctaFooter}</div>
-          {p.nfcMode && <NfcBadge primary={p.primaryColor} sizePct={p.contentScale} />}
+          <div className="text-center opacity-70" style={{ color: p.textColor, fontSize: `${10 * (effectiveScale / 100)}px` }}>{p.ctaFooter}</div>
+          {p.nfcMode && <NfcBadge primary={p.primaryColor} sizePct={effectiveScale} />}
         </div>
       </DraggableItem>
+
 
       {/* Preset badges — draggable icons/emblems */}
       {p.badges.map((b) => {
@@ -1962,15 +1972,17 @@ function NfcBlock({ primary }: { primary: string }) {
 
 
 
-function BrandLogo({ url, name, primary }: { url: string | null; name: string; primary: string }) {
-  if (url) return <img src={url} alt={name} className="h-10 w-10 shrink-0 rounded-full object-cover ring-2" style={{ borderColor: primary }} />;
+function BrandLogo({ url, name, primary, sizePx = 40 }: { url: string | null; name: string; primary: string; sizePx?: number }) {
+  const dim = { width: sizePx, height: sizePx };
+  if (url) return <img src={url} alt={name} className="shrink-0 rounded-full object-cover ring-2" style={{ ...dim, borderColor: primary }} />;
   const initial = name.slice(0, 1).toUpperCase();
   return (
-    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-sm font-black text-white" style={{ background: primary }}>
+    <div className="shrink-0 grid place-items-center rounded-full font-black text-white" style={{ ...dim, background: primary, fontSize: `${sizePx * 0.42}px` }}>
       {initial}
     </div>
   );
 }
+
 
 function Stars({ color, size, center }: { color: string; size: number; center?: boolean }) {
   return (
