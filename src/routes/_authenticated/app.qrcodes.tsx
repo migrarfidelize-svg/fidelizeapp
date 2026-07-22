@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PageHero } from "@/components/PageHero";
+
 import { Palette as HeroIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
