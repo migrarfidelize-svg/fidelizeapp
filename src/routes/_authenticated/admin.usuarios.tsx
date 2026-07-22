@@ -8,6 +8,7 @@ import {
   adminListOrphanCustomers,
   adminLinkOrphanCustomerToAccount,
   adminListEstablishments,
+  adminGetUserWallet,
 } from "@/lib/admin.functions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
