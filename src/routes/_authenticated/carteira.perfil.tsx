@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { exportMyData, deleteMyAccount } from "@/lib/lgpd.functions";
 import { getMyPushPreferences, updateMyPushPreferences } from "@/lib/wallet-prefs.functions";
 import { clearWalletCache } from "@/lib/offline-wallet-cache";
+import { PushStatusCard } from "@/components/wallet/PushStatusCard";
 import { toast } from "sonner";
 import { User, Download, Trash2, ShieldCheck, AlertTriangle, ChevronRight, Bell, Stamp as StampIcon, Gift, Megaphone, Cake } from "lucide-react";
 
