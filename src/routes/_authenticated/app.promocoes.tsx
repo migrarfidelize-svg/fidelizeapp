@@ -233,6 +233,36 @@ function PromocoesPage() {
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erro ao excluir"),
   });
 
+  const seedM = useMutation({
+    mutationFn: async () => {
+      if (!activeEst) throw new Error("Sem estabelecimento");
+      const fixedLinks = (linksQ.data ?? []) as Link[];
+      const tpls = templatesForSegment(activeEst.segment);
+      for (const t of tpls.slice(0, 2)) {
+        await upsertFn({
+          data: {
+            establishment_id: activeEst.id,
+            title: t.title,
+            body: t.body,
+            media: [],
+            external_links: (t.links ?? fixedLinks).slice(0, 10),
+            active: false,
+            starts_at: null,
+            ends_at: null,
+          },
+        });
+      }
+    },
+    onSuccess: () => {
+      toast.success("2 modelos criados como rascunho. Edite e ative quando quiser.");
+      qc.invalidateQueries({ queryKey: ["promotions", activeEst?.id] });
+    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erro ao criar modelos"),
+  });
+    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erro ao excluir"),
+  });
+
   if (!activeEst) {
     return (
       <div className="p-6 text-sm text-muted-foreground">
