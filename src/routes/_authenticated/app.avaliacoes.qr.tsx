@@ -1182,18 +1182,8 @@ function ReviewQrPage() {
                 </span>
                 <span className="relative text-primary transition-transform group-hover:translate-x-1">→</span>
               </button>
-              <Button
-                type="button"
-                size="icon"
-                variant="outline"
-                onClick={() => setFullscreen(true)}
-                aria-label="Inspecionar em tela cheia"
-                title="Tela cheia (inspecionar escala real)"
-                className="h-10 w-10 shrink-0 border-primary/40"
-              >
-                <Maximize2 className="h-4 w-4" />
-              </Button>
             </div>
+
 
             {lastSavedAt !== null && (
               <div className="sr-only" aria-live="polite">
@@ -1392,6 +1382,21 @@ function ReviewQrPage() {
                   Resetar
                 </span>
               </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setFullscreen(true)}
+                aria-label="Inspecionar em tela cheia"
+                title="Tela cheia (inspecionar escala real)"
+                className="flex h-10 w-full flex-row items-center justify-center gap-1.5 px-2 text-xs sm:h-32 sm:w-10 sm:flex-col sm:px-0 border-primary/40"
+              >
+                <Maximize2 className="h-3.5 w-3.5" />
+                <span className="font-semibold tracking-wider sm:[writing-mode:vertical-rl] sm:[transform:rotate(180deg)]">
+                  Tela cheia
+                </span>
+              </Button>
+
             </div>
 
             </div>
