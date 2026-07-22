@@ -582,7 +582,10 @@ function ReviewQrPage() {
       a.href = url;
       a.download = `qr-avaliacao-${est?.slug ?? "estabelecimento"}-${format}-300dpi.png`;
       a.click();
-      toast.success(`PNG 300 DPI baixado (${Math.round((dims.mm.w/25.4)*300)}×${Math.round((dims.mm.h/25.4)*300)}px)`);
+      if (format === "story") toast.success("PNG baixado (1080×1920 · Story/Reels)");
+      else if (format === "feed") toast.success("PNG baixado (1080×1080 · Feed)");
+      else toast.success(`PNG 300 DPI baixado (${Math.round((dims.mm.w/25.4)*300)}×${Math.round((dims.mm.h/25.4)*300)}px)`);
+
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao exportar PNG");
     } finally { setExporting(false); }
