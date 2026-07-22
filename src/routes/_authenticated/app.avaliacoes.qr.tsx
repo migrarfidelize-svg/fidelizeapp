@@ -1190,9 +1190,9 @@ function ReviewQrPage() {
                 {savedTarget === "idb" ? "Salvo offline" : "Salvo"}
               </div>
             )}
-            <div className="flex w-full max-w-[440px] flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-start">
+            <div className={`flex w-full ${format === "counter15x10" || format === "a5" ? "max-w-[560px]" : "max-w-[440px]"} flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-start`}>
             <div
-              className="relative mx-auto w-full max-w-[320px] flex-1"
+              className={`relative mx-auto w-full ${format === "counter15x10" || format === "a5" ? "max-w-[440px]" : "max-w-[320px]"} flex-1`}
               style={displayMode ? { perspective: "1600px", perspectiveOrigin: "50% 65%" } : undefined}
             >
 
