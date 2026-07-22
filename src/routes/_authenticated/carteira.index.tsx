@@ -155,7 +155,7 @@ function WalletHome() {
                   Ver todos →
                 </Link>
               </div>
-              <WalletStack items={items.slice(0, 5)} />
+              <WalletStack items={featured.slice(0, 5)} />
             </section>
 
             {feed.length > 0 && (
