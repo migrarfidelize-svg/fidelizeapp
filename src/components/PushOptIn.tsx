@@ -99,37 +99,115 @@ export function PushOptIn({ token }: { token: string }) {
 
   async function enable() {
     setBusy(true);
+    setErrorMsg(null);
+    setErrorHint(null);
     try {
-      const perm = await Notification.requestPermission();
-      setPermission(perm);
-      if (perm !== "granted") {
-        toast.error("Permissão negada. Habilite nas configurações do navegador.");
-        return;
+      // Step 1: request permission
+      let perm: NotificationPermission;
+      try {
+        perm = await Notification.requestPermission();
+      } catch (e) {
+        throw new Error(
+          `PERMISSION_ERROR::Não foi possível solicitar a permissão de notificações. ${
+            e instanceof Error ? e.message : ""
+          }`,
+        );
       }
-      const reg = await navigator.serviceWorker.ready;
+      setPermission(perm);
+      if (perm === "denied") {
+        throw new Error(
+          "PERMISSION_DENIED::Você bloqueou as notificações neste site. É preciso desbloquear manualmente nas configurações do navegador.",
+        );
+      }
+      if (perm !== "granted") {
+        throw new Error(
+          "PERMISSION_DISMISSED::Você fechou o pedido de permissão sem responder. Toque em ‘Receber notificações’ novamente e escolha ‘Permitir’.",
+        );
+      }
+
+      // Step 2: service worker
+      let reg: ServiceWorkerRegistration;
+      try {
+        reg = await navigator.serviceWorker.ready;
+      } catch (e) {
+        throw new Error(
+          `SW_ERROR::O service worker não está ativo neste navegador. Recarregue a página e tente novamente. ${
+            e instanceof Error ? e.message : ""
+          }`,
+        );
+      }
+
+      // Step 3: subscribe with VAPID
       let sub = await reg.pushManager.getSubscription();
       if (!sub) {
-        sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource,
-        });
+        try {
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource,
+          });
+        } catch (e) {
+          const raw = e instanceof Error ? e.message : String(e);
+          if (/permission/i.test(raw)) {
+            throw new Error(
+              "PERMISSION_DENIED::O navegador recusou o registro do push (permissão negada em segundo plano).",
+            );
+          }
+          if (/gcm|fcm|network|fetch|unreachable/i.test(raw)) {
+            throw new Error(
+              `PUSH_NETWORK::O serviço de push do navegador está inacessível. Verifique sua conexão e desative VPN/bloqueadores. Detalhe: ${raw}`,
+            );
+          }
+          throw new Error(`SUBSCRIBE_ERROR::Falha ao registrar no serviço de push. Detalhe: ${raw}`);
+        }
       }
+
+      // Step 4: persist on server
       const json = sub.toJSON();
-      await subscribe({
-        data: {
-          token,
-          endpoint: sub.endpoint,
-          p256dh: json.keys?.p256dh ?? "",
-          auth: json.keys?.auth ?? "",
-          user_agent: navigator.userAgent.slice(0, 300),
-        },
-      });
+      try {
+        await subscribe({
+          data: {
+            token,
+            endpoint: sub.endpoint,
+            p256dh: json.keys?.p256dh ?? "",
+            auth: json.keys?.auth ?? "",
+            user_agent: navigator.userAgent.slice(0, 300),
+          },
+        });
+      } catch (e) {
+        // Server rejected — roll back the browser subscription so state stays consistent.
+        try {
+          await sub.unsubscribe();
+        } catch {
+          /* ignore */
+        }
+        throw new Error(
+          `SERVER_ERROR::Não conseguimos salvar sua inscrição no servidor. Tente novamente em instantes. Detalhe: ${
+            e instanceof Error ? e.message : String(e)
+          }`,
+        );
+      }
+
       setEndpoint(sub.endpoint);
       setSubscribed(true);
       toast.success("Notificações ativadas neste cartão!");
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Falha ao ativar notificações.";
-      toast.error(msg);
+      const raw = e instanceof Error ? e.message : "Falha ao ativar notificações.";
+      const [code, ...rest] = raw.split("::");
+      const message = rest.length ? rest.join("::") : raw;
+      setErrorMsg(message);
+      if (code === "PERMISSION_DENIED") {
+        setErrorHint("unblock");
+        setShowUnblockGuide(true);
+      } else if (code === "PUSH_NETWORK") {
+        setErrorHint("network");
+      } else if (code === "SERVER_ERROR") {
+        setErrorHint("retry");
+      } else if (code === "SW_ERROR") {
+        setErrorHint("reload");
+      } else {
+        setErrorHint(null);
+      }
+      toast.error(message);
     } finally {
       setBusy(false);
     }
@@ -137,6 +215,8 @@ export function PushOptIn({ token }: { token: string }) {
 
   async function disable() {
     setBusy(true);
+    setErrorMsg(null);
+    setErrorHint(null);
     try {
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.getSubscription();
@@ -148,8 +228,11 @@ export function PushOptIn({ token }: { token: string }) {
       toast.success("Notificações desativadas.");
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Falha ao desativar.";
+      setErrorMsg(msg);
+      setErrorHint("retry");
       toast.error(msg);
     } finally {
+
       setBusy(false);
     }
   }
