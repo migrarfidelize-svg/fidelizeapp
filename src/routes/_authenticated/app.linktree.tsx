@@ -299,10 +299,6 @@ function LinkTreeEditor() {
                 <Label>Descrição</Label>
                 <Textarea value={description} onChange={(e) => setDescription(e.target.value)} maxLength={500} rows={2} />
               </div>
-              <div>
-                <Label>Capa (URL — opcional)</Label>
-                <Input value={coverUrl} onChange={(e) => setCoverUrl(e.target.value)} placeholder="https://…" />
-              </div>
             </CardContent>
           </Card>
 
