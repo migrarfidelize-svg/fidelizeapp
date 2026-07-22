@@ -159,14 +159,14 @@ function PublicLinkTreePage() {
               if (l.kind === "wifi") {
                 return (
                   <li key={l.id}>
-                    <WifiCard label={l.label} url={l.url} rounded={rounded} primary={primary} accent={accent} text={text} buttonStyle={buttonStyle} />
+                    <WifiCard label={l.label} url={l.url} rounded={rounded} primary={primary} accent={accent} text={text} buttonStyle={buttonStyle} cfg={cfg} />
                   </li>
                 );
               }
               if (l.kind === "pix") {
                 return (
                   <li key={l.id}>
-                    <PixCard label={l.label} url={l.url} rounded={rounded} primary={primary} accent={accent} text={text} buttonStyle={buttonStyle} />
+                    <PixCard label={l.label} url={l.url} rounded={rounded} primary={primary} accent={accent} text={text} buttonStyle={buttonStyle} cfg={cfg} />
                   </li>
                 );
               }
