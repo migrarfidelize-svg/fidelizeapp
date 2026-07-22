@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { useMyFeature } from "@/hooks/useMyFeature";
 import { DisplayStorePreview } from "@/components/DisplayStorePreview";
@@ -129,7 +130,7 @@ function ReviewQrPage() {
   const [googleUrl, setGoogleUrl] = useState("");
   const [showGoogleLogo, setShowGoogleLogo] = useState(true);
   const [nfcMode, setNfcMode] = useState(false);
-  const [nfcStyle, setNfcStyle] = useState<"block" | "badge">("block");
+  const [nfcSize, setNfcSize] = useState(100); // % scale, 60–180
   const [title, setTitle] = useState("Como foi seu atendimento?");
   const [subtitle, setSubtitle] = useState("Sua opinião ajuda nossa equipe a melhorar. Leva menos de 30 segundos.");
   const [ctaNearQR, setCtaNearQR] = useState("Aponte a câmera para avaliar");
@@ -165,7 +166,7 @@ function ReviewQrPage() {
         if (typeof s.googleUrl === "string") setGoogleUrl(s.googleUrl);
         if (typeof s.showGoogleLogo === "boolean") setShowGoogleLogo(s.showGoogleLogo);
         if (typeof s.nfcMode === "boolean") setNfcMode(s.nfcMode);
-        if (s.nfcStyle === "block" || s.nfcStyle === "badge") setNfcStyle(s.nfcStyle);
+        if (typeof s.nfcSize === "number") setNfcSize(s.nfcSize);
         if (s.title) setTitle(s.title);
         if (s.subtitle) setSubtitle(s.subtitle);
         if (s.ctaNearQR) setCtaNearQR(s.ctaNearQR);
@@ -188,14 +189,14 @@ function ReviewQrPage() {
     if (typeof window === "undefined") return;
     try {
       window.localStorage.setItem(storageKey, JSON.stringify({
-        template, format, destination, googleUrl, showGoogleLogo, nfcMode, nfcStyle,
+        template, format, destination, googleUrl, showGoogleLogo, nfcMode, nfcSize,
         title, subtitle, ctaNearQR, ctaFooter,
         primaryColor, backgroundColor, textColor,
         primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel,
         layout,
       }));
     } catch { /* ignore */ }
-  }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, nfcStyle, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor, primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel, layout]);
+  }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, nfcSize, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor, primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel, layout]);
 
   function applyTemplate(key: TemplateKey) {
     setTemplate(key);
@@ -503,11 +504,71 @@ function ReviewQrPage() {
                       className="text-xs"
                     />
                   </div>
+
+                  {/* Google logo toggle — only relevant when secondary QR is on */}
+                  <label className="flex cursor-pointer items-start justify-between gap-3 rounded-lg border border-border/50 bg-background/40 p-2.5">
+                    <div className="flex items-start gap-2">
+                      <GoogleColorG />
+                      <div>
+                        <div className="text-[12px] font-semibold">Mostrar logo do Google no cartaz</div>
+                        <div className="text-[10px] text-muted-foreground">Adiciona o selo "Google Reviews" abaixo do QR principal para reforçar credibilidade.</div>
+                      </div>
+                    </div>
+                    <Switch checked={showGoogleLogo} onCheckedChange={setShowGoogleLogo} />
+                  </label>
                 </div>
               )}
             </div>
 
 
+            {/* NFC (moved above templates) */}
+            <label className="flex cursor-pointer items-start justify-between gap-3 rounded-xl border p-3">
+              <div className="flex items-start gap-2">
+                <Radio className="mt-0.5 h-4 w-4 text-primary" />
+                <div>
+                  <div className="text-sm font-semibold">Modo NFC</div>
+                  <div className="text-[11px] text-muted-foreground">Adiciona o selo NFC no cartaz e libera o botão para gravar a URL em uma tag física.</div>
+                </div>
+              </div>
+              <Switch
+                checked={nfcMode}
+                onCheckedChange={(v) => {
+                  setNfcMode(v);
+                  if (v) setLayout((prev) => ({ ...prev, nfc: { ...DEFAULT_LAYOUT.nfc } }));
+                }}
+              />
+            </label>
+
+            {nfcMode && (
+              <div className="space-y-3 rounded-lg border border-primary/30 bg-primary-soft/40 p-3 text-xs">
+                <div>
+                  <div className="mb-1.5 flex items-center justify-between font-semibold text-primary">
+                    <span>Tamanho do selo NFC</span>
+                    <span className="text-[10px] font-bold tabular-nums text-muted-foreground">{nfcSize}%</span>
+                  </div>
+                  <Slider
+                    min={60}
+                    max={180}
+                    step={5}
+                    value={[nfcSize]}
+                    onValueChange={(v) => setNfcSize(v[0] ?? 100)}
+                  />
+                  <div className="mt-1 text-[10px] text-muted-foreground">
+                    Ajuste o selo NFC discreto que aparece no rodapé do cartaz.
+                  </div>
+                </div>
+                <div>
+                  <div className="font-semibold text-primary">URL para NFC</div>
+                  <div className="mt-1 flex items-center gap-2">
+                    <code className="flex-1 truncate rounded bg-background/70 px-2 py-1">{targetUrl || "—"}</code>
+                    <Button size="sm" variant="ghost" className="h-7 px-2" onClick={copyNfcUrl}><Copy className="h-3.5 w-3.5" /></Button>
+                  </div>
+                  <div className="mt-1.5 text-[11px] text-muted-foreground">
+                    Use um app como <strong>NFC Tools</strong> (Android/iOS) para gravar essa URL na tag adesiva.
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Templates */}
             <div className="space-y-3">
@@ -587,62 +648,6 @@ function ReviewQrPage() {
               </button>
             </div>
 
-            {/* NFC */}
-            <label className="flex cursor-pointer items-start justify-between gap-3 rounded-xl border p-3">
-              <div className="flex items-start gap-2">
-                <Radio className="mt-0.5 h-4 w-4 text-primary" />
-                <div>
-                  <div className="text-sm font-semibold">Modo NFC</div>
-                  <div className="text-[11px] text-muted-foreground">Exibe "Aproxime o celular" no cartaz e libera botão para gravar em NFC tag.</div>
-                </div>
-              </div>
-              <Switch
-                checked={nfcMode}
-                onCheckedChange={(v) => {
-                  setNfcMode(v);
-                  if (v) setLayout((prev) => ({ ...prev, nfc: { ...DEFAULT_LAYOUT.nfc } }));
-                }}
-              />
-            </label>
-
-            {nfcMode && (
-              <div className="space-y-3 rounded-lg border border-primary/30 bg-primary-soft/40 p-3 text-xs">
-                <div>
-                  <div className="mb-1.5 font-semibold text-primary">Balão "Toque aqui"</div>
-                  <div className="grid grid-cols-2 gap-1 rounded-md border bg-background/70 p-0.5">
-                    <button
-                      type="button"
-                      onClick={() => { setNfcStyle("block"); setLayout((prev) => ({ ...prev, nfc: { ...DEFAULT_LAYOUT.nfc } })); }}
-                      className={`rounded px-2 py-1.5 text-[11px] font-semibold transition ${nfcStyle === "block" ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
-                    >
-                      Mostrar balão
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setNfcStyle("badge")}
-                      className={`rounded px-2 py-1.5 text-[11px] font-semibold transition ${nfcStyle === "badge" ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
-                    >
-                      Ocultar balão
-                    </button>
-                  </div>
-                  <div className="mt-1 text-[10px] text-muted-foreground">
-                    {nfcStyle === "block"
-                      ? 'O selo NFC aparece no rodapé + balão "Toque aqui" no cartaz.'
-                      : "Apenas o selo NFC discreto no rodapé. O balão fica oculto."}
-                  </div>
-                </div>
-                <div>
-                  <div className="font-semibold text-primary">URL para NFC</div>
-                  <div className="mt-1 flex items-center gap-2">
-                    <code className="flex-1 truncate rounded bg-background/70 px-2 py-1">{targetUrl || "—"}</code>
-                    <Button size="sm" variant="ghost" className="h-7 px-2" onClick={copyNfcUrl}><Copy className="h-3.5 w-3.5" /></Button>
-                  </div>
-                  <div className="mt-1.5 text-[11px] text-muted-foreground">
-                    Use um app como <strong>NFC Tools</strong> (Android/iOS) para gravar essa URL na tag adesiva.
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Text fields */}
             <div className="space-y-3">
@@ -850,7 +855,7 @@ function ReviewQrPage() {
                   destination={destination}
                   showGoogleLogo={showGoogleLogo}
                   nfcMode={nfcMode}
-                  nfcStyle={nfcStyle}
+                  nfcSize={nfcSize}
                   primaryLabel={primaryLabel}
                   secondaryEnabled={secondaryEnabled}
                   secondaryQrDataUrl={secondaryQrDataUrl}
@@ -990,7 +995,7 @@ interface PosterProps {
   destination: Destination;
   showGoogleLogo: boolean;
   nfcMode: boolean;
-  nfcStyle: "block" | "badge";
+  nfcSize: number;
   primaryLabel: string;
   secondaryEnabled: boolean;
   secondaryQrDataUrl: string;
@@ -1137,7 +1142,7 @@ function PortraitBody(p: PosterProps) {
           label={p.primaryLabel}
           primary={p.primaryColor}
           text={p.textColor}
-          badge={p.destination === "google" && p.showGoogleLogo ? "google" : null}
+          badge={p.showGoogleLogo && p.secondaryEnabled ? "google" : null}
           size={primarySize}
         />
       </DraggableItem>
@@ -1156,17 +1161,10 @@ function PortraitBody(p: PosterProps) {
         </DraggableItem>
       )}
 
-      {/* NFC "Toque aqui" block — only when NFC mode + block style + no secondary */}
-      {p.nfcMode && p.nfcStyle === "block" && !p.secondaryEnabled && (
-        <DraggableItem itemKey="nfc" layout={p.layout} setLayout={p.setLayout} editable={p.editable}>
-          <NfcBlock primary={p.primaryColor} />
-        </DraggableItem>
-      )}
-
       {/* CTA near QR */}
       <DraggableItem itemKey="ctaNear" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
         <div className="text-center text-xs font-bold uppercase tracking-widest" style={{ color: p.primaryColor }}>
-          {p.nfcMode && p.nfcStyle === "block" && !p.secondaryEnabled ? "Aproxime o celular" : p.ctaNearQR}
+          {p.ctaNearQR}
         </div>
       </DraggableItem>
 
@@ -1174,7 +1172,7 @@ function PortraitBody(p: PosterProps) {
       <DraggableItem itemKey="ctaFooter" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
         <div className="flex flex-col items-center gap-1">
           <div className="text-center text-[10px] opacity-70" style={{ color: p.textColor }}>{p.ctaFooter}</div>
-          {p.nfcMode && <NfcBadge primary={p.primaryColor} />}
+          {p.nfcMode && <NfcBadge primary={p.primaryColor} sizePct={p.nfcSize} />}
         </div>
       </DraggableItem>
     </div>
@@ -1320,14 +1318,20 @@ function GoogleColorG() {
   );
 }
 
-function NfcBadge({ primary }: { primary: string }) {
+function NfcBadge({ primary, sizePct = 100 }: { primary: string; sizePct?: number }) {
+  const scale = Math.max(60, Math.min(180, sizePct)) / 100;
   return (
     <div
-      className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1"
-      style={{ background: `color-mix(in oklab, ${primary} 20%, transparent)`, border: `1px solid ${primary}` }}
+      className="inline-flex items-center gap-1.5 rounded-full"
+      style={{
+        background: `color-mix(in oklab, ${primary} 20%, transparent)`,
+        border: `1px solid ${primary}`,
+        padding: `${4 * scale}px ${10 * scale}px`,
+        gap: `${6 * scale}px`,
+      }}
     >
-      <Radio className="h-3 w-3" style={{ color: primary }} />
-      <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: primary }}>NFC</span>
+      <Radio style={{ color: primary, width: 12 * scale, height: 12 * scale }} />
+      <span className="font-bold uppercase tracking-widest" style={{ color: primary, fontSize: `${9 * scale}px` }}>NFC</span>
     </div>
   );
 }
