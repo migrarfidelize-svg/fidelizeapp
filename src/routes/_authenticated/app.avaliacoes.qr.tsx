@@ -316,16 +316,22 @@ function ReviewQrPage() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    try {
-      window.localStorage.setItem(storageKey, JSON.stringify({
+    let cancelled = false;
+    const handle = window.setTimeout(async () => {
+      const result = await persistJson(storageKey, {
         template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale,
         ecc, utmEnabled, bleedMarks,
         title, subtitle, ctaNearQR, ctaFooter,
         primaryColor, backgroundColor, textColor,
         primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel,
         layout, badges,
-      }));
-    } catch { /* ignore */ }
+      });
+      if (cancelled) return;
+      setSavedTarget(result);
+      if (result !== "fail") setLastSavedAt(Date.now());
+      else toast.error("Falha ao salvar automaticamente — espaço do navegador esgotado.");
+    }, 400);
+    return () => { cancelled = true; window.clearTimeout(handle); };
   }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale, ecc, utmEnabled, bleedMarks, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor, primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel, layout, badges]);
 
   function applyTemplate(key: TemplateKey) {
