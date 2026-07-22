@@ -192,11 +192,75 @@ function RewardsHub() {
           </div>
         ) : (
           <div className="space-y-3">
-            {items.map((i) => (
-              <WalletCard key={i.customer.id} item={i} />
-            ))}
+            {items.length >= 4 && (
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Buscar loja…"
+                  aria-label="Buscar loja na minha carteira"
+                  className="w-full rounded-2xl border border-border/60 bg-card/40 py-2.5 pl-9 pr-9 text-sm outline-none transition-colors focus:border-primary/50 focus:bg-card/60"
+                />
+                {query && (
+                  <button
+                    onClick={() => setQuery("")}
+                    aria-label="Limpar busca"
+                    className="absolute right-2 top-1/2 grid h-6 w-6 -translate-y-1/2 place-items-center rounded-full text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+            )}
+
+            {items.length >= 4 && (
+              <div className="flex gap-1.5 overflow-x-auto pb-1">
+                {filterChips.map((c) => {
+                  const active = statusFilter === c.key;
+                  return (
+                    <button
+                      key={c.key}
+                      onClick={() => setStatusFilter(c.key)}
+                      className={
+                        "flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-all " +
+                        (active
+                          ? "border-primary/50 bg-primary/10 text-primary shadow-[0_0_10px_color-mix(in_oklab,var(--primary)_25%,transparent)]"
+                          : c.highlight
+                            ? "border-primary/30 bg-primary/5 text-primary/80"
+                            : "border-border/60 bg-card/40 text-muted-foreground hover:text-foreground")
+                      }
+                    >
+                      {c.label}
+                      {c.count != null && c.count > 0 && (
+                        <span
+                          className={
+                            "grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-black " +
+                            (active
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted text-muted-foreground")
+                          }
+                        >
+                          {c.count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {filtered.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-border/60 bg-card/30 p-6 text-center text-sm text-muted-foreground">
+                Nenhum cartão encontrado com esse filtro.
+              </div>
+            ) : (
+              filtered.map((i) => <WalletCard key={i.customer.id} item={i} />)
+            )}
           </div>
         )}
+
       </div>
     </WithOfflineFallback>
   );
