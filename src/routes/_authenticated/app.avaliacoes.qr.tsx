@@ -166,7 +166,7 @@ function ReviewQrPage() {
         if (typeof s.googleUrl === "string") setGoogleUrl(s.googleUrl);
         if (typeof s.showGoogleLogo === "boolean") setShowGoogleLogo(s.showGoogleLogo);
         if (typeof s.nfcMode === "boolean") setNfcMode(s.nfcMode);
-        if (s.nfcStyle === "block" || s.nfcStyle === "badge") setNfcStyle(s.nfcStyle);
+        if (typeof s.nfcSize === "number") setNfcSize(s.nfcSize);
         if (s.title) setTitle(s.title);
         if (s.subtitle) setSubtitle(s.subtitle);
         if (s.ctaNearQR) setCtaNearQR(s.ctaNearQR);
