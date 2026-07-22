@@ -96,6 +96,11 @@ function ReviewQrPage() {
   const [backgroundColor, setBackgroundColor] = useState("#0d1117");
   const [textColor, setTextColor] = useState("#ffffff");
   const [qrDataUrl, setQrDataUrl] = useState("");
+  const [primaryLabel, setPrimaryLabel] = useState("Avalie nosso atendimento");
+  const [secondaryEnabled, setSecondaryEnabled] = useState(false);
+  const [secondaryUrl, setSecondaryUrl] = useState("");
+  const [secondaryLabel, setSecondaryLabel] = useState("Ver nosso cardápio");
+  const [secondaryQrDataUrl, setSecondaryQrDataUrl] = useState("");
   const [exporting, setExporting] = useState(false);
   const [displayMode, setDisplayMode] = useState(false);
   const [designs, setDesigns] = useState<SavedDesign[]>([]);
