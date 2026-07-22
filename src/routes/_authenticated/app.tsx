@@ -503,15 +503,11 @@ function AppLayout() {
                   </div>
                 </div>
 
-                {/* Tooltip when closed */}
-                {!isOpen && (
-                  <span className="dock-tooltip pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 whitespace-nowrap rounded-md px-2 py-1 text-[11px] font-medium opacity-0 transition-opacity group-hover/dock:opacity-100">
-                    {g.label}
-                  </span>
-                )}
+                {/* Tooltip removed — label already visible */}
               </div>
             );
           })}
+
 
           {/* Divider */}
           <div className="dock-divider my-1 h-px w-8" />
