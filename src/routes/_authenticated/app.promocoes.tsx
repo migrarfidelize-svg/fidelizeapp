@@ -37,7 +37,114 @@ import {
   EyeOff,
   X,
   ExternalLink,
+  Sparkles,
 } from "lucide-react";
+
+// ================================================================
+// Segment-based promotion templates (created as inactive drafts)
+// ================================================================
+type PromoTemplate = { title: string; body: string; links?: Link[] };
+const DEFAULT_TEMPLATES: PromoTemplate[] = [
+  {
+    title: "Combo do dia — peça pelo WhatsApp",
+    body: "Combo especial válido hoje. Mostre esta promoção no balcão ou peça pelo WhatsApp para garantir.",
+  },
+  {
+    title: "Traga um amigo e ganhe um carimbo extra",
+    body: "Venha acompanhado(a) essa semana. Cada amigo novo cadastrado no seu cartão vale +1 carimbo pra você.",
+  },
+];
+const SEGMENT_TEMPLATES: Record<string, PromoTemplate[]> = {
+  espetinhos: [
+    { title: "Rodízio de espetinhos — sexta e sábado", body: "Escolha 4 espetos + acompanhamento por um valor fixo. Válido só nos dias do rodízio." },
+    { title: "Combo casal: 6 espetos + 2 bebidas", body: "Pedido mínimo para 2 pessoas. Retirada ou delivery pelo WhatsApp." },
+  ],
+  cafeteria: [
+    { title: "Café + doce da casa em combo", body: "Todo dia útil, das 14h às 17h. Consulte o sabor do dia no balcão." },
+    { title: "Compre 9 cafés, o 10º é por nossa conta", body: "Some carimbos a cada café expresso, cappuccino ou latte pedido no balcão." },
+  ],
+  barbearia: [
+    { title: "Corte + barba com preço fechado", body: "Agende pelo WhatsApp. Válido de terça a quinta, mediante disponibilidade." },
+    { title: "Traga um amigo e os dois ganham desconto", body: "Marque horário duplo e cada um leva um valor promocional no combo corte + barba." },
+  ],
+  petshop: [
+    { title: "Banho + tosa higiênica com desconto", body: "Agende pelo WhatsApp. Válido para cães de pequeno e médio porte." },
+    { title: "Leve 3 latinhas, pague 2", body: "Promoção válida enquanto durarem os estoques. Consulte marcas participantes." },
+  ],
+  lavajato: [
+    { title: "Lavagem completa + cera de brinde", body: "Válido para carros de passeio. Agende horário pelo WhatsApp e evite fila." },
+    { title: "Combo lavagem simples 2x na semana", body: "Duas lavagens simples pelo preço de uma e meia. Válido para o mesmo veículo em 7 dias." },
+  ],
+  salao: [
+    { title: "Escova + hidratação com valor especial", body: "Terça e quarta, mediante agendamento. Cabelos até a cintura." },
+    { title: "Indique uma amiga e ganhe R$20 no próximo serviço", body: "Sua amiga também ganha desconto na primeira visita. Combine com o atendente." },
+  ],
+  restaurante: [
+    { title: "Prato executivo do dia", body: "De segunda a sexta, no almoço. Consulte o cardápio do dia no WhatsApp." },
+    { title: "Combo família: 4 pratos + refrigerante 2L", body: "Retirada ou delivery. Peça com 40 minutos de antecedência." },
+  ],
+  oficina: [
+    { title: "Revisão preventiva com check-list de 20 itens", body: "Agende pelo WhatsApp. Diagnóstico gratuito e orçamento antes de qualquer serviço." },
+    { title: "Troca de óleo com filtro incluso", body: "Marcas parceiras. Consulte disponibilidade para o modelo do seu carro." },
+  ],
+  loja: [
+    { title: "Frete grátis acima de R$150", body: "Válido para entregas na cidade. Combine a retirada pelo WhatsApp para retirar na hora." },
+    { title: "Compre 2, leve 3 em peças selecionadas", body: "Arara promocional na loja. Enquanto durarem os estoques." },
+  ],
+  outro: DEFAULT_TEMPLATES,
+};
+function normalizeSegment(seg: string | null | undefined): string {
+  const s = (seg ?? "").toString().trim().toLowerCase();
+  if (!s) return "outro";
+  return SEGMENT_TEMPLATES[s] ? s : "outro";
+}
+function templatesForSegment(seg: string | null | undefined): PromoTemplate[] {
+  return SEGMENT_TEMPLATES[normalizeSegment(seg)] ?? DEFAULT_TEMPLATES;
+}
+
+// ================================================================
+// Default fixed-link presets (pre-filled when merchant has none saved)
+// ================================================================
+function normalizeUrl(u: string | null | undefined): string | null {
+  const v = (u ?? "").trim();
+  if (!v) return null;
+  if (/^https?:\/\//i.test(v)) return v;
+  return `https://${v}`;
+}
+function onlyDigits(v: string | null | undefined): string {
+  return (v ?? "").replace(/\D+/g, "");
+}
+type EstLinkSource = {
+  whatsapp?: string | null;
+  phone?: string | null;
+  instagram?: string | null;
+  facebook?: string | null;
+  tiktok?: string | null;
+  website?: string | null;
+  google_maps_url?: string | null;
+};
+function suggestFixedLinks(e: EstLinkSource | null | undefined): Link[] {
+  const out: Link[] = [];
+  const wa = onlyDigits(e?.whatsapp ?? e?.phone ?? "");
+  if (wa) out.push({ label: "WhatsApp", url: `https://wa.me/${wa.startsWith("55") ? wa : `55${wa}`}` });
+  const ig = (e?.instagram ?? "").trim().replace(/^@/, "");
+  if (ig) out.push({ label: "Instagram", url: ig.startsWith("http") ? ig : `https://instagram.com/${ig}` });
+  const site = normalizeUrl(e?.website);
+  if (site) out.push({ label: "Site", url: site });
+  const maps = normalizeUrl(e?.google_maps_url);
+  if (maps) out.push({ label: "Como chegar", url: maps });
+  const fb = normalizeUrl(e?.facebook);
+  if (fb) out.push({ label: "Facebook", url: fb });
+  const tk = (e?.tiktok ?? "").trim().replace(/^@/, "");
+  if (tk) out.push({ label: "TikTok", url: tk.startsWith("http") ? tk : `https://tiktok.com/@${tk}` });
+  // Sempre sugerir slots comuns se ainda faltar espaço
+  if (out.length === 0) {
+    out.push({ label: "WhatsApp", url: "https://wa.me/55" });
+    out.push({ label: "Cardápio", url: "https://" });
+    out.push({ label: "Instagram", url: "https://instagram.com/" });
+  }
+  return out.slice(0, 10);
+}
 
 export const Route = createFileRoute("/_authenticated/app/promocoes")({
   ssr: false,
