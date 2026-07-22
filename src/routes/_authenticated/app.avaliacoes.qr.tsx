@@ -1136,104 +1136,11 @@ function ReviewQrPage() {
             </div>
 
 
-            {/* QR avançado — tolerância a erro + rastreio UTM */}
-            <div className="space-y-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
-              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-primary">
-                <Sparkles className="h-3.5 w-3.5" /> QR avançado
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-[11px] font-medium text-muted-foreground">
-                  Tolerância a erro (ECC)
-                </Label>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {(["L", "M", "Q", "H"] as const).map((k) => {
-                    const active = ecc === k;
-                    const labels: Record<typeof k, string> = { L: "L · 7%", M: "M · 15%", Q: "Q · 25%", H: "H · 30%" };
-                    return (
-                      <button
-                        key={k}
-                        type="button"
-                        onClick={() => setEcc(k)}
-                        className={`rounded-lg border-2 px-1.5 py-1.5 text-[10px] font-bold transition ${active ? "border-primary bg-primary/15 text-primary" : "border-border/60 text-muted-foreground hover:border-primary/40"}`}
-                      >
-                        {labels[k]}
-                      </button>
-                    );
-                  })}
-                </div>
-                <p className="text-[10px] text-muted-foreground">
-                  H (30%) é o mais robusto — recomendado para impressão. Níveis menores geram QR menos denso, mas menos tolerante a sujeira/riscos.
-                </p>
-              </div>
-
-              <label className="flex cursor-pointer items-start justify-between gap-3 rounded-lg border bg-background/60 p-2.5">
-                <div>
-                  <div className="text-xs font-semibold">UTM automático</div>
-                  <div className="text-[10px] text-muted-foreground">Adiciona <code>utm_source=qr_poster</code> para medir os scans que vêm do cartaz.</div>
-                </div>
-                <Switch checked={utmEnabled} onCheckedChange={setUtmEnabled} />
-              </label>
-
-              {/* Contrast diagnostic */}
-              <div className="space-y-1 rounded-lg border bg-background/60 p-2.5">
-                <div className="flex items-center justify-between text-[11px] font-semibold">
-                  <span>Contraste (WCAG)</span>
-                  <span className={`tabular-nums ${textBgRatio >= 4.5 ? "text-emerald-500" : textBgRatio >= 3 ? "text-amber-500" : "text-destructive"}`}>
-                    Texto/Fundo {textBgRatio.toFixed(2)}:1
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                  <span>QR (escuro/claro)</span>
-                  <span className="tabular-nums text-emerald-500">{qrCodeRatio.toFixed(1)}:1 · ótimo para leitura</span>
-                </div>
-                {textBgRatio < 4.5 && (
-                  <p className="flex items-start gap-1 text-[10px] text-amber-500">
-                    <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
-                    Contraste texto/fundo abaixo de 4.5:1 — pode dificultar a leitura à distância. Ajuste as cores.
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Impressão profissional */}
-            <div className="space-y-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
-              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-primary">
-                <FileText className="h-3.5 w-3.5" /> Impressão profissional
-              </div>
-
-              <label className="flex cursor-pointer items-start justify-between gap-3 rounded-lg border bg-background/60 p-2.5">
-                <div>
-                  <div className="text-xs font-semibold">Marcas de corte + sangria de 3 mm</div>
-                  <div className="text-[10px] text-muted-foreground">Padrão gráfico: o PDF sai com 3 mm extras em cada lado e marcas de corte nos cantos, prontos para guilhotina.</div>
-                </div>
-                <Switch checked={bleedMarks} onCheckedChange={setBleedMarks} />
-              </label>
-
-              <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-2.5 text-[10px] text-amber-600 dark:text-amber-400">
-                <div className="flex items-start gap-1.5">
-                  <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
-                  <div>
-                    <strong>Perfil de cor RGB.</strong> Gráficas profissionais imprimem em CMYK — peça à sua gráfica para converter o PDF (ou envie o SVG vetorial abaixo para máxima fidelidade e escala infinita).
-                  </div>
-                </div>
-              </div>
-
-              <Button
-                onClick={exportSvg}
-                disabled={exporting || !targetUrl}
-                variant="outline"
-                className="w-full"
-              >
-                <FileImage className="mr-2 h-4 w-4" /> Baixar QR vetorial (SVG)
-              </Button>
-              <p className="text-[10px] text-muted-foreground">
-                O SVG contém apenas o QR principal em vetor — ideal para impressão em qualquer tamanho sem perda de qualidade.
-              </p>
-            </div>
+            {/* QR avançado + Impressão profissional — ocultos ao lojista.
+                Estado permanece ativo com defaults: ecc="H", utmEnabled=true, bleedMarks=true.
+                Contraste WCAG segue sendo calculado silenciosamente. */}
 
             {/* Actions */}
-
             <div className="grid grid-cols-2 gap-2 pt-1">
               <Button onClick={exportPng} disabled={exporting || !targetUrl}>
                 <FileImage className="mr-2 h-4 w-4" /> Baixar PNG
@@ -1241,13 +1148,14 @@ function ReviewQrPage() {
               <Button onClick={exportPdf} disabled={exporting || !targetUrl} variant="outline">
                 <FileText className="mr-2 h-4 w-4" /> Baixar PDF
               </Button>
-              <Button onClick={share} variant="outline" disabled={!targetUrl}>
-                <Share2 className="mr-2 h-4 w-4" /> Compartilhar
+              <Button onClick={exportSvg} disabled={exporting || !targetUrl} variant="outline">
+                <FileImage className="mr-2 h-4 w-4" /> Baixar SVG
               </Button>
               <Button onClick={copyLink} variant="outline" disabled={!targetUrl}>
                 <Copy className="mr-2 h-4 w-4" /> Copiar link
               </Button>
             </div>
+
 
             {/* ===== STORE PREVIEW: Adquirir display físico ===== */}
             <div id="loja-displays" className="scroll-mt-4"><DisplayStorePreview /></div>
