@@ -8,7 +8,9 @@ import { jsPDF } from "jspdf";
 import { toast } from "sonner";
 import {
   Star, Copy, Share2, FileImage, FileText, Lock, Sparkles, Radio, CheckCircle2, AlertTriangle,
+  Save, Layers, Eye, Trash2, Palette,
 } from "lucide-react";
+
 import { PageHero } from "@/components/PageHero";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,8 +36,38 @@ const FORMATS: Record<FormatKey, { label: string; aspect: string; mm: { w: numbe
 };
 
 type Destination = "fidelize" | "google";
+type TemplateKey = "glass" | "minimal" | "bold" | "editorial";
+
+const TEMPLATES: Record<TemplateKey, { label: string; description: string; defaults: { primaryColor: string; backgroundColor: string; textColor: string } }> = {
+  glass:     { label: "Glass Cyan",  description: "Fundo escuro com brilho cyan (padrão)", defaults: { primaryColor: "#00c2c7", backgroundColor: "#0d1117", textColor: "#ffffff" } },
+  minimal:   { label: "Minimal",     description: "Branco limpo, tipografia sóbria",       defaults: { primaryColor: "#111827", backgroundColor: "#ffffff", textColor: "#111827" } },
+  bold:      { label: "Bold",        description: "Cor cheia, contraste alto",             defaults: { primaryColor: "#ffffff", backgroundColor: "#ff5b3d", textColor: "#ffffff" } },
+  editorial: { label: "Editorial",   description: "Sépia sofisticado, estilo revista",     defaults: { primaryColor: "#8b6f3a", backgroundColor: "#f4ede0", textColor: "#2a1f14" } },
+};
+
+type SavedDesign = {
+  id: string;
+  name: string;
+  createdAt: number;
+  data: {
+    template: TemplateKey;
+    format: FormatKey;
+    destination: Destination;
+    googleUrl: string;
+    showGoogleLogo: boolean;
+    nfcMode: boolean;
+    title: string;
+    subtitle: string;
+    ctaNearQR: string;
+    ctaFooter: string;
+    primaryColor: string;
+    backgroundColor: string;
+    textColor: string;
+  };
+};
 
 function ReviewQrPage() {
+
   const getEsts = useServerFn(getMyEstablishments);
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
   const est = memberships?.[0]?.establishment as
@@ -46,8 +78,11 @@ function ReviewQrPage() {
 
   // Persisted preferences
   const storageKey = est ? `review-qr:${est.id}` : "review-qr:draft";
+  const designsKey = est ? `review-qr-designs:${est.id}` : "review-qr-designs:draft";
 
+  const [template, setTemplate] = useState<TemplateKey>("glass");
   const [format, setFormat] = useState<FormatKey>("counter15x10");
+
   const [destination, setDestination] = useState<Destination>("fidelize");
   const [googleUrl, setGoogleUrl] = useState("");
   const [showGoogleLogo, setShowGoogleLogo] = useState(true);
@@ -61,40 +96,103 @@ function ReviewQrPage() {
   const [textColor, setTextColor] = useState("#ffffff");
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [exporting, setExporting] = useState(false);
+  const [displayMode, setDisplayMode] = useState(false);
+  const [designs, setDesigns] = useState<SavedDesign[]>([]);
+  const [designName, setDesignName] = useState("");
   const posterRef = useRef<HTMLDivElement>(null);
+
 
   // Load persisted state
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
       const raw = window.localStorage.getItem(storageKey);
-      if (!raw) return;
-      const s = JSON.parse(raw);
-      if (s.format) setFormat(s.format);
-      if (s.destination) setDestination(s.destination);
-      if (typeof s.googleUrl === "string") setGoogleUrl(s.googleUrl);
-      if (typeof s.showGoogleLogo === "boolean") setShowGoogleLogo(s.showGoogleLogo);
-      if (typeof s.nfcMode === "boolean") setNfcMode(s.nfcMode);
-      if (s.title) setTitle(s.title);
-      if (s.subtitle) setSubtitle(s.subtitle);
-      if (s.ctaNearQR) setCtaNearQR(s.ctaNearQR);
-      if (s.ctaFooter) setCtaFooter(s.ctaFooter);
-      if (s.primaryColor) setPrimaryColor(s.primaryColor);
-      if (s.backgroundColor) setBackgroundColor(s.backgroundColor);
-      if (s.textColor) setTextColor(s.textColor);
+      if (raw) {
+        const s = JSON.parse(raw);
+        if (s.template) setTemplate(s.template);
+        if (s.format) setFormat(s.format);
+        if (s.destination) setDestination(s.destination);
+        if (typeof s.googleUrl === "string") setGoogleUrl(s.googleUrl);
+        if (typeof s.showGoogleLogo === "boolean") setShowGoogleLogo(s.showGoogleLogo);
+        if (typeof s.nfcMode === "boolean") setNfcMode(s.nfcMode);
+        if (s.title) setTitle(s.title);
+        if (s.subtitle) setSubtitle(s.subtitle);
+        if (s.ctaNearQR) setCtaNearQR(s.ctaNearQR);
+        if (s.ctaFooter) setCtaFooter(s.ctaFooter);
+        if (s.primaryColor) setPrimaryColor(s.primaryColor);
+        if (s.backgroundColor) setBackgroundColor(s.backgroundColor);
+        if (s.textColor) setTextColor(s.textColor);
+      }
+      const rawDesigns = window.localStorage.getItem(designsKey);
+      if (rawDesigns) setDesigns(JSON.parse(rawDesigns));
     } catch { /* ignore */ }
-  }, [storageKey]);
+  }, [storageKey, designsKey]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
       window.localStorage.setItem(storageKey, JSON.stringify({
-        format, destination, googleUrl, showGoogleLogo, nfcMode,
+        template, format, destination, googleUrl, showGoogleLogo, nfcMode,
         title, subtitle, ctaNearQR, ctaFooter,
         primaryColor, backgroundColor, textColor,
       }));
     } catch { /* ignore */ }
-  }, [storageKey, format, destination, googleUrl, showGoogleLogo, nfcMode, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor]);
+  }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor]);
+
+  function applyTemplate(key: TemplateKey) {
+    setTemplate(key);
+    const t = TEMPLATES[key];
+    setPrimaryColor(t.defaults.primaryColor);
+    setBackgroundColor(t.defaults.backgroundColor);
+    setTextColor(t.defaults.textColor);
+  }
+
+  function persistDesigns(next: SavedDesign[]) {
+    setDesigns(next);
+    try { window.localStorage.setItem(designsKey, JSON.stringify(next)); } catch { /* ignore */ }
+  }
+
+  function saveCurrentDesign() {
+    const name = designName.trim() || `Design ${designs.length + 1}`;
+    const entry: SavedDesign = {
+      id: (crypto?.randomUUID?.() ?? String(Date.now())),
+      name,
+      createdAt: Date.now(),
+      data: {
+        template, format, destination, googleUrl, showGoogleLogo, nfcMode,
+        title, subtitle, ctaNearQR, ctaFooter,
+        primaryColor, backgroundColor, textColor,
+      },
+    };
+    persistDesigns([entry, ...designs].slice(0, 20));
+    setDesignName("");
+    toast.success(`Design "${name}" salvo`);
+  }
+
+  function loadDesign(d: SavedDesign) {
+    const s = d.data;
+    setTemplate(s.template);
+    setFormat(s.format);
+    setDestination(s.destination);
+    setGoogleUrl(s.googleUrl);
+    setShowGoogleLogo(s.showGoogleLogo);
+    setNfcMode(s.nfcMode);
+    setTitle(s.title);
+    setSubtitle(s.subtitle);
+    setCtaNearQR(s.ctaNearQR);
+    setCtaFooter(s.ctaFooter);
+    setPrimaryColor(s.primaryColor);
+    setBackgroundColor(s.backgroundColor);
+    setTextColor(s.textColor);
+    toast.success(`Design "${d.name}" carregado`);
+  }
+
+  function deleteDesign(id: string) {
+    persistDesigns(designs.filter(d => d.id !== id));
+    toast.success("Design removido");
+  }
+
+
 
   const fidelizeUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/avaliar/${est.slug}` : "";
   const targetUrl = destination === "google" ? googleUrl.trim() : fidelizeUrl;
@@ -267,7 +365,37 @@ function ReviewQrPage() {
               )}
             </div>
 
+            {/* Templates */}
+            <div className="space-y-3">
+              <Label className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <Layers className="h-3.5 w-3.5" /> Modelo de cartaz
+              </Label>
+              <div className="grid grid-cols-2 gap-2">
+                {(Object.keys(TEMPLATES) as TemplateKey[]).map((k) => {
+                  const t = TEMPLATES[k];
+                  const active = template === k;
+                  return (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => applyTemplate(k)}
+                      className={`group relative overflow-hidden rounded-xl border-2 p-2.5 text-left transition ${active ? "border-primary ring-2 ring-primary/30" : "border-border/60 hover:border-primary/40"}`}
+                    >
+                      <div className="mb-2 grid h-10 grid-cols-3 gap-1 rounded-md p-1" style={{ background: t.defaults.backgroundColor }}>
+                        <div className="rounded-sm" style={{ background: t.defaults.primaryColor }} />
+                        <div className="rounded-sm" style={{ background: t.defaults.textColor, opacity: 0.6 }} />
+                        <div className="rounded-sm" style={{ background: t.defaults.primaryColor, opacity: 0.5 }} />
+                      </div>
+                      <div className={`text-[11px] font-bold ${active ? "text-primary" : "text-foreground"}`}>{t.label}</div>
+                      <div className="text-[10px] leading-tight text-muted-foreground line-clamp-2">{t.description}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Format */}
+
             <div className="space-y-3">
               <Label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Formato do cartaz</Label>
               <div className="grid grid-cols-4 gap-2">
@@ -359,7 +487,63 @@ function ReviewQrPage() {
               </div>
             </div>
 
+            {/* Saved designs */}
+            <div className="space-y-2 rounded-xl border border-primary/20 bg-primary/5 p-3">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-primary">
+                <Palette className="h-3.5 w-3.5" /> Meus designs salvos
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  value={designName}
+                  onChange={(e) => setDesignName(e.target.value)}
+                  placeholder="Nome do design (ex: Balcão azul)"
+                  className="h-9 text-xs"
+                  maxLength={40}
+                />
+                <Button onClick={saveCurrentDesign} size="sm" className="h-9 shrink-0">
+                  <Save className="mr-1.5 h-3.5 w-3.5" /> Salvar
+                </Button>
+              </div>
+              {designs.length > 0 ? (
+                <div className="max-h-40 space-y-1 overflow-y-auto pr-1">
+                  {designs.map((d) => (
+                    <div key={d.id} className="flex items-center gap-2 rounded-lg border bg-background/70 p-1.5">
+                      <button
+                        type="button"
+                        onClick={() => loadDesign(d)}
+                        className="flex flex-1 items-center gap-2 rounded px-1.5 py-0.5 text-left hover:bg-primary/10"
+                      >
+                        <div
+                          className="h-6 w-6 shrink-0 rounded-md ring-1 ring-border"
+                          style={{ background: `linear-gradient(135deg, ${d.data.backgroundColor} 50%, ${d.data.primaryColor} 50%)` }}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-xs font-semibold">{d.name}</div>
+                          <div className="text-[10px] text-muted-foreground">
+                            {TEMPLATES[d.data.template].label} · {FORMATS[d.data.format].label}
+                          </div>
+                        </div>
+                      </button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                        onClick={() => deleteDesign(d.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-[11px] text-muted-foreground">
+                  Nenhum design salvo ainda. Ajuste as cores/textos e clique em Salvar para guardar variações.
+                </div>
+              )}
+            </div>
+
             {/* Actions */}
+
             <div className="grid grid-cols-2 gap-2 pt-1">
               <Button onClick={exportPng} disabled={exporting || !targetUrl}>
                 <FileImage className="mr-2 h-4 w-4" /> Baixar PNG
@@ -383,14 +567,47 @@ function ReviewQrPage() {
         {/* PREVIEW */}
         <div className="min-w-0">
           <div className="sticky top-4 flex flex-col items-center gap-3">
-            <div className="relative w-full max-w-[420px]">
+            {/* Display toggle */}
+            <div className="flex w-full max-w-[420px] items-center justify-between rounded-xl border bg-card/70 p-2 backdrop-blur-xl">
+              <span className="flex items-center gap-2 pl-2 text-xs font-semibold">
+                <Eye className="h-3.5 w-3.5 text-primary" />
+                Ver no display de balcão
+              </span>
+              <Switch checked={displayMode} onCheckedChange={setDisplayMode} />
+            </div>
+
+            <div
+              className="relative w-full max-w-[420px]"
+              style={displayMode ? { perspective: "1400px" } : undefined}
+            >
               <div className="pointer-events-none absolute -inset-8 rounded-3xl bg-gradient-to-br from-primary/15 via-transparent to-transparent blur-3xl" />
+
+              {/* Acrylic holder overlay (only in display mode) */}
+              {displayMode && (
+                <div
+                  className="pointer-events-none absolute inset-0 z-20 rounded-lg"
+                  style={{
+                    transform: "rotateX(-10deg)",
+                    transformOrigin: "bottom center",
+                    background:
+                      "linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.03) 30%, rgba(255,255,255,0) 60%, rgba(255,255,255,0.08) 100%)",
+                    boxShadow:
+                      "inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -1px 0 rgba(255,255,255,0.15), 0 30px 60px -30px rgba(0,0,0,0.6)",
+                  }}
+                />
+              )}
+
               <div
-                className="relative overflow-hidden rounded-lg shadow-2xl ring-1 ring-primary/20"
-                style={{ aspectRatio: dims.aspect }}
+                className="relative overflow-hidden rounded-lg shadow-2xl ring-1 ring-primary/20 transition-transform duration-500"
+                style={{
+                  aspectRatio: dims.aspect,
+                  transform: displayMode ? "rotateX(-10deg)" : undefined,
+                  transformOrigin: "bottom center",
+                }}
               >
                 <PosterCanvas
                   ref={posterRef}
+                  template={template}
                   format={format}
                   title={title}
                   subtitle={subtitle}
@@ -408,12 +625,27 @@ function ReviewQrPage() {
                   nfcMode={nfcMode}
                 />
               </div>
+
+              {/* Reflection under counter */}
+              {displayMode && (
+                <div
+                  className="pointer-events-none mx-auto mt-1 h-16 w-[85%] rounded-[50%]"
+                  style={{
+                    background:
+                      "radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.15) 40%, transparent 70%)",
+                    filter: "blur(6px)",
+                  }}
+                />
+              )}
             </div>
             <p className="text-center text-xs text-muted-foreground">
-              Preview em escala. Exportação usa {dims.mm.w}×{dims.mm.h}mm ({dims.orientation === "landscape" ? "paisagem" : dims.orientation === "square" ? "quadrado" : "retrato"}).
+              {displayMode
+                ? "Visualização como estará no display acrílico de balcão (inclinado 10°)."
+                : `Preview em escala. Exportação usa ${dims.mm.w}×${dims.mm.h}mm (${dims.orientation === "landscape" ? "paisagem" : dims.orientation === "square" ? "quadrado" : "retrato"}).`}
             </p>
           </div>
         </div>
+
       </div>
     </div>
   );
@@ -426,6 +658,7 @@ function ReviewQrPage() {
 import { forwardRef } from "react";
 
 interface PosterProps {
+  template: TemplateKey;
   format: FormatKey;
   title: string;
   subtitle: string;
@@ -444,16 +677,28 @@ interface PosterProps {
 }
 
 const PosterCanvas = forwardRef<HTMLDivElement, PosterProps>(function PosterCanvas(props, ref) {
+  const bg = props.template === "glass"
+    ? `radial-gradient(120% 80% at 50% 0%, color-mix(in oklab, ${props.primaryColor} 22%, transparent) 0%, transparent 60%), ${props.backgroundColor}`
+    : props.backgroundColor;
+  const overlay = props.template === "editorial"
+    ? "repeating-linear-gradient(0deg, rgba(0,0,0,0.03) 0 1px, transparent 1px 4px)"
+    : props.template === "bold"
+      ? `radial-gradient(circle at 20% 10%, color-mix(in oklab, #ffffff 20%, transparent) 0%, transparent 40%)`
+      : "none";
   return (
     <div
       ref={ref}
       className="absolute inset-0 flex flex-col"
-      style={{ background: props.backgroundColor, color: props.textColor }}
+      style={{ background: bg, color: props.textColor }}
     >
+      {overlay !== "none" && (
+        <div className="pointer-events-none absolute inset-0" style={{ background: overlay }} />
+      )}
       <PortraitBody {...props} />
     </div>
   );
 });
+
 
 
 function PortraitBody(p: PosterProps) {
