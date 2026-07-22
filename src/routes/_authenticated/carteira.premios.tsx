@@ -36,7 +36,7 @@ export const Route = createFileRoute("/_authenticated/carteira/premios")({
     ]),
   head: () => ({
     meta: [
-      { title: "Meus prêmios — Carteira Fidelize" },
+      { title: "Meus cartões — Carteira Fidelize" },
       { name: "robots", content: "noindex" },
     ],
   }),
