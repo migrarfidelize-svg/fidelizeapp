@@ -314,33 +314,142 @@ function RetencaoPage() {
               }
             />
           </div>
+          {/* Filtros do funil */}
+          <div className="rounded-lg border bg-muted/20 p-3 space-y-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              Filtros do funil
+            </p>
+            <div className="grid gap-3 md:grid-cols-3">
+              {ests.length > 1 && (
+                <div className="space-y-1">
+                  <Label className="text-xs">Estabelecimento</Label>
+                  <select
+                    className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+                    value={activeEst?.id ?? ""}
+                    onChange={(e) => setSelectedEstId(e.target.value)}
+                  >
+                    {ests.map((e) => (
+                      <option key={e.id} value={e.id}>
+                        {e.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <div className="space-y-1">
+                <Label className="text-xs">Período</Label>
+                <div className="flex gap-1">
+                  {[7, 30, 90, 365].map((d) => (
+                    <button
+                      key={d}
+                      onClick={() => setPeriodDays(d)}
+                      className={`flex-1 rounded-md border px-2 py-1.5 text-xs font-semibold transition-colors ${
+                        periodDays === d
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-input bg-background hover:border-primary/40"
+                      }`}
+                    >
+                      {d === 365 ? "1 ano" : `${d}d`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Eventos</Label>
+                <div className="flex flex-wrap gap-1">
+                  {ALL_EVENTS.map((ev) => {
+                    const label = ev.replace("referral_", "");
+                    const on = eventTypes.includes(ev);
+                    return (
+                      <button
+                        key={ev}
+                        onClick={() =>
+                          setEventTypes((prev) =>
+                            prev.includes(ev)
+                              ? prev.filter((x) => x !== ev)
+                              : [...prev, ev],
+                          )
+                        }
+                        className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                          on
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-input bg-background text-muted-foreground hover:border-primary/40"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {stats && (
             <div className="rounded-lg border p-3 space-y-3">
               {/* Funnel */}
               <div>
                 <p className="text-xs font-semibold mb-2 text-muted-foreground">
-                  Funil (últimos 90 dias)
+                  Funil (últimos {stats.period_days ?? periodDays} dias)
                 </p>
                 <div className="grid grid-cols-4 gap-2 text-center">
                   {[
-                    { label: "Cliques", value: stats.funnel?.clicks ?? 0 },
-                    { label: "Compart.", value: stats.funnel?.shares ?? 0 },
-                    { label: "Cadastros", value: stats.funnel?.signups ?? 0 },
-                    { label: "Bônus", value: stats.funnel?.rewards ?? 0 },
-                  ].map((s) => (
-                    <div key={s.label} className="rounded-md border bg-muted/30 p-2">
-                      <div className="text-lg font-bold tabular-nums">{s.value}</div>
-                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                        {s.label}
+                    { label: "Cliques", value: stats.funnel?.clicks ?? 0, key: "referral_click" as EvType },
+                    { label: "Compart.", value: stats.funnel?.shares ?? 0, key: "referral_share" as EvType },
+                    { label: "Cadastros", value: stats.funnel?.signups ?? 0, key: "referral_signup" as EvType },
+                    { label: "Bônus", value: stats.funnel?.rewards ?? 0, key: "referral_reward" as EvType },
+                  ].map((s) => {
+                    const dim = !eventTypes.includes(s.key);
+                    return (
+                      <div
+                        key={s.label}
+                        className={`rounded-md border bg-muted/30 p-2 transition-opacity ${dim ? "opacity-40" : ""}`}
+                      >
+                        <div className="text-lg font-bold tabular-nums">{s.value}</div>
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                          {s.label}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 <p className="mt-2 text-[11px] text-muted-foreground">
                   Conversão clique → cadastro:{" "}
                   <strong className="text-foreground">{stats.conversion ?? 0}%</strong>
                 </p>
               </div>
+
+              {/* UTM breakdown */}
+              {stats.utmSources && stats.utmSources.length > 0 && (
+                <div className="border-t pt-3">
+                  <p className="text-xs font-semibold mb-2 text-muted-foreground">
+                    Origem do clique (UTM source)
+                  </p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="text-left text-muted-foreground">
+                          <th className="pb-1 font-medium">Fonte</th>
+                          <th className="pb-1 text-right font-medium">Cliques</th>
+                          <th className="pb-1 text-right font-medium">Cadastros</th>
+                          <th className="pb-1 text-right font-medium">Conv.</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {stats.utmSources.map((u) => (
+                          <tr key={u.source} className="border-t border-border/40">
+                            <td className="py-1.5 font-mono">{u.source}</td>
+                            <td className="py-1.5 text-right tabular-nums">{u.clicks}</td>
+                            <td className="py-1.5 text-right tabular-nums">{u.signups}</td>
+                            <td className="py-1.5 text-right tabular-nums">{u.conversion}%</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-center justify-between text-sm border-t pt-3">
                 <span className="text-muted-foreground">Clientes indicados (total)</span>
                 <strong>
@@ -364,6 +473,7 @@ function RetencaoPage() {
               )}
             </div>
           )}
+
         </CardContent>
       </Card>
 
