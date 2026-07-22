@@ -1713,11 +1713,14 @@ function PortraitBody(p: PosterProps) {
   // Referência 1.0 = Balcão 10×15.
   const formatMult =
     p.format === "feed" ? 0.72 :
-    p.format === "story" ? 1.15 :
+    p.format === "story" ? 0.82 :
     p.format === "a5" ? 0.95 :
     1;
   const effectiveScale = p.contentScale * formatMult;
-  const primarySize = Math.round((p.secondaryEnabled ? 104 : 128) * formatMult);
+  // Story é 9:16 (muito estreito): reduz ainda mais o QR quando o 2º está ativo
+  // para evitar que os dois balões estourem a largura útil e se sobreponham.
+  const storyDualPenalty = p.format === "story" && p.secondaryEnabled ? 0.82 : 1;
+  const primarySize = Math.round((p.secondaryEnabled ? 104 : 128) * formatMult * storyDualPenalty);
   return (
     <div className="relative h-full w-full">
       {/* Header block (logo + name + stars) */}
