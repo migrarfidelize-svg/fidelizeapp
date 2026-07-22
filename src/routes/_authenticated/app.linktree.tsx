@@ -631,39 +631,65 @@ function WifiFields({ url, onChange }: { url: string; onChange: (ssid: string, p
 
 function PixFields({ url, onChange }: { url: string; onChange: (type: PixKeyType, key: string, name: string) => void }) {
   const parsed = decodePix(url);
+  const [touched, setTouched] = useState(false);
+  const check = validatePixKey(parsed.type, parsed.key);
+  const showError = touched && !check.ok;
+  const placeholders: Record<PixKeyType, string> = {
+    cpf: "000.000.000-00",
+    cnpj: "00.000.000/0000-00",
+    email: "pix@dominio.com",
+    telefone: "+5511999999999",
+    aleatoria: "123e4567-e89b-12d3-a456-426614174000",
+  };
   return (
-    <div className="grid gap-2 md:grid-cols-3">
-      <div>
-        <Label className="text-xs">Tipo de chave</Label>
-        <Select value={parsed.type} onValueChange={(v) => onChange(v as PixKeyType, parsed.key, parsed.name)}>
-          <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="cpf">CPF</SelectItem>
-            <SelectItem value="cnpj">CNPJ</SelectItem>
-            <SelectItem value="email">E-mail</SelectItem>
-            <SelectItem value="telefone">Telefone</SelectItem>
-            <SelectItem value="aleatoria">Aleatória</SelectItem>
-          </SelectContent>
-        </Select>
+    <div className="space-y-2">
+      <div className="grid gap-2 md:grid-cols-3">
+        <div>
+          <Label className="text-xs">Tipo de chave</Label>
+          <Select value={parsed.type} onValueChange={(v) => { setTouched(true); onChange(v as PixKeyType, parsed.key, parsed.name); }}>
+            <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="cpf">CPF</SelectItem>
+              <SelectItem value="cnpj">CNPJ</SelectItem>
+              <SelectItem value="email">E-mail</SelectItem>
+              <SelectItem value="telefone">Telefone</SelectItem>
+              <SelectItem value="aleatoria">Aleatória</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label className="text-xs">Chave Pix</Label>
+          <Input
+            placeholder={placeholders[parsed.type]}
+            value={parsed.key}
+            onChange={(e) => onChange(parsed.type, e.target.value, parsed.name)}
+            onBlur={() => setTouched(true)}
+            maxLength={140}
+            aria-invalid={showError}
+            className={showError ? "border-destructive focus-visible:ring-destructive" : ""}
+          />
+        </div>
+        <div>
+          <Label className="text-xs">Beneficiário (opcional)</Label>
+          <Input
+            placeholder="Nome exibido"
+            value={parsed.name}
+            onChange={(e) => onChange(parsed.type, parsed.key, e.target.value)}
+            maxLength={80}
+          />
+        </div>
       </div>
-      <div>
-        <Label className="text-xs">Chave Pix</Label>
-        <Input
-          placeholder={parsed.type === "email" ? "pix@dominio.com" : parsed.type === "telefone" ? "+5511999999999" : "chave pix"}
-          value={parsed.key}
-          onChange={(e) => onChange(parsed.type, e.target.value, parsed.name)}
-          maxLength={140}
-        />
-      </div>
-      <div>
-        <Label className="text-xs">Beneficiário (opcional)</Label>
-        <Input
-          placeholder="Nome exibido"
-          value={parsed.name}
-          onChange={(e) => onChange(parsed.type, parsed.key, e.target.value)}
-          maxLength={80}
-        />
-      </div>
+      {showError ? (
+        <p className="flex items-center gap-1.5 text-xs text-destructive">
+          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+          {check.message}
+        </p>
+      ) : parsed.key.trim() ? (
+        <p className="text-xs text-emerald-600 dark:text-emerald-400">Chave {PIX_TYPE_LABEL[parsed.type]} válida.</p>
+      ) : (
+        <p className="text-xs text-muted-foreground">Preencha a chave no formato de {PIX_TYPE_LABEL[parsed.type]}.</p>
+      )}
     </div>
   );
 }
+
