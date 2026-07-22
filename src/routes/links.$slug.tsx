@@ -174,3 +174,99 @@ function PublicLinkTreePage() {
     </div>
   );
 }
+
+function WifiCard({
+  label, url, rounded, primary, accent, text, buttonStyle,
+}: {
+  label: string; url: string; rounded: string;
+  primary: string; accent: string; text: string; buttonStyle: string;
+}) {
+  const { ssid, password } = decodeWifi(url);
+  const [showPwd, setShowPwd] = useState(false);
+  const [copied, setCopied] = useState<"" | "ssid" | "pwd">("");
+
+  const copy = async (v: string, which: "ssid" | "pwd") => {
+    try {
+      await navigator.clipboard.writeText(v);
+      setCopied(which);
+      setTimeout(() => setCopied(""), 1400);
+    } catch { /* noop */ }
+  };
+
+  const bg =
+    buttonStyle === "glass"
+      ? "rgba(255,255,255,0.06)"
+      : buttonStyle === "outline"
+      ? "transparent"
+      : `linear-gradient(135deg, ${primary}22, ${accent}22)`;
+  const border = buttonStyle === "outline" ? `2px solid ${primary}` : "1px solid rgba(255,255,255,0.15)";
+
+  return (
+    <div
+      className={`px-4 py-4 text-left ${rounded}`}
+      style={{ background: bg, border, color: text, backdropFilter: "blur(12px)" }}
+    >
+      <div className="flex items-center gap-2 mb-3">
+        <span
+          className="grid h-8 w-8 place-items-center rounded-lg text-white shrink-0"
+          style={{ background: `linear-gradient(135deg, ${primary}, ${accent})` }}
+        >
+          <Wifi className="h-4 w-4" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-xs uppercase tracking-wider opacity-60">Wi-Fi do local</p>
+          <p className="text-sm font-semibold truncate">{label || "Rede Wi-Fi"}</p>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <FieldRow
+          k="Rede"
+          v={ssid || "—"}
+          copied={copied === "ssid"}
+          onCopy={() => ssid && copy(ssid, "ssid")}
+          text={text}
+        />
+        <FieldRow
+          k="Senha"
+          v={password ? (showPwd ? password : "•".repeat(Math.min(password.length, 12))) : "—"}
+          copied={copied === "pwd"}
+          onCopy={() => password && copy(password, "pwd")}
+          text={text}
+          right={
+            password ? (
+              <button
+                type="button"
+                onClick={() => setShowPwd((s) => !s)}
+                className="opacity-70 hover:opacity-100"
+                aria-label={showPwd ? "Ocultar senha" : "Mostrar senha"}
+              >
+                {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            ) : null
+          }
+        />
+      </div>
+    </div>
+  );
+}
+
+function FieldRow({
+  k, v, copied, onCopy, text, right,
+}: { k: string; v: string; copied: boolean; onCopy: () => void; text: string; right?: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2 rounded-lg bg-black/25 px-3 py-2 text-sm">
+      <span className="text-[10px] uppercase tracking-wider opacity-60 w-12 shrink-0">{k}</span>
+      <span className="flex-1 truncate font-mono" style={{ color: text }}>{v}</span>
+      {right}
+      <button
+        type="button"
+        onClick={onCopy}
+        className="opacity-70 hover:opacity-100 transition"
+        aria-label={`Copiar ${k}`}
+      >
+        {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+}
