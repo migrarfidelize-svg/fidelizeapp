@@ -195,10 +195,16 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     const storage = supabaseAdmin.storage.from("promotions");
-    const promotions = await Promise.all(
+    const promotions: PublicPromo[] = await Promise.all(
       (rows ?? []).map(async (r) => ({
-        ...r,
+        id: r.id as string,
+        title: r.title as string,
+        body: (r.body as string | null) ?? null,
         media: await signMediaWith(storage, r.media as unknown as Media[]),
+        external_links: (r.external_links as unknown as { label: string; url: string }[]) ?? [],
+        starts_at: (r.starts_at as string | null) ?? null,
+        ends_at: (r.ends_at as string | null) ?? null,
+        created_at: r.created_at as string,
       })),
     );
     return {
