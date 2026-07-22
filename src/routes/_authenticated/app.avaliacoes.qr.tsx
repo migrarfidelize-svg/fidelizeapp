@@ -1752,9 +1752,10 @@ function PortraitBody(p: PosterProps) {
             primary={p.primaryColor}
             text={p.textColor}
             badge={null}
-            size={104}
+            size={primarySize}
             scale={p.contentScale}
           />
+
         </DraggableItem>
       )}
 
