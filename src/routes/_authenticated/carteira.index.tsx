@@ -411,7 +411,7 @@ function AchievementsAndRecapRow() {
 }
 
 
-
+export function WalletCard({ item }: { item: WalletItem }) {
   const est = item.establishment as { slug: string; name: string; logo_url: string | null; primary_color: string; active: boolean };
   const card = item.card;
   const req = card ? (card.campaign as { stamps_required: number }).stamps_required || 1 : 1;
