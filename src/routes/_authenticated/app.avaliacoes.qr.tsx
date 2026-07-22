@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { useMyFeature } from "@/hooks/useMyFeature";
+import { DisplayStorePreview } from "@/components/DisplayStorePreview";
 
 export const Route = createFileRoute("/_authenticated/app/avaliacoes/qr")({
   head: () => ({ meta: [{ title: "QR de Avaliação — Fidelize" }] }),
@@ -561,6 +562,9 @@ function ReviewQrPage() {
             <Button asChild variant="ghost" size="sm" className="w-full">
               <Link to="/app/avaliacoes">Ver avaliações recebidas →</Link>
             </Button>
+
+            {/* ===== STORE PREVIEW: Adquirir display físico ===== */}
+            <DisplayStorePreview />
           </CardContent>
         </Card>
 
