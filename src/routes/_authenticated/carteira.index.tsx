@@ -122,7 +122,9 @@ function WalletHome() {
               </Link>
             )}
 
-            {streak.weeks >= 2 && <StreakCard weeks={streak.weeks} lastVisit={streak.lastVisit} />}
+            {(streak.weeks >= 2 || streak.atRisk) && (
+              <StreakCard weeks={streak.weeks} lastVisit={streak.lastVisit} atRisk={streak.atRisk} daysLeft={streak.daysLeft} />
+            )}
 
             <div className="grid grid-cols-3 gap-3">
               <KpiTile label="Cartões" value={items.length} />
