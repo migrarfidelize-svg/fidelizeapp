@@ -231,7 +231,8 @@ function ReviewQrPage() {
 
   async function exportPng() {
     if (!posterRef.current) return;
-    if (!targetUrl) { toast.error("Configure o destino do QR primeiro"); return; }
+    if (primaryIsPlaceholder) { toast.error("Cole o link do Google antes de exportar"); return; }
+    if (secondaryIsPlaceholder) { toast.error("Cole a URL do QR secundário antes de exportar"); return; }
     setExporting(true);
     try {
       const url = await toPng(posterRef.current, { pixelRatio: 3, cacheBust: true });
