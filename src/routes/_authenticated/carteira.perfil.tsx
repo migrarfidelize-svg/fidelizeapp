@@ -3,9 +3,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { exportMyData, deleteMyAccount } from "@/lib/lgpd.functions";
+import { getMyPushPreferences, updateMyPushPreferences } from "@/lib/wallet-prefs.functions";
 import { clearWalletCache } from "@/lib/offline-wallet-cache";
 import { toast } from "sonner";
-import { User, Download, Trash2, ShieldCheck, AlertTriangle, ChevronRight } from "lucide-react";
+import { User, Download, Trash2, ShieldCheck, AlertTriangle, ChevronRight, Bell, Stamp as StampIcon, Gift, Megaphone, Cake } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/carteira/perfil")({
   ssr: false,
