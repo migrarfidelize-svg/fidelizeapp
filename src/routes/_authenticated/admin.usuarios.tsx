@@ -605,6 +605,72 @@ function OrphanCustomers({ establishments }: { establishments: Array<{ id: strin
         </DialogContent>
       </Dialog>
 
+      <Dialog open={!!move} onOpenChange={(o) => { if (!o) { setMove(null); setMoveTarget(""); } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Mover cliente para outra empresa</DialogTitle>
+            <DialogDescription>
+              Transfere o cadastro do cliente órfão para o estabelecimento escolhido.
+              Cartões antigos vinculados a campanhas da empresa anterior serão removidos.
+            </DialogDescription>
+          </DialogHeader>
+          {move && (
+            <div className="space-y-3">
+              <div className="rounded-xl border p-3 text-sm">
+                <div className="font-medium">{move.name ?? "Sem nome"}</div>
+                <div className="text-xs text-muted-foreground">
+                  {move.phone ? formatPhone(move.phone) : "—"}
+                </div>
+                <div className="mt-2 text-xs">
+                  Empresa atual:{" "}
+                  <span className="font-medium">{move.from_name ?? "—"}</span>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">
+                  Nova empresa
+                </label>
+                <Select value={moveTarget} onValueChange={setMoveTarget}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o estabelecimento…" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    {establishments
+                      .filter((e) => e.id !== move.from_id)
+                      .map((e) => (
+                        <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => { setMove(null); setMoveTarget(""); }}
+              disabled={moveMut.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              disabled={moveMut.isPending || !move || !moveTarget}
+              onClick={() =>
+                move && moveTarget &&
+                moveMut.mutate({ customer_id: move.id, target_establishment_id: moveTarget })
+              }
+              className="gradient-brand text-primary-foreground"
+            >
+              {moveMut.isPending
+                ? <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                : <ArrowRightLeft className="h-4 w-4 mr-1" />}
+              Confirmar mudança
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
       <Dialog open={!!result} onOpenChange={(o) => !o && setResult(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
