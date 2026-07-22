@@ -78,7 +78,7 @@ const DEFAULT_LAYOUT: PosterLayout = {
   subtitle:    { x: 50, y: 34 },
   primaryQr:   { x: 50, y: 58 },
   secondaryQr: { x: 72, y: 58 },
-  nfc:         { x: 72, y: 58 },
+  nfc:         { x: 50, y: 74 },
   ctaNear:     { x: 50, y: 86 },
   ctaFooter:   { x: 50, y: 93 },
 };
@@ -644,33 +644,39 @@ function ReviewQrPage() {
                   <div className="text-[11px] text-muted-foreground">Exibe "Aproxime o celular" no cartaz e libera botão para gravar em NFC tag.</div>
                 </div>
               </div>
-              <Switch checked={nfcMode} onCheckedChange={setNfcMode} />
+              <Switch
+                checked={nfcMode}
+                onCheckedChange={(v) => {
+                  setNfcMode(v);
+                  if (v) setLayout((prev) => ({ ...prev, nfc: { ...DEFAULT_LAYOUT.nfc } }));
+                }}
+              />
             </label>
 
             {nfcMode && (
               <div className="space-y-3 rounded-lg border border-primary/30 bg-primary-soft/40 p-3 text-xs">
                 <div>
-                  <div className="mb-1.5 font-semibold text-primary">Estilo NFC no cartaz</div>
+                  <div className="mb-1.5 font-semibold text-primary">Balão "Toque aqui"</div>
                   <div className="grid grid-cols-2 gap-1 rounded-md border bg-background/70 p-0.5">
                     <button
                       type="button"
-                      onClick={() => setNfcStyle("block")}
+                      onClick={() => { setNfcStyle("block"); setLayout((prev) => ({ ...prev, nfc: { ...DEFAULT_LAYOUT.nfc } })); }}
                       className={`rounded px-2 py-1.5 text-[11px] font-semibold transition ${nfcStyle === "block" ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
                     >
-                      Bloco "Toque aqui"
+                      Mostrar balão
                     </button>
                     <button
                       type="button"
                       onClick={() => setNfcStyle("badge")}
                       className={`rounded px-2 py-1.5 text-[11px] font-semibold transition ${nfcStyle === "badge" ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
                     >
-                      Só selo NFC
+                      Ocultar balão
                     </button>
                   </div>
                   <div className="mt-1 text-[10px] text-muted-foreground">
                     {nfcStyle === "block"
-                      ? 'Mostra o chip "Toque aqui" ao lado do QR + selo NFC no rodapé.'
-                      : "Mostra apenas o selo NFC discreto no rodapé, sem o bloco no meio."}
+                      ? 'O selo NFC aparece no rodapé + balão "Toque aqui" no cartaz.'
+                      : "Apenas o selo NFC discreto no rodapé. O balão fica oculto."}
                   </div>
                 </div>
                 <div>
@@ -1216,7 +1222,7 @@ function PortraitBody(p: PosterProps) {
       <DraggableItem itemKey="ctaFooter" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
         <div className="flex flex-col items-center gap-1">
           <div className="text-center text-[10px] opacity-70" style={{ color: p.textColor }}>{p.ctaFooter}</div>
-          {p.nfcMode && p.nfcStyle === "badge" && <NfcBadge primary={p.primaryColor} />}
+          {p.nfcMode && <NfcBadge primary={p.primaryColor} />}
         </div>
       </DraggableItem>
     </div>
