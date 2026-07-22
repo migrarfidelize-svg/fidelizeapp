@@ -940,7 +940,11 @@ function ReviewQrPage() {
                     <div key={d.id} className="flex items-center gap-2 rounded-lg border bg-background/70 p-1.5">
                       <button
                         type="button"
-                        onClick={() => applyCloudDesign(d)}
+                        onClick={() => applyCloudDesign({
+                          id: d.id,
+                          name: d.name,
+                          data: (d.data && typeof d.data === "object" && !Array.isArray(d.data)) ? d.data as Record<string, unknown> : {},
+                        })}
                         className="flex flex-1 items-center gap-2 rounded px-1.5 py-0.5 text-left hover:bg-primary/10"
                       >
                         <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/15 ring-1 ring-primary/30">
@@ -951,9 +955,6 @@ function ReviewQrPage() {
                           <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                             <UserCircle2 className="h-3 w-3" />
                             <span className="truncate">{d.applied_by_name ?? d.created_by_name ?? "Equipe"}</span>
-                            {typeof d.times_applied === "number" && d.times_applied > 0 && (
-                              <span>· {d.times_applied}×</span>
-                            )}
                           </div>
                         </div>
                       </button>
