@@ -138,10 +138,11 @@ function suggestFixedLinks(e: EstLinkSource | null | undefined): Link[] {
   const tk = (e?.tiktok ?? "").trim().replace(/^@/, "");
   if (tk) out.push({ label: "TikTok", url: tk.startsWith("http") ? tk : `https://tiktok.com/@${tk}` });
   // Sempre sugerir slots comuns se ainda faltar espaço
+  // Sempre sugerir slots comuns se ainda faltar (usa exemplos válidos que o dono ajusta)
   if (out.length === 0) {
-    out.push({ label: "WhatsApp", url: "https://wa.me/55" });
-    out.push({ label: "Cardápio", url: "https://" });
-    out.push({ label: "Instagram", url: "https://instagram.com/" });
+    out.push({ label: "WhatsApp", url: "https://wa.me/5511999999999" });
+    out.push({ label: "Cardápio", url: "https://exemplo.com/cardapio" });
+    out.push({ label: "Instagram", url: "https://instagram.com/sualoja" });
   }
   return out.slice(0, 10);
 }
