@@ -29,7 +29,7 @@ import { Trash2, Plus, ExternalLink as ExtLink, AlertTriangle, TrendingDown, Sea
 import { useMyFeature } from "@/hooks/useMyFeature";
 import { Link } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/_authenticated/app/avaliacoes")({
+export const Route = createFileRoute("/_authenticated/app/avaliacoes/")({
   head: () => ({ meta: [{ title: "Avaliações — Fidelize" }] }),
   component: Page,
 });

@@ -64,7 +64,6 @@ import { Route as AuthenticatedAppEquipeRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated/app.clientes'
 import { Route as AuthenticatedAppCarimbarRouteImport } from './routes/_authenticated/app.carimbar'
 import { Route as AuthenticatedAppCampanhasRouteImport } from './routes/_authenticated/app.campanhas'
-import { Route as AuthenticatedAppAvaliacoesRouteImport } from './routes/_authenticated/app.avaliacoes'
 import { Route as AuthenticatedAppAnalyticsRouteImport } from './routes/_authenticated/app.analytics'
 import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin.usuarios'
 import { Route as AuthenticatedAdminPagamentosRouteImport } from './routes/_authenticated/admin.pagamentos'
@@ -83,6 +82,7 @@ import { Route as AuthenticatedAdminAssinaturasRouteImport } from './routes/_aut
 import { Route as AuthenticatedAdminAlertasRouteImport } from './routes/_authenticated/admin.alertas'
 import { Route as AuthenticatedAdminAjudaRouteImport } from './routes/_authenticated/admin.ajuda'
 import { Route as AuthenticatedAppPlanosIndexRouteImport } from './routes/_authenticated/app.planos.index'
+import { Route as AuthenticatedAppAvaliacoesIndexRouteImport } from './routes/_authenticated/app.avaliacoes.index'
 import { Route as AuthenticatedAdminSuporteIndexRouteImport } from './routes/_authenticated/admin.suporte.index'
 import { Route as AuthenticatedAdminPlanosIndexRouteImport } from './routes/_authenticated/admin.planos.index'
 import { Route as SuporteSlugKbArticleRouteImport } from './routes/suporte.$slug.kb.$article'
@@ -396,12 +396,6 @@ const AuthenticatedAppCampanhasRoute =
     path: '/campanhas',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
-const AuthenticatedAppAvaliacoesRoute =
-  AuthenticatedAppAvaliacoesRouteImport.update({
-    id: '/avaliacoes',
-    path: '/avaliacoes',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
 const AuthenticatedAppAnalyticsRoute =
   AuthenticatedAppAnalyticsRouteImport.update({
     id: '/analytics',
@@ -509,6 +503,12 @@ const AuthenticatedAppPlanosIndexRoute =
     path: '/planos/',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppAvaliacoesIndexRoute =
+  AuthenticatedAppAvaliacoesIndexRouteImport.update({
+    id: '/avaliacoes/',
+    path: '/avaliacoes/',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAdminSuporteIndexRoute =
   AuthenticatedAdminSuporteIndexRouteImport.update({
     id: '/suporte/',
@@ -592,9 +592,9 @@ const AuthenticatedCarteiraSlugPromocoesRoute =
   } as any)
 const AuthenticatedAppAvaliacoesQrRoute =
   AuthenticatedAppAvaliacoesQrRouteImport.update({
-    id: '/qr',
-    path: '/qr',
-    getParentRoute: () => AuthenticatedAppAvaliacoesRoute,
+    id: '/avaliacoes/qr',
+    path: '/avaliacoes/qr',
+    getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAdminSuporteIdRoute =
   AuthenticatedAdminSuporteIdRouteImport.update({
@@ -655,7 +655,6 @@ export interface FileRoutesByFullPath {
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/app/analytics': typeof AuthenticatedAppAnalyticsRoute
-  '/app/avaliacoes': typeof AuthenticatedAppAvaliacoesRouteWithChildren
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
@@ -705,6 +704,7 @@ export interface FileRoutesByFullPath {
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
   '/admin/planos/': typeof AuthenticatedAdminPlanosIndexRoute
   '/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
+  '/app/avaliacoes/': typeof AuthenticatedAppAvaliacoesIndexRoute
   '/app/planos/': typeof AuthenticatedAppPlanosIndexRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
 }
@@ -745,7 +745,6 @@ export interface FileRoutesByTo {
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/app/analytics': typeof AuthenticatedAppAnalyticsRoute
-  '/app/avaliacoes': typeof AuthenticatedAppAvaliacoesRouteWithChildren
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
@@ -795,6 +794,7 @@ export interface FileRoutesByTo {
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
   '/admin/planos': typeof AuthenticatedAdminPlanosIndexRoute
   '/admin/suporte': typeof AuthenticatedAdminSuporteIndexRoute
+  '/app/avaliacoes': typeof AuthenticatedAppAvaliacoesIndexRoute
   '/app/planos': typeof AuthenticatedAppPlanosIndexRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
 }
@@ -840,7 +840,6 @@ export interface FileRoutesById {
   '/_authenticated/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/_authenticated/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/_authenticated/app/analytics': typeof AuthenticatedAppAnalyticsRoute
-  '/_authenticated/app/avaliacoes': typeof AuthenticatedAppAvaliacoesRouteWithChildren
   '/_authenticated/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/_authenticated/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/_authenticated/app/clientes': typeof AuthenticatedAppClientesRoute
@@ -890,6 +889,7 @@ export interface FileRoutesById {
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
   '/_authenticated/admin/planos/': typeof AuthenticatedAdminPlanosIndexRoute
   '/_authenticated/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
+  '/_authenticated/app/avaliacoes/': typeof AuthenticatedAppAvaliacoesIndexRoute
   '/_authenticated/app/planos/': typeof AuthenticatedAppPlanosIndexRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
 }
@@ -935,7 +935,6 @@ export interface FileRouteTypes {
     | '/admin/pagamentos'
     | '/admin/usuarios'
     | '/app/analytics'
-    | '/app/avaliacoes'
     | '/app/campanhas'
     | '/app/carimbar'
     | '/app/clientes'
@@ -985,6 +984,7 @@ export interface FileRouteTypes {
     | '/suporte/$slug/kb/$article'
     | '/admin/planos/'
     | '/admin/suporte/'
+    | '/app/avaliacoes/'
     | '/app/planos/'
     | '/api/public/wallet/apple/$token'
   fileRoutesByTo: FileRoutesByTo
@@ -1025,7 +1025,6 @@ export interface FileRouteTypes {
     | '/admin/pagamentos'
     | '/admin/usuarios'
     | '/app/analytics'
-    | '/app/avaliacoes'
     | '/app/campanhas'
     | '/app/carimbar'
     | '/app/clientes'
@@ -1075,6 +1074,7 @@ export interface FileRouteTypes {
     | '/suporte/$slug/kb/$article'
     | '/admin/planos'
     | '/admin/suporte'
+    | '/app/avaliacoes'
     | '/app/planos'
     | '/api/public/wallet/apple/$token'
   id:
@@ -1119,7 +1119,6 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/pagamentos'
     | '/_authenticated/admin/usuarios'
     | '/_authenticated/app/analytics'
-    | '/_authenticated/app/avaliacoes'
     | '/_authenticated/app/campanhas'
     | '/_authenticated/app/carimbar'
     | '/_authenticated/app/clientes'
@@ -1169,6 +1168,7 @@ export interface FileRouteTypes {
     | '/suporte/$slug/kb/$article'
     | '/_authenticated/admin/planos/'
     | '/_authenticated/admin/suporte/'
+    | '/_authenticated/app/avaliacoes/'
     | '/_authenticated/app/planos/'
     | '/api/public/wallet/apple/$token'
   fileRoutesById: FileRoutesById
@@ -1595,13 +1595,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppCampanhasRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_authenticated/app/avaliacoes': {
-      id: '/_authenticated/app/avaliacoes'
-      path: '/avaliacoes'
-      fullPath: '/app/avaliacoes'
-      preLoaderRoute: typeof AuthenticatedAppAvaliacoesRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
     '/_authenticated/app/analytics': {
       id: '/_authenticated/app/analytics'
       path: '/analytics'
@@ -1728,6 +1721,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppPlanosIndexRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/avaliacoes/': {
+      id: '/_authenticated/app/avaliacoes/'
+      path: '/avaliacoes'
+      fullPath: '/app/avaliacoes/'
+      preLoaderRoute: typeof AuthenticatedAppAvaliacoesIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/admin/suporte/': {
       id: '/_authenticated/admin/suporte/'
       path: '/suporte'
@@ -1828,10 +1828,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/app/avaliacoes/qr': {
       id: '/_authenticated/app/avaliacoes/qr'
-      path: '/qr'
+      path: '/avaliacoes/qr'
       fullPath: '/app/avaliacoes/qr'
       preLoaderRoute: typeof AuthenticatedAppAvaliacoesQrRouteImport
-      parentRoute: typeof AuthenticatedAppAvaliacoesRoute
+      parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/admin/suporte/$id': {
       id: '/_authenticated/admin/suporte/$id'
@@ -1908,23 +1908,8 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
 const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
-interface AuthenticatedAppAvaliacoesRouteChildren {
-  AuthenticatedAppAvaliacoesQrRoute: typeof AuthenticatedAppAvaliacoesQrRoute
-}
-
-const AuthenticatedAppAvaliacoesRouteChildren: AuthenticatedAppAvaliacoesRouteChildren =
-  {
-    AuthenticatedAppAvaliacoesQrRoute: AuthenticatedAppAvaliacoesQrRoute,
-  }
-
-const AuthenticatedAppAvaliacoesRouteWithChildren =
-  AuthenticatedAppAvaliacoesRoute._addFileChildren(
-    AuthenticatedAppAvaliacoesRouteChildren,
-  )
-
 interface AuthenticatedAppRouteChildren {
   AuthenticatedAppAnalyticsRoute: typeof AuthenticatedAppAnalyticsRoute
-  AuthenticatedAppAvaliacoesRoute: typeof AuthenticatedAppAvaliacoesRouteWithChildren
   AuthenticatedAppCampanhasRoute: typeof AuthenticatedAppCampanhasRoute
   AuthenticatedAppCarimbarRoute: typeof AuthenticatedAppCarimbarRoute
   AuthenticatedAppClientesRoute: typeof AuthenticatedAppClientesRoute
@@ -1939,12 +1924,13 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppRetencaoRoute: typeof AuthenticatedAppRetencaoRoute
   AuthenticatedAppSuporteRoute: typeof AuthenticatedAppSuporteRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
+  AuthenticatedAppAvaliacoesQrRoute: typeof AuthenticatedAppAvaliacoesQrRoute
+  AuthenticatedAppAvaliacoesIndexRoute: typeof AuthenticatedAppAvaliacoesIndexRoute
   AuthenticatedAppPlanosIndexRoute: typeof AuthenticatedAppPlanosIndexRoute
 }
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppAnalyticsRoute: AuthenticatedAppAnalyticsRoute,
-  AuthenticatedAppAvaliacoesRoute: AuthenticatedAppAvaliacoesRouteWithChildren,
   AuthenticatedAppCampanhasRoute: AuthenticatedAppCampanhasRoute,
   AuthenticatedAppCarimbarRoute: AuthenticatedAppCarimbarRoute,
   AuthenticatedAppClientesRoute: AuthenticatedAppClientesRoute,
@@ -1959,6 +1945,8 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppRetencaoRoute: AuthenticatedAppRetencaoRoute,
   AuthenticatedAppSuporteRoute: AuthenticatedAppSuporteRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
+  AuthenticatedAppAvaliacoesQrRoute: AuthenticatedAppAvaliacoesQrRoute,
+  AuthenticatedAppAvaliacoesIndexRoute: AuthenticatedAppAvaliacoesIndexRoute,
   AuthenticatedAppPlanosIndexRoute: AuthenticatedAppPlanosIndexRoute,
 }
 
