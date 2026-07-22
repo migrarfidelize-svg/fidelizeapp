@@ -91,6 +91,7 @@ function WalletHome() {
         </div>
 
         <InstallAppCard />
+        <EnableNotificationsCard />
 
 
 
