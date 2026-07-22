@@ -920,10 +920,37 @@ function ReviewQrPage() {
                 />
               )}
             </div>
+
+            {/* Layout editor controls */}
+            <div className="flex w-full max-w-[420px] flex-wrap items-center justify-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant={editLayout ? "default" : "outline"}
+                onClick={() => setEditLayout((v) => !v)}
+                className="h-8 gap-1.5 text-xs"
+              >
+                <Move className="h-3.5 w-3.5" />
+                {editLayout ? "Concluir edição" : "Editar posições"}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => { setLayout(DEFAULT_LAYOUT); toast.success("Posições restauradas"); }}
+                className="h-8 gap-1.5 text-xs"
+                disabled={JSON.stringify(layout) === JSON.stringify(DEFAULT_LAYOUT)}
+              >
+                <RotateCcw className="h-3.5 w-3.5" /> Resetar posições
+              </Button>
+            </div>
+
             <p className="text-center text-xs text-muted-foreground">
-              {displayMode
+              {editLayout
+                ? "Arraste cada elemento (logo, título, QR, textos) para reposicionar. Toque em Concluir para exportar."
+                : displayMode
                 ? "Simulação em display acrílico de balcão — inclinado 12° para trás."
-                : `Preview em escala. Exportação usa ${dims.mm.w}×${dims.mm.h}mm (${dims.orientation === "landscape" ? "paisagem" : dims.orientation === "square" ? "quadrado" : "retrato"}).`}
+                : `Preview em escala. Exportação em 300 DPI — ${Math.round((dims.mm.w/25.4)*300)}×${Math.round((dims.mm.h/25.4)*300)}px (${dims.mm.w}×${dims.mm.h}mm).`}
             </p>
           </div>
         </div>
