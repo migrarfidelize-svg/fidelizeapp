@@ -2816,6 +2816,62 @@ export type Database = {
           },
         ]
       }
+      scheduled_pushes: {
+        Row: {
+          body: string | null
+          created_at: string
+          created_by: string | null
+          establishment_id: string
+          id: string
+          result: Json | null
+          scheduled_at: string
+          segment: Json
+          sent_at: string | null
+          status: string
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          establishment_id: string
+          id?: string
+          result?: Json | null
+          scheduled_at: string
+          segment?: Json
+          sent_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          establishment_id?: string
+          id?: string
+          result?: Json | null
+          scheduled_at?: string
+          segment?: Json
+          sent_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_pushes_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stamps: {
         Row: {
           added_by: string | null

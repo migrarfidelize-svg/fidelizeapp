@@ -247,7 +247,102 @@ export const getPushQuotaStatus = createServerFn({ method: "POST" })
     };
   });
 
-/** Merchant broadcast: send to all active push subs of the establishment. */
+const segmentSchema = z
+  .object({
+    tiers: z.array(z.enum(["bronze", "prata", "ouro", "diamante"])).optional(),
+    activity: z.enum(["all", "active_30d", "inactive_30d", "inactive_60d"]).optional(),
+    campaign_id: z.string().uuid().nullable().optional(),
+    min_stamps: z.number().int().min(0).max(999).nullable().optional(),
+  })
+  .default({});
+
+/** Preview: how many customers/subscribers match a given segment. */
+export const previewPushSegment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        establishment_id: z.string().uuid(),
+        segment: segmentSchema.optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: isManager } = await context.supabase.rpc("has_establishment_role", {
+      _user: context.userId,
+      _est: data.establishment_id,
+      _min_role: "manager",
+    });
+    if (!isManager) throw new Error("Sem permissão.");
+    const { resolveSegmentCustomerIds } = await import("@/lib/push.segment.server");
+    const ids = await resolveSegmentCustomerIds(data.establishment_id, data.segment ?? {});
+    if (ids.length === 0) return { customers: 0, subscribers: 0 };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: subs } = await supabaseAdmin
+      .from("push_subscriptions")
+      .select("id, preferences")
+      .eq("establishment_id", data.establishment_id)
+      .eq("active", true)
+      .in("customer_id", ids);
+    const subscribers = (subs ?? []).filter(
+      (s: any) => ((s.preferences ?? {}) as Record<string, boolean>).campaign !== false,
+    ).length;
+    return { customers: ids.length, subscribers };
+  });
+
+async function checkAndConsumeQuota(
+  supabase: any,
+  establishmentId: string,
+  title: string,
+): Promise<{ dailyLimit: number | null }> {
+  const { data: est } = await supabase
+    .from("establishments")
+    .select("plan")
+    .eq("id", establishmentId)
+    .maybeSingle();
+  const tier = est?.plan ?? "free";
+  const { data: planRow } = await supabase
+    .from("plans")
+    .select("id")
+    .eq("tier", tier)
+    .maybeSingle();
+  const { data: pf } = planRow
+    ? await supabase
+        .from("plan_features")
+        .select("enabled, limit_value")
+        .eq("plan_id", planRow.id)
+        .eq("feature_key", "push_notifications")
+        .maybeSingle()
+    : { data: null as any };
+  if (!pf?.enabled) {
+    throw new Error(
+      "Notificações push não estão disponíveis no seu plano atual. Faça upgrade em /app/planos.",
+    );
+  }
+  const dailyLimit: number | null = pf.limit_value ?? null;
+  if (dailyLimit != null) {
+    const since = new Date();
+    since.setHours(0, 0, 0, 0);
+    const { data: todayLogs } = await supabase
+      .from("push_logs")
+      .select("title, created_at")
+      .eq("establishment_id", establishmentId)
+      .gte("created_at", since.toISOString());
+    const keys = new Set<string>();
+    for (const l of todayLogs ?? []) {
+      const bucket = new Date(l.created_at).toISOString().slice(0, 16);
+      keys.add(`${bucket}|${l.title}`);
+    }
+    if (keys.size >= dailyLimit) {
+      throw new Error(
+        `Limite diário do plano atingido (${dailyLimit}/dia). Tente novamente amanhã ou faça upgrade em /app/planos.`,
+      );
+    }
+  }
+  return { dailyLimit };
+}
+
+/** Merchant broadcast: send to all matching subs (optionally filtered by segment). */
 export const broadcastPush = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
@@ -257,11 +352,11 @@ export const broadcastPush = createServerFn({ method: "POST" })
         title: z.string().min(2).max(80),
         body: z.string().max(200).optional(),
         url: z.string().url().optional(),
+        segment: segmentSchema.optional(),
       })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    // Verify manager+ role on this establishment
     const { data: isManager } = await context.supabase.rpc("has_establishment_role", {
       _user: context.userId,
       _est: data.establishment_id,
@@ -269,58 +364,24 @@ export const broadcastPush = createServerFn({ method: "POST" })
     });
     if (!isManager) throw new Error("Sem permissão.");
 
-    // Feature gate + daily limit
-    const { data: est } = await context.supabase
-      .from("establishments")
-      .select("plan")
-      .eq("id", data.establishment_id)
-      .maybeSingle();
-    const tier = est?.plan ?? "free";
-    const { data: planRow } = await context.supabase
-      .from("plans")
-      .select("id")
-      .eq("tier", tier)
-      .maybeSingle();
-    const { data: pf } = planRow
-      ? await context.supabase
-          .from("plan_features")
-          .select("enabled, limit_value")
-          .eq("plan_id", planRow.id)
-          .eq("feature_key", "push_notifications")
-          .maybeSingle()
-      : { data: null as any };
-    if (!pf?.enabled) {
-      throw new Error(
-        "Notificações push não estão disponíveis no seu plano atual. Faça upgrade em /app/planos.",
-      );
-    }
-    const dailyLimit: number | null = pf.limit_value ?? null;
-    if (dailyLimit != null) {
-      const since = new Date();
-      since.setHours(0, 0, 0, 0);
-      const { data: todayLogs } = await context.supabase
-        .from("push_logs")
-        .select("title, created_at")
-        .eq("establishment_id", data.establishment_id)
-        .gte("created_at", since.toISOString());
-      const keys = new Set<string>();
-      for (const l of todayLogs ?? []) {
-        const bucket = new Date(l.created_at).toISOString().slice(0, 16);
-        keys.add(`${bucket}|${l.title}`);
-      }
-      if (keys.size >= dailyLimit) {
-        throw new Error(
-          `Limite diário do plano atingido (${dailyLimit}/dia). Tente novamente amanhã ou faça upgrade em /app/planos.`,
-        );
-      }
-    }
+    await checkAndConsumeQuota(context.supabase, data.establishment_id, data.title);
+
+    const { resolveSegmentCustomerIds } = await import("@/lib/push.segment.server");
+    const targetIds = await resolveSegmentCustomerIds(data.establishment_id, data.segment ?? {});
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: subs } = await supabaseAdmin
+    let subsQuery = supabaseAdmin
       .from("push_subscriptions")
       .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, preferences")
       .eq("establishment_id", data.establishment_id)
       .eq("active", true);
+    // If no segment filter was applied, targetIds is the full base; we still filter to avoid
+    // sending to blocked customers. When empty base, skip.
+    if (targetIds.length > 0) subsQuery = subsQuery.in("customer_id", targetIds);
+    else if (data.segment && Object.keys(data.segment).length > 0) {
+      return { sent: 0, failed: 0, total: 0 };
+    }
+    const { data: subs } = await subsQuery;
 
     const { sendPushToSub } = await import("@/lib/push.server");
     let sent = 0;
@@ -350,6 +411,231 @@ export const broadcastPush = createServerFn({ method: "POST" })
     }
     return { sent, failed, total: subs?.length ?? 0 };
   });
+
+// ============================================================
+// SCHEDULED BROADCASTS
+// ============================================================
+
+/** Create a scheduled broadcast (dispatched by cron when due). */
+export const scheduleBroadcast = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        establishment_id: z.string().uuid(),
+        title: z.string().min(2).max(80),
+        body: z.string().max(200).optional(),
+        url: z.string().url().optional(),
+        segment: segmentSchema.optional(),
+        scheduled_at: z.string().datetime(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: isManager } = await context.supabase.rpc("has_establishment_role", {
+      _user: context.userId,
+      _est: data.establishment_id,
+      _min_role: "manager",
+    });
+    if (!isManager) throw new Error("Sem permissão.");
+    // Feature gate (limit is checked at dispatch time as well).
+    const { data: est } = await context.supabase
+      .from("establishments")
+      .select("plan")
+      .eq("id", data.establishment_id)
+      .maybeSingle();
+    const tier = est?.plan ?? "free";
+    const { data: planRow } = await context.supabase
+      .from("plans")
+      .select("id")
+      .eq("tier", tier)
+      .maybeSingle();
+    const { data: pf } = planRow
+      ? await context.supabase
+          .from("plan_features")
+          .select("enabled")
+          .eq("plan_id", planRow.id)
+          .eq("feature_key", "push_notifications")
+          .maybeSingle()
+      : { data: null as any };
+    if (!pf?.enabled) {
+      throw new Error("Notificações push não estão disponíveis no seu plano atual.");
+    }
+    if (new Date(data.scheduled_at).getTime() < Date.now() - 60_000) {
+      throw new Error("Agende para um horário no futuro.");
+    }
+    const { data: row, error } = await context.supabase
+      .from("scheduled_pushes")
+      .insert({
+        establishment_id: data.establishment_id,
+        title: data.title,
+        body: data.body ?? null,
+        url: data.url ?? null,
+        segment: data.segment ?? {},
+        scheduled_at: data.scheduled_at,
+        created_by: context.userId,
+      })
+      .select("id")
+      .single();
+    if (error) throw error;
+    return { id: row.id };
+  });
+
+export const listScheduledBroadcasts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ establishment_id: z.string().uuid() }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: rows, error } = await context.supabase
+      .from("scheduled_pushes")
+      .select("id, title, body, url, segment, scheduled_at, status, sent_at, result, created_at")
+      .eq("establishment_id", data.establishment_id)
+      .order("scheduled_at", { ascending: false })
+      .limit(50);
+    if (error) throw error;
+    return rows ?? [];
+  });
+
+export const cancelScheduledBroadcast = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("scheduled_pushes")
+      .update({ status: "canceled" })
+      .eq("id", data.id)
+      .eq("status", "pending");
+    if (error) throw error;
+    return { ok: true };
+  });
+
+/**
+ * Dispatch all pending scheduled broadcasts whose scheduled_at is <= now.
+ * Called by pg_cron via a public route.
+ */
+export async function dispatchDueScheduledBroadcasts() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: due } = await supabaseAdmin
+    .from("scheduled_pushes")
+    .select("id, establishment_id, title, body, url, segment")
+    .eq("status", "pending")
+    .lte("scheduled_at", new Date().toISOString())
+    .limit(20);
+
+  const { resolveSegmentCustomerIds } = await import("@/lib/push.segment.server");
+  const { sendPushToSub } = await import("@/lib/push.server");
+
+  let processed = 0;
+  for (const row of due ?? []) {
+    try {
+      // Verify plan still allows push (skip limit for scheduled dispatches so users don't
+      // get silently blocked — the scheduling UI enforces).
+      const { data: est } = await supabaseAdmin
+        .from("establishments")
+        .select("plan, active")
+        .eq("id", row.establishment_id)
+        .maybeSingle();
+      if (!est?.active) {
+        await supabaseAdmin
+          .from("scheduled_pushes")
+          .update({ status: "canceled", result: { reason: "establishment_inactive" } })
+          .eq("id", row.id);
+        continue;
+      }
+      const { data: planRow } = await supabaseAdmin
+        .from("plans")
+        .select("id")
+        .eq("tier", est.plan)
+        .maybeSingle();
+      const { data: pf } = planRow
+        ? await supabaseAdmin
+            .from("plan_features")
+            .select("enabled")
+            .eq("plan_id", planRow.id)
+            .eq("feature_key", "push_notifications")
+            .maybeSingle()
+        : { data: null as any };
+      if (!pf?.enabled) {
+        await supabaseAdmin
+          .from("scheduled_pushes")
+          .update({ status: "failed", result: { reason: "feature_disabled" } })
+          .eq("id", row.id);
+        continue;
+      }
+
+      const ids = await resolveSegmentCustomerIds(
+        row.establishment_id,
+        (row.segment ?? {}) as any,
+      );
+      let sq = supabaseAdmin
+        .from("push_subscriptions")
+        .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, preferences")
+        .eq("establishment_id", row.establishment_id)
+        .eq("active", true);
+      const seg = (row.segment ?? {}) as Record<string, unknown>;
+      const hasFilter = Object.keys(seg).length > 0;
+      if (ids.length > 0) sq = sq.in("customer_id", ids);
+      else if (hasFilter) {
+        await supabaseAdmin
+          .from("scheduled_pushes")
+          .update({
+            status: "sent",
+            sent_at: new Date().toISOString(),
+            result: { sent: 0, failed: 0, total: 0 },
+          })
+          .eq("id", row.id);
+        continue;
+      }
+      const { data: subs } = await sq;
+
+      let sent = 0;
+      let failed = 0;
+      for (const s of subs ?? []) {
+        const prefs = (s.preferences ?? {}) as Record<string, boolean>;
+        if (prefs.campaign === false) continue;
+        const r = await sendPushToSub(s as any, {
+          title: row.title,
+          body: row.body ?? undefined,
+          url: row.url ?? undefined,
+          tag: `broadcast-${row.establishment_id}`,
+        });
+        await supabaseAdmin.from("push_logs").insert({
+          establishment_id: row.establishment_id,
+          subscription_id: s.id,
+          customer_id: s.customer_id,
+          title: row.title,
+          body: row.body ?? null,
+          url: row.url ?? null,
+          status: r.ok ? "sent" : r.status === 410 || r.status === 404 ? "expired" : "failed",
+          status_code: r.status ?? null,
+          error: r.error ?? null,
+        });
+        if (r.ok) sent++;
+        else failed++;
+      }
+      await supabaseAdmin
+        .from("scheduled_pushes")
+        .update({
+          status: "sent",
+          sent_at: new Date().toISOString(),
+          result: { sent, failed, total: subs?.length ?? 0 },
+        })
+        .eq("id", row.id);
+      processed++;
+    } catch (e) {
+      await supabaseAdmin
+        .from("scheduled_pushes")
+        .update({
+          status: "failed",
+          result: { error: e instanceof Error ? e.message : String(e) },
+        })
+        .eq("id", row.id);
+    }
+  }
+  return { processed, total: due?.length ?? 0 };
+}
+
 
 
 // ============================================================

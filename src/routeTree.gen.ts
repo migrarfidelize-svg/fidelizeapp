@@ -86,6 +86,7 @@ import { Route as ApiPublicWebhooksAsaasRouteImport } from './routes/api/public/
 import { Route as ApiPublicMercadopagoPublicKeyRouteImport } from './routes/api/public/mercadopago/public-key'
 import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/api/public/hooks/process-email-queue'
 import { Route as ApiPublicHooksMercadopagoRetryRouteImport } from './routes/api/public/hooks/mercadopago-retry'
+import { Route as ApiPublicHooksDispatchScheduledPushRouteImport } from './routes/api/public/hooks/dispatch-scheduled-push'
 import { Route as ApiPublicCronReengagementRouteImport } from './routes/api/public/cron/reengagement'
 import { Route as ApiPublicCronBirthdayRouteImport } from './routes/api/public/cron/birthday'
 import { Route as AuthenticatedSuporteTicketIdRouteImport } from './routes/_authenticated/suporte.ticket.$id'
@@ -517,6 +518,12 @@ const ApiPublicHooksMercadopagoRetryRoute =
     path: '/api/public/hooks/mercadopago-retry',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksDispatchScheduledPushRoute =
+  ApiPublicHooksDispatchScheduledPushRouteImport.update({
+    id: '/api/public/hooks/dispatch-scheduled-push',
+    path: '/api/public/hooks/dispatch-scheduled-push',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronReengagementRoute =
   ApiPublicCronReengagementRouteImport.update({
     id: '/api/public/cron/reengagement',
@@ -626,6 +633,7 @@ export interface FileRoutesByFullPath {
   '/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
+  '/api/public/hooks/dispatch-scheduled-push': typeof ApiPublicHooksDispatchScheduledPushRoute
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
@@ -707,6 +715,7 @@ export interface FileRoutesByTo {
   '/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
+  '/api/public/hooks/dispatch-scheduled-push': typeof ApiPublicHooksDispatchScheduledPushRoute
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
@@ -793,6 +802,7 @@ export interface FileRoutesById {
   '/_authenticated/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
+  '/api/public/hooks/dispatch-scheduled-push': typeof ApiPublicHooksDispatchScheduledPushRoute
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
@@ -879,6 +889,7 @@ export interface FileRouteTypes {
     | '/suporte/ticket/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
+    | '/api/public/hooks/dispatch-scheduled-push'
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/process-email-queue'
     | '/api/public/mercadopago/public-key'
@@ -960,6 +971,7 @@ export interface FileRouteTypes {
     | '/suporte/ticket/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
+    | '/api/public/hooks/dispatch-scheduled-push'
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/process-email-queue'
     | '/api/public/mercadopago/public-key'
@@ -1045,6 +1057,7 @@ export interface FileRouteTypes {
     | '/_authenticated/suporte/ticket/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
+    | '/api/public/hooks/dispatch-scheduled-push'
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/process-email-queue'
     | '/api/public/mercadopago/public-key'
@@ -1081,6 +1094,7 @@ export interface RootRouteChildren {
   SuporteSlugIndexRoute: typeof SuporteSlugIndexRoute
   ApiPublicCronBirthdayRoute: typeof ApiPublicCronBirthdayRoute
   ApiPublicCronReengagementRoute: typeof ApiPublicCronReengagementRoute
+  ApiPublicHooksDispatchScheduledPushRoute: typeof ApiPublicHooksDispatchScheduledPushRoute
   ApiPublicHooksMercadopagoRetryRoute: typeof ApiPublicHooksMercadopagoRetryRoute
   ApiPublicHooksProcessEmailQueueRoute: typeof ApiPublicHooksProcessEmailQueueRoute
   ApiPublicMercadopagoPublicKeyRoute: typeof ApiPublicMercadopagoPublicKeyRoute
@@ -1631,6 +1645,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksMercadopagoRetryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/dispatch-scheduled-push': {
+      id: '/api/public/hooks/dispatch-scheduled-push'
+      path: '/api/public/hooks/dispatch-scheduled-push'
+      fullPath: '/api/public/hooks/dispatch-scheduled-push'
+      preLoaderRoute: typeof ApiPublicHooksDispatchScheduledPushRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/reengagement': {
       id: '/api/public/cron/reengagement'
       path: '/api/public/cron/reengagement'
@@ -1852,6 +1873,8 @@ const rootRouteChildren: RootRouteChildren = {
   SuporteSlugIndexRoute: SuporteSlugIndexRoute,
   ApiPublicCronBirthdayRoute: ApiPublicCronBirthdayRoute,
   ApiPublicCronReengagementRoute: ApiPublicCronReengagementRoute,
+  ApiPublicHooksDispatchScheduledPushRoute:
+    ApiPublicHooksDispatchScheduledPushRoute,
   ApiPublicHooksMercadopagoRetryRoute: ApiPublicHooksMercadopagoRetryRoute,
   ApiPublicHooksProcessEmailQueueRoute: ApiPublicHooksProcessEmailQueueRoute,
   ApiPublicMercadopagoPublicKeyRoute: ApiPublicMercadopagoPublicKeyRoute,
