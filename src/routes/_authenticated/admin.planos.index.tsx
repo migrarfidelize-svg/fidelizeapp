@@ -4,7 +4,7 @@ import { Layers as HeroIcon } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { adminListPlans, adminUpdatePlan, adminToggleFeature, adminPlanFeatureImpact, adminReconcileFeatureAccess } from "@/lib/plans.functions";
+import { adminListPlans, adminUpdatePlan, adminToggleFeature, adminPlanFeatureImpact, adminReconcileFeatureAccess, adminUpdateFeatureLimit } from "@/lib/plans.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
