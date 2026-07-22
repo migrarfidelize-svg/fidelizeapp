@@ -241,6 +241,9 @@ export function WalletPushToggleInline() {
       if (sub) await unsubscribeAll({ data: { endpoint: sub.endpoint } });
       setSubscribed(false);
       toast.success("Notificações desativadas neste aparelho.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Não foi possível desativar as notificações.";
+      toast.error(msg);
     } finally {
       setBusy(false);
     }

@@ -58,7 +58,9 @@ export function LoyaltyVoucher({
     return { label: "Nova", tone: "bg-white/20 text-white" };
   }, [isComplete, filled]);
 
-  const cells = Array.from({ length: required }, (_, i) => i < filled);
+  // Cap visual do grid para evitar renderização excessiva quando merchant configura valores altos.
+  const displayRequired = Math.min(required, 60);
+  const cells = Array.from({ length: displayRequired }, (_, i) => i < Math.min(filled, displayRequired));
 
   return (
     <article
