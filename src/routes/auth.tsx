@@ -214,21 +214,35 @@ function AuthPage() {
               error = retry.error;
             }
           }
+          // Fluxo carteira: tenta localizar a conta pelo WhatsApp mesmo que o
+          // usuário tenha se cadastrado com e-mail real (via QR/site) e
+          // reencaixar a senha sintética para permitir login por WhatsApp.
+          if (error && walletFlow && ((error.message || "").toLowerCase().includes("invalid"))) {
+            try {
+              const { resolveWalletLoginByWhatsapp } = await import("@/lib/my-wallet.functions");
+              const digits2 = whatsapp.replace(/\D/g, "");
+              const r = await resolveWalletLoginByWhatsapp({ data: { whatsapp: digits2 } });
+              if (r.found) {
+                const retry = await supabase.auth.signInWithPassword({ email: r.email, password: r.password });
+                error = retry.error;
+              }
+            } catch {
+              // segue para o fluxo de "não cadastrado"
+            }
+          }
           if (error) {
             if (walletFlow && ((error.message || "").toLowerCase().includes("invalid"))) {
               // Cliente ainda não tem conta — leva direto ao cadastro mantendo o WhatsApp.
               toast.info("Não encontramos seu WhatsApp. Complete seu nome para criar sua conta.");
               const url = new URL(window.location.href);
               url.searchParams.set("mode", "signup");
-              window.history.replaceState({}, "", url.toString());
-              // Força re-render via reload leve do estado do search
               window.location.assign(url.toString());
               return;
             }
             throw error;
           }
-
         }
+
         const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
         if (dest.toastKind === "error") toast.error(dest.toast ?? "Não foi possível vincular seu cartão.");
         else toast.success(dest.toast ?? "Bem-vindo de volta!");
