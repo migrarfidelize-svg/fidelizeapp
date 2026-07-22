@@ -29,8 +29,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import {
   UsersRound, Search, Shield, Building2, User as UserIcon, Loader2, UserX,
-  Wallet, KeyRound, CircleAlert, CircleCheck, Copy, Stamp,
+  Wallet, KeyRound, CircleAlert, CircleCheck, Copy, Stamp, ArrowRightLeft,
 } from "lucide-react";
+
 import { formatPhone } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin/usuarios")({
@@ -387,7 +388,9 @@ function AdminUsers() {
 function OrphanCustomers({ establishments }: { establishments: Array<{ id: string; name: string }> }) {
   const listFn = useServerFn(adminListOrphanCustomers);
   const linkFn = useServerFn(adminLinkOrphanCustomerToAccount);
+  const moveFn = useServerFn(adminReassignOrphanCustomer);
   const qc = useQueryClient();
+
 
   const [q, setQ] = useState("");
   const [term, setTerm] = useState("");
@@ -396,7 +399,10 @@ function OrphanCustomers({ establishments }: { establishments: Array<{ id: strin
   const pageSize = 20;
 
   const [confirm, setConfirm] = useState<null | { id: string; name: string | null; phone: string | null }>(null);
+  const [move, setMove] = useState<null | { id: string; name: string | null; phone: string | null; from_id: string; from_name: string | null }>(null);
+  const [moveTarget, setMoveTarget] = useState<string>("");
   const [result, setResult] = useState<null | { email: string; password: string; created_new_user: boolean }>(null);
+
 
   const { data, isFetching } = useQuery({
     queryKey: ["admin-orphan-customers", term, establishmentId, page],
@@ -424,6 +430,18 @@ function OrphanCustomers({ establishments }: { establishments: Array<{ id: strin
     },
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erro ao vincular cliente."),
   });
+
+  const moveMut = useMutation({
+    mutationFn: (v: { customer_id: string; target_establishment_id: string }) => moveFn({ data: v }),
+    onSuccess: (r) => {
+      setMove(null);
+      setMoveTarget("");
+      qc.invalidateQueries({ queryKey: ["admin-orphan-customers"] });
+      toast.success(`Cliente movido para ${r.moved_to}.${r.removed_cards ? ` ${r.removed_cards} cartão(ões) antigo(s) removido(s).` : ""}`);
+    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erro ao mover cliente."),
+  });
+
 
   function doSearch() { setPage(1); setTerm(q.trim()); }
   async function copy(text: string, label: string) {
