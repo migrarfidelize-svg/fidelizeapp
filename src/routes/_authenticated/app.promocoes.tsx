@@ -129,7 +129,7 @@ function PromocoesPage() {
     );
   }
 
-  const promos = (promosQ.data ?? []) as Promotion[];
+  const promos = (promosQ.data ?? []) as unknown as Promotion[];
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-4 md:p-6">
