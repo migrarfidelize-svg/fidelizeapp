@@ -21,7 +21,7 @@ export const Route = createFileRoute("/_authenticated/carteira/historico")({
   errorComponent: ({ error, reset }) => <WalletErrorState error={error} onRetry={reset} />,
 });
 
-type Filter = "all" | "stamp" | "redeem";
+type Filter = "all" | "stamp" | "redeem" | "achievement";
 
 function HistoryPage() {
   const qc = useQueryClient();
@@ -31,12 +31,14 @@ function HistoryPage() {
 
   const stampCount = items.filter((i) => i.kind === "stamp").length;
   const redeemCount = items.filter((i) => i.kind === "redeem").length;
+  const achCount = items.filter((i) => i.kind === "achievement").length;
   const visible = filter === "all" ? items : items.filter((i) => i.kind === filter);
 
   const chips: Array<{ key: Filter; label: string; count: number }> = [
     { key: "all", label: "Tudo", count: items.length },
     { key: "stamp", label: "Carimbos", count: stampCount },
     { key: "redeem", label: "Resgates", count: redeemCount },
+    { key: "achievement", label: "Conquistas", count: achCount },
   ];
 
   return (
