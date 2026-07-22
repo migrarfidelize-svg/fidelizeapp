@@ -461,31 +461,31 @@ export const getMyHistory = createServerFn({ method: "GET" })
 export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    // Estabelecimentos onde o usuário já tem cartão/registro.
+    // Estabelecimentos onde o usuário já tem cartão/registro — não excluímos,
+    // apenas marcamos como "já visitados" para o cliente ver novidades/promoções.
     const { data: mine } = await context.supabase
       .from("customers")
       .select("establishment_id")
       .eq("user_id", context.userId);
-    const excluded = new Set((mine ?? []).map((r) => r.establishment_id));
+    const visited = new Set((mine ?? []).map((r) => r.establishment_id));
 
     const { data, error } = await context.supabase
       .from("establishments")
       .select("id, slug, name, logo_url, primary_color, address, city, description, created_at")
       .eq("active", true)
       .order("created_at", { ascending: false })
-      .limit(40);
+      .limit(60);
     if (error) throw error;
 
-    return (data ?? [])
-      .filter((e) => !excluded.has(e.id))
-      .map((e) => ({
-        id: e.id,
-        slug: e.slug,
-        name: e.name,
-        logo_url: e.logo_url,
-        primary_color: e.primary_color,
-        address: e.address,
-        city: e.city,
-        description: e.description,
-      }));
+    return (data ?? []).map((e) => ({
+      id: e.id,
+      slug: e.slug,
+      name: e.name,
+      logo_url: e.logo_url,
+      primary_color: e.primary_color,
+      address: e.address,
+      city: e.city,
+      description: e.description,
+      visited: visited.has(e.id),
+    }));
   });
