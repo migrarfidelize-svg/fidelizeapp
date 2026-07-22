@@ -502,19 +502,22 @@ function ReviewQrPage() {
                       onChange={(e) => setSecondaryUrl(e.target.value)}
                       placeholder="https://seurestaurante.com/cardapio"
                       maxLength={500}
-                      className="text-xs"
+                      aria-invalid={secondaryCheck.level === "error"}
+                      className={`text-xs transition-colors ${
+                        secondaryCheck.level === "error" ? "border-destructive focus-visible:ring-destructive/40" :
+                        secondaryCheck.level === "warn"  ? "border-amber-500/60" :
+                        secondaryCheck.level === "ok"    ? "border-emerald-500/60" : ""
+                      }`}
                     />
-                    {secondaryReady ? (
-                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-500">
-                        <CheckCircle2 className="h-3.5 w-3.5" /> Link válido
-                      </div>
-                    ) : secondaryUrl ? (
-                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-amber-500">
-                        <AlertTriangle className="h-3.5 w-3.5" /> O link precisa começar com https://
-                      </div>
-                    ) : (
-                      <div className="text-[11px] text-muted-foreground">Cole o link do cardápio digital, loja online, WhatsApp ou Instagram.</div>
-                    )}
+                    <ValidationLine check={secondaryCheck} />
+                    <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                      <span>{secondaryUrl.length}/500</span>
+                      {secondaryUrl && (
+                        <button type="button" onClick={() => setSecondaryUrl("")} className="inline-flex items-center gap-1 text-muted-foreground hover:text-destructive">
+                          <XCircle className="h-3 w-3" /> limpar
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-[11px] font-medium text-muted-foreground">Texto no cartaz (2º QR)</Label>
