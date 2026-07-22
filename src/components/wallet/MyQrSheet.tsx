@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import QRCode from "qrcode";
-import { QrCode, Gift, Sparkles, Timer, RefreshCw, CheckCircle2, ChevronDown } from "lucide-react";
+import { QrCode, Gift, Sparkles, Timer, RefreshCw, CheckCircle2, ChevronDown, Maximize2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
