@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Bell, BellOff, Loader2, Smartphone, Share, Plus, Info } from "lucide-react";
+import { Bell, BellOff, Loader2, Smartphone, Share, Plus, Info, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,6 +34,18 @@ function isStandalone() {
  * - Persists subscription to the DB via server function
  * - Falls back to iOS 16.4+ install guide when Web Push isn't available yet
  */
+function detectBrowser(): "chrome" | "edge" | "firefox" | "safari" | "opera" | "samsung" | "other" {
+  if (typeof navigator === "undefined") return "other";
+  const ua = navigator.userAgent;
+  if (/EdgA?\//.test(ua)) return "edge";
+  if (/OPR\//.test(ua)) return "opera";
+  if (/SamsungBrowser/.test(ua)) return "samsung";
+  if (/Firefox\//.test(ua)) return "firefox";
+  if (/Chrome\//.test(ua)) return "chrome";
+  if (/Safari\//.test(ua)) return "safari";
+  return "other";
+}
+
 export function PushOptIn({ token }: { token: string }) {
   const [ready, setReady] = useState(false);
   const [supported, setSupported] = useState(false);
@@ -42,6 +54,10 @@ export function PushOptIn({ token }: { token: string }) {
   const [busy, setBusy] = useState(false);
   const [endpoint, setEndpoint] = useState<string | null>(null);
   const [showIosGuide, setShowIosGuide] = useState(false);
+  const [showUnblockGuide, setShowUnblockGuide] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [errorHint, setErrorHint] = useState<string | null>(null);
+
 
   const subscribe = useServerFn(subscribeCustomerPush);
   const unsubscribe = useServerFn(unsubscribeCustomerPush);
@@ -83,37 +99,115 @@ export function PushOptIn({ token }: { token: string }) {
 
   async function enable() {
     setBusy(true);
+    setErrorMsg(null);
+    setErrorHint(null);
     try {
-      const perm = await Notification.requestPermission();
-      setPermission(perm);
-      if (perm !== "granted") {
-        toast.error("Permissão negada. Habilite nas configurações do navegador.");
-        return;
+      // Step 1: request permission
+      let perm: NotificationPermission;
+      try {
+        perm = await Notification.requestPermission();
+      } catch (e) {
+        throw new Error(
+          `PERMISSION_ERROR::Não foi possível solicitar a permissão de notificações. ${
+            e instanceof Error ? e.message : ""
+          }`,
+        );
       }
-      const reg = await navigator.serviceWorker.ready;
+      setPermission(perm);
+      if (perm === "denied") {
+        throw new Error(
+          "PERMISSION_DENIED::Você bloqueou as notificações neste site. É preciso desbloquear manualmente nas configurações do navegador.",
+        );
+      }
+      if (perm !== "granted") {
+        throw new Error(
+          "PERMISSION_DISMISSED::Você fechou o pedido de permissão sem responder. Toque em ‘Receber notificações’ novamente e escolha ‘Permitir’.",
+        );
+      }
+
+      // Step 2: service worker
+      let reg: ServiceWorkerRegistration;
+      try {
+        reg = await navigator.serviceWorker.ready;
+      } catch (e) {
+        throw new Error(
+          `SW_ERROR::O service worker não está ativo neste navegador. Recarregue a página e tente novamente. ${
+            e instanceof Error ? e.message : ""
+          }`,
+        );
+      }
+
+      // Step 3: subscribe with VAPID
       let sub = await reg.pushManager.getSubscription();
       if (!sub) {
-        sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource,
-        });
+        try {
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource,
+          });
+        } catch (e) {
+          const raw = e instanceof Error ? e.message : String(e);
+          if (/permission/i.test(raw)) {
+            throw new Error(
+              "PERMISSION_DENIED::O navegador recusou o registro do push (permissão negada em segundo plano).",
+            );
+          }
+          if (/gcm|fcm|network|fetch|unreachable/i.test(raw)) {
+            throw new Error(
+              `PUSH_NETWORK::O serviço de push do navegador está inacessível. Verifique sua conexão e desative VPN/bloqueadores. Detalhe: ${raw}`,
+            );
+          }
+          throw new Error(`SUBSCRIBE_ERROR::Falha ao registrar no serviço de push. Detalhe: ${raw}`);
+        }
       }
+
+      // Step 4: persist on server
       const json = sub.toJSON();
-      await subscribe({
-        data: {
-          token,
-          endpoint: sub.endpoint,
-          p256dh: json.keys?.p256dh ?? "",
-          auth: json.keys?.auth ?? "",
-          user_agent: navigator.userAgent.slice(0, 300),
-        },
-      });
+      try {
+        await subscribe({
+          data: {
+            token,
+            endpoint: sub.endpoint,
+            p256dh: json.keys?.p256dh ?? "",
+            auth: json.keys?.auth ?? "",
+            user_agent: navigator.userAgent.slice(0, 300),
+          },
+        });
+      } catch (e) {
+        // Server rejected — roll back the browser subscription so state stays consistent.
+        try {
+          await sub.unsubscribe();
+        } catch {
+          /* ignore */
+        }
+        throw new Error(
+          `SERVER_ERROR::Não conseguimos salvar sua inscrição no servidor. Tente novamente em instantes. Detalhe: ${
+            e instanceof Error ? e.message : String(e)
+          }`,
+        );
+      }
+
       setEndpoint(sub.endpoint);
       setSubscribed(true);
       toast.success("Notificações ativadas neste cartão!");
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Falha ao ativar notificações.";
-      toast.error(msg);
+      const raw = e instanceof Error ? e.message : "Falha ao ativar notificações.";
+      const [code, ...rest] = raw.split("::");
+      const message = rest.length ? rest.join("::") : raw;
+      setErrorMsg(message);
+      if (code === "PERMISSION_DENIED") {
+        setErrorHint("unblock");
+        setShowUnblockGuide(true);
+      } else if (code === "PUSH_NETWORK") {
+        setErrorHint("network");
+      } else if (code === "SERVER_ERROR") {
+        setErrorHint("retry");
+      } else if (code === "SW_ERROR") {
+        setErrorHint("reload");
+      } else {
+        setErrorHint(null);
+      }
+      toast.error(message);
     } finally {
       setBusy(false);
     }
@@ -121,6 +215,8 @@ export function PushOptIn({ token }: { token: string }) {
 
   async function disable() {
     setBusy(true);
+    setErrorMsg(null);
+    setErrorHint(null);
     try {
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.getSubscription();
@@ -132,8 +228,11 @@ export function PushOptIn({ token }: { token: string }) {
       toast.success("Notificações desativadas.");
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Falha ao desativar.";
+      setErrorMsg(msg);
+      setErrorHint("retry");
       toast.error(msg);
     } finally {
+
       setBusy(false);
     }
   }
@@ -223,10 +322,7 @@ export function PushOptIn({ token }: { token: string }) {
             Safari.
           </p>
         ) : permission === "denied" ? (
-          <p className="text-xs text-destructive">
-            Você bloqueou notificações neste navegador. Habilite manualmente nas configurações do
-            site.
-          </p>
+          <BlockedGuide browser={detectBrowser()} open={showUnblockGuide} onToggle={() => setShowUnblockGuide((v) => !v)} />
         ) : subscribed ? (
           <Button variant="outline" onClick={disable} disabled={busy} className="w-full">
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <BellOff className="h-4 w-4" />}
@@ -239,6 +335,34 @@ export function PushOptIn({ token }: { token: string }) {
           </Button>
         )}
 
+        {errorMsg && permission !== "denied" && (
+          <div className="space-y-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-xs">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+              <div className="space-y-1">
+                <p className="font-medium text-destructive">Não foi possível ativar</p>
+                <p className="text-muted-foreground break-words">{errorMsg}</p>
+              </div>
+            </div>
+            {errorHint === "network" && (
+              <p className="text-muted-foreground">
+                • Verifique sua internet, desative VPN/proxy e bloqueadores como AdGuard ou Brave Shields, depois toque em <strong>Receber notificações</strong> novamente.
+              </p>
+            )}
+            {errorHint === "reload" && (
+              <p className="text-muted-foreground">
+                • Recarregue a página (puxe para baixo ou pressione F5) e tente ativar de novo.
+              </p>
+            )}
+            {errorHint === "retry" && (
+              <Button size="sm" variant="outline" onClick={enable} disabled={busy} className="w-full">
+                Tentar novamente
+              </Button>
+            )}
+          </div>
+        )}
+
+
         {endpoint && subscribed && (
           <p className="text-[10px] text-muted-foreground">
             Ativado neste aparelho ({endpoint.slice(0, 40)}…)
@@ -248,3 +372,87 @@ export function PushOptIn({ token }: { token: string }) {
     </Card>
   );
 }
+
+function BlockedGuide({
+  browser,
+  open,
+  onToggle,
+}: {
+  browser: ReturnType<typeof detectBrowser>;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  const steps: Record<string, string[]> = {
+    chrome: [
+      "Toque no cadeado 🔒 (ou ícone de ajustes) ao lado do endereço do site.",
+      "Abra ‘Permissões do site’ → ‘Notificações’.",
+      "Troque de ‘Bloquear’ para ‘Permitir’ e recarregue esta página.",
+    ],
+    edge: [
+      "Toque no cadeado 🔒 ao lado do endereço do site.",
+      "Abra ‘Permissões para este site’ → ‘Notificações’.",
+      "Selecione ‘Permitir’ e recarregue a página.",
+    ],
+    firefox: [
+      "Toque no cadeado 🔒 ao lado do endereço.",
+      "Abra ‘Mais informações’ → ‘Permissões’ → ‘Enviar notificações’.",
+      "Desmarque ‘Usar padrão’ e escolha ‘Permitir’, depois recarregue.",
+    ],
+    safari: [
+      "Abra Ajustes do iPhone/iPad → ‘Notificações’.",
+      "Encontre este app (adicionado à tela de início) e ative ‘Permitir Notificações’.",
+      "Volte aqui e recarregue a página.",
+    ],
+    opera: [
+      "Toque no cadeado 🔒 ao lado do endereço.",
+      "Abra permissões do site → ‘Notificações’ → ‘Permitir’.",
+      "Recarregue a página.",
+    ],
+    samsung: [
+      "Toque no cadeado 🔒 ao lado do endereço.",
+      "Abra ‘Permissões’ → ‘Notificações’ → ‘Permitir’.",
+      "Recarregue a página.",
+    ],
+    other: [
+      "Abra as permissões deste site nas configurações do navegador.",
+      "Localize ‘Notificações’ e mude de ‘Bloquear’ para ‘Permitir’.",
+      "Recarregue esta página e tente novamente.",
+    ],
+  };
+  const list = steps[browser] ?? steps.other;
+  return (
+    <div className="space-y-2">
+      <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-xs">
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+        <div className="space-y-1">
+          <p className="font-medium text-destructive">Notificações bloqueadas neste navegador</p>
+          <p className="text-muted-foreground">
+            O navegador está recusando o pedido automaticamente. Para reativar, é preciso desbloquear
+            manualmente nas configurações do site.
+          </p>
+        </div>
+      </div>
+      <Button variant="outline" size="sm" onClick={onToggle} className="w-full">
+        <Info className="mr-2 h-4 w-4" />
+        {open ? "Ocultar passo a passo" : "Ver como desbloquear"}
+      </Button>
+      {open && (
+        <ol className="space-y-2 rounded-lg border border-border/60 bg-muted/30 p-3 text-xs text-foreground">
+          {list.map((step, i) => (
+            <li key={i} className="flex gap-2">
+              <span className="font-bold text-primary">{i + 1}.</span>
+              <span>{step}</span>
+            </li>
+          ))}
+          <li className="flex gap-2 border-t border-border/60 pt-2 text-muted-foreground">
+            <span>ℹ️</span>
+            <span>
+              Depois de permitir, recarregue esta página e toque em <strong>Receber notificações</strong> novamente.
+            </span>
+          </li>
+        </ol>
+      )}
+    </div>
+  );
+}
+
