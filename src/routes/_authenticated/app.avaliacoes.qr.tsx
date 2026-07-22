@@ -107,33 +107,92 @@ function ReviewQrPage() {
     if (typeof window === "undefined") return;
     try {
       const raw = window.localStorage.getItem(storageKey);
-      if (!raw) return;
-      const s = JSON.parse(raw);
-      if (s.format) setFormat(s.format);
-      if (s.destination) setDestination(s.destination);
-      if (typeof s.googleUrl === "string") setGoogleUrl(s.googleUrl);
-      if (typeof s.showGoogleLogo === "boolean") setShowGoogleLogo(s.showGoogleLogo);
-      if (typeof s.nfcMode === "boolean") setNfcMode(s.nfcMode);
-      if (s.title) setTitle(s.title);
-      if (s.subtitle) setSubtitle(s.subtitle);
-      if (s.ctaNearQR) setCtaNearQR(s.ctaNearQR);
-      if (s.ctaFooter) setCtaFooter(s.ctaFooter);
-      if (s.primaryColor) setPrimaryColor(s.primaryColor);
-      if (s.backgroundColor) setBackgroundColor(s.backgroundColor);
-      if (s.textColor) setTextColor(s.textColor);
+      if (raw) {
+        const s = JSON.parse(raw);
+        if (s.template) setTemplate(s.template);
+        if (s.format) setFormat(s.format);
+        if (s.destination) setDestination(s.destination);
+        if (typeof s.googleUrl === "string") setGoogleUrl(s.googleUrl);
+        if (typeof s.showGoogleLogo === "boolean") setShowGoogleLogo(s.showGoogleLogo);
+        if (typeof s.nfcMode === "boolean") setNfcMode(s.nfcMode);
+        if (s.title) setTitle(s.title);
+        if (s.subtitle) setSubtitle(s.subtitle);
+        if (s.ctaNearQR) setCtaNearQR(s.ctaNearQR);
+        if (s.ctaFooter) setCtaFooter(s.ctaFooter);
+        if (s.primaryColor) setPrimaryColor(s.primaryColor);
+        if (s.backgroundColor) setBackgroundColor(s.backgroundColor);
+        if (s.textColor) setTextColor(s.textColor);
+      }
+      const rawDesigns = window.localStorage.getItem(designsKey);
+      if (rawDesigns) setDesigns(JSON.parse(rawDesigns));
     } catch { /* ignore */ }
-  }, [storageKey]);
+  }, [storageKey, designsKey]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
       window.localStorage.setItem(storageKey, JSON.stringify({
-        format, destination, googleUrl, showGoogleLogo, nfcMode,
+        template, format, destination, googleUrl, showGoogleLogo, nfcMode,
         title, subtitle, ctaNearQR, ctaFooter,
         primaryColor, backgroundColor, textColor,
       }));
     } catch { /* ignore */ }
-  }, [storageKey, format, destination, googleUrl, showGoogleLogo, nfcMode, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor]);
+  }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor]);
+
+  function applyTemplate(key: TemplateKey) {
+    setTemplate(key);
+    const t = TEMPLATES[key];
+    setPrimaryColor(t.defaults.primaryColor);
+    setBackgroundColor(t.defaults.backgroundColor);
+    setTextColor(t.defaults.textColor);
+  }
+
+  function persistDesigns(next: SavedDesign[]) {
+    setDesigns(next);
+    try { window.localStorage.setItem(designsKey, JSON.stringify(next)); } catch { /* ignore */ }
+  }
+
+  function saveCurrentDesign() {
+    const name = designName.trim() || `Design ${designs.length + 1}`;
+    const entry: SavedDesign = {
+      id: (crypto?.randomUUID?.() ?? String(Date.now())),
+      name,
+      createdAt: Date.now(),
+      data: {
+        template, format, destination, googleUrl, showGoogleLogo, nfcMode,
+        title, subtitle, ctaNearQR, ctaFooter,
+        primaryColor, backgroundColor, textColor,
+      },
+    };
+    persistDesigns([entry, ...designs].slice(0, 20));
+    setDesignName("");
+    toast.success(`Design "${name}" salvo`);
+  }
+
+  function loadDesign(d: SavedDesign) {
+    const s = d.data;
+    setTemplate(s.template);
+    setFormat(s.format);
+    setDestination(s.destination);
+    setGoogleUrl(s.googleUrl);
+    setShowGoogleLogo(s.showGoogleLogo);
+    setNfcMode(s.nfcMode);
+    setTitle(s.title);
+    setSubtitle(s.subtitle);
+    setCtaNearQR(s.ctaNearQR);
+    setCtaFooter(s.ctaFooter);
+    setPrimaryColor(s.primaryColor);
+    setBackgroundColor(s.backgroundColor);
+    setTextColor(s.textColor);
+    toast.success(`Design "${d.name}" carregado`);
+  }
+
+  function deleteDesign(id: string) {
+    persistDesigns(designs.filter(d => d.id !== id));
+    toast.success("Design removido");
+  }
+
+
 
   const fidelizeUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/avaliar/${est.slug}` : "";
   const targetUrl = destination === "google" ? googleUrl.trim() : fidelizeUrl;
