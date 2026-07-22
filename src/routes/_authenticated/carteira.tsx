@@ -59,7 +59,43 @@ function WalletLayout() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [qrOpen, setQrOpen] = useState(false);
+  const qc = useQueryClient();
   useWalletFlash();
+
+  // Piggyback no cache já hidratado pela home para descobrir os customer_ids.
+  const { data: wallet } = useQuery({
+    queryKey: ["my-wallet"],
+    queryFn: () => getMyWallet(),
+    staleTime: 15_000,
+  });
+  const customerIds = useMemo(
+    () => Array.from(new Set((wallet ?? []).map((w) => w.customer?.id).filter(Boolean) as string[])),
+    [wallet],
+  );
+
+  // Realtime global: qualquer carimbo em qualquer cartão do cliente dispara
+  // haptic + toast + refresh, mesmo fora da tela `/c/$token`.
+  useEffect(() => {
+    if (!customerIds.length) return;
+    const filter = `customer_id=in.(${customerIds.join(",")})`;
+    const channel = supabase
+      .channel("wallet-global-activity")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "stamps", filter }, () => {
+        haptic("stamp");
+        toast.success("Novo carimbo! 🎉");
+        qc.invalidateQueries({ queryKey: ["my-wallet"] });
+        qc.invalidateQueries({ queryKey: ["my-history"] });
+        qc.invalidateQueries({ queryKey: ["my-rewards"] });
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "rewards", filter }, () => {
+        haptic("success");
+        toast.success("Recompensa desbloqueada! 🎁");
+        qc.invalidateQueries({ queryKey: ["my-wallet"] });
+        qc.invalidateQueries({ queryKey: ["my-rewards"] });
+      });
+    channel.subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [customerIds.join(","), qc]);
 
   async function signOut() {
     await supabase.auth.signOut();
