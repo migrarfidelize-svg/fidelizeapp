@@ -21,6 +21,7 @@ import {
 import { toast } from "sonner";
 import { useState } from "react";
 import { ExpiredCardState, WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
+import { PushOptIn } from "@/components/PushOptIn";
 
 
 const opts = (slug: string) =>
@@ -239,6 +240,10 @@ function WalletEstablishment() {
           <div className="rounded-3xl border border-dashed border-border/70 bg-card/30 p-6 text-center text-sm text-muted-foreground">
             Você ainda não possui carimbos aqui. Mostre seu QR Code no próximo atendimento.
           </div>
+        )}
+
+        {primaryCard && campaignActive && d.customer.token && (
+          <PushOptIn token={d.customer.token} />
         )}
 
         {/* Outros programas nesta loja (cascata de prêmios) */}
