@@ -55,7 +55,9 @@ function WalletHome() {
   const totalStamps = items.reduce((sum, i) => sum + (i.card?.stamps ?? 0), 0);
   const readyRewards = items.filter((i) => {
     if (!i.card) return false;
-    const req = (i.card.campaign as { stamps_required: number }).stamps_required || 1;
+    const campaign = i.card.campaign as { stamps_required: number; active: boolean };
+    if (!campaign.active) return false;
+    const req = campaign.stamps_required || 1;
     return i.card.stamps >= req;
   }).length;
 
