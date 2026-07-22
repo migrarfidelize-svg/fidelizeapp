@@ -196,8 +196,9 @@ function ReviewQrPage() {
 
 
   const fidelizeUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/avaliar/${est.slug}` : "";
-  const targetUrl = destination === "google" ? googleUrl.trim() : fidelizeUrl;
+  const targetUrl = destination === "fidelize" ? fidelizeUrl : googleUrl.trim();
   const googleReady = destination === "google" && /^https?:\/\/(g\.page|maps\.app\.goo\.gl|search\.google\.com|www\.google\.com|goo\.gl)/i.test(targetUrl);
+  const menuReady = destination === "menu" && /^https?:\/\//i.test(targetUrl);
 
   useEffect(() => {
     if (!targetUrl) { setQrDataUrl(""); return; }
