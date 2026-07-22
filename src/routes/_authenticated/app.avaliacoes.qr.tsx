@@ -646,9 +646,34 @@ function ReviewQrPage() {
     if (primaryBlocking) { toast.error(googleCheck.message); return; }
     setExporting(true);
     try {
-      const svg = await QRCode.toString(targetUrl, {
+      let svg = await QRCode.toString(targetUrl, {
         type: "svg", errorCorrectionLevel: ecc, margin: 1,
         color: { dark: "#111827", light: "#ffffff" },
+      });
+      // Normalize header: garantir xmlns, viewBox e tamanho responsivo (100%)
+      // para renderizar corretamente em qualquer editor (Illustrator, Figma,
+      // Canva) e no upload do Instagram.
+      const viewBoxMatch = svg.match(/viewBox="([^"]+)"/);
+      const widthMatch = svg.match(/<svg[^>]*\swidth="([^"]+)"/);
+      const heightMatch = svg.match(/<svg[^>]*\sheight="([^"]+)"/);
+      let vb = viewBoxMatch?.[1];
+      if (!vb && widthMatch && heightMatch) {
+        const w = parseFloat(widthMatch[1]);
+        const h = parseFloat(heightMatch[1]);
+        if (!Number.isNaN(w) && !Number.isNaN(h)) vb = `0 0 ${w} ${h}`;
+      }
+      // Reescreve a tag <svg ...> preservando o restante do documento
+      svg = svg.replace(/<svg\b[^>]*>/, (_tag) => {
+        const attrs = [
+          'xmlns="http://www.w3.org/2000/svg"',
+          'xmlns:xlink="http://www.w3.org/1999/xlink"',
+          vb ? `viewBox="${vb}"` : "",
+          'width="100%"',
+          'height="100%"',
+          'preserveAspectRatio="xMidYMid meet"',
+          'shape-rendering="crispEdges"',
+        ].filter(Boolean).join(" ");
+        return `<svg ${attrs}>`;
       });
       const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
       const url = URL.createObjectURL(blob);
@@ -662,6 +687,7 @@ function ReviewQrPage() {
       toast.error(e instanceof Error ? e.message : "Falha ao exportar SVG");
     } finally { setExporting(false); }
   }
+
 
   async function share() {
     if (!targetUrl) return;
@@ -1437,6 +1463,17 @@ const PosterCanvas = forwardRef<HTMLDivElement, PosterProps>(function PosterCanv
     : props.template === "bold"
       ? `radial-gradient(circle at 20% 10%, color-mix(in oklab, #ffffff 20%, transparent) 0%, transparent 40%)`
       : "none";
+  // Safe area: no Story, o topo (username/perfil) e o rodapé (CTA/reações)
+  // do Instagram sobrepõem ~14% e ~18% da imagem. No Feed, garantimos ~5%
+  // de respiro em todos os lados para o auto-crop. Draggable items usam
+  // coordenadas percentuais relativas ao container mais próximo, então o
+  // wrapper interno reduz a área útil sem alterar o tamanho do pôster.
+  const safe =
+    props.format === "story"
+      ? { top: "14%", right: "6%", bottom: "18%", left: "6%" }
+      : props.format === "feed"
+        ? { top: "5%", right: "5%", bottom: "5%", left: "5%" }
+        : { top: "0", right: "0", bottom: "0", left: "0" };
   return (
     <div
       ref={ref}
@@ -1446,10 +1483,16 @@ const PosterCanvas = forwardRef<HTMLDivElement, PosterProps>(function PosterCanv
       {overlay !== "none" && (
         <div className="pointer-events-none absolute inset-0" style={{ background: overlay }} />
       )}
-      <PortraitBody {...props} />
+      <div
+        className="absolute"
+        style={{ top: safe.top, right: safe.right, bottom: safe.bottom, left: safe.left }}
+      >
+        <PortraitBody {...props} />
+      </div>
     </div>
   );
 });
+
 
 /**
  * Renders a single draggable poster element positioned by percentage.
