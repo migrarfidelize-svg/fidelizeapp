@@ -119,16 +119,18 @@ function DiscoverPage() {
         {data.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-border/60 bg-card/30 p-8 text-center">
             <Sparkles className="mx-auto mb-2 h-6 w-6 text-primary" />
-            <div className="font-display text-sm font-bold">Você já está em todos!</div>
+            <div className="font-display text-sm font-bold">Nada por aqui ainda</div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Sua carteira já contém todos os estabelecimentos parceiros ativos.
+              Assim que novos estabelecimentos parceiros entrarem, eles aparecem aqui.
             </p>
           </div>
         ) : (
           <ul className="space-y-2.5">
-            {data.map((e) => (
-              <DiscoverRow key={e.id} e={e} />
-            ))}
+            {[...data]
+              .sort((a, b) => Number(a.visited) - Number(b.visited))
+              .map((e) => (
+                <DiscoverRow key={e.id} e={e} />
+              ))}
           </ul>
         )}
       </div>
@@ -147,6 +149,7 @@ function DiscoverRow({
     address: string | null;
     city: string | null;
     description: string | null;
+    visited: boolean;
   };
 }) {
   const brand = e.primary_color || "hsl(var(--primary))";
@@ -184,12 +187,18 @@ function DiscoverRow({
             <p className="mt-1 line-clamp-1 text-[11px] text-muted-foreground/80">{e.description}</p>
           )}
         </div>
-        <span
-          className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-primary-foreground shadow-sm"
-          style={{ background: brand }}
-        >
-          <Sparkles className="h-3 w-3" /> Novo
-        </span>
+        {e.visited ? (
+          <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/60 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+            Visitado
+          </span>
+        ) : (
+          <span
+            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-primary-foreground shadow-sm"
+            style={{ background: brand }}
+          >
+            <Sparkles className="h-3 w-3" /> Novo
+          </span>
+        )}
         <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
       </Link>
     </li>
