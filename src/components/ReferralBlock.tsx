@@ -24,10 +24,16 @@ export function ReferralBlock({
   alreadyReferred: boolean;
 }) {
   const apply = useServerFn(applyReferralByToken);
+  const track = useServerFn(trackReferralEvent);
   const qc = useQueryClient();
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  function logShare() {
+    if (!ownCode) return;
+    track({ data: { code: ownCode, kind: "share" } }).catch(() => {});
+  }
 
   useEffect(() => {
     if (typeof window === "undefined") return;
