@@ -13,7 +13,7 @@ import {
 } from "@/components/wallet/WalletStates";
 import { WalletStack } from "@/components/wallet/WalletStack";
 import { WalletHomeSkeleton } from "@/components/wallet/WalletCardSkeleton";
-import { InstallAppCard } from "@/components/wallet/InstallAppCard";
+
 import { EnableNotificationsCard } from "@/components/wallet/EnableNotificationsCard";
 
 
@@ -91,7 +91,6 @@ function WalletHome() {
           </p>
         </div>
 
-        <InstallAppCard />
         <EnableNotificationsCard />
 
 
