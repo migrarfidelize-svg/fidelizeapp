@@ -478,3 +478,108 @@ function BlockedGuide({
   );
 }
 
+function EnableGuide({
+  browser,
+  android,
+  mobile,
+  open,
+  onToggle,
+}: {
+  browser: ReturnType<typeof detectBrowser>;
+  android: boolean;
+  mobile: boolean;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  // Mobile Android chrome/edge/samsung/opera all share the same UX for site settings.
+  const mobileChromium: string[] = [
+    "Toque no menu ⋮ no canto superior direito do navegador.",
+    "Abra ‘Configurações do site’ (ou ‘Info do site’) → ‘Notificações’.",
+    "Selecione ‘Permitir’ e volte para esta página.",
+    "Toque em ‘Receber notificações’ novamente.",
+  ];
+  const mobileFirefox: string[] = [
+    "Toque no menu ⋮ do Firefox.",
+    "Abra ‘Configurações’ → ‘Permissões do site’ → ‘Notificações’.",
+    "Marque este site como ‘Permitido’ e recarregue a página.",
+  ];
+  const androidSystem: string[] = [
+    "Se ainda não abrir, vá em Ajustes do Android → ‘Apps’ → seu navegador.",
+    "Abra ‘Notificações’ e verifique se estão ativadas para o navegador todo.",
+    "Volte ao navegador, recarregue esta página e tente ativar de novo.",
+  ];
+  const desktopChromium: string[] = [
+    "Clique no cadeado 🔒 (ou ‘Ver informações do site’) ao lado do endereço.",
+    "Abra ‘Configurações do site’ → ‘Notificações’.",
+    "Mude para ‘Permitir’ e recarregue a página com Ctrl+R (ou ⌘R no Mac).",
+    "Clique em ‘Receber notificações’ novamente.",
+  ];
+  const desktopFirefox: string[] = [
+    "Clique no cadeado 🔒 ao lado do endereço.",
+    "Em ‘Permissões’ → ‘Enviar notificações’, remova o bloqueio e escolha ‘Permitir’.",
+    "Recarregue a página e clique em ‘Receber notificações’.",
+  ];
+  const desktopSafari: string[] = [
+    "No menu superior, abra Safari → ‘Ajustes’ → ‘Sites’ → ‘Notificações’.",
+    "Selecione este site e escolha ‘Permitir’.",
+    "Volte à aba e clique em ‘Receber notificações’ novamente.",
+  ];
+  const desktopSystem: string[] = [
+    "Cheque também as notificações do sistema: Windows (Ajustes → Sistema → Notificações) ou macOS (Ajustes do Sistema → Notificações) e permita alertas do seu navegador.",
+    "Desative modo ‘Não perturbe’ / ‘Foco’ se estiver ativo.",
+  ];
+
+  let title: string;
+  let steps: string[];
+  let systemNote: string[] = [];
+
+  if (mobile) {
+    title = android ? "Ativar notificações no Android" : "Ativar notificações no celular";
+    if (browser === "firefox") steps = mobileFirefox;
+    else steps = mobileChromium;
+    if (android) systemNote = androidSystem;
+  } else {
+    title = "Ativar notificações no computador";
+    if (browser === "firefox") steps = desktopFirefox;
+    else if (browser === "safari") steps = desktopSafari;
+    else steps = desktopChromium;
+    systemNote = desktopSystem;
+  }
+
+  return (
+    <div className="space-y-2">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full text-left text-xs text-muted-foreground underline decoration-dotted underline-offset-2 hover:text-foreground"
+      >
+        {open ? "Ocultar guia" : "O botão não abriu a permissão? Ver como ativar manualmente"}
+      </button>
+      {open && (
+        <div className="space-y-2 rounded-lg border border-border/60 bg-muted/30 p-3 text-xs">
+          <p className="font-medium text-foreground">{title}</p>
+          <ol className="space-y-2 text-foreground">
+            {steps.map((step, i) => (
+              <li key={i} className="flex gap-2">
+                <span className="font-bold text-primary">{i + 1}.</span>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ol>
+          {systemNote.length > 0 && (
+            <div className="space-y-1 border-t border-border/60 pt-2 text-muted-foreground">
+              {systemNote.map((note, i) => (
+                <p key={i} className="flex gap-2">
+                  <span>•</span>
+                  <span>{note}</span>
+                </p>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
