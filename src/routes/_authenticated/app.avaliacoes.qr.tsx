@@ -590,14 +590,19 @@ function ReviewQrPage() {
         {/* PREVIEW */}
         <div className="min-w-0">
           <div className="sticky top-4 flex flex-col items-center gap-3">
-            {/* Display toggle */}
-            <div className="flex w-full max-w-[420px] items-center justify-between rounded-xl border bg-card/70 p-2 backdrop-blur-xl">
-              <span className="flex items-center gap-2 pl-2 text-xs font-semibold">
-                <Eye className="h-3.5 w-3.5 text-primary" />
-                Ver no display de balcão
+            {/* CTA: Loja física */}
+            <button
+              type="button"
+              onClick={() => document.getElementById("loja-displays")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+              className="group relative flex w-full max-w-[420px] items-center justify-between overflow-hidden rounded-xl border border-primary/40 bg-gradient-to-r from-primary/15 via-primary/10 to-accent/15 p-3 text-left transition hover:border-primary hover:shadow-[0_0_30px_-8px_hsl(var(--primary)/0.6)]"
+            >
+              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-primary/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+              <span className="relative flex items-center gap-2 text-xs font-bold">
+                <ShoppingBag className="h-3.5 w-3.5 text-primary" />
+                Quero meu display físico de balcão
               </span>
-              <Switch checked={displayMode} onCheckedChange={setDisplayMode} />
-            </div>
+              <span className="relative text-primary transition-transform group-hover:translate-x-1">→</span>
+            </button>
 
             <div
               className="relative w-full max-w-[420px]"
