@@ -195,7 +195,7 @@ function ReviewQrPage() {
         layout,
       }));
     } catch { /* ignore */ }
-  }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor, primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel, layout]);
+  }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, nfcStyle, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor, primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel, layout]);
 
   function applyTemplate(key: TemplateKey) {
     setTemplate(key);
