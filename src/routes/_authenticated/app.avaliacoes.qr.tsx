@@ -232,7 +232,7 @@ function ReviewQrPage() {
   const [designName, setDesignName] = useState("");
   const [layout, setLayout] = useState<PosterLayout>(DEFAULT_LAYOUT);
   const [editLayout, setEditLayout] = useState(false);
-  const [badges, setBadges] = useState<BadgeInstance[]>([]);
+  const [badges, setBadges] = useState<BadgeInstance[]>([{ key: "wifi", x: 50, y: 18 }]);
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [savedTarget, setSavedTarget] = useState<"ls" | "idb" | "fail">("ls");
   const [savedTick, setSavedTick] = useState(0);
