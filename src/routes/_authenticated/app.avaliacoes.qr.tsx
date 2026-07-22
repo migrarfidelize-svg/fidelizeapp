@@ -98,7 +98,7 @@ const DEFAULT_LAYOUT: PosterLayout = {
   title:       { x: 50, y: 26 },
   subtitle:    { x: 50, y: 34 },
   primaryQr:   { x: 50, y: 58 },
-  secondaryQr: { x: 72, y: 58 },
+  secondaryQr: { x: 78, y: 58 },
   nfc:         { x: 50, y: 74 },
   ctaNear:     { x: 50, y: 86 },
   ctaFooter:   { x: 50, y: 93 },
