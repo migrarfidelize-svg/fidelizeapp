@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ChevronRight, Sparkles, Pin, PinOff } from "lucide-react";
 import { toast } from "sonner";
 import { toggleCustomerPin } from "@/lib/wallet-prefs.functions";
+import { TierBadge } from "@/components/wallet/TierBadge";
 import type { getMyWallet } from "@/lib/my-wallet.functions";
 
 /**
@@ -242,10 +243,15 @@ function StackedCard({
                 <h3 className="truncate font-display text-base font-bold leading-tight text-foreground">
                   {est.name}
                 </h3>
-                <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-                  {item.customer.pinned ? "Fixado • " : ""}
-                  {campaignActive ? "Cartão fidelidade" : "Campanha expirada"}
-                </p>
+                <div className="mt-0.5 flex items-center gap-1.5">
+                  <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                    {item.customer.pinned ? "Fixado • " : ""}
+                    {campaignActive ? "Cartão fidelidade" : "Campanha expirada"}
+                  </p>
+                  {isActive && item.customer.tier && (
+                    <TierBadge tier={item.customer.tier as never} size="xs" />
+                  )}
+                </div>
               </div>
             </div>
             {isActive && <PinToggle customerId={item.customer.id} pinned={!!item.customer.pinned} />}

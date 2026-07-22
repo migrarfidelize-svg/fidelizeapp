@@ -1,12 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { exportMyData, deleteMyAccount } from "@/lib/lgpd.functions";
+import { getMyWallet } from "@/lib/my-wallet.functions";
 import { clearWalletCache } from "@/lib/offline-wallet-cache";
 import { PushStatusCard } from "@/components/wallet/PushStatusCard";
+import { TierBadge } from "@/components/wallet/TierBadge";
 import { toast } from "sonner";
-import { User, Download, Trash2, ShieldCheck, AlertTriangle, ChevronRight } from "lucide-react";
+import { User, Download, Trash2, ShieldCheck, AlertTriangle, ChevronRight, Trophy } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/carteira/perfil")({
   ssr: false,
@@ -151,7 +154,10 @@ function WalletProfile() {
         </button>
       </form>
 
+      <TierOverview />
+
       <PushStatusCard />
+
 
 
 
@@ -265,6 +271,63 @@ function WalletProfile() {
         Sair da conta
       </button>
     </div>
+  );
+}
+
+const TIER_ORDER: Record<string, number> = { bronze: 1, prata: 2, ouro: 3, diamante: 4 };
+
+function TierOverview() {
+  const { data = [], isLoading } = useQuery({
+    queryKey: ["my-wallet"],
+    queryFn: () => getMyWallet(),
+    staleTime: 60_000,
+  });
+  const items = useMemo(() => {
+    return [...data]
+      .map((i) => ({
+        slug: (i.establishment as { slug: string }).slug,
+        name: (i.establishment as { name: string }).name,
+        tier: (i.customer.tier ?? "bronze") as string,
+        visits: i.customer.visitsCount ?? 0,
+      }))
+      .sort((a, b) => (TIER_ORDER[b.tier] ?? 0) - (TIER_ORDER[a.tier] ?? 0) || b.visits - a.visits);
+  }, [data]);
+
+  if (isLoading || items.length === 0) return null;
+  const best = items[0];
+
+  return (
+    <section className="rounded-3xl border border-border/60 bg-card/40 p-5">
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Trophy className="h-4 w-4 text-primary" />
+          <h2 className="font-display text-sm font-bold uppercase tracking-widest">
+            Meu nível
+          </h2>
+        </div>
+        <TierBadge tier={best.tier as never} size="md" />
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Nível mais alto conquistado — quanto mais visitas em um estabelecimento, mais alto o nível
+        (bronze, prata, ouro, diamante).
+      </p>
+      <ul className="mt-3 space-y-1.5">
+        {items.slice(0, 5).map((i) => (
+          <li
+            key={i.slug}
+            className="flex items-center justify-between rounded-xl border border-border/50 bg-background/40 px-3 py-2"
+          >
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-semibold">{i.name}</div>
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                {i.visits} {i.visits === 1 ? "visita" : "visitas"}
+              </div>
+            </div>
+            <TierBadge tier={i.tier as never} size="xs" />
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
