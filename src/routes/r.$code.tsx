@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Gift, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { lookupReferralCode } from "@/lib/retention.functions";
+import { lookupReferralCode, trackReferralEvent } from "@/lib/retention.functions";
 import { useEffect } from "react";
 
 export const Route = createFileRoute("/r/$code")({
