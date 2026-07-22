@@ -480,12 +480,23 @@ function LinkTreeEditor() {
                           })
                         }
                       />
+                    ) : l.kind === "pix" ? (
+                      <PixFields
+                        url={l.url}
+                        onChange={(type, key, name) =>
+                          updateLink(i, {
+                            label: name ? `Pix · ${name}` : "Chave Pix",
+                            url: encodePix(type, key, name),
+                          })
+                        }
+                      />
                     ) : (
                       <div className="grid gap-2 md:grid-cols-2">
                         <Input placeholder="Rótulo" value={l.label} onChange={(e) => updateLink(i, { label: e.target.value })} maxLength={80} />
                         <Input placeholder={M.placeholder} value={l.url} onChange={(e) => updateLink(i, { url: e.target.value })} maxLength={500} />
                       </div>
                     )}
+
 
                   </div>
                 );
