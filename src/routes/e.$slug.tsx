@@ -301,6 +301,76 @@ function DiscoveryProfilePage() {
   );
 }
 
+function useSessionStatus() {
+  const [state, setState] = useState<"loading" | "guest" | "authed">("loading");
+  useEffect(() => {
+    let mounted = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
+      setState(data.session ? "authed" : "guest");
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setState(session ? "authed" : "guest");
+    });
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+  return state;
+}
+
+function VisitorCta({ slug, brand }: { slug: string; brand: string }) {
+  const status = useSessionStatus();
+
+  if (status === "authed") {
+    return (
+      <>
+        <Link
+          to="/carteira/$slug"
+          params={{ slug }}
+          className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-white shadow-sm transition-transform active:scale-95"
+          style={{ background: brand }}
+        >
+          <CreditCard className="h-3.5 w-3.5" /> Abrir meu cartão aqui
+        </Link>
+        <Link
+          to="/carteira"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 bg-background/60 px-3 py-2 text-xs font-semibold transition hover:border-primary/40 hover:text-primary"
+        >
+          <Wallet className="h-3.5 w-3.5" /> Minha carteira
+        </Link>
+        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-400/10 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-emerald-500">
+          <UserCircle2 className="h-3 w-3" /> Você está conectado
+        </span>
+      </>
+    );
+  }
+
+  // guest (and loading — same UI, avoids flicker of auth button before session resolves)
+  return (
+    <>
+      <Link
+        to="/auth"
+        className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-white shadow-sm transition-transform active:scale-95"
+        style={{ background: brand }}
+      >
+        <LogIn className="h-3.5 w-3.5" /> Entrar ou criar minha carteira
+      </Link>
+      <Link
+        to="/carteira/$slug"
+        params={{ slug }}
+        className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 bg-background/60 px-3 py-2 text-xs font-semibold transition hover:border-primary/40 hover:text-primary"
+      >
+        <CreditCard className="h-3.5 w-3.5" /> Já sou cliente
+      </Link>
+      <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/40 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+        Visitando como convidado
+      </span>
+    </>
+  );
+}
+
 function PromoRow({
   promo,
   brand,
