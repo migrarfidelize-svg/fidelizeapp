@@ -398,12 +398,66 @@ function ReviewQrPage() {
       const url = await renderPosterPng();
       const mmW = dims.mm.w;
       const mmH = dims.mm.h;
-      const pdf = new jsPDF({ unit: "mm", format: [mmW, mmH], orientation: mmW > mmH ? "landscape" : "portrait", compress: true });
-      pdf.addImage(url, "PNG", 0, 0, mmW, mmH, undefined, "FAST");
-      pdf.save(`qr-avaliacao-${est?.slug ?? "estabelecimento"}-${format}-300dpi.pdf`);
-      toast.success(`PDF 300 DPI baixado (${mmW}×${mmH}mm)`);
+      const bleed = bleedMarks ? 3 : 0;          // 3 mm sangria
+      const pageW = mmW + bleed * 2;
+      const pageH = mmH + bleed * 2;
+      const pdf = new jsPDF({ unit: "mm", format: [pageW, pageH], orientation: pageW > pageH ? "landscape" : "portrait", compress: true });
+      // Place the artwork inset by the bleed so the design covers to the trim edges
+      pdf.addImage(url, "PNG", bleed, bleed, mmW, mmH, undefined, "FAST");
+
+      if (bleedMarks) {
+        // Crop marks (marcas de corte) — 5 mm long, 0.2 mm thick, 3 mm offset from trim
+        const markLen = 5;
+        const off = 1; // gap between trim and mark start
+        pdf.setLineWidth(0.15);
+        pdf.setDrawColor(0, 0, 0);
+        const corners: Array<[number, number]> = [
+          [bleed, bleed],                 // top-left
+          [bleed + mmW, bleed],           // top-right
+          [bleed, bleed + mmH],           // bottom-left
+          [bleed + mmW, bleed + mmH],     // bottom-right
+        ];
+        for (const [x, y] of corners) {
+          const dx = x < bleed + mmW / 2 ? -1 : 1;
+          const dy = y < bleed + mmH / 2 ? -1 : 1;
+          // horizontal mark
+          pdf.line(x + dx * off, y, x + dx * (off + markLen), y);
+          // vertical mark
+          pdf.line(x, y + dy * off, x, y + dy * (off + markLen));
+        }
+        // Small footer info (outside trim area, in the bleed margin)
+        pdf.setFontSize(5);
+        pdf.setTextColor(120);
+        pdf.text(`Trim ${mmW}×${mmH}mm · Bleed 3mm · 300 DPI · RGB (converta para CMYK na gráfica)`, bleed, pageH - 0.8);
+      }
+
+      pdf.save(`qr-avaliacao-${est?.slug ?? "estabelecimento"}-${format}-${bleedMarks ? "print" : "300dpi"}.pdf`);
+      toast.success(bleedMarks
+        ? `PDF de impressão baixado (${mmW}×${mmH}mm + 3mm sangria + marcas de corte)`
+        : `PDF 300 DPI baixado (${mmW}×${mmH}mm)`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao exportar PDF");
+    } finally { setExporting(false); }
+  }
+
+  async function exportSvg() {
+    if (primaryBlocking) { toast.error(googleCheck.message); return; }
+    setExporting(true);
+    try {
+      const svg = await QRCode.toString(targetUrl, {
+        type: "svg", errorCorrectionLevel: ecc, margin: 1,
+        color: { dark: "#111827", light: "#ffffff" },
+      });
+      const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `qr-avaliacao-${est?.slug ?? "estabelecimento"}-vetorial.svg`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      toast.success("SVG vetorial baixado — escala infinita para gráfica");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao exportar SVG");
     } finally { setExporting(false); }
   }
 
