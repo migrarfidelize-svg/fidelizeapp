@@ -510,10 +510,10 @@ function AppLayout() {
 
 
           {/* Divider */}
-          <div className="dock-divider my-1 h-px w-8" />
+          <div className="dock-divider my-1 h-px w-full" />
 
           {/* Theme + account */}
-          <div className="grid place-items-center">
+          <div className="flex items-center justify-between px-1">
             <ThemeToggle />
           </div>
           <DropdownMenu>
@@ -521,11 +521,15 @@ function AppLayout() {
               <button
                 type="button"
                 aria-label="Conta"
-                className="dock-item grid h-11 w-11 place-items-center rounded-xl text-[11px] font-bold"
+                className="dock-item flex h-11 w-full items-center gap-2.5 rounded-xl px-2.5 text-left text-[13px] font-medium"
               >
-                {activeEst?.name?.slice(0, 2).toUpperCase() ?? "FZ"}
+                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[color:var(--dock-item-active-bg)] text-[10px] font-bold text-[color:var(--dock-item-active-text)]">
+                  {activeEst?.name?.slice(0, 2).toUpperCase() ?? "FZ"}
+                </span>
+                <span className="flex-1 truncate">{activeEst?.name ?? "Conta"}</span>
               </button>
             </DropdownMenuTrigger>
+
 
             <DropdownMenuContent side="right" align="end" className="w-56">
               <div className="px-2 py-1.5 text-xs text-muted-foreground truncate">
