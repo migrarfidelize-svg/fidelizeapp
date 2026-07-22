@@ -1,9 +1,10 @@
 import { createFileRoute, Link, notFound, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { getEstablishmentBySlug, registerOrLoginCustomer } from "@/lib/loyalty.functions";
 import { attachEstablishmentBySlug } from "@/lib/my-wallet.functions";
+import { listPublicPromotionsBySlug } from "@/lib/promotions.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { StampCard } from "@/components/StampCard";
 import { PublicRatingBlock } from "@/components/PublicRatingBlock";
 import { toast } from "sonner";
-import { Sparkles, MapPin, Phone, LogIn } from "lucide-react";
+import { Sparkles, MapPin, Phone, LogIn, Megaphone, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
 
 const opts = (slug: string) => queryOptions({
   queryKey: ["est", slug],
