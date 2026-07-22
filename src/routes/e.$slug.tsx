@@ -92,7 +92,7 @@ type Media = { path: string; type: "image" | "video"; url?: string | null };
 
 export { opts as discoveryProfileOpts };
 export function DiscoveryProfilePage() {
-  const { slug } = Route.useParams();
+  const { slug } = useParams({ strict: false }) as { slug: string };
   const { data } = useSuspenseQuery(opts(slug));
 
   if (!data.establishment) {
