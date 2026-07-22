@@ -202,57 +202,7 @@ export function EnableNotificationsCard() {
   );
 }
 
-/** Compact toggle to disable/re-enable from the profile screen. */
-export function WalletPushToggleInline() {
-  const [supported, setSupported] = useState(false);
-  const [subscribed, setSubscribed] = useState<boolean | null>(null);
-  const [busy, setBusy] = useState(false);
+// Nota: o toggle "desativar neste aparelho" vive em `PushStatusCard`, usado
+// na tela de perfil. Removemos o `WalletPushToggleInline` duplicado para
+// evitar dois pontos de verdade sobre o estado de push.
 
-  const unsubscribeAll = useServerFn(unsubscribePushForAllMyCards);
-  const getStatus = useServerFn(getMyWalletPushStatus);
-
-  useEffect(() => {
-    const ok =
-      typeof window !== "undefined" &&
-      "serviceWorker" in navigator &&
-      "PushManager" in window;
-    setSupported(ok);
-    if (!ok) return;
-    (async () => {
-      try {
-        const reg = await navigator.serviceWorker.ready;
-        const sub = await reg.pushManager.getSubscription();
-        if (!sub) return setSubscribed(false);
-        const st = await getStatus({ data: { endpoint: sub.endpoint } });
-        setSubscribed(!!st.subscribed);
-      } catch {
-        setSubscribed(false);
-      }
-    })();
-  }, [getStatus]);
-
-  if (!supported || subscribed !== true) return null;
-
-  async function disable() {
-    setBusy(true);
-    try {
-      const reg = await navigator.serviceWorker.ready;
-      const sub = await reg.pushManager.getSubscription();
-      if (sub) await unsubscribeAll({ data: { endpoint: sub.endpoint } });
-      setSubscribed(false);
-      toast.success("Notificações desativadas neste aparelho.");
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Não foi possível desativar as notificações.";
-      toast.error(msg);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <Button variant="outline" size="sm" onClick={disable} disabled={busy} className="gap-2">
-      {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <BellOff className="h-4 w-4" />}
-      Desativar neste aparelho
-    </Button>
-  );
-}

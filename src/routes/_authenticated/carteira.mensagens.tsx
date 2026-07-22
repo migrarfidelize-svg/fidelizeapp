@@ -42,12 +42,14 @@ function InboxPage() {
 
   useEffect(() => {
     if (!unreadIds.length) return;
-    // marca como lidas ao entrar na tela
+    // marca como lidas sempre que chegarem novas mensagens não lidas
     markFn({ data: { ids: unreadIds } })
-      .then(() => qc.invalidateQueries({ queryKey: ["inbox-unread"] }))
+      .then(() => {
+        qc.invalidateQueries({ queryKey: ["inbox-unread"] });
+        qc.invalidateQueries({ queryKey: ["my-inbox"] });
+      })
       .catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [unreadIds.join(","), markFn, qc]);
 
   return (
     <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["my-inbox"] })}>
