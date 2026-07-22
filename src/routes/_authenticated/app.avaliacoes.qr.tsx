@@ -1343,6 +1343,8 @@ interface PosterProps {
   layout: PosterLayout;
   setLayout: (updater: (prev: PosterLayout) => PosterLayout) => void;
   editable: boolean;
+  badges: BadgeInstance[];
+  moveBadge: (key: BadgeKey, x: number, y: number) => void;
 }
 
 const PosterCanvas = forwardRef<HTMLDivElement, PosterProps>(function PosterCanvas(props, ref) {
