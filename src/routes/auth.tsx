@@ -252,7 +252,7 @@ function AuthPage() {
             <div className="pointer-events-none absolute -left-8 -top-6 h-24 w-24 rounded-full bg-[#00ffff]/20 blur-2xl animate-[auth-float_9s_ease-in-out_infinite]" />
             <div className="pointer-events-none absolute -bottom-10 -right-6 h-32 w-32 rounded-full bg-[oklch(0.78_0.19_330)]/25 blur-3xl animate-[auth-float_11s_ease-in-out_infinite_reverse]" />
 
-            <div className="auth-loyalty-card relative aspect-[1.6/1] w-[min(460px,88vw)] transform-gpu transition-transform duration-700 will-change-transform [transform:rotateY(-14deg)_rotateX(9deg)] group-hover:[transform:rotateY(-4deg)_rotateX(3deg)]">
+            <div className="auth-loyalty-card relative aspect-[1.6/1] w-[min(320px,70vw)] sm:w-[min(460px,88vw)] transform-gpu transition-transform duration-700 will-change-transform [transform:rotateY(-14deg)_rotateX(9deg)] group-hover:[transform:rotateY(-4deg)_rotateX(3deg)]">
               {/* Card body */}
               <div className="auth-card-body relative h-full w-full overflow-hidden rounded-[26px] border border-white/12">
                 {/* Layered background */}
