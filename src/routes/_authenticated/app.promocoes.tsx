@@ -191,7 +191,12 @@ function PromocoesPage() {
     queryFn: () => getEsts(),
   });
   const activeEst = memberships?.[0]?.establishment as
-    | { id: string; name: string; slug: string }
+    | ({
+        id: string;
+        name: string;
+        slug: string;
+        segment?: string | null;
+      } & EstLinkSource)
     | undefined;
 
   const promosQ = useQuery({
