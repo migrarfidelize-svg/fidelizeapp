@@ -73,6 +73,17 @@ function CustomerCard() {
     return () => { supabase.removeChannel(channel); };
   }, [token, customerId, cardIds.join(","), qc, d.establishment?.id]);
 
+  // Haptic feedback ao ganhar carimbo (detecta aumento do total de carimbos válidos)
+  const prevStamps = useRef<number | null>(null);
+  useEffect(() => {
+    const total = d.stamps.filter((s) => !s.reverted_at).length;
+    if (prevStamps.current !== null && total > prevStamps.current) {
+      haptic("stamp");
+    }
+    prevStamps.current = total;
+  }, [d.stamps]);
+
+
 
   return (
     <div
