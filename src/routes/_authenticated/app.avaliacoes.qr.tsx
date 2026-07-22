@@ -466,7 +466,14 @@ function PortraitBody(p: PosterProps) {
         <h2 className="text-xl font-black leading-tight" style={{ color: p.textColor }}>{p.title}</h2>
         <p className="mx-auto max-w-[26ch] text-[11px] opacity-70" style={{ color: p.textColor }}>{p.subtitle}</p>
       </div>
-      <QrBlock qr={p.qrDataUrl} />
+      {p.nfcMode ? (
+        <div className="flex items-center justify-center gap-3">
+          <QrBlock qr={p.qrDataUrl} />
+          <NfcBlock primary={p.primaryColor} />
+        </div>
+      ) : (
+        <QrBlock qr={p.qrDataUrl} />
+      )}
       <div className="space-y-2">
         <div className="text-xs font-bold uppercase tracking-widest" style={{ color: p.primaryColor }}>
           {p.nfcMode ? "Aproxime o celular" : p.ctaNearQR}
@@ -492,6 +499,33 @@ function QrBlock({ qr }: { qr: string }) {
     </div>
   );
 }
+
+function NfcBlock({ primary }: { primary: string }) {
+  return (
+    <div
+      className="flex h-[152px] w-[152px] flex-col items-center justify-center gap-1.5 rounded-xl p-3 shadow-lg"
+      style={{
+        background: `linear-gradient(135deg, color-mix(in oklab, ${primary} 22%, #ffffff) 0%, #ffffff 100%)`,
+        border: `2px solid ${primary}`,
+      }}
+    >
+      <svg viewBox="0 0 64 64" width="56" height="56" fill="none" stroke={primary} strokeWidth="4" strokeLinecap="round">
+        <path d="M20 22c6 6 6 14 0 20" />
+        <path d="M28 16c10 8 10 24 0 32" />
+        <path d="M36 10c14 10 14 34 0 44" />
+        <circle cx="14" cy="32" r="2.5" fill={primary} stroke="none" />
+      </svg>
+      <div className="text-center text-[10px] font-black uppercase tracking-widest" style={{ color: primary }}>
+        Toque aqui
+      </div>
+      <div className="text-center text-[8px] font-semibold uppercase tracking-widest text-slate-500">
+        NFC
+      </div>
+    </div>
+  );
+}
+
+
 
 function BrandLogo({ url, name, primary }: { url: string | null; name: string; primary: string }) {
   if (url) return <img src={url} alt={name} className="h-10 w-10 shrink-0 rounded-full object-cover ring-2" style={{ borderColor: primary }} />;
