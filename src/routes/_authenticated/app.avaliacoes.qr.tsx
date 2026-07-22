@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/app/avaliacoes/qr")({
 /** Poster formats — landscape 15×10cm is the default. */
 type FormatKey = "counter15x10" | "story" | "feed" | "a5";
 const FORMATS: Record<FormatKey, { label: string; aspect: string; mm: { w: number; h: number }; description: string; orientation: "landscape" | "portrait" | "square" }> = {
-  counter15x10: { label: "Balcão 15×10", aspect: "3 / 2", mm: { w: 150, h: 100 }, description: "Padrão para balcão e mesa", orientation: "landscape" },
+  counter15x10: { label: "Balcão 10×15", aspect: "2 / 3", mm: { w: 100, h: 150 }, description: "Padrão vertical para balcão e mesa", orientation: "portrait" },
   a5:           { label: "A5 vertical", aspect: "1 / 1.414", mm: { w: 148, h: 210 }, description: "Cartaz de parede", orientation: "portrait" },
   feed:         { label: "Feed 1:1", aspect: "1 / 1", mm: { w: 200, h: 200 }, description: "Instagram/Feed", orientation: "square" },
   story:        { label: "Story 9:16", aspect: "9 / 16", mm: { w: 108, h: 192 }, description: "Story/Reels", orientation: "portrait" },
@@ -444,60 +444,17 @@ interface PosterProps {
 }
 
 const PosterCanvas = forwardRef<HTMLDivElement, PosterProps>(function PosterCanvas(props, ref) {
-  const { format } = props;
-  const isLandscape = format === "counter15x10";
   return (
     <div
       ref={ref}
-      className="absolute inset-0 flex"
-      style={{ background: props.backgroundColor, color: props.textColor, flexDirection: isLandscape ? "row" : "column" }}
+      className="absolute inset-0 flex flex-col"
+      style={{ background: props.backgroundColor, color: props.textColor }}
     >
-      {isLandscape ? <LandscapeBody {...props} /> : <PortraitBody {...props} />}
+      <PortraitBody {...props} />
     </div>
   );
 });
 
-function LandscapeBody(p: PosterProps) {
-  return (
-    <>
-      {/* LEFT — brand + copy */}
-      <div className="flex flex-1 flex-col justify-between p-8">
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <BrandLogo url={p.logoUrl} name={p.establishmentName} primary={p.primaryColor} />
-            <div className="min-w-0">
-              <div className="truncate text-lg font-bold" style={{ color: p.textColor }}>{p.establishmentName}</div>
-              <Stars color={p.primaryColor} size={14} />
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <h2 className="text-2xl font-black leading-[1.1]" style={{ color: p.textColor }}>{p.title}</h2>
-            <p className="text-[11px] opacity-70" style={{ color: p.textColor }}>{p.subtitle}</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {p.destination === "google" && p.showGoogleLogo && <GoogleBadge />}
-          {p.nfcMode && <NfcBadge primary={p.primaryColor} />}
-        </div>
-      </div>
-
-      {/* RIGHT — QR */}
-      <div
-        className="flex w-[42%] shrink-0 flex-col items-center justify-center gap-3 p-6"
-        style={{ background: `color-mix(in oklab, ${p.primaryColor} 8%, transparent)`, borderLeft: `1px solid color-mix(in oklab, ${p.primaryColor} 30%, transparent)` }}
-      >
-        <QrBlock qr={p.qrDataUrl} />
-        <div className="text-center">
-          <div className="text-[11px] font-bold uppercase tracking-widest" style={{ color: p.primaryColor }}>
-            {p.nfcMode ? "Aproxime o celular" : p.ctaNearQR}
-          </div>
-          <div className="mt-1 text-[9px] opacity-60" style={{ color: p.textColor }}>{p.ctaFooter}</div>
-        </div>
-      </div>
-    </>
-  );
-}
 
 function PortraitBody(p: PosterProps) {
   return (
