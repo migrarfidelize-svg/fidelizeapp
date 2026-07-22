@@ -203,17 +203,24 @@ function ReviewQrPage() {
   const fidelizeUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/avaliar/${est.slug}` : "";
   const targetUrl = destination === "fidelize" ? fidelizeUrl : googleUrl.trim();
   const googleReady = destination === "google" && /^https?:\/\/(g\.page|maps\.app\.goo\.gl|search\.google\.com|www\.google\.com|goo\.gl)/i.test(targetUrl);
-  const menuReady = destination === "menu" && /^https?:\/\//i.test(targetUrl);
+  const secondaryReady = secondaryEnabled && /^https?:\/\//i.test(secondaryUrl.trim());
 
   useEffect(() => {
     if (!targetUrl) { setQrDataUrl(""); return; }
     QRCode.toDataURL(targetUrl, {
-      width: 1200,
-      margin: 1,
-      errorCorrectionLevel: "H",
+      width: 1200, margin: 1, errorCorrectionLevel: "H",
       color: { dark: "#111827", light: "#ffffff" },
     }).then(setQrDataUrl).catch(() => setQrDataUrl(""));
   }, [targetUrl]);
+
+  useEffect(() => {
+    const u = secondaryUrl.trim();
+    if (!secondaryEnabled || !u) { setSecondaryQrDataUrl(""); return; }
+    QRCode.toDataURL(u, {
+      width: 1200, margin: 1, errorCorrectionLevel: "H",
+      color: { dark: "#111827", light: "#ffffff" },
+    }).then(setSecondaryQrDataUrl).catch(() => setSecondaryQrDataUrl(""));
+  }, [secondaryEnabled, secondaryUrl]);
 
   const dims = FORMATS[format];
 
