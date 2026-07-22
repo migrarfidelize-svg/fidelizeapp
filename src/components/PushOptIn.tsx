@@ -340,10 +340,21 @@ export function PushOptIn({ token }: { token: string }) {
             <span className="ml-2">Desativar notificações deste cartão</span>
           </Button>
         ) : (
-          <Button onClick={enable} disabled={busy} className="w-full">
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bell className="h-4 w-4" />}
-            <span className="ml-2">Receber notificações</span>
-          </Button>
+          <>
+            <Button onClick={enable} disabled={busy} className="w-full">
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bell className="h-4 w-4" />}
+              <span className="ml-2">Receber notificações</span>
+            </Button>
+            {!ios && (
+              <EnableGuide
+                browser={detectBrowser()}
+                android={isAndroid()}
+                mobile={isMobile()}
+                open={showEnableGuide}
+                onToggle={() => setShowEnableGuide((v) => !v)}
+              />
+            )}
+          </>
         )}
 
         {errorMsg && permission !== "denied" && (
