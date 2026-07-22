@@ -231,6 +231,39 @@ async function grantBonusStamps(
   }
 }
 
+// -------------------- Public referral tracking (click / share) --------------------
+
+/**
+ * Public: log a referral link event (click on /r/:code landing, or native share).
+ * Anonymous — attributes the event to the referrer's customer row. Safe by RLS:
+ * `anon` can only insert rows whose event_type is 'referral_click' or 'referral_share'.
+ */
+export const trackReferralEvent = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        code: z.string().min(4).max(20),
+        kind: z.enum(["click", "share"]),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const s = publicClient();
+    const { data: row } = await s
+      .from("customers")
+      .select("id, establishment_id")
+      .eq("referral_code", data.code.toUpperCase())
+      .maybeSingle();
+    if (!row) return { ok: false };
+    await s.from("retention_events").insert({
+      establishment_id: row.establishment_id,
+      customer_id: row.id,
+      event_type: data.kind === "click" ? "referral_click" : "referral_share",
+      meta: { code: data.code.toUpperCase() },
+    });
+    return { ok: true };
+  });
+
 // -------------------- Merchant referral dashboard --------------------
 
 export const listReferralStats = createServerFn({ method: "GET" })
@@ -254,10 +287,31 @@ export const listReferralStats = createServerFn({ method: "GET" })
         name: rows?.find((x) => x.id === id)?.name ?? "—",
         count,
       }));
+
+    // Funnel events (last 90 days)
+    const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: events } = await context.supabase
+      .from("retention_events")
+      .select("event_type")
+      .eq("establishment_id", data.establishment_id)
+      .in("event_type", ["referral_click", "referral_share", "referral_signup", "referral_reward"])
+      .gte("created_at", since);
+    const funnel = { clicks: 0, shares: 0, signups: 0, rewards: 0 };
+    for (const e of events ?? []) {
+      if (e.event_type === "referral_click") funnel.clicks++;
+      else if (e.event_type === "referral_share") funnel.shares++;
+      else if (e.event_type === "referral_signup") funnel.signups++;
+      else if (e.event_type === "referral_reward") funnel.rewards++;
+    }
+    const conversion =
+      funnel.clicks > 0 ? Math.round((funnel.signups / funnel.clicks) * 100) : 0;
+
     return {
       totalReferred: (rows ?? []).filter((r) => r.referred_by).length,
       totalCustomers: rows?.length ?? 0,
       top,
+      funnel,
+      conversion,
     };
   });
 
