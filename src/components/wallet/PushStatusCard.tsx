@@ -17,6 +17,7 @@ import {
   subscribePushForAllMyCards,
   unsubscribePushForAllMyCards,
   getMyWalletPushStatus,
+  sendTestPushToMe,
 } from "@/lib/push.functions";
 
 type PermState = "default" | "granted" | "denied" | "unsupported";
@@ -34,11 +35,12 @@ export function PushStatusCard() {
   const [endpoint, setEndpoint] = useState<string | null>(null);
   const [cardCount, setCardCount] = useState<number>(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [busy, setBusy] = useState<null | "enable" | "disable" | "refresh">(null);
+  const [busy, setBusy] = useState<null | "enable" | "disable" | "refresh" | "test">(null);
 
   const subscribeAll = useServerFn(subscribePushForAllMyCards);
   const unsubscribeAll = useServerFn(unsubscribePushForAllMyCards);
   const getStatus = useServerFn(getMyWalletPushStatus);
+  const sendTest = useServerFn(sendTestPushToMe);
 
   const refresh = useCallback(async () => {
     setErrorMsg(null);
@@ -152,6 +154,22 @@ export function PushStatusCard() {
     setBusy("refresh");
     await refresh();
     setBusy(null);
+  }
+
+  async function handleTest() {
+    if (!endpoint) return;
+    setBusy("test");
+    setErrorMsg(null);
+    try {
+      await sendTest({ data: { endpoint } });
+      toast.success("Push de teste enviado. Confira a notificação no seu aparelho.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Falha ao enviar push de teste.";
+      setErrorMsg(msg);
+      toast.error(msg);
+    } finally {
+      setBusy(null);
+    }
   }
 
   // Render helpers
@@ -279,6 +297,22 @@ export function PushStatusCard() {
               <Bell className="h-4 w-4" />
             )}
             {subState === "error" ? "Tentar novamente" : "Ativar notificações"}
+          </button>
+        )}
+
+        {subState === "active" && (
+          <button
+            type="button"
+            onClick={handleTest}
+            disabled={busy !== null || !endpoint}
+            className="inline-flex items-center gap-2 rounded-xl border border-primary/40 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/20 disabled:opacity-60"
+          >
+            {busy === "test" ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <BellRing className="h-4 w-4" />
+            )}
+            Enviar push de teste
           </button>
         )}
 

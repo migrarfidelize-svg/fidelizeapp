@@ -899,3 +899,58 @@ export const getMyWalletPushStatus = createServerFn({ method: "POST" })
       .eq("active", true);
     return { subscribed: (rows?.length ?? 0) > 0, cardCount: ids.length };
   });
+
+/**
+ * Sends a real Web Push to the current device's endpoint for the authenticated
+ * customer. Smoke-test button on /carteira/perfil. Fails fast if the endpoint
+ * doesn't belong to any of the user's cards (prevents cross-user probing).
+ */
+export const sendTestPushToMe = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ endpoint: z.string().url() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: customers } = await context.supabase
+      .from("customers")
+      .select("id")
+      .eq("user_id", context.userId);
+    const ids = (customers ?? []).map((c) => c.id);
+    if (ids.length === 0) throw new Error("Nenhum cartão vinculado.");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: subs } = await supabaseAdmin
+      .from("push_subscriptions")
+      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id")
+      .in("customer_id", ids)
+      .eq("endpoint", data.endpoint)
+      .eq("active", true)
+      .limit(1);
+    const sub = subs?.[0];
+    if (!sub) throw new Error("Este aparelho não está inscrito. Ative as notificações primeiro.");
+
+    const { sendPushToSub } = await import("./push.server");
+    const r = await sendPushToSub(sub, {
+      title: "Fidelize — teste de push",
+      body: "Se você recebeu esta notificação, está tudo funcionando! 🎉",
+      url: "/carteira/perfil",
+      tag: "fidelize-test",
+    });
+    await supabaseAdmin.from("push_logs").insert({
+      establishment_id: sub.establishment_id,
+      subscription_id: sub.id,
+      customer_id: sub.customer_id,
+      title: "Fidelize — teste de push",
+      body: "Smoke test manual do usuário",
+      url: "/carteira/perfil",
+      status: r.ok ? "sent" : r.status === 410 || r.status === 404 ? "expired" : "failed",
+      status_code: r.status ?? null,
+      error: r.error ?? null,
+    });
+    if (!r.ok) {
+      throw new Error(
+        r.error
+          ? `Falha no envio (${r.status ?? "?"}): ${r.error}`
+          : `Falha no envio (HTTP ${r.status ?? "?"}).`,
+      );
+    }
+    return { ok: true, status: r.status };
+  });
