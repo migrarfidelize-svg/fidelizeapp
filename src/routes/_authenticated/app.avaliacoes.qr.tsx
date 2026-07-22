@@ -455,47 +455,6 @@ const PosterCanvas = forwardRef<HTMLDivElement, PosterProps>(function PosterCanv
   );
 });
 
-function LandscapeBody(p: PosterProps) {
-  return (
-    <>
-      {/* LEFT — brand + copy */}
-      <div className="flex flex-1 flex-col justify-between p-8">
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <BrandLogo url={p.logoUrl} name={p.establishmentName} primary={p.primaryColor} />
-            <div className="min-w-0">
-              <div className="truncate text-lg font-bold" style={{ color: p.textColor }}>{p.establishmentName}</div>
-              <Stars color={p.primaryColor} size={14} />
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <h2 className="text-2xl font-black leading-[1.1]" style={{ color: p.textColor }}>{p.title}</h2>
-            <p className="text-[11px] opacity-70" style={{ color: p.textColor }}>{p.subtitle}</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {p.destination === "google" && p.showGoogleLogo && <GoogleBadge />}
-          {p.nfcMode && <NfcBadge primary={p.primaryColor} />}
-        </div>
-      </div>
-
-      {/* RIGHT — QR */}
-      <div
-        className="flex w-[42%] shrink-0 flex-col items-center justify-center gap-3 p-6"
-        style={{ background: `color-mix(in oklab, ${p.primaryColor} 8%, transparent)`, borderLeft: `1px solid color-mix(in oklab, ${p.primaryColor} 30%, transparent)` }}
-      >
-        <QrBlock qr={p.qrDataUrl} />
-        <div className="text-center">
-          <div className="text-[11px] font-bold uppercase tracking-widest" style={{ color: p.primaryColor }}>
-            {p.nfcMode ? "Aproxime o celular" : p.ctaNearQR}
-          </div>
-          <div className="mt-1 text-[9px] opacity-60" style={{ color: p.textColor }}>{p.ctaFooter}</div>
-        </div>
-      </div>
-    </>
-  );
-}
 
 function PortraitBody(p: PosterProps) {
   return (
