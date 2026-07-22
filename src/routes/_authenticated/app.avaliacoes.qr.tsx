@@ -36,7 +36,7 @@ const FORMATS: Record<FormatKey, { label: string; aspect: string; mm: { w: numbe
   story:        { label: "Story 9:16", aspect: "9 / 16", mm: { w: 108, h: 192 }, description: "Story/Reels", orientation: "portrait" },
 };
 
-type Destination = "fidelize" | "google";
+type Destination = "fidelize" | "google" | "menu";
 type TemplateKey = "glass" | "minimal" | "bold" | "editorial";
 
 const TEMPLATES: Record<TemplateKey, { label: string; description: string; defaults: { primaryColor: string; backgroundColor: string; textColor: string } }> = {
