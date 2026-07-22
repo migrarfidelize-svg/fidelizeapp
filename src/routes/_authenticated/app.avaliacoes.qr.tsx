@@ -36,7 +36,7 @@ const FORMATS: Record<FormatKey, { label: string; aspect: string; mm: { w: numbe
   story:        { label: "Story 9:16", aspect: "9 / 16", mm: { w: 108, h: 192 }, description: "Story/Reels", orientation: "portrait" },
 };
 
-type Destination = "fidelize" | "google" | "menu";
+type Destination = "fidelize" | "google";
 type TemplateKey = "glass" | "minimal" | "bold" | "editorial";
 
 const TEMPLATES: Record<TemplateKey, { label: string; description: string; defaults: { primaryColor: string; backgroundColor: string; textColor: string } }> = {
@@ -96,6 +96,11 @@ function ReviewQrPage() {
   const [backgroundColor, setBackgroundColor] = useState("#0d1117");
   const [textColor, setTextColor] = useState("#ffffff");
   const [qrDataUrl, setQrDataUrl] = useState("");
+  const [primaryLabel, setPrimaryLabel] = useState("Avalie nosso atendimento");
+  const [secondaryEnabled, setSecondaryEnabled] = useState(false);
+  const [secondaryUrl, setSecondaryUrl] = useState("");
+  const [secondaryLabel, setSecondaryLabel] = useState("Ver nosso cardápio");
+  const [secondaryQrDataUrl, setSecondaryQrDataUrl] = useState("");
   const [exporting, setExporting] = useState(false);
   const [displayMode, setDisplayMode] = useState(false);
   const [designs, setDesigns] = useState<SavedDesign[]>([]);
@@ -198,17 +203,24 @@ function ReviewQrPage() {
   const fidelizeUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/avaliar/${est.slug}` : "";
   const targetUrl = destination === "fidelize" ? fidelizeUrl : googleUrl.trim();
   const googleReady = destination === "google" && /^https?:\/\/(g\.page|maps\.app\.goo\.gl|search\.google\.com|www\.google\.com|goo\.gl)/i.test(targetUrl);
-  const menuReady = destination === "menu" && /^https?:\/\//i.test(targetUrl);
+  const secondaryReady = secondaryEnabled && /^https?:\/\//i.test(secondaryUrl.trim());
 
   useEffect(() => {
     if (!targetUrl) { setQrDataUrl(""); return; }
     QRCode.toDataURL(targetUrl, {
-      width: 1200,
-      margin: 1,
-      errorCorrectionLevel: "H",
+      width: 1200, margin: 1, errorCorrectionLevel: "H",
       color: { dark: "#111827", light: "#ffffff" },
     }).then(setQrDataUrl).catch(() => setQrDataUrl(""));
   }, [targetUrl]);
+
+  useEffect(() => {
+    const u = secondaryUrl.trim();
+    if (!secondaryEnabled || !u) { setSecondaryQrDataUrl(""); return; }
+    QRCode.toDataURL(u, {
+      width: 1200, margin: 1, errorCorrectionLevel: "H",
+      color: { dark: "#111827", light: "#ffffff" },
+    }).then(setSecondaryQrDataUrl).catch(() => setSecondaryQrDataUrl(""));
+  }, [secondaryEnabled, secondaryUrl]);
 
   const dims = FORMATS[format];
 
@@ -306,98 +318,127 @@ function ReviewQrPage() {
         {/* CONTROLS — glass panel */}
         <Card className="border-primary/15 bg-card/70 backdrop-blur-xl">
           <CardContent className="space-y-6 p-5">
-            {/* Destination */}
+            {/* Destination — Main QR */}
             <div className="space-y-3">
-              <Label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Destino do QR Code</Label>
+              <Label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">QR principal</Label>
 
-              {/* Pre-filled Fidelize review link */}
-              <div className={`rounded-lg border p-3 text-xs transition ${destination === "fidelize" ? "border-primary/50 bg-primary/5" : "border-border/60 bg-background/50"}`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 font-semibold text-foreground">
-                    <Star className="h-3.5 w-3.5 text-primary" /> Avaliação Fidelize
-                    <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary">padrão</span>
-                  </div>
-                  {destination !== "fidelize" && (
-                    <button type="button" onClick={() => setDestination("fidelize")} className="text-[11px] font-semibold text-primary hover:underline">Usar este</button>
-                  )}
-                </div>
-                <div className="mt-2 flex items-center gap-2">
-                  <code className="flex-1 truncate rounded bg-muted/60 px-2 py-1 text-primary">{fidelizeUrl}</code>
-                  <Button size="sm" variant="ghost" className="h-7 px-2" onClick={copyLink}><Copy className="h-3.5 w-3.5" /></Button>
-                </div>
+              {/* Fidelize / Google toggle */}
+              <div className="grid grid-cols-2 gap-1 rounded-xl border bg-background/60 p-1">
+                <button
+                  type="button"
+                  onClick={() => setDestination("fidelize")}
+                  className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition ${destination === "fidelize" ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  <Star className="h-3.5 w-3.5" /> Avaliação Fidelize
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDestination("google")}
+                  className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition ${destination === "google" ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  <GoogleG className="h-3.5 w-3.5" /> Google Reviews
+                </button>
               </div>
 
-              {/* Alternate destinations */}
-              <div className="space-y-2 rounded-lg border border-dashed border-border/60 p-3">
-                <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Ou use outro link</div>
-                <div className="grid grid-cols-2 gap-1 rounded-lg border bg-background/60 p-1">
-                  <button
-                    type="button"
-                    onClick={() => setDestination("google")}
-                    className={`flex items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-semibold transition ${destination === "google" ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
-                  >
-                    <GoogleG className="h-3.5 w-3.5" /> Google
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDestination("menu")}
-                    className={`flex items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-semibold transition ${destination === "menu" ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
-                  >
-                    <FileText className="h-3.5 w-3.5" /> Cardápio
-                  </button>
-                </div>
-
-                {destination === "google" && (
-                  <div className="space-y-2 pt-1">
-                    <Input
-                      value={googleUrl}
-                      onChange={(e) => setGoogleUrl(e.target.value)}
-                      placeholder="https://g.page/r/XXXXXX/review"
-                      className="text-xs"
-                    />
-                    {googleReady ? (
-                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-500">
-                        <CheckCircle2 className="h-3.5 w-3.5" /> Link Google válido
-                      </div>
-                    ) : googleUrl ? (
-                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-amber-500">
-                        <AlertTriangle className="h-3.5 w-3.5" /> Confira se é um link do Google (g.page, maps.app.goo.gl, google.com)
-                      </div>
-                    ) : (
-                      <div className="text-[11px] text-muted-foreground">Copie o link "Deixe uma avaliação" do seu Google Business.</div>
-                    )}
-                    <label className="mt-1 flex cursor-pointer items-center justify-between gap-3 rounded-lg border bg-background/50 p-2.5">
-                      <span className="flex items-center gap-2 text-xs font-medium">
-                        <GoogleG className="h-4 w-4" /> Mostrar logo do Google no cartaz
-                      </span>
-                      <Switch checked={showGoogleLogo} onCheckedChange={setShowGoogleLogo} />
-                    </label>
+              {destination === "fidelize" ? (
+                <div className="rounded-lg border bg-background/50 p-3 text-xs">
+                  <div className="text-muted-foreground">Link público (pré-definido)</div>
+                  <div className="mt-1 flex items-center gap-2">
+                    <code className="flex-1 truncate rounded bg-muted/60 px-2 py-1 text-primary">{fidelizeUrl}</code>
+                    <Button size="sm" variant="ghost" className="h-7 px-2" onClick={copyLink}><Copy className="h-3.5 w-3.5" /></Button>
                   </div>
-                )}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Input
+                    value={googleUrl}
+                    onChange={(e) => setGoogleUrl(e.target.value)}
+                    placeholder="https://g.page/r/XXXXXX/review"
+                    maxLength={500}
+                    className="text-xs"
+                  />
+                  {googleReady ? (
+                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-500">
+                      <CheckCircle2 className="h-3.5 w-3.5" /> Link Google válido
+                    </div>
+                  ) : googleUrl ? (
+                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-amber-500">
+                      <AlertTriangle className="h-3.5 w-3.5" /> Confira se é um link do Google (g.page, maps.app.goo.gl, google.com)
+                    </div>
+                  ) : (
+                    <div className="text-[11px] text-muted-foreground">Copie o link "Deixe uma avaliação" do seu Google Business.</div>
+                  )}
+                  <label className="mt-1 flex cursor-pointer items-center justify-between gap-3 rounded-lg border bg-background/50 p-2.5">
+                    <span className="flex items-center gap-2 text-xs font-medium">
+                      <GoogleG className="h-4 w-4" /> Mostrar logo do Google no cartaz
+                    </span>
+                    <Switch checked={showGoogleLogo} onCheckedChange={setShowGoogleLogo} />
+                  </label>
+                </div>
+              )}
 
-                {destination === "menu" && (
-                  <div className="space-y-2 pt-1">
+              {/* Editable label shown ON the poster below the main QR */}
+              <div className="space-y-1.5">
+                <Label className="text-[11px] font-medium text-muted-foreground">Texto no cartaz (QR principal)</Label>
+                <Input
+                  value={primaryLabel}
+                  onChange={(e) => setPrimaryLabel(e.target.value)}
+                  placeholder="Ex: Avalie nosso atendimento"
+                  maxLength={40}
+                  className="text-xs"
+                />
+              </div>
+            </div>
+
+            {/* Secondary QR — Cardápio / Loja / etc */}
+            <div className="space-y-3 rounded-xl border border-dashed border-border/60 p-3">
+              <label className="flex cursor-pointer items-start justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2 text-sm font-semibold">
+                    <FileText className="h-4 w-4 text-primary" /> Adicionar 2º QR Code
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">Cardápio, loja, WhatsApp, Instagram — qualquer link extra no mesmo cartaz.</div>
+                </div>
+                <Switch checked={secondaryEnabled} onCheckedChange={setSecondaryEnabled} />
+              </label>
+
+              {secondaryEnabled && (
+                <div className="space-y-2">
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] font-medium text-muted-foreground">Link do 2º QR</Label>
                     <Input
-                      value={googleUrl}
-                      onChange={(e) => setGoogleUrl(e.target.value)}
+                      value={secondaryUrl}
+                      onChange={(e) => setSecondaryUrl(e.target.value)}
                       placeholder="https://seurestaurante.com/cardapio"
+                      maxLength={500}
                       className="text-xs"
                     />
-                    {menuReady ? (
+                    {secondaryReady ? (
                       <div className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-500">
-                        <CheckCircle2 className="h-3.5 w-3.5" /> Link do cardápio válido
+                        <CheckCircle2 className="h-3.5 w-3.5" /> Link válido
                       </div>
-                    ) : googleUrl ? (
+                    ) : secondaryUrl ? (
                       <div className="flex items-center gap-1.5 text-[11px] font-medium text-amber-500">
                         <AlertTriangle className="h-3.5 w-3.5" /> O link precisa começar com https://
                       </div>
                     ) : (
-                      <div className="text-[11px] text-muted-foreground">Cole o link do seu cardápio digital (iFood, PDF, site próprio, etc.).</div>
+                      <div className="text-[11px] text-muted-foreground">Cole o link do cardápio digital, loja online, WhatsApp ou Instagram.</div>
                     )}
                   </div>
-                )}
-              </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] font-medium text-muted-foreground">Texto no cartaz (2º QR)</Label>
+                    <Input
+                      value={secondaryLabel}
+                      onChange={(e) => setSecondaryLabel(e.target.value)}
+                      placeholder="Ex: Ver nosso cardápio"
+                      maxLength={40}
+                      className="text-xs"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
+
 
 
             {/* Templates */}
@@ -709,6 +750,10 @@ function ReviewQrPage() {
                   destination={destination}
                   showGoogleLogo={showGoogleLogo}
                   nfcMode={nfcMode}
+                  primaryLabel={primaryLabel}
+                  secondaryEnabled={secondaryEnabled && !!secondaryQrDataUrl}
+                  secondaryQrDataUrl={secondaryQrDataUrl}
+                  secondaryLabel={secondaryLabel}
                 />
 
                 {/* Acrylic glare overlay (mounted inside so it inherits transform) */}
@@ -814,6 +859,10 @@ interface PosterProps {
   destination: Destination;
   showGoogleLogo: boolean;
   nfcMode: boolean;
+  primaryLabel: string;
+  secondaryEnabled: boolean;
+  secondaryQrDataUrl: string;
+  secondaryLabel: string;
 }
 
 const PosterCanvas = forwardRef<HTMLDivElement, PosterProps>(function PosterCanvas(props, ref) {
@@ -844,34 +893,76 @@ const PosterCanvas = forwardRef<HTMLDivElement, PosterProps>(function PosterCanv
 function PortraitBody(p: PosterProps) {
   return (
     <div className="flex h-full w-full flex-col items-center justify-between p-6 text-center">
-      <div className="space-y-3">
+      <div className="space-y-2">
         <BrandLogo url={p.logoUrl} name={p.establishmentName} primary={p.primaryColor} />
         <div className="text-sm font-bold" style={{ color: p.textColor }}>{p.establishmentName}</div>
         <Stars color={p.primaryColor} size={16} center />
         <h2 className="text-xl font-black leading-tight" style={{ color: p.textColor }}>{p.title}</h2>
         <p className="mx-auto max-w-[26ch] text-[11px] opacity-70" style={{ color: p.textColor }}>{p.subtitle}</p>
       </div>
-      {p.nfcMode ? (
+
+      {/* QR area */}
+      {p.secondaryEnabled ? (
+        <div className="flex w-full items-start justify-center gap-4">
+          <LabeledQr
+            qr={p.qrDataUrl}
+            label={p.primaryLabel}
+            primary={p.primaryColor}
+            text={p.textColor}
+            badge={p.destination === "google" && p.showGoogleLogo ? "google" : null}
+            size={104}
+          />
+          <LabeledQr
+            qr={p.secondaryQrDataUrl}
+            label={p.secondaryLabel}
+            primary={p.primaryColor}
+            text={p.textColor}
+            badge={null}
+            size={104}
+          />
+        </div>
+      ) : p.nfcMode ? (
         <div className="flex items-center justify-center gap-3">
-          <QrBlock qr={p.qrDataUrl} />
+          <LabeledQr qr={p.qrDataUrl} label={p.primaryLabel} primary={p.primaryColor} text={p.textColor} badge={p.destination === "google" && p.showGoogleLogo ? "google" : null} size={128} />
           <NfcBlock primary={p.primaryColor} />
         </div>
       ) : (
-        <QrBlock qr={p.qrDataUrl} />
+        <LabeledQr qr={p.qrDataUrl} label={p.primaryLabel} primary={p.primaryColor} text={p.textColor} badge={p.destination === "google" && p.showGoogleLogo ? "google" : null} size={128} />
       )}
+
       <div className="space-y-2">
         <div className="text-xs font-bold uppercase tracking-widest" style={{ color: p.primaryColor }}>
           {p.nfcMode ? "Aproxime o celular" : p.ctaNearQR}
         </div>
         <div className="text-[10px] opacity-70" style={{ color: p.textColor }}>{p.ctaFooter}</div>
         <div className="flex items-center justify-center gap-2">
-          {p.destination === "google" && p.showGoogleLogo && <GoogleBadge />}
           {p.nfcMode && <NfcBadge primary={p.primaryColor} />}
         </div>
       </div>
     </div>
   );
 }
+
+function LabeledQr({ qr, label, primary, text, badge, size }: { qr: string; label: string; primary: string; text: string; badge: "google" | null; size: number }) {
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      <div className="rounded-xl bg-white p-2.5 shadow-lg">
+        {qr ? (
+          <img src={qr} alt={label} className="block" style={{ width: size, height: size }} />
+        ) : (
+          <div className="grid place-items-center text-[10px] text-slate-400" style={{ width: size, height: size }}>gerando…</div>
+        )}
+      </div>
+      {label && (
+        <div className="max-w-[16ch] text-[10px] font-bold leading-tight" style={{ color: text }}>
+          {label}
+        </div>
+      )}
+      {badge === "google" && <GoogleBadge />}
+    </div>
+  );
+}
+
 
 function QrBlock({ qr }: { qr: string }) {
   return (
