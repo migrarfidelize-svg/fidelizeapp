@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { getMyHistory } from "@/lib/my-wallet.functions";
-import { Stamp, RotateCcw, Trophy } from "lucide-react";
+import { Stamp, RotateCcw, Trophy, Award } from "lucide-react";
+import * as Icons from "lucide-react";
 import { formatDate } from "@/lib/format";
 import { EmptyWalletState, WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
 import { useState } from "react";
