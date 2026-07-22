@@ -487,7 +487,63 @@ function ReviewQrPage() {
               </div>
             </div>
 
+            {/* Saved designs */}
+            <div className="space-y-2 rounded-xl border border-primary/20 bg-primary/5 p-3">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-primary">
+                <Palette className="h-3.5 w-3.5" /> Meus designs salvos
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  value={designName}
+                  onChange={(e) => setDesignName(e.target.value)}
+                  placeholder="Nome do design (ex: Balcão azul)"
+                  className="h-9 text-xs"
+                  maxLength={40}
+                />
+                <Button onClick={saveCurrentDesign} size="sm" className="h-9 shrink-0">
+                  <Save className="mr-1.5 h-3.5 w-3.5" /> Salvar
+                </Button>
+              </div>
+              {designs.length > 0 ? (
+                <div className="max-h-40 space-y-1 overflow-y-auto pr-1">
+                  {designs.map((d) => (
+                    <div key={d.id} className="flex items-center gap-2 rounded-lg border bg-background/70 p-1.5">
+                      <button
+                        type="button"
+                        onClick={() => loadDesign(d)}
+                        className="flex flex-1 items-center gap-2 rounded px-1.5 py-0.5 text-left hover:bg-primary/10"
+                      >
+                        <div
+                          className="h-6 w-6 shrink-0 rounded-md ring-1 ring-border"
+                          style={{ background: `linear-gradient(135deg, ${d.data.backgroundColor} 50%, ${d.data.primaryColor} 50%)` }}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-xs font-semibold">{d.name}</div>
+                          <div className="text-[10px] text-muted-foreground">
+                            {TEMPLATES[d.data.template].label} · {FORMATS[d.data.format].label}
+                          </div>
+                        </div>
+                      </button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                        onClick={() => deleteDesign(d.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-[11px] text-muted-foreground">
+                  Nenhum design salvo ainda. Ajuste as cores/textos e clique em Salvar para guardar variações.
+                </div>
+              )}
+            </div>
+
             {/* Actions */}
+
             <div className="grid grid-cols-2 gap-2 pt-1">
               <Button onClick={exportPng} disabled={exporting || !targetUrl}>
                 <FileImage className="mr-2 h-4 w-4" /> Baixar PNG
