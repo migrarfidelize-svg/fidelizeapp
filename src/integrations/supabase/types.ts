@@ -1465,6 +1465,82 @@ export type Database = {
           },
         ]
       }
+      merchant_message_reads: {
+        Row: {
+          message_id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          message_id: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          message_id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_message_reads_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      merchant_messages: {
+        Row: {
+          author_id: string | null
+          body: string
+          created_at: string
+          establishment_id: string
+          id: string
+          image_url: string | null
+          kind: string
+          link_url: string | null
+          published_at: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          body: string
+          created_at?: string
+          establishment_id: string
+          id?: string
+          image_url?: string | null
+          kind?: string
+          link_url?: string | null
+          published_at?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string
+          created_at?: string
+          establishment_id?: string
+          id?: string
+          image_url?: string | null
+          kind?: string
+          link_url?: string | null
+          published_at?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_messages_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_templates: {
         Row: {
           active: boolean
