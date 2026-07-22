@@ -633,73 +633,171 @@ function QRCodes() {
   if (!est) return <LoadingSkeleton variant="page" />;
 
   return (
-    <div className="space-y-6">
-      <PageHero
-        icon={HeroIcon}
-        eyebrow={"Divulgação · Materiais"}
-        title={"QR & Materiais gráficos"}
-        subtitle={"Gere posters, artes de balcão e criativos prontos para redes sociais."}
-      />
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="text-xs uppercase tracking-widest text-muted-foreground">Divulgação</div>
-          <h1 className="font-display text-3xl font-bold">Divulgue seu programa de fidelidade</h1>
-          <p className="text-sm text-muted-foreground mt-1 max-w-2xl">Crie materiais personalizados com QR Code — com sangria para impressão, validação de leitura e variações salvas.</p>
-        </div>
-        <div className="flex items-center gap-1 rounded-lg border bg-card p-1">
-          <Button size="sm" variant="ghost" onClick={undo} disabled={!canUndo} title="Desfazer (Ctrl+Z)"><Undo2 className="h-4 w-4" /></Button>
-          <Button size="sm" variant="ghost" onClick={redo} disabled={!canRedo} title="Refazer (Ctrl+Shift+Z)"><Redo2 className="h-4 w-4" /></Button>
-          <span className="text-[11px] text-muted-foreground px-2">{historyRef.current.past.length} passos</span>
-        </div>
-      </div>
-
-
-
-
-
-      {/* Format picker */}
-      <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
-        {(Object.keys(FORMATS) as PromoFormat[]).map((k) => {
-          const f = FORMATS[k];
-          return (
-            <button key={k} onClick={() => setFormat(k)} className={`shrink-0 rounded-xl border px-4 py-3 text-left transition ${format === k ? "border-primary bg-primary-soft text-primary" : "border-border hover:border-primary/40"}`}>
-              <div className="text-sm font-semibold flex items-center gap-2">{f.label}{f.print && <span className="text-[10px] rounded bg-primary/10 text-primary px-1.5 py-0.5 font-medium">PRINT</span>}</div>
-              <div className="text-[11px] text-muted-foreground">{f.mm ? `${f.mm.w}×${f.mm.h}mm · ` : `${f.w}×${f.h}px · `}{f.description}</div>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Scannability banner */}
-      <div className={`rounded-lg border p-3 flex items-start gap-3 text-sm ${qrOk && !cardBlend ? "border-emerald-200 bg-emerald-50 text-emerald-900" : qrWarn || cardBlend ? "border-amber-200 bg-amber-50 text-amber-900" : "border-red-200 bg-red-50 text-red-900"}`}>
-        {qrOk && !cardBlend ? <CheckCircle2 className="h-4 w-4 mt-0.5" /> : <AlertTriangle className="h-4 w-4 mt-0.5" />}
-        <div className="flex-1 space-y-1">
-          <div>
-            <strong>Escaneabilidade: </strong>
-            {qrOk && <>Ótima ({qrContrast.toFixed(1)}:1 de contraste do QR). </>}
-            {qrWarn && <>Aceitável ({qrContrast.toFixed(1)}:1) — no limite para impressão pequena. </>}
-            {qrBad && <>Baixa ({qrContrast.toFixed(1)}:1) — leitura pode falhar. </>}
-            {cardBlend && <>O cartão branco do QR está se misturando com o fundo ({cardVsBgContrast.toFixed(2)}:1) — escureça o fundo ou aumente a camada de proteção.</>}
+    <div className="qrstudio relative min-h-[calc(100vh-4rem)] -mx-4 -my-4 md:-mx-6 md:-my-6 bg-gradient-to-br from-[hsl(var(--background))] via-[hsl(var(--primary-soft)/0.4)] to-[hsl(var(--background))]">
+      {/* ==== TOP BAR ==== */}
+      <div className="sticky top-0 z-30 backdrop-blur-xl bg-background/70 border-b border-border/50">
+        <div className="flex items-center gap-3 px-4 md:px-6 py-3">
+          <div className="grid h-10 w-10 place-items-center rounded-xl gradient-brand text-primary-foreground shadow-lg shadow-primary/20">
+            <HeroIcon className="h-5 w-5" />
           </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Studio · Divulgação</div>
+            <h1 className="font-display text-lg md:text-xl font-bold leading-tight truncate">QR & Materiais gráficos</h1>
+          </div>
+          {/* Format switcher — glass pill */}
+          <div className="hidden md:flex items-center gap-1 rounded-full border border-border/60 bg-card/70 backdrop-blur p-1 shadow-sm">
+            {(Object.keys(FORMATS) as PromoFormat[]).map((k) => {
+              const f = FORMATS[k];
+              const active = format === k;
+              return (
+                <button
+                  key={k}
+                  onClick={() => setFormat(k)}
+                  className={`relative rounded-full px-3 py-1.5 text-xs font-medium transition ${active ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
+                  title={`${f.mm ? `${f.mm.w}×${f.mm.h}mm` : `${f.w}×${f.h}px`} · ${f.description}`}
+                >
+                  {f.label}
+                  {f.print && active && <span className="ml-1 text-[9px] opacity-70">PRINT</span>}
+                </button>
+              );
+            })}
+          </div>
+          {/* Undo/Redo */}
+          <div className="flex items-center gap-1 rounded-lg border border-border/60 bg-card/70 p-1">
+            <Button size="sm" variant="ghost" onClick={undo} disabled={!canUndo} title="Desfazer (Ctrl+Z)" className="h-7 w-7 p-0"><Undo2 className="h-3.5 w-3.5" /></Button>
+            <Button size="sm" variant="ghost" onClick={redo} disabled={!canRedo} title="Refazer (Ctrl+Shift+Z)" className="h-7 w-7 p-0"><Redo2 className="h-3.5 w-3.5" /></Button>
+          </div>
+        </div>
+
+        {/* Mobile format switcher */}
+        <div className="md:hidden flex gap-1.5 overflow-x-auto px-4 pb-3 -mt-1">
+          {(Object.keys(FORMATS) as PromoFormat[]).map((k) => {
+            const f = FORMATS[k];
+            const active = format === k;
+            return (
+              <button key={k} onClick={() => setFormat(k)} className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium border transition ${active ? "bg-primary text-primary-foreground border-primary" : "border-border/60 text-muted-foreground"}`}>
+                {f.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Scannability strip — inline compact */}
+        <div className={`px-4 md:px-6 py-2 border-t border-border/40 text-xs flex items-center gap-2 ${qrOk && !cardBlend ? "bg-emerald-500/5 text-emerald-700 dark:text-emerald-400" : qrWarn || cardBlend ? "bg-amber-500/5 text-amber-700 dark:text-amber-400" : "bg-red-500/5 text-red-700 dark:text-red-400"}`}>
+          {qrOk && !cardBlend ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> : <AlertTriangle className="h-3.5 w-3.5 shrink-0" />}
+          <span className="truncate">
+            <strong>Escaneabilidade:</strong> {qrOk && <>Ótima · {qrContrast.toFixed(1)}:1</>}
+            {qrWarn && <>Aceitável · {qrContrast.toFixed(1)}:1 (limite)</>}
+            {qrBad && <>Baixa · {qrContrast.toFixed(1)}:1 — leitura pode falhar</>}
+            {cardBlend && <> · cartão QR se mistura ao fundo ({cardVsBgContrast.toFixed(2)}:1)</>}
+          </span>
           {(qrWarn || qrBad) && (
-            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={autoFixQrContrast}>
-              <Wand2 className="mr-1 h-3 w-3" />Corrigir automaticamente
+            <Button size="sm" variant="outline" className="ml-auto h-6 text-[11px] shrink-0" onClick={autoFixQrContrast}>
+              <Wand2 className="mr-1 h-3 w-3" />Auto-corrigir
             </Button>
           )}
         </div>
       </div>
 
+      {/* ==== STUDIO GRID ==== */}
+      <div className="grid lg:grid-cols-[1fr_400px] gap-0">
+        {/* CANVAS */}
+        <div className="relative">
+          <div
+            ref={previewWrapRef}
+            className="relative overflow-hidden"
+            style={{
+              height: "min(calc(100vh - 220px), 820px)",
+              backgroundImage:
+                "radial-gradient(circle at 1px 1px, hsl(var(--foreground) / 0.08) 1px, transparent 0)",
+              backgroundSize: "22px 22px",
+            }}
+          >
+            <div className="absolute inset-0 grid place-items-center p-6">
+              <div className="relative" style={{ width: dims.w * previewScale, height: dims.h * previewScale }}>
+                {/* subtle glow behind canvas */}
+                <div className="absolute -inset-6 rounded-3xl bg-primary/10 blur-2xl pointer-events-none" aria-hidden />
+                <div className="relative rounded-lg shadow-2xl shadow-primary/20 ring-1 ring-border/40 overflow-hidden bg-white">
+                  <div style={{ transform: `scale(${previewScale})`, transformOrigin: "top left", width: dims.w, height: dims.h }}>
+                    <PromoPoster ref={posterRef} config={config} />
+                  </div>
+                </div>
+              </div>
+            </div>
 
-      <div className="grid lg:grid-cols-[380px_1fr] gap-6">
-        {/* EDITOR */}
-        <Card>
-          <CardContent className="p-5">
+            {/* dimension chip */}
+            <div className="absolute top-3 left-3 rounded-md bg-background/80 backdrop-blur px-2.5 py-1 text-[11px] font-mono text-muted-foreground border border-border/50">
+              {dims.mm ? `${dims.mm.w}×${dims.mm.h}mm` : `${dims.w}×${dims.h}px`}
+              {dims.bleed > 0 && <> · bleed 3mm</>}
+            </div>
+
+            {/* history steps chip */}
+            <div className="absolute top-3 right-3 rounded-md bg-background/80 backdrop-blur px-2.5 py-1 text-[11px] font-mono text-muted-foreground border border-border/50">
+              {historyRef.current.past.length} passos
+            </div>
+
+            {/* FLOATING EXPORT DOCK */}
+            <div className="absolute left-1/2 -translate-x-1/2 bottom-4 flex items-center gap-1 rounded-2xl border border-border/60 bg-card/85 backdrop-blur-xl p-1.5 shadow-2xl shadow-primary/10">
+              <Button size="sm" onClick={exportPNG} disabled={exporting} className="gradient-brand text-primary-foreground h-9 px-3 rounded-xl">
+                {exporting ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <FileImage className="mr-1.5 h-4 w-4" />}PNG
+              </Button>
+              <Button size="sm" onClick={exportJPG} disabled={exporting} variant="ghost" className="h-9 px-2.5 rounded-xl"><FileImage className="mr-1 h-3.5 w-3.5" />JPG</Button>
+              <Button size="sm" onClick={exportPDF} disabled={exporting} variant="ghost" className="h-9 px-2.5 rounded-xl"><FileText className="mr-1 h-3.5 w-3.5" />PDF{dims.mm ? " mm" : ""}</Button>
+              <div className="w-px h-6 bg-border mx-0.5" />
+              <Button size="sm" onClick={printArt} disabled={exporting} variant="ghost" className="h-9 w-9 p-0 rounded-xl" title="Imprimir"><Printer className="h-4 w-4" /></Button>
+              <Button size="sm" onClick={shareArt} disabled={exporting} variant="ghost" className="h-9 w-9 p-0 rounded-xl" title="Compartilhar"><Share2 className="h-4 w-4" /></Button>
+              <Button size="sm" onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success("Link copiado"); }} variant="ghost" className="h-9 w-9 p-0 rounded-xl" title="Copiar link público"><Copy className="h-4 w-4" /></Button>
+            </div>
+          </div>
+
+          {/* VARIATIONS FILMSTRIP */}
+          <div className="border-t border-border/40 bg-card/40 backdrop-blur px-4 md:px-6 py-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Layers className="h-3.5 w-3.5 text-primary" />
+              <h2 className="text-xs font-semibold uppercase tracking-wider">Variações</h2>
+              <span className="text-[11px] text-muted-foreground">— salve e alterne rapidamente</span>
+              <div className="ml-auto flex items-center gap-1.5">
+                <Input placeholder="Nome da versão" value={variationName} onChange={(e) => setVariationName(e.target.value)} className="h-7 text-xs w-40" />
+                <Button size="sm" onClick={saveVariation} className="h-7 text-xs gradient-brand text-primary-foreground"><Save className="mr-1 h-3 w-3" />Salvar</Button>
+                <Button size="sm" onClick={exportAllVariations} disabled={exporting || !variations.length} variant="outline" className="h-7 text-xs">
+                  {exporting ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <Download className="mr-1 h-3 w-3" />}Todas PDF
+                </Button>
+              </div>
+            </div>
+            {variations.length === 0 ? (
+              <p className="text-xs text-muted-foreground py-4 text-center border border-dashed rounded-lg">Nenhuma variação salva. Ajuste o design e clique em Salvar para criar um preset.</p>
+            ) : (
+              <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+                {variations.map((v) => (
+                  <div key={v.id} className="group relative shrink-0 w-44 rounded-xl border border-border/60 bg-card p-2.5 hover:border-primary/60 hover:shadow-lg transition">
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <div className="h-5 w-5 rounded" style={{ background: v.state.primaryColor, border: "1px solid rgba(0,0,0,0.1)" }} />
+                      <div className="h-5 w-5 rounded" style={{ background: v.state.accentColor, border: "1px solid rgba(0,0,0,0.1)" }} />
+                      <span className="ml-auto text-[9px] uppercase tracking-wider text-muted-foreground">{FORMATS[v.state.format].label}</span>
+                    </div>
+                    <div className="text-xs font-medium truncate">{v.name}</div>
+                    <div className="text-[10px] text-muted-foreground line-clamp-1">{v.state.title}</div>
+                    <div className="flex gap-1 mt-2">
+                      <Button size="sm" variant="outline" className="flex-1 h-6 text-[10px]" onClick={() => loadVariation(v.id)}>Carregar</Button>
+                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => renameVariation(v.id)} title="Renomear"><Settings2 className="h-3 w-3" /></Button>
+                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => deleteVariation(v.id)} title="Excluir"><Trash2 className="h-3 w-3 text-red-500" /></Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* SIDE PANEL — CONTROLS */}
+        <div className="border-l border-border/50 bg-card/50 backdrop-blur-sm overflow-y-auto" style={{ maxHeight: "calc(100vh - 132px)" }}>
+          <div className="p-5">
             <Tabs defaultValue="content">
-              <TabsList className="grid grid-cols-4">
-                <TabsTrigger value="content"><Sparkles className="mr-1 h-3 w-3" />Conteúdo</TabsTrigger>
-                <TabsTrigger value="style"><Palette className="mr-1 h-3 w-3" />Estilo</TabsTrigger>
-                <TabsTrigger value="bg"><ImageIcon className="mr-1 h-3 w-3" />Fundo</TabsTrigger>
-                <TabsTrigger value="advanced"><Settings2 className="mr-1 h-3 w-3" />Mais</TabsTrigger>
+              <TabsList className="grid grid-cols-4 w-full bg-muted/40">
+                <TabsTrigger value="content" className="text-xs"><Sparkles className="mr-1 h-3 w-3" />Conteúdo</TabsTrigger>
+                <TabsTrigger value="style" className="text-xs"><Palette className="mr-1 h-3 w-3" />Estilo</TabsTrigger>
+                <TabsTrigger value="bg" className="text-xs"><ImageIcon className="mr-1 h-3 w-3" />Fundo</TabsTrigger>
+                <TabsTrigger value="advanced" className="text-xs"><Settings2 className="mr-1 h-3 w-3" />Mais</TabsTrigger>
               </TabsList>
 
               <TabsContent value="content" className="space-y-4 pt-4">
@@ -830,7 +928,6 @@ function QRCodes() {
                   <p className="text-[11px] text-muted-foreground">0% = quadrado, 30% = super arredondado. Nos formatos de impressão, o arredondamento aparece dentro da linha de corte.</p>
                 </div>
 
-
                 <Row label="Mostrar guias de área segura" hint="Só na prévia — mostra até onde o conteúdo pode chegar">
                   <Switch checked={showSafeArea} onCheckedChange={setShowSafeArea} />
                 </Row>
@@ -851,83 +948,9 @@ function QRCodes() {
                 </div>
               </TabsContent>
             </Tabs>
-          </CardContent>
-        </Card>
-
-        {/* PREVIEW */}
-        <Card>
-          <CardContent className="p-0">
-            <div ref={previewWrapRef} className="relative bg-[linear-gradient(45deg,#f8f9fb_25%,transparent_25%),linear-gradient(-45deg,#f8f9fb_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#f8f9fb_75%),linear-gradient(-45deg,transparent_75%,#f8f9fb_75%)] bg-[length:24px_24px] bg-[position:0_0,0_12px,12px_-12px,-12px_0] rounded-t-lg overflow-hidden" style={{ height: "min(70vh, 720px)" }}>
-              <div className="absolute inset-0 grid place-items-center">
-                <div style={{ width: dims.w * previewScale, height: dims.h * previewScale }}>
-                  <div style={{ transform: `scale(${previewScale})`, transformOrigin: "top left", width: dims.w, height: dims.h }}>
-                    <PromoPoster ref={posterRef} config={config} />
-                  </div>
-                </div>
-              </div>
-              <div className="absolute top-3 right-3 rounded-md bg-background/80 backdrop-blur px-2 py-1 text-[11px] text-muted-foreground border">
-                {dims.mm ? `${dims.mm.w}×${dims.mm.h}mm` : `${dims.w}×${dims.h}px`}
-                {dims.bleed > 0 && <> · sangria 3mm</>}
-              </div>
-            </div>
-            <div className="p-4 border-t flex flex-wrap gap-2">
-              <Button onClick={exportPNG} disabled={exporting} className="gradient-brand text-primary-foreground">
-                {exporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileImage className="mr-2 h-4 w-4" />}PNG
-              </Button>
-              <Button onClick={exportJPG} disabled={exporting} variant="outline"><FileImage className="mr-2 h-4 w-4" />JPG</Button>
-              <Button onClick={exportPDF} disabled={exporting} variant="outline"><FileText className="mr-2 h-4 w-4" />PDF{dims.mm ? " (mm)" : ""}</Button>
-              <Button onClick={printArt} disabled={exporting} variant="outline"><Printer className="mr-2 h-4 w-4" />Imprimir</Button>
-              <Button onClick={shareArt} disabled={exporting} variant="outline"><Share2 className="mr-2 h-4 w-4" />Compartilhar</Button>
-              <Button onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success("Link copiado"); }} variant="ghost"><Copy className="mr-2 h-4 w-4" />Copiar link</Button>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
-
-      {/* VARIATIONS */}
-      <Card>
-        <CardContent className="p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Layers className="h-4 w-4 text-primary" />
-            <h2 className="font-semibold">Minhas variações</h2>
-            <span className="text-xs text-muted-foreground">— salve versões do editor e alterne rapidamente</span>
-          </div>
-          <div className="flex flex-wrap gap-2 mb-4">
-            <Input placeholder="Nome (ex: Campanha de verão)" value={variationName} onChange={(e) => setVariationName(e.target.value)} className="max-w-xs" />
-            <Button onClick={saveVariation} className="gradient-brand text-primary-foreground"><Save className="mr-2 h-4 w-4" />Salvar atual</Button>
-            <Button onClick={exportAllVariations} disabled={exporting || !variations.length} variant="outline">
-              {exporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-              Exportar todas em PDF
-            </Button>
-          </div>
-          {variations.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhuma variação salva ainda.</p>
-          ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {variations.map((v) => (
-                <div key={v.id} className="rounded-lg border p-3 flex flex-col gap-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="font-medium truncate">{v.name}</div>
-                      <div className="text-[11px] text-muted-foreground">{FORMATS[v.state.format].label} · {new Date(v.savedAt).toLocaleString("pt-BR")}</div>
-                    </div>
-                    <div className="flex gap-1 shrink-0">
-                      <div className="h-6 w-6 rounded" style={{ background: v.state.primaryColor, border: "1px solid rgba(0,0,0,0.1)" }} />
-                      <div className="h-6 w-6 rounded" style={{ background: v.state.accentColor, border: "1px solid rgba(0,0,0,0.1)" }} />
-                    </div>
-                  </div>
-                  <div className="text-xs text-muted-foreground line-clamp-2">{v.state.title}</div>
-                  <div className="flex gap-1 mt-1">
-                    <Button size="sm" variant="outline" className="flex-1" onClick={() => loadVariation(v.id)}>Carregar</Button>
-                    <Button size="sm" variant="ghost" onClick={() => renameVariation(v.id)}>Renomear</Button>
-                    <Button size="sm" variant="ghost" onClick={() => deleteVariation(v.id)}><Trash2 className="h-3 w-3 text-red-500" /></Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       {/* Hidden batch render node */}
       {batchNode && (
