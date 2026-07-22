@@ -613,3 +613,42 @@ function WifiFields({ url, onChange }: { url: string; onChange: (ssid: string, p
     </div>
   );
 }
+
+function PixFields({ url, onChange }: { url: string; onChange: (type: PixKeyType, key: string, name: string) => void }) {
+  const parsed = decodePix(url);
+  return (
+    <div className="grid gap-2 md:grid-cols-3">
+      <div>
+        <Label className="text-xs">Tipo de chave</Label>
+        <Select value={parsed.type} onValueChange={(v) => onChange(v as PixKeyType, parsed.key, parsed.name)}>
+          <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="cpf">CPF</SelectItem>
+            <SelectItem value="cnpj">CNPJ</SelectItem>
+            <SelectItem value="email">E-mail</SelectItem>
+            <SelectItem value="telefone">Telefone</SelectItem>
+            <SelectItem value="aleatoria">Aleatória</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <Label className="text-xs">Chave Pix</Label>
+        <Input
+          placeholder={parsed.type === "email" ? "pix@dominio.com" : parsed.type === "telefone" ? "+5511999999999" : "chave pix"}
+          value={parsed.key}
+          onChange={(e) => onChange(parsed.type, e.target.value, parsed.name)}
+          maxLength={140}
+        />
+      </div>
+      <div>
+        <Label className="text-xs">Beneficiário (opcional)</Label>
+        <Input
+          placeholder="Nome exibido"
+          value={parsed.name}
+          onChange={(e) => onChange(parsed.type, parsed.key, e.target.value)}
+          maxLength={80}
+        />
+      </div>
+    </div>
+  );
+}
