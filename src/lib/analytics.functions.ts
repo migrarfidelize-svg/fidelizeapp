@@ -235,7 +235,7 @@ export const getRecapAnalytics = createServerFn({ method: "POST" })
     })).sort((a, b) => b.stamps - a.stamps);
 
     // ---------- Top campanhas por resgates ----------
-    const campaignName = new Map(campaigns.map((c) => [c.id, c.title]));
+    const campaignName = new Map(campaigns.map((c) => [c.id, c.reward_title || c.name]));
     const redByCampaign = new Map<string, number>();
     rewards.forEach((r) => {
       if (r.campaign_id) redByCampaign.set(r.campaign_id, (redByCampaign.get(r.campaign_id) ?? 0) + 1);
