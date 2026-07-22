@@ -605,3 +605,227 @@ function OrphanCustomers({ establishments }: { establishments: Array<{ id: strin
     </Card>
   );
 }
+
+// ============================================================================
+// UserWalletDialog — visualização admin da carteira completa de um cliente
+// ============================================================================
+
+const TIER_META: Record<string, { label: string; tone: string }> = {
+  bronze:   { label: "Bronze",   tone: "border-amber-700/40 text-amber-700 bg-amber-500/10" },
+  prata:    { label: "Prata",    tone: "border-slate-400/40 text-slate-600 bg-slate-400/10" },
+  ouro:     { label: "Ouro",     tone: "border-yellow-500/40 text-yellow-600 bg-yellow-500/10" },
+  diamante: { label: "Diamante", tone: "border-cyan-500/40 text-cyan-600 bg-cyan-500/10" },
+};
+
+function UserWalletDialog({
+  target,
+  onClose,
+}: {
+  target: null | { id: string; name: string | null; email: string };
+  onClose: () => void;
+}) {
+  const walletFn = useServerFn(adminGetUserWallet);
+  const { data, isFetching, error } = useQuery({
+    queryKey: ["admin-user-wallet", target?.id],
+    queryFn: () => walletFn({ data: { user_id: target!.id } }),
+    enabled: !!target,
+    staleTime: 15_000,
+  });
+
+  return (
+    <Dialog open={!!target} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Wallet className="h-5 w-5 text-primary" /> Carteira do cliente
+          </DialogTitle>
+          <DialogDescription>
+            Visão consolidada dos estabelecimentos vinculados e progresso de carimbos.
+          </DialogDescription>
+        </DialogHeader>
+
+        {target && (
+          <div className="rounded-xl border p-3 flex items-center gap-3">
+            <div className="grid h-10 w-10 place-items-center rounded-full bg-primary-soft text-primary text-sm font-semibold">
+              {initialsOf(target.name, target.email)}
+            </div>
+            <div className="min-w-0">
+              <div className="font-medium truncate">{target.name || target.email || target.id.slice(0, 8)}</div>
+              <div className="text-xs text-muted-foreground truncate">{target.email || "—"}</div>
+            </div>
+          </div>
+        )}
+
+        {isFetching && (
+          <div className="py-10 text-center text-muted-foreground text-sm">
+            <Loader2 className="inline h-4 w-4 animate-spin mr-2" /> Carregando carteira…
+          </div>
+        )}
+        {!!error && (
+          <div className="rounded-lg border border-destructive/40 bg-destructive/10 text-destructive text-sm p-3">
+            {error instanceof Error ? error.message : "Não foi possível carregar a carteira."}
+          </div>
+        )}
+
+        {data && !isFetching && (
+          <div className="space-y-5">
+            {(() => {
+              const totalStamps = data.items.reduce((a, i) => a + (i.totalStamps ?? 0), 0);
+              const totalVisits = data.items.reduce((a, i) => a + (i.customer.visitsCount ?? 0), 0);
+              return (
+                <div className="grid grid-cols-3 gap-2">
+                  <StatBox label="Estabelecimentos" value={String(data.items.length)} />
+                  <StatBox label="Total de visitas" value={String(totalVisits)} />
+                  <StatBox label="Carimbos acumulados" value={String(totalStamps)} />
+                </div>
+              );
+            })()}
+
+            {data.items.length === 0 && (
+              <div className="rounded-xl border p-6 text-center text-sm text-muted-foreground">
+                Este usuário ainda não possui carteira em nenhum estabelecimento.
+              </div>
+            )}
+
+            {data.items.map((item) => {
+              const est = item.establishment as {
+                id: string; slug: string; name: string; logo_url: string | null;
+                primary_color: string | null; active: boolean;
+              };
+              const card = item.card;
+              const req = card ? (card.campaign as { stamps_required: number }).stamps_required || 1 : 1;
+              const pct = card ? Math.min(100, Math.round((card.stamps / req) * 100)) : 0;
+              const tier = item.customer.tier ? TIER_META[item.customer.tier] : null;
+              return (
+                <div key={item.customer.id} className="rounded-2xl border p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {est.logo_url ? (
+                        <img src={est.logo_url} alt="" className="h-10 w-10 rounded-lg object-cover border" />
+                      ) : (
+                        <div
+                          className="h-10 w-10 rounded-lg grid place-items-center text-primary-foreground text-xs font-black"
+                          style={{ background: est.primary_color || "hsl(var(--primary))" }}
+                        >
+                          {est.name.slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <div className="font-semibold truncate">{est.name}</div>
+                        <div className="text-xs text-muted-foreground truncate">
+                          Cliente #{item.customer.code ?? "—"}
+                          {item.customer.lastVisitAt
+                            ? ` · última visita ${new Date(item.customer.lastVisitAt).toLocaleDateString("pt-BR")}`
+                            : " · sem visitas"}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      {!est.active && (
+                        <Badge variant="outline" className="border-destructive/40 text-destructive bg-destructive/10">
+                          Estab. inativo
+                        </Badge>
+                      )}
+                      {tier && (
+                        <Badge variant="outline" className={tier.tone}>{tier.label}</Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  {card ? (
+                    <>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium truncate">
+                          {(card.campaign as { name: string }).name}
+                        </span>
+                        <span className="tabular-nums text-muted-foreground">
+                          {card.stamps} / {req} carimbos · ciclo {card.cycle ?? 0}
+                        </span>
+                      </div>
+                      <div className="h-2 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{
+                            width: `${pct}%`,
+                            background: est.primary_color || "hsl(var(--primary))",
+                          }}
+                          aria-label={`Progresso ${pct}%`}
+                        />
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Recompensa: <span className="text-foreground">
+                          {(card.campaign as { reward_title: string }).reward_title}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-xs text-muted-foreground italic">Sem cartão ativo neste estabelecimento.</div>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-3 pt-1 text-xs text-muted-foreground">
+                    <span>Visitas: <strong className="text-foreground">{item.customer.visitsCount ?? 0}</strong></span>
+                    <span>Total carimbos: <strong className="text-foreground">{item.totalStamps ?? 0}</strong></span>
+                    {item.cardsCount > 1 && (
+                      <span>{item.cardsCount} cartões nessa loja</span>
+                    )}
+                    {item.customer.token && (
+                      <Link
+                        to="/c/$token"
+                        params={{ token: item.customer.token }}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline text-primary"
+                      >
+                        Abrir cartão →
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+
+            {data.recentStamps.length > 0 && (
+              <div className="rounded-2xl border p-4">
+                <div className="text-sm font-semibold mb-2 flex items-center gap-2">
+                  <Stamp className="h-4 w-4 text-primary" /> Últimos carimbos
+                </div>
+                <ul className="space-y-1.5 text-xs">
+                  {data.recentStamps.slice(0, 25).map((s) => {
+                    const est = s.establishment as { name?: string } | null;
+                    return (
+                      <li key={s.id} className="flex items-center justify-between gap-2 py-1 border-b last:border-b-0">
+                        <div className="min-w-0 truncate">
+                          <span className="text-foreground font-medium">{est?.name ?? "—"}</span>
+                          {s.note && <span className="text-muted-foreground"> · {s.note}</span>}
+                          {s.revertedAt && (
+                            <span className="ml-1 text-destructive">(revertido)</span>
+                          )}
+                        </div>
+                        <span className="text-muted-foreground tabular-nums shrink-0">
+                          {new Date(s.createdAt).toLocaleString("pt-BR")}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Fechar</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function StatBox({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border p-3">
+      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="font-display text-2xl font-black text-foreground">{value}</div>
+    </div>
+  );
+}
