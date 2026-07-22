@@ -120,7 +120,7 @@ const BADGE_KEYS = Object.keys(BADGE_CATALOG) as BadgeKey[];
 type BadgeInstance = { key: BadgeKey; x: number; y: number };
 const DEFAULT_BADGE_POS: Record<BadgeKey, { x: number; y: number }> = {
   stars5:   { x: 22, y: 46 },
-  wifi:     { x: 78, y: 46 },
+  wifi:     { x: 50, y: 18 },
   pix:      { x: 22, y: 72 },
   card:     { x: 78, y: 72 },
   pet:      { x: 22, y: 82 },
