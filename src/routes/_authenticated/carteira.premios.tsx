@@ -62,6 +62,62 @@ function RewardsHub() {
   const ready = rewards.filter((r) => r.ready);
   const inProgress = rewards.filter((r) => !r.ready);
 
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "ready" | "close" | "inactive">("all");
+
+  const q = query.trim().toLowerCase();
+  const filtered = useMemo(() => {
+    return items.filter((i) => {
+      const est = i.establishment as { name: string; active: boolean };
+      if (q && !est.name.toLowerCase().includes(q)) return false;
+      const req = i.card ? (i.card.campaign as { stamps_required: number }).stamps_required || 1 : 1;
+      const stamps = i.card?.stamps ?? 0;
+      const pct = stamps / req;
+      const campActive = i.card ? (i.card.campaign as { active: boolean }).active : true;
+      const isInactive = !est.active || !campActive;
+      switch (statusFilter) {
+        case "ready":
+          return !isInactive && !!i.card && stamps >= req;
+        case "close":
+          return !isInactive && !!i.card && stamps < req && pct >= 0.6;
+        case "inactive":
+          return isInactive;
+        default:
+          return true;
+      }
+    });
+  }, [items, q, statusFilter]);
+
+  const counts = useMemo(() => {
+    let readyCount = 0;
+    let closeCount = 0;
+    let inactiveCount = 0;
+    for (const i of items) {
+      const est = i.establishment as { active: boolean };
+      const req = i.card ? (i.card.campaign as { stamps_required: number }).stamps_required || 1 : 1;
+      const stamps = i.card?.stamps ?? 0;
+      const campActive = i.card ? (i.card.campaign as { active: boolean }).active : true;
+      const isInactive = !est.active || !campActive;
+      if (isInactive) inactiveCount++;
+      else if (i.card && stamps >= req) readyCount++;
+      else if (i.card && stamps / req >= 0.6) closeCount++;
+    }
+    return { readyCount, closeCount, inactiveCount };
+  }, [items]);
+
+  const filterChips: Array<{
+    key: typeof statusFilter;
+    label: string;
+    count?: number;
+    highlight?: boolean;
+  }> = [
+    { key: "all", label: "Todos", count: items.length },
+    { key: "ready", label: "Prontos", count: counts.readyCount, highlight: counts.readyCount > 0 },
+    { key: "close", label: "Quase lá", count: counts.closeCount },
+    { key: "inactive", label: "Inativos", count: counts.inactiveCount },
+  ];
+
+
   return (
     <WithOfflineFallback
       onRetry={() => {
