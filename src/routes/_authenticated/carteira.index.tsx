@@ -128,6 +128,9 @@ function WalletHome() {
               <KpiTile label="Prontas" value={readyRewards} accent={readyRewards > 0 ? "primary" : undefined} icon={<Gift className="h-3.5 w-3.5" />} />
             </div>
 
+            <AchievementsAndRecapRow />
+
+
             <section>
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Em destaque</h2>
