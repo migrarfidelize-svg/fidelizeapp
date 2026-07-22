@@ -1237,7 +1237,7 @@ function ReviewQrPage() {
               <div
                 className="relative overflow-hidden rounded-lg shadow-2xl ring-1 ring-primary/20 transition-transform duration-500"
                 style={{
-                  aspectRatio: dims.aspect,
+                  aspectRatio: format === "counter15x10" ? "2 / 3.3" : format === "a5" ? "1 / 1.5554" : dims.aspect,
                   transform: displayMode ? "rotateX(12deg) rotateY(-3deg)" : undefined,
                   transformOrigin: "bottom center",
                   boxShadow: displayMode
