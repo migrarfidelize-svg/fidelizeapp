@@ -243,7 +243,14 @@ function DiscoverRow({
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="truncate font-display text-sm font-semibold">{e.name}</div>
+          <div className="flex items-center gap-1.5">
+            <div className="truncate font-display text-sm font-semibold">{e.name}</div>
+            {nearby && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-primary">
+                Perto
+              </span>
+            )}
+          </div>
           {location && (
             <div className="mt-0.5 flex items-center gap-1 truncate text-[11px] text-muted-foreground">
               <MapPin className="h-3 w-3 shrink-0" />
