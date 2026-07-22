@@ -109,6 +109,34 @@ function checkGenericUrl(v: string): UrlCheck {
   return { level: "ok", message: `Link válido — ${u.hostname}` };
 }
 
+/** Append UTM tags to a URL without breaking existing ones. */
+function withUtm(rawUrl: string, campaign: string): string {
+  try {
+    const u = new URL(rawUrl);
+    if (!u.searchParams.get("utm_source")) u.searchParams.set("utm_source", "qr_poster");
+    if (!u.searchParams.get("utm_medium")) u.searchParams.set("utm_medium", "print");
+    if (!u.searchParams.get("utm_campaign")) u.searchParams.set("utm_campaign", campaign || "review");
+    return u.toString();
+  } catch { return rawUrl; }
+}
+
+/** WCAG contrast ratio between two hex colors. */
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace("#", "");
+  const v = h.length === 3 ? h.split("").map(c => c + c).join("") : h;
+  const n = parseInt(v.padEnd(6, "0").slice(0, 6), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+function relLum([r, g, b]: [number, number, number]): number {
+  const f = (c: number) => { const s = c / 255; return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4); };
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+}
+function contrastRatio(a: string, b: string): number {
+  const la = relLum(hexToRgb(a)); const lb = relLum(hexToRgb(b));
+  const [hi, lo] = la > lb ? [la, lb] : [lb, la];
+  return (hi + 0.05) / (lo + 0.05);
+}
+
 function ReviewQrPage() {
 
   const getEsts = useServerFn(getMyEstablishments);
@@ -131,6 +159,9 @@ function ReviewQrPage() {
   const [showGoogleLogo, setShowGoogleLogo] = useState(true);
   const [nfcMode, setNfcMode] = useState(false);
   const [contentScale, setContentScale] = useState(100); // % scale, 60–180
+  const [ecc, setEcc] = useState<"L" | "M" | "Q" | "H">("H");
+  const [utmEnabled, setUtmEnabled] = useState(true);
+  const [bleedMarks, setBleedMarks] = useState(true);
   const [title, setTitle] = useState("Como foi seu atendimento?");
   const [subtitle, setSubtitle] = useState("Sua opinião ajuda nossa equipe a melhorar. Leva menos de 30 segundos.");
   const [ctaNearQR, setCtaNearQR] = useState("Aponte a câmera para avaliar");
@@ -167,6 +198,9 @@ function ReviewQrPage() {
         if (typeof s.showGoogleLogo === "boolean") setShowGoogleLogo(s.showGoogleLogo);
         if (typeof s.nfcMode === "boolean") setNfcMode(s.nfcMode);
         if (typeof s.contentScale === "number") setContentScale(s.contentScale);
+        if (s.ecc === "L" || s.ecc === "M" || s.ecc === "Q" || s.ecc === "H") setEcc(s.ecc);
+        if (typeof s.utmEnabled === "boolean") setUtmEnabled(s.utmEnabled);
+        if (typeof s.bleedMarks === "boolean") setBleedMarks(s.bleedMarks);
         if (s.title) setTitle(s.title);
         if (s.subtitle) setSubtitle(s.subtitle);
         if (s.ctaNearQR) setCtaNearQR(s.ctaNearQR);
@@ -190,13 +224,14 @@ function ReviewQrPage() {
     try {
       window.localStorage.setItem(storageKey, JSON.stringify({
         template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale,
+        ecc, utmEnabled, bleedMarks,
         title, subtitle, ctaNearQR, ctaFooter,
         primaryColor, backgroundColor, textColor,
         primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel,
         layout,
       }));
     } catch { /* ignore */ }
-  }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor, primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel, layout]);
+  }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale, ecc, utmEnabled, bleedMarks, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor, primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel, layout]);
 
   function applyTemplate(key: TemplateKey) {
     setTemplate(key);
@@ -256,9 +291,10 @@ function ReviewQrPage() {
   const fidelizeUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/avaliar/${est.slug}` : "";
   const rawTargetUrl = destination === "fidelize" ? fidelizeUrl : googleUrl.trim();
   const primaryIsPlaceholder = destination === "google" && !rawTargetUrl;
-  const targetUrl = rawTargetUrl || (destination === "google"
+  const baseTargetUrl = rawTargetUrl || (destination === "google"
     ? "https://g.page/exemplo-fidelize/review"
     : "https://fidelize.app/preview");
+  const targetUrl = utmEnabled ? withUtm(baseTargetUrl, est?.slug ?? "review") : baseTargetUrl;
 
   const googleCheck = useMemo(() => checkGoogleUrl(googleUrl), [googleUrl]);
   const secondaryRawUrl = secondaryUrl.trim();
@@ -268,26 +304,30 @@ function ReviewQrPage() {
   const secondaryReady = secondaryEnabled && secondaryCheck.level === "ok";
   const primaryBlocking = destination === "google" && (googleCheck.level === "error" || googleCheck.level === "empty");
   const secondaryBlocking = secondaryEnabled && (secondaryCheck.level === "error" || secondaryCheck.level === "empty");
+  const secondaryTargetUrl = useMemo(() => {
+    const raw = secondaryRawUrl || "https://fidelize.app/preview-cardapio";
+    return utmEnabled ? withUtm(raw, est?.slug ?? "review") : raw;
+  }, [secondaryRawUrl, utmEnabled, est?.slug]);
+
+  // Contrast / readability diagnostics
+  const textBgRatio = useMemo(() => contrastRatio(textColor, backgroundColor), [textColor, backgroundColor]);
+  const qrCodeRatio = contrastRatio("#111827", "#ffffff"); // QR dark vs light
 
   useEffect(() => {
     QRCode.toDataURL(targetUrl, {
-      width: 1200, margin: 1, errorCorrectionLevel: "H",
+      width: 1200, margin: 1, errorCorrectionLevel: ecc,
       color: { dark: "#111827", light: "#ffffff" },
     }).then(setQrDataUrl).catch(() => setQrDataUrl(""));
-  }, [targetUrl]);
+  }, [targetUrl, ecc]);
 
   useEffect(() => {
     if (!secondaryEnabled) {
       setSecondaryQrDataUrl("");
-      // restore centered primary QR when the second QR is turned off (only if
-      // it's still at the auto-shifted position — never override manual drags).
       setLayout((prev) => (prev.primaryQr.x === 30 && prev.primaryQr.y === 58
         ? { ...prev, primaryQr: DEFAULT_LAYOUT.primaryQr }
         : prev));
       return;
     }
-    // Auto-shift the two QRs side-by-side the moment the toggle is enabled,
-    // but only if the user hasn't manually repositioned them yet.
     setLayout((prev) => {
       const primaryUntouched = prev.primaryQr.x === DEFAULT_LAYOUT.primaryQr.x && prev.primaryQr.y === DEFAULT_LAYOUT.primaryQr.y;
       const secondaryUntouched = prev.secondaryQr.x === DEFAULT_LAYOUT.secondaryQr.x && prev.secondaryQr.y === DEFAULT_LAYOUT.secondaryQr.y;
@@ -298,12 +338,11 @@ function ReviewQrPage() {
         secondaryQr: secondaryUntouched ? { x: 70, y: 58 } : prev.secondaryQr,
       };
     });
-    const u = secondaryRawUrl || "https://fidelize.app/preview-cardapio";
-    QRCode.toDataURL(u, {
-      width: 1200, margin: 1, errorCorrectionLevel: "H",
+    QRCode.toDataURL(secondaryTargetUrl, {
+      width: 1200, margin: 1, errorCorrectionLevel: ecc,
       color: { dark: "#111827", light: "#ffffff" },
     }).then(setSecondaryQrDataUrl).catch(() => setSecondaryQrDataUrl(""));
-  }, [secondaryEnabled, secondaryRawUrl]);
+  }, [secondaryEnabled, secondaryTargetUrl, ecc]);
 
   const dims = FORMATS[format];
 
@@ -359,12 +398,66 @@ function ReviewQrPage() {
       const url = await renderPosterPng();
       const mmW = dims.mm.w;
       const mmH = dims.mm.h;
-      const pdf = new jsPDF({ unit: "mm", format: [mmW, mmH], orientation: mmW > mmH ? "landscape" : "portrait", compress: true });
-      pdf.addImage(url, "PNG", 0, 0, mmW, mmH, undefined, "FAST");
-      pdf.save(`qr-avaliacao-${est?.slug ?? "estabelecimento"}-${format}-300dpi.pdf`);
-      toast.success(`PDF 300 DPI baixado (${mmW}×${mmH}mm)`);
+      const bleed = bleedMarks ? 3 : 0;          // 3 mm sangria
+      const pageW = mmW + bleed * 2;
+      const pageH = mmH + bleed * 2;
+      const pdf = new jsPDF({ unit: "mm", format: [pageW, pageH], orientation: pageW > pageH ? "landscape" : "portrait", compress: true });
+      // Place the artwork inset by the bleed so the design covers to the trim edges
+      pdf.addImage(url, "PNG", bleed, bleed, mmW, mmH, undefined, "FAST");
+
+      if (bleedMarks) {
+        // Crop marks (marcas de corte) — 5 mm long, 0.2 mm thick, 3 mm offset from trim
+        const markLen = 5;
+        const off = 1; // gap between trim and mark start
+        pdf.setLineWidth(0.15);
+        pdf.setDrawColor(0, 0, 0);
+        const corners: Array<[number, number]> = [
+          [bleed, bleed],                 // top-left
+          [bleed + mmW, bleed],           // top-right
+          [bleed, bleed + mmH],           // bottom-left
+          [bleed + mmW, bleed + mmH],     // bottom-right
+        ];
+        for (const [x, y] of corners) {
+          const dx = x < bleed + mmW / 2 ? -1 : 1;
+          const dy = y < bleed + mmH / 2 ? -1 : 1;
+          // horizontal mark
+          pdf.line(x + dx * off, y, x + dx * (off + markLen), y);
+          // vertical mark
+          pdf.line(x, y + dy * off, x, y + dy * (off + markLen));
+        }
+        // Small footer info (outside trim area, in the bleed margin)
+        pdf.setFontSize(5);
+        pdf.setTextColor(120);
+        pdf.text(`Trim ${mmW}×${mmH}mm · Bleed 3mm · 300 DPI · RGB (converta para CMYK na gráfica)`, bleed, pageH - 0.8);
+      }
+
+      pdf.save(`qr-avaliacao-${est?.slug ?? "estabelecimento"}-${format}-${bleedMarks ? "print" : "300dpi"}.pdf`);
+      toast.success(bleedMarks
+        ? `PDF de impressão baixado (${mmW}×${mmH}mm + 3mm sangria + marcas de corte)`
+        : `PDF 300 DPI baixado (${mmW}×${mmH}mm)`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao exportar PDF");
+    } finally { setExporting(false); }
+  }
+
+  async function exportSvg() {
+    if (primaryBlocking) { toast.error(googleCheck.message); return; }
+    setExporting(true);
+    try {
+      const svg = await QRCode.toString(targetUrl, {
+        type: "svg", errorCorrectionLevel: ecc, margin: 1,
+        color: { dark: "#111827", light: "#ffffff" },
+      });
+      const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `qr-avaliacao-${est?.slug ?? "estabelecimento"}-vetorial.svg`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      toast.success("SVG vetorial baixado — escala infinita para gráfica");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao exportar SVG");
     } finally { setExporting(false); }
   }
 
@@ -723,6 +816,102 @@ function ReviewQrPage() {
                   Nenhum design salvo ainda. Ajuste as cores/textos e clique em Salvar para guardar variações.
                 </div>
               )}
+            </div>
+
+            {/* QR avançado — tolerância a erro + rastreio UTM */}
+            <div className="space-y-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-primary">
+                <Sparkles className="h-3.5 w-3.5" /> QR avançado
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-[11px] font-medium text-muted-foreground">
+                  Tolerância a erro (ECC)
+                </Label>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {(["L", "M", "Q", "H"] as const).map((k) => {
+                    const active = ecc === k;
+                    const labels: Record<typeof k, string> = { L: "L · 7%", M: "M · 15%", Q: "Q · 25%", H: "H · 30%" };
+                    return (
+                      <button
+                        key={k}
+                        type="button"
+                        onClick={() => setEcc(k)}
+                        className={`rounded-lg border-2 px-1.5 py-1.5 text-[10px] font-bold transition ${active ? "border-primary bg-primary/15 text-primary" : "border-border/60 text-muted-foreground hover:border-primary/40"}`}
+                      >
+                        {labels[k]}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  H (30%) é o mais robusto — recomendado para impressão. Níveis menores geram QR menos denso, mas menos tolerante a sujeira/riscos.
+                </p>
+              </div>
+
+              <label className="flex cursor-pointer items-start justify-between gap-3 rounded-lg border bg-background/60 p-2.5">
+                <div>
+                  <div className="text-xs font-semibold">UTM automático</div>
+                  <div className="text-[10px] text-muted-foreground">Adiciona <code>utm_source=qr_poster</code> para medir os scans que vêm do cartaz.</div>
+                </div>
+                <Switch checked={utmEnabled} onCheckedChange={setUtmEnabled} />
+              </label>
+
+              {/* Contrast diagnostic */}
+              <div className="space-y-1 rounded-lg border bg-background/60 p-2.5">
+                <div className="flex items-center justify-between text-[11px] font-semibold">
+                  <span>Contraste (WCAG)</span>
+                  <span className={`tabular-nums ${textBgRatio >= 4.5 ? "text-emerald-500" : textBgRatio >= 3 ? "text-amber-500" : "text-destructive"}`}>
+                    Texto/Fundo {textBgRatio.toFixed(2)}:1
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                  <span>QR (escuro/claro)</span>
+                  <span className="tabular-nums text-emerald-500">{qrCodeRatio.toFixed(1)}:1 · ótimo para leitura</span>
+                </div>
+                {textBgRatio < 4.5 && (
+                  <p className="flex items-start gap-1 text-[10px] text-amber-500">
+                    <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
+                    Contraste texto/fundo abaixo de 4.5:1 — pode dificultar a leitura à distância. Ajuste as cores.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Impressão profissional */}
+            <div className="space-y-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-primary">
+                <FileText className="h-3.5 w-3.5" /> Impressão profissional
+              </div>
+
+              <label className="flex cursor-pointer items-start justify-between gap-3 rounded-lg border bg-background/60 p-2.5">
+                <div>
+                  <div className="text-xs font-semibold">Marcas de corte + sangria de 3 mm</div>
+                  <div className="text-[10px] text-muted-foreground">Padrão gráfico: o PDF sai com 3 mm extras em cada lado e marcas de corte nos cantos, prontos para guilhotina.</div>
+                </div>
+                <Switch checked={bleedMarks} onCheckedChange={setBleedMarks} />
+              </label>
+
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-2.5 text-[10px] text-amber-600 dark:text-amber-400">
+                <div className="flex items-start gap-1.5">
+                  <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
+                  <div>
+                    <strong>Perfil de cor RGB.</strong> Gráficas profissionais imprimem em CMYK — peça à sua gráfica para converter o PDF (ou envie o SVG vetorial abaixo para máxima fidelidade e escala infinita).
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                onClick={exportSvg}
+                disabled={exporting || !targetUrl}
+                variant="outline"
+                className="w-full"
+              >
+                <FileImage className="mr-2 h-4 w-4" /> Baixar QR vetorial (SVG)
+              </Button>
+              <p className="text-[10px] text-muted-foreground">
+                O SVG contém apenas o QR principal em vetor — ideal para impressão em qualquer tamanho sem perda de qualidade.
+              </p>
             </div>
 
             {/* Actions */}
