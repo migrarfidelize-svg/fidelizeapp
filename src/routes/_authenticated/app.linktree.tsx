@@ -49,6 +49,50 @@ const KIND_META: Record<LinkKind, { label: string; icon: any; placeholder: strin
   custom: { label: "Link personalizado", icon: ExternalLink, placeholder: "https://…" },
 };
 
+type ThemePreset = {
+  id: string;
+  label: string;
+  primary: string;
+  accent: string;
+  background: string;
+  text: string;
+  button_style: "solid" | "outline" | "glass";
+  rounded: "sm" | "md" | "lg" | "xl" | "full";
+};
+
+const THEME_PRESETS: ThemePreset[] = [
+  {
+    id: "cyan-circuit",
+    label: "Cyan Circuit",
+    primary: "#00ffff",
+    accent: "#ff2fd0",
+    background: "#0b1220",
+    text: "#ffffff",
+    button_style: "glass",
+    rounded: "xl",
+  },
+  {
+    id: "porcelain",
+    label: "Porcelain",
+    primary: "#0284c7",
+    accent: "#e11d8a",
+    background: "#f8fafc",
+    text: "#0f172a",
+    button_style: "solid",
+    rounded: "full",
+  },
+  {
+    id: "sunset-neon",
+    label: "Sunset Neon",
+    primary: "#f59e0b",
+    accent: "#ef4444",
+    background: "#1a0b2e",
+    text: "#fff7ed",
+    button_style: "outline",
+    rounded: "lg",
+  },
+];
+
 function LinkTreeEditor() {
   const getEsts = useServerFn(getMyEstablishments);
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
@@ -243,37 +287,106 @@ function LinkTreeEditor() {
           {/* Tema */}
           <Card>
             <CardHeader><CardTitle className="text-base">Tema</CardTitle></CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2">
-              <ColorField label="Cor primária" value={primary} onChange={setPrimary} />
-              <ColorField label="Cor de destaque" value={accent} onChange={setAccent} />
-              <ColorField label="Fundo" value={background} onChange={setBackground} />
-              <ColorField label="Texto" value={text} onChange={setText} />
+            <CardContent className="space-y-5">
               <div>
-                <Label>Estilo do botão</Label>
-                <Select value={buttonStyle} onValueChange={(v) => setButtonStyle(v as any)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="solid">Sólido (gradiente)</SelectItem>
-                    <SelectItem value="outline">Contorno</SelectItem>
-                    <SelectItem value="glass">Glass</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label className="mb-2 block">Modelos prontos</Label>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {THEME_PRESETS.map((p) => {
+                    const active =
+                      primary.toLowerCase() === p.primary.toLowerCase() &&
+                      background.toLowerCase() === p.background.toLowerCase() &&
+                      text.toLowerCase() === p.text.toLowerCase();
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => {
+                          setPrimary(p.primary);
+                          setAccent(p.accent);
+                          setBackground(p.background);
+                          setText(p.text);
+                          setButtonStyle(p.button_style);
+                          setRounded(p.rounded);
+                        }}
+                        className={`group relative overflow-hidden rounded-2xl border-2 p-3 text-left transition ${
+                          active ? "border-primary shadow-lg" : "border-border hover:border-primary/40"
+                        }`}
+                        style={{ background: p.background, color: p.text }}
+                      >
+                        <div
+                          className="mx-auto grid h-10 w-10 place-items-center rounded-xl text-xs font-bold text-white"
+                          style={{ background: `linear-gradient(135deg, ${p.primary}, ${p.accent})` }}
+                        >
+                          Aa
+                        </div>
+                        <div className="mt-2 space-y-1.5">
+                          <div
+                            className="h-5 rounded-md text-[9px] font-semibold flex items-center justify-center text-white"
+                            style={{ background: `linear-gradient(135deg, ${p.primary}, ${p.accent})` }}
+                          >
+                            Link
+                          </div>
+                          <div
+                            className="h-5 rounded-md text-[9px] font-semibold flex items-center justify-center"
+                            style={{
+                              background: p.button_style === "glass" ? "rgba(255,255,255,.1)" : "transparent",
+                              border: `1.5px solid ${p.primary}`,
+                              color: p.text,
+                            }}
+                          >
+                            Link
+                          </div>
+                        </div>
+                        <p className="mt-2 text-center text-[10px] font-semibold" style={{ color: p.text }}>
+                          {p.label}
+                        </p>
+                        {active && (
+                          <span className="absolute right-1.5 top-1.5 rounded-full bg-primary px-1.5 py-0.5 text-[8px] font-bold text-primary-foreground">
+                            EM USO
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Escolha um modelo e ajuste as cores abaixo — as alterações aparecem no preview em tempo real.
+                </p>
               </div>
-              <div>
-                <Label>Borda</Label>
-                <Select value={rounded} onValueChange={(v) => setRounded(v as any)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sm">Pequena</SelectItem>
-                    <SelectItem value="md">Média</SelectItem>
-                    <SelectItem value="lg">Grande</SelectItem>
-                    <SelectItem value="xl">Extra</SelectItem>
-                    <SelectItem value="full">Pílula</SelectItem>
-                  </SelectContent>
-                </Select>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <ColorField label="Cor primária" value={primary} onChange={setPrimary} />
+                <ColorField label="Cor de destaque" value={accent} onChange={setAccent} />
+                <ColorField label="Fundo" value={background} onChange={setBackground} />
+                <ColorField label="Texto" value={text} onChange={setText} />
+                <div>
+                  <Label>Estilo do botão</Label>
+                  <Select value={buttonStyle} onValueChange={(v) => setButtonStyle(v as any)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="solid">Sólido (gradiente)</SelectItem>
+                      <SelectItem value="outline">Contorno</SelectItem>
+                      <SelectItem value="glass">Glass</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Borda</Label>
+                  <Select value={rounded} onValueChange={(v) => setRounded(v as any)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sm">Pequena</SelectItem>
+                      <SelectItem value="md">Média</SelectItem>
+                      <SelectItem value="lg">Grande</SelectItem>
+                      <SelectItem value="xl">Extra</SelectItem>
+                      <SelectItem value="full">Pílula</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </CardContent>
           </Card>
+
 
           {/* Links */}
           <Card>
