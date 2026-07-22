@@ -127,7 +127,8 @@ function DiscoveryProfilePage() {
   if (est.website) contactLinks.push({ icon: Globe, label: "Site", url: est.website });
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4 p-4 pb-10">
+    <div className="min-h-dvh bg-background text-foreground">
+      <div className="mx-auto max-w-3xl space-y-4 p-4 pb-10">
       <header className="relative overflow-hidden rounded-3xl border border-border/60 bg-card/40 p-5">
         <div
           className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full opacity-25 blur-3xl"
