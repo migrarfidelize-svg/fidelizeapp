@@ -421,7 +421,7 @@ function ReviewQrPage() {
         icon={Star}
         eyebrow="Reputação · QR"
         title="QR Code de avaliação"
-        subtitle="Cartaz pronto para balcão, mesa e recibos. Encaminha o cliente direto para avaliar o atendimento — Fidelize ou Google Reviews."
+        subtitle="Cartaz pronto para balcão, mesa e recibos. Encaminha o cliente direto para a página de avaliação Fidelize."
       />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
