@@ -1888,9 +1888,10 @@ function ValidationLine({ check }: { check: UrlCheck }) {
 }
 
 function LabeledQr({ qr, label, primary, text, badge, size, scale = 100 }: { qr: string; label: string; primary: string; text: string; badge: "google" | null; size: number; scale?: number }) {
+  const boxSize = size + 20; // padding compensation, identical for both QRs
   return (
-    <div className="flex flex-col items-center gap-1.5">
-      <div className="rounded-xl bg-white p-2.5 shadow-lg">
+    <div className="flex flex-col items-center gap-1.5" style={{ width: boxSize }}>
+      <div className="rounded-xl bg-white p-2.5 shadow-lg" style={{ width: boxSize, height: boxSize }}>
         {qr ? (
           <img src={qr} alt={label} className="block" style={{ width: size, height: size }} />
         ) : (
@@ -1898,7 +1899,19 @@ function LabeledQr({ qr, label, primary, text, badge, size, scale = 100 }: { qr:
         )}
       </div>
       {label && (
-        <div className="max-w-[16ch] text-center font-bold leading-tight" style={{ color: text, fontSize: `${10 * (scale / 100)}px` }}>
+        <div
+          className="text-center font-bold leading-tight"
+          style={{
+            color: text,
+            fontSize: `${10 * (scale / 100)}px`,
+            width: boxSize,
+            minHeight: `${2 * 10 * (scale / 100) * 1.15}px`,
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}
+        >
           {label}
         </div>
       )}
@@ -1906,6 +1919,7 @@ function LabeledQr({ qr, label, primary, text, badge, size, scale = 100 }: { qr:
     </div>
   );
 }
+
 
 
 
