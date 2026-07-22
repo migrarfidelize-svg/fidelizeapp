@@ -350,7 +350,68 @@ function StreakCard({ weeks, lastVisit }: { weeks: number; lastVisit: string | n
 }
 
 
-export function WalletCard({ item }: { item: WalletItem }) {
+function AchievementsAndRecapRow() {
+  const { data: catalog = [] } = useQuery({
+    queryKey: ["achievements-catalog"],
+    queryFn: () => listAchievementsCatalog(),
+    staleTime: 5 * 60_000,
+  });
+  const { data: mine = [] } = useQuery({
+    queryKey: ["my-achievements"],
+    queryFn: () => listMyAchievements(),
+    staleTime: 30_000,
+  });
+  const total = catalog.length;
+  const unlocked = mine.length;
+  const pct = total > 0 ? Math.round((unlocked / total) * 100) : 0;
+
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <Link
+        to="/carteira/conquistas"
+        className="group relative flex items-center gap-3 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-amber-500/10 via-card/40 to-card/40 p-3 transition-all hover:border-amber-500/50"
+      >
+        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-amber-500/25 to-orange-500/15 text-amber-500 dark:text-amber-300">
+          <Trophy className="h-5 w-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+            Conquistas
+          </div>
+          <div className="font-display text-lg font-black">
+            {unlocked}
+            <span className="text-xs font-bold text-muted-foreground">/{total}</span>
+          </div>
+          <div className="mt-1 h-1 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        </div>
+      </Link>
+
+      <Link
+        to="/carteira/retrospectiva"
+        className="group relative flex items-center gap-3 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-fuchsia-500/10 via-card/40 to-card/40 p-3 transition-all hover:border-fuchsia-500/50"
+      >
+        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-fuchsia-500/25 to-purple-500/15 text-fuchsia-500 dark:text-fuchsia-300">
+          <Calendar className="h-5 w-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+            Retrospectiva
+          </div>
+          <div className="font-display text-sm font-bold">Seu ano em números</div>
+          <div className="text-[10px] text-muted-foreground">Toque para ver →</div>
+        </div>
+      </Link>
+    </div>
+  );
+}
+
+
+
   const est = item.establishment as { slug: string; name: string; logo_url: string | null; primary_color: string; active: boolean };
   const card = item.card;
   const req = card ? (card.campaign as { stamps_required: number }).stamps_required || 1 : 1;
