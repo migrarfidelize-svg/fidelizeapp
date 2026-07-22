@@ -1222,7 +1222,7 @@ function PortraitBody(p: PosterProps) {
       <DraggableItem itemKey="ctaFooter" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
         <div className="flex flex-col items-center gap-1">
           <div className="text-center text-[10px] opacity-70" style={{ color: p.textColor }}>{p.ctaFooter}</div>
-          {p.nfcMode && p.nfcStyle === "badge" && <NfcBadge primary={p.primaryColor} />}
+          {p.nfcMode && <NfcBadge primary={p.primaryColor} />}
         </div>
       </DraggableItem>
     </div>
