@@ -88,6 +88,8 @@ function WalletHome() {
               </Link>
             )}
 
+            {streak.weeks >= 2 && <StreakCard weeks={streak.weeks} lastVisit={streak.lastVisit} />}
+
             <div className="grid grid-cols-3 gap-3">
               <KpiTile label="Cartões" value={items.length} />
               <KpiTile label="Carimbos" value={totalStamps} icon={<Stamp className="h-3.5 w-3.5" />} />
@@ -97,7 +99,7 @@ function WalletHome() {
             <section>
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Em destaque</h2>
-                <Link to="/carteira/cartoes" className="text-xs font-medium text-primary hover:underline">
+                <Link to="/carteira/premios" search={{ tab: "cartoes" }} className="text-xs font-medium text-primary hover:underline">
                   Ver todos →
                 </Link>
               </div>
