@@ -8,6 +8,13 @@ import {
   ExternalLink,
   ChevronLeft as PrevIcon,
   ChevronRight as NextIcon,
+  MapPin,
+  Phone,
+  MessageCircle,
+  Instagram,
+  Globe,
+  Clock,
+  CreditCard,
 } from "lucide-react";
 import { WalletErrorState } from "@/components/wallet/WalletStates";
 
