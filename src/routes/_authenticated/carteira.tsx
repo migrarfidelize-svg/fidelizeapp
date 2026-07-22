@@ -6,7 +6,7 @@ import { Wallet, Home, LogOut, User, Gift, History, Compass, QrCode } from "luci
 import { toast } from "sonner";
 import { MyQrSheet } from "@/components/wallet/MyQrSheet";
 import { countUnread } from "@/lib/inbox.functions";
-import { getMyWallet } from "@/lib/my-wallet.functions";
+import { getMyWallet, getMyRewards } from "@/lib/my-wallet.functions";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AchievementUnlockListener } from "@/components/wallet/AchievementUnlockListener";
 import { PostStampReviewSheet } from "@/components/wallet/PostStampReviewSheet";
@@ -211,5 +211,11 @@ function InboxBell({ pathname }: { pathname: string }) {
     staleTime: 30_000,
     refetchInterval: 90_000,
   });
-  return <InboxBellBadge unread={unread} active={active} />;
+  const { data: rewards = [] } = useQuery({
+    queryKey: ["my-rewards"],
+    queryFn: () => getMyRewards(),
+    staleTime: 30_000,
+  });
+  const readyRewards = rewards.filter((r) => r.ready).length;
+  return <InboxBellBadge unread={unread} active={active} readyRewards={readyRewards} />;
 }
