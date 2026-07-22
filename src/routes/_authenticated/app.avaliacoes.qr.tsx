@@ -645,7 +645,26 @@ function ReviewQrPage() {
                   <Input value={ctaFooter} maxLength={40} onChange={(e) => setCtaFooter(e.target.value)} />
                 </div>
               </div>
+
+              {/* Global text scale — impacts título, subtítulo, CTAs, rótulos e selo NFC */}
+              <div className="space-y-1.5 rounded-lg border border-border/50 bg-background/40 p-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold">Tamanho dos textos</Label>
+                  <span className="text-[10px] font-bold tabular-nums text-muted-foreground">{contentScale}%</span>
+                </div>
+                <Slider
+                  min={60}
+                  max={180}
+                  step={5}
+                  value={[contentScale]}
+                  onValueChange={(v) => setContentScale(v[0] ?? 100)}
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  Ajusta título, subtítulo, chamadas, rótulos dos QRs e selo NFC de forma proporcional.
+                </p>
+              </div>
             </div>
+
 
             {/* Colors */}
             <div className="grid gap-3 sm:grid-cols-3">
