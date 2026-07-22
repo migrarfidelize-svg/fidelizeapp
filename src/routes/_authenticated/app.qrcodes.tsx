@@ -244,13 +244,8 @@ function QRCodes() {
   });
 
   const activeCampaign = campaigns?.find((c) => c.active) ?? campaigns?.[0];
-  type QrTarget = "linktree" | "review";
-  const [qrTarget, setQrTarget] = useState<QrTarget>("linktree");
-  const { allowed: reviewsAllowed } = useMyFeature(est?.id, "public_reviews");
-  const logBlockedFn = useServerFn(logFeatureBlocked);
-  useEffect(() => { if (!reviewsAllowed && qrTarget === "review") setQrTarget("linktree"); }, [reviewsAllowed, qrTarget]);
-  const targetPath = qrTarget === "review" ? "avaliar" : "l";
-  const publicUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/${targetPath}/${est.slug}` : "";
+  const publicUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/l/${est.slug}` : "";
+
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
 
   const [format, setFormat] = useState<PromoFormat>("story");
