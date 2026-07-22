@@ -969,6 +969,7 @@ export type Database = {
           phone: string | null
           plan: Database["public"]["Enums"]["plan_tier"]
           primary_color: string
+          qr_destination: string
           razao_social: string | null
           segment: string | null
           slug: string
@@ -1005,6 +1006,7 @@ export type Database = {
           phone?: string | null
           plan?: Database["public"]["Enums"]["plan_tier"]
           primary_color?: string
+          qr_destination?: string
           razao_social?: string | null
           segment?: string | null
           slug: string
@@ -1041,6 +1043,7 @@ export type Database = {
           phone?: string | null
           plan?: Database["public"]["Enums"]["plan_tier"]
           primary_color?: string
+          qr_destination?: string
           razao_social?: string | null
           segment?: string | null
           slug?: string
@@ -1496,6 +1499,106 @@ export type Database = {
             columns: ["article_id"]
             isOneToOne: false
             referencedRelation: "kb_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      link_tree_links: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          icon: string | null
+          id: string
+          kind: string
+          label: string
+          page_id: string
+          sort_order: number
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          icon?: string | null
+          id?: string
+          kind?: string
+          label: string
+          page_id: string
+          sort_order?: number
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          icon?: string | null
+          id?: string
+          kind?: string
+          label?: string
+          page_id?: string
+          sort_order?: number
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "link_tree_links_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "link_tree_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      link_tree_pages: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          establishment_id: string
+          id: string
+          logo_url: string | null
+          published: boolean
+          published_at: string | null
+          social: Json
+          theme: Json
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          establishment_id: string
+          id?: string
+          logo_url?: string | null
+          published?: boolean
+          published_at?: string | null
+          social?: Json
+          theme?: Json
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          establishment_id?: string
+          id?: string
+          logo_url?: string | null
+          published?: boolean
+          published_at?: string | null
+          social?: Json
+          theme?: Json
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "link_tree_pages_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: true
+            referencedRelation: "establishments"
             referencedColumns: ["id"]
           },
         ]
