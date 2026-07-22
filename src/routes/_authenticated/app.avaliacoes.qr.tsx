@@ -49,9 +49,10 @@ export const Route = createFileRoute("/_authenticated/app/avaliacoes/qr")({
 });
 
 /** Poster formats — landscape 15×10cm is the default. */
-type FormatKey = "counter15x10" | "story" | "feed";
+type FormatKey = "counter15x10" | "story" | "feed" | "a5";
 const FORMATS: Record<FormatKey, { label: string; aspect: string; mm: { w: number; h: number }; description: string; orientation: "landscape" | "portrait" | "square" }> = {
   counter15x10: { label: "Balcão 10×15", aspect: "2 / 3", mm: { w: 100, h: 150 }, description: "Padrão vertical para balcão e mesa", orientation: "portrait" },
+  a5:           { label: "A5 vertical", aspect: "1 / 1.414", mm: { w: 148, h: 210 }, description: "Cartaz de parede", orientation: "portrait" },
   feed:         { label: "Feed 1:1", aspect: "1 / 1", mm: { w: 200, h: 200 }, description: "Instagram/Feed", orientation: "square" },
   story:        { label: "Story 9:16", aspect: "9 / 16", mm: { w: 108, h: 192 }, description: "Story/Reels", orientation: "portrait" },
 };
@@ -545,13 +546,7 @@ function ReviewQrPage() {
     const el = posterRef.current;
     if (!el) throw new Error("Preview indisponível");
     const rect = el.getBoundingClientRect();
-    // Feed/Story exportam nas dimensões oficiais do Instagram (1080×1080 e 1080×1920).
-    // Demais formatos seguem 300 DPI a partir do tamanho em mm.
-    const targetPx = format === "feed"
-      ? 1080
-      : format === "story"
-        ? 1080
-        : Math.max(600, Math.round((dims.mm.w / 25.4) * 300));
+    const targetPx = Math.max(600, Math.round((dims.mm.w / 25.4) * 300));
     const pixelRatio = Math.max(2, targetPx / Math.max(1, rect.width));
     // Force layout-guides off during export
     const wasEditing = editLayout;
@@ -576,21 +571,14 @@ function ReviewQrPage() {
     try {
       const url = await renderPosterPng();
       const a = document.createElement("a");
-      const suffix = format === "feed" ? "instagram-1080x1080" : format === "story" ? "instagram-1080x1920" : `${format}-300dpi`;
       a.href = url;
-      a.download = `qr-avaliacao-${est?.slug ?? "estabelecimento"}-${suffix}.png`;
+      a.download = `qr-avaliacao-${est?.slug ?? "estabelecimento"}-${format}-300dpi.png`;
       a.click();
-      const msg = format === "feed"
-        ? "PNG Instagram Feed baixado (1080×1080px)"
-        : format === "story"
-          ? "PNG Instagram Story baixado (1080×1920px)"
-          : `PNG 300 DPI baixado (${Math.round((dims.mm.w/25.4)*300)}×${Math.round((dims.mm.h/25.4)*300)}px)`;
-      toast.success(msg);
+      toast.success(`PNG 300 DPI baixado (${Math.round((dims.mm.w/25.4)*300)}×${Math.round((dims.mm.h/25.4)*300)}px)`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao exportar PNG");
     } finally { setExporting(false); }
   }
-
 
   async function exportPdf() {
     if (!posterRef.current) return;
@@ -1132,7 +1120,7 @@ function ReviewQrPage() {
 
         {/* PREVIEW */}
         <div className="min-w-0">
-          <div className="lg:sticky lg:top-4 lg:max-h-[calc(100dvh-2rem)] lg:overflow-y-auto lg:overflow-x-hidden lg:pr-1 flex flex-col items-center gap-3 [scrollbar-width:thin]">
+          <div className="sticky top-4 flex flex-col items-center gap-3">
             {/* CTA: Loja física */}
             <button
               type="button"
