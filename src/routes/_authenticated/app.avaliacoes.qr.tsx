@@ -130,7 +130,7 @@ function ReviewQrPage() {
   const [googleUrl, setGoogleUrl] = useState("");
   const [showGoogleLogo, setShowGoogleLogo] = useState(true);
   const [nfcMode, setNfcMode] = useState(false);
-  const [nfcSize, setNfcSize] = useState(100); // % scale, 60–180
+  const [contentScale, setContentScale] = useState(100); // % scale, 60–180
   const [title, setTitle] = useState("Como foi seu atendimento?");
   const [subtitle, setSubtitle] = useState("Sua opinião ajuda nossa equipe a melhorar. Leva menos de 30 segundos.");
   const [ctaNearQR, setCtaNearQR] = useState("Aponte a câmera para avaliar");
@@ -166,7 +166,7 @@ function ReviewQrPage() {
         if (typeof s.googleUrl === "string") setGoogleUrl(s.googleUrl);
         if (typeof s.showGoogleLogo === "boolean") setShowGoogleLogo(s.showGoogleLogo);
         if (typeof s.nfcMode === "boolean") setNfcMode(s.nfcMode);
-        if (typeof s.nfcSize === "number") setNfcSize(s.nfcSize);
+        if (typeof s.contentScale === "number") setContentScale(s.contentScale);
         if (s.title) setTitle(s.title);
         if (s.subtitle) setSubtitle(s.subtitle);
         if (s.ctaNearQR) setCtaNearQR(s.ctaNearQR);
@@ -189,14 +189,14 @@ function ReviewQrPage() {
     if (typeof window === "undefined") return;
     try {
       window.localStorage.setItem(storageKey, JSON.stringify({
-        template, format, destination, googleUrl, showGoogleLogo, nfcMode, nfcSize,
+        template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale,
         title, subtitle, ctaNearQR, ctaFooter,
         primaryColor, backgroundColor, textColor,
         primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel,
         layout,
       }));
     } catch { /* ignore */ }
-  }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, nfcSize, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor, primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel, layout]);
+  }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor, primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel, layout]);
 
   function applyTemplate(key: TemplateKey) {
     setTemplate(key);
@@ -531,25 +531,7 @@ function ReviewQrPage() {
 
             {nfcMode && (
               <div className="space-y-3 rounded-lg border border-primary/30 bg-primary-soft/40 p-3 text-xs">
-                <div>
-                  <div className="mb-1.5 flex items-center justify-between font-semibold text-primary">
-                    <span>Tamanho do selo NFC</span>
-                    <span className="text-[10px] font-bold tabular-nums text-muted-foreground">{nfcSize}%</span>
-                  </div>
-                  <Slider
-                    min={60}
-                    max={180}
-                    step={5}
-                    value={[nfcSize]}
-                    onValueChange={(v) => setNfcSize(v[0] ?? 100)}
-                  />
-                  <div className="mt-1 text-[10px] text-muted-foreground">
-                    Ajuste o selo NFC discreto que aparece no rodapé do cartaz.
-                  </div>
-                  <div className="mt-2 flex items-center justify-center rounded-lg border border-dashed border-primary/30 bg-background/60 py-2">
-                    <NfcBadge primary={primaryColor} sizePct={nfcSize} />
-                  </div>
-                </div>
+
 
                 <div>
                   <div className="font-semibold text-primary">URL para NFC</div>
@@ -663,7 +645,26 @@ function ReviewQrPage() {
                   <Input value={ctaFooter} maxLength={40} onChange={(e) => setCtaFooter(e.target.value)} />
                 </div>
               </div>
+
+              {/* Global text scale — impacts título, subtítulo, CTAs, rótulos e selo NFC */}
+              <div className="space-y-1.5 rounded-lg border border-border/50 bg-background/40 p-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold">Tamanho dos textos</Label>
+                  <span className="text-[10px] font-bold tabular-nums text-muted-foreground">{contentScale}%</span>
+                </div>
+                <Slider
+                  min={60}
+                  max={180}
+                  step={5}
+                  value={[contentScale]}
+                  onValueChange={(v) => setContentScale(v[0] ?? 100)}
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  Ajusta título, subtítulo, chamadas, rótulos dos QRs e selo NFC de forma proporcional.
+                </p>
+              </div>
             </div>
+
 
             {/* Colors */}
             <div className="grid gap-3 sm:grid-cols-3">
@@ -846,7 +847,7 @@ function ReviewQrPage() {
                   destination={destination}
                   showGoogleLogo={showGoogleLogo}
                   nfcMode={nfcMode}
-                  nfcSize={nfcSize}
+                  contentScale={contentScale}
                   primaryLabel={primaryLabel}
                   secondaryEnabled={secondaryEnabled}
                   secondaryQrDataUrl={secondaryQrDataUrl}
@@ -986,7 +987,7 @@ interface PosterProps {
   destination: Destination;
   showGoogleLogo: boolean;
   nfcMode: boolean;
-  nfcSize: number;
+  contentScale: number;
   primaryLabel: string;
   secondaryEnabled: boolean;
   secondaryQrDataUrl: string;
@@ -1118,12 +1119,12 @@ function PortraitBody(p: PosterProps) {
 
       {/* Title */}
       <DraggableItem itemKey="title" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
-        <h2 className="text-center text-xl font-black leading-tight" style={{ color: p.textColor }}>{p.title}</h2>
+        <h2 className="text-center font-black leading-tight" style={{ color: p.textColor, fontSize: `${20 * (p.contentScale / 100)}px` }}>{p.title}</h2>
       </DraggableItem>
 
       {/* Subtitle */}
       <DraggableItem itemKey="subtitle" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[80%]">
-        <p className="text-center text-[11px] opacity-70" style={{ color: p.textColor }}>{p.subtitle}</p>
+        <p className="text-center opacity-70" style={{ color: p.textColor, fontSize: `${11 * (p.contentScale / 100)}px` }}>{p.subtitle}</p>
       </DraggableItem>
 
       {/* Primary QR */}
@@ -1135,6 +1136,7 @@ function PortraitBody(p: PosterProps) {
           text={p.textColor}
           badge={null}
           size={primarySize}
+          scale={p.contentScale}
         />
       </DraggableItem>
 
@@ -1148,13 +1150,14 @@ function PortraitBody(p: PosterProps) {
             text={p.textColor}
             badge={null}
             size={104}
+            scale={p.contentScale}
           />
         </DraggableItem>
       )}
 
       {/* CTA near QR */}
       <DraggableItem itemKey="ctaNear" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
-        <div className="text-center text-xs font-bold uppercase tracking-widest" style={{ color: p.primaryColor }}>
+        <div className="text-center font-bold uppercase tracking-widest" style={{ color: p.primaryColor, fontSize: `${12 * (p.contentScale / 100)}px` }}>
           {p.ctaNearQR}
         </div>
       </DraggableItem>
@@ -1162,10 +1165,11 @@ function PortraitBody(p: PosterProps) {
       {/* CTA footer */}
       <DraggableItem itemKey="ctaFooter" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
         <div className="flex flex-col items-center gap-1">
-          <div className="text-center text-[10px] opacity-70" style={{ color: p.textColor }}>{p.ctaFooter}</div>
-          {p.nfcMode && <NfcBadge primary={p.primaryColor} sizePct={p.nfcSize} />}
+          <div className="text-center opacity-70" style={{ color: p.textColor, fontSize: `${10 * (p.contentScale / 100)}px` }}>{p.ctaFooter}</div>
+          {p.nfcMode && <NfcBadge primary={p.primaryColor} sizePct={p.contentScale} />}
         </div>
       </DraggableItem>
+
     </div>
   );
 }
@@ -1196,7 +1200,7 @@ function ValidationLine({ check }: { check: UrlCheck }) {
   );
 }
 
-function LabeledQr({ qr, label, primary, text, badge, size }: { qr: string; label: string; primary: string; text: string; badge: "google" | null; size: number }) {
+function LabeledQr({ qr, label, primary, text, badge, size, scale = 100 }: { qr: string; label: string; primary: string; text: string; badge: "google" | null; size: number; scale?: number }) {
   return (
     <div className="flex flex-col items-center gap-1.5">
       <div className="rounded-xl bg-white p-2.5 shadow-lg">
@@ -1207,7 +1211,7 @@ function LabeledQr({ qr, label, primary, text, badge, size }: { qr: string; labe
         )}
       </div>
       {label && (
-        <div className="max-w-[16ch] text-center text-[10px] font-bold leading-tight" style={{ color: text }}>
+        <div className="max-w-[16ch] text-center font-bold leading-tight" style={{ color: text, fontSize: `${10 * (scale / 100)}px` }}>
           {label}
         </div>
       )}
@@ -1215,6 +1219,7 @@ function LabeledQr({ qr, label, primary, text, badge, size }: { qr: string; labe
     </div>
   );
 }
+
 
 
 function QrBlock({ qr }: { qr: string }) {
