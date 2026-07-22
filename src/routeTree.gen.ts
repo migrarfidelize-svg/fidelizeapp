@@ -28,6 +28,7 @@ import { Route as AvaliarSlugRouteImport } from './routes/avaliar.$slug'
 import { Route as AvaliacoesSlugRouteImport } from './routes/avaliacoes.$slug'
 import { Route as AuthRecuperarRouteImport } from './routes/auth.recuperar'
 import { Route as AuthNovaSenhaRouteImport } from './routes/auth.nova-senha'
+import { Route as PreviewQrcodesRouteImport } from './routes/_preview.qrcodes'
 import { Route as AuthenticatedLgpdRouteImport } from './routes/_authenticated/lgpd'
 import { Route as AuthenticatedCarteiraRouteImport } from './routes/_authenticated/carteira'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
@@ -196,6 +197,11 @@ const AuthNovaSenhaRoute = AuthNovaSenhaRouteImport.update({
   id: '/nova-senha',
   path: '/nova-senha',
   getParentRoute: () => AuthRoute,
+} as any)
+const PreviewQrcodesRoute = PreviewQrcodesRouteImport.update({
+  id: '/_preview/qrcodes',
+  path: '/qrcodes',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedLgpdRoute = AuthenticatedLgpdRouteImport.update({
   id: '/lgpd',
@@ -633,6 +639,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/carteira': typeof AuthenticatedCarteiraRouteWithChildren
   '/lgpd': typeof AuthenticatedLgpdRoute
+  '/qrcodes': typeof PreviewQrcodesRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
@@ -724,6 +731,7 @@ export interface FileRoutesByTo {
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
   '/lgpd': typeof AuthenticatedLgpdRoute
+  '/qrcodes': typeof PreviewQrcodesRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
@@ -820,6 +828,7 @@ export interface FileRoutesById {
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/_authenticated/carteira': typeof AuthenticatedCarteiraRouteWithChildren
   '/_authenticated/lgpd': typeof AuthenticatedLgpdRoute
+  '/_preview/qrcodes': typeof PreviewQrcodesRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
@@ -916,6 +925,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/carteira'
     | '/lgpd'
+    | '/qrcodes'
     | '/auth/nova-senha'
     | '/auth/recuperar'
     | '/avaliacoes/$slug'
@@ -1007,6 +1017,7 @@ export interface FileRouteTypes {
     | '/privacidade'
     | '/termos'
     | '/lgpd'
+    | '/qrcodes'
     | '/auth/nova-senha'
     | '/auth/recuperar'
     | '/avaliacoes/$slug'
@@ -1102,6 +1113,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app'
     | '/_authenticated/carteira'
     | '/_authenticated/lgpd'
+    | '/_preview/qrcodes'
     | '/auth/nova-senha'
     | '/auth/recuperar'
     | '/avaliacoes/$slug'
@@ -1194,6 +1206,7 @@ export interface RootRouteChildren {
   PreviewDockRoute: typeof PreviewDockRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   TermosRoute: typeof TermosRoute
+  PreviewQrcodesRoute: typeof PreviewQrcodesRoute
   AvaliacoesSlugRoute: typeof AvaliacoesSlugRoute
   AvaliarSlugRoute: typeof AvaliarSlugRoute
   CTokenRoute: typeof CTokenRoute
@@ -1355,6 +1368,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/nova-senha'
       preLoaderRoute: typeof AuthNovaSenhaRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/_preview/qrcodes': {
+      id: '/_preview/qrcodes'
+      path: '/qrcodes'
+      fullPath: '/qrcodes'
+      preLoaderRoute: typeof PreviewQrcodesRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/lgpd': {
       id: '/_authenticated/lgpd'
@@ -2066,6 +2086,7 @@ const rootRouteChildren: RootRouteChildren = {
   PreviewDockRoute: PreviewDockRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   TermosRoute: TermosRoute,
+  PreviewQrcodesRoute: PreviewQrcodesRoute,
   AvaliacoesSlugRoute: AvaliacoesSlugRoute,
   AvaliarSlugRoute: AvaliarSlugRoute,
   CTokenRoute: CTokenRoute,
@@ -2096,3 +2117,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
