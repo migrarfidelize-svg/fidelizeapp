@@ -62,6 +62,7 @@ function WalletLayout() {
           </Link>
           <div className="flex items-center gap-2">
             <InboxBell pathname={pathname} />
+            <ThemeToggle />
             <Link
               to="/carteira/perfil"
               className={
