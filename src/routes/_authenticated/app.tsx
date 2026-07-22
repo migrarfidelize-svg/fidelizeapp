@@ -348,8 +348,10 @@ function AppLayout() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuItem asChild><Link to="/app/perfil" onClick={onNavigate}><UserCircle2 className="mr-2 h-4 w-4" />Editar perfil</Link></DropdownMenuItem>
             <DropdownMenuItem asChild><Link to="/l/$slug" params={{ slug: activeEst!.slug }} onClick={onNavigate}>Ver página pública</Link></DropdownMenuItem>
             <DropdownMenuItem asChild><Link to="/lgpd" onClick={onNavigate}><Shield className="mr-2 h-4 w-4" />Meus Dados (LGPD)</Link></DropdownMenuItem>
+
             {adminStatus?.isAdmin && (
               <DropdownMenuItem asChild><Link to="/admin" onClick={onNavigate}><Shield className="mr-2 h-4 w-4" />Painel do administrador</Link></DropdownMenuItem>
             )}
