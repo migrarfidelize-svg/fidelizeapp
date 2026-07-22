@@ -322,10 +322,7 @@ export function PushOptIn({ token }: { token: string }) {
             Safari.
           </p>
         ) : permission === "denied" ? (
-          <p className="text-xs text-destructive">
-            Você bloqueou notificações neste navegador. Habilite manualmente nas configurações do
-            site.
-          </p>
+          <BlockedGuide browser={detectBrowser()} open={showUnblockGuide} onToggle={() => setShowUnblockGuide((v) => !v)} />
         ) : subscribed ? (
           <Button variant="outline" onClick={disable} disabled={busy} className="w-full">
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <BellOff className="h-4 w-4" />}
@@ -337,6 +334,34 @@ export function PushOptIn({ token }: { token: string }) {
             <span className="ml-2">Receber notificações</span>
           </Button>
         )}
+
+        {errorMsg && permission !== "denied" && (
+          <div className="space-y-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-xs">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+              <div className="space-y-1">
+                <p className="font-medium text-destructive">Não foi possível ativar</p>
+                <p className="text-muted-foreground break-words">{errorMsg}</p>
+              </div>
+            </div>
+            {errorHint === "network" && (
+              <p className="text-muted-foreground">
+                • Verifique sua internet, desative VPN/proxy e bloqueadores como AdGuard ou Brave Shields, depois toque em <strong>Receber notificações</strong> novamente.
+              </p>
+            )}
+            {errorHint === "reload" && (
+              <p className="text-muted-foreground">
+                • Recarregue a página (puxe para baixo ou pressione F5) e tente ativar de novo.
+              </p>
+            )}
+            {errorHint === "retry" && (
+              <Button size="sm" variant="outline" onClick={enable} disabled={busy} className="w-full">
+                Tentar novamente
+              </Button>
+            )}
+          </div>
+        )}
+
 
         {endpoint && subscribed && (
           <p className="text-[10px] text-muted-foreground">
