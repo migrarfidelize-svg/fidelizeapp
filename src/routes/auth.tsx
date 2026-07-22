@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +6,26 @@ import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
 import { Coffee, Check, ArrowRight, Sparkles, Wifi, Store, User } from "lucide-react";
 import { claimCustomerByToken, attachEstablishmentBySlug } from "@/lib/my-wallet.functions";
+
+const AUTH_SYNC_CHANNEL = "fidelize-auth-sync";
+
+function notifyAuthSync(type: "SIGNED_IN" | "SIGNED_UP") {
+  try {
+    localStorage.setItem("fidelize:last-auth-sync", JSON.stringify({ type, at: Date.now(), host: window.location.host }));
+  } catch {}
+  try {
+    const bc = new BroadcastChannel(AUTH_SYNC_CHANNEL);
+    bc.postMessage({ type: "SIGNED_IN", source: "auth-route", at: Date.now() });
+    bc.close();
+  } catch {}
+}
+
+async function completeAuthRedirect(to: string, type: "SIGNED_IN" | "SIGNED_UP") {
+  notifyAuthSync(type);
+  await supabase.auth.getSession();
+  const url = new URL(to, window.location.origin);
+  window.location.assign(url.toString());
+}
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup"]).default("signin"),
@@ -84,7 +104,6 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const search = Route.useSearch();
   const { mode } = search;
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -161,12 +180,12 @@ function AuthPage() {
         }
         if (isEstablishmentSignup) {
           toast.success("Conta criada! Vamos configurar seu cartão.");
-          navigate({ to: "/onboarding" });
+          await completeAuthRedirect("/onboarding", "SIGNED_UP");
         } else {
           const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
           if (dest.toastKind === "error") toast.error(dest.toast ?? "Não foi possível vincular seu cartão.");
           else toast.success(dest.toast ?? "Conta criada!");
-          navigate({ to: dest.to });
+          await completeAuthRedirect(dest.to, "SIGNED_UP");
         }
       } else {
         let creds: { email: string; password: string };
@@ -203,7 +222,7 @@ function AuthPage() {
         const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
         if (dest.toastKind === "error") toast.error(dest.toast ?? "Não foi possível vincular seu cartão.");
         else toast.success(dest.toast ?? "Bem-vindo de volta!");
-        navigate({ to: dest.to });
+        await completeAuthRedirect(dest.to, "SIGNED_IN");
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao autenticar");
