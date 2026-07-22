@@ -91,17 +91,13 @@ function WalletHome() {
             </div>
 
             <section>
-              <div className="mb-2 flex items-center justify-between">
+              <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Em destaque</h2>
                 <Link to="/carteira/cartoes" className="text-xs font-medium text-primary hover:underline">
                   Ver todos →
                 </Link>
               </div>
-              <div className="space-y-3">
-                {items.slice(0, 3).map((i) => (
-                  <WalletCard key={i.customer.id} item={i} />
-                ))}
-              </div>
+              <WalletStack items={items.slice(0, 5)} />
             </section>
 
             {feed.length > 0 && (
