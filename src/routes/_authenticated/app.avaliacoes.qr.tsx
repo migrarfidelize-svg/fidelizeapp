@@ -561,6 +561,9 @@ function ReviewQrPage() {
             <Button asChild variant="ghost" size="sm" className="w-full">
               <Link to="/app/avaliacoes">Ver avaliações recebidas →</Link>
             </Button>
+
+            {/* ===== STORE PREVIEW: Adquirir display físico ===== */}
+            <DisplayStorePreview />
           </CardContent>
         </Card>
 
