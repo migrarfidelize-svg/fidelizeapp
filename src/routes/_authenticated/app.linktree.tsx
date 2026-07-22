@@ -220,7 +220,20 @@ function LinkTreeEditor() {
     if (!est) return;
     // basic validation
     for (const [i, l] of links.entries()) {
-      if (!l.label.trim() || !l.url.trim()) {
+      if (l.kind === "wifi") {
+        const { ssid } = decodeWifi(l.url);
+        if (!ssid.trim()) {
+          toast.error(`Link #${i + 1} (Wi-Fi): informe o nome da rede (SSID).`);
+          return;
+        }
+      } else if (l.kind === "pix") {
+        const { type, key } = decodePix(l.url);
+        const check = validatePixKey(type, key);
+        if (!check.ok) {
+          toast.error(`Link #${i + 1} (Pix · ${PIX_TYPE_LABEL[type]}): ${check.message}`);
+          return;
+        }
+      } else if (!l.label.trim() || !l.url.trim()) {
         toast.error(`Link #${i + 1}: rótulo e URL são obrigatórios.`);
         return;
       }
