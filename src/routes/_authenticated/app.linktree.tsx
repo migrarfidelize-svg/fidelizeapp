@@ -411,7 +411,7 @@ function LinkTreeEditor() {
             <CardHeader className="flex-row items-center justify-between space-y-0">
               <CardTitle className="text-base">Links ({links.length})</CardTitle>
               <div className="flex flex-wrap gap-1">
-                {(["whatsapp","instagram","site","google","maps","custom"] as LinkKind[]).map((k) => {
+                {(["whatsapp","instagram","site","google","maps","wifi","custom"] as LinkKind[]).map((k) => {
                   const M = KIND_META[k];
                   return (
                     <Button key={k} size="sm" variant="outline" onClick={() => addLink(k)}>
