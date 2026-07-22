@@ -34,6 +34,18 @@ function isStandalone() {
  * - Persists subscription to the DB via server function
  * - Falls back to iOS 16.4+ install guide when Web Push isn't available yet
  */
+function detectBrowser(): "chrome" | "edge" | "firefox" | "safari" | "opera" | "samsung" | "other" {
+  if (typeof navigator === "undefined") return "other";
+  const ua = navigator.userAgent;
+  if (/EdgA?\//.test(ua)) return "edge";
+  if (/OPR\//.test(ua)) return "opera";
+  if (/SamsungBrowser/.test(ua)) return "samsung";
+  if (/Firefox\//.test(ua)) return "firefox";
+  if (/Chrome\//.test(ua)) return "chrome";
+  if (/Safari\//.test(ua)) return "safari";
+  return "other";
+}
+
 export function PushOptIn({ token }: { token: string }) {
   const [ready, setReady] = useState(false);
   const [supported, setSupported] = useState(false);
@@ -42,6 +54,10 @@ export function PushOptIn({ token }: { token: string }) {
   const [busy, setBusy] = useState(false);
   const [endpoint, setEndpoint] = useState<string | null>(null);
   const [showIosGuide, setShowIosGuide] = useState(false);
+  const [showUnblockGuide, setShowUnblockGuide] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [errorHint, setErrorHint] = useState<string | null>(null);
+
 
   const subscribe = useServerFn(subscribeCustomerPush);
   const unsubscribe = useServerFn(unsubscribeCustomerPush);
