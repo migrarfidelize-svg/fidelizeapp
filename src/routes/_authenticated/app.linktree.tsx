@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { getErrorMessage as friendlyError } from "@/lib/error-messages";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { getMyLinkTree, upsertLinkTree } from "@/lib/linktree.functions";
+import { validatePixKey, PIX_TYPE_LABEL } from "@/lib/pix-validation";
+import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
