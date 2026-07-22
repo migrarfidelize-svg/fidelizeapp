@@ -59,8 +59,8 @@ export function EmptyWalletState() {
     <StateShell
       tone="primary"
       icon={<QrCode className="h-7 w-7" />}
-      title="Sua carteira está vazia"
-      description="Escaneie o QR Code de qualquer estabelecimento parceiro Fidelize para começar a acumular carimbos e recompensas."
+      title="Você ainda não tem cartões"
+      description="Escaneie o QR Code de qualquer estabelecimento parceiro Fidelize para adicionar seu primeiro cartão e começar a acumular carimbos."
     >
       <ul className="mx-auto grid max-w-xs gap-2 text-left text-xs text-muted-foreground">
         <li className="flex items-start gap-2"><ScanLine className="mt-0.5 h-4 w-4 text-primary" /> Aponte a câmera para o QR Code do estabelecimento</li>
