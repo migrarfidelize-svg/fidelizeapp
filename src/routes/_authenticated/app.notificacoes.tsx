@@ -63,7 +63,13 @@ function NotifPage() {
   const cancelScheduledFn = useServerFn(cancelScheduledBroadcast);
 
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
-  const activeEst = memberships?.[0]?.establishment as { id: string; name: string } | undefined;
+  const activeEst = memberships?.[0]?.establishment as { id: string; name: string; slug: string } | undefined;
+  const deepLinks = [
+    ...BASE_DEEP_LINKS,
+    ...(activeEst?.slug
+      ? [{ key: "promotions", label: "Minhas promoções", path: `/carteira/${activeEst.slug}/promocoes`, icon: Megaphone } as const]
+      : []),
+  ];
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
