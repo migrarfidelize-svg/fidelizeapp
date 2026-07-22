@@ -222,6 +222,7 @@ function DiscoverRow({
     city: string | null;
     description: string | null;
     visited: boolean;
+    has_promotion: boolean;
   };
   nearby?: boolean;
 }) {
@@ -249,8 +250,13 @@ function DiscoverRow({
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             <div className="truncate font-display text-sm font-semibold">{e.name}</div>
+            {e.has_promotion && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/50 bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-300">
+                <Tag className="h-2.5 w-2.5" /> Promoção
+              </span>
+            )}
             {nearby && (
               <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-primary">
                 Perto
