@@ -52,8 +52,17 @@ const KIND_ICONS: Record<string, any> = {
   maps: MapPin,
   email: Mail,
   phone: Phone,
+  wifi: Wifi,
   custom: ExternalLink,
 };
+
+function decodeWifi(url: string): { ssid: string; password: string } {
+  const s = /WIFI:.*?S:((?:\\.|[^;\\])*);/i.exec(url)?.[1] ?? "";
+  const p = /WIFI:.*?P:((?:\\.|[^;\\])*);/i.exec(url)?.[1] ?? "";
+  const unesc = (v: string) => v.replace(/\\(.)/g, "$1");
+  return { ssid: unesc(s), password: unesc(p) };
+}
+
 
 function normalizeUrl(kind: string, url: string) {
   const u = url.trim();
