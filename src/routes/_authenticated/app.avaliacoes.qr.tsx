@@ -1435,6 +1435,24 @@ function ReviewQrPage() {
         </div>
 
       </div>
+
+      {est && (
+        <PrintOrderDialog
+          open={printOpen}
+          onOpenChange={setPrintOpen}
+          establishmentId={est.id}
+          establishmentName={est.name}
+          format={format}
+          posterRef={posterRef}
+          designSnapshot={{
+            template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale,
+            title, subtitle, ctaNearQR, ctaFooter,
+            primaryColor, backgroundColor, textColor,
+            primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel,
+            layout, badges,
+          }}
+        />
+      )}
     </div>
   );
 }
