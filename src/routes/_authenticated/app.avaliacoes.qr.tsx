@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/app/avaliacoes/qr")({
 /** Poster formats — landscape 15×10cm is the default. */
 type FormatKey = "counter15x10" | "story" | "feed" | "a5";
 const FORMATS: Record<FormatKey, { label: string; aspect: string; mm: { w: number; h: number }; description: string; orientation: "landscape" | "portrait" | "square" }> = {
-  counter15x10: { label: "Balcão 15×10", aspect: "3 / 2", mm: { w: 150, h: 100 }, description: "Padrão para balcão e mesa", orientation: "landscape" },
+  counter15x10: { label: "Balcão 10×15", aspect: "2 / 3", mm: { w: 100, h: 150 }, description: "Padrão vertical para balcão e mesa", orientation: "portrait" },
   a5:           { label: "A5 vertical", aspect: "1 / 1.414", mm: { w: 148, h: 210 }, description: "Cartaz de parede", orientation: "portrait" },
   feed:         { label: "Feed 1:1", aspect: "1 / 1", mm: { w: 200, h: 200 }, description: "Instagram/Feed", orientation: "square" },
   story:        { label: "Story 9:16", aspect: "9 / 16", mm: { w: 108, h: 192 }, description: "Story/Reels", orientation: "portrait" },
