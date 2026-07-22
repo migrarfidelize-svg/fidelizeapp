@@ -466,7 +466,14 @@ function PortraitBody(p: PosterProps) {
         <h2 className="text-xl font-black leading-tight" style={{ color: p.textColor }}>{p.title}</h2>
         <p className="mx-auto max-w-[26ch] text-[11px] opacity-70" style={{ color: p.textColor }}>{p.subtitle}</p>
       </div>
-      <QrBlock qr={p.qrDataUrl} />
+      {p.nfcMode ? (
+        <div className="flex items-center justify-center gap-3">
+          <QrBlock qr={p.qrDataUrl} />
+          <NfcBlock primary={p.primaryColor} />
+        </div>
+      ) : (
+        <QrBlock qr={p.qrDataUrl} />
+      )}
       <div className="space-y-2">
         <div className="text-xs font-bold uppercase tracking-widest" style={{ color: p.primaryColor }}>
           {p.nfcMode ? "Aproxime o celular" : p.ctaNearQR}
