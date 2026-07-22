@@ -141,6 +141,13 @@ function PublicLinkTreePage() {
             {links.map((l, i) => {
               const Icon = KIND_ICONS[l.kind] ?? ExternalLink;
               const cfg = buttonClass(i);
+              if (l.kind === "wifi") {
+                return (
+                  <li key={l.id}>
+                    <WifiCard label={l.label} url={l.url} rounded={rounded} primary={primary} accent={accent} text={text} buttonStyle={buttonStyle} />
+                  </li>
+                );
+              }
               return (
                 <li key={l.id}>
                   <a
@@ -156,6 +163,7 @@ function PublicLinkTreePage() {
                 </li>
               );
             })}
+
           </ul>
         )}
 
