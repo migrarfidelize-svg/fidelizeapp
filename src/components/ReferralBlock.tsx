@@ -74,6 +74,7 @@ export function ReferralBlock({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       toast.success("Link copiado!");
+      logShare();
     } catch {
       toast.error("Não foi possível copiar.");
     }
@@ -89,6 +90,7 @@ export function ReferralBlock({
           text: `Use meu código de indicação e ganhe um carimbo-bônus:`,
           url,
         });
+        logShare();
       } catch {
         /* user cancelled */
       }
