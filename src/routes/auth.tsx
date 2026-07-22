@@ -216,10 +216,18 @@ function AuthPage() {
           }
           if (error) {
             if (walletFlow && ((error.message || "").toLowerCase().includes("invalid"))) {
-              throw new Error("WhatsApp não cadastrado. Toque em Criar conta.");
+              // Cliente ainda não tem conta — leva direto ao cadastro mantendo o WhatsApp.
+              toast.info("Não encontramos seu WhatsApp. Complete seu nome para criar sua conta.");
+              const url = new URL(window.location.href);
+              url.searchParams.set("mode", "signup");
+              window.history.replaceState({}, "", url.toString());
+              // Força re-render via reload leve do estado do search
+              window.location.assign(url.toString());
+              return;
             }
             throw error;
           }
+
         }
         const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
         if (dest.toastKind === "error") toast.error(dest.toast ?? "Não foi possível vincular seu cartão.");
