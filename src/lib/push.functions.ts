@@ -175,6 +175,78 @@ export const listPushLogs = createServerFn({ method: "GET" })
     return rows;
   });
 
+/** Push quota + recipient preview for the merchant broadcast UI. */
+export const getPushQuotaStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ establishment_id: z.string().uuid() }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: est } = await context.supabase
+      .from("establishments")
+      .select("plan")
+      .eq("id", data.establishment_id)
+      .maybeSingle();
+    const tier = est?.plan ?? "free";
+
+    // Feature flag + daily limit_value from plan_features (editable per plan).
+    const { data: planRow } = await context.supabase
+      .from("plans")
+      .select("id")
+      .eq("tier", tier)
+      .maybeSingle();
+    let allowed = false;
+    let dailyLimit: number | null = 0;
+    if (planRow) {
+      const { data: pf } = await context.supabase
+        .from("plan_features")
+        .select("enabled, limit_value")
+        .eq("plan_id", planRow.id)
+        .eq("feature_key", "push_notifications")
+        .maybeSingle();
+      allowed = !!pf?.enabled;
+      dailyLimit = pf?.limit_value ?? null; // null = unlimited
+    }
+
+    // Broadcasts sent today (each row in push_logs is one recipient; count unique broadcasts by tag/title/created_at bucket).
+    // Simpler and safer: count distinct (title, minute-bucket) pairs in last 24h — but we treat each Enviar broadcast click as one.
+    // We track broadcasts via a distinct group: minute bucket + title.
+    const since = new Date();
+    since.setHours(0, 0, 0, 0);
+    const { data: todayLogs } = await context.supabase
+      .from("push_logs")
+      .select("title, created_at")
+      .eq("establishment_id", data.establishment_id)
+      .gte("created_at", since.toISOString());
+    const broadcastKeys = new Set<string>();
+    for (const l of todayLogs ?? []) {
+      const bucket = new Date(l.created_at).toISOString().slice(0, 16); // yyyy-mm-ddTHH:MM
+      broadcastKeys.add(`${bucket}|${l.title}`);
+    }
+    const sentToday = broadcastKeys.size;
+
+    // Recipient count: active subs that accept campaign.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: subs } = await supabaseAdmin
+      .from("push_subscriptions")
+      .select("id, preferences")
+      .eq("establishment_id", data.establishment_id)
+      .eq("active", true);
+    const recipients = (subs ?? []).filter(
+      (s: any) => ((s.preferences ?? {}) as Record<string, boolean>).campaign !== false,
+    ).length;
+
+    const remaining = dailyLimit == null ? null : Math.max(0, dailyLimit - sentToday);
+    return {
+      tier,
+      allowed,
+      daily_limit: dailyLimit,
+      sent_today: sentToday,
+      remaining,
+      recipients,
+    };
+  });
+
 /** Merchant broadcast: send to all active push subs of the establishment. */
 export const broadcastPush = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -196,6 +268,52 @@ export const broadcastPush = createServerFn({ method: "POST" })
       _min_role: "manager",
     });
     if (!isManager) throw new Error("Sem permissão.");
+
+    // Feature gate + daily limit
+    const { data: est } = await context.supabase
+      .from("establishments")
+      .select("plan")
+      .eq("id", data.establishment_id)
+      .maybeSingle();
+    const tier = est?.plan ?? "free";
+    const { data: planRow } = await context.supabase
+      .from("plans")
+      .select("id")
+      .eq("tier", tier)
+      .maybeSingle();
+    const { data: pf } = planRow
+      ? await context.supabase
+          .from("plan_features")
+          .select("enabled, limit_value")
+          .eq("plan_id", planRow.id)
+          .eq("feature_key", "push_notifications")
+          .maybeSingle()
+      : { data: null as any };
+    if (!pf?.enabled) {
+      throw new Error(
+        "Notificações push não estão disponíveis no seu plano atual. Faça upgrade em /app/planos.",
+      );
+    }
+    const dailyLimit: number | null = pf.limit_value ?? null;
+    if (dailyLimit != null) {
+      const since = new Date();
+      since.setHours(0, 0, 0, 0);
+      const { data: todayLogs } = await context.supabase
+        .from("push_logs")
+        .select("title, created_at")
+        .eq("establishment_id", data.establishment_id)
+        .gte("created_at", since.toISOString());
+      const keys = new Set<string>();
+      for (const l of todayLogs ?? []) {
+        const bucket = new Date(l.created_at).toISOString().slice(0, 16);
+        keys.add(`${bucket}|${l.title}`);
+      }
+      if (keys.size >= dailyLimit) {
+        throw new Error(
+          `Limite diário do plano atingido (${dailyLimit}/dia). Tente novamente amanhã ou faça upgrade em /app/planos.`,
+        );
+      }
+    }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: subs } = await supabaseAdmin
@@ -232,6 +350,7 @@ export const broadcastPush = createServerFn({ method: "POST" })
     }
     return { sent, failed, total: subs?.length ?? 0 };
   });
+
 
 // ============================================================
 // SUPER ADMIN
