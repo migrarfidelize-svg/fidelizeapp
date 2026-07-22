@@ -15,7 +15,7 @@ import { initSentryClient, captureClientError } from "../lib/sentry-client";
 import { registerPWA } from "../lib/pwa-register";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
-import { SessionStatusPanel } from "@/components/SessionStatusPanel";
+
 
 const AUTH_SYNC_CHANNEL = "fidelize-auth-sync";
 
@@ -190,7 +190,6 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <Outlet />
       <Toaster richColors position="top-center" />
-      <SessionStatusPanel />
     </QueryClientProvider>
   );
 }
