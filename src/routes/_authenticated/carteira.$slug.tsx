@@ -657,7 +657,7 @@ function ReviewsDialog({
   const [ratingFilter, setRatingFilter] = useState<number | null>(null);
   const [sortMode, setSortMode] = useState<import("@/lib/reviews-sort").SortMode>("recent");
 
-  const rawReviews = data?.reviews ?? [];
+  const rawReviews = (data?.reviews ?? []) as import("@/lib/reviews-sort").PublicReview[];
   const filtered = filterByRating(rawReviews, ratingFilter);
   const visible = sortReviews(filtered, sortMode);
 
