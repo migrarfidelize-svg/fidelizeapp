@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMyWallet, getMyHistory, getMyRewards } from "@/lib/my-wallet.functions";
-import { ChevronRight, Sparkles, Gift, Stamp, RotateCcw, Bell } from "lucide-react";
+import { ChevronRight, Sparkles, Gift, Stamp, RotateCcw, Bell, Flame } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import {
   EmptyWalletState,
@@ -9,6 +9,7 @@ import {
   WithOfflineFallback,
 } from "@/components/wallet/WalletStates";
 import { WalletStack } from "@/components/wallet/WalletStack";
+import { WalletHomeSkeleton } from "@/components/wallet/WalletCardSkeleton";
 
 const walletOpts = queryOptions({
   queryKey: ["my-wallet"],
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/_authenticated/carteira/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(walletOpts),
   head: () => ({ meta: [{ title: "Início — Carteira Fidelize" }, { name: "robots", content: "noindex" }] }),
   component: WalletHome,
+  pendingComponent: () => <WalletHomeSkeleton />,
   errorComponent: ({ error, reset }) => {
     return <WalletErrorState error={error} onRetry={reset} />;
   },
