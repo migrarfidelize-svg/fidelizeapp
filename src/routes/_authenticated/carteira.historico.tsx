@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { getMyHistory } from "@/lib/my-wallet.functions";
-import { Stamp, RotateCcw, Trophy } from "lucide-react";
+import { Stamp, RotateCcw, Trophy, Award } from "lucide-react";
+import * as Icons from "lucide-react";
 import { formatDate } from "@/lib/format";
 import { EmptyWalletState, WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
 import { useState } from "react";
@@ -20,7 +21,7 @@ export const Route = createFileRoute("/_authenticated/carteira/historico")({
   errorComponent: ({ error, reset }) => <WalletErrorState error={error} onRetry={reset} />,
 });
 
-type Filter = "all" | "stamp" | "redeem";
+type Filter = "all" | "stamp" | "redeem" | "achievement";
 
 function HistoryPage() {
   const qc = useQueryClient();
@@ -30,12 +31,14 @@ function HistoryPage() {
 
   const stampCount = items.filter((i) => i.kind === "stamp").length;
   const redeemCount = items.filter((i) => i.kind === "redeem").length;
+  const achCount = items.filter((i) => i.kind === "achievement").length;
   const visible = filter === "all" ? items : items.filter((i) => i.kind === filter);
 
   const chips: Array<{ key: Filter; label: string; count: number }> = [
     { key: "all", label: "Tudo", count: items.length },
     { key: "stamp", label: "Carimbos", count: stampCount },
     { key: "redeem", label: "Resgates", count: redeemCount },
+    { key: "achievement", label: "Conquistas", count: achCount },
   ];
 
   return (
@@ -90,6 +93,33 @@ function HistoryPage() {
                 primary_color: string;
               } | null;
               const isRedeem = s.kind === "redeem";
+              const isAch = s.kind === "achievement";
+
+              if (isAch && s.achievement) {
+                const IconComp =
+                  (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[s.achievement.icon] ??
+                  Award;
+                return (
+                  <li
+                    key={s.id}
+                    className="flex items-center gap-3 rounded-2xl border border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-card/40 to-card/40 p-3"
+                  >
+                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md">
+                      <IconComp className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-semibold">{s.achievement.title}</div>
+                      <div className="truncate text-[11px] text-muted-foreground">
+                        {s.achievement.description} · {formatDate(s.createdAt)}
+                      </div>
+                    </div>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-300">
+                      <Award className="h-3 w-3" /> Conquista
+                    </span>
+                  </li>
+                );
+              }
+
               return (
                 <li
                   key={s.id}
