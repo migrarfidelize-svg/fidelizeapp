@@ -90,9 +90,12 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  // Sem claim/est_slug (cadastro vindo do site institucional) o padrão é "estabelecimento".
+  // Fluxos de cliente final sempre chegam com `claim` ou `est_slug` (QR/scan) ou `as=customer`.
   const [role, setRole] = useState<"customer" | "establishment">(
-    search.as ?? (search.claim ? "customer" : "customer"),
+    search.as ?? (search.claim || search.est_slug ? "customer" : "establishment"),
   );
+
 
   const isSignup = mode === "signup";
   const isCustomer = role === "customer";
