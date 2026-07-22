@@ -443,19 +443,22 @@ function ReviewQrPage() {
                     onChange={(e) => setGoogleUrl(e.target.value)}
                     placeholder="https://g.page/r/XXXXXX/review"
                     maxLength={500}
-                    className="text-xs"
+                    aria-invalid={googleCheck.level === "error"}
+                    className={`text-xs transition-colors ${
+                      googleCheck.level === "error" ? "border-destructive focus-visible:ring-destructive/40" :
+                      googleCheck.level === "warn"  ? "border-amber-500/60" :
+                      googleCheck.level === "ok"    ? "border-emerald-500/60" : ""
+                    }`}
                   />
-                  {googleReady ? (
-                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-500">
-                      <CheckCircle2 className="h-3.5 w-3.5" /> Link Google válido
-                    </div>
-                  ) : googleUrl ? (
-                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-amber-500">
-                      <AlertTriangle className="h-3.5 w-3.5" /> Confira se é um link do Google (g.page, maps.app.goo.gl, google.com)
-                    </div>
-                  ) : (
-                    <div className="text-[11px] text-muted-foreground">Copie o link "Deixe uma avaliação" do seu Google Business.</div>
-                  )}
+                  <ValidationLine check={googleCheck} />
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                    <span>{googleUrl.length}/500</span>
+                    {googleUrl && (
+                      <button type="button" onClick={() => setGoogleUrl("")} className="inline-flex items-center gap-1 text-muted-foreground hover:text-destructive">
+                        <XCircle className="h-3 w-3" /> limpar
+                      </button>
+                    )}
+                  </div>
                   <label className="mt-1 flex cursor-pointer items-center justify-between gap-3 rounded-lg border bg-background/50 p-2.5">
                     <span className="flex items-center gap-2 text-xs font-medium">
                       <GoogleG className="h-4 w-4" /> Mostrar logo do Google no cartaz
