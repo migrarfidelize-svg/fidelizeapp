@@ -294,23 +294,23 @@ function KpiTile({ label, value, accent, icon }: { label: string; value: number;
  */
 function computeWeeklyStreak(
   history: Awaited<ReturnType<typeof getMyHistory>>,
-): { weeks: number; lastVisit: string | null } {
+): { weeks: number; lastVisit: string | null; atRisk: boolean; daysLeft: number } {
   const valid = history.filter((h) => !h.reverted && h.createdAt);
-  if (!valid.length) return { weeks: 0, lastVisit: null };
-  const weekKeys = new Set(valid.map((h) => isoWeekKey(new Date(h.createdAt))));
   const now = new Date();
-  let cursor = now;
+  const isoDay = now.getUTCDay() || 7; // 1..7 (Mon..Sun)
+  const daysLeft = 8 - isoDay; // dias restantes até o fim da semana ISO (inclui hoje)
+  if (!valid.length) return { weeks: 0, lastVisit: null, atRisk: false, daysLeft };
+  const weekKeys = new Set(valid.map((h) => isoWeekKey(new Date(h.createdAt))));
+  const hasCurrent = weekKeys.has(isoWeekKey(now));
+  const hasPrev = weekKeys.has(isoWeekKey(addDays(now, -7)));
+  if (!hasCurrent && !hasPrev) return { weeks: 0, lastVisit: valid[0].createdAt, atRisk: false, daysLeft };
+  let cursor = hasCurrent ? now : addDays(now, -7);
   let weeks = 0;
-  // Só conta se a semana atual OU a anterior tem visita (não desqualifica logo).
-  if (!weekKeys.has(isoWeekKey(cursor))) {
-    cursor = addDays(cursor, -7);
-    if (!weekKeys.has(isoWeekKey(cursor))) return { weeks: 0, lastVisit: valid[0].createdAt };
-  }
   while (weekKeys.has(isoWeekKey(cursor))) {
     weeks++;
     cursor = addDays(cursor, -7);
   }
-  return { weeks, lastVisit: valid[0].createdAt };
+  return { weeks, lastVisit: valid[0].createdAt, atRisk: !hasCurrent && hasPrev && weeks >= 1, daysLeft };
 }
 
 function isoWeekKey(d: Date): string {
