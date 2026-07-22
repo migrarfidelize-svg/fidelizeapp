@@ -198,13 +198,16 @@ function PublicLinkTreePage() {
   );
 }
 
+type BtnCfg = { style: React.CSSProperties; className: string };
+
 function WifiCard({
-  label, url, rounded, primary, accent, text, buttonStyle,
+  label, url, rounded, primary, accent, text, buttonStyle, cfg,
 }: {
   label: string; url: string; rounded: string;
-  primary: string; accent: string; text: string; buttonStyle: string;
+  primary: string; accent: string; text: string; buttonStyle: string; cfg: BtnCfg;
 }) {
   const { ssid, password } = decodeWifi(url);
+  const [open, setOpen] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
   const [copied, setCopied] = useState<"" | "ssid" | "pwd">("");
 
@@ -216,60 +219,62 @@ function WifiCard({
     } catch { /* noop */ }
   };
 
-  const bg =
+  const panelBg =
     buttonStyle === "glass"
       ? "rgba(255,255,255,0.06)"
       : buttonStyle === "outline"
       ? "transparent"
       : `linear-gradient(135deg, ${primary}22, ${accent}22)`;
-  const border = buttonStyle === "outline" ? `2px solid ${primary}` : "1px solid rgba(255,255,255,0.15)";
+  const panelBorder = buttonStyle === "outline" ? `2px solid ${primary}` : "1px solid rgba(255,255,255,0.15)";
 
   return (
-    <div
-      className={`px-4 py-4 text-left ${rounded}`}
-      style={{ background: bg, border, color: text, backdropFilter: "blur(12px)" }}
-    >
-      <div className="flex items-center gap-2 mb-3">
-        <span
-          className="grid h-8 w-8 place-items-center rounded-lg text-white shrink-0"
-          style={{ background: `linear-gradient(135deg, ${primary}, ${accent})` }}
-        >
-          <Wifi className="h-4 w-4" />
-        </span>
-        <div className="min-w-0">
-          <p className="text-xs uppercase tracking-wider opacity-60">Wi-Fi do local</p>
-          <p className="text-sm font-semibold truncate">{label || "Rede Wi-Fi"}</p>
-        </div>
-      </div>
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className={`w-full flex items-center justify-center gap-3 px-5 py-4 text-sm font-semibold transition-transform active:scale-[0.97] hover:scale-[1.02] ${cfg.className}`}
+        style={cfg.style}
+      >
+        <Wifi className="h-5 w-5" />
+        <span>{label || "Wi-Fi do local"}</span>
+      </button>
 
-      <div className="space-y-2">
-        <FieldRow
-          k="Rede"
-          v={ssid || "—"}
-          copied={copied === "ssid"}
-          onCopy={() => ssid && copy(ssid, "ssid")}
-          text={text}
-        />
-        <FieldRow
-          k="Senha"
-          v={password ? (showPwd ? password : "•".repeat(Math.min(password.length, 12))) : "—"}
-          copied={copied === "pwd"}
-          onCopy={() => password && copy(password, "pwd")}
-          text={text}
-          right={
-            password ? (
-              <button
-                type="button"
-                onClick={() => setShowPwd((s) => !s)}
-                className="opacity-70 hover:opacity-100"
-                aria-label={showPwd ? "Ocultar senha" : "Mostrar senha"}
-              >
-                {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            ) : null
-          }
-        />
-      </div>
+      {open && (
+        <div
+          className={`mt-2 px-4 py-4 text-left ${rounded}`}
+          style={{ background: panelBg, border: panelBorder, color: text, backdropFilter: "blur(12px)" }}
+        >
+          <div className="space-y-2">
+            <FieldRow
+              k="Rede"
+              v={ssid || "—"}
+              copied={copied === "ssid"}
+              onCopy={() => ssid && copy(ssid, "ssid")}
+              text={text}
+            />
+            <FieldRow
+              k="Senha"
+              v={password ? (showPwd ? password : "•".repeat(Math.min(password.length, 12))) : "—"}
+              copied={copied === "pwd"}
+              onCopy={() => password && copy(password, "pwd")}
+              text={text}
+              right={
+                password ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowPwd((s) => !s)}
+                    className="opacity-70 hover:opacity-100"
+                    aria-label={showPwd ? "Ocultar senha" : "Mostrar senha"}
+                  >
+                    {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                ) : null
+              }
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -295,12 +300,13 @@ function FieldRow({
 }
 
 function PixCard({
-  label, url, rounded, primary, accent, text, buttonStyle,
+  label, url, rounded, primary, accent, text, buttonStyle, cfg,
 }: {
   label: string; url: string; rounded: string;
-  primary: string; accent: string; text: string; buttonStyle: string;
+  primary: string; accent: string; text: string; buttonStyle: string; cfg: BtnCfg;
 }) {
   const { type, key, name } = decodePix(url);
+  const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState<"" | "key" | "name">("");
 
   const copy = async (v: string, which: "key" | "name") => {
@@ -311,50 +317,56 @@ function PixCard({
     } catch { /* noop */ }
   };
 
-  const bg =
+  const panelBg =
     buttonStyle === "glass"
       ? "rgba(255,255,255,0.06)"
       : buttonStyle === "outline"
       ? "transparent"
       : `linear-gradient(135deg, ${primary}22, ${accent}22)`;
-  const border = buttonStyle === "outline" ? `2px solid ${primary}` : "1px solid rgba(255,255,255,0.15)";
+  const panelBorder = buttonStyle === "outline" ? `2px solid ${primary}` : "1px solid rgba(255,255,255,0.15)";
 
   return (
-    <div
-      className={`px-4 py-4 text-left ${rounded}`}
-      style={{ background: bg, border, color: text, backdropFilter: "blur(12px)" }}
-    >
-      <div className="flex items-center gap-2 mb-3">
-        <span
-          className="grid h-8 w-8 place-items-center rounded-lg text-white shrink-0"
-          style={{ background: `linear-gradient(135deg, ${primary}, ${accent})` }}
-        >
-          <KeyRound className="h-4 w-4" />
-        </span>
-        <div className="min-w-0">
-          <p className="text-xs uppercase tracking-wider opacity-60">Chave Pix · {PIX_TYPE_LABEL[type]}</p>
-          <p className="text-sm font-semibold truncate">{label || (name ? `Pix · ${name}` : "Pagamento Pix")}</p>
-        </div>
-      </div>
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className={`w-full flex items-center justify-center gap-3 px-5 py-4 text-sm font-semibold transition-transform active:scale-[0.97] hover:scale-[1.02] ${cfg.className}`}
+        style={cfg.style}
+      >
+        <KeyRound className="h-5 w-5" />
+        <span>{label || (name ? `Pix · ${name}` : "Chave Pix")}</span>
+      </button>
 
-      <div className="space-y-2">
-        <FieldRow
-          k="Chave"
-          v={key || "—"}
-          copied={copied === "key"}
-          onCopy={() => key && copy(key, "key")}
-          text={text}
-        />
-        {name && (
-          <FieldRow
-            k="Nome"
-            v={name}
-            copied={copied === "name"}
-            onCopy={() => copy(name, "name")}
-            text={text}
-          />
-        )}
-      </div>
+      {open && (
+        <div
+          className={`mt-2 px-4 py-4 text-left ${rounded}`}
+          style={{ background: panelBg, border: panelBorder, color: text, backdropFilter: "blur(12px)" }}
+        >
+          <p className="text-[10px] uppercase tracking-wider opacity-60 mb-2">
+            Tipo · {PIX_TYPE_LABEL[type]}
+          </p>
+          <div className="space-y-2">
+            <FieldRow
+              k="Chave"
+              v={key || "—"}
+              copied={copied === "key"}
+              onCopy={() => key && copy(key, "key")}
+              text={text}
+            />
+            {name && (
+              <FieldRow
+                k="Nome"
+                v={name}
+                copied={copied === "name"}
+                onCopy={() => copy(name, "name")}
+                text={text}
+              />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
