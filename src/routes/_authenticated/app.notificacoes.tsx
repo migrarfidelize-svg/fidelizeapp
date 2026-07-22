@@ -101,6 +101,86 @@ function NotifPage() {
         </p>
       </header>
 
+      {/* Quota / plano */}
+      {quota && (
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Card>
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between">
+                <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                  <Zap className="h-3.5 w-3.5" /> Plano
+                </div>
+                <Badge variant="secondary" className="uppercase text-[10px]">{quota.tier}</Badge>
+              </div>
+              <div className="mt-1 text-lg font-semibold">
+                {quota.daily_limit == null ? "Ilimitado" : `${quota.daily_limit}/dia`}
+              </div>
+              <div className="text-[11px] text-muted-foreground">Limite diário do plano</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4">
+              <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Send className="h-3.5 w-3.5" /> Enviados hoje
+              </div>
+              <div className="mt-1 text-lg font-semibold">
+                {quota.sent_today}
+                {quota.daily_limit != null && (
+                  <span className="text-sm text-muted-foreground"> / {quota.daily_limit}</span>
+                )}
+              </div>
+              <div className="text-[11px] text-muted-foreground">
+                {quota.remaining == null ? "Sem limite" : `Restam ${quota.remaining} hoje`}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4">
+              <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Users className="h-3.5 w-3.5" /> Destinatários estimados
+              </div>
+              <div className="mt-1 text-lg font-semibold">{quota.recipients}</div>
+              <div className="text-[11px] text-muted-foreground">Inscritos ativos que aceitam campanhas</div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {blockedByPlan && (
+        <Card className="border-amber-500/40 bg-amber-500/5">
+          <CardContent className="pt-4 flex items-start gap-3">
+            <Sparkles className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+            <div className="flex-1 text-sm">
+              <div className="font-semibold">Notificações push não estão no seu plano</div>
+              <div className="text-muted-foreground">
+                Faça upgrade para enviar avisos instantâneos aos seus clientes.
+              </div>
+            </div>
+            <Button asChild size="sm">
+              <Link to="/app/planos">Ver planos</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {!blockedByPlan && limitReached && (
+        <Card className="border-destructive/40 bg-destructive/5">
+          <CardContent className="pt-4 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+            <div className="flex-1 text-sm">
+              <div className="font-semibold">Limite diário atingido</div>
+              <div className="text-muted-foreground">
+                Você já enviou {quota?.sent_today} de {quota?.daily_limit} broadcasts hoje. Tente novamente amanhã ou faça upgrade.
+              </div>
+            </div>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/app/planos">Upgrade</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Nova mensagem</CardTitle>
