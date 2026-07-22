@@ -35,6 +35,7 @@ function AdminPlansPage() {
   const upd = useServerFn(adminUpdatePlan);
   const toggle = useServerFn(adminToggleFeature);
   const impactFn = useServerFn(adminPlanFeatureImpact);
+  const updateLimit = useServerFn(adminUpdateFeatureLimit);
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["admin-plans"], queryFn: () => list() });
   const [editing, setEditing] = useState<any | null>(null);
@@ -47,6 +48,8 @@ function AdminPlansPage() {
     enabled: !!confirmToggle,
   });
   const [saving, setSaving] = useState(false);
+  // Features with a numeric daily/monthly limit editable inline
+  const LIMIT_FEATURES = new Set(["push_notifications"]);
   // Features whose changes are business-critical → require confirmation
   const SENSITIVE_FEATURES = new Set(["public_reviews"]);
 
@@ -142,24 +145,47 @@ function AdminPlansPage() {
 
                 <div className="space-y-1 max-h-40 overflow-auto pr-1">
                   {(p.features ?? []).map((f: any) => (
-                    <label key={f.id} className="flex items-center justify-between gap-2 text-xs rounded px-2 py-1 hover:bg-muted">
+                    <div key={f.id} className="flex items-center justify-between gap-2 text-xs rounded px-2 py-1 hover:bg-muted">
                       <span className="flex items-center gap-2 truncate">
                         {f.enabled ? <CheckCircle2 className="h-3.5 w-3.5 text-primary" /> : <XCircle className="h-3.5 w-3.5 text-muted-foreground" />}
                         <span className="truncate">{f.feature_name}</span>
                       </span>
-                      <Switch
-                        checked={f.enabled}
-                        onCheckedChange={(v) => {
-                          if (SENSITIVE_FEATURES.has(f.feature_key)) {
-                            setConfirmToggle({ plan_id: p.id, plan_name: p.name, feature_key: f.feature_key, feature_name: f.feature_name, next: v });
-                          } else {
-                            applyToggle(v, p, f);
-                          }
-                        }}
-                      />
-                    </label>
+                      <div className="flex items-center gap-2">
+                        {LIMIT_FEATURES.has(f.feature_key) && f.enabled && (
+                          <Input
+                            type="number"
+                            min={0}
+                            className="h-7 w-20 text-xs"
+                            placeholder="∞"
+                            defaultValue={f.limit_value ?? ""}
+                            title="Limite diário (vazio = ilimitado)"
+                            onBlur={async (e) => {
+                              const raw = e.target.value;
+                              const next = raw === "" ? null : Math.max(0, Number(raw));
+                              if ((f.limit_value ?? null) === next) return;
+                              try {
+                                await updateLimit({ data: { plan_id: p.id, feature_key: f.feature_key, feature_name: f.feature_name, limit_value: next } });
+                                qc.invalidateQueries({ queryKey: ["admin-plans"] });
+                                toast.success(`Limite de "${f.feature_name}" em ${p.name}: ${next == null ? "ilimitado" : `${next}/dia`}.`);
+                              } catch (err: any) { toast.error(err.message); }
+                            }}
+                          />
+                        )}
+                        <Switch
+                          checked={f.enabled}
+                          onCheckedChange={(v) => {
+                            if (SENSITIVE_FEATURES.has(f.feature_key)) {
+                              setConfirmToggle({ plan_id: p.id, plan_name: p.name, feature_key: f.feature_key, feature_name: f.feature_name, next: v });
+                            } else {
+                              applyToggle(v, p, f);
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
                   ))}
                 </div>
+
 
                 <div className="flex items-center justify-between pt-2 border-t text-xs text-muted-foreground">
                   <span>{p.subscribers} empresas</span>
