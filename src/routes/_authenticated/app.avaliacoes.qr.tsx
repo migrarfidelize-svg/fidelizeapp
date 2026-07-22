@@ -1198,8 +1198,8 @@ function PortraitBody(p: PosterProps) {
         </DraggableItem>
       )}
 
-      {/* NFC block (only when NFC mode + no secondary) */}
-      {p.nfcMode && !p.secondaryEnabled && (
+      {/* NFC "Toque aqui" block — only when NFC mode + block style + no secondary */}
+      {p.nfcMode && p.nfcStyle === "block" && !p.secondaryEnabled && (
         <DraggableItem itemKey="nfc" layout={p.layout} setLayout={p.setLayout} editable={p.editable}>
           <NfcBlock primary={p.primaryColor} />
         </DraggableItem>
@@ -1208,7 +1208,7 @@ function PortraitBody(p: PosterProps) {
       {/* CTA near QR */}
       <DraggableItem itemKey="ctaNear" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
         <div className="text-center text-xs font-bold uppercase tracking-widest" style={{ color: p.primaryColor }}>
-          {p.nfcMode ? "Aproxime o celular" : p.ctaNearQR}
+          {p.nfcMode && p.nfcStyle === "block" ? "Aproxime o celular" : p.ctaNearQR}
         </div>
       </DraggableItem>
 
@@ -1216,7 +1216,7 @@ function PortraitBody(p: PosterProps) {
       <DraggableItem itemKey="ctaFooter" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
         <div className="flex flex-col items-center gap-1">
           <div className="text-center text-[10px] opacity-70" style={{ color: p.textColor }}>{p.ctaFooter}</div>
-          {p.nfcMode && <NfcBadge primary={p.primaryColor} />}
+          {p.nfcMode && p.nfcStyle === "badge" && <NfcBadge primary={p.primaryColor} />}
         </div>
       </DraggableItem>
     </div>
