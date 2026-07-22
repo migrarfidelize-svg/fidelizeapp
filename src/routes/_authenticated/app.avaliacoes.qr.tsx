@@ -452,7 +452,10 @@ function ReviewQrPage() {
 
   const googleCheck = useMemo(() => checkGoogleUrl(googleUrl), [googleUrl]);
   const secondaryRawUrl = secondaryUrl.trim();
-  const secondaryCheck = useMemo(() => checkGenericUrl(secondaryUrl), [secondaryUrl]);
+  const primaryHost = useMemo(() => {
+    try { return new URL(rawTargetUrl || fidelizeUrl).hostname; } catch { return undefined; }
+  }, [rawTargetUrl, fidelizeUrl]);
+  const secondaryCheck = useMemo(() => checkGenericUrl(secondaryUrl, primaryHost), [secondaryUrl, primaryHost]);
   const googleReady = destination === "google" && googleCheck.level === "ok";
   const secondaryIsPlaceholder = secondaryEnabled && !secondaryRawUrl;
   const secondaryReady = secondaryEnabled && secondaryCheck.level === "ok";
