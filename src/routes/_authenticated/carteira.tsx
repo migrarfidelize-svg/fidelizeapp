@@ -6,6 +6,7 @@ import { Wallet, Home, LogOut, User, Gift, History, Compass, QrCode, Bell } from
 import { toast } from "sonner";
 import { MyQrSheet } from "@/components/wallet/MyQrSheet";
 import { countUnread } from "@/lib/inbox.functions";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const Route = createFileRoute("/_authenticated/carteira")({
   component: WalletLayout,
@@ -61,6 +62,7 @@ function WalletLayout() {
           </Link>
           <div className="flex items-center gap-2">
             <InboxBell pathname={pathname} />
+            <ThemeToggle />
             <Link
               to="/carteira/perfil"
               className={
