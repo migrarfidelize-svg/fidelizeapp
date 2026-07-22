@@ -45,7 +45,7 @@ const TIERS = [
   { key: "diamante", label: "Diamante" },
 ] as const;
 
-const DEEP_LINKS = [
+const BASE_DEEP_LINKS = [
   { key: "wallet", label: "Minha carteira", path: "/carteira", icon: Wallet },
   { key: "qr", label: "Meu QR", path: "/carteira?tab=qr", icon: QrCode },
   { key: "prizes", label: "Meus prêmios", path: "/carteira/premios", icon: Gift },
