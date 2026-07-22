@@ -855,7 +855,7 @@ function ReviewQrPage() {
                   destination={destination}
                   showGoogleLogo={showGoogleLogo}
                   nfcMode={nfcMode}
-                  nfcStyle={nfcStyle}
+                  nfcSize={nfcSize}
                   primaryLabel={primaryLabel}
                   secondaryEnabled={secondaryEnabled}
                   secondaryQrDataUrl={secondaryQrDataUrl}
