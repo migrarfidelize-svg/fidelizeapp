@@ -45,6 +45,7 @@ type Media = { path: string; type: "image" | "video"; url?: string | null };
 function PromotionsListPage() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(opts(slug));
+  const [showCampaigns, setShowCampaigns] = useState(false);
 
   if (!data.establishment) {
     return (
