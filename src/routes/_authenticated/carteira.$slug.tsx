@@ -242,6 +242,10 @@ function WalletEstablishment() {
           </div>
         )}
 
+        {primaryCard && campaignActive && d.customer.token && (
+          <PushOptIn token={d.customer.token} />
+        )}
+
         {/* Outros programas nesta loja (cascata de prêmios) */}
         {otherCards.length > 0 && (
           <section className="rounded-2xl border border-border/60 bg-card/40 p-4">
