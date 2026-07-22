@@ -296,6 +296,7 @@ function DiscoveryProfilePage() {
       <div className="pt-4 text-center text-[10px] uppercase tracking-widest text-muted-foreground">
         Powered by Fidelize
       </div>
+      </div>
     </div>
   );
 }
