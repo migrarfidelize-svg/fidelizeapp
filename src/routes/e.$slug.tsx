@@ -180,15 +180,9 @@ function DiscoveryProfilePage() {
         </div>
 
         <div className="relative mt-4 flex flex-wrap gap-2">
-          <Link
-            to="/carteira/$slug"
-            params={{ slug }}
-            className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-white shadow-sm transition-transform active:scale-95"
-            style={{ background: brand }}
-          >
-            <CreditCard className="h-3.5 w-3.5" /> Começar a colecionar
-          </Link>
+          <VisitorCta slug={slug} brand={brand} />
           {contactLinks.map((c, i) => {
+
             const Icon = c.icon;
             return (
               <a
