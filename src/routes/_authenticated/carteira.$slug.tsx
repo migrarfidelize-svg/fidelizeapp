@@ -26,6 +26,7 @@ import { useState } from "react";
 import { ExpiredCardState, WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
 import { PushOptIn } from "@/components/PushOptIn";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { filterByRating, sortReviews } from "@/lib/reviews-sort";
 
 
 const opts = (slug: string) =>
