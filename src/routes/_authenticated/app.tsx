@@ -61,6 +61,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/app", label: "Painel", icon: LayoutDashboard, exact: true },
       { to: "/app/carimbar", label: "Carimbar", icon: Stamp },
       { to: "/app/clientes", label: "Clientes", icon: Users },
+      { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
     ],
   },
   {
