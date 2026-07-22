@@ -31,35 +31,47 @@ export const exportMyData = createServerFn({ method: "GET" })
         .eq("email", email),
     ]);
 
-    // 2) Perfil "cliente final": customers + cartões, carimbos, recompensas, avaliações, mensagens
-    const { data: customers } = await supabase
+    // 2) Perfil "cliente final": customers + cartões, carimbos, recompensas, avaliações
+    // Cast pontual para "any" evita explosão de tipos aninhados do postgrest-js.
+    const sb = supabase as unknown as {
+      from: (t: string) => {
+        select: (s: string) => {
+          eq: (c: string, v: unknown) => Promise<{ data: unknown[] | null; error: unknown }> & {
+            in: (c: string, v: unknown[]) => Promise<{ data: unknown[] | null; error: unknown }>;
+            maybeSingle: () => Promise<{ data: unknown; error: unknown }>;
+          };
+          in: (c: string, v: unknown[]) => Promise<{ data: unknown[] | null; error: unknown }>;
+        };
+      };
+    };
+
+    const { data: customers } = (await sb
       .from("customers")
-      .select("id, establishment_id, name, whatsapp, email, birthday, tier, visits_count, token, created_at, establishments(name, slug)")
-      .eq("user_id", userId);
+      .select("id, establishment_id, name, phone, email, birthdate, tier, visits_count, access_token, marketing_opt_in, created_at")
+      .eq("user_id", userId)) as { data: Array<{ id: string }> | null };
     const customerIds = (customers ?? []).map((c) => c.id);
 
-    const [cards, stamps, rewards, reviews, achievements, walletPrefs, pushSubs] = await Promise.all([
+    const [cards, stamps, rewards, reviewsRes, achievements, pushSubs] = await Promise.all([
       customerIds.length
-        ? supabase.from("loyalty_cards").select("id, customer_id, campaign_id, stamps, cycle, created_at").in("customer_id", customerIds)
-        : Promise.resolve({ data: [] as unknown[] }),
+        ? sb.from("loyalty_cards").select("id, customer_id, campaign_id, stamps, cycle, created_at").in("customer_id", customerIds)
+        : Promise.resolve({ data: [] }),
       customerIds.length
-        ? supabase
+        ? sb
             .from("stamps")
             .select("id, card_id, created_at, reverted_at, note, loyalty_cards!inner(customer_id)")
             .in("loyalty_cards.customer_id", customerIds)
-        : Promise.resolve({ data: [] as unknown[] }),
+        : Promise.resolve({ data: [] }),
       customerIds.length
-        ? supabase
+        ? sb
             .from("rewards")
             .select("id, card_id, campaign_id, establishment_id, expires_at, redeemed_at, created_at, loyalty_cards!inner(customer_id)")
             .in("loyalty_cards.customer_id", customerIds)
-        : Promise.resolve({ data: [] as unknown[] }),
+        : Promise.resolve({ data: [] }),
       customerIds.length
-        ? supabase.from("reviews").select("id, establishment_id, rating, comment, created_at, status").in("customer_id", customerIds)
-        : Promise.resolve({ data: [] as unknown[] }),
-      supabase.from("customer_achievements").select("achievement_code, unlocked_at").eq("user_id", userId),
-      supabase.from("wallet_prefs").select("*").eq("user_id", userId).maybeSingle(),
-      supabase.from("push_subscriptions").select("endpoint, created_at, last_seen_at, user_agent").eq("user_id", userId),
+        ? sb.from("reviews").select("id, establishment_id, rating, nps, comment, created_at, is_public").in("customer_id", customerIds)
+        : Promise.resolve({ data: [] }),
+      sb.from("customer_achievements").select("achievement_code, unlocked_at, establishment_id").eq("user_id", userId),
+      sb.from("push_subscriptions").select("endpoint, created_at, user_agent, preferences").eq("user_id", userId),
     ]);
 
     return {
@@ -75,14 +87,13 @@ export const exportMyData = createServerFn({ method: "GET" })
       },
       loyalty: {
         customers: customers ?? [],
-        loyalty_cards: (cards as { data?: unknown[] }).data ?? [],
-        stamps: (stamps as { data?: unknown[] }).data ?? [],
-        rewards: (rewards as { data?: unknown[] }).data ?? [],
-        reviews: (reviews as { data?: unknown[] }).data ?? [],
+        loyalty_cards: cards.data ?? [],
+        stamps: stamps.data ?? [],
+        rewards: rewards.data ?? [],
+        reviews: reviewsRes.data ?? [],
         achievements: achievements.data ?? [],
       },
       preferences: {
-        wallet: walletPrefs.data ?? null,
         push_subscriptions: pushSubs.data ?? [],
       },
       legal_basis: "LGPD art. 18, II (acesso) e V (portabilidade)",
