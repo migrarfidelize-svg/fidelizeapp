@@ -256,10 +256,15 @@ function ReviewQrPage() {
   const targetUrl = rawTargetUrl || (destination === "google"
     ? "https://g.page/exemplo-fidelize/review"
     : "https://fidelize.app/preview");
-  const googleReady = destination === "google" && /^https?:\/\/(g\.page|maps\.app\.goo\.gl|search\.google\.com|www\.google\.com|goo\.gl)/i.test(rawTargetUrl);
+
+  const googleCheck = useMemo(() => checkGoogleUrl(googleUrl), [googleUrl]);
   const secondaryRawUrl = secondaryUrl.trim();
+  const secondaryCheck = useMemo(() => checkGenericUrl(secondaryUrl), [secondaryUrl]);
+  const googleReady = destination === "google" && googleCheck.level === "ok";
   const secondaryIsPlaceholder = secondaryEnabled && !secondaryRawUrl;
-  const secondaryReady = secondaryEnabled && /^https?:\/\//i.test(secondaryRawUrl);
+  const secondaryReady = secondaryEnabled && secondaryCheck.level === "ok";
+  const primaryBlocking = destination === "google" && (googleCheck.level === "error" || googleCheck.level === "empty");
+  const secondaryBlocking = secondaryEnabled && (secondaryCheck.level === "error" || secondaryCheck.level === "empty");
 
   useEffect(() => {
     QRCode.toDataURL(targetUrl, {
@@ -279,18 +284,44 @@ function ReviewQrPage() {
 
   const dims = FORMATS[format];
 
+  /**
+   * Renders the poster to PNG at 300 DPI print resolution.
+   * pixelRatio is computed from the on-screen preview size so the output
+   * always matches (mm ÷ 25.4 × 300) px, no matter how big the preview is.
+   */
+  async function renderPosterPng(): Promise<string> {
+    const el = posterRef.current;
+    if (!el) throw new Error("Preview indisponível");
+    const rect = el.getBoundingClientRect();
+    const targetPx = Math.max(600, Math.round((dims.mm.w / 25.4) * 300));
+    const pixelRatio = Math.max(2, targetPx / Math.max(1, rect.width));
+    // Force layout-guides off during export
+    const wasEditing = editLayout;
+    if (wasEditing) setEditLayout(false);
+    await new Promise((r) => requestAnimationFrame(() => r(null)));
+    try {
+      return await toPng(el, {
+        pixelRatio,
+        cacheBust: true,
+        filter: (node) => !(node instanceof HTMLElement && node.dataset?.exportIgnore === "true"),
+      });
+    } finally {
+      if (wasEditing) setEditLayout(true);
+    }
+  }
+
   async function exportPng() {
     if (!posterRef.current) return;
-    if (primaryIsPlaceholder) { toast.error("Cole o link do Google antes de exportar"); return; }
-    if (secondaryIsPlaceholder) { toast.error("Cole a URL do QR secundário antes de exportar"); return; }
+    if (primaryBlocking) { toast.error(googleCheck.message); return; }
+    if (secondaryBlocking) { toast.error(secondaryCheck.message); return; }
     setExporting(true);
     try {
-      const url = await toPng(posterRef.current, { pixelRatio: 3, cacheBust: true });
+      const url = await renderPosterPng();
       const a = document.createElement("a");
       a.href = url;
-      a.download = `qr-avaliacao-${est?.slug ?? "estabelecimento"}-${format}.png`;
+      a.download = `qr-avaliacao-${est?.slug ?? "estabelecimento"}-${format}-300dpi.png`;
       a.click();
-      toast.success("PNG baixado");
+      toast.success(`PNG 300 DPI baixado (${Math.round((dims.mm.w/25.4)*300)}×${Math.round((dims.mm.h/25.4)*300)}px)`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao exportar PNG");
     } finally { setExporting(false); }
@@ -298,16 +329,17 @@ function ReviewQrPage() {
 
   async function exportPdf() {
     if (!posterRef.current) return;
-    if (!targetUrl) { toast.error("Configure o destino do QR primeiro"); return; }
+    if (primaryBlocking) { toast.error(googleCheck.message); return; }
+    if (secondaryBlocking) { toast.error(secondaryCheck.message); return; }
     setExporting(true);
     try {
-      const url = await toPng(posterRef.current, { pixelRatio: 4, cacheBust: true });
+      const url = await renderPosterPng();
       const mmW = dims.mm.w;
       const mmH = dims.mm.h;
-      const pdf = new jsPDF({ unit: "mm", format: [mmW, mmH], orientation: mmW > mmH ? "landscape" : "portrait" });
-      pdf.addImage(url, "PNG", 0, 0, mmW, mmH);
-      pdf.save(`qr-avaliacao-${est?.slug ?? "estabelecimento"}-${format}.pdf`);
-      toast.success("PDF baixado");
+      const pdf = new jsPDF({ unit: "mm", format: [mmW, mmH], orientation: mmW > mmH ? "landscape" : "portrait", compress: true });
+      pdf.addImage(url, "PNG", 0, 0, mmW, mmH, undefined, "FAST");
+      pdf.save(`qr-avaliacao-${est?.slug ?? "estabelecimento"}-${format}-300dpi.pdf`);
+      toast.success(`PDF 300 DPI baixado (${mmW}×${mmH}mm)`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao exportar PDF");
     } finally { setExporting(false); }
