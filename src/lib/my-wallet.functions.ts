@@ -231,7 +231,7 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
     const { data: row, error } = await context.supabase
       .from("customers")
       .select(
-        `id, name, code, access_token, last_visit_at, visits_count, tier,
+        `id, name, code, access_token, last_visit_at, visits_count, tier, referral_code,
          establishment:establishments!inner(
            id, slug, name, logo_url, primary_color, address, phone, whatsapp,
            instagram, active, description
@@ -242,6 +242,7 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
       .maybeSingle();
     if (error) throw error;
     if (!row) return null;
+
 
     const { data: cards } = await context.supabase
       .from("loyalty_cards")
@@ -299,7 +300,9 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
         lastVisitAt: row.last_visit_at,
         visitsCount: row.visits_count,
         tier: row.tier,
+        referralCode: row.referral_code,
       },
+
       establishment: row.establishment,
       cards: cards ?? [],
       recentStamps,
@@ -377,41 +380,76 @@ export const getMyHistory = createServerFn({ method: "GET" })
       .eq("user_id", context.userId);
     if (cErr) throw cErr;
     const custIds = (customers ?? []).map((c) => c.id);
-    if (!custIds.length) return [] as Array<{
-      id: string; createdAt: string; reverted: boolean; establishment: any; campaignName: string | null;
-    }>;
+    type HistoryItem = {
+      id: string;
+      kind: "stamp" | "redeem";
+      createdAt: string;
+      reverted: boolean;
+      establishment: any;
+      campaignName: string | null;
+      rewardTitle: string | null;
+    };
+    if (!custIds.length) return [] as HistoryItem[];
 
     const { data: cards } = await context.supabase
       .from("loyalty_cards")
-      .select(`id, customer_id, campaign:campaigns!inner(name)`)
+      .select(`id, customer_id, campaign:campaigns!inner(name, reward_title)`)
       .in("customer_id", custIds);
     const cardMap = new Map((cards ?? []).map((c) => [c.id, {
       customerId: c.customer_id,
       campaignName: (c.campaign as { name: string }).name,
+      rewardTitle: (c.campaign as { reward_title: string }).reward_title,
     }]));
     const cardIds = (cards ?? []).map((c) => c.id);
-    if (!cardIds.length) return [];
+    if (!cardIds.length) return [] as HistoryItem[];
 
-    const { data: stamps, error } = await context.supabase
-      .from("stamps")
-      .select(`id, card_id, created_at, reverted_at`)
-      .in("card_id", cardIds)
-      .order("created_at", { ascending: false })
-      .limit(120);
+    const [{ data: stamps, error }, { data: redemptions }] = await Promise.all([
+      context.supabase
+        .from("stamps")
+        .select(`id, card_id, created_at, reverted_at`)
+        .in("card_id", cardIds)
+        .order("created_at", { ascending: false })
+        .limit(120),
+      context.supabase
+        .from("rewards")
+        .select(`id, card_id, redeemed_at`)
+        .in("card_id", cardIds)
+        .not("redeemed_at", "is", null)
+        .order("redeemed_at", { ascending: false })
+        .limit(60),
+    ]);
     if (error) throw error;
 
     const custEstMap = new Map((customers ?? []).map((c) => [c.id, c.establishment]));
-    return (stamps ?? []).map((s) => {
+    const stampItems: HistoryItem[] = (stamps ?? []).map((s) => {
       const c = cardMap.get(s.card_id);
       return {
-        id: s.id,
+        id: `s:${s.id}`,
+        kind: "stamp",
         createdAt: s.created_at,
         reverted: !!s.reverted_at,
         establishment: c ? custEstMap.get(c.customerId) : null,
         campaignName: c?.campaignName ?? null,
+        rewardTitle: null,
       };
     });
+    const redeemItems: HistoryItem[] = (redemptions ?? []).map((r) => {
+      const c = cardMap.get(r.card_id);
+      return {
+        id: `r:${r.id}`,
+        kind: "redeem",
+        createdAt: r.redeemed_at as string,
+        reverted: false,
+        establishment: c ? custEstMap.get(c.customerId) : null,
+        campaignName: c?.campaignName ?? null,
+        rewardTitle: c?.rewardTitle ?? null,
+      };
+    });
+    return [...stampItems, ...redeemItems].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
   });
+
 
 /**
  * Lista estabelecimentos ativos que o usuário ainda NÃO tem na carteira,

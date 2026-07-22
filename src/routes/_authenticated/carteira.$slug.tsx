@@ -14,8 +14,14 @@ import {
   Stamp as StampIcon,
   Trophy,
   Clock,
+  Share2,
+  Copy,
+  Check,
 } from "lucide-react";
+import { toast } from "sonner";
+import { useState } from "react";
 import { ExpiredCardState, WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
+
 
 const opts = (slug: string) =>
   queryOptions({
@@ -70,6 +76,8 @@ function WalletEstablishment() {
   const qc = useQueryClient();
   const slug = Route.useParams().slug;
   const { data } = useSuspenseQuery(opts(slug));
+  const [copied, setCopied] = useState(false);
+
   const d = data!;
   const est = d.establishment as {
     name: string;
@@ -336,6 +344,21 @@ function WalletEstablishment() {
           </section>
         )}
 
+        {/* Indicar esta loja — link contextualizado */}
+        {d.customer.referralCode && (
+          <ShareCardSection
+            referralCode={d.customer.referralCode}
+            establishmentName={est.name}
+            copied={copied}
+            onCopied={() => {
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            }}
+          />
+        )}
+
+
+
         {primaryCard && (primaryCard.campaign as { rules: string | null }).rules && (
           <section className="rounded-2xl border border-border/60 bg-card/40 p-4">
             <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
@@ -376,5 +399,80 @@ function WalletEstablishment() {
         )}
       </div>
     </WithOfflineFallback>
+  );
+}
+
+function ShareCardSection({
+  referralCode,
+  establishmentName,
+  copied,
+  onCopied,
+}: {
+  referralCode: string;
+  establishmentName: string;
+  copied: boolean;
+  onCopied: () => void;
+}) {
+  const url =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/r/${referralCode.toUpperCase()}`
+      : `/r/${referralCode.toUpperCase()}`;
+  const shareText = `Vem carimbar comigo na ${establishmentName}! Use meu link e a gente ganha carimbo-bônus 🎁`;
+
+  async function handleShare() {
+    try {
+      if (typeof navigator !== "undefined" && "share" in navigator) {
+        await navigator.share({ title: `Indicação — ${establishmentName}`, text: shareText, url });
+        return;
+      }
+    } catch {
+      /* usuário cancelou — segue para o fallback */
+    }
+    try {
+      await navigator.clipboard.writeText(`${shareText}\n${url}`);
+      onCopied();
+      toast.success("Link copiado! Envie para um amigo.");
+    } catch {
+      toast.error("Não consegui copiar. Copie manualmente.");
+    }
+  }
+
+  async function copyOnly() {
+    try {
+      await navigator.clipboard.writeText(url);
+      onCopied();
+      toast.success("Link copiado.");
+    } catch {
+      toast.error("Não consegui copiar.");
+    }
+  }
+
+  return (
+    <section className="overflow-hidden rounded-2xl border border-border/60 bg-card/40 p-4">
+      <h2 className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+        <Share2 className="h-3.5 w-3.5" /> Indicar esta loja
+      </h2>
+      <p className="text-xs text-muted-foreground">
+        Compartilhe seu link. Quando um amigo se cadastrar por ele, vocês dois ganham carimbo-bônus.
+      </p>
+      <div className="mt-3 flex items-center gap-2 rounded-xl border border-border/50 bg-background/60 px-3 py-2 text-[11px] font-mono">
+        <span className="min-w-0 truncate text-muted-foreground">{url}</span>
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <button
+          onClick={handleShare}
+          className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-[11px] font-black uppercase tracking-widest text-primary-foreground shadow-[0_0_16px_color-mix(in_oklab,var(--primary)_35%,transparent)] transition-transform active:scale-95"
+        >
+          <Share2 className="h-3.5 w-3.5" /> Compartilhar
+        </button>
+        <button
+          onClick={copyOnly}
+          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-border/60 bg-background/60 px-3 py-2 text-[11px] font-black uppercase tracking-widest text-foreground/80 transition-colors hover:border-primary/40 hover:text-primary"
+        >
+          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? "Copiado" : "Copiar link"}
+        </button>
+      </div>
+    </section>
   );
 }
