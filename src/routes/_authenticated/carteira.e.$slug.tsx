@@ -29,7 +29,7 @@ const opts = (slug: string) =>
     staleTime: 30_000,
   });
 
-export const Route = createFileRoute("/carteira/e/$slug")({
+export const Route = createFileRoute("/_authenticated/carteira/e/$slug")({
   ssr: false,
   loader: ({ context, params }) => context.queryClient.ensureQueryData(opts(params.slug)),
   head: ({ params }) => ({

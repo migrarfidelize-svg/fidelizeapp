@@ -39,7 +39,6 @@ import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as SuporteChamadoIdRouteImport } from './routes/suporte.chamado.$id'
 import { Route as SuporteSlugNovoRouteImport } from './routes/suporte.$slug.novo'
-import { Route as CarteiraESlugRouteImport } from './routes/carteira.e.$slug'
 import { Route as AjudaCategoryArticleRouteImport } from './routes/ajuda.$category.$article'
 import { Route as AuthenticatedCarteiraRecompensasRouteImport } from './routes/_authenticated/carteira.recompensas'
 import { Route as AuthenticatedCarteiraPremiosRouteImport } from './routes/_authenticated/carteira.premios'
@@ -92,6 +91,7 @@ import { Route as ApiPublicHooksDispatchScheduledPushRouteImport } from './route
 import { Route as ApiPublicCronReengagementRouteImport } from './routes/api/public/cron/reengagement'
 import { Route as ApiPublicCronBirthdayRouteImport } from './routes/api/public/cron/birthday'
 import { Route as AuthenticatedSuporteTicketIdRouteImport } from './routes/_authenticated/suporte.ticket.$id'
+import { Route as AuthenticatedCarteiraESlugRouteImport } from './routes/_authenticated/carteira.e.$slug'
 import { Route as AuthenticatedCarteiraSlugPromocoesRouteImport } from './routes/_authenticated/carteira.$slug.promocoes'
 import { Route as AuthenticatedAdminSuporteIdRouteImport } from './routes/_authenticated/admin.suporte.$id'
 import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authenticated/admin.empresa.$id'
@@ -246,11 +246,6 @@ const SuporteChamadoIdRoute = SuporteChamadoIdRouteImport.update({
 const SuporteSlugNovoRoute = SuporteSlugNovoRouteImport.update({
   id: '/suporte/$slug/novo',
   path: '/suporte/$slug/novo',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CarteiraESlugRoute = CarteiraESlugRouteImport.update({
-  id: '/carteira/e/$slug',
-  path: '/carteira/e/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AjudaCategoryArticleRoute = AjudaCategoryArticleRouteImport.update({
@@ -555,6 +550,12 @@ const AuthenticatedSuporteTicketIdRoute =
     path: '/suporte/ticket/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCarteiraESlugRoute =
+  AuthenticatedCarteiraESlugRouteImport.update({
+    id: '/e/$slug',
+    path: '/e/$slug',
+    getParentRoute: () => AuthenticatedCarteiraRoute,
+  } as any)
 const AuthenticatedCarteiraSlugPromocoesRoute =
   AuthenticatedCarteiraSlugPromocoesRouteImport.update({
     id: '/promocoes',
@@ -641,7 +642,6 @@ export interface FileRoutesByFullPath {
   '/carteira/premios': typeof AuthenticatedCarteiraPremiosRoute
   '/carteira/recompensas': typeof AuthenticatedCarteiraRecompensasRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
-  '/carteira/e/$slug': typeof CarteiraESlugRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -653,6 +653,7 @@ export interface FileRoutesByFullPath {
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
+  '/carteira/e/$slug': typeof AuthenticatedCarteiraESlugRoute
   '/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
@@ -726,7 +727,6 @@ export interface FileRoutesByTo {
   '/carteira/premios': typeof AuthenticatedCarteiraPremiosRoute
   '/carteira/recompensas': typeof AuthenticatedCarteiraRecompensasRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
-  '/carteira/e/$slug': typeof CarteiraESlugRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -738,6 +738,7 @@ export interface FileRoutesByTo {
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
+  '/carteira/e/$slug': typeof AuthenticatedCarteiraESlugRoute
   '/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
@@ -816,7 +817,6 @@ export interface FileRoutesById {
   '/_authenticated/carteira/premios': typeof AuthenticatedCarteiraPremiosRoute
   '/_authenticated/carteira/recompensas': typeof AuthenticatedCarteiraRecompensasRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
-  '/carteira/e/$slug': typeof CarteiraESlugRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -828,6 +828,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/_authenticated/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/_authenticated/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
+  '/_authenticated/carteira/e/$slug': typeof AuthenticatedCarteiraESlugRoute
   '/_authenticated/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
@@ -906,7 +907,6 @@ export interface FileRouteTypes {
     | '/carteira/premios'
     | '/carteira/recompensas'
     | '/ajuda/$category/$article'
-    | '/carteira/e/$slug'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/admin/'
@@ -918,6 +918,7 @@ export interface FileRouteTypes {
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
     | '/carteira/$slug/promocoes'
+    | '/carteira/e/$slug'
     | '/suporte/ticket/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
@@ -991,7 +992,6 @@ export interface FileRouteTypes {
     | '/carteira/premios'
     | '/carteira/recompensas'
     | '/ajuda/$category/$article'
-    | '/carteira/e/$slug'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/admin'
@@ -1003,6 +1003,7 @@ export interface FileRouteTypes {
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
     | '/carteira/$slug/promocoes'
+    | '/carteira/e/$slug'
     | '/suporte/ticket/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
@@ -1080,7 +1081,6 @@ export interface FileRouteTypes {
     | '/_authenticated/carteira/premios'
     | '/_authenticated/carteira/recompensas'
     | '/ajuda/$category/$article'
-    | '/carteira/e/$slug'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/_authenticated/admin/'
@@ -1092,6 +1092,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/empresa/$id'
     | '/_authenticated/admin/suporte/$id'
     | '/_authenticated/carteira/$slug/promocoes'
+    | '/_authenticated/carteira/e/$slug'
     | '/_authenticated/suporte/ticket/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
@@ -1126,7 +1127,6 @@ export interface RootRouteChildren {
   SuporteMeusRoute: typeof SuporteMeusRoute
   AjudaIndexRoute: typeof AjudaIndexRoute
   AjudaCategoryArticleRoute: typeof AjudaCategoryArticleRoute
-  CarteiraESlugRoute: typeof CarteiraESlugRoute
   SuporteSlugNovoRoute: typeof SuporteSlugNovoRoute
   SuporteChamadoIdRoute: typeof SuporteChamadoIdRoute
   AjudaCategoryIndexRoute: typeof AjudaCategoryIndexRoute
@@ -1353,13 +1353,6 @@ declare module '@tanstack/react-router' {
       path: '/suporte/$slug/novo'
       fullPath: '/suporte/$slug/novo'
       preLoaderRoute: typeof SuporteSlugNovoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/carteira/e/$slug': {
-      id: '/carteira/e/$slug'
-      path: '/carteira/e/$slug'
-      fullPath: '/carteira/e/$slug'
-      preLoaderRoute: typeof CarteiraESlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ajuda/$category/$article': {
@@ -1726,6 +1719,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSuporteTicketIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/carteira/e/$slug': {
+      id: '/_authenticated/carteira/e/$slug'
+      path: '/e/$slug'
+      fullPath: '/carteira/e/$slug'
+      preLoaderRoute: typeof AuthenticatedCarteiraESlugRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
+    }
     '/_authenticated/carteira/$slug/promocoes': {
       id: '/_authenticated/carteira/$slug/promocoes'
       path: '/promocoes'
@@ -1874,6 +1874,7 @@ interface AuthenticatedCarteiraRouteChildren {
   AuthenticatedCarteiraPremiosRoute: typeof AuthenticatedCarteiraPremiosRoute
   AuthenticatedCarteiraRecompensasRoute: typeof AuthenticatedCarteiraRecompensasRoute
   AuthenticatedCarteiraIndexRoute: typeof AuthenticatedCarteiraIndexRoute
+  AuthenticatedCarteiraESlugRoute: typeof AuthenticatedCarteiraESlugRoute
 }
 
 const AuthenticatedCarteiraRouteChildren: AuthenticatedCarteiraRouteChildren = {
@@ -1886,6 +1887,7 @@ const AuthenticatedCarteiraRouteChildren: AuthenticatedCarteiraRouteChildren = {
   AuthenticatedCarteiraPremiosRoute: AuthenticatedCarteiraPremiosRoute,
   AuthenticatedCarteiraRecompensasRoute: AuthenticatedCarteiraRecompensasRoute,
   AuthenticatedCarteiraIndexRoute: AuthenticatedCarteiraIndexRoute,
+  AuthenticatedCarteiraESlugRoute: AuthenticatedCarteiraESlugRoute,
 }
 
 const AuthenticatedCarteiraRouteWithChildren =
@@ -1944,7 +1946,6 @@ const rootRouteChildren: RootRouteChildren = {
   SuporteMeusRoute: SuporteMeusRoute,
   AjudaIndexRoute: AjudaIndexRoute,
   AjudaCategoryArticleRoute: AjudaCategoryArticleRoute,
-  CarteiraESlugRoute: CarteiraESlugRoute,
   SuporteSlugNovoRoute: SuporteSlugNovoRoute,
   SuporteChamadoIdRoute: SuporteChamadoIdRoute,
   AjudaCategoryIndexRoute: AjudaCategoryIndexRoute,
