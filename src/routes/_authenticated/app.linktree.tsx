@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/app/linktree")({
   component: LinkTreeEditor,
 });
 
-type LinkKind = "whatsapp" | "instagram" | "facebook" | "tiktok" | "youtube" | "site" | "google" | "maps" | "email" | "phone" | "wifi" | "custom";
+type LinkKind = "whatsapp" | "instagram" | "facebook" | "tiktok" | "youtube" | "site" | "google" | "maps" | "email" | "phone" | "wifi" | "pix" | "custom";
 
 type LinkRow = {
   id?: string;
@@ -49,6 +49,7 @@ const KIND_META: Record<LinkKind, { label: string; icon: any; placeholder: strin
   email: { label: "E-mail", icon: Mail, placeholder: "contato@seudominio.com" },
   phone: { label: "Telefone", icon: Phone, placeholder: "1130000000" },
   wifi: { label: "Wi-Fi", icon: Wifi, placeholder: "WIFI:S:Rede;T:WPA;P:senha;;" },
+  pix: { label: "Chave Pix", icon: KeyRound, placeholder: "PIX:T:email;K:chave;;" },
   custom: { label: "Link personalizado", icon: ExternalLink, placeholder: "https://…" },
 };
 
@@ -63,6 +64,26 @@ function decodeWifi(url: string): { ssid: string; password: string } {
   const unesc = (v: string) => v.replace(/\\(.)/g, "$1");
   return { ssid: unesc(s), password: unesc(p) };
 }
+
+// Encode/decode helpers for Pix keys stored in the `url` field
+type PixKeyType = "cpf" | "cnpj" | "email" | "telefone" | "aleatoria";
+function encodePix(type: PixKeyType, key: string, name: string) {
+  const esc = (s: string) => s.replace(/([\\;,":])/g, "\\$1");
+  return `PIX:T:${type};K:${esc(key)};N:${esc(name)};;`;
+}
+function decodePix(url: string): { type: PixKeyType; key: string; name: string } {
+  const t = (/PIX:.*?T:([^;]+);/i.exec(url)?.[1] ?? "email") as PixKeyType;
+  const k = /PIX:.*?K:((?:\\.|[^;\\])*);/i.exec(url)?.[1] ?? "";
+  const n = /PIX:.*?N:((?:\\.|[^;\\])*);/i.exec(url)?.[1] ?? "";
+  const unesc = (v: string) => v.replace(/\\(.)/g, "$1");
+  const validTypes: PixKeyType[] = ["cpf", "cnpj", "email", "telefone", "aleatoria"];
+  return {
+    type: validTypes.includes(t) ? t : "email",
+    key: unesc(k),
+    name: unesc(n),
+  };
+}
+
 
 
 type ThemePreset = {
