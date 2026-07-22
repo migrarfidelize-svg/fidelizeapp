@@ -297,9 +297,19 @@ function PromoCard({
   brand: string;
   globalLinks: { label: string; url: string }[];
 }) {
+  const [open, setOpen] = useState(false);
+  const [mediaOpen, setMediaOpen] = useState(false);
   const [idx, setIdx] = useState(0);
   const media = promo.media.filter((m) => !!m.url);
   const current = media[idx];
+  const hasImage = media.some((m) => m.type === "image");
+  const hasVideo = media.some((m) => m.type === "video");
+  const mediaLabel = hasImage && hasVideo
+    ? "Ver imagem/vídeo"
+    : hasVideo
+    ? "Ver vídeo"
+    : "Ver imagem";
+  const MediaIcon = hasVideo && !hasImage ? PlayCircle : ImageIcon;
 
   const combinedLinks = [
     ...promo.external_links,
@@ -310,68 +320,61 @@ function PromoCard({
 
   return (
     <li className="overflow-hidden rounded-3xl border border-border/60 bg-card/40 shadow-sm">
-      {current && (
-        <div className="relative aspect-video w-full bg-black">
-          {current.type === "video" ? (
-            <video
-              src={current.url ?? undefined}
-              className="h-full w-full object-contain"
-              controls
-              playsInline
-            />
-          ) : (
-            <img
-              src={current.url ?? undefined}
-              alt=""
-              className="h-full w-full object-cover"
-            />
-          )}
-          {media.length > 1 && (
-            <>
-              <button
-                type="button"
-                onClick={() => setIdx((idx - 1 + media.length) % media.length)}
-                className="absolute left-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-black/60 text-white transition hover:bg-black/80"
-                aria-label="Anterior"
-              >
-                <PrevIcon className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setIdx((idx + 1) % media.length)}
-                className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-black/60 text-white transition hover:bg-black/80"
-                aria-label="Próxima"
-              >
-                <NextIcon className="h-4 w-4" />
-              </button>
-              <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1">
-                {media.map((_, i) => (
-                  <span
-                    key={i}
-                    className={`h-1.5 w-1.5 rounded-full transition ${
-                      i === idx ? "bg-white" : "bg-white/40"
-                    }`}
-                  />
-                ))}
-              </div>
-            </>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex w-full items-center gap-3 p-4 text-left transition hover:bg-card/60"
+      >
+        <div
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl"
+          style={{ background: `${brand}22`, color: brand }}
+        >
+          <Megaphone className="h-5 w-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="truncate font-display text-base font-bold" style={{ color: brand }}>
+            {promo.title}
+          </div>
+          {promo.ends_at && (
+            <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
+              Válido até {new Date(promo.ends_at).toLocaleDateString("pt-BR")}
+            </div>
           )}
         </div>
-      )}
-      <div className="space-y-3 p-4">
-        <h2 className="font-display text-base font-bold" style={{ color: brand }}>
-          {promo.title}
-        </h2>
-        {promo.body && (
-          <p className="whitespace-pre-wrap text-sm text-muted-foreground">{promo.body}</p>
-        )}
-        {promo.ends_at && (
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-            Válido até {new Date(promo.ends_at).toLocaleDateString("pt-BR")}
-          </p>
-        )}
-        {combinedLinks.length > 0 && (
+        <ChevronDown
+          className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {open && (
+        <div className="space-y-3 border-t border-border/60 px-4 pb-4 pt-3">
+          {promo.body ? (
+            <p className="whitespace-pre-wrap text-sm text-muted-foreground">{promo.body}</p>
+          ) : (
+            <p className="text-sm italic text-muted-foreground">Sem descrição adicional.</p>
+          )}
+
           <div className="flex flex-wrap gap-2 pt-1">
+            {media.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIdx(0);
+                  setMediaOpen(true);
+                }}
+                className="inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold shadow-sm transition-transform active:scale-95"
+                style={{ borderColor: `${brand}55`, color: brand, background: `${brand}12` }}
+              >
+                <MediaIcon className="h-3.5 w-3.5" />
+                {mediaLabel}
+                {media.length > 1 && (
+                  <span className="ml-0.5 opacity-70">({media.length})</span>
+                )}
+              </button>
+            )}
             {combinedLinks.map((l, i) => (
               <a
                 key={`${l.url}-${i}`}
@@ -385,8 +388,78 @@ function PromoCard({
               </a>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {mediaOpen && current && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setMediaOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setMediaOpen(false)}
+              aria-label="Fechar"
+              className="absolute -top-10 right-0 grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black">
+              {current.type === "video" ? (
+                <video
+                  src={current.url ?? undefined}
+                  className="h-full w-full object-contain"
+                  controls
+                  autoPlay
+                  playsInline
+                />
+              ) : (
+                <img
+                  src={current.url ?? undefined}
+                  alt={promo.title}
+                  className="h-full w-full object-contain"
+                />
+              )}
+              {media.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setIdx((idx - 1 + media.length) % media.length)}
+                    className="absolute left-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/60 text-white transition hover:bg-black/80"
+                    aria-label="Anterior"
+                  >
+                    <PrevIcon className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIdx((idx + 1) % media.length)}
+                    className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/60 text-white transition hover:bg-black/80"
+                    aria-label="Próxima"
+                  >
+                    <NextIcon className="h-4 w-4" />
+                  </button>
+                  <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1">
+                    {media.map((_, i) => (
+                      <span
+                        key={i}
+                        className={`h-1.5 w-1.5 rounded-full transition ${
+                          i === idx ? "bg-white" : "bg-white/40"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </li>
   );
 }
