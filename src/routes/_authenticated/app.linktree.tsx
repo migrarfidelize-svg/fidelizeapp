@@ -160,7 +160,7 @@ function LinkTreeEditor() {
       toast.success(publish === true ? "Página publicada!" : publish === false ? "Página despublicada." : "Alterações salvas.");
       q.refetch();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao salvar");
+      toast.error(friendlyError(e));
     } finally {
       setSaving(false);
     }
