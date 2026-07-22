@@ -14,8 +14,10 @@ import {
   Instagram,
   Globe,
   Clock,
-  CreditCard,
+  Gift,
+  ChevronDown,
 } from "lucide-react";
+import { getStampIcon } from "@/lib/stampIcons";
 import { WalletErrorState } from "@/components/wallet/WalletStates";
 
 const opts = (slug: string) =>
