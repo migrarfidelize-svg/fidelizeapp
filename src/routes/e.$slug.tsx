@@ -90,18 +90,20 @@ function DiscoveryProfilePage() {
 
   if (!data.establishment) {
     return (
-      <div className="mx-auto max-w-2xl space-y-4 p-4 pt-6">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ChevronLeft className="h-4 w-4" /> Início
-        </Link>
-        <div className="rounded-3xl border border-dashed border-border/60 bg-card/30 p-8 text-center">
-          <div className="font-display text-sm font-bold">Estabelecimento indisponível</div>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Este estabelecimento não está mais ativo na Fidelize.
-          </p>
+      <div className="min-h-dvh bg-background text-foreground">
+        <div className="mx-auto max-w-2xl space-y-4 p-4 pt-6">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ChevronLeft className="h-4 w-4" /> Início
+          </Link>
+          <div className="rounded-3xl border border-dashed border-border/60 bg-card/30 p-8 text-center">
+            <div className="font-display text-sm font-bold">Estabelecimento indisponível</div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Este estabelecimento não está mais ativo na Fidelize.
+            </p>
+          </div>
         </div>
       </div>
     );
