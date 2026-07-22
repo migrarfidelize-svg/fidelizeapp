@@ -177,7 +177,14 @@ function ReviewQrPage() {
         if (typeof s.secondaryEnabled === "boolean") setSecondaryEnabled(s.secondaryEnabled);
         if (typeof s.secondaryUrl === "string") setSecondaryUrl(s.secondaryUrl);
         if (typeof s.secondaryLabel === "string") setSecondaryLabel(s.secondaryLabel);
-        if (s.layout && typeof s.layout === "object") setLayout({ ...DEFAULT_LAYOUT, ...s.layout });
+        if (s.layout && typeof s.layout === "object") {
+          const merged = { ...DEFAULT_LAYOUT, ...s.layout };
+          // Migrate old default (ctaNear at y:86) to new tighter default (y:74)
+          if (merged.ctaNear?.x === 50 && merged.ctaNear?.y === 86) {
+            merged.ctaNear = DEFAULT_LAYOUT.ctaNear;
+          }
+          setLayout(merged);
+        }
       }
       const rawDesigns = window.localStorage.getItem(designsKey);
       if (rawDesigns) setDesigns(JSON.parse(rawDesigns));
