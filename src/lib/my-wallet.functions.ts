@@ -407,28 +407,27 @@ export const getMyHistory = createServerFn({ method: "GET" })
         .eq("is_active", true),
     ]);
     const catMap = new Map((catalog ?? []).map((c) => [c.code, c]));
-    const achievementItems: HistoryItem[] = (myAchievs ?? [])
-      .map((a) => {
-        const meta = catMap.get(a.achievement_code);
-        if (!meta) return null;
-        return {
-          id: `a:${a.achievement_code}`,
-          kind: "achievement" as const,
-          createdAt: a.unlocked_at,
-          reverted: false,
-          establishment: null,
-          campaignName: null,
-          rewardTitle: null,
-          achievement: {
-            code: meta.code,
-            title: meta.title,
-            description: meta.description,
-            icon: meta.icon,
-            rarity: meta.rarity,
-          },
-        };
-      })
-      .filter((x): x is HistoryItem => x !== null);
+    const achievementItems: HistoryItem[] = [];
+    for (const a of myAchievs ?? []) {
+      const meta = catMap.get(a.achievement_code);
+      if (!meta) continue;
+      achievementItems.push({
+        id: `a:${a.achievement_code}`,
+        kind: "achievement",
+        createdAt: a.unlocked_at,
+        reverted: false,
+        establishment: null,
+        campaignName: null,
+        rewardTitle: null,
+        achievement: {
+          code: meta.code,
+          title: meta.title,
+          description: meta.description,
+          icon: meta.icon,
+          rarity: meta.rarity,
+        },
+      });
+    }
 
     if (!custIds.length) {
       return achievementItems as HistoryItem[];
