@@ -74,7 +74,7 @@ export const exportMyData = createServerFn({ method: "GET" })
       sb.from("push_subscriptions").select("endpoint, created_at, user_agent, preferences").eq("user_id", userId),
     ]);
 
-    return {
+    const payload = {
       generated_at: new Date().toISOString(),
       user_id: userId,
       email,
@@ -100,6 +100,7 @@ export const exportMyData = createServerFn({ method: "GET" })
       notes:
         "Este pacote contém todos os dados pessoais tratados pela Fidelize associados a esta conta. Registros retidos por obrigação legal (ex.: comprovantes fiscais) não são removidos com a exclusão da conta.",
     };
+    return payload as unknown as Record<string, unknown>;
   });
 
 export const deleteMyAccount = createServerFn({ method: "POST" })
