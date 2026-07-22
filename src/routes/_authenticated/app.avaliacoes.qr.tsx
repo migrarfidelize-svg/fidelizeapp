@@ -1032,6 +1032,7 @@ interface PosterProps {
   destination: Destination;
   showGoogleLogo: boolean;
   nfcMode: boolean;
+  nfcStyle: "block" | "badge";
   primaryLabel: string;
   secondaryEnabled: boolean;
   secondaryQrDataUrl: string;
