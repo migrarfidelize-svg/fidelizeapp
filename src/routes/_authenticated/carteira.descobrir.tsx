@@ -157,7 +157,7 @@ function DiscoverRow({
   return (
     <li>
       <Link
-        to="/carteira/$slug/promocoes"
+        to="/carteira/e/$slug"
         params={{ slug: e.slug }}
         className="group relative flex items-center gap-3 overflow-hidden rounded-2xl border border-border/60 bg-card/40 p-3 transition-all hover:border-primary/40 hover:bg-card/60"
       >
