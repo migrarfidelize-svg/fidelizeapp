@@ -112,8 +112,9 @@ function AuthPage() {
   const [whatsapp, setWhatsapp] = useState("");
   // Sem claim/est_slug (cadastro vindo do site institucional) o padrão é "estabelecimento".
   // Fluxos de cliente final sempre chegam com `claim` ou `est_slug` (QR/scan) ou `as=customer`.
+  // Se abriu como PWA instalado (source=pwa), assume "cliente".
   const [role, setRole] = useState<"customer" | "establishment">(
-    search.as ?? (search.claim || search.est_slug ? "customer" : "establishment"),
+    search.as ?? (search.claim || search.est_slug || search.source === "pwa" ? "customer" : "establishment"),
   );
 
 
