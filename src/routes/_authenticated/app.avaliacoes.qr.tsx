@@ -266,49 +266,53 @@ function ReviewQrPage() {
   });
 
 
-  // Load persisted state
+  // Load persisted state (localStorage → IndexedDB fallback)
   useEffect(() => {
     if (typeof window === "undefined") return;
-    try {
-      const raw = window.localStorage.getItem(storageKey);
-      if (raw) {
-        const s = JSON.parse(raw);
-        if (s.template) setTemplate(s.template);
-        if (s.format) setFormat(s.format);
-        if (s.destination) setDestination(s.destination);
-        if (typeof s.googleUrl === "string") setGoogleUrl(s.googleUrl);
-        if (typeof s.showGoogleLogo === "boolean") setShowGoogleLogo(s.showGoogleLogo);
-        if (typeof s.nfcMode === "boolean") setNfcMode(s.nfcMode);
-        if (typeof s.contentScale === "number") setContentScale(s.contentScale);
-        if (s.ecc === "L" || s.ecc === "M" || s.ecc === "Q" || s.ecc === "H") setEcc(s.ecc);
-        if (typeof s.utmEnabled === "boolean") setUtmEnabled(s.utmEnabled);
-        if (typeof s.bleedMarks === "boolean") setBleedMarks(s.bleedMarks);
-        if (s.title) setTitle(s.title);
-        if (s.subtitle) setSubtitle(s.subtitle);
-        if (s.ctaNearQR) setCtaNearQR(s.ctaNearQR);
-        if (s.ctaFooter) setCtaFooter(s.ctaFooter);
-        if (s.primaryColor) setPrimaryColor(s.primaryColor);
-        if (s.backgroundColor) setBackgroundColor(s.backgroundColor);
-        if (s.textColor) setTextColor(s.textColor);
-        if (typeof s.primaryLabel === "string") setPrimaryLabel(s.primaryLabel);
-        if (typeof s.secondaryEnabled === "boolean") setSecondaryEnabled(s.secondaryEnabled);
-        if (typeof s.secondaryUrl === "string") setSecondaryUrl(s.secondaryUrl);
-        if (typeof s.secondaryLabel === "string") setSecondaryLabel(s.secondaryLabel);
-        if (s.layout && typeof s.layout === "object") setLayout({ ...DEFAULT_LAYOUT, ...s.layout });
-        if (Array.isArray(s.badges)) {
-          setBadges(s.badges.filter((b: unknown): b is BadgeInstance =>
-            !!b && typeof b === "object"
-            && typeof (b as BadgeInstance).key === "string"
-            && (BADGE_KEYS as string[]).includes((b as BadgeInstance).key)
-            && typeof (b as BadgeInstance).x === "number"
-            && typeof (b as BadgeInstance).y === "number"
-          ));
+    let cancelled = false;
+    (async () => {
+      try {
+        const s = await readJson<Record<string, unknown>>(storageKey);
+        if (s && !cancelled) {
+          if (s.template) setTemplate(s.template as TemplateKey);
+          if (s.format) setFormat(s.format as FormatKey);
+          if (s.destination) setDestination(s.destination as typeof destination);
+          if (typeof s.googleUrl === "string") setGoogleUrl(s.googleUrl);
+          if (typeof s.showGoogleLogo === "boolean") setShowGoogleLogo(s.showGoogleLogo);
+          if (typeof s.nfcMode === "boolean") setNfcMode(s.nfcMode);
+          if (typeof s.contentScale === "number") setContentScale(s.contentScale);
+          if (s.ecc === "L" || s.ecc === "M" || s.ecc === "Q" || s.ecc === "H") setEcc(s.ecc);
+          if (typeof s.utmEnabled === "boolean") setUtmEnabled(s.utmEnabled);
+          if (typeof s.bleedMarks === "boolean") setBleedMarks(s.bleedMarks);
+          if (typeof s.title === "string") setTitle(s.title);
+          if (typeof s.subtitle === "string") setSubtitle(s.subtitle);
+          if (typeof s.ctaNearQR === "string") setCtaNearQR(s.ctaNearQR);
+          if (typeof s.ctaFooter === "string") setCtaFooter(s.ctaFooter);
+          if (typeof s.primaryColor === "string") setPrimaryColor(s.primaryColor);
+          if (typeof s.backgroundColor === "string") setBackgroundColor(s.backgroundColor);
+          if (typeof s.textColor === "string") setTextColor(s.textColor);
+          if (typeof s.primaryLabel === "string") setPrimaryLabel(s.primaryLabel);
+          if (typeof s.secondaryEnabled === "boolean") setSecondaryEnabled(s.secondaryEnabled);
+          if (typeof s.secondaryUrl === "string") setSecondaryUrl(s.secondaryUrl);
+          if (typeof s.secondaryLabel === "string") setSecondaryLabel(s.secondaryLabel);
+          if (s.layout && typeof s.layout === "object") setLayout({ ...DEFAULT_LAYOUT, ...(s.layout as PosterLayout) });
+          if (Array.isArray(s.badges)) {
+            setBadges((s.badges as unknown[]).filter((b: unknown): b is BadgeInstance =>
+              !!b && typeof b === "object"
+              && typeof (b as BadgeInstance).key === "string"
+              && (BADGE_KEYS as string[]).includes((b as BadgeInstance).key)
+              && typeof (b as BadgeInstance).x === "number"
+              && typeof (b as BadgeInstance).y === "number"
+            ));
+          }
         }
-      }
-      const rawDesigns = window.localStorage.getItem(designsKey);
-      if (rawDesigns) setDesigns(JSON.parse(rawDesigns));
-    } catch { /* ignore */ }
+        const d = await readJson<SavedDesign[]>(designsKey);
+        if (d && !cancelled) setDesigns(d);
+      } catch { /* ignore */ }
+    })();
+    return () => { cancelled = true; };
   }, [storageKey, designsKey]);
+
 
   useEffect(() => {
     if (typeof window === "undefined") return;
