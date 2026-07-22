@@ -1133,7 +1133,7 @@ function PortraitBody(p: PosterProps) {
           label={p.primaryLabel}
           primary={p.primaryColor}
           text={p.textColor}
-          badge={p.showGoogleLogo && p.secondaryEnabled ? "google" : null}
+          badge={null}
           size={primarySize}
         />
       </DraggableItem>
