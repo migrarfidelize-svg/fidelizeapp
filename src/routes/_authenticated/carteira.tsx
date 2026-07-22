@@ -50,7 +50,7 @@ function useWalletFlash() {
 /** 4 tabs laterais + slot central reservado ao FAB "Meu QR". */
 const TABS = [
   { to: "/carteira", label: "Início", icon: Home, exact: true },
-  { to: "/carteira/premios", label: "Cartões", icon: Gift, exact: false },
+  { to: "/carteira/premios", label: "Prêmios", icon: Gift, exact: false },
   { to: "/carteira/historico", label: "Histórico", icon: History, exact: false },
   { to: "/carteira/descobrir", label: "Descobrir", icon: Compass, exact: false },
 ] as const;
