@@ -6,7 +6,7 @@ import { Gift, Loader2, Share2, Copy, Check } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { applyReferralByToken } from "@/lib/retention.functions";
+import { applyReferralByToken, trackReferralEvent } from "@/lib/retention.functions";
 
 /**
  * Voucher block: apply an incoming referral code (once per customer) and
