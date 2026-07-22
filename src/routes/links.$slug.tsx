@@ -295,8 +295,10 @@ function FieldRow({
       <button
         type="button"
         onClick={onCopy}
-        className="opacity-70 hover:opacity-100 transition"
+        disabled={copied}
+        className="opacity-70 hover:opacity-100 transition disabled:cursor-not-allowed disabled:opacity-100"
         aria-label={`Copiar ${k}`}
+        aria-live="polite"
       >
         {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
       </button>
