@@ -34,6 +34,16 @@ export const Route = createFileRoute("/_authenticated/carteira/descobrir")({
 
 type GeoState = "idle" | "asking" | "granted" | "denied" | "unsupported";
 
+/** Normaliza cidade para comparação tolerante (case + acentos + espaços). */
+function normalizeCity(s: string | null | undefined) {
+  if (!s) return "";
+  return s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
 function DiscoverPage() {
   const qc = useQueryClient();
   const { data = [] } = useSuspenseQuery(opts);
@@ -41,12 +51,53 @@ function DiscoverPage() {
     if (typeof window === "undefined") return "idle";
     return (localStorage.getItem("wallet:geo") as GeoState) || "idle";
   });
+  const [myCity, setMyCity] = useState<string>(() => {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem("wallet:geo:city") || "";
+  });
+  const [locating, setLocating] = useState(false);
 
   useEffect(() => {
     if (geo === "granted" || geo === "denied" || geo === "unsupported") {
       localStorage.setItem("wallet:geo", geo);
     }
   }, [geo]);
+
+  useEffect(() => {
+    if (myCity) localStorage.setItem("wallet:geo:city", myCity);
+  }, [myCity]);
+
+  // Se acabamos de conceder e ainda não temos cidade, tenta resolver.
+  useEffect(() => {
+    if (geo !== "granted" || myCity || typeof navigator === "undefined" || !navigator.geolocation) return;
+    let cancelled = false;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=10&accept-language=pt-BR`,
+            { headers: { Accept: "application/json" } },
+          );
+          const j = (await res.json()) as { address?: { city?: string; town?: string; village?: string; municipality?: string } };
+          const city = j.address?.city || j.address?.town || j.address?.village || j.address?.municipality || "";
+          if (!cancelled) setMyCity(city);
+        } catch {
+          /* silêncio — mantemos a lista base */
+        } finally {
+          if (!cancelled) setLocating(false);
+        }
+      },
+      () => {
+        if (!cancelled) setLocating(false);
+      },
+      { timeout: 8000, maximumAge: 5 * 60_000 },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [geo, myCity]);
 
   function askGeo() {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
@@ -60,6 +111,18 @@ function DiscoverPage() {
       { timeout: 8000 },
     );
   }
+
+  // Ordenação: quando temos cidade do usuário, prioriza estabelecimentos na mesma cidade,
+  // depois não-visitados, depois o resto. Sem cidade, mantém heurística "não visitados no topo".
+  const myCityNorm = normalizeCity(myCity);
+  const sorted = [...data].sort((a, b) => {
+    if (myCityNorm) {
+      const aMatch = normalizeCity(a.city) === myCityNorm ? 1 : 0;
+      const bMatch = normalizeCity(b.city) === myCityNorm ? 1 : 0;
+      if (aMatch !== bMatch) return bMatch - aMatch;
+    }
+    return Number(a.visited) - Number(b.visited);
+  });
 
   return (
     <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["discovery-establishments"] })}>
@@ -112,11 +175,15 @@ function DiscoverPage() {
         {geo === "granted" && (
           <p className="rounded-2xl border border-primary/30 bg-primary/5 px-3 py-2 text-xs text-primary">
             <MapPin className="mr-1 inline h-3.5 w-3.5" />
-            Localização ativa — mostrando estabelecimentos por proximidade.
+            {locating
+              ? "Detectando sua região…"
+              : myCity
+              ? `Ordenado por proximidade — priorizando ${myCity}.`
+              : "Localização ativa — priorizando novidades."}
           </p>
         )}
 
-        {data.length === 0 ? (
+        {sorted.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-border/60 bg-card/30 p-8 text-center">
             <Sparkles className="mx-auto mb-2 h-6 w-6 text-primary" />
             <div className="font-display text-sm font-bold">Nada por aqui ainda</div>
@@ -126,11 +193,9 @@ function DiscoverPage() {
           </div>
         ) : (
           <ul className="space-y-2.5">
-            {[...data]
-              .sort((a, b) => Number(a.visited) - Number(b.visited))
-              .map((e) => (
-                <DiscoverRow key={e.id} e={e} />
-              ))}
+            {sorted.map((e) => (
+              <DiscoverRow key={e.id} e={e} nearby={!!myCityNorm && normalizeCity(e.city) === myCityNorm} />
+            ))}
           </ul>
         )}
       </div>
@@ -140,6 +205,7 @@ function DiscoverPage() {
 
 function DiscoverRow({
   e,
+  nearby,
 }: {
   e: {
     slug: string;
@@ -151,6 +217,7 @@ function DiscoverRow({
     description: string | null;
     visited: boolean;
   };
+  nearby?: boolean;
 }) {
   const brand = e.primary_color || "hsl(var(--primary))";
   const location = [e.address, e.city].filter(Boolean).join(" · ");
