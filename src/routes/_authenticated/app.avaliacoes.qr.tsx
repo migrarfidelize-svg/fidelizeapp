@@ -545,7 +545,13 @@ function ReviewQrPage() {
     const el = posterRef.current;
     if (!el) throw new Error("Preview indisponível");
     const rect = el.getBoundingClientRect();
-    const targetPx = Math.max(600, Math.round((dims.mm.w / 25.4) * 300));
+    // Feed/Story exportam nas dimensões oficiais do Instagram (1080×1080 e 1080×1920).
+    // Demais formatos seguem 300 DPI a partir do tamanho em mm.
+    const targetPx = format === "feed"
+      ? 1080
+      : format === "story"
+        ? 1080
+        : Math.max(600, Math.round((dims.mm.w / 25.4) * 300));
     const pixelRatio = Math.max(2, targetPx / Math.max(1, rect.width));
     // Force layout-guides off during export
     const wasEditing = editLayout;
@@ -570,14 +576,21 @@ function ReviewQrPage() {
     try {
       const url = await renderPosterPng();
       const a = document.createElement("a");
+      const suffix = format === "feed" ? "instagram-1080x1080" : format === "story" ? "instagram-1080x1920" : `${format}-300dpi`;
       a.href = url;
-      a.download = `qr-avaliacao-${est?.slug ?? "estabelecimento"}-${format}-300dpi.png`;
+      a.download = `qr-avaliacao-${est?.slug ?? "estabelecimento"}-${suffix}.png`;
       a.click();
-      toast.success(`PNG 300 DPI baixado (${Math.round((dims.mm.w/25.4)*300)}×${Math.round((dims.mm.h/25.4)*300)}px)`);
+      const msg = format === "feed"
+        ? "PNG Instagram Feed baixado (1080×1080px)"
+        : format === "story"
+          ? "PNG Instagram Story baixado (1080×1920px)"
+          : `PNG 300 DPI baixado (${Math.round((dims.mm.w/25.4)*300)}×${Math.round((dims.mm.h/25.4)*300)}px)`;
+      toast.success(msg);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao exportar PNG");
     } finally { setExporting(false); }
   }
+
 
   async function exportPdf() {
     if (!posterRef.current) return;
