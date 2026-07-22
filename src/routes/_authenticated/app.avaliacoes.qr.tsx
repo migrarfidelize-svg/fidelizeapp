@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import QRCode from "qrcode";
 import { toPng } from "html-to-image";
@@ -9,7 +9,10 @@ import { toast } from "sonner";
 import {
   Star, Copy, Share2, FileImage, FileText, Lock, Sparkles, Radio, CheckCircle2, AlertTriangle,
   Save, Layers, Eye, Trash2, Palette, ShoppingBag, Move, RotateCcw, XCircle,
+  Wifi, QrCode as QrCodeIcon, CreditCard, PawPrint, Bike, Snowflake, ParkingCircle,
+  Printer, ScanLine, Cloud, UserCircle2,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 import { PageHero } from "@/components/PageHero";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,6 +25,11 @@ import { Slider } from "@/components/ui/slider";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { useMyFeature } from "@/hooks/useMyFeature";
 import { DisplayStorePreview } from "@/components/DisplayStorePreview";
+import { PrintOrderDialog } from "@/components/PrintOrderDialog";
+import {
+  listPosterDesigns, savePosterDesign, applyPosterDesign, deletePosterDesign,
+  getQrScanStats,
+} from "@/lib/poster-designs.functions";
 
 export const Route = createFileRoute("/_authenticated/app/avaliacoes/qr")({
   head: () => ({ meta: [{ title: "QR de Avaliação — Fidelize" }] }),
@@ -82,6 +90,31 @@ const DEFAULT_LAYOUT: PosterLayout = {
   nfc:         { x: 50, y: 74 },
   ctaNear:     { x: 50, y: 86 },
   ctaFooter:   { x: 50, y: 93 },
+};
+
+/** Preset badges the merchant can drop onto the poster. */
+type BadgeKey = "stars5" | "wifi" | "pix" | "card" | "pet" | "delivery" | "ac" | "parking";
+const BADGE_CATALOG: Record<BadgeKey, { label: string; Icon: LucideIcon; short: string }> = {
+  stars5:   { label: "5 estrelas",              Icon: Star,          short: "★★★★★" },
+  wifi:     { label: "Wi-Fi grátis",            Icon: Wifi,          short: "Wi-Fi grátis" },
+  pix:      { label: "Aceitamos Pix",           Icon: QrCodeIcon,    short: "Aceitamos Pix" },
+  card:     { label: "Aceitamos cartão",        Icon: CreditCard,    short: "Cartão / Débito" },
+  pet:      { label: "Pet friendly",            Icon: PawPrint,      short: "Pet friendly" },
+  delivery: { label: "Delivery próprio",        Icon: Bike,          short: "Delivery próprio" },
+  ac:       { label: "Ambiente climatizado",    Icon: Snowflake,     short: "Ar-condicionado" },
+  parking:  { label: "Estacionamento",          Icon: ParkingCircle, short: "Estacionamento" },
+};
+const BADGE_KEYS = Object.keys(BADGE_CATALOG) as BadgeKey[];
+type BadgeInstance = { key: BadgeKey; x: number; y: number };
+const DEFAULT_BADGE_POS: Record<BadgeKey, { x: number; y: number }> = {
+  stars5:   { x: 22, y: 46 },
+  wifi:     { x: 78, y: 46 },
+  pix:      { x: 22, y: 72 },
+  card:     { x: 78, y: 72 },
+  pet:      { x: 22, y: 82 },
+  delivery: { x: 78, y: 82 },
+  ac:       { x: 22, y: 92 },
+  parking:  { x: 78, y: 92 },
 };
 
 /** URL validation for QR destinations. */
@@ -181,7 +214,31 @@ function ReviewQrPage() {
   const [designName, setDesignName] = useState("");
   const [layout, setLayout] = useState<PosterLayout>(DEFAULT_LAYOUT);
   const [editLayout, setEditLayout] = useState(false);
+  const [badges, setBadges] = useState<BadgeInstance[]>([]);
+  const [printOpen, setPrintOpen] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
+
+  const qc = useQueryClient();
+
+  /* Cloud designs (shared between establishment members) */
+  const listDesignsFn = useServerFn(listPosterDesigns);
+  const saveDesignFn = useServerFn(savePosterDesign);
+  const applyDesignFn = useServerFn(applyPosterDesign);
+  const deleteDesignFn = useServerFn(deletePosterDesign);
+  const { data: cloudDesigns } = useQuery({
+    queryKey: ["poster-designs", est?.id],
+    queryFn: () => listDesignsFn({ data: { establishmentId: est!.id } }),
+    enabled: !!est?.id,
+  });
+
+  /* QR scan stats */
+  const scanStatsFn = useServerFn(getQrScanStats);
+  const { data: scanStats } = useQuery({
+    queryKey: ["qr-scan-stats", est?.id],
+    queryFn: () => scanStatsFn({ data: { establishmentId: est!.id } }),
+    enabled: !!est?.id,
+    refetchInterval: 60_000,
+  });
 
 
   // Load persisted state
@@ -213,6 +270,15 @@ function ReviewQrPage() {
         if (typeof s.secondaryUrl === "string") setSecondaryUrl(s.secondaryUrl);
         if (typeof s.secondaryLabel === "string") setSecondaryLabel(s.secondaryLabel);
         if (s.layout && typeof s.layout === "object") setLayout({ ...DEFAULT_LAYOUT, ...s.layout });
+        if (Array.isArray(s.badges)) {
+          setBadges(s.badges.filter((b: unknown): b is BadgeInstance =>
+            !!b && typeof b === "object"
+            && typeof (b as BadgeInstance).key === "string"
+            && (BADGE_KEYS as string[]).includes((b as BadgeInstance).key)
+            && typeof (b as BadgeInstance).x === "number"
+            && typeof (b as BadgeInstance).y === "number"
+          ));
+        }
       }
       const rawDesigns = window.localStorage.getItem(designsKey);
       if (rawDesigns) setDesigns(JSON.parse(rawDesigns));
@@ -228,10 +294,10 @@ function ReviewQrPage() {
         title, subtitle, ctaNearQR, ctaFooter,
         primaryColor, backgroundColor, textColor,
         primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel,
-        layout,
+        layout, badges,
       }));
     } catch { /* ignore */ }
-  }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale, ecc, utmEnabled, bleedMarks, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor, primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel, layout]);
+  }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale, ecc, utmEnabled, bleedMarks, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor, primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel, layout, badges]);
 
   function applyTemplate(key: TemplateKey) {
     setTemplate(key);
@@ -246,8 +312,26 @@ function ReviewQrPage() {
     try { window.localStorage.setItem(designsKey, JSON.stringify(next)); } catch { /* ignore */ }
   }
 
-  function saveCurrentDesign() {
-    const name = designName.trim() || `Design ${designs.length + 1}`;
+  async function saveCurrentDesign() {
+    const name = designName.trim() || `Design ${(cloudDesigns?.length ?? designs.length) + 1}`;
+    const payload = {
+      template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale,
+      title, subtitle, ctaNearQR, ctaFooter,
+      primaryColor, backgroundColor, textColor,
+      primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel,
+      layout, badges,
+    };
+    if (est?.id) {
+      try {
+        await saveDesignFn({ data: { establishmentId: est.id, name, data: payload } });
+        setDesignName("");
+        toast.success(`Design "${name}" salvo na nuvem`);
+        qc.invalidateQueries({ queryKey: ["poster-designs", est.id] });
+        return;
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Falha ao salvar na nuvem — salvando local");
+      }
+    }
     const entry: SavedDesign = {
       id: (crypto?.randomUUID?.() ?? String(Date.now())),
       name,
@@ -260,7 +344,7 @@ function ReviewQrPage() {
     };
     persistDesigns([entry, ...designs].slice(0, 20));
     setDesignName("");
-    toast.success(`Design "${name}" salvo`);
+    toast.success(`Design "${name}" salvo (offline)`);
   }
 
   function loadDesign(d: SavedDesign) {
@@ -281,14 +365,66 @@ function ReviewQrPage() {
     toast.success(`Design "${d.name}" carregado`);
   }
 
+  function applyCloudDesign(d: { id: string; name: string; data: Record<string, unknown> }) {
+    const s = d.data as Record<string, unknown>;
+    if (typeof s.template === "string") setTemplate(s.template as TemplateKey);
+    if (typeof s.format === "string") setFormat(s.format as FormatKey);
+    if (typeof s.destination === "string") setDestination(s.destination as Destination);
+    if (typeof s.googleUrl === "string") setGoogleUrl(s.googleUrl);
+    if (typeof s.showGoogleLogo === "boolean") setShowGoogleLogo(s.showGoogleLogo);
+    if (typeof s.nfcMode === "boolean") setNfcMode(s.nfcMode);
+    if (typeof s.contentScale === "number") setContentScale(s.contentScale);
+    if (typeof s.title === "string") setTitle(s.title);
+    if (typeof s.subtitle === "string") setSubtitle(s.subtitle);
+    if (typeof s.ctaNearQR === "string") setCtaNearQR(s.ctaNearQR);
+    if (typeof s.ctaFooter === "string") setCtaFooter(s.ctaFooter);
+    if (typeof s.primaryColor === "string") setPrimaryColor(s.primaryColor);
+    if (typeof s.backgroundColor === "string") setBackgroundColor(s.backgroundColor);
+    if (typeof s.textColor === "string") setTextColor(s.textColor);
+    if (typeof s.primaryLabel === "string") setPrimaryLabel(s.primaryLabel);
+    if (typeof s.secondaryEnabled === "boolean") setSecondaryEnabled(s.secondaryEnabled);
+    if (typeof s.secondaryUrl === "string") setSecondaryUrl(s.secondaryUrl);
+    if (typeof s.secondaryLabel === "string") setSecondaryLabel(s.secondaryLabel);
+    if (s.layout && typeof s.layout === "object") setLayout({ ...DEFAULT_LAYOUT, ...(s.layout as PosterLayout) });
+    if (Array.isArray(s.badges)) setBadges(s.badges as BadgeInstance[]);
+    applyDesignFn({ data: { id: d.id } })
+      .then(() => qc.invalidateQueries({ queryKey: ["poster-designs", est?.id] }))
+      .catch(() => { /* silent */ });
+    toast.success(`Design "${d.name}" aplicado`);
+  }
+
+  async function removeCloudDesign(id: string) {
+    try {
+      await deleteDesignFn({ data: { id } });
+      qc.invalidateQueries({ queryKey: ["poster-designs", est?.id] });
+      toast.success("Design removido");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao remover");
+    }
+  }
+
   function deleteDesign(id: string) {
     persistDesigns(designs.filter(d => d.id !== id));
-    toast.success("Design removido");
+    toast.success("Design local removido");
+  }
+
+  /* Badge helpers */
+  function toggleBadge(key: BadgeKey) {
+    setBadges((prev) => {
+      const exists = prev.find((b) => b.key === key);
+      if (exists) return prev.filter((b) => b.key !== key);
+      const def = DEFAULT_BADGE_POS[key];
+      return [...prev, { key, x: def.x, y: def.y }];
+    });
+  }
+  function moveBadge(key: BadgeKey, x: number, y: number) {
+    setBadges((prev) => prev.map((b) => (b.key === key ? { ...b, x, y } : b)));
   }
 
 
 
-  const fidelizeUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/avaliar/${est.slug}` : "";
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const fidelizeUrl = est ? `${origin}/avaliar/${est.slug}` : "";
   const rawTargetUrl = destination === "fidelize" ? fidelizeUrl : googleUrl.trim();
   const primaryIsPlaceholder = destination === "google" && !rawTargetUrl;
   const baseTargetUrl = rawTargetUrl || (destination === "google"
@@ -309,16 +445,33 @@ function ReviewQrPage() {
     return utmEnabled ? withUtm(raw, est?.slug ?? "review") : raw;
   }, [secondaryRawUrl, utmEnabled, est?.slug]);
 
+  /* Encoded URL that actually goes into the QR image — routes through the
+     public tracker so scans are counted server-side. Falls back to the raw
+     targetUrl during SSR / when we don't have a slug yet. */
+  const qrEncodedPrimaryUrl = useMemo(() => {
+    if (!est?.slug || !origin) return targetUrl;
+    // Only route Fidelize destinations through the tracker (Google/etc redirect
+    // straight to the merchant destination for max compatibility).
+    if (destination !== "fidelize") return targetUrl;
+    return `${origin}/api/public/r/qr/${est.slug}/main`;
+  }, [origin, est?.slug, targetUrl, destination]);
+  const qrEncodedSecondaryUrl = useMemo(() => {
+    if (!est?.slug || !origin) return secondaryTargetUrl;
+    const u = new URL(`${origin}/api/public/r/qr/${est.slug}/second`);
+    u.searchParams.set("u", secondaryTargetUrl);
+    return u.toString();
+  }, [origin, est?.slug, secondaryTargetUrl]);
+
   // Contrast / readability diagnostics
   const textBgRatio = useMemo(() => contrastRatio(textColor, backgroundColor), [textColor, backgroundColor]);
   const qrCodeRatio = contrastRatio("#111827", "#ffffff"); // QR dark vs light
 
   useEffect(() => {
-    QRCode.toDataURL(targetUrl, {
+    QRCode.toDataURL(qrEncodedPrimaryUrl, {
       width: 1200, margin: 1, errorCorrectionLevel: ecc,
       color: { dark: "#111827", light: "#ffffff" },
     }).then(setQrDataUrl).catch(() => setQrDataUrl(""));
-  }, [targetUrl, ecc]);
+  }, [qrEncodedPrimaryUrl, ecc]);
 
   useEffect(() => {
     if (!secondaryEnabled) {
@@ -338,11 +491,11 @@ function ReviewQrPage() {
         secondaryQr: secondaryUntouched ? { x: 70, y: 58 } : prev.secondaryQr,
       };
     });
-    QRCode.toDataURL(secondaryTargetUrl, {
+    QRCode.toDataURL(qrEncodedSecondaryUrl, {
       width: 1200, margin: 1, errorCorrectionLevel: ecc,
       color: { dark: "#111827", light: "#ffffff" },
     }).then(setSecondaryQrDataUrl).catch(() => setSecondaryQrDataUrl(""));
-  }, [secondaryEnabled, secondaryTargetUrl, ecc]);
+  }, [secondaryEnabled, qrEncodedSecondaryUrl, ecc]);
 
   const dims = FORMATS[format];
 

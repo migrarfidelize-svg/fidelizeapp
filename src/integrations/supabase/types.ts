@@ -2088,6 +2088,118 @@ export type Database = {
         }
         Relationships: []
       }
+      poster_designs: {
+        Row: {
+          applied_at: string | null
+          applied_by: string | null
+          created_at: string
+          created_by: string | null
+          data: Json
+          establishment_id: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          applied_at?: string | null
+          applied_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          data: Json
+          establishment_id: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          applied_at?: string | null
+          applied_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          data?: Json
+          establishment_id?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poster_designs_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      print_orders: {
+        Row: {
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          establishment_id: string
+          finish: string | null
+          format: string | null
+          id: string
+          notes: string | null
+          order_number: string
+          paper: string
+          pdf_path: string | null
+          quantity: number
+          requested_by: string | null
+          shipping_address: Json
+          status: string
+          svg_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          establishment_id: string
+          finish?: string | null
+          format?: string | null
+          id?: string
+          notes?: string | null
+          order_number?: string
+          paper: string
+          pdf_path?: string | null
+          quantity: number
+          requested_by?: string | null
+          shipping_address: Json
+          status?: string
+          svg_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          establishment_id?: string
+          finish?: string | null
+          format?: string | null
+          id?: string
+          notes?: string | null
+          order_number?: string
+          paper?: string
+          pdf_path?: string | null
+          quantity?: number
+          requested_by?: string | null
+          shipping_address?: Json
+          status?: string
+          svg_path?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_orders_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"]
@@ -2315,6 +2427,41 @@ export type Database = {
           },
           {
             foreignKeyName: "push_subscriptions_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      qr_scans: {
+        Row: {
+          dest: string
+          establishment_id: string
+          id: number
+          ip_hash: string | null
+          scanned_at: string
+          ua: string | null
+        }
+        Insert: {
+          dest: string
+          establishment_id: string
+          id?: never
+          ip_hash?: string | null
+          scanned_at?: string
+          ua?: string | null
+        }
+        Update: {
+          dest?: string
+          establishment_id?: string
+          id?: never
+          ip_hash?: string | null
+          scanned_at?: string
+          ua?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qr_scans_establishment_id_fkey"
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "establishments"
