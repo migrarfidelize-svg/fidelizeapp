@@ -207,6 +207,8 @@ export function InstallAppButton({
   }, [platform, steps]);
 
   if (standalone) return null;
+  // Gate contextual: aguarda o momento de valor (default 2º carimbo)
+  if (typeof minStamps === "number" && (currentStamps ?? 0) < minStamps) return null;
 
   async function handlePrimary() {
     // Android/Chrome/Edge: native prompt in 1 click
