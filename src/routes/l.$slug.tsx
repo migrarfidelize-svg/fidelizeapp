@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { queryOptions, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { getEstablishmentBySlug, registerOrLoginCustomer } from "@/lib/loyalty.functions";
+import { applyReferralByToken } from "@/lib/retention.functions";
 import { attachEstablishmentBySlug } from "@/lib/my-wallet.functions";
 import { listPublicPromotionsBySlug } from "@/lib/promotions.functions";
 import { supabase } from "@/integrations/supabase/client";
@@ -90,6 +91,7 @@ function PublicPage() {
   const { data } = useSuspenseQuery(opts(slug));
   const navigate = useNavigate();
   const register = useServerFn(registerOrLoginCustomer);
+  const applyRef = useServerFn(applyReferralByToken);
   const [f, setF] = useState({ name: "", phone: "", email: "", opt: true });
   const [loading, setLoading] = useState(false);
 
@@ -107,7 +109,24 @@ function PublicPage() {
         establishment_id: est.id, campaign_id: campaign.id,
         name: f.name, phone: f.phone.replace(/\D/g, ""), email: f.email, marketing_opt_in: f.opt,
       }});
-      toast.success("Bem-vindo!");
+      // Aplica indicação (carimbos-bônus) se o cliente veio de /r/:code — promessa da landing.
+      let refMsg: string | null = null;
+      try {
+        const refCode = typeof window !== "undefined"
+          ? sessionStorage.getItem("fidelize_referral_code")
+          : null;
+        if (refCode) {
+          const res = await applyRef({ data: { token: r.access_token, code: refCode } });
+          sessionStorage.removeItem("fidelize_referral_code");
+          if (res?.bonus && res.bonus > 0) {
+            refMsg = `Indicação de ${res.referrer} aplicada — você ganhou ${res.bonus} ${res.bonus === 1 ? "carimbo-bônus" : "carimbos-bônus"}!`;
+          }
+        }
+      } catch (refErr) {
+        // Não bloqueia o cadastro se a indicação falhar (código inválido, já usado, etc).
+        console.warn("Referral apply failed:", refErr);
+      }
+      toast.success(refMsg ?? "Bem-vindo!");
       navigate({ to: "/c/$token", params: { token: r.access_token } });
     } catch (err) { toast.error(err instanceof Error ? err.message : "Erro"); }
     finally { setLoading(false); }
