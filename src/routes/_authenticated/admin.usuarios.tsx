@@ -95,6 +95,7 @@ function AdminUsers() {
     account_type: AccountType; memberships: Array<{ name: string | null; active: boolean }>;
   }>(null);
   const [nextType, setNextType] = useState<AccountType>("customer");
+  const [walletTarget, setWalletTarget] = useState<null | { id: string; name: string | null; email: string }>(null);
 
   const { data, isFetching } = useQuery({
     queryKey: ["admin-users", searchTerm, filter, status, establishmentId, page],
