@@ -53,6 +53,7 @@ const KIND_ICONS: Record<string, any> = {
   email: Mail,
   phone: Phone,
   wifi: Wifi,
+  pix: KeyRound,
   custom: ExternalLink,
 };
 
@@ -62,6 +63,20 @@ function decodeWifi(url: string): { ssid: string; password: string } {
   const unesc = (v: string) => v.replace(/\\(.)/g, "$1");
   return { ssid: unesc(s), password: unesc(p) };
 }
+
+type PixKeyType = "cpf" | "cnpj" | "email" | "telefone" | "aleatoria";
+const PIX_TYPE_LABEL: Record<PixKeyType, string> = {
+  cpf: "CPF", cnpj: "CNPJ", email: "E-mail", telefone: "Telefone", aleatoria: "Aleatória",
+};
+function decodePix(url: string): { type: PixKeyType; key: string; name: string } {
+  const t = (/PIX:.*?T:([^;]+);/i.exec(url)?.[1] ?? "email") as PixKeyType;
+  const k = /PIX:.*?K:((?:\\.|[^;\\])*);/i.exec(url)?.[1] ?? "";
+  const n = /PIX:.*?N:((?:\\.|[^;\\])*);/i.exec(url)?.[1] ?? "";
+  const unesc = (v: string) => v.replace(/\\(.)/g, "$1");
+  const valid: PixKeyType[] = ["cpf", "cnpj", "email", "telefone", "aleatoria"];
+  return { type: valid.includes(t) ? t : "email", key: unesc(k), name: unesc(n) };
+}
+
 
 
 function normalizeUrl(kind: string, url: string) {
