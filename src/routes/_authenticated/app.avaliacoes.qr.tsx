@@ -776,8 +776,9 @@ function ReviewQrPage() {
               <span className="relative text-primary transition-transform group-hover:translate-x-1">→</span>
             </button>
 
+            <div className="flex w-full max-w-[520px] items-start justify-center gap-3">
             <div
-              className="relative w-full max-w-[420px]"
+              className="relative w-full max-w-[420px] flex-1"
               style={displayMode ? { perspective: "1600px", perspectiveOrigin: "50% 65%" } : undefined}
             >
               {/* Showroom backdrop — dark wall + wooden counter (only in display mode) */}
