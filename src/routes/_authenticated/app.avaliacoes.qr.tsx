@@ -30,6 +30,18 @@ import {
   listPosterDesigns, savePosterDesign, applyPosterDesign, deletePosterDesign,
   getQrScanStats,
 } from "@/lib/poster-designs.functions";
+import { persistJson, readJson } from "@/lib/idb-storage";
+
+const URL_SHORTENERS = new Set([
+  "bit.ly", "tinyurl.com", "goo.gl", "t.co", "ow.ly", "is.gd", "buff.ly",
+  "encurtador.com.br", "cutt.ly", "rebrand.ly", "shorturl.at", "rb.gy",
+]);
+
+/** Root registrable-ish domain (last two labels). Good enough for a UI hint. */
+function rootDomain(host: string): string {
+  const parts = host.toLowerCase().split(".");
+  return parts.length <= 2 ? host.toLowerCase() : parts.slice(-2).join(".");
+}
 
 export const Route = createFileRoute("/_authenticated/app/avaliacoes/qr")({
   head: () => ({ meta: [{ title: "QR de Avaliação — Fidelize" }] }),
@@ -132,13 +144,19 @@ function checkGoogleUrl(v: string): UrlCheck {
   return { level: "ok", message: `Link Google válido — ${u.hostname}` };
 }
 
-function checkGenericUrl(v: string): UrlCheck {
+function checkGenericUrl(v: string, referenceHost?: string): UrlCheck {
   const t = v.trim();
   if (!t) return { level: "empty", message: "Cole o link do cardápio, loja, WhatsApp ou Instagram." };
   let u: URL;
   try { u = new URL(t); } catch { return { level: "error", message: "URL inválida — comece com https:// e verifique se está completa." }; }
   if (u.protocol !== "https:" && u.protocol !== "http:") return { level: "error", message: "O link deve começar com https://" };
   if (u.protocol === "http:") return { level: "warn", message: "Preferimos https:// para evitar avisos de segurança no celular." };
+  if (URL_SHORTENERS.has(u.hostname.toLowerCase())) {
+    return { level: "warn", message: `Encurtador detectado (${u.hostname}) — o cliente não vê o destino final. Prefira o link direto do seu domínio.` };
+  }
+  if (referenceHost && rootDomain(u.hostname) !== rootDomain(referenceHost)) {
+    return { level: "warn", message: `O 2º QR aponta para "${u.hostname}", diferente de "${referenceHost}". Confirme que é seu — evita direcionar clientes a um domínio errado.` };
+  }
   return { level: "ok", message: `Link válido — ${u.hostname}` };
 }
 
@@ -215,6 +233,13 @@ function ReviewQrPage() {
   const [layout, setLayout] = useState<PosterLayout>(DEFAULT_LAYOUT);
   const [editLayout, setEditLayout] = useState(false);
   const [badges, setBadges] = useState<BadgeInstance[]>([]);
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
+  const [savedTarget, setSavedTarget] = useState<"ls" | "idb" | "fail">("ls");
+  const [savedTick, setSavedTick] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(() => setSavedTick((t) => t + 1), 30_000);
+    return () => window.clearInterval(id);
+  }, []);
   const [printOpen, setPrintOpen] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
 
@@ -241,62 +266,72 @@ function ReviewQrPage() {
   });
 
 
-  // Load persisted state
+  // Load persisted state (localStorage → IndexedDB fallback)
   useEffect(() => {
     if (typeof window === "undefined") return;
-    try {
-      const raw = window.localStorage.getItem(storageKey);
-      if (raw) {
-        const s = JSON.parse(raw);
-        if (s.template) setTemplate(s.template);
-        if (s.format) setFormat(s.format);
-        if (s.destination) setDestination(s.destination);
-        if (typeof s.googleUrl === "string") setGoogleUrl(s.googleUrl);
-        if (typeof s.showGoogleLogo === "boolean") setShowGoogleLogo(s.showGoogleLogo);
-        if (typeof s.nfcMode === "boolean") setNfcMode(s.nfcMode);
-        if (typeof s.contentScale === "number") setContentScale(s.contentScale);
-        if (s.ecc === "L" || s.ecc === "M" || s.ecc === "Q" || s.ecc === "H") setEcc(s.ecc);
-        if (typeof s.utmEnabled === "boolean") setUtmEnabled(s.utmEnabled);
-        if (typeof s.bleedMarks === "boolean") setBleedMarks(s.bleedMarks);
-        if (s.title) setTitle(s.title);
-        if (s.subtitle) setSubtitle(s.subtitle);
-        if (s.ctaNearQR) setCtaNearQR(s.ctaNearQR);
-        if (s.ctaFooter) setCtaFooter(s.ctaFooter);
-        if (s.primaryColor) setPrimaryColor(s.primaryColor);
-        if (s.backgroundColor) setBackgroundColor(s.backgroundColor);
-        if (s.textColor) setTextColor(s.textColor);
-        if (typeof s.primaryLabel === "string") setPrimaryLabel(s.primaryLabel);
-        if (typeof s.secondaryEnabled === "boolean") setSecondaryEnabled(s.secondaryEnabled);
-        if (typeof s.secondaryUrl === "string") setSecondaryUrl(s.secondaryUrl);
-        if (typeof s.secondaryLabel === "string") setSecondaryLabel(s.secondaryLabel);
-        if (s.layout && typeof s.layout === "object") setLayout({ ...DEFAULT_LAYOUT, ...s.layout });
-        if (Array.isArray(s.badges)) {
-          setBadges(s.badges.filter((b: unknown): b is BadgeInstance =>
-            !!b && typeof b === "object"
-            && typeof (b as BadgeInstance).key === "string"
-            && (BADGE_KEYS as string[]).includes((b as BadgeInstance).key)
-            && typeof (b as BadgeInstance).x === "number"
-            && typeof (b as BadgeInstance).y === "number"
-          ));
+    let cancelled = false;
+    (async () => {
+      try {
+        const s = await readJson<Record<string, unknown>>(storageKey);
+        if (s && !cancelled) {
+          if (s.template) setTemplate(s.template as TemplateKey);
+          if (s.format) setFormat(s.format as FormatKey);
+          if (s.destination) setDestination(s.destination as typeof destination);
+          if (typeof s.googleUrl === "string") setGoogleUrl(s.googleUrl);
+          if (typeof s.showGoogleLogo === "boolean") setShowGoogleLogo(s.showGoogleLogo);
+          if (typeof s.nfcMode === "boolean") setNfcMode(s.nfcMode);
+          if (typeof s.contentScale === "number") setContentScale(s.contentScale);
+          if (s.ecc === "L" || s.ecc === "M" || s.ecc === "Q" || s.ecc === "H") setEcc(s.ecc);
+          if (typeof s.utmEnabled === "boolean") setUtmEnabled(s.utmEnabled);
+          if (typeof s.bleedMarks === "boolean") setBleedMarks(s.bleedMarks);
+          if (typeof s.title === "string") setTitle(s.title);
+          if (typeof s.subtitle === "string") setSubtitle(s.subtitle);
+          if (typeof s.ctaNearQR === "string") setCtaNearQR(s.ctaNearQR);
+          if (typeof s.ctaFooter === "string") setCtaFooter(s.ctaFooter);
+          if (typeof s.primaryColor === "string") setPrimaryColor(s.primaryColor);
+          if (typeof s.backgroundColor === "string") setBackgroundColor(s.backgroundColor);
+          if (typeof s.textColor === "string") setTextColor(s.textColor);
+          if (typeof s.primaryLabel === "string") setPrimaryLabel(s.primaryLabel);
+          if (typeof s.secondaryEnabled === "boolean") setSecondaryEnabled(s.secondaryEnabled);
+          if (typeof s.secondaryUrl === "string") setSecondaryUrl(s.secondaryUrl);
+          if (typeof s.secondaryLabel === "string") setSecondaryLabel(s.secondaryLabel);
+          if (s.layout && typeof s.layout === "object") setLayout({ ...DEFAULT_LAYOUT, ...(s.layout as PosterLayout) });
+          if (Array.isArray(s.badges)) {
+            setBadges((s.badges as unknown[]).filter((b: unknown): b is BadgeInstance =>
+              !!b && typeof b === "object"
+              && typeof (b as BadgeInstance).key === "string"
+              && (BADGE_KEYS as string[]).includes((b as BadgeInstance).key)
+              && typeof (b as BadgeInstance).x === "number"
+              && typeof (b as BadgeInstance).y === "number"
+            ));
+          }
         }
-      }
-      const rawDesigns = window.localStorage.getItem(designsKey);
-      if (rawDesigns) setDesigns(JSON.parse(rawDesigns));
-    } catch { /* ignore */ }
+        const d = await readJson<SavedDesign[]>(designsKey);
+        if (d && !cancelled) setDesigns(d);
+      } catch { /* ignore */ }
+    })();
+    return () => { cancelled = true; };
   }, [storageKey, designsKey]);
+
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    try {
-      window.localStorage.setItem(storageKey, JSON.stringify({
+    let cancelled = false;
+    const handle = window.setTimeout(async () => {
+      const result = await persistJson(storageKey, {
         template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale,
         ecc, utmEnabled, bleedMarks,
         title, subtitle, ctaNearQR, ctaFooter,
         primaryColor, backgroundColor, textColor,
         primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel,
         layout, badges,
-      }));
-    } catch { /* ignore */ }
+      });
+      if (cancelled) return;
+      setSavedTarget(result);
+      if (result !== "fail") setLastSavedAt(Date.now());
+      else toast.error("Falha ao salvar automaticamente — espaço do navegador esgotado.");
+    }, 400);
+    return () => { cancelled = true; window.clearTimeout(handle); };
   }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale, ecc, utmEnabled, bleedMarks, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor, primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel, layout, badges]);
 
   function applyTemplate(key: TemplateKey) {
@@ -309,7 +344,7 @@ function ReviewQrPage() {
 
   function persistDesigns(next: SavedDesign[]) {
     setDesigns(next);
-    try { window.localStorage.setItem(designsKey, JSON.stringify(next)); } catch { /* ignore */ }
+    void persistJson(designsKey, next);
   }
 
   async function saveCurrentDesign() {
@@ -434,7 +469,10 @@ function ReviewQrPage() {
 
   const googleCheck = useMemo(() => checkGoogleUrl(googleUrl), [googleUrl]);
   const secondaryRawUrl = secondaryUrl.trim();
-  const secondaryCheck = useMemo(() => checkGenericUrl(secondaryUrl), [secondaryUrl]);
+  const primaryHost = useMemo(() => {
+    try { return new URL(rawTargetUrl || fidelizeUrl).hostname; } catch { return undefined; }
+  }, [rawTargetUrl, fidelizeUrl]);
+  const secondaryCheck = useMemo(() => checkGenericUrl(secondaryUrl, primaryHost), [secondaryUrl, primaryHost]);
   const googleReady = destination === "google" && googleCheck.level === "ok";
   const secondaryIsPlaceholder = secondaryEnabled && !secondaryRawUrl;
   const secondaryReady = secondaryEnabled && secondaryCheck.level === "ok";
@@ -1233,7 +1271,17 @@ function ReviewQrPage() {
               <span className="relative text-primary transition-transform group-hover:translate-x-1">→</span>
             </button>
 
-            <div className="flex w-full max-w-[520px] items-start justify-center gap-3">
+            {lastSavedAt !== null && (
+              <div
+                aria-live="polite"
+                className="mb-1 inline-flex items-center gap-1.5 self-center rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300"
+              >
+                <CheckCircle2 className="h-3 w-3" />
+                {savedTarget === "idb" ? "Salvo (offline) " : "Salvo "}
+                <RelativeTime timestamp={lastSavedAt} tick={savedTick} />
+              </div>
+            )}
+            <div className="flex w-full max-w-[520px] flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-start">
             <div
               className="relative w-full max-w-[420px] flex-1"
               style={displayMode ? { perspective: "1600px", perspectiveOrigin: "50% 65%" } : undefined}
@@ -1386,19 +1434,24 @@ function ReviewQrPage() {
               )}
             </div>
 
-            {/* Layout editor controls — lateral (texto vertical) */}
-            <div className="flex w-10 shrink-0 flex-col gap-2 pt-2">
+            {/* Layout editor controls — horizontal em mobile, vertical em ≥sm */}
+            <div
+              role="group"
+              aria-label="Editor de posições do cartaz"
+              className="flex w-full shrink-0 flex-row gap-2 pt-2 sm:w-10 sm:flex-col"
+            >
               <Button
                 type="button"
                 size="sm"
                 variant={editLayout ? "default" : "outline"}
                 onClick={() => setEditLayout((v) => !v)}
-                className="flex h-32 w-10 flex-col items-center justify-center gap-1.5 px-0 text-xs"
+                aria-label={editLayout ? "Concluir edição de posições" : "Editar posições dos elementos"}
+                aria-pressed={editLayout}
+                className="flex h-10 w-full flex-row items-center justify-center gap-1.5 px-2 text-xs sm:h-32 sm:w-10 sm:flex-col sm:px-0"
               >
                 <Move className="h-3.5 w-3.5" />
                 <span
-                  className="font-semibold tracking-wider"
-                  style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+                  className="font-semibold tracking-wider sm:[writing-mode:vertical-rl] sm:[transform:rotate(180deg)]"
                 >
                   {editLayout ? "Concluir" : "Editar"}
                 </span>
@@ -1408,13 +1461,13 @@ function ReviewQrPage() {
                 size="sm"
                 variant="ghost"
                 onClick={() => { setLayout(DEFAULT_LAYOUT); toast.success("Posições restauradas"); }}
-                className="flex h-32 w-10 flex-col items-center justify-center gap-1.5 px-0 text-xs"
+                aria-label="Restaurar posições padrão"
+                className="flex h-10 w-full flex-row items-center justify-center gap-1.5 px-2 text-xs sm:h-32 sm:w-10 sm:flex-col sm:px-0"
                 disabled={JSON.stringify(layout) === JSON.stringify(DEFAULT_LAYOUT)}
               >
                 <RotateCcw className="h-3.5 w-3.5" />
                 <span
-                  className="font-semibold tracking-wider"
-                  style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+                  className="font-semibold tracking-wider sm:[writing-mode:vertical-rl] sm:[transform:rotate(180deg)]"
                 >
                   Resetar
                 </span>
@@ -1572,7 +1625,10 @@ function DraggableItem({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
-      className={`absolute ${editable ? "cursor-move select-none" : ""} ${className}`}
+      tabIndex={editable ? 0 : -1}
+      role={editable ? "button" : undefined}
+      aria-label={editable ? `${LAYOUT_LABELS[itemKey]} — arraste para reposicionar` : undefined}
+      className={`absolute ${editable ? "cursor-move select-none outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-sm" : ""} ${className}`}
       style={{
         left: `${pos.x}%`,
         top: `${pos.y}%`,
@@ -1741,7 +1797,10 @@ function BadgeDraggable({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
-      className={`absolute ${editable ? "cursor-move select-none" : ""}`}
+      tabIndex={editable ? 0 : -1}
+      role={editable ? "button" : undefined}
+      aria-label={editable ? `Emblema ${badge.key} — arraste para reposicionar` : undefined}
+      className={`absolute ${editable ? "cursor-move select-none rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2" : ""}`}
       style={{
         left: `${badge.x}%`,
         top: `${badge.y}%`,
@@ -1913,4 +1972,16 @@ function NfcBadge({ primary, sizePct = 100 }: { primary: string; sizePct?: numbe
       <span className="font-bold uppercase tracking-widest" style={{ color: primary, fontSize: `${9 * scale}px` }}>NFC</span>
     </div>
   );
+}
+
+/** Relative "há Xs" timestamp — refreshed by parent tick prop. */
+function RelativeTime({ timestamp, tick: _tick }: { timestamp: number; tick: number }) {
+  const diff = Math.max(0, Date.now() - timestamp);
+  const sec = Math.floor(diff / 1000);
+  let label: string;
+  if (sec < 5) label = "agora";
+  else if (sec < 60) label = `há ${sec}s`;
+  else if (sec < 3600) label = `há ${Math.floor(sec / 60)}min`;
+  else label = `há ${Math.floor(sec / 3600)}h`;
+  return <span>{label}</span>;
 }
