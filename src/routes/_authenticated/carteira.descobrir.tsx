@@ -116,11 +116,17 @@ function DiscoverPage() {
   // depois não-visitados, depois o resto. Sem cidade, mantém heurística "não visitados no topo".
   const myCityNorm = normalizeCity(myCity);
   const sorted = [...data].sort((a, b) => {
+    // 1) Promoções ativas primeiro — o cliente vê ofertas antes de tudo.
+    const aPromo = a.has_promotion ? 1 : 0;
+    const bPromo = b.has_promotion ? 1 : 0;
+    if (aPromo !== bPromo) return bPromo - aPromo;
+    // 2) Proximidade (mesma cidade) quando disponível.
     if (myCityNorm) {
       const aMatch = normalizeCity(a.city) === myCityNorm ? 1 : 0;
       const bMatch = normalizeCity(b.city) === myCityNorm ? 1 : 0;
       if (aMatch !== bMatch) return bMatch - aMatch;
     }
+    // 3) Não visitados no topo.
     return Number(a.visited) - Number(b.visited);
   });
 
