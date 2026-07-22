@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import QRCode from "qrcode";
 import { toPng } from "html-to-image";
@@ -9,7 +9,10 @@ import { toast } from "sonner";
 import {
   Star, Copy, Share2, FileImage, FileText, Lock, Sparkles, Radio, CheckCircle2, AlertTriangle,
   Save, Layers, Eye, Trash2, Palette, ShoppingBag, Move, RotateCcw, XCircle,
+  Wifi, QrCode as QrCodeIcon, CreditCard, PawPrint, Bike, Snowflake, ParkingCircle,
+  Printer, ScanLine, Cloud, UserCircle2,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 import { PageHero } from "@/components/PageHero";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,6 +25,11 @@ import { Slider } from "@/components/ui/slider";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { useMyFeature } from "@/hooks/useMyFeature";
 import { DisplayStorePreview } from "@/components/DisplayStorePreview";
+import { PrintOrderDialog } from "@/components/PrintOrderDialog";
+import {
+  listPosterDesigns, savePosterDesign, applyPosterDesign, deletePosterDesign,
+  getQrScanStats,
+} from "@/lib/poster-designs.functions";
 
 export const Route = createFileRoute("/_authenticated/app/avaliacoes/qr")({
   head: () => ({ meta: [{ title: "QR de Avaliação — Fidelize" }] }),
@@ -82,6 +90,31 @@ const DEFAULT_LAYOUT: PosterLayout = {
   nfc:         { x: 50, y: 74 },
   ctaNear:     { x: 50, y: 86 },
   ctaFooter:   { x: 50, y: 93 },
+};
+
+/** Preset badges the merchant can drop onto the poster. */
+type BadgeKey = "stars5" | "wifi" | "pix" | "card" | "pet" | "delivery" | "ac" | "parking";
+const BADGE_CATALOG: Record<BadgeKey, { label: string; Icon: LucideIcon; short: string }> = {
+  stars5:   { label: "5 estrelas",              Icon: Star,          short: "★★★★★" },
+  wifi:     { label: "Wi-Fi grátis",            Icon: Wifi,          short: "Wi-Fi grátis" },
+  pix:      { label: "Aceitamos Pix",           Icon: QrCodeIcon,    short: "Aceitamos Pix" },
+  card:     { label: "Aceitamos cartão",        Icon: CreditCard,    short: "Cartão / Débito" },
+  pet:      { label: "Pet friendly",            Icon: PawPrint,      short: "Pet friendly" },
+  delivery: { label: "Delivery próprio",        Icon: Bike,          short: "Delivery próprio" },
+  ac:       { label: "Ambiente climatizado",    Icon: Snowflake,     short: "Ar-condicionado" },
+  parking:  { label: "Estacionamento",          Icon: ParkingCircle, short: "Estacionamento" },
+};
+const BADGE_KEYS = Object.keys(BADGE_CATALOG) as BadgeKey[];
+type BadgeInstance = { key: BadgeKey; x: number; y: number };
+const DEFAULT_BADGE_POS: Record<BadgeKey, { x: number; y: number }> = {
+  stars5:   { x: 22, y: 46 },
+  wifi:     { x: 78, y: 46 },
+  pix:      { x: 22, y: 72 },
+  card:     { x: 78, y: 72 },
+  pet:      { x: 22, y: 82 },
+  delivery: { x: 78, y: 82 },
+  ac:       { x: 22, y: 92 },
+  parking:  { x: 78, y: 92 },
 };
 
 /** URL validation for QR destinations. */
@@ -181,7 +214,31 @@ function ReviewQrPage() {
   const [designName, setDesignName] = useState("");
   const [layout, setLayout] = useState<PosterLayout>(DEFAULT_LAYOUT);
   const [editLayout, setEditLayout] = useState(false);
+  const [badges, setBadges] = useState<BadgeInstance[]>([]);
+  const [printOpen, setPrintOpen] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
+
+  const qc = useQueryClient();
+
+  /* Cloud designs (shared between establishment members) */
+  const listDesignsFn = useServerFn(listPosterDesigns);
+  const saveDesignFn = useServerFn(savePosterDesign);
+  const applyDesignFn = useServerFn(applyPosterDesign);
+  const deleteDesignFn = useServerFn(deletePosterDesign);
+  const { data: cloudDesigns } = useQuery({
+    queryKey: ["poster-designs", est?.id],
+    queryFn: () => listDesignsFn({ data: { establishmentId: est!.id } }),
+    enabled: !!est?.id,
+  });
+
+  /* QR scan stats */
+  const scanStatsFn = useServerFn(getQrScanStats);
+  const { data: scanStats } = useQuery({
+    queryKey: ["qr-scan-stats", est?.id],
+    queryFn: () => scanStatsFn({ data: { establishmentId: est!.id } }),
+    enabled: !!est?.id,
+    refetchInterval: 60_000,
+  });
 
 
   // Load persisted state
@@ -213,6 +270,15 @@ function ReviewQrPage() {
         if (typeof s.secondaryUrl === "string") setSecondaryUrl(s.secondaryUrl);
         if (typeof s.secondaryLabel === "string") setSecondaryLabel(s.secondaryLabel);
         if (s.layout && typeof s.layout === "object") setLayout({ ...DEFAULT_LAYOUT, ...s.layout });
+        if (Array.isArray(s.badges)) {
+          setBadges(s.badges.filter((b: unknown): b is BadgeInstance =>
+            !!b && typeof b === "object"
+            && typeof (b as BadgeInstance).key === "string"
+            && (BADGE_KEYS as string[]).includes((b as BadgeInstance).key)
+            && typeof (b as BadgeInstance).x === "number"
+            && typeof (b as BadgeInstance).y === "number"
+          ));
+        }
       }
       const rawDesigns = window.localStorage.getItem(designsKey);
       if (rawDesigns) setDesigns(JSON.parse(rawDesigns));
@@ -228,10 +294,10 @@ function ReviewQrPage() {
         title, subtitle, ctaNearQR, ctaFooter,
         primaryColor, backgroundColor, textColor,
         primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel,
-        layout,
+        layout, badges,
       }));
     } catch { /* ignore */ }
-  }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale, ecc, utmEnabled, bleedMarks, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor, primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel, layout]);
+  }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale, ecc, utmEnabled, bleedMarks, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor, primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel, layout, badges]);
 
   function applyTemplate(key: TemplateKey) {
     setTemplate(key);
@@ -246,8 +312,26 @@ function ReviewQrPage() {
     try { window.localStorage.setItem(designsKey, JSON.stringify(next)); } catch { /* ignore */ }
   }
 
-  function saveCurrentDesign() {
-    const name = designName.trim() || `Design ${designs.length + 1}`;
+  async function saveCurrentDesign() {
+    const name = designName.trim() || `Design ${(cloudDesigns?.length ?? designs.length) + 1}`;
+    const payload = {
+      template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale,
+      title, subtitle, ctaNearQR, ctaFooter,
+      primaryColor, backgroundColor, textColor,
+      primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel,
+      layout, badges,
+    };
+    if (est?.id) {
+      try {
+        await saveDesignFn({ data: { establishmentId: est.id, name, data: payload } });
+        setDesignName("");
+        toast.success(`Design "${name}" salvo na nuvem`);
+        qc.invalidateQueries({ queryKey: ["poster-designs", est.id] });
+        return;
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Falha ao salvar na nuvem — salvando local");
+      }
+    }
     const entry: SavedDesign = {
       id: (crypto?.randomUUID?.() ?? String(Date.now())),
       name,
@@ -260,7 +344,7 @@ function ReviewQrPage() {
     };
     persistDesigns([entry, ...designs].slice(0, 20));
     setDesignName("");
-    toast.success(`Design "${name}" salvo`);
+    toast.success(`Design "${name}" salvo (offline)`);
   }
 
   function loadDesign(d: SavedDesign) {
@@ -281,14 +365,66 @@ function ReviewQrPage() {
     toast.success(`Design "${d.name}" carregado`);
   }
 
+  function applyCloudDesign(d: { id: string; name: string; data: Record<string, unknown> }) {
+    const s = d.data as Record<string, unknown>;
+    if (typeof s.template === "string") setTemplate(s.template as TemplateKey);
+    if (typeof s.format === "string") setFormat(s.format as FormatKey);
+    if (typeof s.destination === "string") setDestination(s.destination as Destination);
+    if (typeof s.googleUrl === "string") setGoogleUrl(s.googleUrl);
+    if (typeof s.showGoogleLogo === "boolean") setShowGoogleLogo(s.showGoogleLogo);
+    if (typeof s.nfcMode === "boolean") setNfcMode(s.nfcMode);
+    if (typeof s.contentScale === "number") setContentScale(s.contentScale);
+    if (typeof s.title === "string") setTitle(s.title);
+    if (typeof s.subtitle === "string") setSubtitle(s.subtitle);
+    if (typeof s.ctaNearQR === "string") setCtaNearQR(s.ctaNearQR);
+    if (typeof s.ctaFooter === "string") setCtaFooter(s.ctaFooter);
+    if (typeof s.primaryColor === "string") setPrimaryColor(s.primaryColor);
+    if (typeof s.backgroundColor === "string") setBackgroundColor(s.backgroundColor);
+    if (typeof s.textColor === "string") setTextColor(s.textColor);
+    if (typeof s.primaryLabel === "string") setPrimaryLabel(s.primaryLabel);
+    if (typeof s.secondaryEnabled === "boolean") setSecondaryEnabled(s.secondaryEnabled);
+    if (typeof s.secondaryUrl === "string") setSecondaryUrl(s.secondaryUrl);
+    if (typeof s.secondaryLabel === "string") setSecondaryLabel(s.secondaryLabel);
+    if (s.layout && typeof s.layout === "object") setLayout({ ...DEFAULT_LAYOUT, ...(s.layout as PosterLayout) });
+    if (Array.isArray(s.badges)) setBadges(s.badges as BadgeInstance[]);
+    applyDesignFn({ data: { id: d.id } })
+      .then(() => qc.invalidateQueries({ queryKey: ["poster-designs", est?.id] }))
+      .catch(() => { /* silent */ });
+    toast.success(`Design "${d.name}" aplicado`);
+  }
+
+  async function removeCloudDesign(id: string) {
+    try {
+      await deleteDesignFn({ data: { id } });
+      qc.invalidateQueries({ queryKey: ["poster-designs", est?.id] });
+      toast.success("Design removido");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao remover");
+    }
+  }
+
   function deleteDesign(id: string) {
     persistDesigns(designs.filter(d => d.id !== id));
-    toast.success("Design removido");
+    toast.success("Design local removido");
+  }
+
+  /* Badge helpers */
+  function toggleBadge(key: BadgeKey) {
+    setBadges((prev) => {
+      const exists = prev.find((b) => b.key === key);
+      if (exists) return prev.filter((b) => b.key !== key);
+      const def = DEFAULT_BADGE_POS[key];
+      return [...prev, { key, x: def.x, y: def.y }];
+    });
+  }
+  function moveBadge(key: BadgeKey, x: number, y: number) {
+    setBadges((prev) => prev.map((b) => (b.key === key ? { ...b, x, y } : b)));
   }
 
 
 
-  const fidelizeUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/avaliar/${est.slug}` : "";
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const fidelizeUrl = est ? `${origin}/avaliar/${est.slug}` : "";
   const rawTargetUrl = destination === "fidelize" ? fidelizeUrl : googleUrl.trim();
   const primaryIsPlaceholder = destination === "google" && !rawTargetUrl;
   const baseTargetUrl = rawTargetUrl || (destination === "google"
@@ -309,16 +445,33 @@ function ReviewQrPage() {
     return utmEnabled ? withUtm(raw, est?.slug ?? "review") : raw;
   }, [secondaryRawUrl, utmEnabled, est?.slug]);
 
+  /* Encoded URL that actually goes into the QR image — routes through the
+     public tracker so scans are counted server-side. Falls back to the raw
+     targetUrl during SSR / when we don't have a slug yet. */
+  const qrEncodedPrimaryUrl = useMemo(() => {
+    if (!est?.slug || !origin) return targetUrl;
+    // Only route Fidelize destinations through the tracker (Google/etc redirect
+    // straight to the merchant destination for max compatibility).
+    if (destination !== "fidelize") return targetUrl;
+    return `${origin}/api/public/r/qr/${est.slug}/main`;
+  }, [origin, est?.slug, targetUrl, destination]);
+  const qrEncodedSecondaryUrl = useMemo(() => {
+    if (!est?.slug || !origin) return secondaryTargetUrl;
+    const u = new URL(`${origin}/api/public/r/qr/${est.slug}/second`);
+    u.searchParams.set("u", secondaryTargetUrl);
+    return u.toString();
+  }, [origin, est?.slug, secondaryTargetUrl]);
+
   // Contrast / readability diagnostics
   const textBgRatio = useMemo(() => contrastRatio(textColor, backgroundColor), [textColor, backgroundColor]);
   const qrCodeRatio = contrastRatio("#111827", "#ffffff"); // QR dark vs light
 
   useEffect(() => {
-    QRCode.toDataURL(targetUrl, {
+    QRCode.toDataURL(qrEncodedPrimaryUrl, {
       width: 1200, margin: 1, errorCorrectionLevel: ecc,
       color: { dark: "#111827", light: "#ffffff" },
     }).then(setQrDataUrl).catch(() => setQrDataUrl(""));
-  }, [targetUrl, ecc]);
+  }, [qrEncodedPrimaryUrl, ecc]);
 
   useEffect(() => {
     if (!secondaryEnabled) {
@@ -338,11 +491,11 @@ function ReviewQrPage() {
         secondaryQr: secondaryUntouched ? { x: 70, y: 58 } : prev.secondaryQr,
       };
     });
-    QRCode.toDataURL(secondaryTargetUrl, {
+    QRCode.toDataURL(qrEncodedSecondaryUrl, {
       width: 1200, margin: 1, errorCorrectionLevel: ecc,
       color: { dark: "#111827", light: "#ffffff" },
     }).then(setSecondaryQrDataUrl).catch(() => setSecondaryQrDataUrl(""));
-  }, [secondaryEnabled, secondaryTargetUrl, ecc]);
+  }, [secondaryEnabled, qrEncodedSecondaryUrl, ecc]);
 
   const dims = FORMATS[format];
 
@@ -780,8 +933,46 @@ function ReviewQrPage() {
                   <Save className="mr-1.5 h-3.5 w-3.5" /> Salvar
                 </Button>
               </div>
-              {designs.length > 0 ? (
+              {/* Cloud designs (shared between establishment members) */}
+              {cloudDesigns && cloudDesigns.length > 0 && (
+                <div className="max-h-56 space-y-1 overflow-y-auto pr-1">
+                  {cloudDesigns.map((d) => (
+                    <div key={d.id} className="flex items-center gap-2 rounded-lg border bg-background/70 p-1.5">
+                      <button
+                        type="button"
+                        onClick={() => applyCloudDesign({
+                          id: d.id,
+                          name: d.name,
+                          data: (d.data && typeof d.data === "object" && !Array.isArray(d.data)) ? d.data as Record<string, unknown> : {},
+                        })}
+                        className="flex flex-1 items-center gap-2 rounded px-1.5 py-0.5 text-left hover:bg-primary/10"
+                      >
+                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/15 ring-1 ring-primary/30">
+                          <Cloud className="h-3.5 w-3.5 text-primary" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-xs font-semibold">{d.name}</div>
+                          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                            <UserCircle2 className="h-3 w-3" />
+                            <span className="truncate">{d.applied_by_name ?? d.created_by_name ?? "Equipe"}</span>
+                          </div>
+                        </div>
+                      </button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                        onClick={() => removeCloudDesign(d.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {designs.length > 0 && (
                 <div className="max-h-40 space-y-1 overflow-y-auto pr-1">
+                  <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Locais (offline)</div>
                   {designs.map((d) => (
                     <div key={d.id} className="flex items-center gap-2 rounded-lg border bg-background/70 p-1.5">
                       <button
@@ -811,12 +1002,101 @@ function ReviewQrPage() {
                     </div>
                   ))}
                 </div>
-              ) : (
+              )}
+              {(!cloudDesigns || cloudDesigns.length === 0) && designs.length === 0 && (
                 <div className="text-[11px] text-muted-foreground">
-                  Nenhum design salvo ainda. Ajuste as cores/textos e clique em Salvar para guardar variações.
+                  Nenhum design salvo ainda. Ajuste as cores/textos e clique em Salvar para guardar variações — ficam disponíveis para toda a equipe.
                 </div>
               )}
             </div>
+
+            {/* Emblemas / selos arrastáveis */}
+            <div className="space-y-2 rounded-xl border border-primary/20 bg-primary/5 p-3">
+              <div className="flex items-center justify-between gap-2 text-[11px] font-semibold uppercase tracking-widest text-primary">
+                <span className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5" /> Emblemas</span>
+                <span className="text-[10px] font-normal normal-case text-muted-foreground">Arraste após adicionar</span>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5">
+                {BADGE_KEYS.map((k) => {
+                  const meta = BADGE_CATALOG[k];
+                  const Icon = meta.Icon;
+                  const active = badges.some((b) => b.key === k);
+                  return (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => toggleBadge(k)}
+                      className={`flex items-center gap-1.5 rounded-lg border px-2 py-1.5 text-left text-[11px] transition ${
+                        active
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-background hover:border-primary/50"
+                      }`}
+                    >
+                      <Icon className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate font-semibold">{meta.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {badges.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setBadges([])}
+                  className="text-[10px] text-muted-foreground hover:text-destructive"
+                >
+                  Remover todos os emblemas
+                </button>
+              )}
+            </div>
+
+            {/* Estatísticas de scans */}
+            <div className="space-y-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                <ScanLine className="h-3.5 w-3.5" /> Scans do QR
+              </div>
+              {scanStats ? (
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="rounded-lg bg-background/70 p-2 text-center">
+                    <div className="text-lg font-bold tabular-nums">{scanStats.total}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Total</div>
+                  </div>
+                  <div className="rounded-lg bg-background/70 p-2 text-center">
+                    <div className="text-lg font-bold tabular-nums">{scanStats.last30}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">30 dias</div>
+                  </div>
+                  <div className="rounded-lg bg-background/70 p-2 text-center">
+                    <div className="text-lg font-bold tabular-nums">{scanStats.last7}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">7 dias</div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-[11px] text-muted-foreground">Aguardando primeiros scans do cartaz…</div>
+              )}
+              <div className="text-[10px] text-muted-foreground">
+                Cada leitura do QR passa por um redirecionador rastreado — o cliente é enviado ao destino imediatamente.
+              </div>
+            </div>
+
+            {/* Enviar para gráfica parceira */}
+            <div className="space-y-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-400">
+                <Printer className="h-3.5 w-3.5" /> Enviar para gráfica parceira
+              </div>
+              <div className="text-[11px] text-muted-foreground">
+                Recebemos o arquivo em alta resolução, revisamos e imprimimos no display. Você acompanha o pedido pelo painel.
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="w-full border-amber-500/50 text-amber-700 hover:bg-amber-500/10 dark:text-amber-300"
+                onClick={() => setPrintOpen(true)}
+                disabled={!qrDataUrl || primaryBlocking}
+              >
+                <Printer className="mr-1.5 h-3.5 w-3.5" /> Solicitar impressão
+              </Button>
+            </div>
+
 
             {/* QR avançado — tolerância a erro + rastreio UTM */}
             <div className="space-y-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
@@ -1033,7 +1313,10 @@ function ReviewQrPage() {
                   layout={layout}
                   setLayout={setLayout}
                   editable={editLayout}
+                  badges={badges}
+                  moveBadge={moveBadge}
                 />
+
 
                 {/* Acrylic glare overlay (mounted inside so it inherits transform) */}
                 {displayMode && (
@@ -1152,6 +1435,32 @@ function ReviewQrPage() {
         </div>
 
       </div>
+
+      {est && (
+        <PrintOrderDialog
+          open={printOpen}
+          onOpenChange={setPrintOpen}
+          establishmentId={est.id}
+          establishmentSlug={est.slug}
+          format={format}
+          getPngBlob={async () => {
+            try {
+              const dataUrl = await renderPosterPng();
+              const res = await fetch(dataUrl);
+              return await res.blob();
+            } catch { return null; }
+          }}
+          getSvgBlob={async () => {
+            try {
+              const svg = await QRCode.toString(qrEncodedPrimaryUrl, {
+                type: "svg", errorCorrectionLevel: ecc, margin: 1,
+                color: { dark: "#111827", light: "#ffffff" },
+              });
+              return new Blob([svg], { type: "image/svg+xml" });
+            } catch { return null; }
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -1187,6 +1496,8 @@ interface PosterProps {
   layout: PosterLayout;
   setLayout: (updater: (prev: PosterLayout) => PosterLayout) => void;
   editable: boolean;
+  badges: BadgeInstance[];
+  moveBadge: (key: BadgeKey, x: number, y: number) => void;
 }
 
 const PosterCanvas = forwardRef<HTMLDivElement, PosterProps>(function PosterCanvas(props, ref) {
@@ -1362,6 +1673,86 @@ function PortraitBody(p: PosterProps) {
         </div>
       </DraggableItem>
 
+      {/* Preset badges — draggable icons/emblems */}
+      {p.badges.map((b) => {
+        const meta = BADGE_CATALOG[b.key];
+        const Icon = meta.Icon;
+        return (
+          <BadgeDraggable
+            key={b.key}
+            badge={b}
+            editable={p.editable}
+            move={p.moveBadge}
+          >
+            <div
+              className="flex items-center gap-1.5 rounded-full px-2.5 py-1 shadow-sm"
+              style={{
+                background: `color-mix(in oklab, ${p.primaryColor} 12%, ${p.backgroundColor})`,
+                color: p.textColor,
+                border: `1px solid color-mix(in oklab, ${p.primaryColor} 40%, transparent)`,
+                fontSize: `${10 * (p.contentScale / 100)}px`,
+              }}
+            >
+              <Icon className="h-3 w-3" style={{ color: p.primaryColor }} />
+              <span className="whitespace-nowrap font-semibold">{meta.short}</span>
+            </div>
+          </BadgeDraggable>
+        );
+      })}
+
+    </div>
+  );
+}
+
+/** Draggable wrapper for a preset badge instance. */
+function BadgeDraggable({
+  badge, editable, move, children,
+}: {
+  badge: BadgeInstance;
+  editable: boolean;
+  move: (key: BadgeKey, x: number, y: number) => void;
+  children: React.ReactNode;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const draggingRef = useRef(false);
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!editable) return;
+    draggingRef.current = true;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    e.preventDefault();
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!editable || !draggingRef.current) return;
+    const parent = ref.current?.parentElement;
+    if (!parent) return;
+    const rect = parent.getBoundingClientRect();
+    const x = Math.max(2, Math.min(98, ((e.clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(2, Math.min(98, ((e.clientY - rect.top) / rect.height) * 100));
+    move(badge.key, x, y);
+  };
+  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    draggingRef.current = false;
+    try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch { /* ignore */ }
+  };
+  return (
+    <div
+      ref={ref}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      className={`absolute ${editable ? "cursor-move select-none" : ""}`}
+      style={{
+        left: `${badge.x}%`,
+        top: `${badge.y}%`,
+        transform: "translate(-50%, -50%)",
+        touchAction: editable ? "none" : undefined,
+      }}
+    >
+      {editable && (
+        <div data-export-ignore="true" className="pointer-events-none absolute -inset-1.5 rounded-full border border-dashed border-primary/70 bg-primary/5" />
+      )}
+      {children}
     </div>
   );
 }

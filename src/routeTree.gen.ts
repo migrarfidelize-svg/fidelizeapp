@@ -101,6 +101,7 @@ import { Route as AuthenticatedAppAvaliacoesQrRouteImport } from './routes/_auth
 import { Route as AuthenticatedAdminSuporteIdRouteImport } from './routes/_authenticated/admin.suporte.$id'
 import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authenticated/admin.empresa.$id'
 import { Route as ApiPublicWalletAppleTokenRouteImport } from './routes/api/public/wallet.apple.$token'
+import { Route as ApiPublicRQrSlugDestRouteImport } from './routes/api/public/r/qr/$slug/$dest'
 
 const TermosRoute = TermosRouteImport.update({
   id: '/termos',
@@ -614,6 +615,11 @@ const ApiPublicWalletAppleTokenRoute =
     path: '/api/public/wallet/apple/$token',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicRQrSlugDestRoute = ApiPublicRQrSlugDestRouteImport.update({
+  id: '/api/public/r/qr/$slug/$dest',
+  path: '/api/public/r/qr/$slug/$dest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -707,6 +713,7 @@ export interface FileRoutesByFullPath {
   '/app/avaliacoes/': typeof AuthenticatedAppAvaliacoesIndexRoute
   '/app/planos/': typeof AuthenticatedAppPlanosIndexRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
+  '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -797,6 +804,7 @@ export interface FileRoutesByTo {
   '/app/avaliacoes': typeof AuthenticatedAppAvaliacoesIndexRoute
   '/app/planos': typeof AuthenticatedAppPlanosIndexRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
+  '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -892,6 +900,7 @@ export interface FileRoutesById {
   '/_authenticated/app/avaliacoes/': typeof AuthenticatedAppAvaliacoesIndexRoute
   '/_authenticated/app/planos/': typeof AuthenticatedAppPlanosIndexRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
+  '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -987,6 +996,7 @@ export interface FileRouteTypes {
     | '/app/avaliacoes/'
     | '/app/planos/'
     | '/api/public/wallet/apple/$token'
+    | '/api/public/r/qr/$slug/$dest'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -1077,6 +1087,7 @@ export interface FileRouteTypes {
     | '/app/avaliacoes'
     | '/app/planos'
     | '/api/public/wallet/apple/$token'
+    | '/api/public/r/qr/$slug/$dest'
   id:
     | '__root__'
     | '/'
@@ -1171,6 +1182,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/avaliacoes/'
     | '/_authenticated/app/planos/'
     | '/api/public/wallet/apple/$token'
+    | '/api/public/r/qr/$slug/$dest'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1206,6 +1218,7 @@ export interface RootRouteChildren {
   ApiPublicWebhooksMercadopagoRoute: typeof ApiPublicWebhooksMercadopagoRoute
   SuporteSlugKbArticleRoute: typeof SuporteSlugKbArticleRoute
   ApiPublicWalletAppleTokenRoute: typeof ApiPublicWalletAppleTokenRoute
+  ApiPublicRQrSlugDestRoute: typeof ApiPublicRQrSlugDestRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1854,6 +1867,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWalletAppleTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/r/qr/$slug/$dest': {
+      id: '/api/public/r/qr/$slug/$dest'
+      path: '/api/public/r/qr/$slug/$dest'
+      fullPath: '/api/public/r/qr/$slug/$dest'
+      preLoaderRoute: typeof ApiPublicRQrSlugDestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -2071,6 +2091,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicWebhooksMercadopagoRoute: ApiPublicWebhooksMercadopagoRoute,
   SuporteSlugKbArticleRoute: SuporteSlugKbArticleRoute,
   ApiPublicWalletAppleTokenRoute: ApiPublicWalletAppleTokenRoute,
+  ApiPublicRQrSlugDestRoute: ApiPublicRQrSlugDestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
