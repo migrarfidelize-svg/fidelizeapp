@@ -153,7 +153,6 @@ function WalletProfile() {
       </form>
 
       <PushStatusCard />
-      <PushPreferencesSection />
 
 
 
