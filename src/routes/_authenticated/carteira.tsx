@@ -9,6 +9,7 @@ import { countUnread } from "@/lib/inbox.functions";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AchievementUnlockListener } from "@/components/wallet/AchievementUnlockListener";
 import { PostStampReviewSheet } from "@/components/wallet/PostStampReviewSheet";
+import { InboxBellBadge } from "@/components/wallet/InboxBellBadge";
 
 export const Route = createFileRoute("/_authenticated/carteira")({
   head: () => ({
