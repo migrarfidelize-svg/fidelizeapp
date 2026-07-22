@@ -13,6 +13,7 @@ import {
 import { WalletStack } from "@/components/wallet/WalletStack";
 import { WalletHomeSkeleton } from "@/components/wallet/WalletCardSkeleton";
 import { InstallAppCard } from "@/components/wallet/InstallAppCard";
+import { EnableNotificationsCard } from "@/components/wallet/EnableNotificationsCard";
 
 
 type WalletItem = Awaited<ReturnType<typeof getMyWallet>>[number];
