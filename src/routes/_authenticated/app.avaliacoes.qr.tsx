@@ -531,25 +531,7 @@ function ReviewQrPage() {
 
             {nfcMode && (
               <div className="space-y-3 rounded-lg border border-primary/30 bg-primary-soft/40 p-3 text-xs">
-                <div>
-                  <div className="mb-1.5 flex items-center justify-between font-semibold text-primary">
-                    <span>Tamanho do selo NFC</span>
-                    <span className="text-[10px] font-bold tabular-nums text-muted-foreground">{contentScale}%</span>
-                  </div>
-                  <Slider
-                    min={60}
-                    max={180}
-                    step={5}
-                    value={[contentScale]}
-                    onValueChange={(v) => setContentScale(v[0] ?? 100)}
-                  />
-                  <div className="mt-1 text-[10px] text-muted-foreground">
-                    Ajuste o selo NFC discreto que aparece no rodapé do cartaz.
-                  </div>
-                  <div className="mt-2 flex items-center justify-center rounded-lg border border-dashed border-primary/30 bg-background/60 py-2">
-                    <NfcBadge primary={primaryColor} sizePct={contentScale} />
-                  </div>
-                </div>
+
 
                 <div>
                   <div className="font-semibold text-primary">URL para NFC</div>
