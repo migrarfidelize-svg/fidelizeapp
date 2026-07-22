@@ -144,13 +144,19 @@ function checkGoogleUrl(v: string): UrlCheck {
   return { level: "ok", message: `Link Google válido — ${u.hostname}` };
 }
 
-function checkGenericUrl(v: string): UrlCheck {
+function checkGenericUrl(v: string, referenceHost?: string): UrlCheck {
   const t = v.trim();
   if (!t) return { level: "empty", message: "Cole o link do cardápio, loja, WhatsApp ou Instagram." };
   let u: URL;
   try { u = new URL(t); } catch { return { level: "error", message: "URL inválida — comece com https:// e verifique se está completa." }; }
   if (u.protocol !== "https:" && u.protocol !== "http:") return { level: "error", message: "O link deve começar com https://" };
   if (u.protocol === "http:") return { level: "warn", message: "Preferimos https:// para evitar avisos de segurança no celular." };
+  if (URL_SHORTENERS.has(u.hostname.toLowerCase())) {
+    return { level: "warn", message: `Encurtador detectado (${u.hostname}) — o cliente não vê o destino final. Prefira o link direto do seu domínio.` };
+  }
+  if (referenceHost && rootDomain(u.hostname) !== rootDomain(referenceHost)) {
+    return { level: "warn", message: `O 2º QR aponta para "${u.hostname}", diferente de "${referenceHost}". Confirme que é seu — evita direcionar clientes a um domínio errado.` };
+  }
   return { level: "ok", message: `Link válido — ${u.hostname}` };
 }
 
