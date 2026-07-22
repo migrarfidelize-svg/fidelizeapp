@@ -61,7 +61,6 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/app", label: "Painel", icon: LayoutDashboard, exact: true },
       { to: "/app/carimbar", label: "Carimbar", icon: Stamp },
       { to: "/app/clientes", label: "Clientes", icon: Users },
-      { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
     ],
   },
   {
@@ -81,8 +80,10 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/app/notificacoes", label: "Notificações", icon: Bell },
       { to: "/app/promocoes", label: "Promoções", icon: Megaphone },
       { to: "/app/mensagens", label: "Mensagens", icon: MessageSquare },
+      { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
     ],
   },
+
   {
     key: "conta",
     label: "Conta",
