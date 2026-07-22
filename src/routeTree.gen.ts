@@ -20,6 +20,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AjudaIndexRouteImport } from './routes/ajuda.index'
 import { Route as SuporteMeusRouteImport } from './routes/suporte.meus'
 import { Route as RCodeRouteImport } from './routes/r.$code'
+import { Route as LinksSlugRouteImport } from './routes/links.$slug'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as ESlugRouteImport } from './routes/e.$slug'
@@ -57,6 +58,7 @@ import { Route as AuthenticatedAppPerfilRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAppPagamentosRouteImport } from './routes/_authenticated/app.pagamentos'
 import { Route as AuthenticatedAppNotificacoesRouteImport } from './routes/_authenticated/app.notificacoes'
 import { Route as AuthenticatedAppMensagensRouteImport } from './routes/_authenticated/app.mensagens'
+import { Route as AuthenticatedAppLinktreeRouteImport } from './routes/_authenticated/app.linktree'
 import { Route as AuthenticatedAppKbRouteImport } from './routes/_authenticated/app.kb'
 import { Route as AuthenticatedAppEquipeRouteImport } from './routes/_authenticated/app.equipe'
 import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated/app.clientes'
@@ -153,6 +155,11 @@ const SuporteMeusRoute = SuporteMeusRouteImport.update({
 const RCodeRoute = RCodeRouteImport.update({
   id: '/r/$code',
   path: '/r/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LinksSlugRoute = LinksSlugRouteImport.update({
+  id: '/links/$slug',
+  path: '/links/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LSlugRoute = LSlugRouteImport.update({
@@ -353,6 +360,12 @@ const AuthenticatedAppMensagensRoute =
   AuthenticatedAppMensagensRouteImport.update({
     id: '/mensagens',
     path: '/mensagens',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppLinktreeRoute =
+  AuthenticatedAppLinktreeRouteImport.update({
+    id: '/linktree',
+    path: '/linktree',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppKbRoute = AuthenticatedAppKbRouteImport.update({
@@ -627,6 +640,7 @@ export interface FileRoutesByFullPath {
   '/e/$slug': typeof ESlugRoute
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
+  '/links/$slug': typeof LinksSlugRoute
   '/r/$code': typeof RCodeRoute
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda/': typeof AjudaIndexRoute
@@ -652,6 +666,7 @@ export interface FileRoutesByFullPath {
   '/app/clientes': typeof AuthenticatedAppClientesRoute
   '/app/equipe': typeof AuthenticatedAppEquipeRoute
   '/app/kb': typeof AuthenticatedAppKbRoute
+  '/app/linktree': typeof AuthenticatedAppLinktreeRoute
   '/app/mensagens': typeof AuthenticatedAppMensagensRoute
   '/app/notificacoes': typeof AuthenticatedAppNotificacoesRoute
   '/app/pagamentos': typeof AuthenticatedAppPagamentosRoute
@@ -716,6 +731,7 @@ export interface FileRoutesByTo {
   '/e/$slug': typeof ESlugRoute
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
+  '/links/$slug': typeof LinksSlugRoute
   '/r/$code': typeof RCodeRoute
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda': typeof AjudaIndexRoute
@@ -741,6 +757,7 @@ export interface FileRoutesByTo {
   '/app/clientes': typeof AuthenticatedAppClientesRoute
   '/app/equipe': typeof AuthenticatedAppEquipeRoute
   '/app/kb': typeof AuthenticatedAppKbRoute
+  '/app/linktree': typeof AuthenticatedAppLinktreeRoute
   '/app/mensagens': typeof AuthenticatedAppMensagensRoute
   '/app/notificacoes': typeof AuthenticatedAppNotificacoesRoute
   '/app/pagamentos': typeof AuthenticatedAppPagamentosRoute
@@ -810,6 +827,7 @@ export interface FileRoutesById {
   '/e/$slug': typeof ESlugRoute
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
+  '/links/$slug': typeof LinksSlugRoute
   '/r/$code': typeof RCodeRoute
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda/': typeof AjudaIndexRoute
@@ -835,6 +853,7 @@ export interface FileRoutesById {
   '/_authenticated/app/clientes': typeof AuthenticatedAppClientesRoute
   '/_authenticated/app/equipe': typeof AuthenticatedAppEquipeRoute
   '/_authenticated/app/kb': typeof AuthenticatedAppKbRoute
+  '/_authenticated/app/linktree': typeof AuthenticatedAppLinktreeRoute
   '/_authenticated/app/mensagens': typeof AuthenticatedAppMensagensRoute
   '/_authenticated/app/notificacoes': typeof AuthenticatedAppNotificacoesRoute
   '/_authenticated/app/pagamentos': typeof AuthenticatedAppPagamentosRoute
@@ -904,6 +923,7 @@ export interface FileRouteTypes {
     | '/e/$slug'
     | '/invite/$token'
     | '/l/$slug'
+    | '/links/$slug'
     | '/r/$code'
     | '/suporte/meus'
     | '/ajuda/'
@@ -929,6 +949,7 @@ export interface FileRouteTypes {
     | '/app/clientes'
     | '/app/equipe'
     | '/app/kb'
+    | '/app/linktree'
     | '/app/mensagens'
     | '/app/notificacoes'
     | '/app/pagamentos'
@@ -993,6 +1014,7 @@ export interface FileRouteTypes {
     | '/e/$slug'
     | '/invite/$token'
     | '/l/$slug'
+    | '/links/$slug'
     | '/r/$code'
     | '/suporte/meus'
     | '/ajuda'
@@ -1018,6 +1040,7 @@ export interface FileRouteTypes {
     | '/app/clientes'
     | '/app/equipe'
     | '/app/kb'
+    | '/app/linktree'
     | '/app/mensagens'
     | '/app/notificacoes'
     | '/app/pagamentos'
@@ -1086,6 +1109,7 @@ export interface FileRouteTypes {
     | '/e/$slug'
     | '/invite/$token'
     | '/l/$slug'
+    | '/links/$slug'
     | '/r/$code'
     | '/suporte/meus'
     | '/ajuda/'
@@ -1111,6 +1135,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/clientes'
     | '/_authenticated/app/equipe'
     | '/_authenticated/app/kb'
+    | '/_authenticated/app/linktree'
     | '/_authenticated/app/mensagens'
     | '/_authenticated/app/notificacoes'
     | '/_authenticated/app/pagamentos'
@@ -1174,6 +1199,7 @@ export interface RootRouteChildren {
   ESlugRoute: typeof ESlugRoute
   InviteTokenRoute: typeof InviteTokenRoute
   LSlugRoute: typeof LSlugRoute
+  LinksSlugRoute: typeof LinksSlugRoute
   RCodeRoute: typeof RCodeRoute
   SuporteMeusRoute: typeof SuporteMeusRoute
   AjudaIndexRoute: typeof AjudaIndexRoute
@@ -1272,6 +1298,13 @@ declare module '@tanstack/react-router' {
       path: '/r/$code'
       fullPath: '/r/$code'
       preLoaderRoute: typeof RCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/links/$slug': {
+      id: '/links/$slug'
+      path: '/links/$slug'
+      fullPath: '/links/$slug'
+      preLoaderRoute: typeof LinksSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/l/$slug': {
@@ -1531,6 +1564,13 @@ declare module '@tanstack/react-router' {
       path: '/mensagens'
       fullPath: '/app/mensagens'
       preLoaderRoute: typeof AuthenticatedAppMensagensRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/linktree': {
+      id: '/_authenticated/app/linktree'
+      path: '/linktree'
+      fullPath: '/app/linktree'
+      preLoaderRoute: typeof AuthenticatedAppLinktreeRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/app/kb': {
@@ -1895,6 +1935,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppClientesRoute: typeof AuthenticatedAppClientesRoute
   AuthenticatedAppEquipeRoute: typeof AuthenticatedAppEquipeRoute
   AuthenticatedAppKbRoute: typeof AuthenticatedAppKbRoute
+  AuthenticatedAppLinktreeRoute: typeof AuthenticatedAppLinktreeRoute
   AuthenticatedAppMensagensRoute: typeof AuthenticatedAppMensagensRoute
   AuthenticatedAppNotificacoesRoute: typeof AuthenticatedAppNotificacoesRoute
   AuthenticatedAppPagamentosRoute: typeof AuthenticatedAppPagamentosRoute
@@ -1916,6 +1957,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppClientesRoute: AuthenticatedAppClientesRoute,
   AuthenticatedAppEquipeRoute: AuthenticatedAppEquipeRoute,
   AuthenticatedAppKbRoute: AuthenticatedAppKbRoute,
+  AuthenticatedAppLinktreeRoute: AuthenticatedAppLinktreeRoute,
   AuthenticatedAppMensagensRoute: AuthenticatedAppMensagensRoute,
   AuthenticatedAppNotificacoesRoute: AuthenticatedAppNotificacoesRoute,
   AuthenticatedAppPagamentosRoute: AuthenticatedAppPagamentosRoute,
@@ -2028,6 +2070,7 @@ const rootRouteChildren: RootRouteChildren = {
   ESlugRoute: ESlugRoute,
   InviteTokenRoute: InviteTokenRoute,
   LSlugRoute: LSlugRoute,
+  LinksSlugRoute: LinksSlugRoute,
   RCodeRoute: RCodeRoute,
   SuporteMeusRoute: SuporteMeusRoute,
   AjudaIndexRoute: AjudaIndexRoute,

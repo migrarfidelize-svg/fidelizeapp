@@ -53,7 +53,7 @@ export const Route = createFileRoute("/api/public/r/qr/$slug/$dest")({
 
         const { data: est } = await sb
           .from("establishments")
-          .select("id")
+          .select("id, qr_destination")
           .eq("slug", slug)
           .maybeSingle();
 
@@ -68,8 +68,20 @@ export const Route = createFileRoute("/api/public/r/qr/$slug/$dest")({
           }
           target = u || `${origin}/e/${slug}`;
         } else {
-          target = `${origin}/avaliar/${slug}`;
+          // Dynamic destination: reviews (default), linktree, or landing.
+          const qd = (est?.qr_destination ?? "reviews") as
+            | "reviews"
+            | "linktree"
+            | "landing";
+          if (qd === "linktree") {
+            target = `${origin}/links/${slug}`;
+          } else if (qd === "landing") {
+            target = `${origin}/l/${slug}`;
+          } else {
+            target = `${origin}/avaliar/${slug}`;
+          }
         }
+
 
         // Forward any remaining UTM params
         const forwarded = forwardedQs.toString();

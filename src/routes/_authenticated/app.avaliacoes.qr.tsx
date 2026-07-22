@@ -15,6 +15,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 
 import { PageHero } from "@/components/PageHero";
+import { QrDestinationCard } from "@/components/QrDestinationCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -756,6 +757,10 @@ function ReviewQrPage() {
         title="QR Code de avaliação"
         subtitle="Cartaz pronto para balcão, mesa e recibos. Encaminha o cliente direto para a página de avaliação Fidelize."
       />
+
+      <QrDestinationCard establishmentId={est.id} />
+
+
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
         {/* CONTROLS — glass panel */}

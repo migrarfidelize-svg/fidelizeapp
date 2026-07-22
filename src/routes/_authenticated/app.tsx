@@ -17,7 +17,9 @@ import {
   LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield,
   LifeBuoy, BookOpen, Package, Receipt, HeartHandshake, Bell, Star, Menu,
   PanelLeftClose, PanelLeftOpen, Compass, Megaphone, UserCircle2, MessageSquare, BarChart3,
+  Link2,
 } from "lucide-react";
+
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { GuidedTour, type TourStep } from "@/components/GuidedTour";
@@ -78,8 +80,10 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: "/app/avaliacoes", label: "Avaliações", icon: Star },
       { to: "/app/avaliacoes/qr", label: "QR de avaliação", icon: QrCode },
+      { to: "/app/linktree", label: "Árvore de Links", icon: Link2 },
     ],
   },
+
   {
     key: "comunicacao",
     label: "Comunicação",
