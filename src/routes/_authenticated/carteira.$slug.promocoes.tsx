@@ -351,43 +351,70 @@ function PromoCard({
 
       {open && (
         <div className="space-y-3 border-t border-border/60 px-4 pb-4 pt-3">
+          <div className="font-display text-lg font-black leading-tight" style={{ color: brand }}>
+            {promo.title}
+          </div>
           {promo.body ? (
             <p className="whitespace-pre-wrap text-sm text-muted-foreground">{promo.body}</p>
           ) : (
             <p className="text-sm italic text-muted-foreground">Sem descrição adicional.</p>
           )}
 
-          <div className="flex flex-wrap gap-2 pt-1">
-            {media.length > 0 && (
-              <button
-                type="button"
-                onClick={() => {
-                  setIdx(0);
-                  setMediaOpen(true);
-                }}
-                className="inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold shadow-sm transition-transform active:scale-95"
-                style={{ borderColor: `${brand}55`, color: brand, background: `${brand}12` }}
-              >
-                <MediaIcon className="h-3.5 w-3.5" />
-                {mediaLabel}
-                {media.length > 1 && (
-                  <span className="ml-0.5 opacity-70">({media.length})</span>
-                )}
-              </button>
-            )}
-            {combinedLinks.map((l, i) => (
-              <a
-                key={`${l.url}-${i}`}
-                href={l.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-white shadow-sm transition-transform active:scale-95"
-                style={{ background: brand }}
-              >
-                <ExternalLink className="h-3.5 w-3.5" /> {l.label}
-              </a>
-            ))}
-          </div>
+          {media.length > 0 && (
+            <div className="grid gap-2 pt-1 sm:grid-cols-2">
+              {media.map((m, i) => (
+                <button
+                  key={`${m.path}-${i}`}
+                  type="button"
+                  onClick={() => {
+                    setIdx(i);
+                    setMediaOpen(true);
+                  }}
+                  className="group relative aspect-video w-full overflow-hidden rounded-2xl border border-border/60 bg-black"
+                  aria-label={m.type === "video" ? "Ver vídeo" : "Ver imagem"}
+                >
+                  {m.type === "video" ? (
+                    <>
+                      <video
+                        src={m.url ?? undefined}
+                        className="h-full w-full object-cover"
+                        muted
+                        playsInline
+                        preload="metadata"
+                      />
+                      <div className="absolute inset-0 grid place-items-center bg-black/30 transition group-hover:bg-black/50">
+                        <PlayCircle className="h-10 w-10 text-white drop-shadow" />
+                      </div>
+                    </>
+                  ) : (
+                    <img
+                      src={m.url ?? undefined}
+                      alt={promo.title}
+                      className="h-full w-full object-cover transition group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {combinedLinks.length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {combinedLinks.map((l, i) => (
+                <a
+                  key={`${l.url}-${i}`}
+                  href={l.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-white shadow-sm transition-transform active:scale-95"
+                  style={{ background: brand }}
+                >
+                  <ExternalLink className="h-3.5 w-3.5" /> {l.label}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
