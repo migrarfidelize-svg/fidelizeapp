@@ -41,12 +41,14 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as SuporteChamadoIdRouteImport } from './routes/suporte.chamado.$id'
 import { Route as SuporteSlugNovoRouteImport } from './routes/suporte.$slug.novo'
 import { Route as AjudaCategoryArticleRouteImport } from './routes/ajuda.$category.$article'
+import { Route as AuthenticatedCarteiraRetrospectivaRouteImport } from './routes/_authenticated/carteira.retrospectiva'
 import { Route as AuthenticatedCarteiraRecompensasRouteImport } from './routes/_authenticated/carteira.recompensas'
 import { Route as AuthenticatedCarteiraPremiosRouteImport } from './routes/_authenticated/carteira.premios'
 import { Route as AuthenticatedCarteiraPerfilRouteImport } from './routes/_authenticated/carteira.perfil'
 import { Route as AuthenticatedCarteiraMensagensRouteImport } from './routes/_authenticated/carteira.mensagens'
 import { Route as AuthenticatedCarteiraHistoricoRouteImport } from './routes/_authenticated/carteira.historico'
 import { Route as AuthenticatedCarteiraDescobrirRouteImport } from './routes/_authenticated/carteira.descobrir'
+import { Route as AuthenticatedCarteiraConquistasRouteImport } from './routes/_authenticated/carteira.conquistas'
 import { Route as AuthenticatedCarteiraCartoesRouteImport } from './routes/_authenticated/carteira.cartoes'
 import { Route as AuthenticatedCarteiraSlugRouteImport } from './routes/_authenticated/carteira.$slug'
 import { Route as AuthenticatedAppSuporteRouteImport } from './routes/_authenticated/app.suporte'
@@ -259,6 +261,12 @@ const AjudaCategoryArticleRoute = AjudaCategoryArticleRouteImport.update({
   path: '/ajuda/$category/$article',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCarteiraRetrospectivaRoute =
+  AuthenticatedCarteiraRetrospectivaRouteImport.update({
+    id: '/retrospectiva',
+    path: '/retrospectiva',
+    getParentRoute: () => AuthenticatedCarteiraRoute,
+  } as any)
 const AuthenticatedCarteiraRecompensasRoute =
   AuthenticatedCarteiraRecompensasRouteImport.update({
     id: '/recompensas',
@@ -293,6 +301,12 @@ const AuthenticatedCarteiraDescobrirRoute =
   AuthenticatedCarteiraDescobrirRouteImport.update({
     id: '/descobrir',
     path: '/descobrir',
+    getParentRoute: () => AuthenticatedCarteiraRoute,
+  } as any)
+const AuthenticatedCarteiraConquistasRoute =
+  AuthenticatedCarteiraConquistasRouteImport.update({
+    id: '/conquistas',
+    path: '/conquistas',
     getParentRoute: () => AuthenticatedCarteiraRoute,
   } as any)
 const AuthenticatedCarteiraCartoesRoute =
@@ -642,12 +656,14 @@ export interface FileRoutesByFullPath {
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
   '/carteira/$slug': typeof AuthenticatedCarteiraSlugRouteWithChildren
   '/carteira/cartoes': typeof AuthenticatedCarteiraCartoesRoute
+  '/carteira/conquistas': typeof AuthenticatedCarteiraConquistasRoute
   '/carteira/descobrir': typeof AuthenticatedCarteiraDescobrirRoute
   '/carteira/historico': typeof AuthenticatedCarteiraHistoricoRoute
   '/carteira/mensagens': typeof AuthenticatedCarteiraMensagensRoute
   '/carteira/perfil': typeof AuthenticatedCarteiraPerfilRoute
   '/carteira/premios': typeof AuthenticatedCarteiraPremiosRoute
   '/carteira/recompensas': typeof AuthenticatedCarteiraRecompensasRoute
+  '/carteira/retrospectiva': typeof AuthenticatedCarteiraRetrospectivaRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
@@ -728,12 +744,14 @@ export interface FileRoutesByTo {
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
   '/carteira/$slug': typeof AuthenticatedCarteiraSlugRouteWithChildren
   '/carteira/cartoes': typeof AuthenticatedCarteiraCartoesRoute
+  '/carteira/conquistas': typeof AuthenticatedCarteiraConquistasRoute
   '/carteira/descobrir': typeof AuthenticatedCarteiraDescobrirRoute
   '/carteira/historico': typeof AuthenticatedCarteiraHistoricoRoute
   '/carteira/mensagens': typeof AuthenticatedCarteiraMensagensRoute
   '/carteira/perfil': typeof AuthenticatedCarteiraPerfilRoute
   '/carteira/premios': typeof AuthenticatedCarteiraPremiosRoute
   '/carteira/recompensas': typeof AuthenticatedCarteiraRecompensasRoute
+  '/carteira/retrospectiva': typeof AuthenticatedCarteiraRetrospectivaRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
@@ -819,12 +837,14 @@ export interface FileRoutesById {
   '/_authenticated/app/suporte': typeof AuthenticatedAppSuporteRoute
   '/_authenticated/carteira/$slug': typeof AuthenticatedCarteiraSlugRouteWithChildren
   '/_authenticated/carteira/cartoes': typeof AuthenticatedCarteiraCartoesRoute
+  '/_authenticated/carteira/conquistas': typeof AuthenticatedCarteiraConquistasRoute
   '/_authenticated/carteira/descobrir': typeof AuthenticatedCarteiraDescobrirRoute
   '/_authenticated/carteira/historico': typeof AuthenticatedCarteiraHistoricoRoute
   '/_authenticated/carteira/mensagens': typeof AuthenticatedCarteiraMensagensRoute
   '/_authenticated/carteira/perfil': typeof AuthenticatedCarteiraPerfilRoute
   '/_authenticated/carteira/premios': typeof AuthenticatedCarteiraPremiosRoute
   '/_authenticated/carteira/recompensas': typeof AuthenticatedCarteiraRecompensasRoute
+  '/_authenticated/carteira/retrospectiva': typeof AuthenticatedCarteiraRetrospectivaRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
@@ -910,12 +930,14 @@ export interface FileRouteTypes {
     | '/app/suporte'
     | '/carteira/$slug'
     | '/carteira/cartoes'
+    | '/carteira/conquistas'
     | '/carteira/descobrir'
     | '/carteira/historico'
     | '/carteira/mensagens'
     | '/carteira/perfil'
     | '/carteira/premios'
     | '/carteira/recompensas'
+    | '/carteira/retrospectiva'
     | '/ajuda/$category/$article'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
@@ -996,12 +1018,14 @@ export interface FileRouteTypes {
     | '/app/suporte'
     | '/carteira/$slug'
     | '/carteira/cartoes'
+    | '/carteira/conquistas'
     | '/carteira/descobrir'
     | '/carteira/historico'
     | '/carteira/mensagens'
     | '/carteira/perfil'
     | '/carteira/premios'
     | '/carteira/recompensas'
+    | '/carteira/retrospectiva'
     | '/ajuda/$category/$article'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
@@ -1086,12 +1110,14 @@ export interface FileRouteTypes {
     | '/_authenticated/app/suporte'
     | '/_authenticated/carteira/$slug'
     | '/_authenticated/carteira/cartoes'
+    | '/_authenticated/carteira/conquistas'
     | '/_authenticated/carteira/descobrir'
     | '/_authenticated/carteira/historico'
     | '/_authenticated/carteira/mensagens'
     | '/_authenticated/carteira/perfil'
     | '/_authenticated/carteira/premios'
     | '/_authenticated/carteira/recompensas'
+    | '/_authenticated/carteira/retrospectiva'
     | '/ajuda/$category/$article'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
@@ -1382,6 +1408,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AjudaCategoryArticleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/carteira/retrospectiva': {
+      id: '/_authenticated/carteira/retrospectiva'
+      path: '/retrospectiva'
+      fullPath: '/carteira/retrospectiva'
+      preLoaderRoute: typeof AuthenticatedCarteiraRetrospectivaRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
+    }
     '/_authenticated/carteira/recompensas': {
       id: '/_authenticated/carteira/recompensas'
       path: '/recompensas'
@@ -1422,6 +1455,13 @@ declare module '@tanstack/react-router' {
       path: '/descobrir'
       fullPath: '/carteira/descobrir'
       preLoaderRoute: typeof AuthenticatedCarteiraDescobrirRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
+    }
+    '/_authenticated/carteira/conquistas': {
+      id: '/_authenticated/carteira/conquistas'
+      path: '/conquistas'
+      fullPath: '/carteira/conquistas'
+      preLoaderRoute: typeof AuthenticatedCarteiraConquistasRouteImport
       parentRoute: typeof AuthenticatedCarteiraRoute
     }
     '/_authenticated/carteira/cartoes': {
@@ -1887,12 +1927,14 @@ const AuthenticatedCarteiraSlugRouteWithChildren =
 interface AuthenticatedCarteiraRouteChildren {
   AuthenticatedCarteiraSlugRoute: typeof AuthenticatedCarteiraSlugRouteWithChildren
   AuthenticatedCarteiraCartoesRoute: typeof AuthenticatedCarteiraCartoesRoute
+  AuthenticatedCarteiraConquistasRoute: typeof AuthenticatedCarteiraConquistasRoute
   AuthenticatedCarteiraDescobrirRoute: typeof AuthenticatedCarteiraDescobrirRoute
   AuthenticatedCarteiraHistoricoRoute: typeof AuthenticatedCarteiraHistoricoRoute
   AuthenticatedCarteiraMensagensRoute: typeof AuthenticatedCarteiraMensagensRoute
   AuthenticatedCarteiraPerfilRoute: typeof AuthenticatedCarteiraPerfilRoute
   AuthenticatedCarteiraPremiosRoute: typeof AuthenticatedCarteiraPremiosRoute
   AuthenticatedCarteiraRecompensasRoute: typeof AuthenticatedCarteiraRecompensasRoute
+  AuthenticatedCarteiraRetrospectivaRoute: typeof AuthenticatedCarteiraRetrospectivaRoute
   AuthenticatedCarteiraIndexRoute: typeof AuthenticatedCarteiraIndexRoute
   AuthenticatedCarteiraESlugRoute: typeof AuthenticatedCarteiraESlugRoute
 }
@@ -1900,12 +1942,15 @@ interface AuthenticatedCarteiraRouteChildren {
 const AuthenticatedCarteiraRouteChildren: AuthenticatedCarteiraRouteChildren = {
   AuthenticatedCarteiraSlugRoute: AuthenticatedCarteiraSlugRouteWithChildren,
   AuthenticatedCarteiraCartoesRoute: AuthenticatedCarteiraCartoesRoute,
+  AuthenticatedCarteiraConquistasRoute: AuthenticatedCarteiraConquistasRoute,
   AuthenticatedCarteiraDescobrirRoute: AuthenticatedCarteiraDescobrirRoute,
   AuthenticatedCarteiraHistoricoRoute: AuthenticatedCarteiraHistoricoRoute,
   AuthenticatedCarteiraMensagensRoute: AuthenticatedCarteiraMensagensRoute,
   AuthenticatedCarteiraPerfilRoute: AuthenticatedCarteiraPerfilRoute,
   AuthenticatedCarteiraPremiosRoute: AuthenticatedCarteiraPremiosRoute,
   AuthenticatedCarteiraRecompensasRoute: AuthenticatedCarteiraRecompensasRoute,
+  AuthenticatedCarteiraRetrospectivaRoute:
+    AuthenticatedCarteiraRetrospectivaRoute,
   AuthenticatedCarteiraIndexRoute: AuthenticatedCarteiraIndexRoute,
   AuthenticatedCarteiraESlugRoute: AuthenticatedCarteiraESlugRoute,
 }
