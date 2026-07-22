@@ -337,7 +337,6 @@ function StreakCard({ weeks, lastVisit }: { weeks: number; lastVisit: string | n
   );
 }
 
-type WalletItem = Awaited<ReturnType<typeof getMyWallet>>[number];
 
 export function WalletCard({ item }: { item: WalletItem }) {
   const est = item.establishment as { slug: string; name: string; logo_url: string | null; primary_color: string; active: boolean };
