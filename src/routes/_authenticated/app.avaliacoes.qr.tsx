@@ -859,6 +859,10 @@ interface PosterProps {
   destination: Destination;
   showGoogleLogo: boolean;
   nfcMode: boolean;
+  primaryLabel: string;
+  secondaryEnabled: boolean;
+  secondaryQrDataUrl: string;
+  secondaryLabel: string;
 }
 
 const PosterCanvas = forwardRef<HTMLDivElement, PosterProps>(function PosterCanvas(props, ref) {
