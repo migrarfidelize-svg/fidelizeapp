@@ -154,15 +154,36 @@ export const updateEstablishmentLinks = createServerFn({ method: "POST" })
 export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1).max(120) }).parse(d))
   .handler(async ({ data }) => {
+    type PublicPromo = {
+      id: string;
+      title: string;
+      body: string | null;
+      media: Media[];
+      external_links: { label: string; url: string }[];
+      starts_at: string | null;
+      ends_at: string | null;
+      created_at: string;
+    };
+    type PublicEst = {
+      id: string;
+      name: string;
+      slug: string;
+      logo_url: string | null;
+      primary_color: string;
+      accent_color: string;
+      external_links: { label: string; url: string }[];
+    };
+    const empty: { establishment: PublicEst | null; promotions: PublicPromo[] } = {
+      establishment: null,
+      promotions: [],
+    };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: est } = await supabaseAdmin
       .from("establishments")
       .select("id, name, slug, logo_url, primary_color, accent_color, external_links, active")
       .eq("slug", data.slug)
       .maybeSingle();
-    if (!est || !est.active) {
-      return { establishment: null, promotions: [] as Array<Record<string, unknown>> };
-    }
+    if (!est || !est.active) return empty;
     const nowIso = new Date().toISOString();
     const { data: rows, error } = await supabaseAdmin
       .from("promotions")
