@@ -22,6 +22,7 @@ import { Route as SuporteMeusRouteImport } from './routes/suporte.meus'
 import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
+import { Route as ESlugRouteImport } from './routes/e.$slug'
 import { Route as CTokenRouteImport } from './routes/c.$token'
 import { Route as AvaliarSlugRouteImport } from './routes/avaliar.$slug'
 import { Route as AvaliacoesSlugRouteImport } from './routes/avaliacoes.$slug'
@@ -91,7 +92,6 @@ import { Route as ApiPublicHooksDispatchScheduledPushRouteImport } from './route
 import { Route as ApiPublicCronReengagementRouteImport } from './routes/api/public/cron/reengagement'
 import { Route as ApiPublicCronBirthdayRouteImport } from './routes/api/public/cron/birthday'
 import { Route as AuthenticatedSuporteTicketIdRouteImport } from './routes/_authenticated/suporte.ticket.$id'
-import { Route as AuthenticatedCarteiraESlugRouteImport } from './routes/_authenticated/carteira.e.$slug'
 import { Route as AuthenticatedCarteiraSlugPromocoesRouteImport } from './routes/_authenticated/carteira.$slug.promocoes'
 import { Route as AuthenticatedAdminSuporteIdRouteImport } from './routes/_authenticated/admin.suporte.$id'
 import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authenticated/admin.empresa.$id'
@@ -159,6 +159,11 @@ const LSlugRoute = LSlugRouteImport.update({
 const InviteTokenRoute = InviteTokenRouteImport.update({
   id: '/invite/$token',
   path: '/invite/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ESlugRoute = ESlugRouteImport.update({
+  id: '/e/$slug',
+  path: '/e/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CTokenRoute = CTokenRouteImport.update({
@@ -550,12 +555,6 @@ const AuthenticatedSuporteTicketIdRoute =
     path: '/suporte/ticket/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedCarteiraESlugRoute =
-  AuthenticatedCarteiraESlugRouteImport.update({
-    id: '/e/$slug',
-    path: '/e/$slug',
-    getParentRoute: () => AuthenticatedCarteiraRoute,
-  } as any)
 const AuthenticatedCarteiraSlugPromocoesRoute =
   AuthenticatedCarteiraSlugPromocoesRouteImport.update({
     id: '/promocoes',
@@ -598,6 +597,7 @@ export interface FileRoutesByFullPath {
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
   '/avaliar/$slug': typeof AvaliarSlugRoute
   '/c/$token': typeof CTokenRoute
+  '/e/$slug': typeof ESlugRoute
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
   '/r/$code': typeof RCodeRoute
@@ -653,7 +653,6 @@ export interface FileRoutesByFullPath {
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
-  '/carteira/e/$slug': typeof AuthenticatedCarteiraESlugRoute
   '/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
@@ -683,6 +682,7 @@ export interface FileRoutesByTo {
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
   '/avaliar/$slug': typeof AvaliarSlugRoute
   '/c/$token': typeof CTokenRoute
+  '/e/$slug': typeof ESlugRoute
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
   '/r/$code': typeof RCodeRoute
@@ -738,7 +738,6 @@ export interface FileRoutesByTo {
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
-  '/carteira/e/$slug': typeof AuthenticatedCarteiraESlugRoute
   '/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
@@ -773,6 +772,7 @@ export interface FileRoutesById {
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
   '/avaliar/$slug': typeof AvaliarSlugRoute
   '/c/$token': typeof CTokenRoute
+  '/e/$slug': typeof ESlugRoute
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
   '/r/$code': typeof RCodeRoute
@@ -828,7 +828,6 @@ export interface FileRoutesById {
   '/_authenticated/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/_authenticated/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/_authenticated/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
-  '/_authenticated/carteira/e/$slug': typeof AuthenticatedCarteiraESlugRoute
   '/_authenticated/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
@@ -863,6 +862,7 @@ export interface FileRouteTypes {
     | '/avaliacoes/$slug'
     | '/avaliar/$slug'
     | '/c/$token'
+    | '/e/$slug'
     | '/invite/$token'
     | '/l/$slug'
     | '/r/$code'
@@ -918,7 +918,6 @@ export interface FileRouteTypes {
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
     | '/carteira/$slug/promocoes'
-    | '/carteira/e/$slug'
     | '/suporte/ticket/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
@@ -948,6 +947,7 @@ export interface FileRouteTypes {
     | '/avaliacoes/$slug'
     | '/avaliar/$slug'
     | '/c/$token'
+    | '/e/$slug'
     | '/invite/$token'
     | '/l/$slug'
     | '/r/$code'
@@ -1003,7 +1003,6 @@ export interface FileRouteTypes {
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
     | '/carteira/$slug/promocoes'
-    | '/carteira/e/$slug'
     | '/suporte/ticket/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
@@ -1037,6 +1036,7 @@ export interface FileRouteTypes {
     | '/avaliacoes/$slug'
     | '/avaliar/$slug'
     | '/c/$token'
+    | '/e/$slug'
     | '/invite/$token'
     | '/l/$slug'
     | '/r/$code'
@@ -1092,7 +1092,6 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/empresa/$id'
     | '/_authenticated/admin/suporte/$id'
     | '/_authenticated/carteira/$slug/promocoes'
-    | '/_authenticated/carteira/e/$slug'
     | '/_authenticated/suporte/ticket/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
@@ -1121,6 +1120,7 @@ export interface RootRouteChildren {
   AvaliacoesSlugRoute: typeof AvaliacoesSlugRoute
   AvaliarSlugRoute: typeof AvaliarSlugRoute
   CTokenRoute: typeof CTokenRoute
+  ESlugRoute: typeof ESlugRoute
   InviteTokenRoute: typeof InviteTokenRoute
   LSlugRoute: typeof LSlugRoute
   RCodeRoute: typeof RCodeRoute
@@ -1234,6 +1234,13 @@ declare module '@tanstack/react-router' {
       path: '/invite/$token'
       fullPath: '/invite/$token'
       preLoaderRoute: typeof InviteTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/e/$slug': {
+      id: '/e/$slug'
+      path: '/e/$slug'
+      fullPath: '/e/$slug'
+      preLoaderRoute: typeof ESlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/c/$token': {
@@ -1719,13 +1726,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSuporteTicketIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/carteira/e/$slug': {
-      id: '/_authenticated/carteira/e/$slug'
-      path: '/e/$slug'
-      fullPath: '/carteira/e/$slug'
-      preLoaderRoute: typeof AuthenticatedCarteiraESlugRouteImport
-      parentRoute: typeof AuthenticatedCarteiraRoute
-    }
     '/_authenticated/carteira/$slug/promocoes': {
       id: '/_authenticated/carteira/$slug/promocoes'
       path: '/promocoes'
@@ -1874,7 +1874,6 @@ interface AuthenticatedCarteiraRouteChildren {
   AuthenticatedCarteiraPremiosRoute: typeof AuthenticatedCarteiraPremiosRoute
   AuthenticatedCarteiraRecompensasRoute: typeof AuthenticatedCarteiraRecompensasRoute
   AuthenticatedCarteiraIndexRoute: typeof AuthenticatedCarteiraIndexRoute
-  AuthenticatedCarteiraESlugRoute: typeof AuthenticatedCarteiraESlugRoute
 }
 
 const AuthenticatedCarteiraRouteChildren: AuthenticatedCarteiraRouteChildren = {
@@ -1887,7 +1886,6 @@ const AuthenticatedCarteiraRouteChildren: AuthenticatedCarteiraRouteChildren = {
   AuthenticatedCarteiraPremiosRoute: AuthenticatedCarteiraPremiosRoute,
   AuthenticatedCarteiraRecompensasRoute: AuthenticatedCarteiraRecompensasRoute,
   AuthenticatedCarteiraIndexRoute: AuthenticatedCarteiraIndexRoute,
-  AuthenticatedCarteiraESlugRoute: AuthenticatedCarteiraESlugRoute,
 }
 
 const AuthenticatedCarteiraRouteWithChildren =
@@ -1940,6 +1938,7 @@ const rootRouteChildren: RootRouteChildren = {
   AvaliacoesSlugRoute: AvaliacoesSlugRoute,
   AvaliarSlugRoute: AvaliarSlugRoute,
   CTokenRoute: CTokenRoute,
+  ESlugRoute: ESlugRoute,
   InviteTokenRoute: InviteTokenRoute,
   LSlugRoute: LSlugRoute,
   RCodeRoute: RCodeRoute,

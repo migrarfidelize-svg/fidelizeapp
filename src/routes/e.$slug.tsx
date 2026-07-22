@@ -20,7 +20,6 @@ import {
   CreditCard,
 } from "lucide-react";
 import { getStampIcon } from "@/lib/stampIcons";
-import { WalletErrorState } from "@/components/wallet/WalletStates";
 
 const opts = (slug: string) =>
   queryOptions({
@@ -29,17 +28,58 @@ const opts = (slug: string) =>
     staleTime: 30_000,
   });
 
-export const Route = createFileRoute("/_authenticated/carteira/e/$slug")({
-  ssr: false,
+export const Route = createFileRoute("/e/$slug")({
   loader: ({ context, params }) => context.queryClient.ensureQueryData(opts(params.slug)),
-  head: ({ params }) => ({
-    meta: [
-      { title: `Descobrir ${params.slug} — Carteira Fidelize` },
-      { name: "robots", content: "noindex" },
-    ],
-  }),
+  head: ({ params, loaderData }) => {
+    const est = loaderData?.establishment;
+    const title = est ? `${est.name} — Promoções e fidelidade` : `Descobrir — Fidelize`;
+    const desc = est?.description
+      ? est.description
+      : est
+      ? `Confira promoções, campanhas de fidelidade e novidades de ${est.name}.`
+      : "Descubra estabelecimentos e promoções na Fidelize.";
+    const meta: Array<
+      | { title: string }
+      | { name: string; content: string }
+      | { property: string; content: string }
+    > = [
+      { title },
+      { name: "description", content: desc },
+      { property: "og:title", content: title },
+      { property: "og:description", content: desc },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ];
+    if (est?.logo_url) {
+      meta.push({ property: "og:image", content: est.logo_url });
+      meta.push({ name: "twitter:image", content: est.logo_url });
+    }
+    return { meta };
+  },
   component: DiscoveryProfilePage,
-  errorComponent: ({ error, reset }) => <WalletErrorState error={error} onRetry={reset} />,
+  errorComponent: ({ error, reset }) => (
+    <div className="mx-auto max-w-2xl p-6">
+      <div className="rounded-3xl border border-dashed border-border/60 bg-card/30 p-8 text-center">
+        <div className="font-display text-sm font-bold">Não foi possível carregar</div>
+        <p className="mt-1 text-xs text-muted-foreground">{error.message}</p>
+        <button
+          type="button"
+          onClick={() => reset()}
+          className="mt-4 rounded-xl border border-border/60 bg-background/60 px-3 py-2 text-xs font-semibold"
+        >
+          Tentar novamente
+        </button>
+      </div>
+    </div>
+  ),
+  notFoundComponent: () => (
+    <div className="mx-auto max-w-2xl p-6 text-center">
+      <div className="font-display text-lg font-bold">Estabelecimento não encontrado</div>
+      <Link to="/" className="mt-2 inline-block text-sm text-primary underline">
+        Ir para o início
+      </Link>
+    </div>
+  ),
 });
 
 type Media = { path: string; type: "image" | "video"; url?: string | null };
@@ -50,12 +90,12 @@ function DiscoveryProfilePage() {
 
   if (!data.establishment) {
     return (
-      <div className="space-y-4 pt-2">
+      <div className="mx-auto max-w-2xl space-y-4 p-4 pt-6">
         <Link
-          to="/carteira/descobrir"
+          to="/"
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
-          <ChevronLeft className="h-4 w-4" /> Voltar
+          <ChevronLeft className="h-4 w-4" /> Início
         </Link>
         <div className="rounded-3xl border border-dashed border-border/60 bg-card/30 p-8 text-center">
           <div className="font-display text-sm font-bold">Estabelecimento indisponível</div>
@@ -85,14 +125,7 @@ function DiscoveryProfilePage() {
   if (est.website) contactLinks.push({ icon: Globe, label: "Site", url: est.website });
 
   return (
-    <div className="space-y-4 pb-6">
-      <Link
-        to="/carteira/descobrir"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ChevronLeft className="h-4 w-4" /> Voltar para descobrir
-      </Link>
-
+    <div className="mx-auto max-w-3xl space-y-4 p-4 pb-10">
       <header className="relative overflow-hidden rounded-3xl border border-border/60 bg-card/40 p-5">
         <div
           className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full opacity-25 blur-3xl"
@@ -163,7 +196,6 @@ function DiscoveryProfilePage() {
         </div>
       </header>
 
-      {/* Campanhas ativas — em destaque na descoberta */}
       <section className="space-y-3 rounded-3xl border border-border/60 bg-card/40 p-4">
         <div className="flex items-center gap-2">
           <Gift className="h-4 w-4" style={{ color: brand }} />
@@ -257,6 +289,10 @@ function DiscoveryProfilePage() {
           ))}
         </ul>
       )}
+
+      <div className="pt-4 text-center text-[10px] uppercase tracking-widest text-muted-foreground">
+        Powered by Fidelize
+      </div>
     </div>
   );
 }
