@@ -201,12 +201,17 @@ function ReviewQrPage() {
 
 
   const fidelizeUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/avaliar/${est.slug}` : "";
-  const targetUrl = destination === "fidelize" ? fidelizeUrl : googleUrl.trim();
-  const googleReady = destination === "google" && /^https?:\/\/(g\.page|maps\.app\.goo\.gl|search\.google\.com|www\.google\.com|goo\.gl)/i.test(targetUrl);
-  const secondaryReady = secondaryEnabled && /^https?:\/\//i.test(secondaryUrl.trim());
+  const rawTargetUrl = destination === "fidelize" ? fidelizeUrl : googleUrl.trim();
+  const primaryIsPlaceholder = destination === "google" && !rawTargetUrl;
+  const targetUrl = rawTargetUrl || (destination === "google"
+    ? "https://g.page/exemplo-fidelize/review"
+    : "https://fidelize.app/preview");
+  const googleReady = destination === "google" && /^https?:\/\/(g\.page|maps\.app\.goo\.gl|search\.google\.com|www\.google\.com|goo\.gl)/i.test(rawTargetUrl);
+  const secondaryRawUrl = secondaryUrl.trim();
+  const secondaryIsPlaceholder = secondaryEnabled && !secondaryRawUrl;
+  const secondaryReady = secondaryEnabled && /^https?:\/\//i.test(secondaryRawUrl);
 
   useEffect(() => {
-    if (!targetUrl) { setQrDataUrl(""); return; }
     QRCode.toDataURL(targetUrl, {
       width: 1200, margin: 1, errorCorrectionLevel: "H",
       color: { dark: "#111827", light: "#ffffff" },
@@ -214,19 +219,20 @@ function ReviewQrPage() {
   }, [targetUrl]);
 
   useEffect(() => {
-    const u = secondaryUrl.trim();
-    if (!secondaryEnabled || !u) { setSecondaryQrDataUrl(""); return; }
+    if (!secondaryEnabled) { setSecondaryQrDataUrl(""); return; }
+    const u = secondaryRawUrl || "https://fidelize.app/preview-cardapio";
     QRCode.toDataURL(u, {
       width: 1200, margin: 1, errorCorrectionLevel: "H",
       color: { dark: "#111827", light: "#ffffff" },
     }).then(setSecondaryQrDataUrl).catch(() => setSecondaryQrDataUrl(""));
-  }, [secondaryEnabled, secondaryUrl]);
+  }, [secondaryEnabled, secondaryRawUrl]);
 
   const dims = FORMATS[format];
 
   async function exportPng() {
     if (!posterRef.current) return;
-    if (!targetUrl) { toast.error("Configure o destino do QR primeiro"); return; }
+    if (primaryIsPlaceholder) { toast.error("Cole o link do Google antes de exportar"); return; }
+    if (secondaryIsPlaceholder) { toast.error("Cole a URL do QR secundário antes de exportar"); return; }
     setExporting(true);
     try {
       const url = await toPng(posterRef.current, { pixelRatio: 3, cacheBust: true });
@@ -751,7 +757,7 @@ function ReviewQrPage() {
                   showGoogleLogo={showGoogleLogo}
                   nfcMode={nfcMode}
                   primaryLabel={primaryLabel}
-                  secondaryEnabled={secondaryEnabled && !!secondaryQrDataUrl}
+                  secondaryEnabled={secondaryEnabled}
                   secondaryQrDataUrl={secondaryQrDataUrl}
                   secondaryLabel={secondaryLabel}
                 />
