@@ -365,7 +365,37 @@ function ReviewQrPage() {
               )}
             </div>
 
+            {/* Templates */}
+            <div className="space-y-3">
+              <Label className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <Layers className="h-3.5 w-3.5" /> Modelo de cartaz
+              </Label>
+              <div className="grid grid-cols-2 gap-2">
+                {(Object.keys(TEMPLATES) as TemplateKey[]).map((k) => {
+                  const t = TEMPLATES[k];
+                  const active = template === k;
+                  return (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => applyTemplate(k)}
+                      className={`group relative overflow-hidden rounded-xl border-2 p-2.5 text-left transition ${active ? "border-primary ring-2 ring-primary/30" : "border-border/60 hover:border-primary/40"}`}
+                    >
+                      <div className="mb-2 grid h-10 grid-cols-3 gap-1 rounded-md p-1" style={{ background: t.defaults.backgroundColor }}>
+                        <div className="rounded-sm" style={{ background: t.defaults.primaryColor }} />
+                        <div className="rounded-sm" style={{ background: t.defaults.textColor, opacity: 0.6 }} />
+                        <div className="rounded-sm" style={{ background: t.defaults.primaryColor, opacity: 0.5 }} />
+                      </div>
+                      <div className={`text-[11px] font-bold ${active ? "text-primary" : "text-foreground"}`}>{t.label}</div>
+                      <div className="text-[10px] leading-tight text-muted-foreground line-clamp-2">{t.description}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Format */}
+
             <div className="space-y-3">
               <Label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Formato do cartaz</Label>
               <div className="grid grid-cols-4 gap-2">
