@@ -949,3 +949,125 @@ export const adminLinkOrphanCustomerToAccount = createServerFn({ method: "POST" 
       credentials: { email: syntheticEmail, password: syntheticPassword },
     };
   });
+
+/**
+ * Retorna toda a carteira de um usuário (cliente final) para inspeção pelo
+ * super admin: estabelecimentos vinculados, progresso do cartão em cada um
+ * e os últimos carimbos recebidos.
+ */
+export const adminGetUserWallet = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ user_id: z.string().uuid() }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertSuperAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("id, full_name, phone, account_type, created_at")
+      .eq("id", data.user_id)
+      .maybeSingle();
+
+    const { data: rows, error } = await supabaseAdmin
+      .from("customers")
+      .select(
+        `id, name, code, access_token, phone, email, visits_count, last_visit_at, tier, created_at,
+         establishment:establishments!inner(
+           id, slug, name, logo_url, primary_color, active
+         )`,
+      )
+      .eq("user_id", data.user_id)
+      .order("last_visit_at", { ascending: false, nullsFirst: false });
+    if (error) throw new Error(error.message);
+
+    const customerIds = (rows ?? []).map((r: any) => r.id);
+    if (!customerIds.length) {
+      return { profile: profile ?? null, items: [], recentStamps: [] as any[] };
+    }
+
+    const { data: cards } = await supabaseAdmin
+      .from("loyalty_cards")
+      .select(
+        `id, customer_id, stamps, cycle, updated_at, created_at,
+         campaign:campaigns!inner(
+           id, name, stamps_required, reward_title, reward_description,
+           active, stamp_icon, primary_color, accent_color
+         )`,
+      )
+      .in("customer_id", customerIds);
+
+    const cardIds = (cards ?? []).map((c: any) => c.id);
+    const { data: stamps } = cardIds.length
+      ? await supabaseAdmin
+          .from("stamps")
+          .select("id, card_id, created_at, reverted_at, note")
+          .in("card_id", cardIds)
+          .order("created_at", { ascending: false })
+          .limit(80)
+      : { data: [] as any[] };
+
+    const items = (rows ?? []).map((r: any) => {
+      const myCards = (cards ?? []).filter((c: any) => c.customer_id === r.id);
+      const best =
+        myCards
+          .filter((c: any) => (c.campaign as { active: boolean }).active)
+          .sort((a: any, b: any) => {
+            const aReq = (a.campaign as { stamps_required: number }).stamps_required || 1;
+            const bReq = (b.campaign as { stamps_required: number }).stamps_required || 1;
+            return b.stamps / bReq - a.stamps / aReq;
+          })[0] ?? myCards[0];
+
+      const totalStamps = myCards.reduce(
+        (acc: number, c: any) => acc + ((c.cycle ?? 0) * ((c.campaign as any).stamps_required ?? 0) + (c.stamps ?? 0)),
+        0,
+      );
+
+      return {
+        customer: {
+          id: r.id,
+          name: r.name,
+          code: r.code,
+          token: r.access_token,
+          phone: r.phone,
+          email: r.email,
+          lastVisitAt: r.last_visit_at,
+          visitsCount: r.visits_count,
+          tier: r.tier,
+          createdAt: r.created_at,
+        },
+        establishment: r.establishment,
+        card: best
+          ? {
+              id: best.id,
+              stamps: best.stamps,
+              cycle: best.cycle,
+              updatedAt: best.updated_at,
+              campaign: best.campaign,
+            }
+          : null,
+        cardsCount: myCards.length,
+        totalStamps,
+      };
+    });
+
+    const custMap = new Map(items.map((i) => [i.customer.id, i.establishment]));
+    const cardCustomer = new Map((cards ?? []).map((c: any) => [c.id, c.customer_id]));
+
+    const recentStamps = (stamps ?? []).map((s: any) => {
+      const custId = cardCustomer.get(s.card_id) ?? null;
+      const est = custId ? custMap.get(custId) : null;
+      return {
+        id: s.id,
+        cardId: s.card_id,
+        createdAt: s.created_at,
+        revertedAt: s.reverted_at,
+        note: s.note ?? null,
+        establishment: est,
+      };
+    });
+
+    return { profile: profile ?? null, items, recentStamps };
+  });
