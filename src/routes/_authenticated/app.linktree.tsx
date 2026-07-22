@@ -49,6 +49,50 @@ const KIND_META: Record<LinkKind, { label: string; icon: any; placeholder: strin
   custom: { label: "Link personalizado", icon: ExternalLink, placeholder: "https://…" },
 };
 
+type ThemePreset = {
+  id: string;
+  label: string;
+  primary: string;
+  accent: string;
+  background: string;
+  text: string;
+  button_style: "solid" | "outline" | "glass";
+  rounded: "sm" | "md" | "lg" | "xl" | "full";
+};
+
+const THEME_PRESETS: ThemePreset[] = [
+  {
+    id: "cyan-circuit",
+    label: "Cyan Circuit",
+    primary: "#00ffff",
+    accent: "#ff2fd0",
+    background: "#0b1220",
+    text: "#ffffff",
+    button_style: "glass",
+    rounded: "xl",
+  },
+  {
+    id: "porcelain",
+    label: "Porcelain",
+    primary: "#0284c7",
+    accent: "#e11d8a",
+    background: "#f8fafc",
+    text: "#0f172a",
+    button_style: "solid",
+    rounded: "full",
+  },
+  {
+    id: "sunset-neon",
+    label: "Sunset Neon",
+    primary: "#f59e0b",
+    accent: "#ef4444",
+    background: "#1a0b2e",
+    text: "#fff7ed",
+    button_style: "outline",
+    rounded: "lg",
+  },
+];
+
 function LinkTreeEditor() {
   const getEsts = useServerFn(getMyEstablishments);
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
