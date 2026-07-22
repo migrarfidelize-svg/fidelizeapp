@@ -535,15 +535,32 @@ function OrphanCustomers({ establishments }: { establishments: Array<{ id: strin
                       {new Date(c.created_at).toLocaleDateString("pt-BR")}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        size="sm" variant="outline" className="gap-1"
-                        disabled={!canLink}
-                        title={canLink ? "Criar credenciais e vincular ao /carteira" : "Cliente sem WhatsApp válido (DDD + número)"}
-                        onClick={() => setConfirm({ id: c.id, name: c.name, phone: c.phone })}
-                      >
-                        <KeyRound className="h-3.5 w-3.5" /> Criar login
-                      </Button>
+                      <div className="flex justify-end gap-1.5">
+                        <Button
+                          size="sm" variant="outline" className="gap-1"
+                          title="Mover para outra empresa cadastrada"
+                          onClick={() => {
+                            setMove({
+                              id: c.id, name: c.name, phone: c.phone,
+                              from_id: c.establishment_id,
+                              from_name: c.establishment_name,
+                            });
+                            setMoveTarget("");
+                          }}
+                        >
+                          <ArrowRightLeft className="h-3.5 w-3.5" /> Mover
+                        </Button>
+                        <Button
+                          size="sm" variant="outline" className="gap-1"
+                          disabled={!canLink}
+                          title={canLink ? "Criar credenciais e vincular ao /carteira" : "Cliente sem WhatsApp válido (DDD + número)"}
+                          onClick={() => setConfirm({ id: c.id, name: c.name, phone: c.phone })}
+                        >
+                          <KeyRound className="h-3.5 w-3.5" /> Criar login
+                        </Button>
+                      </div>
                     </TableCell>
+
                   </TableRow>
                 );
               })}
