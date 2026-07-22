@@ -43,6 +43,7 @@ import { Route as AjudaCategoryArticleRouteImport } from './routes/ajuda.$catego
 import { Route as AuthenticatedCarteiraRecompensasRouteImport } from './routes/_authenticated/carteira.recompensas'
 import { Route as AuthenticatedCarteiraPremiosRouteImport } from './routes/_authenticated/carteira.premios'
 import { Route as AuthenticatedCarteiraPerfilRouteImport } from './routes/_authenticated/carteira.perfil'
+import { Route as AuthenticatedCarteiraMensagensRouteImport } from './routes/_authenticated/carteira.mensagens'
 import { Route as AuthenticatedCarteiraHistoricoRouteImport } from './routes/_authenticated/carteira.historico'
 import { Route as AuthenticatedCarteiraDescobrirRouteImport } from './routes/_authenticated/carteira.descobrir'
 import { Route as AuthenticatedCarteiraCartoesRouteImport } from './routes/_authenticated/carteira.cartoes'
@@ -52,6 +53,7 @@ import { Route as AuthenticatedAppRetencaoRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppQrcodesRouteImport } from './routes/_authenticated/app.qrcodes'
 import { Route as AuthenticatedAppPagamentosRouteImport } from './routes/_authenticated/app.pagamentos'
 import { Route as AuthenticatedAppNotificacoesRouteImport } from './routes/_authenticated/app.notificacoes'
+import { Route as AuthenticatedAppMensagensRouteImport } from './routes/_authenticated/app.mensagens'
 import { Route as AuthenticatedAppKbRouteImport } from './routes/_authenticated/app.kb'
 import { Route as AuthenticatedAppEquipeRouteImport } from './routes/_authenticated/app.equipe'
 import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated/app.clientes'
@@ -264,6 +266,12 @@ const AuthenticatedCarteiraPerfilRoute =
     path: '/perfil',
     getParentRoute: () => AuthenticatedCarteiraRoute,
   } as any)
+const AuthenticatedCarteiraMensagensRoute =
+  AuthenticatedCarteiraMensagensRouteImport.update({
+    id: '/mensagens',
+    path: '/mensagens',
+    getParentRoute: () => AuthenticatedCarteiraRoute,
+  } as any)
 const AuthenticatedCarteiraHistoricoRoute =
   AuthenticatedCarteiraHistoricoRouteImport.update({
     id: '/historico',
@@ -314,6 +322,12 @@ const AuthenticatedAppNotificacoesRoute =
   AuthenticatedAppNotificacoesRouteImport.update({
     id: '/notificacoes',
     path: '/notificacoes',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppMensagensRoute =
+  AuthenticatedAppMensagensRouteImport.update({
+    id: '/mensagens',
+    path: '/mensagens',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppKbRoute = AuthenticatedAppKbRouteImport.update({
@@ -577,6 +591,7 @@ export interface FileRoutesByFullPath {
   '/app/clientes': typeof AuthenticatedAppClientesRoute
   '/app/equipe': typeof AuthenticatedAppEquipeRoute
   '/app/kb': typeof AuthenticatedAppKbRoute
+  '/app/mensagens': typeof AuthenticatedAppMensagensRoute
   '/app/notificacoes': typeof AuthenticatedAppNotificacoesRoute
   '/app/pagamentos': typeof AuthenticatedAppPagamentosRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
@@ -586,6 +601,7 @@ export interface FileRoutesByFullPath {
   '/carteira/cartoes': typeof AuthenticatedCarteiraCartoesRoute
   '/carteira/descobrir': typeof AuthenticatedCarteiraDescobrirRoute
   '/carteira/historico': typeof AuthenticatedCarteiraHistoricoRoute
+  '/carteira/mensagens': typeof AuthenticatedCarteiraMensagensRoute
   '/carteira/perfil': typeof AuthenticatedCarteiraPerfilRoute
   '/carteira/premios': typeof AuthenticatedCarteiraPremiosRoute
   '/carteira/recompensas': typeof AuthenticatedCarteiraRecompensasRoute
@@ -655,6 +671,7 @@ export interface FileRoutesByTo {
   '/app/clientes': typeof AuthenticatedAppClientesRoute
   '/app/equipe': typeof AuthenticatedAppEquipeRoute
   '/app/kb': typeof AuthenticatedAppKbRoute
+  '/app/mensagens': typeof AuthenticatedAppMensagensRoute
   '/app/notificacoes': typeof AuthenticatedAppNotificacoesRoute
   '/app/pagamentos': typeof AuthenticatedAppPagamentosRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
@@ -664,6 +681,7 @@ export interface FileRoutesByTo {
   '/carteira/cartoes': typeof AuthenticatedCarteiraCartoesRoute
   '/carteira/descobrir': typeof AuthenticatedCarteiraDescobrirRoute
   '/carteira/historico': typeof AuthenticatedCarteiraHistoricoRoute
+  '/carteira/mensagens': typeof AuthenticatedCarteiraMensagensRoute
   '/carteira/perfil': typeof AuthenticatedCarteiraPerfilRoute
   '/carteira/premios': typeof AuthenticatedCarteiraPremiosRoute
   '/carteira/recompensas': typeof AuthenticatedCarteiraRecompensasRoute
@@ -738,6 +756,7 @@ export interface FileRoutesById {
   '/_authenticated/app/clientes': typeof AuthenticatedAppClientesRoute
   '/_authenticated/app/equipe': typeof AuthenticatedAppEquipeRoute
   '/_authenticated/app/kb': typeof AuthenticatedAppKbRoute
+  '/_authenticated/app/mensagens': typeof AuthenticatedAppMensagensRoute
   '/_authenticated/app/notificacoes': typeof AuthenticatedAppNotificacoesRoute
   '/_authenticated/app/pagamentos': typeof AuthenticatedAppPagamentosRoute
   '/_authenticated/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
@@ -747,6 +766,7 @@ export interface FileRoutesById {
   '/_authenticated/carteira/cartoes': typeof AuthenticatedCarteiraCartoesRoute
   '/_authenticated/carteira/descobrir': typeof AuthenticatedCarteiraDescobrirRoute
   '/_authenticated/carteira/historico': typeof AuthenticatedCarteiraHistoricoRoute
+  '/_authenticated/carteira/mensagens': typeof AuthenticatedCarteiraMensagensRoute
   '/_authenticated/carteira/perfil': typeof AuthenticatedCarteiraPerfilRoute
   '/_authenticated/carteira/premios': typeof AuthenticatedCarteiraPremiosRoute
   '/_authenticated/carteira/recompensas': typeof AuthenticatedCarteiraRecompensasRoute
@@ -821,6 +841,7 @@ export interface FileRouteTypes {
     | '/app/clientes'
     | '/app/equipe'
     | '/app/kb'
+    | '/app/mensagens'
     | '/app/notificacoes'
     | '/app/pagamentos'
     | '/app/qrcodes'
@@ -830,6 +851,7 @@ export interface FileRouteTypes {
     | '/carteira/cartoes'
     | '/carteira/descobrir'
     | '/carteira/historico'
+    | '/carteira/mensagens'
     | '/carteira/perfil'
     | '/carteira/premios'
     | '/carteira/recompensas'
@@ -899,6 +921,7 @@ export interface FileRouteTypes {
     | '/app/clientes'
     | '/app/equipe'
     | '/app/kb'
+    | '/app/mensagens'
     | '/app/notificacoes'
     | '/app/pagamentos'
     | '/app/qrcodes'
@@ -908,6 +931,7 @@ export interface FileRouteTypes {
     | '/carteira/cartoes'
     | '/carteira/descobrir'
     | '/carteira/historico'
+    | '/carteira/mensagens'
     | '/carteira/perfil'
     | '/carteira/premios'
     | '/carteira/recompensas'
@@ -981,6 +1005,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/clientes'
     | '/_authenticated/app/equipe'
     | '/_authenticated/app/kb'
+    | '/_authenticated/app/mensagens'
     | '/_authenticated/app/notificacoes'
     | '/_authenticated/app/pagamentos'
     | '/_authenticated/app/qrcodes'
@@ -990,6 +1015,7 @@ export interface FileRouteTypes {
     | '/_authenticated/carteira/cartoes'
     | '/_authenticated/carteira/descobrir'
     | '/_authenticated/carteira/historico'
+    | '/_authenticated/carteira/mensagens'
     | '/_authenticated/carteira/perfil'
     | '/_authenticated/carteira/premios'
     | '/_authenticated/carteira/recompensas'
@@ -1292,6 +1318,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCarteiraPerfilRouteImport
       parentRoute: typeof AuthenticatedCarteiraRoute
     }
+    '/_authenticated/carteira/mensagens': {
+      id: '/_authenticated/carteira/mensagens'
+      path: '/mensagens'
+      fullPath: '/carteira/mensagens'
+      preLoaderRoute: typeof AuthenticatedCarteiraMensagensRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
+    }
     '/_authenticated/carteira/historico': {
       id: '/_authenticated/carteira/historico'
       path: '/historico'
@@ -1353,6 +1386,13 @@ declare module '@tanstack/react-router' {
       path: '/notificacoes'
       fullPath: '/app/notificacoes'
       preLoaderRoute: typeof AuthenticatedAppNotificacoesRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/mensagens': {
+      id: '/_authenticated/app/mensagens'
+      path: '/mensagens'
+      fullPath: '/app/mensagens'
+      preLoaderRoute: typeof AuthenticatedAppMensagensRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/app/kb': {
@@ -1675,6 +1715,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppClientesRoute: typeof AuthenticatedAppClientesRoute
   AuthenticatedAppEquipeRoute: typeof AuthenticatedAppEquipeRoute
   AuthenticatedAppKbRoute: typeof AuthenticatedAppKbRoute
+  AuthenticatedAppMensagensRoute: typeof AuthenticatedAppMensagensRoute
   AuthenticatedAppNotificacoesRoute: typeof AuthenticatedAppNotificacoesRoute
   AuthenticatedAppPagamentosRoute: typeof AuthenticatedAppPagamentosRoute
   AuthenticatedAppQrcodesRoute: typeof AuthenticatedAppQrcodesRoute
@@ -1691,6 +1732,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppClientesRoute: AuthenticatedAppClientesRoute,
   AuthenticatedAppEquipeRoute: AuthenticatedAppEquipeRoute,
   AuthenticatedAppKbRoute: AuthenticatedAppKbRoute,
+  AuthenticatedAppMensagensRoute: AuthenticatedAppMensagensRoute,
   AuthenticatedAppNotificacoesRoute: AuthenticatedAppNotificacoesRoute,
   AuthenticatedAppPagamentosRoute: AuthenticatedAppPagamentosRoute,
   AuthenticatedAppQrcodesRoute: AuthenticatedAppQrcodesRoute,
@@ -1708,6 +1750,7 @@ interface AuthenticatedCarteiraRouteChildren {
   AuthenticatedCarteiraCartoesRoute: typeof AuthenticatedCarteiraCartoesRoute
   AuthenticatedCarteiraDescobrirRoute: typeof AuthenticatedCarteiraDescobrirRoute
   AuthenticatedCarteiraHistoricoRoute: typeof AuthenticatedCarteiraHistoricoRoute
+  AuthenticatedCarteiraMensagensRoute: typeof AuthenticatedCarteiraMensagensRoute
   AuthenticatedCarteiraPerfilRoute: typeof AuthenticatedCarteiraPerfilRoute
   AuthenticatedCarteiraPremiosRoute: typeof AuthenticatedCarteiraPremiosRoute
   AuthenticatedCarteiraRecompensasRoute: typeof AuthenticatedCarteiraRecompensasRoute
@@ -1719,6 +1762,7 @@ const AuthenticatedCarteiraRouteChildren: AuthenticatedCarteiraRouteChildren = {
   AuthenticatedCarteiraCartoesRoute: AuthenticatedCarteiraCartoesRoute,
   AuthenticatedCarteiraDescobrirRoute: AuthenticatedCarteiraDescobrirRoute,
   AuthenticatedCarteiraHistoricoRoute: AuthenticatedCarteiraHistoricoRoute,
+  AuthenticatedCarteiraMensagensRoute: AuthenticatedCarteiraMensagensRoute,
   AuthenticatedCarteiraPerfilRoute: AuthenticatedCarteiraPerfilRoute,
   AuthenticatedCarteiraPremiosRoute: AuthenticatedCarteiraPremiosRoute,
   AuthenticatedCarteiraRecompensasRoute: AuthenticatedCarteiraRecompensasRoute,
