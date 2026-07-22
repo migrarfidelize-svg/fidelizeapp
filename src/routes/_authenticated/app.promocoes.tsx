@@ -817,8 +817,8 @@ function GlobalLinksDialog({
           <DialogTitle>Links fixos da empresa</DialogTitle>
         </DialogHeader>
         <p className="text-xs text-muted-foreground">
-          Aparecem em <strong>todas</strong> as promoções e na página pública. Use para
-          Instagram, cardápio, WhatsApp, site…
+          Aparecem em <strong>todas</strong> as promoções e na página pública. Já pré-preenchemos
+          os principais (WhatsApp, Instagram, site, mapa) com base no seu cadastro — revise e salve.
         </p>
         <div className="space-y-2">
           {links.map((l, i) => (
