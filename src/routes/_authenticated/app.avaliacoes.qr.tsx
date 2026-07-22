@@ -406,7 +406,7 @@ function ReviewQrPage() {
             <ul className="mx-auto max-w-md space-y-1 text-left text-sm text-muted-foreground">
               <li className="flex gap-2"><Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Página pública <code>/avaliar/{est.slug}</code></li>
               <li className="flex gap-2"><Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Cartaz 15×10 para balcão, mesa e recibo</li>
-              <li className="flex gap-2"><Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> QR para Google Reviews + modo NFC</li>
+              <li className="flex gap-2"><Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Modo NFC + 2º QR para cardápio/loja</li>
             </ul>
             <Button asChild size="lg" className="mt-2"><Link to="/app/planos">Ver planos disponíveis</Link></Button>
           </CardContent>
