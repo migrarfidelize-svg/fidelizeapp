@@ -52,6 +52,7 @@ function WalletHome() {
 
   // Feed unificado: recompensas prontas (topo) + carimbos + "faltam X" (aviso).
   const feed = buildFeed(items, history ?? [], rewards ?? []);
+  const streak = computeWeeklyStreak(history ?? []);
 
   return (
     <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["my-wallet"] })}>
@@ -69,7 +70,8 @@ function WalletHome() {
           <>
             {readyRewards > 0 && (
               <Link
-                to="/carteira/recompensas"
+                to="/carteira/premios"
+                search={{ tab: "recompensas" }}
                 className="group relative flex items-center gap-3 overflow-hidden rounded-3xl border border-primary/50 bg-gradient-to-br from-primary/15 to-primary/5 p-4 shadow-[0_0_0_1px_hsl(var(--primary)/0.15)] transition-all hover:from-primary/20"
               >
                 <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-md">
