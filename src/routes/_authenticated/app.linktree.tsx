@@ -24,7 +24,7 @@ export const Route = createFileRoute("/_authenticated/app/linktree")({
   component: LinkTreeEditor,
 });
 
-type LinkKind = "whatsapp" | "instagram" | "facebook" | "tiktok" | "youtube" | "site" | "google" | "maps" | "email" | "phone" | "custom";
+type LinkKind = "whatsapp" | "instagram" | "facebook" | "tiktok" | "youtube" | "site" | "google" | "maps" | "email" | "phone" | "wifi" | "custom";
 
 type LinkRow = {
   id?: string;
@@ -47,8 +47,22 @@ const KIND_META: Record<LinkKind, { label: string; icon: any; placeholder: strin
   maps: { label: "Endereço / Maps", icon: MapPin, placeholder: "https://maps.google.com/…" },
   email: { label: "E-mail", icon: Mail, placeholder: "contato@seudominio.com" },
   phone: { label: "Telefone", icon: Phone, placeholder: "1130000000" },
+  wifi: { label: "Wi-Fi", icon: Wifi, placeholder: "WIFI:S:Rede;T:WPA;P:senha;;" },
   custom: { label: "Link personalizado", icon: ExternalLink, placeholder: "https://…" },
 };
+
+// Encode/decode helpers for Wi-Fi credentials stored in the `url` field
+function encodeWifi(ssid: string, password: string, security: "WPA" | "nopass" = "WPA") {
+  const esc = (s: string) => s.replace(/([\\;,":])/g, "\\$1");
+  return `WIFI:S:${esc(ssid)};T:${password ? security : "nopass"};P:${esc(password)};;`;
+}
+function decodeWifi(url: string): { ssid: string; password: string } {
+  const s = /WIFI:.*?S:((?:\\.|[^;\\])*);/i.exec(url)?.[1] ?? "";
+  const p = /WIFI:.*?P:((?:\\.|[^;\\])*);/i.exec(url)?.[1] ?? "";
+  const unesc = (v: string) => v.replace(/\\(.)/g, "$1");
+  return { ssid: unesc(s), password: unesc(p) };
+}
+
 
 type ThemePreset = {
   id: string;
