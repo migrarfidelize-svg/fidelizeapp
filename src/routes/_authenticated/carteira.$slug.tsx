@@ -14,8 +14,14 @@ import {
   Stamp as StampIcon,
   Trophy,
   Clock,
+  Share2,
+  Copy,
+  Check,
 } from "lucide-react";
+import { toast } from "sonner";
+import { useState } from "react";
 import { ExpiredCardState, WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
+
 
 const opts = (slug: string) =>
   queryOptions({
