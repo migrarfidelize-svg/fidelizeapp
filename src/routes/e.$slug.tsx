@@ -90,7 +90,8 @@ export const Route = createFileRoute("/e/$slug")({
 
 type Media = { path: string; type: "image" | "video"; url?: string | null };
 
-function DiscoveryProfilePage() {
+export { opts as discoveryProfileOpts };
+export function DiscoveryProfilePage() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(opts(slug));
 
