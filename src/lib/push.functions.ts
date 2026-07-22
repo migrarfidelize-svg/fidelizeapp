@@ -68,7 +68,7 @@ export const subscribeCustomerPush = createServerFn({ method: "POST" })
           active: true,
           last_error: null,
         },
-        { onConflict: "endpoint" },
+        { onConflict: "customer_id,endpoint" },
       );
     if (upErr) throw upErr;
     return { ok: true };
