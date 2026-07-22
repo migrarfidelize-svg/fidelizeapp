@@ -400,12 +400,12 @@ function AppLayout() {
       <div className="min-h-screen dock-page-bg">
         {/* Desktop: floating dock */}
         <aside
-          className="dock-surface hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-30 flex-col items-center gap-1.5 rounded-2xl p-2"
+          className="dock-surface hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-30 flex-col items-stretch gap-1.5 rounded-2xl p-2 w-[188px]"
           data-tour="sidebar-logo"
         >
           <Link
             to="/app"
-            className="dock-logo dock-logo-bg relative mb-1 grid h-12 w-12 place-items-center rounded-full"
+            className="dock-logo dock-logo-bg relative mb-1 mx-auto grid h-12 w-12 place-items-center rounded-full"
             aria-label="Fidelize"
           >
             <span aria-hidden className="dock-logo-led" />
@@ -433,17 +433,19 @@ function AppLayout() {
                   aria-expanded={isOpen}
                   onClick={() => (isOpen ? setPinnedGroup(null) : openGroup(g.key))}
                   className={[
-                    "relative grid h-11 w-11 place-items-center rounded-xl",
+                    "relative flex h-11 w-full items-center gap-2.5 rounded-xl px-2.5 text-left text-[13px] font-medium",
                     isActive || isOpen ? "dock-item-active" : "dock-item",
                   ].join(" ")}
                 >
-                  <Icon className="h-[19px] w-[19px]" strokeWidth={1.8} />
+                  <Icon className="h-[19px] w-[19px] shrink-0" strokeWidth={1.8} />
+                  <span className="flex-1 truncate">{g.label}</span>
                   {badge > 0 && (
-                    <span className="dock-badge absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-bold ring-2 ring-[color:var(--dock-surface)]">
+                    <span className="dock-badge grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-bold ring-2 ring-[color:var(--dock-surface)]">
                       {badge > 9 ? "9+" : badge}
                     </span>
                   )}
                 </button>
+
 
                 {/* Flyout — com ponte de hover (pl-3) para eliminar o gap morto */}
                 <div
