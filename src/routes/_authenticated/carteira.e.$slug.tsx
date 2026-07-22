@@ -15,6 +15,7 @@ import {
   Globe,
   Clock,
   Gift,
+  ChevronDown,
   Sparkles,
   CreditCard,
 } from "lucide-react";
