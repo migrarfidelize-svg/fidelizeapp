@@ -848,6 +848,9 @@ function ReviewQrPage() {
                   secondaryEnabled={secondaryEnabled}
                   secondaryQrDataUrl={secondaryQrDataUrl}
                   secondaryLabel={secondaryLabel}
+                  layout={layout}
+                  setLayout={setLayout}
+                  editable={editLayout}
                 />
 
                 {/* Acrylic glare overlay (mounted inside so it inherits transform) */}
