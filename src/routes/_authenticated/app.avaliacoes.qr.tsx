@@ -274,7 +274,27 @@ function ReviewQrPage() {
   }, [targetUrl]);
 
   useEffect(() => {
-    if (!secondaryEnabled) { setSecondaryQrDataUrl(""); return; }
+    if (!secondaryEnabled) {
+      setSecondaryQrDataUrl("");
+      // restore centered primary QR when the second QR is turned off (only if
+      // it's still at the auto-shifted position — never override manual drags).
+      setLayout((prev) => (prev.primaryQr.x === 30 && prev.primaryQr.y === 58
+        ? { ...prev, primaryQr: DEFAULT_LAYOUT.primaryQr }
+        : prev));
+      return;
+    }
+    // Auto-shift the two QRs side-by-side the moment the toggle is enabled,
+    // but only if the user hasn't manually repositioned them yet.
+    setLayout((prev) => {
+      const primaryUntouched = prev.primaryQr.x === DEFAULT_LAYOUT.primaryQr.x && prev.primaryQr.y === DEFAULT_LAYOUT.primaryQr.y;
+      const secondaryUntouched = prev.secondaryQr.x === DEFAULT_LAYOUT.secondaryQr.x && prev.secondaryQr.y === DEFAULT_LAYOUT.secondaryQr.y;
+      if (!primaryUntouched && !secondaryUntouched) return prev;
+      return {
+        ...prev,
+        primaryQr: primaryUntouched ? { x: 30, y: 58 } : prev.primaryQr,
+        secondaryQr: secondaryUntouched ? { x: 70, y: 58 } : prev.secondaryQr,
+      };
+    });
     const u = secondaryRawUrl || "https://fidelize.app/preview-cardapio";
     QRCode.toDataURL(u, {
       width: 1200, margin: 1, errorCorrectionLevel: "H",
