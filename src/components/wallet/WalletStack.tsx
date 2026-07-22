@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ChevronRight, Sparkles } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQueryClient } from "@tanstack/react-query";
+import { ChevronRight, Sparkles, Pin, PinOff } from "lucide-react";
+import { toast } from "sonner";
+import { toggleCustomerPin } from "@/lib/wallet-prefs.functions";
 import type { getMyWallet } from "@/lib/my-wallet.functions";
 
 /**
@@ -239,11 +243,17 @@ function StackedCard({
                   {est.name}
                 </h3>
                 <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                  {item.customer.pinned ? "Fixado • " : ""}
                   {campaignActive ? "Cartão fidelidade" : "Campanha expirada"}
                 </p>
               </div>
             </div>
-            <div className="text-right">
+            {isActive && <PinToggle customerId={item.customer.id} pinned={!!item.customer.pinned} />}
+          </div>
+
+          {/* Progresso — só no cartão ativo */}
+          {isActive && (
+            <div className="mt-1 text-right">
               <div className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">
                 Progresso
               </div>
@@ -252,7 +262,7 @@ function StackedCard({
                 <span className="text-sm text-muted-foreground">/{req}</span>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Middle — reward + progress */}
           <div className="mt-6">
