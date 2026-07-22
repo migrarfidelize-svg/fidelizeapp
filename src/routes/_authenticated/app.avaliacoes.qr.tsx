@@ -109,6 +109,34 @@ function checkGenericUrl(v: string): UrlCheck {
   return { level: "ok", message: `Link válido — ${u.hostname}` };
 }
 
+/** Append UTM tags to a URL without breaking existing ones. */
+function withUtm(rawUrl: string, campaign: string): string {
+  try {
+    const u = new URL(rawUrl);
+    if (!u.searchParams.get("utm_source")) u.searchParams.set("utm_source", "qr_poster");
+    if (!u.searchParams.get("utm_medium")) u.searchParams.set("utm_medium", "print");
+    if (!u.searchParams.get("utm_campaign")) u.searchParams.set("utm_campaign", campaign || "review");
+    return u.toString();
+  } catch { return rawUrl; }
+}
+
+/** WCAG contrast ratio between two hex colors. */
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace("#", "");
+  const v = h.length === 3 ? h.split("").map(c => c + c).join("") : h;
+  const n = parseInt(v.padEnd(6, "0").slice(0, 6), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+function relLum([r, g, b]: [number, number, number]): number {
+  const f = (c: number) => { const s = c / 255; return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4); };
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+}
+function contrastRatio(a: string, b: string): number {
+  const la = relLum(hexToRgb(a)); const lb = relLum(hexToRgb(b));
+  const [hi, lo] = la > lb ? [la, lb] : [lb, la];
+  return (hi + 0.05) / (lo + 0.05);
+}
+
 function ReviewQrPage() {
 
   const getEsts = useServerFn(getMyEstablishments);
