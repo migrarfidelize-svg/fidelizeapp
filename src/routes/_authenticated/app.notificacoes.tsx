@@ -12,9 +12,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Send, Bell } from "lucide-react";
+import { Loader2, Send, Bell, Users, Zap, AlertTriangle, Sparkles } from "lucide-react";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
-import { listPushLogs, broadcastPush } from "@/lib/push.functions";
+import { listPushLogs, broadcastPush, getPushQuotaStatus } from "@/lib/push.functions";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/app/notificacoes")({
   component: NotifPage,
