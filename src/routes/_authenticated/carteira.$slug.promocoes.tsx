@@ -16,6 +16,9 @@ import {
   Clock,
   Gift,
   ChevronDown,
+  ImageIcon,
+  PlayCircle,
+  X,
 } from "lucide-react";
 import { getStampIcon } from "@/lib/stampIcons";
 import { WalletErrorState } from "@/components/wallet/WalletStates";
