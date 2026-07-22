@@ -504,6 +504,18 @@ function ReviewQrPage() {
                       className="text-xs"
                     />
                   </div>
+
+                  {/* Google logo toggle — only relevant when secondary QR is on */}
+                  <label className="flex cursor-pointer items-start justify-between gap-3 rounded-lg border border-border/50 bg-background/40 p-2.5">
+                    <div className="flex items-start gap-2">
+                      <GoogleColorG />
+                      <div>
+                        <div className="text-[12px] font-semibold">Mostrar logo do Google no cartaz</div>
+                        <div className="text-[10px] text-muted-foreground">Adiciona o selo "Google Reviews" abaixo do QR principal para reforçar credibilidade.</div>
+                      </div>
+                    </div>
+                    <Switch checked={showGoogleLogo} onCheckedChange={setShowGoogleLogo} />
+                  </label>
                 </div>
               )}
             </div>
