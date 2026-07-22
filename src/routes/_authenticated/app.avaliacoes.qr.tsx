@@ -383,7 +383,7 @@ function ReviewQrPage() {
         {/* PREVIEW */}
         <div className="min-w-0">
           <div className="sticky top-4 flex flex-col items-center gap-3">
-            <div className="relative w-full max-w-[620px]">
+            <div className="relative w-full max-w-[420px]">
               <div className="pointer-events-none absolute -inset-8 rounded-3xl bg-gradient-to-br from-primary/15 via-transparent to-transparent blur-3xl" />
               <div
                 className="relative overflow-hidden rounded-lg shadow-2xl ring-1 ring-primary/20"
