@@ -22,7 +22,7 @@ import { jsPDF } from "jspdf";
 import { PromoPoster, FORMATS, SEGMENT_LABEL, type PromoConfig, type PromoFormat, type Segment } from "@/components/PromoPoster";
 import { LogoUploadButton } from "@/components/LogoUploadButton";
 import { LoadingSkeleton } from "@/components/states";
-import { LoadingSkeleton as _LS } from "@/components/states";
+
 
 
 export const Route = createFileRoute("/_authenticated/app/qrcodes")({
