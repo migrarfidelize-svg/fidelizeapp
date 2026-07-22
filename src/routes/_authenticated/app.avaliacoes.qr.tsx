@@ -1794,7 +1794,10 @@ function BadgeDraggable({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
-      className={`absolute ${editable ? "cursor-move select-none" : ""}`}
+      tabIndex={editable ? 0 : -1}
+      role={editable ? "button" : undefined}
+      aria-label={editable ? `Emblema ${badge.key} — arraste para reposicionar` : undefined}
+      className={`absolute ${editable ? "cursor-move select-none rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2" : ""}`}
       style={{
         left: `${badge.x}%`,
         top: `${badge.y}%`,
