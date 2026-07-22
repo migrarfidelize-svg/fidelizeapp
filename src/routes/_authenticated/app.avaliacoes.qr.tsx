@@ -1186,7 +1186,10 @@ function ReviewQrPage() {
                   layout={layout}
                   setLayout={setLayout}
                   editable={editLayout}
+                  badges={badges}
+                  moveBadge={moveBadge}
                 />
+
 
                 {/* Acrylic glare overlay (mounted inside so it inherits transform) */}
                 {displayMode && (
