@@ -24,7 +24,6 @@ async function completeAuthRedirect(to: string, type: "SIGNED_IN" | "SIGNED_UP")
   notifyAuthSync(type);
   await supabase.auth.getSession();
   const url = new URL(to, window.location.origin);
-  url.searchParams.set("auth_sync", String(Date.now()));
   window.location.assign(url.toString());
 }
 
