@@ -146,6 +146,8 @@ function ReviewQrPage() {
   const [displayMode, setDisplayMode] = useState(false);
   const [designs, setDesigns] = useState<SavedDesign[]>([]);
   const [designName, setDesignName] = useState("");
+  const [layout, setLayout] = useState<PosterLayout>(DEFAULT_LAYOUT);
+  const [editLayout, setEditLayout] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
 
 
