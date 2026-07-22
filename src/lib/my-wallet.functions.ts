@@ -517,6 +517,8 @@ export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
       .limit(60);
     if (error) throw error;
 
+    const promoted = await fetchPromotedEstablishmentIds(context.supabase);
+
     return (data ?? []).map((e) => ({
       id: e.id,
       slug: e.slug,
@@ -527,5 +529,37 @@ export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
       city: e.city,
       description: e.description,
       visited: visited.has(e.id),
+      has_promotion: promoted.has(e.id),
     }));
   });
+
+/**
+ * IDs de estabelecimentos com promoções ativas agora (respeita janela de vigência).
+ * Usa a política pública `Public reads active promotions`.
+ */
+async function fetchPromotedEstablishmentIds(
+  supabase: { from: (t: string) => unknown },
+): Promise<Set<string>> {
+  const nowIso = new Date().toISOString();
+  const { data } = (await (supabase.from("promotions") as unknown as {
+    select: (s: string) => {
+      eq: (c: string, v: unknown) => {
+        or: (f: string) => { or: (f: string) => Promise<{ data: { establishment_id: string }[] | null }> };
+      };
+    };
+  })
+    .select("establishment_id")
+    .eq("active", true)
+    .or(`starts_at.is.null,starts_at.lte.${nowIso}`)
+    .or(`ends_at.is.null,ends_at.gte.${nowIso}`)) as { data: { establishment_id: string }[] | null };
+  return new Set((data ?? []).map((r) => r.establishment_id));
+}
+
+/** IDs de estabelecimentos com promoção ativa agora — usado para destacar na carteira. */
+export const getPromotedEstablishmentIds = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const set = await fetchPromotedEstablishmentIds(context.supabase);
+    return Array.from(set);
+  });
+

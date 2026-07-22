@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Compass, MapPin, Sparkles, ChevronRight, ShieldCheck } from "lucide-react";
+import { Compass, MapPin, Sparkles, ChevronRight, ShieldCheck, Tag } from "lucide-react";
 import { getDiscoveryEstablishments } from "@/lib/my-wallet.functions";
 import { WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
 
@@ -116,11 +116,17 @@ function DiscoverPage() {
   // depois não-visitados, depois o resto. Sem cidade, mantém heurística "não visitados no topo".
   const myCityNorm = normalizeCity(myCity);
   const sorted = [...data].sort((a, b) => {
+    // 1) Promoções ativas primeiro — o cliente vê ofertas antes de tudo.
+    const aPromo = a.has_promotion ? 1 : 0;
+    const bPromo = b.has_promotion ? 1 : 0;
+    if (aPromo !== bPromo) return bPromo - aPromo;
+    // 2) Proximidade (mesma cidade) quando disponível.
     if (myCityNorm) {
       const aMatch = normalizeCity(a.city) === myCityNorm ? 1 : 0;
       const bMatch = normalizeCity(b.city) === myCityNorm ? 1 : 0;
       if (aMatch !== bMatch) return bMatch - aMatch;
     }
+    // 3) Não visitados no topo.
     return Number(a.visited) - Number(b.visited);
   });
 
@@ -216,6 +222,7 @@ function DiscoverRow({
     city: string | null;
     description: string | null;
     visited: boolean;
+    has_promotion: boolean;
   };
   nearby?: boolean;
 }) {
@@ -243,8 +250,13 @@ function DiscoverRow({
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             <div className="truncate font-display text-sm font-semibold">{e.name}</div>
+            {e.has_promotion && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/50 bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-300">
+                <Tag className="h-2.5 w-2.5" /> Promoção
+              </span>
+            )}
             {nearby && (
               <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-primary">
                 Perto

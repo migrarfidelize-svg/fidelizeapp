@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { getMyWallet, getMyHistory, getMyRewards } from "@/lib/my-wallet.functions";
+import { getMyWallet, getMyHistory, getMyRewards, getPromotedEstablishmentIds } from "@/lib/my-wallet.functions";
 import { listAchievementsCatalog, listMyAchievements } from "@/lib/achievements.functions";
 import { ChevronRight, Sparkles, Gift, Stamp, RotateCcw, Bell, Flame, Trophy, Calendar } from "lucide-react";
 import { formatDate } from "@/lib/format";
@@ -78,10 +78,23 @@ function WalletHome() {
     queryFn: () => getMyRewards(),
     staleTime: 15_000,
   });
+  const { data: promotedIds } = useQuery({
+    queryKey: ["promoted-establishment-ids"],
+    queryFn: () => getPromotedEstablishmentIds(),
+    staleTime: 60_000,
+  });
+  const promotedSet = new Set(promotedIds ?? []);
 
   // Feed unificado: recompensas prontas (topo) + carimbos + "faltam X" (aviso).
   const feed = buildFeed(items, history ?? [], rewards ?? []);
   const streak = computeWeeklyStreak(history ?? []);
+
+  // "Em destaque": prioriza cartões cujo estabelecimento tem promoção ativa agora.
+  const featured = [...items].sort((a, b) => {
+    const aP = promotedSet.has((a.establishment as { id: string }).id) ? 1 : 0;
+    const bP = promotedSet.has((b.establishment as { id: string }).id) ? 1 : 0;
+    return bP - aP;
+  });
 
   return (
     <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["my-wallet"] })}>
@@ -142,7 +155,7 @@ function WalletHome() {
                   Ver todos →
                 </Link>
               </div>
-              <WalletStack items={items.slice(0, 5)} />
+              <WalletStack items={featured.slice(0, 5)} />
             </section>
 
             {feed.length > 0 && (
