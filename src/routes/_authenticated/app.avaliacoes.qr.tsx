@@ -750,6 +750,10 @@ function ReviewQrPage() {
                   destination={destination}
                   showGoogleLogo={showGoogleLogo}
                   nfcMode={nfcMode}
+                  primaryLabel={primaryLabel}
+                  secondaryEnabled={secondaryEnabled && !!secondaryQrDataUrl}
+                  secondaryQrDataUrl={secondaryQrDataUrl}
+                  secondaryLabel={secondaryLabel}
                 />
 
                 {/* Acrylic glare overlay (mounted inside so it inherits transform) */}
