@@ -170,6 +170,9 @@ function ReviewQrPage() {
         if (typeof s.showGoogleLogo === "boolean") setShowGoogleLogo(s.showGoogleLogo);
         if (typeof s.nfcMode === "boolean") setNfcMode(s.nfcMode);
         if (typeof s.contentScale === "number") setContentScale(s.contentScale);
+        if (s.ecc === "L" || s.ecc === "M" || s.ecc === "Q" || s.ecc === "H") setEcc(s.ecc);
+        if (typeof s.utmEnabled === "boolean") setUtmEnabled(s.utmEnabled);
+        if (typeof s.bleedMarks === "boolean") setBleedMarks(s.bleedMarks);
         if (s.title) setTitle(s.title);
         if (s.subtitle) setSubtitle(s.subtitle);
         if (s.ctaNearQR) setCtaNearQR(s.ctaNearQR);
