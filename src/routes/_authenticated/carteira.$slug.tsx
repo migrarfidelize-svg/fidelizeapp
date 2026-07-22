@@ -76,6 +76,8 @@ function WalletEstablishment() {
   const qc = useQueryClient();
   const slug = Route.useParams().slug;
   const { data } = useSuspenseQuery(opts(slug));
+  const [copied, setCopied] = useState(false);
+
   const d = data!;
   const est = d.establishment as {
     name: string;
