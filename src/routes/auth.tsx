@@ -453,6 +453,19 @@ function AuthPage() {
               <Check className="h-3 w-3 text-[#00ffff]" /> Criptografia ativa · SSL
             </div>
 
+            <p className="mt-3 text-center text-[10px] leading-relaxed text-white/40">
+              Ao continuar você concorda com os{" "}
+              <a href="/termos" target="_blank" rel="noopener noreferrer" className="underline decoration-[#00ffff]/40 underline-offset-2 hover:text-white/70">
+                Termos de uso
+              </a>{" "}
+              e a{" "}
+              <a href="/privacidade" target="_blank" rel="noopener noreferrer" className="underline decoration-[#00ffff]/40 underline-offset-2 hover:text-white/70">
+                Política de privacidade
+              </a>
+              .
+            </p>
+
+
           </div>
         </div>
       </div>
