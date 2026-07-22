@@ -12,6 +12,8 @@ import {
 } from "@/components/wallet/WalletStates";
 import { WalletStack } from "@/components/wallet/WalletStack";
 import { WalletHomeSkeleton } from "@/components/wallet/WalletCardSkeleton";
+import { InstallAppCard } from "@/components/wallet/InstallAppCard";
+
 
 type WalletItem = Awaited<ReturnType<typeof getMyWallet>>[number];
 
@@ -86,6 +88,10 @@ function WalletHome() {
             Um resumo dos seus cartões e recompensas Fidelize.
           </p>
         </div>
+
+        <InstallAppCard />
+
+
 
         {items.length === 0 ? (
           <EmptyWalletState />
