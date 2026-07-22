@@ -35,11 +35,12 @@ export function PushStatusCard() {
   const [endpoint, setEndpoint] = useState<string | null>(null);
   const [cardCount, setCardCount] = useState<number>(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [busy, setBusy] = useState<null | "enable" | "disable" | "refresh">(null);
+  const [busy, setBusy] = useState<null | "enable" | "disable" | "refresh" | "test">(null);
 
   const subscribeAll = useServerFn(subscribePushForAllMyCards);
   const unsubscribeAll = useServerFn(unsubscribePushForAllMyCards);
   const getStatus = useServerFn(getMyWalletPushStatus);
+  const sendTest = useServerFn(sendTestPushToMe);
 
   const refresh = useCallback(async () => {
     setErrorMsg(null);
