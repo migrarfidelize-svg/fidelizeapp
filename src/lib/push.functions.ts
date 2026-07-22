@@ -404,3 +404,93 @@ export const adminBroadcastPush = createServerFn({ method: "POST" })
     }
     return { sent, failed, skipped, total: subs?.length ?? 0 };
   });
+
+// ============================================================
+// WALLET-LEVEL OPT-IN (authenticated customer)
+// ============================================================
+
+const walletSubInput = z.object({
+  endpoint: z.string().url(),
+  p256dh: z.string().min(10),
+  auth: z.string().min(4),
+  user_agent: z.string().max(400).optional(),
+});
+
+/**
+ * Wallet-level push opt-in. Subscribes the current device for every card
+ * the authenticated user owns, so a single "Ativar notificações" action on
+ * the wallet home covers all establishments at once.
+ */
+export const subscribePushForAllMyCards = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => walletSubInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: customers, error } = await context.supabase
+      .from("customers")
+      .select("id, establishment_id")
+      .eq("user_id", context.userId);
+    if (error) throw error;
+    const list = customers ?? [];
+    if (list.length === 0) return { ok: true, count: 0 };
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Deactivate any prior row on the same endpoint that isn't in our set
+    // (avoid stale rows if the user changed establishments).
+    const rows = list.map((c) => ({
+      customer_id: c.id,
+      establishment_id: c.establishment_id,
+      endpoint: data.endpoint,
+      p256dh: data.p256dh,
+      auth_key: data.auth,
+      user_agent: data.user_agent ?? null,
+      preferences: { stamp: true, reward: true, campaign: true, birthday: true },
+      active: true,
+      last_error: null,
+    }));
+    const { error: upErr } = await supabaseAdmin
+      .from("push_subscriptions")
+      .upsert(rows, { onConflict: "customer_id,endpoint" });
+    if (upErr) throw upErr;
+    return { ok: true, count: rows.length };
+  });
+
+/** Deactivates the current device's push subscription across all user's cards. */
+export const unsubscribePushForAllMyCards = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ endpoint: z.string().url() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: customers } = await context.supabase
+      .from("customers")
+      .select("id")
+      .eq("user_id", context.userId);
+    const ids = (customers ?? []).map((c) => c.id);
+    if (ids.length === 0) return { ok: true };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin
+      .from("push_subscriptions")
+      .update({ active: false })
+      .in("customer_id", ids)
+      .eq("endpoint", data.endpoint);
+    return { ok: true };
+  });
+
+/** Whether the current device endpoint is active on any of the user's cards. */
+export const getMyWalletPushStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ endpoint: z.string().url() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: customers } = await context.supabase
+      .from("customers")
+      .select("id")
+      .eq("user_id", context.userId);
+    const ids = (customers ?? []).map((c) => c.id);
+    if (ids.length === 0) return { subscribed: false, cardCount: 0 };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows } = await supabaseAdmin
+      .from("push_subscriptions")
+      .select("id, active")
+      .in("customer_id", ids)
+      .eq("endpoint", data.endpoint)
+      .eq("active", true);
+    return { subscribed: (rows?.length ?? 0) > 0, cardCount: ids.length };
+  });
