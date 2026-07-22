@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Bell, BellOff, Loader2, Smartphone, Share, Plus, Info } from "lucide-react";
+import { Bell, BellOff, Loader2, Smartphone, Share, Plus, Info, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
