@@ -260,7 +260,7 @@ function DiscoveryProfilePage() {
   );
 }
 
-function PromoCard({
+function PromoRow({
   promo,
   brand,
   globalLinks,
@@ -276,81 +276,111 @@ function PromoCard({
   brand: string;
   globalLinks: { label: string; url: string }[];
 }) {
+  const [open, setOpen] = useState(false);
   const [idx, setIdx] = useState(0);
   const media = promo.media.filter((m) => !!m.url);
   const current = media[idx];
-
   const combinedLinks = [
     ...promo.external_links,
     ...globalLinks.filter((g) => !promo.external_links.some((p) => p.url === g.url)),
   ];
 
   return (
-    <li className="overflow-hidden rounded-3xl border border-border/60 bg-card/40 shadow-sm">
-      {current && (
-        <div className="relative aspect-video w-full bg-black">
-          {current.type === "video" ? (
-            <video src={current.url ?? undefined} className="h-full w-full object-contain" controls playsInline />
-          ) : (
-            <img src={current.url ?? undefined} alt="" className="h-full w-full object-cover" />
+    <li className="overflow-hidden rounded-2xl border border-border/60 bg-background/40">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-3 p-3 text-left transition hover:bg-card/40"
+      >
+        <div
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl"
+          style={{ background: `${brand}22`, color: brand }}
+        >
+          <Megaphone className="h-5 w-5" />
+        </div>
+        <div className="min-w-0 flex-1 space-y-0.5">
+          <div className="truncate font-display text-sm font-bold">{promo.title}</div>
+          {promo.body && (
+            <p className="line-clamp-1 text-[11px] text-muted-foreground">{promo.body}</p>
           )}
-          {media.length > 1 && (
-            <>
-              <button
-                type="button"
-                onClick={() => setIdx((idx - 1 + media.length) % media.length)}
-                className="absolute left-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-black/60 text-white transition hover:bg-black/80"
-                aria-label="Anterior"
-              >
-                <PrevIcon className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setIdx((idx + 1) % media.length)}
-                className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-black/60 text-white transition hover:bg-black/80"
-                aria-label="Próxima"
-              >
-                <NextIcon className="h-4 w-4" />
-              </button>
-              <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1">
-                {media.map((_, i) => (
-                  <span
-                    key={i}
-                    className={`h-1.5 w-1.5 rounded-full transition ${i === idx ? "bg-white" : "bg-white/40"}`}
-                  />
-                ))}
-              </div>
-            </>
+          {promo.ends_at && (
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground/70">
+              Até {new Date(promo.ends_at).toLocaleDateString("pt-BR")}
+            </p>
           )}
         </div>
-      )}
-      <div className="space-y-3 p-4">
-        <h2 className="font-display text-base font-bold" style={{ color: brand }}>
-          {promo.title}
-        </h2>
-        {promo.body && <p className="whitespace-pre-wrap text-sm text-muted-foreground">{promo.body}</p>}
-        {promo.ends_at && (
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-            Válido até {new Date(promo.ends_at).toLocaleDateString("pt-BR")}
-          </p>
+        {media.length > 0 && (
+          <span className="rounded-full border border-border/60 bg-background/60 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+            {media.length} mídia{media.length > 1 ? "s" : ""}
+          </span>
         )}
-        {combinedLinks.length > 0 && (
-          <div className="flex flex-wrap gap-2 pt-1">
-            {combinedLinks.map((l, i) => (
-              <a
-                key={`${l.url}-${i}`}
-                href={l.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-white shadow-sm transition-transform active:scale-95"
-                style={{ background: brand }}
-              >
-                <ExternalLink className="h-3.5 w-3.5" /> {l.label}
-              </a>
-            ))}
+        <ChevronDown
+          className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {open && (
+        <div className="border-t border-border/60 bg-card/30">
+          {current && (
+            <div className="relative aspect-video w-full bg-black">
+              {current.type === "video" ? (
+                <video src={current.url ?? undefined} className="h-full w-full object-contain" controls playsInline />
+              ) : (
+                <img src={current.url ?? undefined} alt="" className="h-full w-full object-cover" />
+              )}
+              {media.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setIdx((idx - 1 + media.length) % media.length)}
+                    className="absolute left-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-black/60 text-white transition hover:bg-black/80"
+                    aria-label="Anterior"
+                  >
+                    <PrevIcon className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIdx((idx + 1) % media.length)}
+                    className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-black/60 text-white transition hover:bg-black/80"
+                    aria-label="Próxima"
+                  >
+                    <NextIcon className="h-4 w-4" />
+                  </button>
+                  <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1">
+                    {media.map((_, i) => (
+                      <span
+                        key={i}
+                        className={`h-1.5 w-1.5 rounded-full transition ${i === idx ? "bg-white" : "bg-white/40"}`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+          <div className="space-y-2 p-4">
+            {promo.body && (
+              <p className="whitespace-pre-wrap text-sm text-muted-foreground">{promo.body}</p>
+            )}
+            {combinedLinks.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {combinedLinks.map((l, i) => (
+                  <a
+                    key={`${l.url}-${i}`}
+                    href={l.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-white shadow-sm transition-transform active:scale-95"
+                    style={{ background: brand }}
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" /> {l.label}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </li>
   );
 }
