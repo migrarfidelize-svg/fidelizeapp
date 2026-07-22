@@ -70,7 +70,14 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/app/campanhas", label: "Campanhas", icon: Sparkles },
       { to: "/app/qrcodes", label: "QR Codes", icon: QrCode },
       { to: "/app/retencao", label: "Retenção", icon: HeartHandshake },
+    ],
+  },
+  {
+    key: "reputacao",
+    label: "Reputação",
+    items: [
       { to: "/app/avaliacoes", label: "Avaliações", icon: Star },
+      { to: "/app/avaliacoes/qr", label: "QR de avaliação", icon: QrCode },
     ],
   },
   {
@@ -83,6 +90,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
     ],
   },
+
 
   {
     key: "conta",
