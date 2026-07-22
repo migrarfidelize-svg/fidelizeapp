@@ -1087,53 +1087,9 @@ function ReviewQrPage() {
               )}
             </div>
 
-            {/* Estatísticas de scans */}
-            <div className="space-y-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3">
-              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
-                <ScanLine className="h-3.5 w-3.5" /> Scans do QR
-              </div>
-              {scanStats ? (
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="rounded-lg bg-background/70 p-2 text-center">
-                    <div className="text-lg font-bold tabular-nums">{scanStats.total}</div>
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Total</div>
-                  </div>
-                  <div className="rounded-lg bg-background/70 p-2 text-center">
-                    <div className="text-lg font-bold tabular-nums">{scanStats.last30}</div>
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">30 dias</div>
-                  </div>
-                  <div className="rounded-lg bg-background/70 p-2 text-center">
-                    <div className="text-lg font-bold tabular-nums">{scanStats.last7}</div>
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">7 dias</div>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-[11px] text-muted-foreground">Aguardando primeiros scans do cartaz…</div>
-              )}
-              <div className="text-[10px] text-muted-foreground">
-                Cada leitura do QR passa por um redirecionador rastreado — o cliente é enviado ao destino imediatamente.
-              </div>
-            </div>
+            {/* Scans do QR e Enviar para gráfica parceira — ocultos ao lojista por enquanto.
+                Tracking e diálogo de impressão continuam disponíveis no código. */}
 
-            {/* Enviar para gráfica parceira */}
-            <div className="space-y-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
-              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-400">
-                <Printer className="h-3.5 w-3.5" /> Enviar para gráfica parceira
-              </div>
-              <div className="text-[11px] text-muted-foreground">
-                Recebemos o arquivo em alta resolução, revisamos e imprimimos no display. Você acompanha o pedido pelo painel.
-              </div>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="w-full border-amber-500/50 text-amber-700 hover:bg-amber-500/10 dark:text-amber-300"
-                onClick={() => setPrintOpen(true)}
-                disabled={!qrDataUrl || primaryBlocking}
-              >
-                <Printer className="mr-1.5 h-3.5 w-3.5" /> Solicitar impressão
-              </Button>
-            </div>
 
 
             {/* QR avançado + Impressão profissional — ocultos ao lojista.
