@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Send, Bell, Users, Zap, AlertTriangle, Sparkles, Clock, X, Wallet, Gift, Compass, QrCode, Link2 } from "lucide-react";
+import { Loader2, Send, Bell, Users, Zap, AlertTriangle, Sparkles, Clock, X, Wallet, Gift, Compass, QrCode, Link2, Megaphone } from "lucide-react";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import {
   listPushLogs,
