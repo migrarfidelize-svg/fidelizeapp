@@ -1424,19 +1424,24 @@ function ReviewQrPage() {
               )}
             </div>
 
-            {/* Layout editor controls — lateral (texto vertical) */}
-            <div className="flex w-10 shrink-0 flex-col gap-2 pt-2">
+            {/* Layout editor controls — horizontal em mobile, vertical em ≥sm */}
+            <div
+              role="group"
+              aria-label="Editor de posições do cartaz"
+              className="flex w-full shrink-0 flex-row gap-2 pt-2 sm:w-10 sm:flex-col"
+            >
               <Button
                 type="button"
                 size="sm"
                 variant={editLayout ? "default" : "outline"}
                 onClick={() => setEditLayout((v) => !v)}
-                className="flex h-32 w-10 flex-col items-center justify-center gap-1.5 px-0 text-xs"
+                aria-label={editLayout ? "Concluir edição de posições" : "Editar posições dos elementos"}
+                aria-pressed={editLayout}
+                className="flex h-10 w-full flex-row items-center justify-center gap-1.5 px-2 text-xs sm:h-32 sm:w-10 sm:flex-col sm:px-0"
               >
                 <Move className="h-3.5 w-3.5" />
                 <span
-                  className="font-semibold tracking-wider"
-                  style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+                  className="font-semibold tracking-wider sm:[writing-mode:vertical-rl] sm:[transform:rotate(180deg)]"
                 >
                   {editLayout ? "Concluir" : "Editar"}
                 </span>
@@ -1446,13 +1451,13 @@ function ReviewQrPage() {
                 size="sm"
                 variant="ghost"
                 onClick={() => { setLayout(DEFAULT_LAYOUT); toast.success("Posições restauradas"); }}
-                className="flex h-32 w-10 flex-col items-center justify-center gap-1.5 px-0 text-xs"
+                aria-label="Restaurar posições padrão"
+                className="flex h-10 w-full flex-row items-center justify-center gap-1.5 px-2 text-xs sm:h-32 sm:w-10 sm:flex-col sm:px-0"
                 disabled={JSON.stringify(layout) === JSON.stringify(DEFAULT_LAYOUT)}
               >
                 <RotateCcw className="h-3.5 w-3.5" />
                 <span
-                  className="font-semibold tracking-wider"
-                  style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+                  className="font-semibold tracking-wider sm:[writing-mode:vertical-rl] sm:[transform:rotate(180deg)]"
                 >
                   Resetar
                 </span>
