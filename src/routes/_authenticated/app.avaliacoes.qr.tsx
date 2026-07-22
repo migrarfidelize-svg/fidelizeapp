@@ -130,7 +130,7 @@ function ReviewQrPage() {
   const [googleUrl, setGoogleUrl] = useState("");
   const [showGoogleLogo, setShowGoogleLogo] = useState(true);
   const [nfcMode, setNfcMode] = useState(false);
-  const [contentScale, setNfcSize] = useState(100); // % scale, 60–180
+  const [contentScale, setContentScale] = useState(100); // % scale, 60–180
   const [title, setTitle] = useState("Como foi seu atendimento?");
   const [subtitle, setSubtitle] = useState("Sua opinião ajuda nossa equipe a melhorar. Leva menos de 30 segundos.");
   const [ctaNearQR, setCtaNearQR] = useState("Aponte a câmera para avaliar");
@@ -166,7 +166,7 @@ function ReviewQrPage() {
         if (typeof s.googleUrl === "string") setGoogleUrl(s.googleUrl);
         if (typeof s.showGoogleLogo === "boolean") setShowGoogleLogo(s.showGoogleLogo);
         if (typeof s.nfcMode === "boolean") setNfcMode(s.nfcMode);
-        if (typeof s.contentScale === "number") setNfcSize(s.contentScale);
+        if (typeof s.contentScale === "number") setContentScale(s.contentScale);
         if (s.title) setTitle(s.title);
         if (s.subtitle) setSubtitle(s.subtitle);
         if (s.ctaNearQR) setCtaNearQR(s.ctaNearQR);
@@ -541,7 +541,7 @@ function ReviewQrPage() {
                     max={180}
                     step={5}
                     value={[contentScale]}
-                    onValueChange={(v) => setNfcSize(v[0] ?? 100)}
+                    onValueChange={(v) => setContentScale(v[0] ?? 100)}
                   />
                   <div className="mt-1 text-[10px] text-muted-foreground">
                     Ajuste o selo NFC discreto que aparece no rodapé do cartaz.
