@@ -646,9 +646,34 @@ function ReviewQrPage() {
     if (primaryBlocking) { toast.error(googleCheck.message); return; }
     setExporting(true);
     try {
-      const svg = await QRCode.toString(targetUrl, {
+      let svg = await QRCode.toString(targetUrl, {
         type: "svg", errorCorrectionLevel: ecc, margin: 1,
         color: { dark: "#111827", light: "#ffffff" },
+      });
+      // Normalize header: garantir xmlns, viewBox e tamanho responsivo (100%)
+      // para renderizar corretamente em qualquer editor (Illustrator, Figma,
+      // Canva) e no upload do Instagram.
+      const viewBoxMatch = svg.match(/viewBox="([^"]+)"/);
+      const widthMatch = svg.match(/<svg[^>]*\swidth="([^"]+)"/);
+      const heightMatch = svg.match(/<svg[^>]*\sheight="([^"]+)"/);
+      let vb = viewBoxMatch?.[1];
+      if (!vb && widthMatch && heightMatch) {
+        const w = parseFloat(widthMatch[1]);
+        const h = parseFloat(heightMatch[1]);
+        if (!Number.isNaN(w) && !Number.isNaN(h)) vb = `0 0 ${w} ${h}`;
+      }
+      // Reescreve a tag <svg ...> preservando o restante do documento
+      svg = svg.replace(/<svg\b[^>]*>/, (_tag) => {
+        const attrs = [
+          'xmlns="http://www.w3.org/2000/svg"',
+          'xmlns:xlink="http://www.w3.org/1999/xlink"',
+          vb ? `viewBox="${vb}"` : "",
+          'width="100%"',
+          'height="100%"',
+          'preserveAspectRatio="xMidYMid meet"',
+          'shape-rendering="crispEdges"',
+        ].filter(Boolean).join(" ");
+        return `<svg ${attrs}>`;
       });
       const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
       const url = URL.createObjectURL(blob);
@@ -662,6 +687,7 @@ function ReviewQrPage() {
       toast.error(e instanceof Error ? e.message : "Falha ao exportar SVG");
     } finally { setExporting(false); }
   }
+
 
   async function share() {
     if (!targetUrl) return;
