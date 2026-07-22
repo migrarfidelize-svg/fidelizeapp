@@ -259,9 +259,6 @@ function PromocoesPage() {
     },
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erro ao criar modelos"),
   });
-    },
-    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erro ao excluir"),
-  });
 
   if (!activeEst) {
     return (
