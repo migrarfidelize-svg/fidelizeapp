@@ -22,13 +22,14 @@ export const getMyWallet = createServerFn({ method: "GET" })
     const { data: rows, error } = await context.supabase
       .from("customers")
       .select(
-        `id, name, code, access_token, last_visit_at, visits_count, tier,
+        `id, name, code, access_token, last_visit_at, visits_count, tier, pinned_at,
          establishment:establishments!inner(
            id, slug, name, logo_url, primary_color, address, phone, whatsapp,
            instagram, active
          )`,
       )
       .eq("user_id", context.userId)
+      .order("pinned_at", { ascending: false, nullsFirst: false })
       .order("last_visit_at", { ascending: false, nullsFirst: false });
     if (error) throw error;
 
@@ -63,6 +64,7 @@ export const getMyWallet = createServerFn({ method: "GET" })
           lastVisitAt: r.last_visit_at,
           visitsCount: r.visits_count,
           tier: r.tier,
+          pinned: !!(r as unknown as { pinned_at: string | null }).pinned_at,
         },
         establishment: r.establishment,
         card: best
@@ -248,7 +250,7 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
       .from("loyalty_cards")
       .select(
         `id, stamps, cycle, updated_at, created_at,
-         campaign:campaigns!inner(id, name, stamps_required, reward_title, reward_description, active, stamp_icon, primary_color, accent_color, rules)`,
+         campaign:campaigns!inner(id, name, stamps_required, reward_title, reward_description, active, stamp_icon, primary_color, accent_color, rules, stamp_validity_days, reward_validity_days)`,
       )
       .eq("customer_id", row.id)
       .order("updated_at", { ascending: false });
