@@ -442,6 +442,7 @@ export type Database = {
           name: string
           notes: string | null
           phone: string
+          pinned_at: string | null
           referral_code: string | null
           referred_by: string | null
           tier: Database["public"]["Enums"]["customer_tier"]
@@ -463,6 +464,7 @@ export type Database = {
           name: string
           notes?: string | null
           phone: string
+          pinned_at?: string | null
           referral_code?: string | null
           referred_by?: string | null
           tier?: Database["public"]["Enums"]["customer_tier"]
@@ -484,6 +486,7 @@ export type Database = {
           name?: string
           notes?: string | null
           phone?: string
+          pinned_at?: string | null
           referral_code?: string | null
           referred_by?: string | null
           tier?: Database["public"]["Enums"]["customer_tier"]

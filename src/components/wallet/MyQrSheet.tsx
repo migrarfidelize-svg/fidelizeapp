@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import QRCode from "qrcode";
-import { QrCode, Gift, Sparkles, Timer, RefreshCw, CheckCircle2, ChevronDown } from "lucide-react";
+import { QrCode, Gift, Sparkles, Timer, RefreshCw, CheckCircle2, ChevronDown, Maximize2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -141,10 +141,39 @@ function IdentityQR({ item, origin, canSwitch, onOpenPicker }: {
   const token = item.customer.token;
   const url = `${origin}/c/${token}`;
   const [dataUrl, setDataUrl] = useState("");
+  const [presenting, setPresenting] = useState(false);
+  const wakeLockRef = useRef<{ release: () => Promise<void> } | null>(null);
 
   useEffect(() => {
-    QRCode.toDataURL(url, { width: 640, margin: 1, errorCorrectionLevel: "M" }).then(setDataUrl).catch(() => {});
+    QRCode.toDataURL(url, { width: 960, margin: 1, errorCorrectionLevel: "M" }).then(setDataUrl).catch(() => {});
   }, [url]);
+
+  // Wake Lock + limpeza ao sair do modo apresentação
+  useEffect(() => {
+    async function acquire() {
+      try {
+        const nav = navigator as unknown as { wakeLock?: { request: (t: string) => Promise<{ release: () => Promise<void> }> } };
+        if (presenting && nav.wakeLock) {
+          wakeLockRef.current = await nav.wakeLock.request("screen");
+        }
+      } catch {
+        /* alguns browsers negam sem gesto do usuário; tudo bem */
+      }
+    }
+    void acquire();
+    return () => {
+      wakeLockRef.current?.release().catch(() => {});
+      wakeLockRef.current = null;
+    };
+  }, [presenting]);
+
+  // Sai do modo apresentação com ESC
+  useEffect(() => {
+    if (!presenting) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setPresenting(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [presenting]);
 
   return (
     <div className="space-y-4">
@@ -172,9 +201,65 @@ function IdentityQR({ item, origin, canSwitch, onOpenPicker }: {
         <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-primary/20" />
       </div>
 
-      <p className="text-center text-[11px] text-muted-foreground">
-        Código: <span className="font-mono font-semibold text-foreground">{item.customer.code}</span>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[11px] text-muted-foreground">
+          Código: <span className="font-mono font-semibold text-foreground">{item.customer.code}</span>
+        </p>
+        <button
+          type="button"
+          onClick={() => setPresenting(true)}
+          className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/20"
+        >
+          <Maximize2 className="h-3 w-3" /> Modo apresentação
+        </button>
+      </div>
+
+      {presenting && dataUrl && (
+        <PresentationOverlay dataUrl={dataUrl} customerCode={item.customer.code} establishmentName={est.name} onClose={() => setPresenting(false)} />
+      )}
+    </div>
+  );
+}
+
+function PresentationOverlay({ dataUrl, customerCode, establishmentName, onClose }: {
+  dataUrl: string; customerCode: string; establishmentName: string; onClose: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-[80] flex flex-col items-center justify-center gap-6 bg-white p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Modo apresentação do QR"
+      style={{ filter: "brightness(1.08)" }}
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute right-4 top-4 grid h-11 w-11 place-items-center rounded-full border border-neutral-300 bg-white text-neutral-700 shadow-sm"
+        aria-label="Fechar modo apresentação"
+      >
+        <X className="h-5 w-5" />
+      </button>
+      <p className="text-center text-xs font-black uppercase tracking-[0.28em] text-neutral-500">
+        {establishmentName}
       </p>
+      <img
+        src={dataUrl}
+        alt="Meu QR em tela cheia"
+        className="h-auto w-full max-w-[560px] rounded-3xl border border-neutral-200 bg-white p-4 shadow-2xl"
+      />
+      <p className="text-center font-mono text-lg font-bold tracking-widest text-neutral-800">
+        {customerCode}
+      </p>
+      <p className="text-center text-xs text-neutral-500">
+        Toque em qualquer lugar para sair · Brilho no máximo recomendado
+      </p>
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute inset-x-0 bottom-0 top-24 cursor-default opacity-0"
+        aria-hidden
+      />
     </div>
   );
 }

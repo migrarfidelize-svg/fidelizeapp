@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ChevronRight, Sparkles } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQueryClient } from "@tanstack/react-query";
+import { ChevronRight, Sparkles, Pin, PinOff } from "lucide-react";
+import { toast } from "sonner";
+import { toggleCustomerPin } from "@/lib/wallet-prefs.functions";
 import type { getMyWallet } from "@/lib/my-wallet.functions";
 
 /**
@@ -239,11 +243,17 @@ function StackedCard({
                   {est.name}
                 </h3>
                 <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                  {item.customer.pinned ? "Fixado • " : ""}
                   {campaignActive ? "Cartão fidelidade" : "Campanha expirada"}
                 </p>
               </div>
             </div>
-            <div className="text-right">
+            {isActive && <PinToggle customerId={item.customer.id} pinned={!!item.customer.pinned} />}
+          </div>
+
+          {/* Progresso — só no cartão ativo */}
+          {isActive && (
+            <div className="mt-1 text-right">
               <div className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">
                 Progresso
               </div>
@@ -252,7 +262,7 @@ function StackedCard({
                 <span className="text-sm text-muted-foreground">/{req}</span>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Middle — reward + progress */}
           <div className="mt-6">
@@ -324,6 +334,42 @@ function StackedCard({
         )}
       </div>
     </div>
+  );
+}
+
+function PinToggle({ customerId, pinned }: { customerId: string; pinned: boolean }) {
+  const qc = useQueryClient();
+  const toggle = useServerFn(toggleCustomerPin);
+  const [busy, setBusy] = useState(false);
+  return (
+    <button
+      type="button"
+      disabled={busy}
+      onClick={async (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        setBusy(true);
+        try {
+          await toggle({ data: { customer_id: customerId, pinned: !pinned } });
+          toast.success(pinned ? "Cartão desafixado." : "Cartão fixado no topo.");
+          await qc.invalidateQueries({ queryKey: ["my-wallet"] });
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : "Falha ao fixar.");
+        } finally {
+          setBusy(false);
+        }
+      }}
+      aria-label={pinned ? "Desafixar cartão" : "Fixar cartão"}
+      aria-pressed={pinned}
+      className={
+        "grid h-8 w-8 place-items-center rounded-xl border transition-colors " +
+        (pinned
+          ? "border-primary/40 bg-primary/10 text-primary"
+          : "border-border/50 bg-background/50 text-muted-foreground hover:text-foreground")
+      }
+    >
+      {pinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
+    </button>
   );
 }
 

@@ -1,0 +1,2 @@
+ALTER TABLE public.customers ADD COLUMN IF NOT EXISTS pinned_at TIMESTAMPTZ;
+CREATE INDEX IF NOT EXISTS idx_customers_user_pinned ON public.customers(user_id, pinned_at DESC NULLS LAST) WHERE user_id IS NOT NULL;
