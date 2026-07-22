@@ -400,12 +400,12 @@ function AppLayout() {
       <div className="min-h-screen dock-page-bg">
         {/* Desktop: floating dock */}
         <aside
-          className="dock-surface hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-30 flex-col items-center gap-1.5 rounded-2xl p-2"
+          className="dock-surface hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-30 flex-col items-stretch gap-1.5 rounded-2xl p-2 w-[188px]"
           data-tour="sidebar-logo"
         >
           <Link
             to="/app"
-            className="dock-logo dock-logo-bg relative mb-1 grid h-12 w-12 place-items-center rounded-full"
+            className="dock-logo dock-logo-bg relative mb-1 mx-auto grid h-12 w-12 place-items-center rounded-full"
             aria-label="Fidelize"
           >
             <span aria-hidden className="dock-logo-led" />
@@ -433,17 +433,19 @@ function AppLayout() {
                   aria-expanded={isOpen}
                   onClick={() => (isOpen ? setPinnedGroup(null) : openGroup(g.key))}
                   className={[
-                    "relative grid h-11 w-11 place-items-center rounded-xl",
+                    "relative flex h-11 w-full items-center gap-2.5 rounded-xl px-2.5 text-left text-[13px] font-medium",
                     isActive || isOpen ? "dock-item-active" : "dock-item",
                   ].join(" ")}
                 >
-                  <Icon className="h-[19px] w-[19px]" strokeWidth={1.8} />
+                  <Icon className="h-[19px] w-[19px] shrink-0" strokeWidth={1.8} />
+                  <span className="flex-1 truncate">{g.label}</span>
                   {badge > 0 && (
-                    <span className="dock-badge absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-bold ring-2 ring-[color:var(--dock-surface)]">
+                    <span className="dock-badge grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-bold ring-2 ring-[color:var(--dock-surface)]">
                       {badge > 9 ? "9+" : badge}
                     </span>
                   )}
                 </button>
+
 
                 {/* Flyout — com ponte de hover (pl-3) para eliminar o gap morto */}
                 <div
@@ -501,21 +503,17 @@ function AppLayout() {
                   </div>
                 </div>
 
-                {/* Tooltip when closed */}
-                {!isOpen && (
-                  <span className="dock-tooltip pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 whitespace-nowrap rounded-md px-2 py-1 text-[11px] font-medium opacity-0 transition-opacity group-hover/dock:opacity-100">
-                    {g.label}
-                  </span>
-                )}
+                {/* Tooltip removed — label already visible */}
               </div>
             );
           })}
 
+
           {/* Divider */}
-          <div className="dock-divider my-1 h-px w-8" />
+          <div className="dock-divider my-1 h-px w-full" />
 
           {/* Theme + account */}
-          <div className="grid place-items-center">
+          <div className="flex items-center justify-between px-1">
             <ThemeToggle />
           </div>
           <DropdownMenu>
@@ -523,11 +521,15 @@ function AppLayout() {
               <button
                 type="button"
                 aria-label="Conta"
-                className="dock-item grid h-11 w-11 place-items-center rounded-xl text-[11px] font-bold"
+                className="dock-item flex h-11 w-full items-center gap-2.5 rounded-xl px-2.5 text-left text-[13px] font-medium"
               >
-                {activeEst?.name?.slice(0, 2).toUpperCase() ?? "FZ"}
+                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[color:var(--dock-item-active-bg)] text-[10px] font-bold text-[color:var(--dock-item-active-text)]">
+                  {activeEst?.name?.slice(0, 2).toUpperCase() ?? "FZ"}
+                </span>
+                <span className="flex-1 truncate">{activeEst?.name ?? "Conta"}</span>
               </button>
             </DropdownMenuTrigger>
+
 
             <DropdownMenuContent side="right" align="end" className="w-56">
               <div className="px-2 py-1.5 text-xs text-muted-foreground truncate">
@@ -563,7 +565,7 @@ function AppLayout() {
         </aside>
 
 
-        <div className="flex flex-col min-w-0 md:pl-24">
+        <div className="flex flex-col min-w-0 md:pl-[220px]">
           {/* Top bar (desktop + mobile) */}
           <header className="sticky top-0 z-20 flex items-center justify-between gap-3 h-14 px-4 md:px-6 border-b bg-card/70 backdrop-blur-xl">
             <div className="flex items-center gap-3 min-w-0">
