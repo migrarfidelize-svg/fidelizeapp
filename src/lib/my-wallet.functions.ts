@@ -231,7 +231,7 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
     const { data: row, error } = await context.supabase
       .from("customers")
       .select(
-        `id, name, code, access_token, last_visit_at, visits_count, tier,
+        `id, name, code, access_token, last_visit_at, visits_count, tier, referral_code,
          establishment:establishments!inner(
            id, slug, name, logo_url, primary_color, address, phone, whatsapp,
            instagram, active, description
@@ -242,6 +242,7 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
       .maybeSingle();
     if (error) throw error;
     if (!row) return null;
+
 
     const { data: cards } = await context.supabase
       .from("loyalty_cards")
