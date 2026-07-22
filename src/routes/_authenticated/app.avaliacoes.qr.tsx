@@ -530,34 +530,8 @@ function ReviewQrPage() {
             </label>
 
 
-            {/* Templates */}
-            <div className="space-y-3">
-              <Label className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                <Layers className="h-3.5 w-3.5" /> Modelo de cartaz
-              </Label>
-              <div className="grid grid-cols-4 gap-1.5">
-                {(Object.keys(TEMPLATES) as TemplateKey[]).map((k) => {
-                  const t = TEMPLATES[k];
-                  const active = template === k;
-                  return (
-                    <button
-                      key={k}
-                      type="button"
-                      onClick={() => applyTemplate(k)}
-                      title={`${t.label} — ${t.description}`}
-                      className={`group relative overflow-hidden rounded-lg border-2 p-1.5 text-left transition ${active ? "border-primary ring-2 ring-primary/30" : "border-border/60 hover:border-primary/40"}`}
-                    >
-                      <div className="mb-1 grid h-6 grid-cols-3 gap-0.5 rounded-sm p-0.5" style={{ background: t.defaults.backgroundColor }}>
-                        <div className="rounded-[2px]" style={{ background: t.defaults.primaryColor }} />
-                        <div className="rounded-[2px]" style={{ background: t.defaults.textColor, opacity: 0.6 }} />
-                        <div className="rounded-[2px]" style={{ background: t.defaults.primaryColor, opacity: 0.5 }} />
-                      </div>
-                      <div className={`text-[10px] font-bold leading-tight truncate ${active ? "text-primary" : "text-foreground"}`}>{t.label}</div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+
+
 
             {/* Format */}
 
@@ -609,8 +583,38 @@ function ReviewQrPage() {
             </div>
 
 
+            {/* Templates */}
+            <div className="space-y-3">
+              <Label className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <Layers className="h-3.5 w-3.5" /> Modelo de cartaz
+              </Label>
+              <div className="grid grid-cols-4 gap-1.5">
+                {(Object.keys(TEMPLATES) as TemplateKey[]).map((k) => {
+                  const t = TEMPLATES[k];
+                  const active = template === k;
+                  return (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => applyTemplate(k)}
+                      title={`${t.label} — ${t.description}`}
+                      className={`group relative overflow-hidden rounded-lg border-2 p-1.5 text-left transition ${active ? "border-primary ring-2 ring-primary/30" : "border-border/60 hover:border-primary/40"}`}
+                    >
+                      <div className="mb-1 grid h-6 grid-cols-3 gap-0.5 rounded-sm p-0.5" style={{ background: t.defaults.backgroundColor }}>
+                        <div className="rounded-[2px]" style={{ background: t.defaults.primaryColor }} />
+                        <div className="rounded-[2px]" style={{ background: t.defaults.textColor, opacity: 0.6 }} />
+                        <div className="rounded-[2px]" style={{ background: t.defaults.primaryColor, opacity: 0.5 }} />
+                      </div>
+                      <div className={`text-[10px] font-bold leading-tight truncate ${active ? "text-primary" : "text-foreground"}`}>{t.label}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Text fields */}
             <div className="space-y-3">
+
               <div className="space-y-1.5">
                 <Label className="text-xs">Título</Label>
                 <Input value={title} maxLength={60} onChange={(e) => setTitle(e.target.value)} />
