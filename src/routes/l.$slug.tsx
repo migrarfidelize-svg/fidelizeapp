@@ -185,11 +185,151 @@ function PublicPage() {
             </div>
           )}
         </div>
+        <PromotionsSection slug={slug} brand={bg} />
         <div className="mt-6">
           <PublicRatingBlock slug={slug} source="linktree" />
         </div>
         <div className="text-center mt-6 text-xs text-muted-foreground"><Link to="/">Crie o cartão fidelidade do seu negócio · Fidelize</Link></div>
       </div>
     </div>
+  );
+}
+
+// ---------- Public promotions block ----------
+
+type Media = { path: string; type: "image" | "video"; url?: string | null };
+
+function PromotionsSection({ slug, brand }: { slug: string; brand: string }) {
+  const listFn = useServerFn(listPublicPromotionsBySlug);
+  const q = useQuery({
+    queryKey: ["public-promotions-linktree", slug],
+    queryFn: () => listFn({ data: { slug } }),
+    staleTime: 60_000,
+  });
+  const promos = q.data?.promotions ?? [];
+  const globalLinks = q.data?.establishment?.external_links ?? [];
+
+  if (promos.length === 0 && globalLinks.length === 0) return null;
+
+  return (
+    <section className="mt-6 rounded-3xl border bg-card p-6 shadow-sm">
+      <div className="flex items-center gap-2">
+        <Megaphone className="h-5 w-5 text-primary" />
+        <h2 className="font-display text-lg font-bold">Promoções e links</h2>
+      </div>
+
+      {globalLinks.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {globalLinks.map((l, i) => (
+            <a
+              key={`${l.url}-${i}`}
+              href={l.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition hover:border-primary/40 hover:text-primary"
+            >
+              <ExternalLink className="h-3 w-3" /> {l.label}
+            </a>
+          ))}
+        </div>
+      )}
+
+      {promos.length > 0 && (
+        <ul className="mt-4 space-y-4">
+          {promos.map((p) => (
+            <PublicPromoCard
+              key={p.id}
+              promo={p}
+              brand={brand}
+              globalLinks={globalLinks}
+            />
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function PublicPromoCard({
+  promo,
+  brand,
+  globalLinks,
+}: {
+  promo: {
+    id: string;
+    title: string;
+    body: string | null;
+    media: Media[];
+    external_links: { label: string; url: string }[];
+    ends_at: string | null;
+  };
+  brand: string;
+  globalLinks: { label: string; url: string }[];
+}) {
+  const [idx, setIdx] = useState(0);
+  const media = promo.media.filter((m) => !!m.url);
+  const current = media[idx];
+  const combined = [
+    ...promo.external_links,
+    ...globalLinks.filter((g) => !promo.external_links.some((p) => p.url === g.url)),
+  ];
+
+  return (
+    <li className="overflow-hidden rounded-2xl border bg-background">
+      {current && (
+        <div className="relative aspect-video w-full bg-black">
+          {current.type === "video" ? (
+            <video src={current.url ?? undefined} className="h-full w-full object-contain" controls playsInline />
+          ) : (
+            <img src={current.url ?? undefined} alt="" className="h-full w-full object-cover" />
+          )}
+          {media.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={() => setIdx((idx - 1 + media.length) % media.length)}
+                className="absolute left-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-black/60 text-white transition hover:bg-black/80"
+                aria-label="Anterior"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIdx((idx + 1) % media.length)}
+                className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-black/60 text-white transition hover:bg-black/80"
+                aria-label="Próxima"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </>
+          )}
+        </div>
+      )}
+      <div className="space-y-2 p-4">
+        <h3 className="font-display text-base font-bold">{promo.title}</h3>
+        {promo.body && <p className="whitespace-pre-wrap text-sm text-muted-foreground">{promo.body}</p>}
+        {promo.ends_at && (
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            Válido até {new Date(promo.ends_at).toLocaleDateString("pt-BR")}
+          </p>
+        )}
+        {combined.length > 0 && (
+          <div className="flex flex-wrap gap-2 pt-1">
+            {combined.map((l, i) => (
+              <a
+                key={`${l.url}-${i}`}
+                href={l.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-white shadow-sm transition-transform active:scale-95"
+                style={{ background: brand }}
+              >
+                <ExternalLink className="h-3.5 w-3.5" /> {l.label}
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+    </li>
   );
 }
