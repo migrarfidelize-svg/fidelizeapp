@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { getMyWallet, getMyHistory, getMyRewards } from "@/lib/my-wallet.functions";
 import { ChevronRight, Sparkles, Gift, Stamp, RotateCcw, Bell, Flame } from "lucide-react";
 import { formatDate } from "@/lib/format";
-import { saveWalletCache } from "@/lib/offline-wallet-cache";
+import { saveWalletCache, readWalletCache } from "@/lib/offline-wallet-cache";
 import {
   EmptyWalletState,
   WalletErrorState,
@@ -12,6 +12,8 @@ import {
 } from "@/components/wallet/WalletStates";
 import { WalletStack } from "@/components/wallet/WalletStack";
 import { WalletHomeSkeleton } from "@/components/wallet/WalletCardSkeleton";
+
+type WalletItem = Awaited<ReturnType<typeof getMyWallet>>[number];
 
 const walletOpts = queryOptions({
   queryKey: ["my-wallet"],
@@ -21,7 +23,19 @@ const walletOpts = queryOptions({
 
 export const Route = createFileRoute("/_authenticated/carteira/")({
   ssr: false,
-  loader: ({ context }) => context.queryClient.ensureQueryData(walletOpts),
+  loader: async ({ context }) => {
+    try {
+      return await context.queryClient.ensureQueryData(walletOpts);
+    } catch (err) {
+      // Offline-first: usa último snapshot em cache local se a rede falhar.
+      const cache = readWalletCache<WalletItem>();
+      if (cache?.items?.length) {
+        context.queryClient.setQueryData(walletOpts.queryKey, cache.items);
+        return cache.items;
+      }
+      throw err;
+    }
+  },
   head: () => ({ meta: [{ title: "Início — Carteira Fidelize" }, { name: "robots", content: "noindex" }] }),
   component: WalletHome,
   pendingComponent: () => <WalletHomeSkeleton />,
