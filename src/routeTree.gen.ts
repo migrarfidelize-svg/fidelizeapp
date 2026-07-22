@@ -51,6 +51,7 @@ import { Route as AuthenticatedCarteiraSlugRouteImport } from './routes/_authent
 import { Route as AuthenticatedAppSuporteRouteImport } from './routes/_authenticated/app.suporte'
 import { Route as AuthenticatedAppRetencaoRouteImport } from './routes/_authenticated/app.retencao'
 import { Route as AuthenticatedAppQrcodesRouteImport } from './routes/_authenticated/app.qrcodes'
+import { Route as AuthenticatedAppPerfilRouteImport } from './routes/_authenticated/app.perfil'
 import { Route as AuthenticatedAppPagamentosRouteImport } from './routes/_authenticated/app.pagamentos'
 import { Route as AuthenticatedAppNotificacoesRouteImport } from './routes/_authenticated/app.notificacoes'
 import { Route as AuthenticatedAppMensagensRouteImport } from './routes/_authenticated/app.mensagens'
@@ -310,6 +311,11 @@ const AuthenticatedAppRetencaoRoute =
 const AuthenticatedAppQrcodesRoute = AuthenticatedAppQrcodesRouteImport.update({
   id: '/qrcodes',
   path: '/qrcodes',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppPerfilRoute = AuthenticatedAppPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
 const AuthenticatedAppPagamentosRoute =
@@ -594,6 +600,7 @@ export interface FileRoutesByFullPath {
   '/app/mensagens': typeof AuthenticatedAppMensagensRoute
   '/app/notificacoes': typeof AuthenticatedAppNotificacoesRoute
   '/app/pagamentos': typeof AuthenticatedAppPagamentosRoute
+  '/app/perfil': typeof AuthenticatedAppPerfilRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/retencao': typeof AuthenticatedAppRetencaoRoute
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
@@ -674,6 +681,7 @@ export interface FileRoutesByTo {
   '/app/mensagens': typeof AuthenticatedAppMensagensRoute
   '/app/notificacoes': typeof AuthenticatedAppNotificacoesRoute
   '/app/pagamentos': typeof AuthenticatedAppPagamentosRoute
+  '/app/perfil': typeof AuthenticatedAppPerfilRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/retencao': typeof AuthenticatedAppRetencaoRoute
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
@@ -759,6 +767,7 @@ export interface FileRoutesById {
   '/_authenticated/app/mensagens': typeof AuthenticatedAppMensagensRoute
   '/_authenticated/app/notificacoes': typeof AuthenticatedAppNotificacoesRoute
   '/_authenticated/app/pagamentos': typeof AuthenticatedAppPagamentosRoute
+  '/_authenticated/app/perfil': typeof AuthenticatedAppPerfilRoute
   '/_authenticated/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/_authenticated/app/retencao': typeof AuthenticatedAppRetencaoRoute
   '/_authenticated/app/suporte': typeof AuthenticatedAppSuporteRoute
@@ -844,6 +853,7 @@ export interface FileRouteTypes {
     | '/app/mensagens'
     | '/app/notificacoes'
     | '/app/pagamentos'
+    | '/app/perfil'
     | '/app/qrcodes'
     | '/app/retencao'
     | '/app/suporte'
@@ -924,6 +934,7 @@ export interface FileRouteTypes {
     | '/app/mensagens'
     | '/app/notificacoes'
     | '/app/pagamentos'
+    | '/app/perfil'
     | '/app/qrcodes'
     | '/app/retencao'
     | '/app/suporte'
@@ -1008,6 +1019,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/mensagens'
     | '/_authenticated/app/notificacoes'
     | '/_authenticated/app/pagamentos'
+    | '/_authenticated/app/perfil'
     | '/_authenticated/app/qrcodes'
     | '/_authenticated/app/retencao'
     | '/_authenticated/app/suporte'
@@ -1374,6 +1386,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppQrcodesRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/perfil': {
+      id: '/_authenticated/app/perfil'
+      path: '/perfil'
+      fullPath: '/app/perfil'
+      preLoaderRoute: typeof AuthenticatedAppPerfilRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/app/pagamentos': {
       id: '/_authenticated/app/pagamentos'
       path: '/pagamentos'
@@ -1718,6 +1737,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppMensagensRoute: typeof AuthenticatedAppMensagensRoute
   AuthenticatedAppNotificacoesRoute: typeof AuthenticatedAppNotificacoesRoute
   AuthenticatedAppPagamentosRoute: typeof AuthenticatedAppPagamentosRoute
+  AuthenticatedAppPerfilRoute: typeof AuthenticatedAppPerfilRoute
   AuthenticatedAppQrcodesRoute: typeof AuthenticatedAppQrcodesRoute
   AuthenticatedAppRetencaoRoute: typeof AuthenticatedAppRetencaoRoute
   AuthenticatedAppSuporteRoute: typeof AuthenticatedAppSuporteRoute
@@ -1735,6 +1755,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppMensagensRoute: AuthenticatedAppMensagensRoute,
   AuthenticatedAppNotificacoesRoute: AuthenticatedAppNotificacoesRoute,
   AuthenticatedAppPagamentosRoute: AuthenticatedAppPagamentosRoute,
+  AuthenticatedAppPerfilRoute: AuthenticatedAppPerfilRoute,
   AuthenticatedAppQrcodesRoute: AuthenticatedAppQrcodesRoute,
   AuthenticatedAppRetencaoRoute: AuthenticatedAppRetencaoRoute,
   AuthenticatedAppSuporteRoute: AuthenticatedAppSuporteRoute,
