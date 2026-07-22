@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useSuspenseQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMyEstablishmentCard } from "@/lib/my-wallet.functions";
+import { listPublicReviewsBySlug } from "@/lib/public-reviews.functions";
 import { LoyaltyVoucher } from "@/components/LoyaltyVoucher";
 import { formatDate } from "@/lib/format";
 import {
@@ -17,11 +18,14 @@ import {
   Share2,
   Copy,
   Check,
+  Star,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { ExpiredCardState, WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
 import { PushOptIn } from "@/components/PushOptIn";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 
 const opts = (slug: string) =>
@@ -30,6 +34,14 @@ const opts = (slug: string) =>
     queryFn: () => getMyEstablishmentCard({ data: { slug } }),
     staleTime: 10_000,
   });
+
+const reviewsOpts = (slug: string) =>
+  queryOptions({
+    queryKey: ["public-reviews", slug],
+    queryFn: () => listPublicReviewsBySlug({ data: { slug, limit: 50 } }),
+    staleTime: 60_000,
+  });
+
 
 export const Route = createFileRoute("/_authenticated/carteira/$slug")({
   ssr: false,
@@ -78,6 +90,8 @@ function WalletEstablishment() {
   const slug = Route.useParams().slug;
   const { data } = useSuspenseQuery(opts(slug));
   const [copied, setCopied] = useState(false);
+  const [reviewsOpen, setReviewsOpen] = useState(false);
+  const reviewsQuery = useQuery(reviewsOpts(slug));
 
   const d = data!;
   const est = d.establishment as {
@@ -409,6 +423,22 @@ function WalletEstablishment() {
           );
         })()}
 
+        {/* Avaliações do estabelecimento */}
+        <ReviewsSummary
+          data={reviewsQuery.data}
+          loading={reviewsQuery.isLoading}
+          onOpen={() => setReviewsOpen(true)}
+        />
+
+        <ReviewsDialog
+          open={reviewsOpen}
+          onOpenChange={setReviewsOpen}
+          establishmentName={est.name}
+          data={reviewsQuery.data}
+        />
+
+
+
         {(est.address || est.instagram) && (
           <section className="rounded-2xl border border-border/60 bg-card/40 p-4">
             <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
@@ -537,3 +567,133 @@ function ShareCardSection({
 
   );
 }
+
+type ReviewsData = Awaited<ReturnType<typeof listPublicReviewsBySlug>>;
+
+function Stars({ value, size = 14 }: { value: number; size?: number }) {
+  const full = Math.round(value);
+  return (
+    <div className="inline-flex items-center gap-0.5" aria-label={`Nota ${value.toFixed(1)} de 5`}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <Star
+          key={n}
+          style={{ width: size, height: size }}
+          className={n <= full ? "fill-amber-400 text-amber-400" : "text-muted-foreground/40"}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ReviewsSummary({
+  data,
+  loading,
+  onOpen,
+}: {
+  data: ReviewsData | undefined;
+  loading: boolean;
+  onOpen: () => void;
+}) {
+  if (loading) {
+    return (
+      <section className="rounded-2xl border border-border/60 bg-card/40 p-4">
+        <div className="h-14 animate-pulse rounded-xl bg-muted/40" />
+      </section>
+    );
+  }
+  if (!data || data.stats.count === 0) return null;
+  const { avg, count } = data.stats;
+  const showAvg = data.settings.show_average !== false;
+  const showCount = data.settings.show_review_count !== false;
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="group flex w-full items-center justify-between gap-3 rounded-2xl border border-border/60 bg-card/40 p-4 text-left transition-colors hover:border-amber-400/50"
+    >
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-amber-400/40 bg-amber-400/10">
+          <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+        </div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            {showAvg && <span className="font-display text-lg font-bold leading-none">{avg.toFixed(1)}</span>}
+            <Stars value={avg} />
+          </div>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            {showCount ? `${count} avaliação${count > 1 ? "ões" : ""} · ` : ""}Toque para ler
+          </p>
+        </div>
+      </div>
+      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+    </button>
+  );
+}
+
+function ReviewsDialog({
+  open,
+  onOpenChange,
+  establishmentName,
+  data,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  establishmentName: string;
+  data: ReviewsData | undefined;
+}) {
+  const reviews = data?.reviews ?? [];
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[85vh] overflow-hidden p-0 sm:max-w-lg">
+        <DialogHeader className="border-b border-border/60 px-5 py-4">
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+            Avaliações — {establishmentName}
+          </DialogTitle>
+          {data && data.stats.count > 0 && (
+            <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="font-display text-sm font-bold text-foreground">{data.stats.avg.toFixed(1)}</span>
+              <Stars value={data.stats.avg} size={12} />
+              <span>· {data.stats.count} no total</span>
+            </div>
+          )}
+        </DialogHeader>
+        <div className="max-h-[70vh] space-y-3 overflow-y-auto px-5 py-4">
+          {reviews.length === 0 && (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              Ainda não há avaliações públicas.
+            </p>
+          )}
+          {reviews.map((r) => (
+            <article
+              key={r.id}
+              className="rounded-2xl border border-border/60 bg-background/50 p-3"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold">{r.author || "Cliente"}</p>
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                    {formatDate(r.submittedAt)}
+                  </p>
+                </div>
+                <Stars value={r.rating ?? 0} />
+              </div>
+              {r.comment && (
+                <p className="mt-2 whitespace-pre-line text-sm text-foreground/90">{r.comment}</p>
+              )}
+              {r.reply && (
+                <div className="mt-3 rounded-xl border border-primary/25 bg-primary/5 p-2.5">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
+                    Resposta da loja {r.replyAt ? `· ${formatDate(r.replyAt)}` : ""}
+                  </p>
+                  <p className="mt-1 whitespace-pre-line text-sm">{r.reply}</p>
+                </div>
+              )}
+            </article>
+          ))}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+

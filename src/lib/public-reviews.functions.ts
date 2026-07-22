@@ -647,3 +647,55 @@ export const getReviewInsights = createServerFn({ method: "GET" })
 
     return { byRatingOption, byQuestion, insights };
   });
+
+// ============ PUBLIC: list approved reviews by slug (for wallet page) ============
+export const listPublicReviewsBySlug = createServerFn({ method: "GET" })
+  .inputValidator((d: { slug: string; limit?: number }) =>
+    z.object({ slug: z.string().min(1).max(80), limit: z.number().int().min(1).max(100).optional() }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: est } = await supabaseAdmin
+      .from("establishments")
+      .select("id")
+      .eq("slug", data.slug)
+      .maybeSingle();
+    if (!est) return { stats: { count: 0, avg: 0 }, reviews: [], settings: { show_average: true, show_review_count: true } };
+
+    const { data: form } = await supabaseAdmin
+      .from("review_forms")
+      .select("show_average, show_review_count")
+      .eq("establishment_id", est.id)
+      .maybeSingle();
+
+    const { data: rows } = await supabaseAdmin
+      .from("customer_reviews")
+      .select("id, rating, comment, customer_name, anonymous, submitted_at, created_at, merchant_reply, merchant_reply_at, status, public_hidden")
+      .eq("establishment_id", est.id)
+      .neq("status", "archived")
+      .eq("public_hidden", false)
+      .order("submitted_at", { ascending: false, nullsFirst: false })
+      .limit(data.limit ?? 50);
+
+    const list = rows ?? [];
+    const withComments = list.filter((r) => r.rating > 0);
+    const count = withComments.length;
+    const avg = count ? withComments.reduce((a, r) => a + (r.rating ?? 0), 0) / count : 0;
+
+    return {
+      stats: { count, avg },
+      settings: {
+        show_average: form?.show_average ?? true,
+        show_review_count: form?.show_review_count ?? true,
+      },
+      reviews: list.map((r) => ({
+        id: r.id,
+        rating: r.rating,
+        comment: r.comment,
+        author: r.anonymous ? null : r.customer_name,
+        submittedAt: r.submitted_at ?? r.created_at,
+        reply: r.merchant_reply,
+        replyAt: r.merchant_reply_at,
+      })),
+    };
+  });
