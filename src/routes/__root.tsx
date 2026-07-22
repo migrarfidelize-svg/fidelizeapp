@@ -15,6 +15,9 @@ import { initSentryClient, captureClientError } from "../lib/sentry-client";
 import { registerPWA } from "../lib/pwa-register";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
+import { SessionStatusPanel } from "@/components/SessionStatusPanel";
+
+const AUTH_SYNC_CHANNEL = "fidelize-auth-sync";
 
 
 if (typeof window !== "undefined") {
@@ -135,13 +138,23 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
   useEffect(() => {
+    const bc = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel(AUTH_SYNC_CHANNEL) : null;
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
         router.invalidate();
         if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+        try { bc?.postMessage({ type: event, at: Date.now() }); } catch {}
       }
     });
-    return () => subscription.unsubscribe();
+    const onMsg = (ev: MessageEvent) => {
+      const t = ev.data?.type;
+      if (t === "SIGNED_IN" || t === "SIGNED_OUT" || t === "USER_UPDATED") {
+        router.invalidate();
+        if (t !== "SIGNED_OUT") queryClient.invalidateQueries();
+      }
+    };
+    bc?.addEventListener("message", onMsg);
+    return () => { subscription.unsubscribe(); bc?.removeEventListener("message", onMsg); bc?.close(); };
   }, [router, queryClient]);
   useEffect(() => {
     const apply = () => {
@@ -170,6 +183,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <Outlet />
       <Toaster richColors position="top-center" />
+      <SessionStatusPanel />
     </QueryClientProvider>
   );
 }
