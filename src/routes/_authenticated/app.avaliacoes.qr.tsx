@@ -10,7 +10,7 @@ import {
   Star, Copy, Share2, FileImage, FileText, Lock, Sparkles, Radio, CheckCircle2, AlertTriangle,
   Save, Layers, Eye, Trash2, Palette, ShoppingBag, Move, RotateCcw, XCircle,
   Wifi, QrCode as QrCodeIcon, CreditCard, PawPrint, Bike, Snowflake, ParkingCircle,
-  Printer, ScanLine, Cloud, UserCircle2,
+  Printer, ScanLine, Cloud, UserCircle2, Maximize2, Ruler, X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
