@@ -78,10 +78,23 @@ function WalletHome() {
     queryFn: () => getMyRewards(),
     staleTime: 15_000,
   });
+  const { data: promotedIds } = useQuery({
+    queryKey: ["promoted-establishment-ids"],
+    queryFn: () => getPromotedEstablishmentIds(),
+    staleTime: 60_000,
+  });
+  const promotedSet = new Set(promotedIds ?? []);
 
   // Feed unificado: recompensas prontas (topo) + carimbos + "faltam X" (aviso).
   const feed = buildFeed(items, history ?? [], rewards ?? []);
   const streak = computeWeeklyStreak(history ?? []);
+
+  // "Em destaque": prioriza cartões cujo estabelecimento tem promoção ativa agora.
+  const featured = [...items].sort((a, b) => {
+    const aP = promotedSet.has((a.establishment as { id: string }).id) ? 1 : 0;
+    const bP = promotedSet.has((b.establishment as { id: string }).id) ? 1 : 0;
+    return bP - aP;
+  });
 
   return (
     <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["my-wallet"] })}>
