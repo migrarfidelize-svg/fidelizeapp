@@ -17,6 +17,7 @@ import {
   subscribePushForAllMyCards,
   unsubscribePushForAllMyCards,
   getMyWalletPushStatus,
+  sendTestPushToMe,
 } from "@/lib/push.functions";
 
 type PermState = "default" | "granted" | "denied" | "unsupported";
