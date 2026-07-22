@@ -30,6 +30,18 @@ import {
   listPosterDesigns, savePosterDesign, applyPosterDesign, deletePosterDesign,
   getQrScanStats,
 } from "@/lib/poster-designs.functions";
+import { persistJson, readJson } from "@/lib/idb-storage";
+
+const URL_SHORTENERS = new Set([
+  "bit.ly", "tinyurl.com", "goo.gl", "t.co", "ow.ly", "is.gd", "buff.ly",
+  "encurtador.com.br", "cutt.ly", "rebrand.ly", "shorturl.at", "rb.gy",
+]);
+
+/** Root registrable-ish domain (last two labels). Good enough for a UI hint. */
+function rootDomain(host: string): string {
+  const parts = host.toLowerCase().split(".");
+  return parts.length <= 2 ? host.toLowerCase() : parts.slice(-2).join(".");
+}
 
 export const Route = createFileRoute("/_authenticated/app/avaliacoes/qr")({
   head: () => ({ meta: [{ title: "QR de Avaliação — Fidelize" }] }),
