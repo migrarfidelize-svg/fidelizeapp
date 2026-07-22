@@ -93,6 +93,33 @@ function HistoryPage() {
                 primary_color: string;
               } | null;
               const isRedeem = s.kind === "redeem";
+              const isAch = s.kind === "achievement";
+
+              if (isAch && s.achievement) {
+                const IconComp =
+                  (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[s.achievement.icon] ??
+                  Award;
+                return (
+                  <li
+                    key={s.id}
+                    className="flex items-center gap-3 rounded-2xl border border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-card/40 to-card/40 p-3"
+                  >
+                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md">
+                      <IconComp className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-semibold">{s.achievement.title}</div>
+                      <div className="truncate text-[11px] text-muted-foreground">
+                        {s.achievement.description} · {formatDate(s.createdAt)}
+                      </div>
+                    </div>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-300">
+                      <Award className="h-3 w-3" /> Conquista
+                    </span>
+                  </li>
+                );
+              }
+
               return (
                 <li
                   key={s.id}
