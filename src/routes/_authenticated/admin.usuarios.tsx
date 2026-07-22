@@ -267,14 +267,28 @@ function AdminUsers() {
                             {new Date(u.created_at).toLocaleDateString("pt-BR")}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button size="sm" variant="outline" onClick={() => {
-                              setTarget({
-                                id: u.id, email: u.email, full_name: u.full_name,
-                                account_type: u.account_type,
-                                memberships: u.memberships,
-                              });
-                              setNextType(u.account_type === "customer" ? "establishment" : "customer");
-                            }}>Alterar perfil</Button>
+                            <div className="flex justify-end gap-2">
+                              {u.account_type === "customer" && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="gap-1"
+                                  onClick={() =>
+                                    setWalletTarget({ id: u.id, name: u.full_name, email: u.email })
+                                  }
+                                >
+                                  <Wallet className="h-3.5 w-3.5" /> Ver carteira
+                                </Button>
+                              )}
+                              <Button size="sm" variant="outline" onClick={() => {
+                                setTarget({
+                                  id: u.id, email: u.email, full_name: u.full_name,
+                                  account_type: u.account_type,
+                                  memberships: u.memberships,
+                                });
+                                setNextType(u.account_type === "customer" ? "establishment" : "customer");
+                              }}>Alterar perfil</Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       );
