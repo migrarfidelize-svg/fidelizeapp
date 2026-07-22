@@ -233,6 +233,13 @@ function ReviewQrPage() {
   const [layout, setLayout] = useState<PosterLayout>(DEFAULT_LAYOUT);
   const [editLayout, setEditLayout] = useState(false);
   const [badges, setBadges] = useState<BadgeInstance[]>([]);
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
+  const [savedTarget, setSavedTarget] = useState<"ls" | "idb" | "fail">("ls");
+  const [savedTick, setSavedTick] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(() => setSavedTick((t) => t + 1), 30_000);
+    return () => window.clearInterval(id);
+  }, []);
   const [printOpen, setPrintOpen] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
 
