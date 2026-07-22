@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { MyQrSheet } from "@/components/wallet/MyQrSheet";
 import { countUnread } from "@/lib/inbox.functions";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AchievementUnlockListener } from "@/components/wallet/AchievementUnlockListener";
 
 export const Route = createFileRoute("/_authenticated/carteira")({
   head: () => ({
@@ -136,6 +137,7 @@ function WalletLayout() {
       </nav>
 
       <MyQrSheet open={qrOpen} onOpenChange={setQrOpen} />
+      <AchievementUnlockListener />
     </div>
   );
 }
