@@ -583,7 +583,7 @@ function ReviewQrPage() {
             </Button>
 
             {/* ===== STORE PREVIEW: Adquirir display físico ===== */}
-            <DisplayStorePreview />
+            <div id="loja-displays" className="scroll-mt-4"><DisplayStorePreview /></div>
           </CardContent>
         </Card>
 
