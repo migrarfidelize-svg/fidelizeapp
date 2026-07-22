@@ -42,6 +42,7 @@ export function EnableNotificationsCard() {
   const [subscribed, setSubscribed] = useState<boolean | null>(null);
   const [dismissed, setDismissed] = useState<boolean>(false);
   const [busy, setBusy] = useState(false);
+  const [runningAsPwa, setRunningAsPwa] = useState(false);
 
   const subscribeAll = useServerFn(subscribePushForAllMyCards);
   const unsubscribeAll = useServerFn(unsubscribePushForAllMyCards);
@@ -54,6 +55,7 @@ export function EnableNotificationsCard() {
       "PushManager" in window &&
       "Notification" in window;
     setSupported(ok);
+    setRunningAsPwa(isRunningAsPwa());
     if (!ok) return;
     setPermission(Notification.permission);
     setDismissed(localStorage.getItem(DISMISS_KEY) === "1");
@@ -75,19 +77,28 @@ export function EnableNotificationsCard() {
   }, [getStatus]);
 
   // Auto-prompt on first launch from installed PWA shortcut.
+  // Chrome/Android permite requestPermission sem gesto quando disparado logo
+  // após load do PWA; iOS Safari standalone exige toque — nesses casos o
+  // fluxo simplesmente cai no card visual abaixo (que já é um gesto).
   useEffect(() => {
     if (!supported || subscribed !== false) return;
     if (permission !== "default") return;
-    if (!isRunningAsPwa()) return;
+    if (!runningAsPwa) return;
     if (localStorage.getItem(PWA_AUTOPROMPT_KEY) === "1") return;
-    localStorage.setItem(PWA_AUTOPROMPT_KEY, "1");
-    // Small delay so the wallet UI paints before the native dialog appears.
+    // iOS não permite prompt automático — não gasta a "única chance".
+    const isIOS = /iP(hone|ad|od)/i.test(navigator.userAgent);
+    if (isIOS) return;
     const t = setTimeout(() => {
-      enable().catch(() => {});
-    }, 900);
+      enable()
+        .then(() => localStorage.setItem(PWA_AUTOPROMPT_KEY, "1"))
+        .catch(() => {
+          // Se falhou por falta de gesto, não marca — deixa o card visível
+          // para o próximo abrir/tocar.
+        });
+    }, 1200);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [supported, subscribed, permission]);
+  }, [supported, subscribed, permission, runningAsPwa]);
 
   async function enable() {
     setBusy(true);
@@ -95,7 +106,9 @@ export function EnableNotificationsCard() {
       const perm = await Notification.requestPermission();
       setPermission(perm);
       if (perm !== "granted") {
-        toast.error("Permissão negada. Habilite nas configurações do navegador.");
+        if (perm === "denied") {
+          toast.error("Permissão negada. Habilite nas configurações do navegador.");
+        }
         return;
       }
       const reg = await navigator.serviceWorker.ready;
@@ -116,6 +129,7 @@ export function EnableNotificationsCard() {
         },
       });
       setSubscribed(true);
+      localStorage.setItem(PWA_AUTOPROMPT_KEY, "1");
       toast.success(
         res.count
           ? `Notificações ativadas em ${res.count} ${res.count === 1 ? "cartão" : "cartões"}.`
@@ -123,6 +137,7 @@ export function EnableNotificationsCard() {
       );
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao ativar notificações.");
+      throw e;
     } finally {
       setBusy(false);
     }
@@ -150,17 +165,16 @@ export function EnableNotificationsCard() {
     setDismissed(true);
   }
 
-  // Hide when: unsupported, already subscribed, permission denied+dismissed,
-  // or user dismissed. Show as a compact "gerenciar" card when subscribed and
-  // running as installed PWA — otherwise stay silent to avoid noise.
   if (!supported || subscribed === null) return null;
   if (subscribed) return null;
-  if (dismissed) return null;
+  // No PWA instalado, ignoramos o "dismiss" anterior (feito no navegador)
+  // para garantir que o cliente veja o CTA ao menos uma vez dentro do app.
+  if (dismissed && !runningAsPwa) return null;
 
   const denied = permission === "denied";
 
   return (
-    <Card className="relative overflow-hidden border-primary/30 bg-gradient-to-br from-primary/10 via-background to-background">
+    <Card className="relative overflow-hidden border-primary/40 bg-gradient-to-br from-primary/15 via-background to-background shadow-lg">
       <button
         type="button"
         onClick={dismiss}
@@ -171,11 +185,13 @@ export function EnableNotificationsCard() {
       </button>
       <CardContent className="flex items-start gap-3 p-4">
         <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
-          <Bell className="h-5 w-5" />
+          {denied ? <BellOff className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
         </div>
         <div className="min-w-0 flex-1 space-y-2">
           <div>
-            <p className="font-semibold leading-tight">Ative as notificações</p>
+            <p className="font-semibold leading-tight">
+              {runningAsPwa ? "Ative as notificações do app" : "Ative as notificações"}
+            </p>
             <p className="text-xs text-muted-foreground">
               Avise-me quando eu ganhar um carimbo, faltar pouco para o prêmio ou surgir uma
               oferta.
@@ -183,8 +199,8 @@ export function EnableNotificationsCard() {
           </div>
           {denied ? (
             <p className="text-xs text-destructive">
-              Notificações bloqueadas neste navegador. Habilite manualmente nas configurações do
-              site.
+              Notificações bloqueadas neste aparelho. Abra Ajustes → Notificações e libere para o
+              Fidelize.
             </p>
           ) : (
             <Button size="sm" onClick={enable} disabled={busy} className="gap-2">
@@ -201,6 +217,7 @@ export function EnableNotificationsCard() {
     </Card>
   );
 }
+
 
 // Nota: o toggle "desativar neste aparelho" vive em `PushStatusCard`, usado
 // na tela de perfil. Removemos o `WalletPushToggleInline` duplicado para
