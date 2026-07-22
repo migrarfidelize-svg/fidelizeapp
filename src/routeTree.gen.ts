@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
-import { Route as PreviewQrcodesRouteImport } from './routes/preview-qrcodes'
 import { Route as PreviewDockRouteImport } from './routes/preview-dock'
 import { Route as PrecosRouteImport } from './routes/precos'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -112,11 +111,6 @@ const TermosRoute = TermosRouteImport.update({
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
   id: '/privacidade',
   path: '/privacidade',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PreviewQrcodesRoute = PreviewQrcodesRouteImport.update({
-  id: '/preview-qrcodes',
-  path: '/preview-qrcodes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PreviewDockRoute = PreviewDockRouteImport.update({
@@ -633,7 +627,6 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/precos': typeof PrecosRoute
   '/preview-dock': typeof PreviewDockRoute
-  '/preview-qrcodes': typeof PreviewQrcodesRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
@@ -728,7 +721,6 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/precos': typeof PrecosRoute
   '/preview-dock': typeof PreviewDockRoute
-  '/preview-qrcodes': typeof PreviewQrcodesRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
   '/lgpd': typeof AuthenticatedLgpdRoute
@@ -822,7 +814,6 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/precos': typeof PrecosRoute
   '/preview-dock': typeof PreviewDockRoute
-  '/preview-qrcodes': typeof PreviewQrcodesRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
@@ -919,7 +910,6 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/precos'
     | '/preview-dock'
-    | '/preview-qrcodes'
     | '/privacidade'
     | '/termos'
     | '/admin'
@@ -1014,7 +1004,6 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/precos'
     | '/preview-dock'
-    | '/preview-qrcodes'
     | '/privacidade'
     | '/termos'
     | '/lgpd'
@@ -1107,7 +1096,6 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/precos'
     | '/preview-dock'
-    | '/preview-qrcodes'
     | '/privacidade'
     | '/termos'
     | '/_authenticated/admin'
@@ -1204,7 +1192,6 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PrecosRoute: typeof PrecosRoute
   PreviewDockRoute: typeof PreviewDockRoute
-  PreviewQrcodesRoute: typeof PreviewQrcodesRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   TermosRoute: typeof TermosRoute
   AvaliacoesSlugRoute: typeof AvaliacoesSlugRoute
@@ -1248,13 +1235,6 @@ declare module '@tanstack/react-router' {
       path: '/privacidade'
       fullPath: '/privacidade'
       preLoaderRoute: typeof PrivacidadeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/preview-qrcodes': {
-      id: '/preview-qrcodes'
-      path: '/preview-qrcodes'
-      fullPath: '/preview-qrcodes'
-      preLoaderRoute: typeof PreviewQrcodesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/preview-dock': {
@@ -2084,7 +2064,6 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PrecosRoute: PrecosRoute,
   PreviewDockRoute: PreviewDockRoute,
-  PreviewQrcodesRoute: PreviewQrcodesRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   TermosRoute: TermosRoute,
   AvaliacoesSlugRoute: AvaliacoesSlugRoute,
