@@ -658,6 +658,7 @@ function ReviewQrPage() {
 import { forwardRef } from "react";
 
 interface PosterProps {
+  template: TemplateKey;
   format: FormatKey;
   title: string;
   subtitle: string;
@@ -676,16 +677,28 @@ interface PosterProps {
 }
 
 const PosterCanvas = forwardRef<HTMLDivElement, PosterProps>(function PosterCanvas(props, ref) {
+  const bg = props.template === "glass"
+    ? `radial-gradient(120% 80% at 50% 0%, color-mix(in oklab, ${props.primaryColor} 22%, transparent) 0%, transparent 60%), ${props.backgroundColor}`
+    : props.backgroundColor;
+  const overlay = props.template === "editorial"
+    ? "repeating-linear-gradient(0deg, rgba(0,0,0,0.03) 0 1px, transparent 1px 4px)"
+    : props.template === "bold"
+      ? `radial-gradient(circle at 20% 10%, color-mix(in oklab, #ffffff 20%, transparent) 0%, transparent 40%)`
+      : "none";
   return (
     <div
       ref={ref}
       className="absolute inset-0 flex flex-col"
-      style={{ background: props.backgroundColor, color: props.textColor }}
+      style={{ background: bg, color: props.textColor }}
     >
+      {overlay !== "none" && (
+        <div className="pointer-events-none absolute inset-0" style={{ background: overlay }} />
+      )}
       <PortraitBody {...props} />
     </div>
   );
 });
+
 
 
 function PortraitBody(p: PosterProps) {
