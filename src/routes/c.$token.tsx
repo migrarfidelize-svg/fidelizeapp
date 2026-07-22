@@ -125,7 +125,11 @@ function CustomerCard() {
 
         {cards.length > 0 && (
           <div className="mt-3 space-y-3">
-            <InstallAppButton label={`Instalar ${est.name} como app`} />
+            <InstallAppButton
+              label={`Instalar ${est.name} como app`}
+              minStamps={2}
+              currentStamps={d.stamps.filter((s) => !s.reverted_at).length}
+            />
             <RequiresOnlineAlert
               message="A instalação como app precisa carregar recursos da internet. Volte assim que estiver online."
               onRetry={() => qc.invalidateQueries({ queryKey: ["card", token] })}
