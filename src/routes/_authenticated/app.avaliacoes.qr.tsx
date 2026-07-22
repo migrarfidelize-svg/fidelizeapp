@@ -582,31 +582,55 @@ function ReviewQrPage() {
 
             <div
               className="relative w-full max-w-[420px]"
-              style={displayMode ? { perspective: "1400px" } : undefined}
+              style={displayMode ? { perspective: "1600px", perspectiveOrigin: "50% 65%" } : undefined}
             >
-              <div className="pointer-events-none absolute -inset-8 rounded-3xl bg-gradient-to-br from-primary/15 via-transparent to-transparent blur-3xl" />
-
-              {/* Acrylic holder overlay (only in display mode) */}
+              {/* Showroom backdrop — dark wall + wooden counter (only in display mode) */}
               {displayMode && (
-                <div
-                  className="pointer-events-none absolute inset-0 z-20 rounded-lg"
-                  style={{
-                    transform: "rotateX(-10deg)",
-                    transformOrigin: "bottom center",
-                    background:
-                      "linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.03) 30%, rgba(255,255,255,0) 60%, rgba(255,255,255,0.08) 100%)",
-                    boxShadow:
-                      "inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -1px 0 rgba(255,255,255,0.15), 0 30px 60px -30px rgba(0,0,0,0.6)",
-                  }}
-                />
+                <div className="pointer-events-none absolute -inset-x-10 -inset-y-8 -z-10 overflow-hidden rounded-3xl">
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background:
+                        "radial-gradient(ellipse at 50% 25%, #1a2540 0%, #0a0e1a 55%, #05070d 100%)",
+                    }}
+                  />
+                  <div
+                    className="absolute inset-x-0 bottom-0 h-[45%]"
+                    style={{
+                      background:
+                        "linear-gradient(180deg, #3a2a1e 0%, #251710 45%, #120a06 100%)",
+                      boxShadow: "inset 0 40px 60px -20px rgba(0,0,0,0.6)",
+                    }}
+                  />
+                  <div
+                    className="absolute inset-x-0 bottom-0 h-[45%] opacity-40"
+                    style={{
+                      backgroundImage:
+                        "repeating-linear-gradient(90deg, transparent 0 40px, rgba(255,255,255,0.04) 40px 41px)",
+                    }}
+                  />
+                  {/* warm counter glow */}
+                  <div
+                    className="absolute inset-x-0 bottom-[35%] h-24"
+                    style={{
+                      background:
+                        "radial-gradient(ellipse at 50% 100%, rgba(255,220,170,0.15), transparent 60%)",
+                    }}
+                  />
+                </div>
               )}
+
+              <div className="pointer-events-none absolute -inset-8 rounded-3xl bg-gradient-to-br from-primary/15 via-transparent to-transparent blur-3xl" />
 
               <div
                 className="relative overflow-hidden rounded-lg shadow-2xl ring-1 ring-primary/20 transition-transform duration-500"
                 style={{
                   aspectRatio: dims.aspect,
-                  transform: displayMode ? "rotateX(-10deg)" : undefined,
+                  transform: displayMode ? "rotateX(12deg) rotateY(-3deg)" : undefined,
                   transformOrigin: "bottom center",
+                  boxShadow: displayMode
+                    ? "0 40px 80px -20px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,229,255,0.15)"
+                    : undefined,
                 }}
               >
                 <PosterCanvas
@@ -628,15 +652,69 @@ function ReviewQrPage() {
                   showGoogleLogo={showGoogleLogo}
                   nfcMode={nfcMode}
                 />
+
+                {/* Acrylic glare overlay (mounted inside so it inherits transform) */}
+                {displayMode && (
+                  <>
+                    <div
+                      className="pointer-events-none absolute inset-0 z-20"
+                      style={{
+                        background:
+                          "linear-gradient(115deg, rgba(255,255,255,0) 38%, rgba(255,255,255,0.32) 48%, rgba(255,255,255,0.05) 55%, rgba(255,255,255,0.18) 66%, rgba(255,255,255,0) 78%)",
+                        mixBlendMode: "screen",
+                      }}
+                    />
+                    <div
+                      className="pointer-events-none absolute inset-0 z-20"
+                      style={{
+                        background:
+                          "linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 30%)",
+                        mixBlendMode: "screen",
+                      }}
+                    />
+                    {/* side acrylic edges */}
+                    <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-[3px] bg-gradient-to-b from-white/70 via-white/25 to-white/40" />
+                    <div className="pointer-events-none absolute inset-y-0 right-0 z-20 w-[3px] bg-gradient-to-b from-white/70 via-white/25 to-white/40" />
+                  </>
+                )}
               </div>
 
-              {/* Reflection under counter */}
+              {/* Acrylic L-stand base (horizontal foot rotated flat) */}
               {displayMode && (
                 <div
-                  className="pointer-events-none mx-auto mt-1 h-16 w-[85%] rounded-[50%]"
+                  className="pointer-events-none absolute left-1/2 z-10"
+                  style={{
+                    bottom: "-2px",
+                    width: "108%",
+                    height: "34px",
+                    transform: "translateX(-50%) rotateX(78deg)",
+                    transformOrigin: "top center",
+                    background:
+                      "linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(220,230,240,0.35) 55%, rgba(180,200,220,0.15) 100%)",
+                    borderRadius: "6px",
+                    boxShadow:
+                      "0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.7)",
+                  }}
+                >
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background:
+                        "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.5) 45%, rgba(255,255,255,0.85) 50%, rgba(255,255,255,0.5) 55%, transparent 100%)",
+                      opacity: 0.55,
+                      mixBlendMode: "screen",
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Contact shadow under stand */}
+              {displayMode && (
+                <div
+                  className="pointer-events-none mx-auto mt-4 h-6 w-[80%] rounded-[50%]"
                   style={{
                     background:
-                      "radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.15) 40%, transparent 70%)",
+                      "radial-gradient(ellipse at center, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.2) 45%, transparent 75%)",
                     filter: "blur(6px)",
                   }}
                 />
@@ -644,7 +722,7 @@ function ReviewQrPage() {
             </div>
             <p className="text-center text-xs text-muted-foreground">
               {displayMode
-                ? "Visualização como estará no display acrílico de balcão (inclinado 10°)."
+                ? "Simulação em display acrílico de balcão — inclinado 12° para trás."
                 : `Preview em escala. Exportação usa ${dims.mm.w}×${dims.mm.h}mm (${dims.orientation === "landscape" ? "paisagem" : dims.orientation === "square" ? "quadrado" : "retrato"}).`}
             </p>
           </div>
