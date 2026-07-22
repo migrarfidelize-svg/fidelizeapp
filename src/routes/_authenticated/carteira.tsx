@@ -1,9 +1,11 @@
 import { createFileRoute, Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Wallet, Home, LogOut, User, Gift, History, Compass, QrCode } from "lucide-react";
+import { Wallet, Home, LogOut, User, Gift, History, Compass, QrCode, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { MyQrSheet } from "@/components/wallet/MyQrSheet";
+import { countUnread } from "@/lib/inbox.functions";
 
 export const Route = createFileRoute("/_authenticated/carteira")({
   component: WalletLayout,
