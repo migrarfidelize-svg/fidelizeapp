@@ -562,7 +562,11 @@ function ReviewQrPage() {
                   <div className="mt-1 text-[10px] text-muted-foreground">
                     Ajuste o selo NFC discreto que aparece no rodapé do cartaz.
                   </div>
+                  <div className="mt-2 flex items-center justify-center rounded-lg border border-dashed border-primary/30 bg-background/60 py-2">
+                    <NfcBadge primary={primaryColor} sizePct={nfcSize} />
+                  </div>
                 </div>
+
                 <div>
                   <div className="font-semibold text-primary">URL para NFC</div>
                   <div className="mt-1 flex items-center gap-2">
