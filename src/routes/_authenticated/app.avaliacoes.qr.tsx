@@ -1200,7 +1200,7 @@ function ValidationLine({ check }: { check: UrlCheck }) {
   );
 }
 
-function LabeledQr({ qr, label, primary, text, badge, size }: { qr: string; label: string; primary: string; text: string; badge: "google" | null; size: number }) {
+function LabeledQr({ qr, label, primary, text, badge, size, scale = 100 }: { qr: string; label: string; primary: string; text: string; badge: "google" | null; size: number; scale?: number }) {
   return (
     <div className="flex flex-col items-center gap-1.5">
       <div className="rounded-xl bg-white p-2.5 shadow-lg">
@@ -1211,7 +1211,7 @@ function LabeledQr({ qr, label, primary, text, badge, size }: { qr: string; labe
         )}
       </div>
       {label && (
-        <div className="max-w-[16ch] text-center text-[10px] font-bold leading-tight" style={{ color: text }}>
+        <div className="max-w-[16ch] text-center font-bold leading-tight" style={{ color: text, fontSize: `${10 * (scale / 100)}px` }}>
           {label}
         </div>
       )}
@@ -1219,6 +1219,7 @@ function LabeledQr({ qr, label, primary, text, badge, size }: { qr: string; labe
     </div>
   );
 }
+
 
 
 function QrBlock({ qr }: { qr: string }) {
