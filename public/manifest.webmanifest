@@ -3,7 +3,7 @@
   "name": "Fidelize — Cartão fidelidade digital",
   "short_name": "Fidelize",
   "description": "Seu cartão fidelidade digital. Acumule carimbos e resgate recompensas sem precisar de app.",
-  "start_url": "/?source=pwa",
+  "start_url": "/auth?source=pwa",
   "scope": "/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
