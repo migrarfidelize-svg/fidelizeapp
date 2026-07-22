@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/_preview/qrcodes")({
+export const Route = createFileRoute("/preview-qrcodes")({
   component: Preview,
 });
 

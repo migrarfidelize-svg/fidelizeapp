@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as PreviewQrcodesRouteImport } from './routes/preview-qrcodes'
 import { Route as PreviewDockRouteImport } from './routes/preview-dock'
 import { Route as PrecosRouteImport } from './routes/precos'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -28,7 +29,6 @@ import { Route as AvaliarSlugRouteImport } from './routes/avaliar.$slug'
 import { Route as AvaliacoesSlugRouteImport } from './routes/avaliacoes.$slug'
 import { Route as AuthRecuperarRouteImport } from './routes/auth.recuperar'
 import { Route as AuthNovaSenhaRouteImport } from './routes/auth.nova-senha'
-import { Route as PreviewQrcodesRouteImport } from './routes/_preview.qrcodes'
 import { Route as AuthenticatedLgpdRouteImport } from './routes/_authenticated/lgpd'
 import { Route as AuthenticatedCarteiraRouteImport } from './routes/_authenticated/carteira'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
@@ -114,6 +114,11 @@ const PrivacidadeRoute = PrivacidadeRouteImport.update({
   path: '/privacidade',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PreviewQrcodesRoute = PreviewQrcodesRouteImport.update({
+  id: '/preview-qrcodes',
+  path: '/preview-qrcodes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PreviewDockRoute = PreviewDockRouteImport.update({
   id: '/preview-dock',
   path: '/preview-dock',
@@ -197,11 +202,6 @@ const AuthNovaSenhaRoute = AuthNovaSenhaRouteImport.update({
   id: '/nova-senha',
   path: '/nova-senha',
   getParentRoute: () => AuthRoute,
-} as any)
-const PreviewQrcodesRoute = PreviewQrcodesRouteImport.update({
-  id: '/_preview/qrcodes',
-  path: '/qrcodes',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedLgpdRoute = AuthenticatedLgpdRouteImport.update({
   id: '/lgpd',
@@ -633,13 +633,13 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/precos': typeof PrecosRoute
   '/preview-dock': typeof PreviewDockRoute
+  '/preview-qrcodes': typeof PreviewQrcodesRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/carteira': typeof AuthenticatedCarteiraRouteWithChildren
   '/lgpd': typeof AuthenticatedLgpdRoute
-  '/qrcodes': typeof PreviewQrcodesRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
@@ -728,10 +728,10 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/precos': typeof PrecosRoute
   '/preview-dock': typeof PreviewDockRoute
+  '/preview-qrcodes': typeof PreviewQrcodesRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
   '/lgpd': typeof AuthenticatedLgpdRoute
-  '/qrcodes': typeof PreviewQrcodesRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
@@ -822,13 +822,13 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/precos': typeof PrecosRoute
   '/preview-dock': typeof PreviewDockRoute
+  '/preview-qrcodes': typeof PreviewQrcodesRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/_authenticated/carteira': typeof AuthenticatedCarteiraRouteWithChildren
   '/_authenticated/lgpd': typeof AuthenticatedLgpdRoute
-  '/_preview/qrcodes': typeof PreviewQrcodesRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
@@ -919,13 +919,13 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/precos'
     | '/preview-dock'
+    | '/preview-qrcodes'
     | '/privacidade'
     | '/termos'
     | '/admin'
     | '/app'
     | '/carteira'
     | '/lgpd'
-    | '/qrcodes'
     | '/auth/nova-senha'
     | '/auth/recuperar'
     | '/avaliacoes/$slug'
@@ -1014,10 +1014,10 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/precos'
     | '/preview-dock'
+    | '/preview-qrcodes'
     | '/privacidade'
     | '/termos'
     | '/lgpd'
-    | '/qrcodes'
     | '/auth/nova-senha'
     | '/auth/recuperar'
     | '/avaliacoes/$slug'
@@ -1107,13 +1107,13 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/precos'
     | '/preview-dock'
+    | '/preview-qrcodes'
     | '/privacidade'
     | '/termos'
     | '/_authenticated/admin'
     | '/_authenticated/app'
     | '/_authenticated/carteira'
     | '/_authenticated/lgpd'
-    | '/_preview/qrcodes'
     | '/auth/nova-senha'
     | '/auth/recuperar'
     | '/avaliacoes/$slug'
@@ -1204,9 +1204,9 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PrecosRoute: typeof PrecosRoute
   PreviewDockRoute: typeof PreviewDockRoute
+  PreviewQrcodesRoute: typeof PreviewQrcodesRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   TermosRoute: typeof TermosRoute
-  PreviewQrcodesRoute: typeof PreviewQrcodesRoute
   AvaliacoesSlugRoute: typeof AvaliacoesSlugRoute
   AvaliarSlugRoute: typeof AvaliarSlugRoute
   CTokenRoute: typeof CTokenRoute
@@ -1248,6 +1248,13 @@ declare module '@tanstack/react-router' {
       path: '/privacidade'
       fullPath: '/privacidade'
       preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/preview-qrcodes': {
+      id: '/preview-qrcodes'
+      path: '/preview-qrcodes'
+      fullPath: '/preview-qrcodes'
+      preLoaderRoute: typeof PreviewQrcodesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/preview-dock': {
@@ -1368,13 +1375,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/nova-senha'
       preLoaderRoute: typeof AuthNovaSenhaRouteImport
       parentRoute: typeof AuthRoute
-    }
-    '/_preview/qrcodes': {
-      id: '/_preview/qrcodes'
-      path: '/qrcodes'
-      fullPath: '/qrcodes'
-      preLoaderRoute: typeof PreviewQrcodesRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/lgpd': {
       id: '/_authenticated/lgpd'
@@ -2084,9 +2084,9 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PrecosRoute: PrecosRoute,
   PreviewDockRoute: PreviewDockRoute,
+  PreviewQrcodesRoute: PreviewQrcodesRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   TermosRoute: TermosRoute,
-  PreviewQrcodesRoute: PreviewQrcodesRoute,
   AvaliacoesSlugRoute: AvaliacoesSlugRoute,
   AvaliarSlugRoute: AvaliarSlugRoute,
   CTokenRoute: CTokenRoute,
