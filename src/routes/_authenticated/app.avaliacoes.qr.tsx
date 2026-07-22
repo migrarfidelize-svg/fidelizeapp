@@ -757,6 +757,10 @@ function ReviewQrPage() {
         subtitle="Cartaz pronto para balcão, mesa e recibos. Encaminha o cliente direto para a página de avaliação Fidelize."
       />
 
+      <QrDestinationCard establishmentId={est.id} />
+
+
+
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
         {/* CONTROLS — glass panel */}
         <Card className="border-primary/15 bg-card/70 backdrop-blur-xl">
