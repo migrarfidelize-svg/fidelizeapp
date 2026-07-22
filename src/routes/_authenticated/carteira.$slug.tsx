@@ -90,6 +90,8 @@ function WalletEstablishment() {
   const slug = Route.useParams().slug;
   const { data } = useSuspenseQuery(opts(slug));
   const [copied, setCopied] = useState(false);
+  const [reviewsOpen, setReviewsOpen] = useState(false);
+  const reviewsQuery = useQuery(reviewsOpts(slug));
 
   const d = data!;
   const est = d.establishment as {
