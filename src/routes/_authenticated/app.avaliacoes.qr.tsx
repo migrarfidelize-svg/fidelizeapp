@@ -67,6 +67,47 @@ type SavedDesign = {
   };
 };
 
+/** Draggable elements on the poster canvas. */
+type LayoutKey = "header" | "title" | "subtitle" | "primaryQr" | "secondaryQr" | "nfc" | "ctaNear" | "ctaFooter";
+type LayoutPos = { x: number; y: number }; // percent 0-100 (element center)
+type PosterLayout = Record<LayoutKey, LayoutPos>;
+
+const DEFAULT_LAYOUT: PosterLayout = {
+  header:      { x: 50, y: 13 },
+  title:       { x: 50, y: 26 },
+  subtitle:    { x: 50, y: 34 },
+  primaryQr:   { x: 50, y: 58 },
+  secondaryQr: { x: 72, y: 58 },
+  nfc:         { x: 72, y: 58 },
+  ctaNear:     { x: 50, y: 86 },
+  ctaFooter:   { x: 50, y: 93 },
+};
+
+/** URL validation for QR destinations. */
+type UrlCheck = { level: "empty" | "ok" | "warn" | "error"; message: string };
+
+function checkGoogleUrl(v: string): UrlCheck {
+  const t = v.trim();
+  if (!t) return { level: "empty", message: 'Copie o link "Deixe uma avaliação" do seu Google Business.' };
+  let u: URL;
+  try { u = new URL(t); } catch { return { level: "error", message: "URL inválida — verifique se copiou o link completo." }; }
+  if (u.protocol !== "https:" && u.protocol !== "http:") return { level: "error", message: "O link deve começar com https://" };
+  const ok = /^(g\.page|maps\.app\.goo\.gl|search\.google\.com|www\.google\.com|goo\.gl|maps\.google\.com)$/i;
+  if (!ok.test(u.hostname)) return { level: "warn", message: `"${u.hostname}" não parece um domínio do Google (g.page, maps.app.goo.gl, google.com).` };
+  if (u.protocol === "http:") return { level: "warn", message: "Preferimos https:// para evitar avisos de segurança no celular." };
+  return { level: "ok", message: `Link Google válido — ${u.hostname}` };
+}
+
+function checkGenericUrl(v: string): UrlCheck {
+  const t = v.trim();
+  if (!t) return { level: "empty", message: "Cole o link do cardápio, loja, WhatsApp ou Instagram." };
+  let u: URL;
+  try { u = new URL(t); } catch { return { level: "error", message: "URL inválida — comece com https:// e verifique se está completa." }; }
+  if (u.protocol !== "https:" && u.protocol !== "http:") return { level: "error", message: "O link deve começar com https://" };
+  if (u.protocol === "http:") return { level: "warn", message: "Preferimos https:// para evitar avisos de segurança no celular." };
+  return { level: "ok", message: `Link válido — ${u.hostname}` };
+}
+
 function ReviewQrPage() {
 
   const getEsts = useServerFn(getMyEstablishments);
