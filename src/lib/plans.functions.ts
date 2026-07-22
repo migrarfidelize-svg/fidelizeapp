@@ -176,6 +176,44 @@ export const adminToggleFeature = createServerFn({ method: "POST" })
     return upsert;
   });
 
+// ---------- Admin: update a plan feature's numeric limit ----------
+export const adminUpdateFeatureLimit = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    plan_id: z.string().uuid(),
+    feature_key: z.string().min(1).max(60),
+    feature_name: z.string().min(1).max(120),
+    limit_value: z.number().int().min(0).nullable(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const { data: prev } = await context.supabase.from("plan_features")
+      .select("enabled, limit_value").eq("plan_id", data.plan_id).eq("feature_key", data.feature_key).maybeSingle();
+    const { data: upsert, error } = await context.supabase.from("plan_features")
+      .upsert({
+        plan_id: data.plan_id,
+        feature_key: data.feature_key,
+        feature_name: data.feature_name,
+        enabled: prev?.enabled ?? true,
+        limit_value: data.limit_value,
+      }, { onConflict: "plan_id,feature_key" })
+      .select("*").single();
+    if (error) throw new Error(error.message);
+    await context.supabase.from("audit_logs").insert({
+      user_id: context.userId,
+      action: "plan_feature_limit_update",
+      entity_type: "plan_feature",
+      entity_id: data.plan_id,
+      metadata: {
+        plan_id: data.plan_id,
+        feature_key: data.feature_key,
+        previous_limit: prev?.limit_value ?? null,
+        new_limit: data.limit_value,
+      } as never,
+    });
+    return upsert;
+  });
+
 // Preview impact of toggling a plan feature (count of establishments on that tier)
 export const adminPlanFeatureImpact = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

@@ -12,9 +12,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Send, Bell } from "lucide-react";
+import { Loader2, Send, Bell, Users, Zap, AlertTriangle, Sparkles } from "lucide-react";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
-import { listPushLogs, broadcastPush } from "@/lib/push.functions";
+import { listPushLogs, broadcastPush, getPushQuotaStatus } from "@/lib/push.functions";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/app/notificacoes")({
   component: NotifPage,
@@ -24,12 +25,21 @@ function NotifPage() {
   const getEsts = useServerFn(getMyEstablishments);
   const listLogs = useServerFn(listPushLogs);
   const bcast = useServerFn(broadcastPush);
+  const quotaFn = useServerFn(getPushQuotaStatus);
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
   const activeEst = memberships?.[0]?.establishment as { id: string; name: string } | undefined;
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [url, setUrl] = useState("");
+
+  const quotaQ = useQuery({
+    queryKey: ["push_quota", activeEst?.id],
+    queryFn: () => quotaFn({ data: { establishment_id: activeEst!.id } }),
+    enabled: !!activeEst?.id,
+    refetchOnWindowFocus: true,
+    staleTime: 15_000,
+  });
 
   const { data: logs, refetch } = useQuery({
     queryKey: ["push_logs", activeEst?.id],
@@ -55,9 +65,16 @@ function NotifPage() {
       setBody("");
       setUrl("");
       refetch();
+      quotaQ.refetch();
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Falha no envio"),
   });
+
+  const quota = quotaQ.data;
+  const blockedByPlan = !!quota && !quota.allowed;
+  const limitReached =
+    !!quota && quota.daily_limit != null && quota.remaining != null && quota.remaining <= 0;
+  const canSend = !!quota && quota.allowed && !limitReached && title.trim().length >= 2;
 
   if (!activeEst) {
     return (
@@ -83,6 +100,86 @@ function NotifPage() {
           Envie um aviso instantâneo a todos os clientes que ativaram notificações.
         </p>
       </header>
+
+      {/* Quota / plano */}
+      {quota && (
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Card>
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between">
+                <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                  <Zap className="h-3.5 w-3.5" /> Plano
+                </div>
+                <Badge variant="secondary" className="uppercase text-[10px]">{quota.tier}</Badge>
+              </div>
+              <div className="mt-1 text-lg font-semibold">
+                {quota.daily_limit == null ? "Ilimitado" : `${quota.daily_limit}/dia`}
+              </div>
+              <div className="text-[11px] text-muted-foreground">Limite diário do plano</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4">
+              <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Send className="h-3.5 w-3.5" /> Enviados hoje
+              </div>
+              <div className="mt-1 text-lg font-semibold">
+                {quota.sent_today}
+                {quota.daily_limit != null && (
+                  <span className="text-sm text-muted-foreground"> / {quota.daily_limit}</span>
+                )}
+              </div>
+              <div className="text-[11px] text-muted-foreground">
+                {quota.remaining == null ? "Sem limite" : `Restam ${quota.remaining} hoje`}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4">
+              <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Users className="h-3.5 w-3.5" /> Destinatários estimados
+              </div>
+              <div className="mt-1 text-lg font-semibold">{quota.recipients}</div>
+              <div className="text-[11px] text-muted-foreground">Inscritos ativos que aceitam campanhas</div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {blockedByPlan && (
+        <Card className="border-amber-500/40 bg-amber-500/5">
+          <CardContent className="pt-4 flex items-start gap-3">
+            <Sparkles className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+            <div className="flex-1 text-sm">
+              <div className="font-semibold">Notificações push não estão no seu plano</div>
+              <div className="text-muted-foreground">
+                Faça upgrade para enviar avisos instantâneos aos seus clientes.
+              </div>
+            </div>
+            <Button asChild size="sm">
+              <Link to="/app/planos">Ver planos</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {!blockedByPlan && limitReached && (
+        <Card className="border-destructive/40 bg-destructive/5">
+          <CardContent className="pt-4 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+            <div className="flex-1 text-sm">
+              <div className="font-semibold">Limite diário atingido</div>
+              <div className="text-muted-foreground">
+                Você já enviou {quota?.sent_today} de {quota?.daily_limit} broadcasts hoje. Tente novamente amanhã ou faça upgrade.
+              </div>
+            </div>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/app/planos">Upgrade</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
 
       <Card>
         <CardHeader>
@@ -122,16 +219,24 @@ function NotifPage() {
           <div className="flex justify-end">
             <Button
               onClick={() => send.mutate()}
-              disabled={send.isPending || title.trim().length < 2}
+              disabled={send.isPending || !canSend}
+              title={blockedByPlan ? "Recurso indisponível no seu plano" : limitReached ? "Limite diário atingido" : undefined}
             >
               {send.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <Send className="h-4 w-4" />
               )}
-              <span className="ml-2">Enviar broadcast</span>
+              <span className="ml-2">
+                {blockedByPlan
+                  ? "Bloqueado pelo plano"
+                  : limitReached
+                    ? "Limite diário atingido"
+                    : `Enviar para ${quota?.recipients ?? 0} inscritos`}
+              </span>
             </Button>
           </div>
+
         </CardContent>
       </Card>
 
