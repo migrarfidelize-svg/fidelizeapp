@@ -284,9 +284,18 @@ function PromocoesPage() {
             <strong>Minhas promoções</strong> da carteira.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            onClick={() => seedM.mutate()}
+            disabled={seedM.isPending}
+            title="Cria 2 modelos como rascunho baseados no ramo da sua empresa"
+          >
+            <Sparkles className="mr-2 h-4 w-4" />
+            {seedM.isPending ? "Criando…" : "Usar modelos"}
+          </Button>
           <Button variant="outline" onClick={() => setLinksOpen(true)}>
-            <Link2 className="mr-2 h-4 w-4" /> Links da empresa
+            <Link2 className="mr-2 h-4 w-4" /> Links fixos
           </Button>
           <Button onClick={openCreate}>
             <Plus className="mr-2 h-4 w-4" /> Nova promoção
