@@ -98,7 +98,7 @@ const DEFAULT_LAYOUT: PosterLayout = {
   title:       { x: 50, y: 26 },
   subtitle:    { x: 50, y: 34 },
   primaryQr:   { x: 50, y: 58 },
-  secondaryQr: { x: 78, y: 58 },
+  secondaryQr: { x: 72, y: 58 },
   nfc:         { x: 50, y: 74 },
   ctaNear:     { x: 50, y: 86 },
   ctaFooter:   { x: 50, y: 93 },
@@ -535,8 +535,8 @@ function ReviewQrPage() {
       if (!primaryUntouched && !secondaryUntouched) return prev;
       return {
         ...prev,
-        primaryQr: primaryUntouched ? { x: 22, y: 58 } : prev.primaryQr,
-        secondaryQr: secondaryUntouched ? { x: 78, y: 58 } : prev.secondaryQr,
+        primaryQr: primaryUntouched ? { x: 30, y: 58 } : prev.primaryQr,
+        secondaryQr: secondaryUntouched ? { x: 70, y: 58 } : prev.secondaryQr,
       };
     });
     QRCode.toDataURL(qrEncodedSecondaryUrl, {
@@ -1237,7 +1237,7 @@ function ReviewQrPage() {
               <div
                 className="relative overflow-hidden rounded-lg shadow-2xl ring-1 ring-primary/20 transition-transform duration-500"
                 style={{
-                  aspectRatio: format === "counter15x10" ? "2 / 3.3" : format === "a5" ? "1 / 1.5554" : dims.aspect,
+                  aspectRatio: dims.aspect,
                   transform: displayMode ? "rotateX(12deg) rotateY(-3deg)" : undefined,
                   transformOrigin: "bottom center",
                   boxShadow: displayMode
