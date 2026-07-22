@@ -212,12 +212,16 @@ function WifiCard({
   const [showPwd, setShowPwd] = useState(false);
   const [copied, setCopied] = useState<"" | "ssid" | "pwd">("");
 
-  const copy = async (v: string, which: "ssid" | "pwd") => {
+  const copy = async (v: string, which: "ssid" | "pwd", labelPt: string) => {
+    if (!v || copied) return;
     try {
       await navigator.clipboard.writeText(v);
       setCopied(which);
+      toast.success(`${labelPt} copiada`, { description: v.length > 40 ? v.slice(0, 40) + "…" : v });
       setTimeout(() => setCopied(""), 1400);
-    } catch { /* noop */ }
+    } catch {
+      toast.error("Não foi possível copiar. Copie manualmente.");
+    }
   };
 
   const panelBg =
