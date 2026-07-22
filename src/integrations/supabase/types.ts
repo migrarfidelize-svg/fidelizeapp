@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          code: string
+          created_at: string
+          criteria_type: string
+          criteria_value: number
+          description: string
+          icon: string
+          id: string
+          is_active: boolean
+          rarity: string
+          sort_order: number
+          title: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          criteria_type: string
+          criteria_value?: number
+          description: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          rarity?: string
+          sort_order?: number
+          title: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          criteria_type?: string
+          criteria_value?: number
+          description?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          rarity?: string
+          sort_order?: number
+          title?: string
+        }
+        Relationships: []
+      }
       api_keys: {
         Row: {
           created_at: string
@@ -283,6 +325,48 @@ export type Database = {
           valid_until?: string | null
         }
         Relationships: []
+      }
+      customer_achievements: {
+        Row: {
+          achievement_code: string
+          establishment_id: string | null
+          id: string
+          seen_at: string | null
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_code: string
+          establishment_id?: string | null
+          id?: string
+          seen_at?: string | null
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_code?: string
+          establishment_id?: string | null
+          id?: string
+          seen_at?: string | null
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_achievements_achievement_code_fkey"
+            columns: ["achievement_code"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "customer_achievements_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       customer_reviews: {
         Row: {
@@ -3628,6 +3712,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_and_unlock_achievements: {
+        Args: { _user_id: string }
+        Returns: number
+      }
       compute_tier: {
         Args: { _thresholds: Json; _visits: number }
         Returns: Database["public"]["Enums"]["customer_tier"]
