@@ -100,17 +100,8 @@ export const exportMyData = createServerFn({ method: "GET" })
       notes:
         "Este pacote contém todos os dados pessoais tratados pela Fidelize associados a esta conta. Registros retidos por obrigação legal (ex.: comprovantes fiscais) não são removidos com a exclusão da conta.",
     };
-    // Round-trip por JSON garante uma árvore puramente serializável para o RPC.
-    return JSON.parse(JSON.stringify(payload)) as {
-      generated_at: string;
-      user_id: string;
-      email: string;
-      identity: Record<string, unknown>;
-      loyalty: Record<string, unknown>;
-      preferences: Record<string, unknown>;
-      legal_basis: string;
-      notes: string;
-    };
+    // Retornamos como string JSON para evitar validação de árvore genérica do RPC.
+    return { json: JSON.stringify(payload) };
   });
 
 export const deleteMyAccount = createServerFn({ method: "POST" })
