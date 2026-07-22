@@ -12,6 +12,23 @@ import {
 } from "@/lib/push.functions";
 
 const DISMISS_KEY = "fidelize:notifications:dismissed";
+const PWA_AUTOPROMPT_KEY = "fidelize:notifications:pwa-autoprompt";
+
+function isRunningAsPwa(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    if (window.matchMedia?.("(display-mode: standalone)").matches) return true;
+    if (window.matchMedia?.("(display-mode: fullscreen)").matches) return true;
+    if (window.matchMedia?.("(display-mode: minimal-ui)").matches) return true;
+  } catch {}
+  // iOS Safari
+  if ((navigator as unknown as { standalone?: boolean }).standalone) return true;
+  // Fallback: launched via PWA start_url
+  try {
+    if (new URLSearchParams(window.location.search).get("source") === "pwa") return true;
+  } catch {}
+  return false;
+}
 
 /**
  * Wallet-level "Ativar notificações" card, shown on the customer wallet home.
@@ -56,6 +73,21 @@ export function EnableNotificationsCard() {
       }
     })();
   }, [getStatus]);
+
+  // Auto-prompt on first launch from installed PWA shortcut.
+  useEffect(() => {
+    if (!supported || subscribed !== false) return;
+    if (permission !== "default") return;
+    if (!isRunningAsPwa()) return;
+    if (localStorage.getItem(PWA_AUTOPROMPT_KEY) === "1") return;
+    localStorage.setItem(PWA_AUTOPROMPT_KEY, "1");
+    // Small delay so the wallet UI paints before the native dialog appears.
+    const t = setTimeout(() => {
+      enable().catch(() => {});
+    }, 900);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [supported, subscribed, permission]);
 
   async function enable() {
     setBusy(true);
