@@ -8,8 +8,10 @@ import {
   WithOfflineFallback,
 } from "@/components/wallet/WalletStates";
 import { WalletCardSkeletonList } from "@/components/wallet/WalletCardSkeleton";
-import { Gift, Sparkles, ChevronRight, CreditCard } from "lucide-react";
+import { Gift, Sparkles, ChevronRight, CreditCard, Search, X } from "lucide-react";
+import { useMemo, useState } from "react";
 import { z } from "zod";
+
 
 const walletOpts = queryOptions({
   queryKey: ["my-wallet"],
