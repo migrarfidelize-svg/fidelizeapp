@@ -423,6 +423,22 @@ function WalletEstablishment() {
           );
         })()}
 
+        {/* Avaliações do estabelecimento */}
+        <ReviewsSummary
+          data={reviewsQuery.data}
+          loading={reviewsQuery.isLoading}
+          onOpen={() => setReviewsOpen(true)}
+        />
+
+        <ReviewsDialog
+          open={reviewsOpen}
+          onOpenChange={setReviewsOpen}
+          establishmentName={est.name}
+          data={reviewsQuery.data}
+        />
+
+
+
         {(est.address || est.instagram) && (
           <section className="rounded-2xl border border-border/60 bg-card/40 p-4">
             <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
