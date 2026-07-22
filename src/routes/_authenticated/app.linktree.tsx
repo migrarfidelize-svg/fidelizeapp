@@ -448,10 +448,23 @@ function LinkTreeEditor() {
                         <Button size="icon" variant="ghost" onClick={() => removeLink(i)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                       </div>
                     </div>
-                    <div className="grid gap-2 md:grid-cols-2">
-                      <Input placeholder="Rótulo" value={l.label} onChange={(e) => updateLink(i, { label: e.target.value })} maxLength={80} />
-                      <Input placeholder={M.placeholder} value={l.url} onChange={(e) => updateLink(i, { url: e.target.value })} maxLength={500} />
-                    </div>
+                    {l.kind === "wifi" ? (
+                      <WifiFields
+                        url={l.url}
+                        onChange={(ssid, password) =>
+                          updateLink(i, {
+                            label: ssid ? `Wi-Fi · ${ssid}` : "Wi-Fi",
+                            url: encodeWifi(ssid, password),
+                          })
+                        }
+                      />
+                    ) : (
+                      <div className="grid gap-2 md:grid-cols-2">
+                        <Input placeholder="Rótulo" value={l.label} onChange={(e) => updateLink(i, { label: e.target.value })} maxLength={80} />
+                        <Input placeholder={M.placeholder} value={l.url} onChange={(e) => updateLink(i, { url: e.target.value })} maxLength={500} />
+                      </div>
+                    )}
+
                   </div>
                 );
               })}
