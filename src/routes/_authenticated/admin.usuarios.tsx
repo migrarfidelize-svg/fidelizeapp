@@ -370,6 +370,11 @@ function AdminUsers() {
         </DialogContent>
       </Dialog>
 
+      <UserWalletDialog
+        target={walletTarget}
+        onClose={() => setWalletTarget(null)}
+      />
+
       <div className="text-xs text-muted-foreground">
         Precisa gerenciar vínculos específicos de uma empresa? Acesse <Link to="/admin/empresas" className="underline">Empresas</Link>.
       </div>
