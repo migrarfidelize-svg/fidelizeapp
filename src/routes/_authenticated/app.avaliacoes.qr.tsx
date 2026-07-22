@@ -1973,3 +1973,15 @@ function NfcBadge({ primary, sizePct = 100 }: { primary: string; sizePct?: numbe
     </div>
   );
 }
+
+/** Relative "há Xs" timestamp — refreshed by parent tick prop. */
+function RelativeTime({ timestamp, tick: _tick }: { timestamp: number; tick: number }) {
+  const diff = Math.max(0, Date.now() - timestamp);
+  const sec = Math.floor(diff / 1000);
+  let label: string;
+  if (sec < 5) label = "agora";
+  else if (sec < 60) label = `há ${sec}s`;
+  else if (sec < 3600) label = `há ${Math.floor(sec / 60)}min`;
+  else label = `há ${Math.floor(sec / 3600)}h`;
+  return <span>{label}</span>;
+}
