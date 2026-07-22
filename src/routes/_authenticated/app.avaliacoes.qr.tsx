@@ -96,7 +96,11 @@ function ReviewQrPage() {
   const [textColor, setTextColor] = useState("#ffffff");
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [exporting, setExporting] = useState(false);
+  const [displayMode, setDisplayMode] = useState(false);
+  const [designs, setDesigns] = useState<SavedDesign[]>([]);
+  const [designName, setDesignName] = useState("");
   const posterRef = useRef<HTMLDivElement>(null);
+
 
   // Load persisted state
   useEffect(() => {
