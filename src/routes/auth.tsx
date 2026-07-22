@@ -33,6 +33,7 @@ const searchSchema = z.object({
   claim: z.string().optional(),
   est_slug: z.string().optional(),
   next: z.string().optional(),
+  source: z.string().optional(),
 });
 
 async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: string }): Promise<{ to: string; toast?: string; toastKind?: "success" | "error" | "info" }> {
@@ -111,8 +112,9 @@ function AuthPage() {
   const [whatsapp, setWhatsapp] = useState("");
   // Sem claim/est_slug (cadastro vindo do site institucional) o padrão é "estabelecimento".
   // Fluxos de cliente final sempre chegam com `claim` ou `est_slug` (QR/scan) ou `as=customer`.
+  // Se abriu como PWA instalado (source=pwa), assume "cliente".
   const [role, setRole] = useState<"customer" | "establishment">(
-    search.as ?? (search.claim || search.est_slug ? "customer" : "establishment"),
+    search.as ?? (search.claim || search.est_slug || search.source === "pwa" ? "customer" : "establishment"),
   );
 
 
