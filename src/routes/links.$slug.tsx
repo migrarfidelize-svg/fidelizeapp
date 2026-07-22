@@ -293,3 +293,68 @@ function FieldRow({
     </div>
   );
 }
+
+function PixCard({
+  label, url, rounded, primary, accent, text, buttonStyle,
+}: {
+  label: string; url: string; rounded: string;
+  primary: string; accent: string; text: string; buttonStyle: string;
+}) {
+  const { type, key, name } = decodePix(url);
+  const [copied, setCopied] = useState<"" | "key" | "name">("");
+
+  const copy = async (v: string, which: "key" | "name") => {
+    try {
+      await navigator.clipboard.writeText(v);
+      setCopied(which);
+      setTimeout(() => setCopied(""), 1400);
+    } catch { /* noop */ }
+  };
+
+  const bg =
+    buttonStyle === "glass"
+      ? "rgba(255,255,255,0.06)"
+      : buttonStyle === "outline"
+      ? "transparent"
+      : `linear-gradient(135deg, ${primary}22, ${accent}22)`;
+  const border = buttonStyle === "outline" ? `2px solid ${primary}` : "1px solid rgba(255,255,255,0.15)";
+
+  return (
+    <div
+      className={`px-4 py-4 text-left ${rounded}`}
+      style={{ background: bg, border, color: text, backdropFilter: "blur(12px)" }}
+    >
+      <div className="flex items-center gap-2 mb-3">
+        <span
+          className="grid h-8 w-8 place-items-center rounded-lg text-white shrink-0"
+          style={{ background: `linear-gradient(135deg, ${primary}, ${accent})` }}
+        >
+          <KeyRound className="h-4 w-4" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-xs uppercase tracking-wider opacity-60">Chave Pix · {PIX_TYPE_LABEL[type]}</p>
+          <p className="text-sm font-semibold truncate">{label || (name ? `Pix · ${name}` : "Pagamento Pix")}</p>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <FieldRow
+          k="Chave"
+          v={key || "—"}
+          copied={copied === "key"}
+          onCopy={() => key && copy(key, "key")}
+          text={text}
+        />
+        {name && (
+          <FieldRow
+            k="Nome"
+            v={name}
+            copied={copied === "name"}
+            onCopy={() => copy(name, "name")}
+            text={text}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
