@@ -219,16 +219,24 @@ function NotifPage() {
           <div className="flex justify-end">
             <Button
               onClick={() => send.mutate()}
-              disabled={send.isPending || title.trim().length < 2}
+              disabled={send.isPending || !canSend}
+              title={blockedByPlan ? "Recurso indisponível no seu plano" : limitReached ? "Limite diário atingido" : undefined}
             >
               {send.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <Send className="h-4 w-4" />
               )}
-              <span className="ml-2">Enviar broadcast</span>
+              <span className="ml-2">
+                {blockedByPlan
+                  ? "Bloqueado pelo plano"
+                  : limitReached
+                    ? "Limite diário atingido"
+                    : `Enviar para ${quota?.recipients ?? 0} inscritos`}
+              </span>
             </Button>
           </div>
+
         </CardContent>
       </Card>
 
