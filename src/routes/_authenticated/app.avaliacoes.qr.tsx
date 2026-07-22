@@ -893,34 +893,76 @@ const PosterCanvas = forwardRef<HTMLDivElement, PosterProps>(function PosterCanv
 function PortraitBody(p: PosterProps) {
   return (
     <div className="flex h-full w-full flex-col items-center justify-between p-6 text-center">
-      <div className="space-y-3">
+      <div className="space-y-2">
         <BrandLogo url={p.logoUrl} name={p.establishmentName} primary={p.primaryColor} />
         <div className="text-sm font-bold" style={{ color: p.textColor }}>{p.establishmentName}</div>
         <Stars color={p.primaryColor} size={16} center />
         <h2 className="text-xl font-black leading-tight" style={{ color: p.textColor }}>{p.title}</h2>
         <p className="mx-auto max-w-[26ch] text-[11px] opacity-70" style={{ color: p.textColor }}>{p.subtitle}</p>
       </div>
-      {p.nfcMode ? (
+
+      {/* QR area */}
+      {p.secondaryEnabled ? (
+        <div className="flex w-full items-start justify-center gap-4">
+          <LabeledQr
+            qr={p.qrDataUrl}
+            label={p.primaryLabel}
+            primary={p.primaryColor}
+            text={p.textColor}
+            badge={p.destination === "google" && p.showGoogleLogo ? "google" : null}
+            size={104}
+          />
+          <LabeledQr
+            qr={p.secondaryQrDataUrl}
+            label={p.secondaryLabel}
+            primary={p.primaryColor}
+            text={p.textColor}
+            badge={null}
+            size={104}
+          />
+        </div>
+      ) : p.nfcMode ? (
         <div className="flex items-center justify-center gap-3">
-          <QrBlock qr={p.qrDataUrl} />
+          <LabeledQr qr={p.qrDataUrl} label={p.primaryLabel} primary={p.primaryColor} text={p.textColor} badge={p.destination === "google" && p.showGoogleLogo ? "google" : null} size={128} />
           <NfcBlock primary={p.primaryColor} />
         </div>
       ) : (
-        <QrBlock qr={p.qrDataUrl} />
+        <LabeledQr qr={p.qrDataUrl} label={p.primaryLabel} primary={p.primaryColor} text={p.textColor} badge={p.destination === "google" && p.showGoogleLogo ? "google" : null} size={128} />
       )}
+
       <div className="space-y-2">
         <div className="text-xs font-bold uppercase tracking-widest" style={{ color: p.primaryColor }}>
           {p.nfcMode ? "Aproxime o celular" : p.ctaNearQR}
         </div>
         <div className="text-[10px] opacity-70" style={{ color: p.textColor }}>{p.ctaFooter}</div>
         <div className="flex items-center justify-center gap-2">
-          {p.destination === "google" && p.showGoogleLogo && <GoogleBadge />}
           {p.nfcMode && <NfcBadge primary={p.primaryColor} />}
         </div>
       </div>
     </div>
   );
 }
+
+function LabeledQr({ qr, label, primary, text, badge, size }: { qr: string; label: string; primary: string; text: string; badge: "google" | null; size: number }) {
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      <div className="rounded-xl bg-white p-2.5 shadow-lg">
+        {qr ? (
+          <img src={qr} alt={label} className="block" style={{ width: size, height: size }} />
+        ) : (
+          <div className="grid place-items-center text-[10px] text-slate-400" style={{ width: size, height: size }}>gerando…</div>
+        )}
+      </div>
+      {label && (
+        <div className="max-w-[16ch] text-[10px] font-bold leading-tight" style={{ color: text }}>
+          {label}
+        </div>
+      )}
+      {badge === "google" && <GoogleBadge />}
+    </div>
+  );
+}
+
 
 function QrBlock({ qr }: { qr: string }) {
   return (
