@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { getMyWallet, getMyHistory, getMyRewards } from "@/lib/my-wallet.functions";
 import { ChevronRight, Sparkles, Gift, Stamp, RotateCcw, Bell, Flame } from "lucide-react";
 import { formatDate } from "@/lib/format";
+import { saveWalletCache, readWalletCache } from "@/lib/offline-wallet-cache";
 import {
   EmptyWalletState,
   WalletErrorState,
@@ -10,6 +12,8 @@ import {
 } from "@/components/wallet/WalletStates";
 import { WalletStack } from "@/components/wallet/WalletStack";
 import { WalletHomeSkeleton } from "@/components/wallet/WalletCardSkeleton";
+
+type WalletItem = Awaited<ReturnType<typeof getMyWallet>>[number];
 
 const walletOpts = queryOptions({
   queryKey: ["my-wallet"],
@@ -19,7 +23,19 @@ const walletOpts = queryOptions({
 
 export const Route = createFileRoute("/_authenticated/carteira/")({
   ssr: false,
-  loader: ({ context }) => context.queryClient.ensureQueryData(walletOpts),
+  loader: async ({ context }) => {
+    try {
+      return await context.queryClient.ensureQueryData(walletOpts);
+    } catch (err) {
+      // Offline-first: usa último snapshot em cache local se a rede falhar.
+      const cache = readWalletCache<WalletItem>();
+      if (cache?.items?.length) {
+        context.queryClient.setQueryData(walletOpts.queryKey, cache.items);
+        return cache.items;
+      }
+      throw err;
+    }
+  },
   head: () => ({ meta: [{ title: "Início — Carteira Fidelize" }, { name: "robots", content: "noindex" }] }),
   component: WalletHome,
   pendingComponent: () => <WalletHomeSkeleton />,
@@ -38,6 +54,13 @@ function WalletHome() {
     const req = (i.card.campaign as { stamps_required: number }).stamps_required || 1;
     return i.card.stamps >= req;
   }).length;
+
+  // Offline-first: persiste último estado da carteira para renderizar sem internet.
+  useEffect(() => {
+    if (items.length) saveWalletCache(items);
+  }, [items]);
+
+
 
   const { data: history } = useQuery({
     queryKey: ["my-history"],
@@ -314,7 +337,6 @@ function StreakCard({ weeks, lastVisit }: { weeks: number; lastVisit: string | n
   );
 }
 
-type WalletItem = Awaited<ReturnType<typeof getMyWallet>>[number];
 
 export function WalletCard({ item }: { item: WalletItem }) {
   const est = item.establishment as { slug: string; name: string; logo_url: string | null; primary_color: string; active: boolean };

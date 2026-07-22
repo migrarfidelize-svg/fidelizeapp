@@ -1,6 +1,6 @@
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getCardByToken } from "@/lib/loyalty.functions";
 import { claimCustomerByToken } from "@/lib/my-wallet.functions";
 import { LoyaltyVoucher } from "@/components/LoyaltyVoucher";
@@ -14,6 +14,7 @@ import { formatDate } from "@/lib/format";
 import { Clock, Wallet, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { haptic } from "@/lib/haptics";
 
 const opts = (token: string) => queryOptions({
   queryKey: ["card", token],
@@ -72,6 +73,17 @@ function CustomerCard() {
     return () => { supabase.removeChannel(channel); };
   }, [token, customerId, cardIds.join(","), qc, d.establishment?.id]);
 
+  // Haptic feedback ao ganhar carimbo (detecta aumento do total de carimbos válidos)
+  const prevStamps = useRef<number | null>(null);
+  useEffect(() => {
+    const total = d.stamps.filter((s) => !s.reverted_at).length;
+    if (prevStamps.current !== null && total > prevStamps.current) {
+      haptic("stamp");
+    }
+    prevStamps.current = total;
+  }, [d.stamps]);
+
+
 
   return (
     <div
@@ -113,7 +125,11 @@ function CustomerCard() {
 
         {cards.length > 0 && (
           <div className="mt-3 space-y-3">
-            <InstallAppButton label={`Instalar ${est.name} como app`} />
+            <InstallAppButton
+              label={`Instalar ${est.name} como app`}
+              minStamps={2}
+              currentStamps={d.stamps.filter((s) => !s.reverted_at).length}
+            />
             <RequiresOnlineAlert
               message="A instalação como app precisa carregar recursos da internet. Volte assim que estiver online."
               onRetry={() => qc.invalidateQueries({ queryKey: ["card", token] })}

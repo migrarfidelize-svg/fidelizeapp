@@ -8,16 +8,30 @@ import { lookupReferralCode } from "@/lib/retention.functions";
 import { useEffect } from "react";
 
 export const Route = createFileRoute("/r/$code")({
-  head: () => ({
-    meta: [
-      { title: "Você foi indicado — Fidelize" },
-      {
-        name: "description",
-        content:
-          "Aceite a indicação de um amigo, crie seu cartão fidelidade digital e ganhe carimbos-bônus.",
-      },
-    ],
-  }),
+  head: ({ params }) => {
+    const url = `https://fidelizeapp.lovable.app/r/${params.code}`;
+    const title = "Você ganhou uma indicação — Fidelize";
+    const description =
+      "Aceite a indicação de um amigo, crie seu cartão fidelidade digital e ganhe carimbos-bônus na hora.";
+    const image = "https://fidelizeapp.lovable.app/logo-mark.svg";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "website" },
+        { property: "og:url", content: url },
+        { property: "og:image", content: image },
+        { property: "og:image:alt", content: "Fidelize — cartão fidelidade digital" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { name: "twitter:image", content: image },
+      ],
+      links: [{ rel: "canonical", href: url }],
+    };
+  },
   component: ReferralLanding,
 });
 
