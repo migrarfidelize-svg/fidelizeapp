@@ -300,7 +300,9 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
         lastVisitAt: row.last_visit_at,
         visitsCount: row.visits_count,
         tier: row.tier,
+        referralCode: row.referral_code,
       },
+
       establishment: row.establishment,
       cards: cards ?? [],
       recentStamps,
