@@ -1196,20 +1196,16 @@ function ReviewQrPage() {
             </div>
 
             {lastSavedAt !== null && (
-              <div
-                aria-live="polite"
-                className="mb-1 inline-flex items-center gap-1.5 self-center rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300"
-              >
-                <CheckCircle2 className="h-3 w-3" />
-                {savedTarget === "idb" ? "Salvo (offline) " : "Salvo "}
-                <RelativeTime timestamp={lastSavedAt} tick={savedTick} />
+              <div className="sr-only" aria-live="polite">
+                {savedTarget === "idb" ? "Salvo offline" : "Salvo"}
               </div>
             )}
-            <div className="flex w-full max-w-[520px] flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-start">
+            <div className="flex w-full max-w-[440px] flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-start">
             <div
-              className="relative w-full max-w-[420px] flex-1"
+              className="relative mx-auto w-full max-w-[320px] flex-1"
               style={displayMode ? { perspective: "1600px", perspectiveOrigin: "50% 65%" } : undefined}
             >
+
               {/* Showroom backdrop — dark wall + wooden counter (only in display mode) */}
               {displayMode && (
                 <div className="pointer-events-none absolute -inset-x-10 -inset-y-8 -z-10 overflow-hidden rounded-3xl">
