@@ -74,6 +74,21 @@ export function EnableNotificationsCard() {
     })();
   }, [getStatus]);
 
+  // Auto-prompt on first launch from installed PWA shortcut.
+  useEffect(() => {
+    if (!supported || subscribed !== false) return;
+    if (permission !== "default") return;
+    if (!isRunningAsPwa()) return;
+    if (localStorage.getItem(PWA_AUTOPROMPT_KEY) === "1") return;
+    localStorage.setItem(PWA_AUTOPROMPT_KEY, "1");
+    // Small delay so the wallet UI paints before the native dialog appears.
+    const t = setTimeout(() => {
+      enable().catch(() => {});
+    }, 900);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [supported, subscribed, permission]);
+
   async function enable() {
     setBusy(true);
     try {
