@@ -255,14 +255,14 @@ function WifiCard({
               k="Rede"
               v={ssid || "—"}
               copied={copied === "ssid"}
-              onCopy={() => ssid && copy(ssid, "ssid")}
+              onCopy={() => copy(ssid, "ssid", "Rede Wi-Fi")}
               text={text}
             />
             <FieldRow
               k="Senha"
               v={password ? (showPwd ? password : "•".repeat(Math.min(password.length, 12))) : "—"}
               copied={copied === "pwd"}
-              onCopy={() => password && copy(password, "pwd")}
+              onCopy={() => copy(password, "pwd", "Senha")}
               text={text}
               right={
                 password ? (
