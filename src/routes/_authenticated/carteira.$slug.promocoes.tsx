@@ -132,14 +132,18 @@ function PromotionsListPage() {
         </div>
 
         <div className="relative mt-4 flex flex-wrap gap-2">
-          <Link
-            to="/carteira/$slug"
-            params={{ slug }}
+          <button
+            type="button"
+            onClick={() => setShowCampaigns((v) => !v)}
             className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-white shadow-sm transition-transform active:scale-95"
             style={{ background: brand }}
           >
-            <CreditCard className="h-3.5 w-3.5" /> Ver meu cartão
-          </Link>
+            <Gift className="h-3.5 w-3.5" />
+            {showCampaigns ? "Ocultar campanhas" : `Ver campanhas ativas${data.campaigns.length ? ` (${data.campaigns.length})` : ""}`}
+            <ChevronDown
+              className={`h-3.5 w-3.5 transition-transform ${showCampaigns ? "rotate-180" : ""}`}
+            />
+          </button>
           {contactLinks.map((c, i) => {
             const Icon = c.icon;
             return (
