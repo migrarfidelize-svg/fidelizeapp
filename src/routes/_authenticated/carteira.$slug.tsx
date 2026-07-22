@@ -447,13 +447,22 @@ function ShareCardSection({
   copied: boolean;
   onCopied: () => void;
 }) {
-  const url =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/r/${referralCode.toUpperCase()}`
-      : `/r/${referralCode.toUpperCase()}`;
+  const origin =
+    typeof window !== "undefined" ? window.location.origin : "";
+  const buildUrl = (source: string) => {
+    const params = new URLSearchParams({
+      utm_source: source,
+      utm_medium: "referral",
+      utm_campaign: "wallet_share",
+      utm_content: referralCode.toUpperCase(),
+    });
+    return `${origin}/r/${referralCode.toUpperCase()}?${params.toString()}`;
+  };
+  const displayUrl = `${origin || ""}/r/${referralCode.toUpperCase()}`;
   const shareText = `Vem carimbar comigo na ${establishmentName}! Use meu link e a gente ganha carimbo-bônus 🎁`;
 
   async function handleShare() {
+    const url = buildUrl("native_share");
     try {
       if (typeof navigator !== "undefined" && "share" in navigator) {
         await navigator.share({ title: `Indicação — ${establishmentName}`, text: shareText, url });
@@ -473,12 +482,18 @@ function ShareCardSection({
 
   async function copyOnly() {
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(buildUrl("copy_link"));
       onCopied();
       toast.success("Link copiado.");
     } catch {
       toast.error("Não consegui copiar.");
     }
+  }
+
+  function shareWhatsapp() {
+    const url = buildUrl("whatsapp");
+    const wa = `https://wa.me/?text=${encodeURIComponent(`${shareText}\n${url}`)}`;
+    if (typeof window !== "undefined") window.open(wa, "_blank", "noopener,noreferrer");
   }
 
   return (
@@ -490,23 +505,30 @@ function ShareCardSection({
         Compartilhe seu link. Quando um amigo se cadastrar por ele, vocês dois ganham carimbo-bônus.
       </p>
       <div className="mt-3 flex items-center gap-2 rounded-xl border border-border/50 bg-background/60 px-3 py-2 text-[11px] font-mono">
-        <span className="min-w-0 truncate text-muted-foreground">{url}</span>
+        <span className="min-w-0 truncate text-muted-foreground">{displayUrl}</span>
       </div>
-      <div className="mt-3 grid grid-cols-2 gap-2">
+      <div className="mt-3 grid grid-cols-3 gap-2">
         <button
           onClick={handleShare}
           className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-[11px] font-black uppercase tracking-widest text-primary-foreground shadow-[0_0_16px_color-mix(in_oklab,var(--primary)_35%,transparent)] transition-transform active:scale-95"
         >
-          <Share2 className="h-3.5 w-3.5" /> Compartilhar
+          <Share2 className="h-3.5 w-3.5" /> Enviar
+        </button>
+        <button
+          onClick={shareWhatsapp}
+          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-border/60 bg-background/60 px-3 py-2 text-[11px] font-black uppercase tracking-widest text-foreground/80 transition-colors hover:border-primary/40 hover:text-primary"
+        >
+          WhatsApp
         </button>
         <button
           onClick={copyOnly}
           className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-border/60 bg-background/60 px-3 py-2 text-[11px] font-black uppercase tracking-widest text-foreground/80 transition-colors hover:border-primary/40 hover:text-primary"
         >
           {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-          {copied ? "Copiado" : "Copiar link"}
+          {copied ? "Copiado" : "Copiar"}
         </button>
       </div>
     </section>
+
   );
 }

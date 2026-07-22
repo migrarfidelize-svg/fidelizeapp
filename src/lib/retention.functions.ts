@@ -244,6 +244,14 @@ export const trackReferralEvent = createServerFn({ method: "POST" })
       .object({
         code: z.string().min(4).max(20),
         kind: z.enum(["click", "share"]),
+        utm: z
+          .object({
+            source: z.string().max(60).optional(),
+            medium: z.string().max(60).optional(),
+            campaign: z.string().max(60).optional(),
+            content: z.string().max(60).optional(),
+          })
+          .optional(),
       })
       .parse(d),
   )
@@ -259,16 +267,37 @@ export const trackReferralEvent = createServerFn({ method: "POST" })
       establishment_id: row.establishment_id,
       customer_id: row.id,
       event_type: data.kind === "click" ? "referral_click" : "referral_share",
-      meta: { code: data.code.toUpperCase() },
+      meta: {
+        code: data.code.toUpperCase(),
+        utm_source: data.utm?.source ?? null,
+        utm_medium: data.utm?.medium ?? null,
+        utm_campaign: data.utm?.campaign ?? null,
+        utm_content: data.utm?.content ?? null,
+      },
     });
     return { ok: true };
   });
 
 // -------------------- Merchant referral dashboard --------------------
 
+const REFERRAL_EVENT_TYPES = [
+  "referral_click",
+  "referral_share",
+  "referral_signup",
+  "referral_reward",
+] as const;
+
 export const listReferralStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ establishment_id: z.string().uuid() }).parse(d))
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        establishment_id: z.string().uuid(),
+        days: z.number().int().min(1).max(365).optional(),
+        event_types: z.array(z.string()).optional(),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
     // Top referrers = customers who appear most as referred_by
     const { data: rows } = await context.supabase
@@ -288,23 +317,69 @@ export const listReferralStats = createServerFn({ method: "GET" })
         count,
       }));
 
-    // Funnel events (last 90 days)
-    const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+    // Funnel events (filtered by period + optional event_types)
+    const days = Math.max(1, Math.min(365, data.days ?? 90));
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+    const filterTypes =
+      data.event_types && data.event_types.length > 0
+        ? (data.event_types.filter((t) =>
+            (REFERRAL_EVENT_TYPES as readonly string[]).includes(t),
+          ) as string[])
+        : (REFERRAL_EVENT_TYPES as readonly string[] as string[]);
+
     const { data: events } = await context.supabase
       .from("retention_events")
-      .select("event_type")
+      .select("event_type, created_at, meta")
       .eq("establishment_id", data.establishment_id)
-      .in("event_type", ["referral_click", "referral_share", "referral_signup", "referral_reward"])
-      .gte("created_at", since);
+      .in("event_type", filterTypes)
+      .gte("created_at", since)
+      .order("created_at", { ascending: true });
+
     const funnel = { clicks: 0, shares: 0, signups: 0, rewards: 0 };
+    const utmSourceMap = new Map<string, { clicks: number; signups: number }>();
+    const timeline = new Map<string, { clicks: number; shares: number; signups: number; rewards: number }>();
+
     for (const e of events ?? []) {
       if (e.event_type === "referral_click") funnel.clicks++;
       else if (e.event_type === "referral_share") funnel.shares++;
       else if (e.event_type === "referral_signup") funnel.signups++;
       else if (e.event_type === "referral_reward") funnel.rewards++;
+
+      // Daily bucket
+      const day = (e.created_at as string).slice(0, 10);
+      const t = timeline.get(day) ?? { clicks: 0, shares: 0, signups: 0, rewards: 0 };
+      if (e.event_type === "referral_click") t.clicks++;
+      else if (e.event_type === "referral_share") t.shares++;
+      else if (e.event_type === "referral_signup") t.signups++;
+      else if (e.event_type === "referral_reward") t.rewards++;
+      timeline.set(day, t);
+
+      // UTM source attribution (clicks + signups)
+      const meta = (e.meta ?? {}) as Record<string, unknown>;
+      const src = (typeof meta.utm_source === "string" && meta.utm_source) || "direct";
+      if (e.event_type === "referral_click" || e.event_type === "referral_signup") {
+        const bucket = utmSourceMap.get(src) ?? { clicks: 0, signups: 0 };
+        if (e.event_type === "referral_click") bucket.clicks++;
+        else bucket.signups++;
+        utmSourceMap.set(src, bucket);
+      }
     }
+
     const conversion =
       funnel.clicks > 0 ? Math.round((funnel.signups / funnel.clicks) * 100) : 0;
+
+    const utmSources = Array.from(utmSourceMap.entries())
+      .map(([source, v]) => ({
+        source,
+        clicks: v.clicks,
+        signups: v.signups,
+        conversion: v.clicks > 0 ? Math.round((v.signups / v.clicks) * 100) : 0,
+      }))
+      .sort((a, b) => b.clicks - a.clicks);
+
+    const timelineArr = Array.from(timeline.entries())
+      .map(([day, v]) => ({ day, ...v }))
+      .sort((a, b) => a.day.localeCompare(b.day));
 
     return {
       totalReferred: (rows ?? []).filter((r) => r.referred_by).length,
@@ -312,8 +387,12 @@ export const listReferralStats = createServerFn({ method: "GET" })
       top,
       funnel,
       conversion,
+      utmSources,
+      timeline: timelineArr,
+      period_days: days,
     };
   });
+
 
 // -------------------- Retention events (customer timeline) --------------------
 
