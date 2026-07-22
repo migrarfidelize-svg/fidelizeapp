@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Gift, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { lookupReferralCode } from "@/lib/retention.functions";
+import { lookupReferralCode, trackReferralEvent } from "@/lib/retention.functions";
 import { useEffect } from "react";
 
 export const Route = createFileRoute("/r/$code")({
@@ -38,6 +38,7 @@ export const Route = createFileRoute("/r/$code")({
 function ReferralLanding() {
   const { code } = Route.useParams();
   const lookup = useServerFn(lookupReferralCode);
+  const track = useServerFn(trackReferralEvent);
   const navigate = useNavigate();
 
   const { data, isLoading } = useQuery({
@@ -49,11 +50,17 @@ function ReferralLanding() {
     if (typeof window !== "undefined") {
       try {
         sessionStorage.setItem("fidelize_referral_code", code.toUpperCase());
+        // De-dupe click tracking: only log once per code per session.
+        const key = `fidelize_ref_click_${code.toUpperCase()}`;
+        if (!sessionStorage.getItem(key)) {
+          sessionStorage.setItem(key, "1");
+          track({ data: { code, kind: "click" } }).catch(() => {});
+        }
       } catch {
         /* noop */
       }
     }
-  }, [code]);
+  }, [code, track]);
 
   if (isLoading) {
     return (

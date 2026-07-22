@@ -6,7 +6,7 @@ import { Gift, Loader2, Share2, Copy, Check } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { applyReferralByToken } from "@/lib/retention.functions";
+import { applyReferralByToken, trackReferralEvent } from "@/lib/retention.functions";
 
 /**
  * Voucher block: apply an incoming referral code (once per customer) and
@@ -24,10 +24,16 @@ export function ReferralBlock({
   alreadyReferred: boolean;
 }) {
   const apply = useServerFn(applyReferralByToken);
+  const track = useServerFn(trackReferralEvent);
   const qc = useQueryClient();
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  function logShare() {
+    if (!ownCode) return;
+    track({ data: { code: ownCode, kind: "share" } }).catch(() => {});
+  }
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -68,6 +74,7 @@ export function ReferralBlock({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       toast.success("Link copiado!");
+      logShare();
     } catch {
       toast.error("Não foi possível copiar.");
     }
@@ -83,6 +90,7 @@ export function ReferralBlock({
           text: `Use meu código de indicação e ganhe um carimbo-bônus:`,
           url,
         });
+        logShare();
       } catch {
         /* user cancelled */
       }

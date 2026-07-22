@@ -294,15 +294,40 @@ function RetencaoPage() {
             />
           </div>
           {stats && (
-            <div className="rounded-lg border p-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Clientes indicados</span>
+            <div className="rounded-lg border p-3 space-y-3">
+              {/* Funnel */}
+              <div>
+                <p className="text-xs font-semibold mb-2 text-muted-foreground">
+                  Funil (últimos 90 dias)
+                </p>
+                <div className="grid grid-cols-4 gap-2 text-center">
+                  {[
+                    { label: "Cliques", value: stats.funnel?.clicks ?? 0 },
+                    { label: "Compart.", value: stats.funnel?.shares ?? 0 },
+                    { label: "Cadastros", value: stats.funnel?.signups ?? 0 },
+                    { label: "Bônus", value: stats.funnel?.rewards ?? 0 },
+                  ].map((s) => (
+                    <div key={s.label} className="rounded-md border bg-muted/30 p-2">
+                      <div className="text-lg font-bold tabular-nums">{s.value}</div>
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        {s.label}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-2 text-[11px] text-muted-foreground">
+                  Conversão clique → cadastro:{" "}
+                  <strong className="text-foreground">{stats.conversion ?? 0}%</strong>
+                </p>
+              </div>
+              <div className="flex items-center justify-between text-sm border-t pt-3">
+                <span className="text-muted-foreground">Clientes indicados (total)</span>
                 <strong>
                   {stats.totalReferred} / {stats.totalCustomers}
                 </strong>
               </div>
               {stats.top.length > 0 && (
-                <div className="mt-3">
+                <div>
                   <p className="text-xs font-semibold mb-2 text-muted-foreground">
                     Top indicadores
                   </p>
