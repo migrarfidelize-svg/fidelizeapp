@@ -304,7 +304,7 @@ function PromocoesPage() {
             title="Abrir sua página pública de promoções em nova aba"
           >
             <a
-              href={`/l/${activeEst.slug}`}
+              href={`/carteira/e/${activeEst.slug}`}
               target="_blank"
               rel="noopener noreferrer"
             >
