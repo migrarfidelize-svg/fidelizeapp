@@ -163,6 +163,14 @@ function PublicLinkTreePage() {
                   </li>
                 );
               }
+              if (l.kind === "pix") {
+                return (
+                  <li key={l.id}>
+                    <PixCard label={l.label} url={l.url} rounded={rounded} primary={primary} accent={accent} text={text} buttonStyle={buttonStyle} />
+                  </li>
+                );
+              }
+
               return (
                 <li key={l.id}>
                   <a
