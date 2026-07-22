@@ -161,6 +161,80 @@ function PromotionsListPage() {
         </div>
       </header>
 
+      {showCampaigns && (
+        <section className="space-y-3 rounded-3xl border border-border/60 bg-card/40 p-4">
+          <div className="flex items-center gap-2">
+            <Gift className="h-4 w-4" style={{ color: brand }} />
+            <h2 className="font-display text-sm font-bold uppercase tracking-widest">
+              Campanhas ativas
+            </h2>
+          </div>
+          {data.campaigns.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              Nenhuma campanha ativa no momento.
+            </p>
+          ) : (
+            <ul className="grid gap-3 sm:grid-cols-2">
+              {data.campaigns.map((c) => {
+                const Icon = getStampIcon(c.stamp_icon);
+                const color = c.primary_color || brand;
+                return (
+                  <li
+                    key={c.id}
+                    className="flex gap-3 rounded-2xl border border-border/60 bg-background/40 p-3"
+                  >
+                    <div
+                      className="grid h-10 w-10 shrink-0 place-items-center rounded-xl"
+                      style={{ background: `${color}22`, color }}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="truncate font-display text-sm font-bold">{c.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        A cada <strong>{c.stamps_required}</strong> carimbos:{" "}
+                        <span style={{ color }}>{c.reward_title}</span>
+                      </div>
+                      {c.reward_description && (
+                        <p className="text-[11px] text-muted-foreground">
+                          {c.reward_description}
+                        </p>
+                      )}
+                      {c.rules && (
+                        <p className="text-[11px] text-muted-foreground/80">
+                          <strong>Regras:</strong> {c.rules}
+                        </p>
+                      )}
+                      {(c.stamp_validity_days || c.reward_validity_days) && (
+                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground/70">
+                          {c.stamp_validity_days
+                            ? `Carimbo vale ${c.stamp_validity_days}d`
+                            : ""}
+                          {c.stamp_validity_days && c.reward_validity_days ? " · " : ""}
+                          {c.reward_validity_days
+                            ? `Prêmio vale ${c.reward_validity_days}d`
+                            : ""}
+                        </p>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          <Link
+            to="/carteira/$slug"
+            params={{ slug }}
+            className="inline-flex items-center gap-1 text-xs font-semibold hover:underline"
+            style={{ color: brand }}
+          >
+            Abrir meu cartão →
+          </Link>
+        </section>
+      )}
+
+
+
       <div className="flex items-center gap-2 pt-1">
         <Megaphone className="h-4 w-4" style={{ color: brand }} />
         <h2 className="font-display text-sm font-bold uppercase tracking-widest">
