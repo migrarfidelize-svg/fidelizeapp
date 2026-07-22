@@ -156,6 +156,22 @@ export function PushStatusCard() {
     setBusy(null);
   }
 
+  async function handleTest() {
+    if (!endpoint) return;
+    setBusy("test");
+    setErrorMsg(null);
+    try {
+      await sendTest({ data: { endpoint } });
+      toast.success("Push de teste enviado. Confira a notificação no seu aparelho.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Falha ao enviar push de teste.";
+      setErrorMsg(msg);
+      toast.error(msg);
+    } finally {
+      setBusy(null);
+    }
+  }
+
   // Render helpers
   const permBadge = (() => {
     if (permission === "granted")
