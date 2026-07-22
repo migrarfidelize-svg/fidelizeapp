@@ -20,6 +20,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AjudaIndexRouteImport } from './routes/ajuda.index'
 import { Route as SuporteMeusRouteImport } from './routes/suporte.meus'
 import { Route as RCodeRouteImport } from './routes/r.$code'
+import { Route as LinksSlugRouteImport } from './routes/links.$slug'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as ESlugRouteImport } from './routes/e.$slug'
@@ -153,6 +154,11 @@ const SuporteMeusRoute = SuporteMeusRouteImport.update({
 const RCodeRoute = RCodeRouteImport.update({
   id: '/r/$code',
   path: '/r/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LinksSlugRoute = LinksSlugRouteImport.update({
+  id: '/links/$slug',
+  path: '/links/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LSlugRoute = LSlugRouteImport.update({
@@ -627,6 +633,7 @@ export interface FileRoutesByFullPath {
   '/e/$slug': typeof ESlugRoute
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
+  '/links/$slug': typeof LinksSlugRoute
   '/r/$code': typeof RCodeRoute
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda/': typeof AjudaIndexRoute
@@ -716,6 +723,7 @@ export interface FileRoutesByTo {
   '/e/$slug': typeof ESlugRoute
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
+  '/links/$slug': typeof LinksSlugRoute
   '/r/$code': typeof RCodeRoute
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda': typeof AjudaIndexRoute
@@ -810,6 +818,7 @@ export interface FileRoutesById {
   '/e/$slug': typeof ESlugRoute
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
+  '/links/$slug': typeof LinksSlugRoute
   '/r/$code': typeof RCodeRoute
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda/': typeof AjudaIndexRoute
@@ -904,6 +913,7 @@ export interface FileRouteTypes {
     | '/e/$slug'
     | '/invite/$token'
     | '/l/$slug'
+    | '/links/$slug'
     | '/r/$code'
     | '/suporte/meus'
     | '/ajuda/'
@@ -993,6 +1003,7 @@ export interface FileRouteTypes {
     | '/e/$slug'
     | '/invite/$token'
     | '/l/$slug'
+    | '/links/$slug'
     | '/r/$code'
     | '/suporte/meus'
     | '/ajuda'
@@ -1086,6 +1097,7 @@ export interface FileRouteTypes {
     | '/e/$slug'
     | '/invite/$token'
     | '/l/$slug'
+    | '/links/$slug'
     | '/r/$code'
     | '/suporte/meus'
     | '/ajuda/'
@@ -1174,6 +1186,7 @@ export interface RootRouteChildren {
   ESlugRoute: typeof ESlugRoute
   InviteTokenRoute: typeof InviteTokenRoute
   LSlugRoute: typeof LSlugRoute
+  LinksSlugRoute: typeof LinksSlugRoute
   RCodeRoute: typeof RCodeRoute
   SuporteMeusRoute: typeof SuporteMeusRoute
   AjudaIndexRoute: typeof AjudaIndexRoute
@@ -1272,6 +1285,13 @@ declare module '@tanstack/react-router' {
       path: '/r/$code'
       fullPath: '/r/$code'
       preLoaderRoute: typeof RCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/links/$slug': {
+      id: '/links/$slug'
+      path: '/links/$slug'
+      fullPath: '/links/$slug'
+      preLoaderRoute: typeof LinksSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/l/$slug': {
@@ -2028,6 +2048,7 @@ const rootRouteChildren: RootRouteChildren = {
   ESlugRoute: ESlugRoute,
   InviteTokenRoute: InviteTokenRoute,
   LSlugRoute: LSlugRoute,
+  LinksSlugRoute: LinksSlugRoute,
   RCodeRoute: RCodeRoute,
   SuporteMeusRoute: SuporteMeusRoute,
   AjudaIndexRoute: AjudaIndexRoute,
