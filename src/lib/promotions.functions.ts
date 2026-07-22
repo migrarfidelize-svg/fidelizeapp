@@ -269,5 +269,6 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
         business_hours: (est.business_hours as string | null) ?? null,
       },
       promotions,
+      campaigns,
     };
   });
