@@ -344,6 +344,21 @@ function WalletEstablishment() {
           </section>
         )}
 
+        {/* Indicar esta loja — link contextualizado */}
+        {d.customer.referralCode && (
+          <ShareCardSection
+            referralCode={d.customer.referralCode}
+            establishmentName={est.name}
+            copied={copied}
+            onCopied={() => {
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            }}
+          />
+        )}
+
+
+
         {primaryCard && (primaryCard.campaign as { rules: string | null }).rules && (
           <section className="rounded-2xl border border-border/60 bg-card/40 p-4">
             <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
