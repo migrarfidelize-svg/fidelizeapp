@@ -139,6 +139,7 @@ function WalletLayout() {
 
       <MyQrSheet open={qrOpen} onOpenChange={setQrOpen} />
       <AchievementUnlockListener />
+      <PostStampReviewSheet />
     </div>
   );
 }
