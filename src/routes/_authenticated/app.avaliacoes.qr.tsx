@@ -130,7 +130,7 @@ function ReviewQrPage() {
   const [googleUrl, setGoogleUrl] = useState("");
   const [showGoogleLogo, setShowGoogleLogo] = useState(true);
   const [nfcMode, setNfcMode] = useState(false);
-  const [nfcSize, setNfcSize] = useState(100); // % scale, 60–180
+  const [contentScale, setNfcSize] = useState(100); // % scale, 60–180
   const [title, setTitle] = useState("Como foi seu atendimento?");
   const [subtitle, setSubtitle] = useState("Sua opinião ajuda nossa equipe a melhorar. Leva menos de 30 segundos.");
   const [ctaNearQR, setCtaNearQR] = useState("Aponte a câmera para avaliar");
@@ -166,7 +166,7 @@ function ReviewQrPage() {
         if (typeof s.googleUrl === "string") setGoogleUrl(s.googleUrl);
         if (typeof s.showGoogleLogo === "boolean") setShowGoogleLogo(s.showGoogleLogo);
         if (typeof s.nfcMode === "boolean") setNfcMode(s.nfcMode);
-        if (typeof s.nfcSize === "number") setNfcSize(s.nfcSize);
+        if (typeof s.contentScale === "number") setNfcSize(s.contentScale);
         if (s.title) setTitle(s.title);
         if (s.subtitle) setSubtitle(s.subtitle);
         if (s.ctaNearQR) setCtaNearQR(s.ctaNearQR);
@@ -189,14 +189,14 @@ function ReviewQrPage() {
     if (typeof window === "undefined") return;
     try {
       window.localStorage.setItem(storageKey, JSON.stringify({
-        template, format, destination, googleUrl, showGoogleLogo, nfcMode, nfcSize,
+        template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale,
         title, subtitle, ctaNearQR, ctaFooter,
         primaryColor, backgroundColor, textColor,
         primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel,
         layout,
       }));
     } catch { /* ignore */ }
-  }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, nfcSize, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor, primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel, layout]);
+  }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor, primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel, layout]);
 
   function applyTemplate(key: TemplateKey) {
     setTemplate(key);
@@ -534,20 +534,20 @@ function ReviewQrPage() {
                 <div>
                   <div className="mb-1.5 flex items-center justify-between font-semibold text-primary">
                     <span>Tamanho do selo NFC</span>
-                    <span className="text-[10px] font-bold tabular-nums text-muted-foreground">{nfcSize}%</span>
+                    <span className="text-[10px] font-bold tabular-nums text-muted-foreground">{contentScale}%</span>
                   </div>
                   <Slider
                     min={60}
                     max={180}
                     step={5}
-                    value={[nfcSize]}
+                    value={[contentScale]}
                     onValueChange={(v) => setNfcSize(v[0] ?? 100)}
                   />
                   <div className="mt-1 text-[10px] text-muted-foreground">
                     Ajuste o selo NFC discreto que aparece no rodapé do cartaz.
                   </div>
                   <div className="mt-2 flex items-center justify-center rounded-lg border border-dashed border-primary/30 bg-background/60 py-2">
-                    <NfcBadge primary={primaryColor} sizePct={nfcSize} />
+                    <NfcBadge primary={primaryColor} sizePct={contentScale} />
                   </div>
                 </div>
 
@@ -846,7 +846,7 @@ function ReviewQrPage() {
                   destination={destination}
                   showGoogleLogo={showGoogleLogo}
                   nfcMode={nfcMode}
-                  nfcSize={nfcSize}
+                  contentScale={contentScale}
                   primaryLabel={primaryLabel}
                   secondaryEnabled={secondaryEnabled}
                   secondaryQrDataUrl={secondaryQrDataUrl}
@@ -986,7 +986,7 @@ interface PosterProps {
   destination: Destination;
   showGoogleLogo: boolean;
   nfcMode: boolean;
-  nfcSize: number;
+  contentScale: number;
   primaryLabel: string;
   secondaryEnabled: boolean;
   secondaryQrDataUrl: string;
@@ -1163,7 +1163,7 @@ function PortraitBody(p: PosterProps) {
       <DraggableItem itemKey="ctaFooter" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
         <div className="flex flex-col items-center gap-1">
           <div className="text-center text-[10px] opacity-70" style={{ color: p.textColor }}>{p.ctaFooter}</div>
-          {p.nfcMode && <NfcBadge primary={p.primaryColor} sizePct={p.nfcSize} />}
+          {p.nfcMode && <NfcBadge primary={p.primaryColor} sizePct={p.contentScale} />}
         </div>
       </DraggableItem>
     </div>
