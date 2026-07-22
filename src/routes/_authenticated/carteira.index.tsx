@@ -8,6 +8,7 @@ import {
   WalletErrorState,
   WithOfflineFallback,
 } from "@/components/wallet/WalletStates";
+import { WalletStack } from "@/components/wallet/WalletStack";
 
 const walletOpts = queryOptions({
   queryKey: ["my-wallet"],
