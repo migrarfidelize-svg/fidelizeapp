@@ -15,8 +15,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ExternalLink, Instagram, MessageCircle, Globe, MapPin, Youtube, Facebook,
-  Music2, Mail, Phone, Star, Trash2, ArrowUp, ArrowDown, Plus, Eye, Copy, QrCode,
+  Music2, Mail, Phone, Star, Trash2, ArrowUp, ArrowDown, Plus, Eye, Copy, QrCode, Wifi,
 } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/app/linktree")({
   ssr: false,
