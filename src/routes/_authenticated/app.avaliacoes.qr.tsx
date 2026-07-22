@@ -1438,6 +1438,108 @@ function ReviewQrPage() {
           }}
         />
       )}
+
+      {fullscreen && (
+        <div
+          className="fixed inset-0 z-[100] flex flex-col bg-black/95 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Inspeção em tela cheia"
+        >
+          {/* Toolbar */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-black/60 px-4 py-2 text-white">
+            <div className="flex items-center gap-3 text-xs">
+              <span className="font-bold uppercase tracking-wider text-primary">Tela cheia</span>
+              <span className="opacity-80">{FORMATS[format].label} · {dims.mm.w}×{dims.mm.h}mm</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Format switcher — mesma escala relativa */}
+              <div className="flex overflow-hidden rounded-lg border border-white/20 text-[11px]">
+                {(["counter15x10", "a5", "feed", "story"] as FormatKey[]).map((k) => (
+                  <button
+                    key={k}
+                    type="button"
+                    onClick={() => setFormat(k)}
+                    className={`px-2.5 py-1.5 font-semibold transition ${format === k ? "bg-primary text-primary-foreground" : "text-white/80 hover:bg-white/10"}`}
+                  >
+                    {FORMATS[k].label}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setRealScale((v) => !v)}
+                className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition ${realScale ? "border-primary bg-primary text-primary-foreground" : "border-white/20 text-white hover:bg-white/10"}`}
+                title="Alterna entre ajustar à tela e escala 1:1 real (mm)"
+              >
+                <Ruler className="h-3.5 w-3.5" />
+                {realScale ? "Escala real 1:1" : "Ajustar à tela"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setFullscreen(false)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-white/10"
+                aria-label="Fechar tela cheia (Esc)"
+              >
+                <X className="h-3.5 w-3.5" /> Fechar
+              </button>
+            </div>
+          </div>
+
+          {/* Stage */}
+          <div className="relative flex-1 overflow-auto">
+            <div className="flex min-h-full min-w-full items-center justify-center p-6">
+              <div
+                className="relative overflow-hidden rounded-md shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)] ring-1 ring-white/10"
+                style={
+                  realScale
+                    ? { width: `${dims.mm.w}mm`, height: `${dims.mm.h}mm` }
+                    : {
+                        aspectRatio: dims.aspect,
+                        height: "min(calc(100vh - 8rem), 92vh)",
+                        maxWidth: "calc(100vw - 3rem)",
+                      }
+                }
+              >
+                <PosterCanvas
+                  template={template}
+                  format={format}
+                  title={title}
+                  subtitle={subtitle}
+                  ctaNearQR={ctaNearQR}
+                  ctaFooter={ctaFooter}
+                  primaryColor={primaryColor}
+                  backgroundColor={backgroundColor}
+                  textColor={textColor}
+                  qrDataUrl={qrDataUrl}
+                  targetUrl={targetUrl}
+                  establishmentName={est?.name ?? ""}
+                  logoUrl={est?.logo_url ?? null}
+                  destination={destination}
+                  showGoogleLogo={showGoogleLogo}
+                  nfcMode={nfcMode}
+                  contentScale={contentScale}
+                  primaryLabel={primaryLabel}
+                  secondaryEnabled={secondaryEnabled}
+                  secondaryQrDataUrl={secondaryQrDataUrl}
+                  secondaryLabel={secondaryLabel}
+                  layout={layout}
+                  setLayout={setLayout}
+                  editable={false}
+                  badges={badges}
+                  moveBadge={moveBadge}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-white/10 bg-black/60 px-4 py-2 text-center text-[11px] text-white/60">
+            {realScale
+              ? "Renderizado em milímetros — a proporção física entre Balcão 10×15 e A5 é fiel na sua tela (aprox. 96dpi)."
+              : "Ajustado à tela mantendo a proporção do formato. Ative Escala 1:1 para comparar tamanhos reais."}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
