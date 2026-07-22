@@ -46,6 +46,16 @@ function detectBrowser(): "chrome" | "edge" | "firefox" | "safari" | "opera" | "
   return "other";
 }
 
+function isAndroid() {
+  if (typeof navigator === "undefined") return false;
+  return /Android/.test(navigator.userAgent);
+}
+
+function isMobile() {
+  if (typeof navigator === "undefined") return false;
+  return /Android|iPhone|iPad|iPod|Mobile/.test(navigator.userAgent);
+}
+
 export function PushOptIn({ token }: { token: string }) {
   const [ready, setReady] = useState(false);
   const [supported, setSupported] = useState(false);
