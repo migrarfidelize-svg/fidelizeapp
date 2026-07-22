@@ -249,6 +249,71 @@ function KpiTile({ label, value, accent, icon }: { label: string; value: number;
   );
 }
 
+/**
+ * Streak semanal: quantas semanas ISO consecutivas (contando esta semana)
+ * o usuário registrou ao menos um carimbo não estornado.
+ */
+function computeWeeklyStreak(
+  history: Awaited<ReturnType<typeof getMyHistory>>,
+): { weeks: number; lastVisit: string | null } {
+  const valid = history.filter((h) => !h.reverted && h.createdAt);
+  if (!valid.length) return { weeks: 0, lastVisit: null };
+  const weekKeys = new Set(valid.map((h) => isoWeekKey(new Date(h.createdAt))));
+  const now = new Date();
+  let cursor = now;
+  let weeks = 0;
+  // Só conta se a semana atual OU a anterior tem visita (não desqualifica logo).
+  if (!weekKeys.has(isoWeekKey(cursor))) {
+    cursor = addDays(cursor, -7);
+    if (!weekKeys.has(isoWeekKey(cursor))) return { weeks: 0, lastVisit: valid[0].createdAt };
+  }
+  while (weekKeys.has(isoWeekKey(cursor))) {
+    weeks++;
+    cursor = addDays(cursor, -7);
+  }
+  return { weeks, lastVisit: valid[0].createdAt };
+}
+
+function isoWeekKey(d: Date): string {
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+  const week = Math.ceil(((+t - +yearStart) / 86400000 + 1) / 7);
+  return `${t.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
+}
+function addDays(d: Date, days: number): Date {
+  const c = new Date(d);
+  c.setDate(c.getDate() + days);
+  return c;
+}
+
+function StreakCard({ weeks, lastVisit }: { weeks: number; lastVisit: string | null }) {
+  return (
+    <div className="relative overflow-hidden rounded-3xl border border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-primary/10 p-4">
+      <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-orange-500/20 blur-3xl" />
+      <div className="relative flex items-center gap-3">
+        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg">
+          <Flame className="wallet-streak-flame h-6 w-6" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-300">
+            Sequência semanal
+          </div>
+          <div className="font-display text-base font-bold">
+            Você visitou <span className="text-orange-600 dark:text-orange-400">{weeks} semanas seguidas</span> 🔥
+          </div>
+          {lastVisit && (
+            <div className="text-[11px] text-muted-foreground">
+              Última visita em {formatDate(lastVisit)} — não perca o ritmo.
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 type WalletItem = Awaited<ReturnType<typeof getMyWallet>>[number];
 
 export function WalletCard({ item }: { item: WalletItem }) {
