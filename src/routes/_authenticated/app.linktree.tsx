@@ -15,8 +15,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ExternalLink, Instagram, MessageCircle, Globe, MapPin, Youtube, Facebook,
-  Music2, Mail, Phone, Star, Trash2, ArrowUp, ArrowDown, Plus, Eye, Copy, QrCode, Wifi,
+  Music2, Mail, Phone, Star, Trash2, ArrowUp, ArrowDown, Plus, Eye, Copy, QrCode, Wifi, KeyRound,
 } from "lucide-react";
+
 
 
 export const Route = createFileRoute("/_authenticated/app/linktree")({
@@ -24,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/app/linktree")({
   component: LinkTreeEditor,
 });
 
-type LinkKind = "whatsapp" | "instagram" | "facebook" | "tiktok" | "youtube" | "site" | "google" | "maps" | "email" | "phone" | "wifi" | "custom";
+type LinkKind = "whatsapp" | "instagram" | "facebook" | "tiktok" | "youtube" | "site" | "google" | "maps" | "email" | "phone" | "wifi" | "pix" | "custom";
 
 type LinkRow = {
   id?: string;
@@ -48,6 +49,7 @@ const KIND_META: Record<LinkKind, { label: string; icon: any; placeholder: strin
   email: { label: "E-mail", icon: Mail, placeholder: "contato@seudominio.com" },
   phone: { label: "Telefone", icon: Phone, placeholder: "1130000000" },
   wifi: { label: "Wi-Fi", icon: Wifi, placeholder: "WIFI:S:Rede;T:WPA;P:senha;;" },
+  pix: { label: "Chave Pix", icon: KeyRound, placeholder: "PIX:T:email;K:chave;;" },
   custom: { label: "Link personalizado", icon: ExternalLink, placeholder: "https://…" },
 };
 
@@ -62,6 +64,26 @@ function decodeWifi(url: string): { ssid: string; password: string } {
   const unesc = (v: string) => v.replace(/\\(.)/g, "$1");
   return { ssid: unesc(s), password: unesc(p) };
 }
+
+// Encode/decode helpers for Pix keys stored in the `url` field
+type PixKeyType = "cpf" | "cnpj" | "email" | "telefone" | "aleatoria";
+function encodePix(type: PixKeyType, key: string, name: string) {
+  const esc = (s: string) => s.replace(/([\\;,":])/g, "\\$1");
+  return `PIX:T:${type};K:${esc(key)};N:${esc(name)};;`;
+}
+function decodePix(url: string): { type: PixKeyType; key: string; name: string } {
+  const t = (/PIX:.*?T:([^;]+);/i.exec(url)?.[1] ?? "email") as PixKeyType;
+  const k = /PIX:.*?K:((?:\\.|[^;\\])*);/i.exec(url)?.[1] ?? "";
+  const n = /PIX:.*?N:((?:\\.|[^;\\])*);/i.exec(url)?.[1] ?? "";
+  const unesc = (v: string) => v.replace(/\\(.)/g, "$1");
+  const validTypes: PixKeyType[] = ["cpf", "cnpj", "email", "telefone", "aleatoria"];
+  return {
+    type: validTypes.includes(t) ? t : "email",
+    key: unesc(k),
+    name: unesc(n),
+  };
+}
+
 
 
 type ThemePreset = {
@@ -411,7 +433,7 @@ function LinkTreeEditor() {
             <CardHeader className="flex-row items-center justify-between space-y-0">
               <CardTitle className="text-base">Links ({links.length})</CardTitle>
               <div className="flex flex-wrap gap-1">
-                {(["whatsapp","instagram","site","google","maps","wifi","custom"] as LinkKind[]).map((k) => {
+                {(["whatsapp","instagram","site","google","maps","wifi","pix","custom"] as LinkKind[]).map((k) => {
                   const M = KIND_META[k];
                   return (
                     <Button key={k} size="sm" variant="outline" onClick={() => addLink(k)}>
@@ -458,12 +480,23 @@ function LinkTreeEditor() {
                           })
                         }
                       />
+                    ) : l.kind === "pix" ? (
+                      <PixFields
+                        url={l.url}
+                        onChange={(type, key, name) =>
+                          updateLink(i, {
+                            label: name ? `Pix · ${name}` : "Chave Pix",
+                            url: encodePix(type, key, name),
+                          })
+                        }
+                      />
                     ) : (
                       <div className="grid gap-2 md:grid-cols-2">
                         <Input placeholder="Rótulo" value={l.label} onChange={(e) => updateLink(i, { label: e.target.value })} maxLength={80} />
                         <Input placeholder={M.placeholder} value={l.url} onChange={(e) => updateLink(i, { url: e.target.value })} maxLength={500} />
                       </div>
                     )}
+
 
                   </div>
                 );
@@ -576,6 +609,45 @@ function WifiFields({ url, onChange }: { url: string; onChange: (ssid: string, p
             {show ? "Ocultar" : "Ver"}
           </Button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function PixFields({ url, onChange }: { url: string; onChange: (type: PixKeyType, key: string, name: string) => void }) {
+  const parsed = decodePix(url);
+  return (
+    <div className="grid gap-2 md:grid-cols-3">
+      <div>
+        <Label className="text-xs">Tipo de chave</Label>
+        <Select value={parsed.type} onValueChange={(v) => onChange(v as PixKeyType, parsed.key, parsed.name)}>
+          <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="cpf">CPF</SelectItem>
+            <SelectItem value="cnpj">CNPJ</SelectItem>
+            <SelectItem value="email">E-mail</SelectItem>
+            <SelectItem value="telefone">Telefone</SelectItem>
+            <SelectItem value="aleatoria">Aleatória</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <Label className="text-xs">Chave Pix</Label>
+        <Input
+          placeholder={parsed.type === "email" ? "pix@dominio.com" : parsed.type === "telefone" ? "+5511999999999" : "chave pix"}
+          value={parsed.key}
+          onChange={(e) => onChange(parsed.type, e.target.value, parsed.name)}
+          maxLength={140}
+        />
+      </div>
+      <div>
+        <Label className="text-xs">Beneficiário (opcional)</Label>
+        <Input
+          placeholder="Nome exibido"
+          value={parsed.name}
+          onChange={(e) => onChange(parsed.type, parsed.key, e.target.value)}
+          maxLength={80}
+        />
       </div>
     </div>
   );

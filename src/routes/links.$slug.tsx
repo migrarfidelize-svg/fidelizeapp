@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { getPublicLinkTreeBySlug } from "@/lib/linktree.functions";
-import { ExternalLink, Instagram, MessageCircle, Globe, MapPin, Youtube, Facebook, Music2, Mail, Phone, Star, Wifi, Copy, Check, Eye, EyeOff } from "lucide-react";
+import { ExternalLink, Instagram, MessageCircle, Globe, MapPin, Youtube, Facebook, Music2, Mail, Phone, Star, Wifi, KeyRound, Copy, Check, Eye, EyeOff } from "lucide-react";
 
 
 const opts = (slug: string) =>
@@ -53,6 +53,7 @@ const KIND_ICONS: Record<string, any> = {
   email: Mail,
   phone: Phone,
   wifi: Wifi,
+  pix: KeyRound,
   custom: ExternalLink,
 };
 
@@ -62,6 +63,20 @@ function decodeWifi(url: string): { ssid: string; password: string } {
   const unesc = (v: string) => v.replace(/\\(.)/g, "$1");
   return { ssid: unesc(s), password: unesc(p) };
 }
+
+type PixKeyType = "cpf" | "cnpj" | "email" | "telefone" | "aleatoria";
+const PIX_TYPE_LABEL: Record<PixKeyType, string> = {
+  cpf: "CPF", cnpj: "CNPJ", email: "E-mail", telefone: "Telefone", aleatoria: "Aleatória",
+};
+function decodePix(url: string): { type: PixKeyType; key: string; name: string } {
+  const t = (/PIX:.*?T:([^;]+);/i.exec(url)?.[1] ?? "email") as PixKeyType;
+  const k = /PIX:.*?K:((?:\\.|[^;\\])*);/i.exec(url)?.[1] ?? "";
+  const n = /PIX:.*?N:((?:\\.|[^;\\])*);/i.exec(url)?.[1] ?? "";
+  const unesc = (v: string) => v.replace(/\\(.)/g, "$1");
+  const valid: PixKeyType[] = ["cpf", "cnpj", "email", "telefone", "aleatoria"];
+  return { type: valid.includes(t) ? t : "email", key: unesc(k), name: unesc(n) };
+}
+
 
 
 function normalizeUrl(kind: string, url: string) {
@@ -148,6 +163,14 @@ function PublicLinkTreePage() {
                   </li>
                 );
               }
+              if (l.kind === "pix") {
+                return (
+                  <li key={l.id}>
+                    <PixCard label={l.label} url={l.url} rounded={rounded} primary={primary} accent={accent} text={text} buttonStyle={buttonStyle} />
+                  </li>
+                );
+              }
+
               return (
                 <li key={l.id}>
                   <a
@@ -267,6 +290,71 @@ function FieldRow({
       >
         {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
       </button>
+    </div>
+  );
+}
+
+function PixCard({
+  label, url, rounded, primary, accent, text, buttonStyle,
+}: {
+  label: string; url: string; rounded: string;
+  primary: string; accent: string; text: string; buttonStyle: string;
+}) {
+  const { type, key, name } = decodePix(url);
+  const [copied, setCopied] = useState<"" | "key" | "name">("");
+
+  const copy = async (v: string, which: "key" | "name") => {
+    try {
+      await navigator.clipboard.writeText(v);
+      setCopied(which);
+      setTimeout(() => setCopied(""), 1400);
+    } catch { /* noop */ }
+  };
+
+  const bg =
+    buttonStyle === "glass"
+      ? "rgba(255,255,255,0.06)"
+      : buttonStyle === "outline"
+      ? "transparent"
+      : `linear-gradient(135deg, ${primary}22, ${accent}22)`;
+  const border = buttonStyle === "outline" ? `2px solid ${primary}` : "1px solid rgba(255,255,255,0.15)";
+
+  return (
+    <div
+      className={`px-4 py-4 text-left ${rounded}`}
+      style={{ background: bg, border, color: text, backdropFilter: "blur(12px)" }}
+    >
+      <div className="flex items-center gap-2 mb-3">
+        <span
+          className="grid h-8 w-8 place-items-center rounded-lg text-white shrink-0"
+          style={{ background: `linear-gradient(135deg, ${primary}, ${accent})` }}
+        >
+          <KeyRound className="h-4 w-4" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-xs uppercase tracking-wider opacity-60">Chave Pix · {PIX_TYPE_LABEL[type]}</p>
+          <p className="text-sm font-semibold truncate">{label || (name ? `Pix · ${name}` : "Pagamento Pix")}</p>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <FieldRow
+          k="Chave"
+          v={key || "—"}
+          copied={copied === "key"}
+          onCopy={() => key && copy(key, "key")}
+          text={text}
+        />
+        {name && (
+          <FieldRow
+            k="Nome"
+            v={name}
+            copied={copied === "name"}
+            onCopy={() => copy(name, "name")}
+            text={text}
+          />
+        )}
+      </div>
     </div>
   );
 }
