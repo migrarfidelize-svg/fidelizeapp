@@ -547,3 +547,36 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
     </div>
   );
 }
+
+function WifiFields({ url, onChange }: { url: string; onChange: (ssid: string, password: string) => void }) {
+  const parsed = decodeWifi(url);
+  const [show, setShow] = useState(false);
+  return (
+    <div className="grid gap-2 md:grid-cols-2">
+      <div>
+        <Label className="text-xs">Nome da rede (SSID)</Label>
+        <Input
+          placeholder="Minha_Rede_WiFi"
+          value={parsed.ssid}
+          onChange={(e) => onChange(e.target.value, parsed.password)}
+          maxLength={64}
+        />
+      </div>
+      <div>
+        <Label className="text-xs">Senha</Label>
+        <div className="flex gap-1">
+          <Input
+            type={show ? "text" : "password"}
+            placeholder="••••••••"
+            value={parsed.password}
+            onChange={(e) => onChange(parsed.ssid, e.target.value)}
+            maxLength={128}
+          />
+          <Button type="button" variant="outline" size="sm" onClick={() => setShow((s) => !s)}>
+            {show ? "Ocultar" : "Ver"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
