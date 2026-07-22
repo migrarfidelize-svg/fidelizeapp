@@ -423,6 +423,25 @@ function ReviewQrPage() {
                 })}
               </div>
               <div className="text-[11px] text-muted-foreground">{dims.description} · {dims.mm.w}×{dims.mm.h}mm</div>
+
+              {/* CTA: Loja física */}
+              <button
+                type="button"
+                onClick={() => document.getElementById("loja-displays")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                className="group relative w-full overflow-hidden rounded-xl border border-primary/40 bg-gradient-to-r from-primary/15 via-primary/10 to-accent/15 p-3 text-left transition hover:border-primary hover:shadow-[0_0_30px_-8px_hsl(var(--primary)/0.6)]"
+              >
+                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-primary/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                <div className="relative flex items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/20 text-primary">
+                    <ShoppingBag className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[13px] font-bold text-foreground">Adquira seu display físico de balcão</div>
+                    <div className="text-[11px] text-muted-foreground">Transforme mais clientes em avaliações 5★ — acrílico premium, NFC e brilho de vitrine.</div>
+                  </div>
+                  <span className="text-primary transition-transform group-hover:translate-x-1">→</span>
+                </div>
+              </button>
             </div>
 
             {/* NFC */}
