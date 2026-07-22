@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import * as Icons from "lucide-react";
-import { listAchievementsCatalog, listMyAchievements, markAchievementsSeen } from "@/lib/achievements.functions";
+import { listAchievementsCatalog, listMyAchievements, markAchievementsSeen, runAchievementsCheck } from "@/lib/achievements.functions";
 
 /**
  * Subscribes to customer_achievements inserts for the current user and shows
@@ -13,6 +13,20 @@ import { listAchievementsCatalog, listMyAchievements, markAchievementsSeen } fro
 export function AchievementUnlockListener() {
   const qc = useQueryClient();
   const shownRef = useRef<Set<string>>(new Set());
+
+  // Roda uma verificação retroativa uma vez por sessão — cobre carimbos
+  // anteriores aos triggers e garante que primeiras conquistas apareçam.
+  useEffect(() => {
+    const key = "ach:backfill:v1";
+    if (typeof sessionStorage !== "undefined" && sessionStorage.getItem(key)) return;
+    runAchievementsCheck()
+      .then((r) => {
+        if (typeof sessionStorage !== "undefined") sessionStorage.setItem(key, "1");
+        if (r.unlocked > 0) qc.invalidateQueries({ queryKey: ["my-achievements"] });
+      })
+      .catch(() => { /* silent */ });
+  }, [qc]);
+
 
   const { data: catalog } = useQuery({
     queryKey: ["achievements-catalog"],
