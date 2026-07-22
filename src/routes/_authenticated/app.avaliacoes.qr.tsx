@@ -1060,11 +1060,11 @@ function ReviewQrPage() {
                     <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Total</div>
                   </div>
                   <div className="rounded-lg bg-background/70 p-2 text-center">
-                    <div className="text-lg font-bold tabular-nums">{scanStats.last30d}</div>
+                    <div className="text-lg font-bold tabular-nums">{scanStats.last30}</div>
                     <div className="text-[10px] uppercase tracking-wider text-muted-foreground">30 dias</div>
                   </div>
                   <div className="rounded-lg bg-background/70 p-2 text-center">
-                    <div className="text-lg font-bold tabular-nums">{scanStats.last7d}</div>
+                    <div className="text-lg font-bold tabular-nums">{scanStats.last7}</div>
                     <div className="text-[10px] uppercase tracking-wider text-muted-foreground">7 dias</div>
                   </div>
                 </div>
