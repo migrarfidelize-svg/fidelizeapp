@@ -84,6 +84,11 @@ function Dashboard() {
         actions={
           <>
             <Button asChild variant="outline" className="border-primary/30 hover:border-primary/60">
+              <Link to="/app/analytics">
+                <TrendingUp className="mr-1 h-4 w-4" /> Analytics 2.0
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="border-primary/30 hover:border-primary/60">
               <Link to="/l/$slug" params={{ slug: est.slug }}>
                 <QrCode className="mr-1 h-4 w-4" /> Página pública
               </Link>
