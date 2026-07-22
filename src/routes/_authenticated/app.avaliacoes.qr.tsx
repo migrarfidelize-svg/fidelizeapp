@@ -1119,12 +1119,12 @@ function PortraitBody(p: PosterProps) {
 
       {/* Title */}
       <DraggableItem itemKey="title" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
-        <h2 className="text-center text-xl font-black leading-tight" style={{ color: p.textColor }}>{p.title}</h2>
+        <h2 className="text-center font-black leading-tight" style={{ color: p.textColor, fontSize: `${20 * (p.contentScale / 100)}px` }}>{p.title}</h2>
       </DraggableItem>
 
       {/* Subtitle */}
       <DraggableItem itemKey="subtitle" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[80%]">
-        <p className="text-center text-[11px] opacity-70" style={{ color: p.textColor }}>{p.subtitle}</p>
+        <p className="text-center opacity-70" style={{ color: p.textColor, fontSize: `${11 * (p.contentScale / 100)}px` }}>{p.subtitle}</p>
       </DraggableItem>
 
       {/* Primary QR */}
@@ -1136,6 +1136,7 @@ function PortraitBody(p: PosterProps) {
           text={p.textColor}
           badge={null}
           size={primarySize}
+          scale={p.contentScale}
         />
       </DraggableItem>
 
@@ -1149,13 +1150,14 @@ function PortraitBody(p: PosterProps) {
             text={p.textColor}
             badge={null}
             size={104}
+            scale={p.contentScale}
           />
         </DraggableItem>
       )}
 
       {/* CTA near QR */}
       <DraggableItem itemKey="ctaNear" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
-        <div className="text-center text-xs font-bold uppercase tracking-widest" style={{ color: p.primaryColor }}>
+        <div className="text-center font-bold uppercase tracking-widest" style={{ color: p.primaryColor, fontSize: `${12 * (p.contentScale / 100)}px` }}>
           {p.ctaNearQR}
         </div>
       </DraggableItem>
@@ -1163,10 +1165,11 @@ function PortraitBody(p: PosterProps) {
       {/* CTA footer */}
       <DraggableItem itemKey="ctaFooter" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
         <div className="flex flex-col items-center gap-1">
-          <div className="text-center text-[10px] opacity-70" style={{ color: p.textColor }}>{p.ctaFooter}</div>
+          <div className="text-center opacity-70" style={{ color: p.textColor, fontSize: `${10 * (p.contentScale / 100)}px` }}>{p.ctaFooter}</div>
           {p.nfcMode && <NfcBadge primary={p.primaryColor} sizePct={p.contentScale} />}
         </div>
       </DraggableItem>
+
     </div>
   );
 }
