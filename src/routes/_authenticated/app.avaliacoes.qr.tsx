@@ -406,7 +406,7 @@ function ReviewQrPage() {
             <ul className="mx-auto max-w-md space-y-1 text-left text-sm text-muted-foreground">
               <li className="flex gap-2"><Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Página pública <code>/avaliar/{est.slug}</code></li>
               <li className="flex gap-2"><Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Cartaz 15×10 para balcão, mesa e recibo</li>
-              <li className="flex gap-2"><Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> QR para Google Reviews + modo NFC</li>
+              <li className="flex gap-2"><Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Modo NFC + 2º QR para cardápio/loja</li>
             </ul>
             <Button asChild size="lg" className="mt-2"><Link to="/app/planos">Ver planos disponíveis</Link></Button>
           </CardContent>
@@ -421,7 +421,7 @@ function ReviewQrPage() {
         icon={Star}
         eyebrow="Reputação · QR"
         title="QR Code de avaliação"
-        subtitle="Cartaz pronto para balcão, mesa e recibos. Encaminha o cliente direto para avaliar o atendimento — Fidelize ou Google Reviews."
+        subtitle="Cartaz pronto para balcão, mesa e recibos. Encaminha o cliente direto para a página de avaliação Fidelize."
       />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
@@ -432,63 +432,15 @@ function ReviewQrPage() {
             <div className="space-y-3">
               <Label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">QR principal</Label>
 
-              {/* Fidelize / Google toggle */}
-              <div className="grid grid-cols-2 gap-1 rounded-xl border bg-background/60 p-1">
-                <button
-                  type="button"
-                  onClick={() => setDestination("fidelize")}
-                  className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition ${destination === "fidelize" ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  <Star className="h-3.5 w-3.5" /> Avaliação Fidelize
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDestination("google")}
-                  className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition ${destination === "google" ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  <GoogleG className="h-3.5 w-3.5" /> Google Reviews
-                </button>
+              {/* Fidelize-only destination */}
+              <div className="rounded-lg border bg-background/50 p-3 text-xs">
+                <div className="text-muted-foreground">Link público (pré-definido)</div>
+                <div className="mt-1 flex items-center gap-2">
+                  <code className="flex-1 truncate rounded bg-muted/60 px-2 py-1 text-primary">{fidelizeUrl}</code>
+                  <Button size="sm" variant="ghost" className="h-7 px-2" onClick={copyLink}><Copy className="h-3.5 w-3.5" /></Button>
+                </div>
               </div>
 
-              {destination === "fidelize" ? (
-                <div className="rounded-lg border bg-background/50 p-3 text-xs">
-                  <div className="text-muted-foreground">Link público (pré-definido)</div>
-                  <div className="mt-1 flex items-center gap-2">
-                    <code className="flex-1 truncate rounded bg-muted/60 px-2 py-1 text-primary">{fidelizeUrl}</code>
-                    <Button size="sm" variant="ghost" className="h-7 px-2" onClick={copyLink}><Copy className="h-3.5 w-3.5" /></Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Input
-                    value={googleUrl}
-                    onChange={(e) => setGoogleUrl(e.target.value)}
-                    placeholder="https://g.page/r/XXXXXX/review"
-                    maxLength={500}
-                    aria-invalid={googleCheck.level === "error"}
-                    className={`text-xs transition-colors ${
-                      googleCheck.level === "error" ? "border-destructive focus-visible:ring-destructive/40" :
-                      googleCheck.level === "warn"  ? "border-amber-500/60" :
-                      googleCheck.level === "ok"    ? "border-emerald-500/60" : ""
-                    }`}
-                  />
-                  <ValidationLine check={googleCheck} />
-                  <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span>{googleUrl.length}/500</span>
-                    {googleUrl && (
-                      <button type="button" onClick={() => setGoogleUrl("")} className="inline-flex items-center gap-1 text-muted-foreground hover:text-destructive">
-                        <XCircle className="h-3 w-3" /> limpar
-                      </button>
-                    )}
-                  </div>
-                  <label className="mt-1 flex cursor-pointer items-center justify-between gap-3 rounded-lg border bg-background/50 p-2.5">
-                    <span className="flex items-center gap-2 text-xs font-medium">
-                      <GoogleG className="h-4 w-4" /> Mostrar logo do Google no cartaz
-                    </span>
-                    <Switch checked={showGoogleLogo} onCheckedChange={setShowGoogleLogo} />
-                  </label>
-                </div>
-              )}
 
               {/* Editable label shown ON the poster below the main QR */}
               <div className="space-y-1.5">
