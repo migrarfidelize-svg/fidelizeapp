@@ -444,15 +444,13 @@ interface PosterProps {
 }
 
 const PosterCanvas = forwardRef<HTMLDivElement, PosterProps>(function PosterCanvas(props, ref) {
-  const { format } = props;
-  const isLandscape = format === "counter15x10";
   return (
     <div
       ref={ref}
-      className="absolute inset-0 flex"
-      style={{ background: props.backgroundColor, color: props.textColor, flexDirection: isLandscape ? "row" : "column" }}
+      className="absolute inset-0 flex flex-col"
+      style={{ background: props.backgroundColor, color: props.textColor }}
     >
-      {isLandscape ? <LandscapeBody {...props} /> : <PortraitBody {...props} />}
+      <PortraitBody {...props} />
     </div>
   );
 });
