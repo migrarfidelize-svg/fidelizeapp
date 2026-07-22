@@ -1972,15 +1972,17 @@ function NfcBlock({ primary }: { primary: string }) {
 
 
 
-function BrandLogo({ url, name, primary }: { url: string | null; name: string; primary: string }) {
-  if (url) return <img src={url} alt={name} className="h-10 w-10 shrink-0 rounded-full object-cover ring-2" style={{ borderColor: primary }} />;
+function BrandLogo({ url, name, primary, sizePx = 40 }: { url: string | null; name: string; primary: string; sizePx?: number }) {
+  const dim = { width: sizePx, height: sizePx };
+  if (url) return <img src={url} alt={name} className="shrink-0 rounded-full object-cover ring-2" style={{ ...dim, borderColor: primary }} />;
   const initial = name.slice(0, 1).toUpperCase();
   return (
-    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-sm font-black text-white" style={{ background: primary }}>
+    <div className="shrink-0 grid place-items-center rounded-full font-black text-white" style={{ ...dim, background: primary, fontSize: `${sizePx * 0.42}px` }}>
       {initial}
     </div>
   );
 }
+
 
 function Stars({ color, size, center }: { color: string; size: number; center?: boolean }) {
   return (
