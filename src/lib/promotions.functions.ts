@@ -172,6 +172,14 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
       primary_color: string;
       accent_color: string;
       external_links: { label: string; url: string }[];
+      description: string | null;
+      address: string | null;
+      city: string | null;
+      phone: string | null;
+      whatsapp: string | null;
+      instagram: string | null;
+      website: string | null;
+      hours: unknown;
     };
     const empty: { establishment: PublicEst | null; promotions: PublicPromo[] } = {
       establishment: null,
@@ -180,7 +188,7 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: est } = await supabaseAdmin
       .from("establishments")
-      .select("id, name, slug, logo_url, primary_color, accent_color, external_links, active")
+      .select("id, name, slug, logo_url, primary_color, accent_color, external_links, active, description, address, city, phone, whatsapp, instagram, website, hours")
       .eq("slug", data.slug)
       .maybeSingle();
     if (!est || !est.active) return empty;
