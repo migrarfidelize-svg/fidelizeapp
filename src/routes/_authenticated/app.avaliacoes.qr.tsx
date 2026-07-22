@@ -1208,7 +1208,7 @@ function PortraitBody(p: PosterProps) {
       {/* CTA near QR */}
       <DraggableItem itemKey="ctaNear" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
         <div className="text-center text-xs font-bold uppercase tracking-widest" style={{ color: p.primaryColor }}>
-          {p.nfcMode && p.nfcStyle === "block" ? "Aproxime o celular" : p.ctaNearQR}
+          {p.nfcMode && p.nfcStyle === "block" && !p.secondaryEnabled ? "Aproxime o celular" : p.ctaNearQR}
         </div>
       </DraggableItem>
 
