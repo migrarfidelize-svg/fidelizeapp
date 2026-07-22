@@ -20,6 +20,10 @@ import {
   ChevronDown,
   Sparkles,
   CreditCard,
+  LogIn,
+  Wallet,
+  UserCircle2,
+
 } from "lucide-react";
 import { getStampIcon } from "@/lib/stampIcons";
 
