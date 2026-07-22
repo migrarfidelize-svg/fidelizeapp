@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { getErrorMessage as friendlyError } from "@/lib/error-messages";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { getMyLinkTree, upsertLinkTree } from "@/lib/linktree.functions";
 import { Button } from "@/components/ui/button";
