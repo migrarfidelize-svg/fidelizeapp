@@ -875,6 +875,7 @@ export type Database = {
           created_by: string | null
           description: string | null
           email: string | null
+          external_links: Json
           facebook: string | null
           google_maps_url: string | null
           id: string
@@ -910,6 +911,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           email?: string | null
+          external_links?: Json
           facebook?: string | null
           google_maps_url?: string | null
           id?: string
@@ -945,6 +947,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           email?: string | null
+          external_links?: Json
           facebook?: string | null
           google_maps_url?: string | null
           id?: string
@@ -2054,6 +2057,59 @@ export type Database = {
           profile_id?: string
         }
         Relationships: []
+      }
+      promotions: {
+        Row: {
+          active: boolean
+          body: string | null
+          created_at: string
+          created_by: string | null
+          ends_at: string | null
+          establishment_id: string
+          external_links: Json
+          id: string
+          media: Json
+          starts_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          establishment_id: string
+          external_links?: Json
+          id?: string
+          media?: Json
+          starts_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          establishment_id?: string
+          external_links?: Json
+          id?: string
+          media?: Json
+          starts_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotions_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       push_logs: {
         Row: {

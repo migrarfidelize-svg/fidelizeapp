@@ -27,12 +27,18 @@ function resolveTargetUrl(data) {
     birthday: "/carteira",
     discover: "/carteira/descobrir",
     profile: "/carteira/perfil",
+    promotions: "/carteira/descobrir",
+    promotion: "/carteira/descobrir",
+    promo: "/carteira/descobrir",
   };
 
   // Card-scoped deep-link (stamp on a specific establishment).
   if (type === "card" && slug) return `/carteira/${encodeURIComponent(slug)}`;
   if ((type === "stamp" || type === "reward") && slug) {
     return `/carteira/${encodeURIComponent(slug)}`;
+  }
+  if ((type === "promotions" || type === "promotion" || type === "promo") && slug) {
+    return `/carteira/${encodeURIComponent(slug)}/promocoes`;
   }
 
   // Explicit URL in payload — same-origin + /carteira prefix only.

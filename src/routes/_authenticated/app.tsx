@@ -68,11 +68,18 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Marketing",
     items: [
       { to: "/app/campanhas", label: "Campanhas", icon: Sparkles },
-      { to: "/app/mensagens", label: "Mensagens", icon: MessageSquare },
       { to: "/app/qrcodes", label: "QR Codes", icon: QrCode },
       { to: "/app/retencao", label: "Retenção", icon: HeartHandshake },
       { to: "/app/avaliacoes", label: "Avaliações", icon: Star },
+    ],
+  },
+  {
+    key: "comunicacao",
+    label: "Comunicação",
+    items: [
       { to: "/app/notificacoes", label: "Notificações", icon: Bell },
+      { to: "/app/promocoes", label: "Promoções", icon: Megaphone },
+      { to: "/app/mensagens", label: "Mensagens", icon: MessageSquare },
     ],
   },
   {

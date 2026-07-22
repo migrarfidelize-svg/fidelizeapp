@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Send, Bell, Users, Zap, AlertTriangle, Sparkles, Clock, X, Wallet, Gift, Compass, QrCode, Link2 } from "lucide-react";
+import { Loader2, Send, Bell, Users, Zap, AlertTriangle, Sparkles, Clock, X, Wallet, Gift, Compass, QrCode, Link2, Megaphone } from "lucide-react";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import {
   listPushLogs,
@@ -45,7 +45,7 @@ const TIERS = [
   { key: "diamante", label: "Diamante" },
 ] as const;
 
-const DEEP_LINKS = [
+const BASE_DEEP_LINKS = [
   { key: "wallet", label: "Minha carteira", path: "/carteira", icon: Wallet },
   { key: "qr", label: "Meu QR", path: "/carteira?tab=qr", icon: QrCode },
   { key: "prizes", label: "Meus prêmios", path: "/carteira/premios", icon: Gift },
@@ -63,7 +63,13 @@ function NotifPage() {
   const cancelScheduledFn = useServerFn(cancelScheduledBroadcast);
 
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
-  const activeEst = memberships?.[0]?.establishment as { id: string; name: string } | undefined;
+  const activeEst = memberships?.[0]?.establishment as { id: string; name: string; slug: string } | undefined;
+  const deepLinks = [
+    ...BASE_DEEP_LINKS,
+    ...(activeEst?.slug
+      ? [{ key: "promotions", label: "Minhas promoções", path: `/carteira/${activeEst.slug}/promocoes`, icon: Megaphone } as const]
+      : []),
+  ];
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -316,7 +322,7 @@ function NotifPage() {
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5"><Link2 className="h-3.5 w-3.5" /> Destino ao tocar</Label>
             <div className="flex flex-wrap gap-2">
-              {DEEP_LINKS.map((d) => {
+              {deepLinks.map((d: typeof deepLinks[number]) => {
                 const Icon = d.icon;
                 const full = typeof window !== "undefined" ? `${window.location.origin}${d.path}` : d.path;
                 const active = url === full;
