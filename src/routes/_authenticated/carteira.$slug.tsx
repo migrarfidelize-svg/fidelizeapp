@@ -359,16 +359,50 @@ function WalletEstablishment() {
 
 
 
-        {primaryCard && (primaryCard.campaign as { rules: string | null }).rules && (
-          <section className="rounded-2xl border border-border/60 bg-card/40 p-4">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              Regras do programa
-            </h2>
-            <p className="mt-2 whitespace-pre-line text-sm">
-              {(primaryCard.campaign as { rules: string }).rules}
-            </p>
-          </section>
-        )}
+        {primaryCard && (() => {
+          const camp = primaryCard.campaign as {
+            rules: string | null;
+            stamp_validity_days: number | null;
+            reward_validity_days: number | null;
+            reward_description: string | null;
+          };
+          const hasAny = camp.rules || camp.stamp_validity_days || camp.reward_validity_days || camp.reward_description;
+          if (!hasAny) return null;
+          return (
+            <section className="rounded-2xl border border-border/60 bg-card/40 p-4">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                Regras do programa
+              </h2>
+              <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                {camp.stamp_validity_days ? (
+                  <li className="rounded-xl border border-border/50 bg-background/40 px-3 py-2 text-xs">
+                    <span className="block font-bold uppercase tracking-widest text-[10px] text-muted-foreground">Validade do carimbo</span>
+                    <span className="mt-0.5 block text-sm font-semibold text-foreground">
+                      {camp.stamp_validity_days} dias após emissão
+                    </span>
+                  </li>
+                ) : null}
+                {camp.reward_validity_days ? (
+                  <li className="rounded-xl border border-border/50 bg-background/40 px-3 py-2 text-xs">
+                    <span className="block font-bold uppercase tracking-widest text-[10px] text-muted-foreground">Validade do prêmio</span>
+                    <span className="mt-0.5 block text-sm font-semibold text-foreground">
+                      {camp.reward_validity_days} dias após liberado
+                    </span>
+                  </li>
+                ) : null}
+              </ul>
+              {camp.reward_description && (
+                <p className="mt-3 whitespace-pre-line text-sm text-muted-foreground">
+                  <span className="font-semibold text-foreground">Sobre o prêmio: </span>
+                  {camp.reward_description}
+                </p>
+              )}
+              {camp.rules && (
+                <p className="mt-3 whitespace-pre-line text-sm">{camp.rules}</p>
+              )}
+            </section>
+          );
+        })()}
 
         {(est.address || est.instagram) && (
           <section className="rounded-2xl border border-border/60 bg-card/40 p-4">
