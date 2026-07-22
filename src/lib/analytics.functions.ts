@@ -109,7 +109,7 @@ export const getRecapAnalytics = createServerFn({ method: "POST" })
         .select("id, establishment_id, created_at")
         .in("establishment_id", estIds),
       supabase.from("campaigns")
-        .select("id, title, establishment_id")
+        .select("id, name, reward_title, establishment_id")
         .in("establishment_id", estIds),
       supabase.from("achievements")
         .select("code, title, icon")
