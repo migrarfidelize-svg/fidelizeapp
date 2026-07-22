@@ -44,6 +44,7 @@ import { Route as AuthenticatedCarteiraRecompensasRouteImport } from './routes/_
 import { Route as AuthenticatedCarteiraPremiosRouteImport } from './routes/_authenticated/carteira.premios'
 import { Route as AuthenticatedCarteiraPerfilRouteImport } from './routes/_authenticated/carteira.perfil'
 import { Route as AuthenticatedCarteiraHistoricoRouteImport } from './routes/_authenticated/carteira.historico'
+import { Route as AuthenticatedCarteiraDescobrirRouteImport } from './routes/_authenticated/carteira.descobrir'
 import { Route as AuthenticatedCarteiraCartoesRouteImport } from './routes/_authenticated/carteira.cartoes'
 import { Route as AuthenticatedCarteiraSlugRouteImport } from './routes/_authenticated/carteira.$slug'
 import { Route as AuthenticatedAppSuporteRouteImport } from './routes/_authenticated/app.suporte'
@@ -267,6 +268,12 @@ const AuthenticatedCarteiraHistoricoRoute =
   AuthenticatedCarteiraHistoricoRouteImport.update({
     id: '/historico',
     path: '/historico',
+    getParentRoute: () => AuthenticatedCarteiraRoute,
+  } as any)
+const AuthenticatedCarteiraDescobrirRoute =
+  AuthenticatedCarteiraDescobrirRouteImport.update({
+    id: '/descobrir',
+    path: '/descobrir',
     getParentRoute: () => AuthenticatedCarteiraRoute,
   } as any)
 const AuthenticatedCarteiraCartoesRoute =
@@ -577,6 +584,7 @@ export interface FileRoutesByFullPath {
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
   '/carteira/$slug': typeof AuthenticatedCarteiraSlugRoute
   '/carteira/cartoes': typeof AuthenticatedCarteiraCartoesRoute
+  '/carteira/descobrir': typeof AuthenticatedCarteiraDescobrirRoute
   '/carteira/historico': typeof AuthenticatedCarteiraHistoricoRoute
   '/carteira/perfil': typeof AuthenticatedCarteiraPerfilRoute
   '/carteira/premios': typeof AuthenticatedCarteiraPremiosRoute
@@ -654,6 +662,7 @@ export interface FileRoutesByTo {
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
   '/carteira/$slug': typeof AuthenticatedCarteiraSlugRoute
   '/carteira/cartoes': typeof AuthenticatedCarteiraCartoesRoute
+  '/carteira/descobrir': typeof AuthenticatedCarteiraDescobrirRoute
   '/carteira/historico': typeof AuthenticatedCarteiraHistoricoRoute
   '/carteira/perfil': typeof AuthenticatedCarteiraPerfilRoute
   '/carteira/premios': typeof AuthenticatedCarteiraPremiosRoute
@@ -736,6 +745,7 @@ export interface FileRoutesById {
   '/_authenticated/app/suporte': typeof AuthenticatedAppSuporteRoute
   '/_authenticated/carteira/$slug': typeof AuthenticatedCarteiraSlugRoute
   '/_authenticated/carteira/cartoes': typeof AuthenticatedCarteiraCartoesRoute
+  '/_authenticated/carteira/descobrir': typeof AuthenticatedCarteiraDescobrirRoute
   '/_authenticated/carteira/historico': typeof AuthenticatedCarteiraHistoricoRoute
   '/_authenticated/carteira/perfil': typeof AuthenticatedCarteiraPerfilRoute
   '/_authenticated/carteira/premios': typeof AuthenticatedCarteiraPremiosRoute
@@ -818,6 +828,7 @@ export interface FileRouteTypes {
     | '/app/suporte'
     | '/carteira/$slug'
     | '/carteira/cartoes'
+    | '/carteira/descobrir'
     | '/carteira/historico'
     | '/carteira/perfil'
     | '/carteira/premios'
@@ -895,6 +906,7 @@ export interface FileRouteTypes {
     | '/app/suporte'
     | '/carteira/$slug'
     | '/carteira/cartoes'
+    | '/carteira/descobrir'
     | '/carteira/historico'
     | '/carteira/perfil'
     | '/carteira/premios'
@@ -976,6 +988,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/suporte'
     | '/_authenticated/carteira/$slug'
     | '/_authenticated/carteira/cartoes'
+    | '/_authenticated/carteira/descobrir'
     | '/_authenticated/carteira/historico'
     | '/_authenticated/carteira/perfil'
     | '/_authenticated/carteira/premios'
@@ -1284,6 +1297,13 @@ declare module '@tanstack/react-router' {
       path: '/historico'
       fullPath: '/carteira/historico'
       preLoaderRoute: typeof AuthenticatedCarteiraHistoricoRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
+    }
+    '/_authenticated/carteira/descobrir': {
+      id: '/_authenticated/carteira/descobrir'
+      path: '/descobrir'
+      fullPath: '/carteira/descobrir'
+      preLoaderRoute: typeof AuthenticatedCarteiraDescobrirRouteImport
       parentRoute: typeof AuthenticatedCarteiraRoute
     }
     '/_authenticated/carteira/cartoes': {
@@ -1686,6 +1706,7 @@ const AuthenticatedAppRouteWithChildren =
 interface AuthenticatedCarteiraRouteChildren {
   AuthenticatedCarteiraSlugRoute: typeof AuthenticatedCarteiraSlugRoute
   AuthenticatedCarteiraCartoesRoute: typeof AuthenticatedCarteiraCartoesRoute
+  AuthenticatedCarteiraDescobrirRoute: typeof AuthenticatedCarteiraDescobrirRoute
   AuthenticatedCarteiraHistoricoRoute: typeof AuthenticatedCarteiraHistoricoRoute
   AuthenticatedCarteiraPerfilRoute: typeof AuthenticatedCarteiraPerfilRoute
   AuthenticatedCarteiraPremiosRoute: typeof AuthenticatedCarteiraPremiosRoute
@@ -1696,6 +1717,7 @@ interface AuthenticatedCarteiraRouteChildren {
 const AuthenticatedCarteiraRouteChildren: AuthenticatedCarteiraRouteChildren = {
   AuthenticatedCarteiraSlugRoute: AuthenticatedCarteiraSlugRoute,
   AuthenticatedCarteiraCartoesRoute: AuthenticatedCarteiraCartoesRoute,
+  AuthenticatedCarteiraDescobrirRoute: AuthenticatedCarteiraDescobrirRoute,
   AuthenticatedCarteiraHistoricoRoute: AuthenticatedCarteiraHistoricoRoute,
   AuthenticatedCarteiraPerfilRoute: AuthenticatedCarteiraPerfilRoute,
   AuthenticatedCarteiraPremiosRoute: AuthenticatedCarteiraPremiosRoute,

@@ -194,9 +194,13 @@ function StackedCard({
       >
         {/* Base escura + glow da marca */}
         <div className="absolute inset-0 bg-card" />
+        {/* Halo respirando na cor da marca — só no cartão ativo */}
         <div
-          className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full opacity-30 blur-3xl"
-          style={{ background: brand }}
+          className={
+            "pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full blur-3xl " +
+            (isActive ? "wallet-card-breathe" : "opacity-30")
+          }
+          style={{ background: brand, ["--brand" as never]: brand }}
         />
         <div
           className="pointer-events-none absolute inset-x-0 bottom-0 h-40 opacity-25"
@@ -282,7 +286,7 @@ function StackedCard({
 
           {/* Bottom — stamps preview + CTA */}
           <div className="mt-5 flex items-center justify-between border-t border-border/40 pt-4">
-            <StampsPreview stamps={stamps} required={req} brand={brand} />
+            <StampsPreview stamps={stamps} required={req} brand={brand} pulseLatest={isActive && stamps > 0} />
             <Link
               to="/carteira/$slug"
               params={{ slug: est.slug }}
@@ -327,25 +331,30 @@ function StampsPreview({
   stamps,
   required,
   brand,
+  pulseLatest,
 }: {
   stamps: number;
   required: number;
   brand: string;
+  pulseLatest?: boolean;
 }) {
   const max = Math.min(3, required);
   const filled = Math.min(stamps, max);
   const extra = Math.max(0, required - max);
+  const latestIndex = filled - 1;
   return (
-    <div className="flex items-center">
+    <div className="flex items-center" style={{ ["--brand" as never]: brand }}>
       <div className="flex -space-x-1.5">
         {Array.from({ length: max }).map((_, i) => {
           const on = i < filled;
+          const isLatest = pulseLatest && i === latestIndex;
           return (
             <div
               key={i}
               className={
                 "grid h-6 w-6 place-items-center rounded-full border-2 border-background text-[9px] font-bold " +
-                (on ? "text-white" : "bg-muted text-muted-foreground/60")
+                (on ? "text-white " : "bg-muted text-muted-foreground/60 ") +
+                (isLatest ? "wallet-stamp-pulse relative z-10" : "")
               }
               style={on ? { background: brand } : undefined}
             >
