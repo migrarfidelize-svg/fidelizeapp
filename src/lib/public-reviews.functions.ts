@@ -672,7 +672,7 @@ export const listPublicReviewsBySlug = createServerFn({ method: "GET" })
       .from("customer_reviews")
       .select("id, rating, comment, customer_name, anonymous, submitted_at, created_at, merchant_reply, merchant_reply_at, status, public_hidden")
       .eq("establishment_id", est.id)
-      .in("status", ["resolved", "contacting", "analyzing", "new"])
+      .neq("status", "archived")
       .eq("public_hidden", false)
       .order("submitted_at", { ascending: false, nullsFirst: false })
       .limit(data.limit ?? 50);
