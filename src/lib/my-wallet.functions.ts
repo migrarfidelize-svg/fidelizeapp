@@ -563,3 +563,46 @@ export const getPromotedEstablishmentIds = createServerFn({ method: "GET" })
     return Array.from(set);
   });
 
+/**
+ * Resolve login de cliente pelo WhatsApp. Design consciente: no fluxo
+ * /carteira o WhatsApp é o único identificador/PIN. Se o usuário existir
+ * com e-mail real (cadastros antigos ou vindos por QR/site), reencaixamos
+ * a senha nas credenciais sintéticas do fluxo carteira e devolvemos o
+ * e-mail correto para o cliente conseguir entrar apenas com o WhatsApp.
+ * Retorna { found: false } quando não existe conta associada ao número.
+ */
+export const resolveWalletLoginByWhatsapp = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ whatsapp: z.string().min(10) }).parse(d))
+  .handler(async ({ data }) => {
+    const digits = data.whatsapp.replace(/\D/g, "");
+    if (digits.length < 10) return { found: false as const };
+    const syntheticPassword = `wa_${digits}_fidelize_v1`;
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Procura profile cujo telefone (só dígitos) bata com o informado.
+    const { data: profiles } = await supabaseAdmin
+      .from("profiles")
+      .select("id, phone")
+      .not("phone", "is", null)
+      .limit(500);
+    const match = (profiles ?? []).find(
+      (p) => (p.phone ?? "").replace(/\D/g, "") === digits,
+    );
+    if (!match) return { found: false as const };
+
+    // Descobre o e-mail real no auth.users
+    const { data: userRes, error: uErr } = await supabaseAdmin.auth.admin.getUserById(match.id);
+    if (uErr || !userRes?.user?.email) return { found: false as const };
+    const email = userRes.user.email;
+
+    // Reencaixa a senha para a senha sintética do fluxo carteira,
+    // e garante e-mail confirmado (sem exigir clique de confirmação).
+    await supabaseAdmin.auth.admin.updateUserById(match.id, {
+      password: syntheticPassword,
+      email_confirm: true,
+    });
+
+    return { found: true as const, email, password: syntheticPassword };
+  });
+
