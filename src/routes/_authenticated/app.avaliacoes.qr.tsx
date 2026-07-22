@@ -8,7 +8,7 @@ import { jsPDF } from "jspdf";
 import { toast } from "sonner";
 import {
   Star, Copy, Share2, FileImage, FileText, Lock, Sparkles, Radio, CheckCircle2, AlertTriangle,
-  Save, Layers, Eye, Trash2, Palette, ShoppingBag,
+  Save, Layers, Eye, Trash2, Palette, ShoppingBag, Move, RotateCcw, XCircle,
 } from "lucide-react";
 
 import { PageHero } from "@/components/PageHero";
@@ -67,6 +67,47 @@ type SavedDesign = {
   };
 };
 
+/** Draggable elements on the poster canvas. */
+type LayoutKey = "header" | "title" | "subtitle" | "primaryQr" | "secondaryQr" | "nfc" | "ctaNear" | "ctaFooter";
+type LayoutPos = { x: number; y: number }; // percent 0-100 (element center)
+type PosterLayout = Record<LayoutKey, LayoutPos>;
+
+const DEFAULT_LAYOUT: PosterLayout = {
+  header:      { x: 50, y: 13 },
+  title:       { x: 50, y: 26 },
+  subtitle:    { x: 50, y: 34 },
+  primaryQr:   { x: 50, y: 58 },
+  secondaryQr: { x: 72, y: 58 },
+  nfc:         { x: 72, y: 58 },
+  ctaNear:     { x: 50, y: 86 },
+  ctaFooter:   { x: 50, y: 93 },
+};
+
+/** URL validation for QR destinations. */
+type UrlCheck = { level: "empty" | "ok" | "warn" | "error"; message: string };
+
+function checkGoogleUrl(v: string): UrlCheck {
+  const t = v.trim();
+  if (!t) return { level: "empty", message: 'Copie o link "Deixe uma avaliação" do seu Google Business.' };
+  let u: URL;
+  try { u = new URL(t); } catch { return { level: "error", message: "URL inválida — verifique se copiou o link completo." }; }
+  if (u.protocol !== "https:" && u.protocol !== "http:") return { level: "error", message: "O link deve começar com https://" };
+  const ok = /^(g\.page|maps\.app\.goo\.gl|search\.google\.com|www\.google\.com|goo\.gl|maps\.google\.com)$/i;
+  if (!ok.test(u.hostname)) return { level: "warn", message: `"${u.hostname}" não parece um domínio do Google (g.page, maps.app.goo.gl, google.com).` };
+  if (u.protocol === "http:") return { level: "warn", message: "Preferimos https:// para evitar avisos de segurança no celular." };
+  return { level: "ok", message: `Link Google válido — ${u.hostname}` };
+}
+
+function checkGenericUrl(v: string): UrlCheck {
+  const t = v.trim();
+  if (!t) return { level: "empty", message: "Cole o link do cardápio, loja, WhatsApp ou Instagram." };
+  let u: URL;
+  try { u = new URL(t); } catch { return { level: "error", message: "URL inválida — comece com https:// e verifique se está completa." }; }
+  if (u.protocol !== "https:" && u.protocol !== "http:") return { level: "error", message: "O link deve começar com https://" };
+  if (u.protocol === "http:") return { level: "warn", message: "Preferimos https:// para evitar avisos de segurança no celular." };
+  return { level: "ok", message: `Link válido — ${u.hostname}` };
+}
+
 function ReviewQrPage() {
 
   const getEsts = useServerFn(getMyEstablishments);
@@ -105,6 +146,8 @@ function ReviewQrPage() {
   const [displayMode, setDisplayMode] = useState(false);
   const [designs, setDesigns] = useState<SavedDesign[]>([]);
   const [designName, setDesignName] = useState("");
+  const [layout, setLayout] = useState<PosterLayout>(DEFAULT_LAYOUT);
+  const [editLayout, setEditLayout] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
 
 
@@ -128,6 +171,11 @@ function ReviewQrPage() {
         if (s.primaryColor) setPrimaryColor(s.primaryColor);
         if (s.backgroundColor) setBackgroundColor(s.backgroundColor);
         if (s.textColor) setTextColor(s.textColor);
+        if (typeof s.primaryLabel === "string") setPrimaryLabel(s.primaryLabel);
+        if (typeof s.secondaryEnabled === "boolean") setSecondaryEnabled(s.secondaryEnabled);
+        if (typeof s.secondaryUrl === "string") setSecondaryUrl(s.secondaryUrl);
+        if (typeof s.secondaryLabel === "string") setSecondaryLabel(s.secondaryLabel);
+        if (s.layout && typeof s.layout === "object") setLayout({ ...DEFAULT_LAYOUT, ...s.layout });
       }
       const rawDesigns = window.localStorage.getItem(designsKey);
       if (rawDesigns) setDesigns(JSON.parse(rawDesigns));
@@ -141,9 +189,11 @@ function ReviewQrPage() {
         template, format, destination, googleUrl, showGoogleLogo, nfcMode,
         title, subtitle, ctaNearQR, ctaFooter,
         primaryColor, backgroundColor, textColor,
+        primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel,
+        layout,
       }));
     } catch { /* ignore */ }
-  }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor]);
+  }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor, primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel, layout]);
 
   function applyTemplate(key: TemplateKey) {
     setTemplate(key);
@@ -206,10 +256,15 @@ function ReviewQrPage() {
   const targetUrl = rawTargetUrl || (destination === "google"
     ? "https://g.page/exemplo-fidelize/review"
     : "https://fidelize.app/preview");
-  const googleReady = destination === "google" && /^https?:\/\/(g\.page|maps\.app\.goo\.gl|search\.google\.com|www\.google\.com|goo\.gl)/i.test(rawTargetUrl);
+
+  const googleCheck = useMemo(() => checkGoogleUrl(googleUrl), [googleUrl]);
   const secondaryRawUrl = secondaryUrl.trim();
+  const secondaryCheck = useMemo(() => checkGenericUrl(secondaryUrl), [secondaryUrl]);
+  const googleReady = destination === "google" && googleCheck.level === "ok";
   const secondaryIsPlaceholder = secondaryEnabled && !secondaryRawUrl;
-  const secondaryReady = secondaryEnabled && /^https?:\/\//i.test(secondaryRawUrl);
+  const secondaryReady = secondaryEnabled && secondaryCheck.level === "ok";
+  const primaryBlocking = destination === "google" && (googleCheck.level === "error" || googleCheck.level === "empty");
+  const secondaryBlocking = secondaryEnabled && (secondaryCheck.level === "error" || secondaryCheck.level === "empty");
 
   useEffect(() => {
     QRCode.toDataURL(targetUrl, {
@@ -229,18 +284,44 @@ function ReviewQrPage() {
 
   const dims = FORMATS[format];
 
+  /**
+   * Renders the poster to PNG at 300 DPI print resolution.
+   * pixelRatio is computed from the on-screen preview size so the output
+   * always matches (mm ÷ 25.4 × 300) px, no matter how big the preview is.
+   */
+  async function renderPosterPng(): Promise<string> {
+    const el = posterRef.current;
+    if (!el) throw new Error("Preview indisponível");
+    const rect = el.getBoundingClientRect();
+    const targetPx = Math.max(600, Math.round((dims.mm.w / 25.4) * 300));
+    const pixelRatio = Math.max(2, targetPx / Math.max(1, rect.width));
+    // Force layout-guides off during export
+    const wasEditing = editLayout;
+    if (wasEditing) setEditLayout(false);
+    await new Promise((r) => requestAnimationFrame(() => r(null)));
+    try {
+      return await toPng(el, {
+        pixelRatio,
+        cacheBust: true,
+        filter: (node) => !(node instanceof HTMLElement && node.dataset?.exportIgnore === "true"),
+      });
+    } finally {
+      if (wasEditing) setEditLayout(true);
+    }
+  }
+
   async function exportPng() {
     if (!posterRef.current) return;
-    if (primaryIsPlaceholder) { toast.error("Cole o link do Google antes de exportar"); return; }
-    if (secondaryIsPlaceholder) { toast.error("Cole a URL do QR secundário antes de exportar"); return; }
+    if (primaryBlocking) { toast.error(googleCheck.message); return; }
+    if (secondaryBlocking) { toast.error(secondaryCheck.message); return; }
     setExporting(true);
     try {
-      const url = await toPng(posterRef.current, { pixelRatio: 3, cacheBust: true });
+      const url = await renderPosterPng();
       const a = document.createElement("a");
       a.href = url;
-      a.download = `qr-avaliacao-${est?.slug ?? "estabelecimento"}-${format}.png`;
+      a.download = `qr-avaliacao-${est?.slug ?? "estabelecimento"}-${format}-300dpi.png`;
       a.click();
-      toast.success("PNG baixado");
+      toast.success(`PNG 300 DPI baixado (${Math.round((dims.mm.w/25.4)*300)}×${Math.round((dims.mm.h/25.4)*300)}px)`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao exportar PNG");
     } finally { setExporting(false); }
@@ -248,16 +329,17 @@ function ReviewQrPage() {
 
   async function exportPdf() {
     if (!posterRef.current) return;
-    if (!targetUrl) { toast.error("Configure o destino do QR primeiro"); return; }
+    if (primaryBlocking) { toast.error(googleCheck.message); return; }
+    if (secondaryBlocking) { toast.error(secondaryCheck.message); return; }
     setExporting(true);
     try {
-      const url = await toPng(posterRef.current, { pixelRatio: 4, cacheBust: true });
+      const url = await renderPosterPng();
       const mmW = dims.mm.w;
       const mmH = dims.mm.h;
-      const pdf = new jsPDF({ unit: "mm", format: [mmW, mmH], orientation: mmW > mmH ? "landscape" : "portrait" });
-      pdf.addImage(url, "PNG", 0, 0, mmW, mmH);
-      pdf.save(`qr-avaliacao-${est?.slug ?? "estabelecimento"}-${format}.pdf`);
-      toast.success("PDF baixado");
+      const pdf = new jsPDF({ unit: "mm", format: [mmW, mmH], orientation: mmW > mmH ? "landscape" : "portrait", compress: true });
+      pdf.addImage(url, "PNG", 0, 0, mmW, mmH, undefined, "FAST");
+      pdf.save(`qr-avaliacao-${est?.slug ?? "estabelecimento"}-${format}-300dpi.pdf`);
+      toast.success(`PDF 300 DPI baixado (${mmW}×${mmH}mm)`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao exportar PDF");
     } finally { setExporting(false); }
@@ -361,19 +443,22 @@ function ReviewQrPage() {
                     onChange={(e) => setGoogleUrl(e.target.value)}
                     placeholder="https://g.page/r/XXXXXX/review"
                     maxLength={500}
-                    className="text-xs"
+                    aria-invalid={googleCheck.level === "error"}
+                    className={`text-xs transition-colors ${
+                      googleCheck.level === "error" ? "border-destructive focus-visible:ring-destructive/40" :
+                      googleCheck.level === "warn"  ? "border-amber-500/60" :
+                      googleCheck.level === "ok"    ? "border-emerald-500/60" : ""
+                    }`}
                   />
-                  {googleReady ? (
-                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-500">
-                      <CheckCircle2 className="h-3.5 w-3.5" /> Link Google válido
-                    </div>
-                  ) : googleUrl ? (
-                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-amber-500">
-                      <AlertTriangle className="h-3.5 w-3.5" /> Confira se é um link do Google (g.page, maps.app.goo.gl, google.com)
-                    </div>
-                  ) : (
-                    <div className="text-[11px] text-muted-foreground">Copie o link "Deixe uma avaliação" do seu Google Business.</div>
-                  )}
+                  <ValidationLine check={googleCheck} />
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                    <span>{googleUrl.length}/500</span>
+                    {googleUrl && (
+                      <button type="button" onClick={() => setGoogleUrl("")} className="inline-flex items-center gap-1 text-muted-foreground hover:text-destructive">
+                        <XCircle className="h-3 w-3" /> limpar
+                      </button>
+                    )}
+                  </div>
                   <label className="mt-1 flex cursor-pointer items-center justify-between gap-3 rounded-lg border bg-background/50 p-2.5">
                     <span className="flex items-center gap-2 text-xs font-medium">
                       <GoogleG className="h-4 w-4" /> Mostrar logo do Google no cartaz
@@ -417,19 +502,22 @@ function ReviewQrPage() {
                       onChange={(e) => setSecondaryUrl(e.target.value)}
                       placeholder="https://seurestaurante.com/cardapio"
                       maxLength={500}
-                      className="text-xs"
+                      aria-invalid={secondaryCheck.level === "error"}
+                      className={`text-xs transition-colors ${
+                        secondaryCheck.level === "error" ? "border-destructive focus-visible:ring-destructive/40" :
+                        secondaryCheck.level === "warn"  ? "border-amber-500/60" :
+                        secondaryCheck.level === "ok"    ? "border-emerald-500/60" : ""
+                      }`}
                     />
-                    {secondaryReady ? (
-                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-500">
-                        <CheckCircle2 className="h-3.5 w-3.5" /> Link válido
-                      </div>
-                    ) : secondaryUrl ? (
-                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-amber-500">
-                        <AlertTriangle className="h-3.5 w-3.5" /> O link precisa começar com https://
-                      </div>
-                    ) : (
-                      <div className="text-[11px] text-muted-foreground">Cole o link do cardápio digital, loja online, WhatsApp ou Instagram.</div>
-                    )}
+                    <ValidationLine check={secondaryCheck} />
+                    <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                      <span>{secondaryUrl.length}/500</span>
+                      {secondaryUrl && (
+                        <button type="button" onClick={() => setSecondaryUrl("")} className="inline-flex items-center gap-1 text-muted-foreground hover:text-destructive">
+                          <XCircle className="h-3 w-3" /> limpar
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-[11px] font-medium text-muted-foreground">Texto no cartaz (2º QR)</Label>
@@ -760,6 +848,9 @@ function ReviewQrPage() {
                   secondaryEnabled={secondaryEnabled}
                   secondaryQrDataUrl={secondaryQrDataUrl}
                   secondaryLabel={secondaryLabel}
+                  layout={layout}
+                  setLayout={setLayout}
+                  editable={editLayout}
                 />
 
                 {/* Acrylic glare overlay (mounted inside so it inherits transform) */}
@@ -829,10 +920,37 @@ function ReviewQrPage() {
                 />
               )}
             </div>
+
+            {/* Layout editor controls */}
+            <div className="flex w-full max-w-[420px] flex-wrap items-center justify-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant={editLayout ? "default" : "outline"}
+                onClick={() => setEditLayout((v) => !v)}
+                className="h-8 gap-1.5 text-xs"
+              >
+                <Move className="h-3.5 w-3.5" />
+                {editLayout ? "Concluir edição" : "Editar posições"}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => { setLayout(DEFAULT_LAYOUT); toast.success("Posições restauradas"); }}
+                className="h-8 gap-1.5 text-xs"
+                disabled={JSON.stringify(layout) === JSON.stringify(DEFAULT_LAYOUT)}
+              >
+                <RotateCcw className="h-3.5 w-3.5" /> Resetar posições
+              </Button>
+            </div>
+
             <p className="text-center text-xs text-muted-foreground">
-              {displayMode
+              {editLayout
+                ? "Arraste cada elemento (logo, título, QR, textos) para reposicionar. Toque em Concluir para exportar."
+                : displayMode
                 ? "Simulação em display acrílico de balcão — inclinado 12° para trás."
-                : `Preview em escala. Exportação usa ${dims.mm.w}×${dims.mm.h}mm (${dims.orientation === "landscape" ? "paisagem" : dims.orientation === "square" ? "quadrado" : "retrato"}).`}
+                : `Preview em escala. Exportação em 300 DPI — ${Math.round((dims.mm.w/25.4)*300)}×${Math.round((dims.mm.h/25.4)*300)}px (${dims.mm.w}×${dims.mm.h}mm).`}
             </p>
           </div>
         </div>
@@ -869,6 +987,9 @@ interface PosterProps {
   secondaryEnabled: boolean;
   secondaryQrDataUrl: string;
   secondaryLabel: string;
+  layout: PosterLayout;
+  setLayout: (updater: (prev: PosterLayout) => PosterLayout) => void;
+  editable: boolean;
 }
 
 const PosterCanvas = forwardRef<HTMLDivElement, PosterProps>(function PosterCanvas(props, ref) {
@@ -883,7 +1004,7 @@ const PosterCanvas = forwardRef<HTMLDivElement, PosterProps>(function PosterCanv
   return (
     <div
       ref={ref}
-      className="absolute inset-0 flex flex-col"
+      className="absolute inset-0"
       style={{ background: bg, color: props.textColor }}
     >
       {overlay !== "none" && (
@@ -894,30 +1015,128 @@ const PosterCanvas = forwardRef<HTMLDivElement, PosterProps>(function PosterCanv
   );
 });
 
+/**
+ * Renders a single draggable poster element positioned by percentage.
+ * When editable=true, the item shows a dashed guide and reacts to pointer drag,
+ * updating its (x, y) center coordinates in the shared layout state.
+ */
+function DraggableItem({
+  itemKey, layout, setLayout, editable, className = "", style, children,
+}: {
+  itemKey: LayoutKey;
+  layout: PosterLayout;
+  setLayout: (updater: (prev: PosterLayout) => PosterLayout) => void;
+  editable: boolean;
+  className?: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const draggingRef = useRef(false);
+  const pos = layout[itemKey];
 
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!editable) return;
+    const parent = ref.current?.parentElement;
+    if (!parent) return;
+    draggingRef.current = true;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    e.preventDefault();
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!editable || !draggingRef.current) return;
+    const parent = ref.current?.parentElement;
+    if (!parent) return;
+    const rect = parent.getBoundingClientRect();
+    const x = Math.max(2, Math.min(98, ((e.clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(2, Math.min(98, ((e.clientY - rect.top) / rect.height) * 100));
+    setLayout((prev) => ({ ...prev, [itemKey]: { x, y } }));
+  };
+  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    draggingRef.current = false;
+    try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch { /* ignore */ }
+  };
+
+  return (
+    <div
+      ref={ref}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      className={`absolute ${editable ? "cursor-move select-none" : ""} ${className}`}
+      style={{
+        left: `${pos.x}%`,
+        top: `${pos.y}%`,
+        transform: "translate(-50%, -50%)",
+        touchAction: editable ? "none" : undefined,
+        ...style,
+      }}
+    >
+      {editable && (
+        <div
+          data-export-ignore="true"
+          className="pointer-events-none absolute -inset-2 rounded-md border border-dashed border-primary/70 bg-primary/5"
+        >
+          <div className="absolute -top-4 left-0 whitespace-nowrap rounded bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-primary-foreground shadow">
+            {LAYOUT_LABELS[itemKey]}
+          </div>
+        </div>
+      )}
+      {children}
+    </div>
+  );
+}
+
+const LAYOUT_LABELS: Record<LayoutKey, string> = {
+  header: "Logo",
+  title: "Título",
+  subtitle: "Subtítulo",
+  primaryQr: "QR principal",
+  secondaryQr: "2º QR",
+  nfc: "NFC",
+  ctaNear: "Chamada",
+  ctaFooter: "Rodapé",
+};
 
 function PortraitBody(p: PosterProps) {
+  const primarySize = p.secondaryEnabled ? 104 : 128;
   return (
-    <div className="flex h-full w-full flex-col items-center justify-between p-6 text-center">
-      <div className="space-y-2">
-        <BrandLogo url={p.logoUrl} name={p.establishmentName} primary={p.primaryColor} />
-        <div className="text-sm font-bold" style={{ color: p.textColor }}>{p.establishmentName}</div>
-        <Stars color={p.primaryColor} size={16} center />
-        <h2 className="text-xl font-black leading-tight" style={{ color: p.textColor }}>{p.title}</h2>
-        <p className="mx-auto max-w-[26ch] text-[11px] opacity-70" style={{ color: p.textColor }}>{p.subtitle}</p>
-      </div>
+    <div className="relative h-full w-full">
+      {/* Header block (logo + name + stars) */}
+      <DraggableItem itemKey="header" layout={p.layout} setLayout={p.setLayout} editable={p.editable}>
+        <div className="flex flex-col items-center gap-1">
+          <BrandLogo url={p.logoUrl} name={p.establishmentName} primary={p.primaryColor} />
+          <div className="text-sm font-bold" style={{ color: p.textColor }}>{p.establishmentName}</div>
+          <Stars color={p.primaryColor} size={14} center />
+        </div>
+      </DraggableItem>
 
-      {/* QR area */}
-      {p.secondaryEnabled ? (
-        <div className="flex w-full items-start justify-center gap-4">
-          <LabeledQr
-            qr={p.qrDataUrl}
-            label={p.primaryLabel}
-            primary={p.primaryColor}
-            text={p.textColor}
-            badge={p.destination === "google" && p.showGoogleLogo ? "google" : null}
-            size={104}
-          />
+      {/* Title */}
+      <DraggableItem itemKey="title" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
+        <h2 className="text-center text-xl font-black leading-tight" style={{ color: p.textColor }}>{p.title}</h2>
+      </DraggableItem>
+
+      {/* Subtitle */}
+      <DraggableItem itemKey="subtitle" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[80%]">
+        <p className="text-center text-[11px] opacity-70" style={{ color: p.textColor }}>{p.subtitle}</p>
+      </DraggableItem>
+
+      {/* Primary QR */}
+      <DraggableItem itemKey="primaryQr" layout={p.layout} setLayout={p.setLayout} editable={p.editable}>
+        <LabeledQr
+          qr={p.qrDataUrl}
+          label={p.primaryLabel}
+          primary={p.primaryColor}
+          text={p.textColor}
+          badge={p.destination === "google" && p.showGoogleLogo ? "google" : null}
+          size={primarySize}
+        />
+      </DraggableItem>
+
+      {/* Secondary QR */}
+      {p.secondaryEnabled && (
+        <DraggableItem itemKey="secondaryQr" layout={p.layout} setLayout={p.setLayout} editable={p.editable}>
           <LabeledQr
             qr={p.secondaryQrDataUrl}
             label={p.secondaryLabel}
@@ -926,25 +1145,56 @@ function PortraitBody(p: PosterProps) {
             badge={null}
             size={104}
           />
-        </div>
-      ) : p.nfcMode ? (
-        <div className="flex items-center justify-center gap-3">
-          <LabeledQr qr={p.qrDataUrl} label={p.primaryLabel} primary={p.primaryColor} text={p.textColor} badge={p.destination === "google" && p.showGoogleLogo ? "google" : null} size={128} />
-          <NfcBlock primary={p.primaryColor} />
-        </div>
-      ) : (
-        <LabeledQr qr={p.qrDataUrl} label={p.primaryLabel} primary={p.primaryColor} text={p.textColor} badge={p.destination === "google" && p.showGoogleLogo ? "google" : null} size={128} />
+        </DraggableItem>
       )}
 
-      <div className="space-y-2">
-        <div className="text-xs font-bold uppercase tracking-widest" style={{ color: p.primaryColor }}>
+      {/* NFC block (only when NFC mode + no secondary) */}
+      {p.nfcMode && !p.secondaryEnabled && (
+        <DraggableItem itemKey="nfc" layout={p.layout} setLayout={p.setLayout} editable={p.editable}>
+          <NfcBlock primary={p.primaryColor} />
+        </DraggableItem>
+      )}
+
+      {/* CTA near QR */}
+      <DraggableItem itemKey="ctaNear" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
+        <div className="text-center text-xs font-bold uppercase tracking-widest" style={{ color: p.primaryColor }}>
           {p.nfcMode ? "Aproxime o celular" : p.ctaNearQR}
         </div>
-        <div className="text-[10px] opacity-70" style={{ color: p.textColor }}>{p.ctaFooter}</div>
-        <div className="flex items-center justify-center gap-2">
+      </DraggableItem>
+
+      {/* CTA footer */}
+      <DraggableItem itemKey="ctaFooter" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
+        <div className="flex flex-col items-center gap-1">
+          <div className="text-center text-[10px] opacity-70" style={{ color: p.textColor }}>{p.ctaFooter}</div>
           {p.nfcMode && <NfcBadge primary={p.primaryColor} />}
         </div>
+      </DraggableItem>
+    </div>
+  );
+}
+
+/** Compact inline validation message for URL fields. */
+function ValidationLine({ check }: { check: UrlCheck }) {
+  if (check.level === "empty") {
+    return <div className="text-[11px] text-muted-foreground">{check.message}</div>;
+  }
+  if (check.level === "ok") {
+    return (
+      <div className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-500">
+        <CheckCircle2 className="h-3.5 w-3.5" /> {check.message}
       </div>
+    );
+  }
+  if (check.level === "warn") {
+    return (
+      <div className="flex items-center gap-1.5 text-[11px] font-medium text-amber-500">
+        <AlertTriangle className="h-3.5 w-3.5" /> {check.message}
+      </div>
+    );
+  }
+  return (
+    <div role="alert" className="flex items-center gap-1.5 text-[11px] font-semibold text-destructive">
+      <XCircle className="h-3.5 w-3.5" /> {check.message}
     </div>
   );
 }
