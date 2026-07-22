@@ -105,10 +105,99 @@ export function extractErrorCode(err: unknown): string | null {
 export function getErrorMessage(err: unknown, fallback?: string): string {
   const code = extractErrorCode(err);
   if (code && ERROR_MESSAGES[code]) return ERROR_MESSAGES[code];
+  const zod = extractZodMessage(err);
+  if (zod) return zod;
   if (typeof err === "string" && err.trim()) return err;
-  if (err instanceof Error && err.message) return err.message;
+  if (err instanceof Error && err.message) {
+    const z2 = extractZodMessage(err.message);
+    if (z2) return z2;
+    return err.message;
+  }
   return fallback ?? ERROR_MESSAGES.unknown_error;
 }
+
+const FIELD_LABELS: Record<string, string> = {
+  title: "Título",
+  description: "Descrição",
+  logo_url: "Logo",
+  cover_url: "Capa",
+  label: "Rótulo do link",
+  url: "URL do link",
+  links: "Links",
+  name: "Nome",
+  email: "E-mail",
+  phone: "WhatsApp",
+  slug: "Identificador",
+  primary_color: "Cor primária",
+  accent_color: "Cor de destaque",
+};
+
+function labelForPath(path: (string | number)[]): string {
+  if (!path.length) return "Campo";
+  const key = String(path[path.length - 1]);
+  const base = FIELD_LABELS[key] ?? key.replace(/_/g, " ");
+  const idx = path.find((p) => typeof p === "number");
+  return typeof idx === "number" ? `${base} #${(idx as number) + 1}` : base;
+}
+
+function translateZodIssue(issue: {
+  code?: string;
+  message?: string;
+  path?: (string | number)[];
+  type?: string;
+  minimum?: number;
+  maximum?: number;
+}): string {
+  const label = labelForPath(issue.path ?? []);
+  switch (issue.code) {
+    case "too_big":
+      return issue.type === "string"
+        ? `${label} muito longo (máximo ${issue.maximum} caracteres).`
+        : `${label} acima do permitido (máx. ${issue.maximum}).`;
+    case "too_small":
+      if (issue.type === "string" && issue.minimum === 1)
+        return `${label} é obrigatório.`;
+      return `${label} muito curto (mínimo ${issue.minimum}).`;
+    case "invalid_type":
+      return `${label} está em formato inválido.`;
+    case "invalid_string":
+      return `${label} está em formato inválido.`;
+    case "invalid_enum_value":
+      return `${label} tem valor não permitido.`;
+    default:
+      return issue.message ? `${label}: ${issue.message}` : `${label} inválido.`;
+  }
+}
+
+/** Detecta e traduz um payload de erro Zod (array ou string JSON). */
+function extractZodMessage(err: unknown): string | null {
+  let issues: unknown = null;
+  if (Array.isArray(err)) issues = err;
+  else if (err && typeof err === "object") {
+    const anyErr = err as { issues?: unknown; message?: unknown };
+    if (Array.isArray(anyErr.issues)) issues = anyErr.issues;
+    else if (typeof anyErr.message === "string") {
+      const parsed = tryParseJson(anyErr.message);
+      if (Array.isArray(parsed)) issues = parsed;
+      else if (parsed && typeof parsed === "object" && Array.isArray((parsed as { issues?: unknown }).issues))
+        issues = (parsed as { issues: unknown[] }).issues;
+    }
+  } else if (typeof err === "string") {
+    const parsed = tryParseJson(err);
+    if (Array.isArray(parsed)) issues = parsed;
+  }
+  if (!Array.isArray(issues) || issues.length === 0) return null;
+  const first = issues[0] as Parameters<typeof translateZodIssue>[0];
+  const main = translateZodIssue(first);
+  return issues.length > 1 ? `${main} (+${issues.length - 1} outro(s) campo(s))` : main;
+}
+
+function tryParseJson(s: string): unknown {
+  const trimmed = s.trim();
+  if (!trimmed.startsWith("[") && !trimmed.startsWith("{")) return null;
+  try { return JSON.parse(trimmed); } catch { return null; }
+}
+
 
 /**
  * Dispara um toast de erro com contexto suficiente para leitores de tela.

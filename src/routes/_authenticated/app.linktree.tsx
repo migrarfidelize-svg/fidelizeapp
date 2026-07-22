@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { getErrorMessage as friendlyError } from "@/lib/error-messages";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { getMyLinkTree, upsertLinkTree } from "@/lib/linktree.functions";
 import { Button } from "@/components/ui/button";
@@ -160,7 +161,7 @@ function LinkTreeEditor() {
       toast.success(publish === true ? "Página publicada!" : publish === false ? "Página despublicada." : "Alterações salvas.");
       q.refetch();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao salvar");
+      toast.error(friendlyError(e));
     } finally {
       setSaving(false);
     }
