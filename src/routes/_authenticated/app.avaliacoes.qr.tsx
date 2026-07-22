@@ -516,6 +516,12 @@ function ReviewQrPage() {
                     </div>
                     <Switch checked={showGoogleLogo} onCheckedChange={setShowGoogleLogo} />
                   </label>
+                  {showGoogleLogo && (
+                    <div className="flex items-center justify-center rounded-lg border border-dashed border-border/60 bg-white/70 py-2">
+                      <GoogleBadge />
+                    </div>
+                  )}
+
                 </div>
               )}
             </div>
