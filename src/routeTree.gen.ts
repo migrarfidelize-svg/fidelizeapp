@@ -91,6 +91,7 @@ import { Route as ApiPublicHooksDispatchScheduledPushRouteImport } from './route
 import { Route as ApiPublicCronReengagementRouteImport } from './routes/api/public/cron/reengagement'
 import { Route as ApiPublicCronBirthdayRouteImport } from './routes/api/public/cron/birthday'
 import { Route as AuthenticatedSuporteTicketIdRouteImport } from './routes/_authenticated/suporte.ticket.$id'
+import { Route as AuthenticatedCarteiraSlugPromocoesRouteImport } from './routes/_authenticated/carteira.$slug.promocoes'
 import { Route as AuthenticatedAdminSuporteIdRouteImport } from './routes/_authenticated/admin.suporte.$id'
 import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authenticated/admin.empresa.$id'
 import { Route as ApiPublicWalletAppleTokenRouteImport } from './routes/api/public/wallet.apple.$token'
@@ -548,6 +549,12 @@ const AuthenticatedSuporteTicketIdRoute =
     path: '/suporte/ticket/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCarteiraSlugPromocoesRoute =
+  AuthenticatedCarteiraSlugPromocoesRouteImport.update({
+    id: '/promocoes',
+    path: '/promocoes',
+    getParentRoute: () => AuthenticatedCarteiraSlugRoute,
+  } as any)
 const AuthenticatedAdminSuporteIdRoute =
   AuthenticatedAdminSuporteIdRouteImport.update({
     id: '/suporte/$id',
@@ -619,7 +626,7 @@ export interface FileRoutesByFullPath {
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/retencao': typeof AuthenticatedAppRetencaoRoute
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
-  '/carteira/$slug': typeof AuthenticatedCarteiraSlugRoute
+  '/carteira/$slug': typeof AuthenticatedCarteiraSlugRouteWithChildren
   '/carteira/cartoes': typeof AuthenticatedCarteiraCartoesRoute
   '/carteira/descobrir': typeof AuthenticatedCarteiraDescobrirRoute
   '/carteira/historico': typeof AuthenticatedCarteiraHistoricoRoute
@@ -638,6 +645,7 @@ export interface FileRoutesByFullPath {
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
+  '/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
   '/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
@@ -702,7 +710,7 @@ export interface FileRoutesByTo {
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/retencao': typeof AuthenticatedAppRetencaoRoute
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
-  '/carteira/$slug': typeof AuthenticatedCarteiraSlugRoute
+  '/carteira/$slug': typeof AuthenticatedCarteiraSlugRouteWithChildren
   '/carteira/cartoes': typeof AuthenticatedCarteiraCartoesRoute
   '/carteira/descobrir': typeof AuthenticatedCarteiraDescobrirRoute
   '/carteira/historico': typeof AuthenticatedCarteiraHistoricoRoute
@@ -721,6 +729,7 @@ export interface FileRoutesByTo {
   '/suporte/$slug': typeof SuporteSlugIndexRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
+  '/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
   '/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
@@ -790,7 +799,7 @@ export interface FileRoutesById {
   '/_authenticated/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/_authenticated/app/retencao': typeof AuthenticatedAppRetencaoRoute
   '/_authenticated/app/suporte': typeof AuthenticatedAppSuporteRoute
-  '/_authenticated/carteira/$slug': typeof AuthenticatedCarteiraSlugRoute
+  '/_authenticated/carteira/$slug': typeof AuthenticatedCarteiraSlugRouteWithChildren
   '/_authenticated/carteira/cartoes': typeof AuthenticatedCarteiraCartoesRoute
   '/_authenticated/carteira/descobrir': typeof AuthenticatedCarteiraDescobrirRoute
   '/_authenticated/carteira/historico': typeof AuthenticatedCarteiraHistoricoRoute
@@ -809,6 +818,7 @@ export interface FileRoutesById {
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
   '/_authenticated/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/_authenticated/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
+  '/_authenticated/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
   '/_authenticated/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
@@ -897,6 +907,7 @@ export interface FileRouteTypes {
     | '/suporte/$slug/'
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
+    | '/carteira/$slug/promocoes'
     | '/suporte/ticket/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
@@ -980,6 +991,7 @@ export interface FileRouteTypes {
     | '/suporte/$slug'
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
+    | '/carteira/$slug/promocoes'
     | '/suporte/ticket/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
@@ -1067,6 +1079,7 @@ export interface FileRouteTypes {
     | '/suporte/$slug/'
     | '/_authenticated/admin/empresa/$id'
     | '/_authenticated/admin/suporte/$id'
+    | '/_authenticated/carteira/$slug/promocoes'
     | '/_authenticated/suporte/ticket/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
@@ -1693,6 +1706,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSuporteTicketIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/carteira/$slug/promocoes': {
+      id: '/_authenticated/carteira/$slug/promocoes'
+      path: '/promocoes'
+      fullPath: '/carteira/$slug/promocoes'
+      preLoaderRoute: typeof AuthenticatedCarteiraSlugPromocoesRouteImport
+      parentRoute: typeof AuthenticatedCarteiraSlugRoute
+    }
     '/_authenticated/admin/suporte/$id': {
       id: '/_authenticated/admin/suporte/$id'
       path: '/suporte/$id'
@@ -1809,8 +1829,23 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
 const AuthenticatedAppRouteWithChildren =
   AuthenticatedAppRoute._addFileChildren(AuthenticatedAppRouteChildren)
 
+interface AuthenticatedCarteiraSlugRouteChildren {
+  AuthenticatedCarteiraSlugPromocoesRoute: typeof AuthenticatedCarteiraSlugPromocoesRoute
+}
+
+const AuthenticatedCarteiraSlugRouteChildren: AuthenticatedCarteiraSlugRouteChildren =
+  {
+    AuthenticatedCarteiraSlugPromocoesRoute:
+      AuthenticatedCarteiraSlugPromocoesRoute,
+  }
+
+const AuthenticatedCarteiraSlugRouteWithChildren =
+  AuthenticatedCarteiraSlugRoute._addFileChildren(
+    AuthenticatedCarteiraSlugRouteChildren,
+  )
+
 interface AuthenticatedCarteiraRouteChildren {
-  AuthenticatedCarteiraSlugRoute: typeof AuthenticatedCarteiraSlugRoute
+  AuthenticatedCarteiraSlugRoute: typeof AuthenticatedCarteiraSlugRouteWithChildren
   AuthenticatedCarteiraCartoesRoute: typeof AuthenticatedCarteiraCartoesRoute
   AuthenticatedCarteiraDescobrirRoute: typeof AuthenticatedCarteiraDescobrirRoute
   AuthenticatedCarteiraHistoricoRoute: typeof AuthenticatedCarteiraHistoricoRoute
@@ -1822,7 +1857,7 @@ interface AuthenticatedCarteiraRouteChildren {
 }
 
 const AuthenticatedCarteiraRouteChildren: AuthenticatedCarteiraRouteChildren = {
-  AuthenticatedCarteiraSlugRoute: AuthenticatedCarteiraSlugRoute,
+  AuthenticatedCarteiraSlugRoute: AuthenticatedCarteiraSlugRouteWithChildren,
   AuthenticatedCarteiraCartoesRoute: AuthenticatedCarteiraCartoesRoute,
   AuthenticatedCarteiraDescobrirRoute: AuthenticatedCarteiraDescobrirRoute,
   AuthenticatedCarteiraHistoricoRoute: AuthenticatedCarteiraHistoricoRoute,
