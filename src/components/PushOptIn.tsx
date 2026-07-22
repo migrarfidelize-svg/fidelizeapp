@@ -14,9 +14,8 @@ import {
 function isIOS() {
   if (typeof navigator === "undefined") return false;
   const ua = navigator.userAgent || "";
-  const isIPad =
-    /iPad/.test(ua) ||
-    (navigator.platform === "MacIntel" && (navigator as unknown as { maxTouchPoints?: number }).maxTouchPoints ?? 0 > 1);
+  const touchPoints = (navigator as unknown as { maxTouchPoints?: number }).maxTouchPoints ?? 0;
+  const isIPad = /iPad/.test(ua) || (navigator.platform === "MacIntel" && touchPoints > 1);
   return /iPhone|iPod/.test(ua) || isIPad;
 }
 
