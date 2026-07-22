@@ -384,14 +384,55 @@ export const getMyHistory = createServerFn({ method: "GET" })
     const custIds = (customers ?? []).map((c) => c.id);
     type HistoryItem = {
       id: string;
-      kind: "stamp" | "redeem";
+      kind: "stamp" | "redeem" | "achievement";
       createdAt: string;
       reverted: boolean;
       establishment: any;
       campaignName: string | null;
       rewardTitle: string | null;
+      achievement?: { code: string; title: string; description: string; icon: string; rarity: string } | null;
     };
-    if (!custIds.length) return [] as HistoryItem[];
+
+    // Conquistas do usuário (independem de ter cartão)
+    const [{ data: myAchievs }, { data: catalog }] = await Promise.all([
+      context.supabase
+        .from("customer_achievements")
+        .select("achievement_code, unlocked_at")
+        .eq("user_id", context.userId)
+        .order("unlocked_at", { ascending: false })
+        .limit(30),
+      context.supabase
+        .from("achievements")
+        .select("code, title, description, icon, rarity")
+        .eq("is_active", true),
+    ]);
+    const catMap = new Map((catalog ?? []).map((c) => [c.code, c]));
+    const achievementItems: HistoryItem[] = (myAchievs ?? [])
+      .map((a) => {
+        const meta = catMap.get(a.achievement_code);
+        if (!meta) return null;
+        return {
+          id: `a:${a.achievement_code}`,
+          kind: "achievement" as const,
+          createdAt: a.unlocked_at,
+          reverted: false,
+          establishment: null,
+          campaignName: null,
+          rewardTitle: null,
+          achievement: {
+            code: meta.code,
+            title: meta.title,
+            description: meta.description,
+            icon: meta.icon,
+            rarity: meta.rarity,
+          },
+        };
+      })
+      .filter((x): x is HistoryItem => x !== null);
+
+    if (!custIds.length) {
+      return achievementItems as HistoryItem[];
+    }
 
     const { data: cards } = await context.supabase
       .from("loyalty_cards")
@@ -403,7 +444,7 @@ export const getMyHistory = createServerFn({ method: "GET" })
       rewardTitle: (c.campaign as { reward_title: string }).reward_title,
     }]));
     const cardIds = (cards ?? []).map((c) => c.id);
-    if (!cardIds.length) return [] as HistoryItem[];
+    if (!cardIds.length) return achievementItems as HistoryItem[];
 
     const [{ data: stamps, error }, { data: redemptions }] = await Promise.all([
       context.supabase
@@ -447,7 +488,7 @@ export const getMyHistory = createServerFn({ method: "GET" })
         rewardTitle: c?.rewardTitle ?? null,
       };
     });
-    return [...stampItems, ...redeemItems].sort(
+    return [...stampItems, ...redeemItems, ...achievementItems].sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
   });
