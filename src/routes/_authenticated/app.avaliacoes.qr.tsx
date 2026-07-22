@@ -758,9 +758,6 @@ function ReviewQrPage() {
                 <Copy className="mr-2 h-4 w-4" /> Copiar link
               </Button>
             </div>
-            <Button asChild variant="ghost" size="sm" className="w-full">
-              <Link to="/app/avaliacoes">Ver avaliações recebidas →</Link>
-            </Button>
 
             {/* ===== STORE PREVIEW: Adquirir display físico ===== */}
             <div id="loja-displays" className="scroll-mt-4"><DisplayStorePreview /></div>
