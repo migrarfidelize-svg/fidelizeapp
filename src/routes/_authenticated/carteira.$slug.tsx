@@ -21,6 +21,7 @@ import {
 import { toast } from "sonner";
 import { useState } from "react";
 import { ExpiredCardState, WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
+import { PushOptIn } from "@/components/PushOptIn";
 
 
 const opts = (slug: string) =>
