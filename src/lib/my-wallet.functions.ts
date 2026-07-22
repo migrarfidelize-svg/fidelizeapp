@@ -252,6 +252,44 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
       .eq("customer_id", row.id)
       .order("updated_at", { ascending: false });
 
+    const cardIds = (cards ?? []).map((c) => c.id);
+
+    // Recent stamps for this establishment (all campaigns of this customer).
+    let recentStamps: Array<{ id: string; createdAt: string; reverted: boolean; campaignName: string | null }> = [];
+    let redeemedRewards: Array<{ id: string; unlockedAt: string; redeemedAt: string; campaignName: string; rewardTitle: string }> = [];
+    if (cardIds.length) {
+      const { data: sRows } = await context.supabase
+        .from("stamps")
+        .select("id, card_id, created_at, reverted_at")
+        .in("card_id", cardIds)
+        .order("created_at", { ascending: false })
+        .limit(30);
+      const cardName = new Map(
+        (cards ?? []).map((c) => [c.id, (c.campaign as { name: string }).name]),
+      );
+      recentStamps = (sRows ?? []).map((s) => ({
+        id: s.id,
+        createdAt: s.created_at,
+        reverted: !!s.reverted_at,
+        campaignName: cardName.get(s.card_id) ?? null,
+      }));
+
+      const { data: rRows } = await context.supabase
+        .from("rewards")
+        .select("id, card_id, unlocked_at, redeemed_at, campaign:campaigns!inner(name, reward_title)")
+        .in("card_id", cardIds)
+        .not("redeemed_at", "is", null)
+        .order("redeemed_at", { ascending: false })
+        .limit(20);
+      redeemedRewards = (rRows ?? []).map((r) => ({
+        id: r.id,
+        unlockedAt: r.unlocked_at,
+        redeemedAt: r.redeemed_at as string,
+        campaignName: (r.campaign as { name: string }).name,
+        rewardTitle: (r.campaign as { reward_title: string }).reward_title,
+      }));
+    }
+
     return {
       customer: {
         id: row.id,
@@ -264,8 +302,11 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
       },
       establishment: row.establishment,
       cards: cards ?? [],
+      recentStamps,
+      redeemedRewards,
     };
   });
+
 
 /** Rewards ready to redeem for the current user (across all cards). */
 export const getMyRewards = createServerFn({ method: "GET" })
