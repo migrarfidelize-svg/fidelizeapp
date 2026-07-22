@@ -129,6 +129,7 @@ function ReviewQrPage() {
   const [googleUrl, setGoogleUrl] = useState("");
   const [showGoogleLogo, setShowGoogleLogo] = useState(true);
   const [nfcMode, setNfcMode] = useState(false);
+  const [nfcStyle, setNfcStyle] = useState<"block" | "badge">("block");
   const [title, setTitle] = useState("Como foi seu atendimento?");
   const [subtitle, setSubtitle] = useState("Sua opinião ajuda nossa equipe a melhorar. Leva menos de 30 segundos.");
   const [ctaNearQR, setCtaNearQR] = useState("Aponte a câmera para avaliar");
@@ -164,6 +165,7 @@ function ReviewQrPage() {
         if (typeof s.googleUrl === "string") setGoogleUrl(s.googleUrl);
         if (typeof s.showGoogleLogo === "boolean") setShowGoogleLogo(s.showGoogleLogo);
         if (typeof s.nfcMode === "boolean") setNfcMode(s.nfcMode);
+        if (s.nfcStyle === "block" || s.nfcStyle === "badge") setNfcStyle(s.nfcStyle);
         if (s.title) setTitle(s.title);
         if (s.subtitle) setSubtitle(s.subtitle);
         if (s.ctaNearQR) setCtaNearQR(s.ctaNearQR);
@@ -186,14 +188,14 @@ function ReviewQrPage() {
     if (typeof window === "undefined") return;
     try {
       window.localStorage.setItem(storageKey, JSON.stringify({
-        template, format, destination, googleUrl, showGoogleLogo, nfcMode,
+        template, format, destination, googleUrl, showGoogleLogo, nfcMode, nfcStyle,
         title, subtitle, ctaNearQR, ctaFooter,
         primaryColor, backgroundColor, textColor,
         primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel,
         layout,
       }));
     } catch { /* ignore */ }
-  }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor, primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel, layout]);
+  }, [storageKey, template, format, destination, googleUrl, showGoogleLogo, nfcMode, nfcStyle, title, subtitle, ctaNearQR, ctaFooter, primaryColor, backgroundColor, textColor, primaryLabel, secondaryEnabled, secondaryUrl, secondaryLabel, layout]);
 
   function applyTemplate(key: TemplateKey) {
     setTemplate(key);
@@ -646,14 +648,40 @@ function ReviewQrPage() {
             </label>
 
             {nfcMode && (
-              <div className="rounded-lg border border-primary/30 bg-primary-soft/40 p-3 text-xs">
-                <div className="font-semibold text-primary">URL para NFC</div>
-                <div className="mt-1 flex items-center gap-2">
-                  <code className="flex-1 truncate rounded bg-background/70 px-2 py-1">{targetUrl || "—"}</code>
-                  <Button size="sm" variant="ghost" className="h-7 px-2" onClick={copyNfcUrl}><Copy className="h-3.5 w-3.5" /></Button>
+              <div className="space-y-3 rounded-lg border border-primary/30 bg-primary-soft/40 p-3 text-xs">
+                <div>
+                  <div className="mb-1.5 font-semibold text-primary">Estilo NFC no cartaz</div>
+                  <div className="grid grid-cols-2 gap-1 rounded-md border bg-background/70 p-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setNfcStyle("block")}
+                      className={`rounded px-2 py-1.5 text-[11px] font-semibold transition ${nfcStyle === "block" ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
+                    >
+                      Bloco "Toque aqui"
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNfcStyle("badge")}
+                      className={`rounded px-2 py-1.5 text-[11px] font-semibold transition ${nfcStyle === "badge" ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
+                    >
+                      Só selo NFC
+                    </button>
+                  </div>
+                  <div className="mt-1 text-[10px] text-muted-foreground">
+                    {nfcStyle === "block"
+                      ? 'Mostra o chip "Toque aqui" ao lado do QR + selo NFC no rodapé.'
+                      : "Mostra apenas o selo NFC discreto no rodapé, sem o bloco no meio."}
+                  </div>
                 </div>
-                <div className="mt-1.5 text-[11px] text-muted-foreground">
-                  Use um app como <strong>NFC Tools</strong> (Android/iOS) para gravar essa URL na tag adesiva.
+                <div>
+                  <div className="font-semibold text-primary">URL para NFC</div>
+                  <div className="mt-1 flex items-center gap-2">
+                    <code className="flex-1 truncate rounded bg-background/70 px-2 py-1">{targetUrl || "—"}</code>
+                    <Button size="sm" variant="ghost" className="h-7 px-2" onClick={copyNfcUrl}><Copy className="h-3.5 w-3.5" /></Button>
+                  </div>
+                  <div className="mt-1.5 text-[11px] text-muted-foreground">
+                    Use um app como <strong>NFC Tools</strong> (Android/iOS) para gravar essa URL na tag adesiva.
+                  </div>
                 </div>
               </div>
             )}
@@ -864,6 +892,7 @@ function ReviewQrPage() {
                   destination={destination}
                   showGoogleLogo={showGoogleLogo}
                   nfcMode={nfcMode}
+                  nfcStyle={nfcStyle}
                   primaryLabel={primaryLabel}
                   secondaryEnabled={secondaryEnabled}
                   secondaryQrDataUrl={secondaryQrDataUrl}
@@ -1003,6 +1032,7 @@ interface PosterProps {
   destination: Destination;
   showGoogleLogo: boolean;
   nfcMode: boolean;
+  nfcStyle: "block" | "badge";
   primaryLabel: string;
   secondaryEnabled: boolean;
   secondaryQrDataUrl: string;
@@ -1168,8 +1198,8 @@ function PortraitBody(p: PosterProps) {
         </DraggableItem>
       )}
 
-      {/* NFC block (only when NFC mode + no secondary) */}
-      {p.nfcMode && !p.secondaryEnabled && (
+      {/* NFC "Toque aqui" block — only when NFC mode + block style + no secondary */}
+      {p.nfcMode && p.nfcStyle === "block" && !p.secondaryEnabled && (
         <DraggableItem itemKey="nfc" layout={p.layout} setLayout={p.setLayout} editable={p.editable}>
           <NfcBlock primary={p.primaryColor} />
         </DraggableItem>
@@ -1178,7 +1208,7 @@ function PortraitBody(p: PosterProps) {
       {/* CTA near QR */}
       <DraggableItem itemKey="ctaNear" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
         <div className="text-center text-xs font-bold uppercase tracking-widest" style={{ color: p.primaryColor }}>
-          {p.nfcMode ? "Aproxime o celular" : p.ctaNearQR}
+          {p.nfcMode && p.nfcStyle === "block" ? "Aproxime o celular" : p.ctaNearQR}
         </div>
       </DraggableItem>
 
@@ -1186,7 +1216,7 @@ function PortraitBody(p: PosterProps) {
       <DraggableItem itemKey="ctaFooter" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
         <div className="flex flex-col items-center gap-1">
           <div className="text-center text-[10px] opacity-70" style={{ color: p.textColor }}>{p.ctaFooter}</div>
-          {p.nfcMode && <NfcBadge primary={p.primaryColor} />}
+          {p.nfcMode && p.nfcStyle === "badge" && <NfcBadge primary={p.primaryColor} />}
         </div>
       </DraggableItem>
     </div>
