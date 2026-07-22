@@ -205,13 +205,22 @@ export const addStamp = createServerFn({ method: "POST" })
     // Fire-and-forget push notification to the customer (never blocks or throws).
     try {
       const { sendPushToCustomer } = await import("@/lib/push.server");
+      // Deep-link para o cartão específico na /carteira
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: est } = await supabaseAdmin
+        .from("establishments")
+        .select("slug")
+        .eq("id", card.establishment_id)
+        .maybeSingle();
+      const deepLink = est?.slug ? `/carteira/${est.slug}` : "/carteira";
+
       if (completed) {
         await sendPushToCustomer(
           card.customer_id,
           {
             title: "🎉 Recompensa liberada!",
             body: "Parabéns! Você completou seu cartão. Retire sua recompensa na próxima visita.",
-            url: `/c/${card.customer_id}`,
+            url: deepLink,
             tag: `reward-${card.id}`,
           },
           "reward",
@@ -226,6 +235,7 @@ export const addStamp = createServerFn({ method: "POST" })
               remaining === 1
                 ? "Falta só 1 carimbo para o seu prêmio!"
                 : `Faltam ${remaining} carimbos para o seu prêmio.`,
+            url: deepLink,
             tag: `stamp-${card.id}`,
           },
           "stamp",

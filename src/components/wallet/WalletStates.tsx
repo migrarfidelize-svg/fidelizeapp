@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { QrCode, WifiOff, AlertTriangle, TimerOff, ScanLine, RefreshCw, Home } from "lucide-react";
+import { QrCode, WifiOff, AlertTriangle, TimerOff, ScanLine, RefreshCw, Home, Compass, ArrowRight } from "lucide-react";
 
 /** Shell used by every wallet state — mimics the voucher card visual language. */
 function StateShell({
@@ -60,12 +60,20 @@ export function EmptyWalletState() {
       tone="primary"
       icon={<QrCode className="h-7 w-7" />}
       title="Você ainda não tem cartões"
-      description="Escaneie o QR Code de qualquer estabelecimento parceiro Fidelize para adicionar seu primeiro cartão e começar a acumular carimbos."
+      description="Escaneie o QR Code de qualquer estabelecimento parceiro Fidelize para adicionar seu primeiro cartão — ou descubra parceiros perto de você."
     >
-      <ul className="mx-auto grid max-w-xs gap-2 text-left text-xs text-muted-foreground">
-        <li className="flex items-start gap-2"><ScanLine className="mt-0.5 h-4 w-4 text-primary" /> Aponte a câmera para o QR Code do estabelecimento</li>
-        <li className="flex items-start gap-2"><Home className="mt-0.5 h-4 w-4 text-primary" /> O cartão aparece automaticamente aqui</li>
-      </ul>
+      <div className="flex flex-col gap-2">
+        <Link
+          to="/carteira/descobrir"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-transform hover:scale-[1.01]"
+        >
+          <Compass className="h-4 w-4" /> Descobrir estabelecimentos
+        </Link>
+        <ul className="mx-auto mt-2 grid max-w-xs gap-2 text-left text-xs text-muted-foreground">
+          <li className="flex items-start gap-2"><ScanLine className="mt-0.5 h-4 w-4 text-primary" /> Aponte a câmera para o QR Code do estabelecimento</li>
+          <li className="flex items-start gap-2"><Home className="mt-0.5 h-4 w-4 text-primary" /> O cartão aparece automaticamente aqui</li>
+        </ul>
+      </div>
     </StateShell>
   );
 }
@@ -128,12 +136,21 @@ export function ExpiredCardState({ establishmentName }: { establishmentName?: st
           : "A campanha deste cartão foi encerrada. Seus carimbos ficam registrados no seu histórico."
       }
     >
-      <Link
-        to="/carteira"
-        className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"
-      >
-        <Home className="h-4 w-4" /> Voltar para minha carteira
-      </Link>
+      <div className="flex flex-col gap-2">
+        <Link
+          to="/carteira/descobrir"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"
+        >
+          <Compass className="h-4 w-4" /> Ver outros parceiros
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+        <Link
+          to="/carteira"
+          className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-semibold hover:bg-muted"
+        >
+          <Home className="h-4 w-4" /> Voltar para minha carteira
+        </Link>
+      </div>
     </StateShell>
   );
 }
