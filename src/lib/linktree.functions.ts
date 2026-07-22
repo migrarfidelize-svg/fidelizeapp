@@ -89,8 +89,7 @@ export const upsertLinkTree = createServerFn({ method: "POST" })
     published: z.boolean().optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    // Upsert page
-    const patch: Record<string, unknown> = {
+    const patch: Database["public"]["Tables"]["link_tree_pages"]["Insert"] = {
       establishment_id: data.establishment_id,
       title: data.title ?? null,
       description: data.description ?? null,
@@ -109,6 +108,7 @@ export const upsertLinkTree = createServerFn({ method: "POST" })
       .select("*")
       .single();
     if (error) throw new Error(error.message);
+
 
     // Replace links: delete all then insert
     await context.supabase.from("link_tree_links").delete().eq("page_id", page.id);
