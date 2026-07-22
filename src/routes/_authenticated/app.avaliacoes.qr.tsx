@@ -529,22 +529,6 @@ function ReviewQrPage() {
               />
             </label>
 
-            {nfcMode && (
-              <div className="space-y-3 rounded-lg border border-primary/30 bg-primary-soft/40 p-3 text-xs">
-
-
-                <div>
-                  <div className="font-semibold text-primary">URL para NFC</div>
-                  <div className="mt-1 flex items-center gap-2">
-                    <code className="flex-1 truncate rounded bg-background/70 px-2 py-1">{targetUrl || "—"}</code>
-                    <Button size="sm" variant="ghost" className="h-7 px-2" onClick={copyNfcUrl}><Copy className="h-3.5 w-3.5" /></Button>
-                  </div>
-                  <div className="mt-1.5 text-[11px] text-muted-foreground">
-                    Use um app como <strong>NFC Tools</strong> (Android/iOS) para gravar essa URL na tag adesiva.
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Templates */}
             <div className="space-y-3">
