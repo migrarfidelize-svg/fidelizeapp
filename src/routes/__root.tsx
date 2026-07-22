@@ -153,8 +153,15 @@ function RootComponent() {
         if (t !== "SIGNED_OUT") queryClient.invalidateQueries();
       }
     };
+    const onStorage = (ev: StorageEvent) => {
+      if (ev.key === "fidelize:last-auth-sync" || ev.key === "fidelize:last-manual-session-sync") {
+        router.invalidate();
+        queryClient.invalidateQueries();
+      }
+    };
     bc?.addEventListener("message", onMsg);
-    return () => { subscription.unsubscribe(); bc?.removeEventListener("message", onMsg); bc?.close(); };
+    window.addEventListener("storage", onStorage);
+    return () => { subscription.unsubscribe(); bc?.removeEventListener("message", onMsg); bc?.close(); window.removeEventListener("storage", onStorage); };
   }, [router, queryClient]);
   useEffect(() => {
     const apply = () => {
