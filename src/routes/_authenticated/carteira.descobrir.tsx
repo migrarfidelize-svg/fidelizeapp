@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Compass, MapPin, Sparkles, ChevronRight, ShieldCheck } from "lucide-react";
+import { Compass, MapPin, Sparkles, ChevronRight, ShieldCheck, Tag } from "lucide-react";
 import { getDiscoveryEstablishments } from "@/lib/my-wallet.functions";
 import { WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
 
