@@ -951,6 +951,97 @@ export const adminLinkOrphanCustomerToAccount = createServerFn({ method: "POST" 
   });
 
 /**
+ * Move (vincula) um cliente órfão — sem conta de login — para outro
+ * estabelecimento cadastrado. Só permite se o cliente ainda não possui
+ * user_id (senão o vínculo passa pelo fluxo multi-loja do /carteira).
+ * Remove cartões antigos ligados a campanhas de outros estabelecimentos
+ * para evitar registros órfãos.
+ */
+export const adminReassignOrphanCustomer = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      customer_id: z.string().uuid(),
+      target_establishment_id: z.string().uuid(),
+    }).parse(d)
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertSuperAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: cust, error: cErr } = await supabaseAdmin
+      .from("customers")
+      .select("id, name, phone, user_id, establishment_id")
+      .eq("id", data.customer_id)
+      .maybeSingle();
+    if (cErr) throw new Error(cErr.message);
+    if (!cust) throw new Error("Cliente não encontrado.");
+    if (cust.user_id) {
+      throw new Error("Cliente já possui conta de login. Use o fluxo de multi-loja em vez de mover.");
+    }
+    if (cust.establishment_id === data.target_establishment_id) {
+      throw new Error("O cliente já pertence a este estabelecimento.");
+    }
+
+    const { data: target, error: tErr } = await supabaseAdmin
+      .from("establishments")
+      .select("id, name, active")
+      .eq("id", data.target_establishment_id)
+      .maybeSingle();
+    if (tErr) throw new Error(tErr.message);
+    if (!target) throw new Error("Estabelecimento de destino não encontrado.");
+    if (!target.active) throw new Error("Estabelecimento de destino está inativo.");
+
+    // Evita conflito com o UNIQUE (establishment_id, phone) do destino.
+    if (cust.phone) {
+      const { data: clash } = await supabaseAdmin
+        .from("customers")
+        .select("id")
+        .eq("establishment_id", data.target_establishment_id)
+        .eq("phone", cust.phone)
+        .maybeSingle();
+      if (clash?.id) {
+        throw new Error("Já existe um cliente com este WhatsApp no estabelecimento de destino.");
+      }
+    }
+
+    // Limpa cartões antigos ligados a campanhas do estabelecimento anterior.
+    const { data: oldCards } = await supabaseAdmin
+      .from("loyalty_cards")
+      .select("id, campaign:campaigns!inner(establishment_id)")
+      .eq("customer_id", cust.id);
+    const staleIds = (oldCards ?? [])
+      .filter((c: any) => c.campaign?.establishment_id !== data.target_establishment_id)
+      .map((c: any) => c.id);
+    if (staleIds.length) {
+      await supabaseAdmin.from("loyalty_cards").delete().in("id", staleIds);
+    }
+
+    const { error: uErr } = await supabaseAdmin
+      .from("customers")
+      .update({ establishment_id: data.target_establishment_id })
+      .eq("id", cust.id);
+    if (uErr) throw new Error(uErr.message);
+
+    await supabase.from("audit_logs").insert({
+      user_id: userId,
+      action: "admin_reassign_orphan_customer",
+      entity_type: "customer",
+      entity_id: cust.id,
+      metadata: {
+        from_establishment_id: cust.establishment_id,
+        to_establishment_id: data.target_establishment_id,
+        to_establishment_name: target.name,
+        removed_cards: staleIds.length,
+      } as never,
+    });
+
+    return { ok: true, moved_to: target.name, removed_cards: staleIds.length };
+  });
+
+
+/**
  * Retorna toda a carteira de um usuário (cliente final) para inspeção pelo
  * super admin: estabelecimentos vinculados, progresso do cartão em cada um
  * e os últimos carimbos recebidos.

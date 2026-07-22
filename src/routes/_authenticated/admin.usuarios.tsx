@@ -7,9 +7,11 @@ import {
   adminSetUserAccountType,
   adminListOrphanCustomers,
   adminLinkOrphanCustomerToAccount,
+  adminReassignOrphanCustomer,
   adminListEstablishments,
   adminGetUserWallet,
 } from "@/lib/admin.functions";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -27,8 +29,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import {
   UsersRound, Search, Shield, Building2, User as UserIcon, Loader2, UserX,
-  Wallet, KeyRound, CircleAlert, CircleCheck, Copy, Stamp,
+  Wallet, KeyRound, CircleAlert, CircleCheck, Copy, Stamp, ArrowRightLeft,
 } from "lucide-react";
+
 import { formatPhone } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin/usuarios")({
@@ -385,7 +388,9 @@ function AdminUsers() {
 function OrphanCustomers({ establishments }: { establishments: Array<{ id: string; name: string }> }) {
   const listFn = useServerFn(adminListOrphanCustomers);
   const linkFn = useServerFn(adminLinkOrphanCustomerToAccount);
+  const moveFn = useServerFn(adminReassignOrphanCustomer);
   const qc = useQueryClient();
+
 
   const [q, setQ] = useState("");
   const [term, setTerm] = useState("");
@@ -394,7 +399,10 @@ function OrphanCustomers({ establishments }: { establishments: Array<{ id: strin
   const pageSize = 20;
 
   const [confirm, setConfirm] = useState<null | { id: string; name: string | null; phone: string | null }>(null);
+  const [move, setMove] = useState<null | { id: string; name: string | null; phone: string | null; from_id: string; from_name: string | null }>(null);
+  const [moveTarget, setMoveTarget] = useState<string>("");
   const [result, setResult] = useState<null | { email: string; password: string; created_new_user: boolean }>(null);
+
 
   const { data, isFetching } = useQuery({
     queryKey: ["admin-orphan-customers", term, establishmentId, page],
@@ -422,6 +430,18 @@ function OrphanCustomers({ establishments }: { establishments: Array<{ id: strin
     },
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erro ao vincular cliente."),
   });
+
+  const moveMut = useMutation({
+    mutationFn: (v: { customer_id: string; target_establishment_id: string }) => moveFn({ data: v }),
+    onSuccess: (r) => {
+      setMove(null);
+      setMoveTarget("");
+      qc.invalidateQueries({ queryKey: ["admin-orphan-customers"] });
+      toast.success(`Cliente movido para ${r.moved_to}.${r.removed_cards ? ` ${r.removed_cards} cartão(ões) antigo(s) removido(s).` : ""}`);
+    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erro ao mover cliente."),
+  });
+
 
   function doSearch() { setPage(1); setTerm(q.trim()); }
   async function copy(text: string, label: string) {
@@ -515,15 +535,32 @@ function OrphanCustomers({ establishments }: { establishments: Array<{ id: strin
                       {new Date(c.created_at).toLocaleDateString("pt-BR")}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        size="sm" variant="outline" className="gap-1"
-                        disabled={!canLink}
-                        title={canLink ? "Criar credenciais e vincular ao /carteira" : "Cliente sem WhatsApp válido (DDD + número)"}
-                        onClick={() => setConfirm({ id: c.id, name: c.name, phone: c.phone })}
-                      >
-                        <KeyRound className="h-3.5 w-3.5" /> Criar login
-                      </Button>
+                      <div className="flex justify-end gap-1.5">
+                        <Button
+                          size="sm" variant="outline" className="gap-1"
+                          title="Mover para outra empresa cadastrada"
+                          onClick={() => {
+                            setMove({
+                              id: c.id, name: c.name, phone: c.phone,
+                              from_id: c.establishment_id,
+                              from_name: c.establishment_name,
+                            });
+                            setMoveTarget("");
+                          }}
+                        >
+                          <ArrowRightLeft className="h-3.5 w-3.5" /> Mover
+                        </Button>
+                        <Button
+                          size="sm" variant="outline" className="gap-1"
+                          disabled={!canLink}
+                          title={canLink ? "Criar credenciais e vincular ao /carteira" : "Cliente sem WhatsApp válido (DDD + número)"}
+                          onClick={() => setConfirm({ id: c.id, name: c.name, phone: c.phone })}
+                        >
+                          <KeyRound className="h-3.5 w-3.5" /> Criar login
+                        </Button>
+                      </div>
                     </TableCell>
+
                   </TableRow>
                 );
               })}
@@ -567,6 +604,72 @@ function OrphanCustomers({ establishments }: { establishments: Array<{ id: strin
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!move} onOpenChange={(o) => { if (!o) { setMove(null); setMoveTarget(""); } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Mover cliente para outra empresa</DialogTitle>
+            <DialogDescription>
+              Transfere o cadastro do cliente órfão para o estabelecimento escolhido.
+              Cartões antigos vinculados a campanhas da empresa anterior serão removidos.
+            </DialogDescription>
+          </DialogHeader>
+          {move && (
+            <div className="space-y-3">
+              <div className="rounded-xl border p-3 text-sm">
+                <div className="font-medium">{move.name ?? "Sem nome"}</div>
+                <div className="text-xs text-muted-foreground">
+                  {move.phone ? formatPhone(move.phone) : "—"}
+                </div>
+                <div className="mt-2 text-xs">
+                  Empresa atual:{" "}
+                  <span className="font-medium">{move.from_name ?? "—"}</span>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">
+                  Nova empresa
+                </label>
+                <Select value={moveTarget} onValueChange={setMoveTarget}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o estabelecimento…" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    {establishments
+                      .filter((e) => e.id !== move.from_id)
+                      .map((e) => (
+                        <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => { setMove(null); setMoveTarget(""); }}
+              disabled={moveMut.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              disabled={moveMut.isPending || !move || !moveTarget}
+              onClick={() =>
+                move && moveTarget &&
+                moveMut.mutate({ customer_id: move.id, target_establishment_id: moveTarget })
+              }
+              className="gradient-brand text-primary-foreground"
+            >
+              {moveMut.isPending
+                ? <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                : <ArrowRightLeft className="h-4 w-4 mr-1" />}
+              Confirmar mudança
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       <Dialog open={!!result} onOpenChange={(o) => !o && setResult(null)}>
         <DialogContent className="sm:max-w-md">
