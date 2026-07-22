@@ -344,7 +344,7 @@ function ReviewQrPage() {
 
   function persistDesigns(next: SavedDesign[]) {
     setDesigns(next);
-    try { window.localStorage.setItem(designsKey, JSON.stringify(next)); } catch { /* ignore */ }
+    void persistJson(designsKey, next);
   }
 
   async function saveCurrentDesign() {
