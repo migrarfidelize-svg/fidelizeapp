@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { getMyWallet, getMyHistory, getMyRewards } from "@/lib/my-wallet.functions";
+import { getMyWallet, getMyHistory, getMyRewards, getPromotedEstablishmentIds } from "@/lib/my-wallet.functions";
 import { listAchievementsCatalog, listMyAchievements } from "@/lib/achievements.functions";
 import { ChevronRight, Sparkles, Gift, Stamp, RotateCcw, Bell, Flame, Trophy, Calendar } from "lucide-react";
 import { formatDate } from "@/lib/format";
