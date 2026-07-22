@@ -435,6 +435,10 @@ function WalletEstablishment() {
           onOpenChange={setReviewsOpen}
           establishmentName={est.name}
           data={reviewsQuery.data}
+          isLoading={reviewsQuery.isLoading}
+          isError={reviewsQuery.isError}
+          error={reviewsQuery.error as Error | null}
+          onRetry={() => reviewsQuery.refetch()}
         />
 
 
