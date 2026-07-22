@@ -1625,7 +1625,10 @@ function DraggableItem({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
-      className={`absolute ${editable ? "cursor-move select-none" : ""} ${className}`}
+      tabIndex={editable ? 0 : -1}
+      role={editable ? "button" : undefined}
+      aria-label={editable ? `${LAYOUT_LABELS[itemKey]} — arraste para reposicionar` : undefined}
+      className={`absolute ${editable ? "cursor-move select-none outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-sm" : ""} ${className}`}
       style={{
         left: `${pos.x}%`,
         top: `${pos.y}%`,
