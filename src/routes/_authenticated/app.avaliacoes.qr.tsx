@@ -1520,6 +1520,86 @@ function PortraitBody(p: PosterProps) {
         </div>
       </DraggableItem>
 
+      {/* Preset badges — draggable icons/emblems */}
+      {p.badges.map((b) => {
+        const meta = BADGE_CATALOG[b.key];
+        const Icon = meta.Icon;
+        return (
+          <BadgeDraggable
+            key={b.key}
+            badge={b}
+            editable={p.editable}
+            move={p.moveBadge}
+          >
+            <div
+              className="flex items-center gap-1.5 rounded-full px-2.5 py-1 shadow-sm"
+              style={{
+                background: `color-mix(in oklab, ${p.primaryColor} 12%, ${p.backgroundColor})`,
+                color: p.textColor,
+                border: `1px solid color-mix(in oklab, ${p.primaryColor} 40%, transparent)`,
+                fontSize: `${10 * (p.contentScale / 100)}px`,
+              }}
+            >
+              <Icon className="h-3 w-3" style={{ color: p.primaryColor }} />
+              <span className="whitespace-nowrap font-semibold">{meta.short}</span>
+            </div>
+          </BadgeDraggable>
+        );
+      })}
+
+    </div>
+  );
+}
+
+/** Draggable wrapper for a preset badge instance. */
+function BadgeDraggable({
+  badge, editable, move, children,
+}: {
+  badge: BadgeInstance;
+  editable: boolean;
+  move: (key: BadgeKey, x: number, y: number) => void;
+  children: React.ReactNode;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const draggingRef = useRef(false);
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!editable) return;
+    draggingRef.current = true;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    e.preventDefault();
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!editable || !draggingRef.current) return;
+    const parent = ref.current?.parentElement;
+    if (!parent) return;
+    const rect = parent.getBoundingClientRect();
+    const x = Math.max(2, Math.min(98, ((e.clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(2, Math.min(98, ((e.clientY - rect.top) / rect.height) * 100));
+    move(badge.key, x, y);
+  };
+  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    draggingRef.current = false;
+    try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch { /* ignore */ }
+  };
+  return (
+    <div
+      ref={ref}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      className={`absolute ${editable ? "cursor-move select-none" : ""}`}
+      style={{
+        left: `${badge.x}%`,
+        top: `${badge.y}%`,
+        transform: "translate(-50%, -50%)",
+        touchAction: editable ? "none" : undefined,
+      }}
+    >
+      {editable && (
+        <div data-export-ignore="true" className="pointer-events-none absolute -inset-1.5 rounded-full border border-dashed border-primary/70 bg-primary/5" />
+      )}
+      {children}
     </div>
   );
 }
