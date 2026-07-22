@@ -122,7 +122,9 @@ function WalletHome() {
               </Link>
             )}
 
-            {streak.weeks >= 2 && <StreakCard weeks={streak.weeks} lastVisit={streak.lastVisit} />}
+            {(streak.weeks >= 2 || streak.atRisk) && (
+              <StreakCard weeks={streak.weeks} lastVisit={streak.lastVisit} atRisk={streak.atRisk} daysLeft={streak.daysLeft} />
+            )}
 
             <div className="grid grid-cols-3 gap-3">
               <KpiTile label="Cartões" value={items.length} />
@@ -292,23 +294,23 @@ function KpiTile({ label, value, accent, icon }: { label: string; value: number;
  */
 function computeWeeklyStreak(
   history: Awaited<ReturnType<typeof getMyHistory>>,
-): { weeks: number; lastVisit: string | null } {
+): { weeks: number; lastVisit: string | null; atRisk: boolean; daysLeft: number } {
   const valid = history.filter((h) => !h.reverted && h.createdAt);
-  if (!valid.length) return { weeks: 0, lastVisit: null };
-  const weekKeys = new Set(valid.map((h) => isoWeekKey(new Date(h.createdAt))));
   const now = new Date();
-  let cursor = now;
+  const isoDay = now.getUTCDay() || 7; // 1..7 (Mon..Sun)
+  const daysLeft = 8 - isoDay; // dias restantes até o fim da semana ISO (inclui hoje)
+  if (!valid.length) return { weeks: 0, lastVisit: null, atRisk: false, daysLeft };
+  const weekKeys = new Set(valid.map((h) => isoWeekKey(new Date(h.createdAt))));
+  const hasCurrent = weekKeys.has(isoWeekKey(now));
+  const hasPrev = weekKeys.has(isoWeekKey(addDays(now, -7)));
+  if (!hasCurrent && !hasPrev) return { weeks: 0, lastVisit: valid[0].createdAt, atRisk: false, daysLeft };
+  let cursor = hasCurrent ? now : addDays(now, -7);
   let weeks = 0;
-  // Só conta se a semana atual OU a anterior tem visita (não desqualifica logo).
-  if (!weekKeys.has(isoWeekKey(cursor))) {
-    cursor = addDays(cursor, -7);
-    if (!weekKeys.has(isoWeekKey(cursor))) return { weeks: 0, lastVisit: valid[0].createdAt };
-  }
   while (weekKeys.has(isoWeekKey(cursor))) {
     weeks++;
     cursor = addDays(cursor, -7);
   }
-  return { weeks, lastVisit: valid[0].createdAt };
+  return { weeks, lastVisit: valid[0].createdAt, atRisk: !hasCurrent && hasPrev && weeks >= 1, daysLeft };
 }
 
 function isoWeekKey(d: Date): string {
@@ -325,7 +327,30 @@ function addDays(d: Date, days: number): Date {
   return c;
 }
 
-function StreakCard({ weeks, lastVisit }: { weeks: number; lastVisit: string | null }) {
+function StreakCard({ weeks, lastVisit, atRisk, daysLeft }: { weeks: number; lastVisit: string | null; atRisk: boolean; daysLeft: number }) {
+  if (atRisk) {
+    return (
+      <div className="relative overflow-hidden rounded-3xl border border-destructive/50 bg-gradient-to-br from-destructive/15 via-amber-500/10 to-orange-500/10 p-4">
+        <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-destructive/25 blur-3xl" />
+        <div className="relative flex items-center gap-3">
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-destructive to-orange-600 text-white shadow-lg">
+            <Flame className="wallet-streak-flame h-6 w-6" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] font-black uppercase tracking-widest text-destructive">
+              Sua sequência está em risco
+            </div>
+            <div className="font-display text-base font-bold">
+              Faltam <span className="text-destructive">{daysLeft} {daysLeft === 1 ? "dia" : "dias"}</span> para quebrar {weeks} {weeks === 1 ? "semana" : "semanas"} 🔥
+            </div>
+            <div className="text-[11px] text-muted-foreground">
+              Passe em uma loja essa semana para manter o combo vivo.
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="relative overflow-hidden rounded-3xl border border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-primary/10 p-4">
       <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-orange-500/20 blur-3xl" />

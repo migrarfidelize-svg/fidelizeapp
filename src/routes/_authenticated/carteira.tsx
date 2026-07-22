@@ -1,15 +1,18 @@
 import { createFileRoute, Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Wallet, Home, LogOut, User, Gift, History, Compass, QrCode, Bell } from "lucide-react";
+import { Wallet, Home, LogOut, User, Gift, History, Compass, QrCode } from "lucide-react";
 import { toast } from "sonner";
 import { MyQrSheet } from "@/components/wallet/MyQrSheet";
 import { countUnread } from "@/lib/inbox.functions";
+import { getMyWallet } from "@/lib/my-wallet.functions";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AchievementUnlockListener } from "@/components/wallet/AchievementUnlockListener";
 import { PostStampReviewSheet } from "@/components/wallet/PostStampReviewSheet";
 import { InboxBellBadge } from "@/components/wallet/InboxBellBadge";
+import { haptic } from "@/lib/haptics";
+
 
 export const Route = createFileRoute("/_authenticated/carteira")({
   head: () => ({
@@ -47,7 +50,7 @@ function useWalletFlash() {
 /** 4 tabs laterais + slot central reservado ao FAB "Meu QR". */
 const TABS = [
   { to: "/carteira", label: "Início", icon: Home, exact: true },
-  { to: "/carteira/premios", label: "Cartões", icon: Gift, exact: false },
+  { to: "/carteira/premios", label: "Prêmios", icon: Gift, exact: false },
   { to: "/carteira/historico", label: "Histórico", icon: History, exact: false },
   { to: "/carteira/descobrir", label: "Descobrir", icon: Compass, exact: false },
 ] as const;
@@ -56,7 +59,43 @@ function WalletLayout() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [qrOpen, setQrOpen] = useState(false);
+  const qc = useQueryClient();
   useWalletFlash();
+
+  // Piggyback no cache já hidratado pela home para descobrir os customer_ids.
+  const { data: wallet } = useQuery({
+    queryKey: ["my-wallet"],
+    queryFn: () => getMyWallet(),
+    staleTime: 15_000,
+  });
+  const customerIds = useMemo(
+    () => Array.from(new Set((wallet ?? []).map((w) => w.customer?.id).filter(Boolean) as string[])),
+    [wallet],
+  );
+
+  // Realtime global: qualquer carimbo em qualquer cartão do cliente dispara
+  // haptic + toast + refresh, mesmo fora da tela `/c/$token`.
+  useEffect(() => {
+    if (!customerIds.length) return;
+    const filter = `customer_id=in.(${customerIds.join(",")})`;
+    const channel = supabase
+      .channel("wallet-global-activity")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "stamps", filter }, () => {
+        haptic("stamp");
+        toast.success("Novo carimbo! 🎉");
+        qc.invalidateQueries({ queryKey: ["my-wallet"] });
+        qc.invalidateQueries({ queryKey: ["my-history"] });
+        qc.invalidateQueries({ queryKey: ["my-rewards"] });
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "rewards", filter }, () => {
+        haptic("success");
+        toast.success("Recompensa desbloqueada! 🎁");
+        qc.invalidateQueries({ queryKey: ["my-wallet"] });
+        qc.invalidateQueries({ queryKey: ["my-rewards"] });
+      });
+    channel.subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [customerIds.join(","), qc]);
 
   async function signOut() {
     await supabase.auth.signOut();
