@@ -719,7 +719,7 @@ export const getCustomerTokenByCode = createServerFn({ method: "POST" })
 
 
 // ---------- Onboarding ----------
-const SLUG_RESERVED = new Set(["app", "admin", "auth", "onboarding", "api", "l", "c", "precos", "termos", "privacidade", "404", "bloqueado"]);
+const SLUG_RESERVED = new Set(["app", "admin", "auth", "onboarding", "api", "l", "cartao", "c", "precos", "termos", "privacidade", "404", "bloqueado"]);
 
 const establishmentSchema = z.object({
   name: z.string({ required_error: "Informe o nome da empresa." })
