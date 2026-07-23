@@ -44,6 +44,7 @@ import {
   getQrScanStats,
 } from "@/lib/poster-designs.functions";
 import { persistJson, readJson } from "@/lib/idb-storage";
+import { getQrDestinationStatus } from "@/lib/linktree.functions";
 
 const URL_SHORTENERS = new Set([
   "bit.ly", "tinyurl.com", "goo.gl", "t.co", "ow.ly", "is.gd", "buff.ly",
