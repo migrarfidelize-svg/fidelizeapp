@@ -252,6 +252,7 @@ function ReviewQrPage() {
   const [format, setFormat] = useState<FormatKey>("counter15x10");
 
   const [destination, setDestination] = useState<Destination>("fidelize");
+  const [qrDest, setQrDest] = useState<QrDest>("reviews");
   const [googleUrl, setGoogleUrl] = useState("");
   const [showGoogleLogo, setShowGoogleLogo] = useState(true);
   const [nfcMode, setNfcMode] = useState(false);
