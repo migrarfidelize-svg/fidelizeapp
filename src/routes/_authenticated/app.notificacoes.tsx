@@ -459,7 +459,105 @@ function NotifPage() {
                 placeholder="ex.: 5 (clientes prestes a resgatar)"
               />
             </div>
+
+            {/* Individual customer picker */}
+            <div className="space-y-2 border-t pt-3">
+              <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <UserCheck className="h-3.5 w-3.5" /> Clientes
+              </Label>
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomerMode("all");
+                    setSegment((s) => ({ ...s, customer_ids: null }));
+                  }}
+                  className={`px-2.5 py-1 rounded-full text-xs border transition ${
+                    customerMode === "all"
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background hover:bg-muted border-border"
+                  }`}
+                >
+                  Todos que casarem com o segmento
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCustomerMode("specific")}
+                  className={`px-2.5 py-1 rounded-full text-xs border transition ${
+                    customerMode === "specific"
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background hover:bg-muted border-border"
+                  }`}
+                >
+                  Escolher cliente por cliente
+                </button>
+              </div>
+
+              {customerMode === "specific" && (
+                <div className="space-y-2 rounded-md border bg-muted/30 p-2">
+                  <div className="relative">
+                    <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      value={customerQuery}
+                      onChange={(e) => setCustomerQuery(e.target.value)}
+                      placeholder="Buscar por nome, telefone ou código"
+                      className="h-8 pl-7 text-xs"
+                    />
+                  </div>
+                  {(segment.customer_ids?.length ?? 0) > 0 && (
+                    <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                      <span>{segment.customer_ids!.length} selecionado(s)</span>
+                      <button
+                        type="button"
+                        className="underline hover:text-foreground"
+                        onClick={() => setSegment((s) => ({ ...s, customer_ids: null }))}
+                      >
+                        Limpar seleção
+                      </button>
+                    </div>
+                  )}
+                  <div className="max-h-60 overflow-y-auto rounded border bg-background divide-y">
+                    {loadingCustomers && (
+                      <div className="p-3 text-center text-xs text-muted-foreground">
+                        <Loader2 className="h-3 w-3 animate-spin inline mr-1" /> Carregando…
+                      </div>
+                    )}
+                    {!loadingCustomers && (customersData?.customers ?? []).length === 0 && (
+                      <div className="p-3 text-center text-xs text-muted-foreground">
+                        Nenhum cliente encontrado.
+                      </div>
+                    )}
+                    {(customersData?.customers ?? []).map((c: any) => {
+                      const checked = (segment.customer_ids ?? []).includes(c.id);
+                      return (
+                        <label
+                          key={c.id}
+                          className={`flex items-center gap-2 px-2 py-1.5 text-xs cursor-pointer hover:bg-muted/60 ${
+                            checked ? "bg-primary/5" : ""
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleCustomer(c.id)}
+                            className="h-3.5 w-3.5 accent-primary"
+                          />
+                          <span className="flex-1 truncate font-medium">{c.name || "—"}</span>
+                          <span className="text-muted-foreground">{c.phone || c.code || ""}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  {customersData && customersData.total > (customersData.customers?.length ?? 0) && (
+                    <p className="text-[10px] text-muted-foreground">
+                      Mostrando {customersData.customers?.length ?? 0} de {customersData.total}. Refine a busca para ver mais.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
+
 
           {/* Schedule */}
           <div className="rounded-lg border p-3 space-y-2">
