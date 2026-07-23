@@ -234,27 +234,33 @@ function Page() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-4 md:p-8">
-      <header className="flex items-end justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Avaliações de atendimento</h1>
-          <p className="text-sm text-muted-foreground">Acompanhe o feedback dos seus clientes e responda com agilidade.</p>
-        </div>
-        <a href={`/avaliacoes/${est.slug}`} target="_blank" rel="noopener" className="text-sm text-primary hover:underline">
-          Ver página pública →
-        </a>
-      </header>
+    <div className="mx-auto max-w-6xl space-y-8 p-4 md:p-8">
+      <CockpitHero est={est} />
 
-      <Tabs defaultValue="feed" className="space-y-4">
-        <TabsList className="flex-wrap">
-          <TabsTrigger value="feed">Voucher (pós-carimbo)</TabsTrigger>
-          <TabsTrigger value="public-inbox">Caixa (público)</TabsTrigger>
-          <TabsTrigger value="alerts"><AlertTriangle className="mr-1 h-3 w-3" />Alertas ≤2</TabsTrigger>
-          <TabsTrigger value="insights"><TrendingDown className="mr-1 h-3 w-3" />Insights</TabsTrigger>
-          <TabsTrigger value="public-form">Formulário público</TabsTrigger>
-          <TabsTrigger value="public-ratings">Notas 1–5</TabsTrigger>
-          <TabsTrigger value="public-questions">Perguntas extras</TabsTrigger>
-          <TabsTrigger value="config">Config. voucher</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="feed" className="space-y-6">
+        <div className="border-b border-border/50 -mx-4 md:mx-0 overflow-x-auto no-scrollbar">
+          <TabsList className="h-auto bg-transparent p-0 gap-0 rounded-none w-max">
+            {[
+              { v: "feed", label: "Voucher (pós-carimbo)" },
+              { v: "public-inbox", label: "Caixa (público)" },
+              { v: "alerts", label: "Alertas ≤2", icon: AlertTriangle },
+              { v: "insights", label: "Insights AI", icon: TrendingDown },
+              { v: "public-form", label: "Formulário público" },
+              { v: "public-ratings", label: "Notas 1–5" },
+              { v: "public-questions", label: "Perguntas extras" },
+              { v: "config", label: "Config. voucher" },
+            ].map(({ v, label, icon: Icon }) => (
+              <TabsTrigger
+                key={v}
+                value={v}
+                className="relative rounded-none border-0 bg-transparent px-4 md:px-5 py-3 text-xs font-bold uppercase tracking-widest text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none whitespace-nowrap data-[state=active]:after:absolute data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:-bottom-px data-[state=active]:after:h-0.5 data-[state=active]:after:bg-primary data-[state=active]:after:shadow-[0_0_10px_hsl(var(--primary))]"
+              >
+                {Icon && <Icon className="mr-1.5 h-3 w-3" />}
+                {label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
         <TabsContent value="feed"><Feed estId={est.id} /></TabsContent>
         <TabsContent value="public-inbox"><PublicInbox estId={est.id} /></TabsContent>
         <TabsContent value="alerts"><LowRatingAlerts estId={est.id} /></TabsContent>
@@ -267,6 +273,7 @@ function Page() {
     </div>
   );
 }
+
 
 function Feed({ estId }: { estId: string }) {
   const statsFn = useServerFn(getReviewStats);
