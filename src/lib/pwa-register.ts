@@ -6,7 +6,7 @@
 // - Never register more than once — this is the ONLY call site.
 
 const SW_URL = "/sw.js";
-const SW_READY_TIMEOUT_MS = 9000;
+const SW_READY_TIMEOUT_MS = 20000;
 
 let registrationPromise: Promise<ServiceWorkerRegistration> | null = null;
 let routeWatcherInstalled = false;
