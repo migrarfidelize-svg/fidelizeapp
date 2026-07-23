@@ -237,42 +237,117 @@ function Page() {
 
       <CockpitHero est={est} />
 
-      <Tabs defaultValue="feed" className="space-y-6">
-        <div className="border-b border-border/50 -mx-4 md:mx-0 overflow-x-auto no-scrollbar">
-          <TabsList className="h-auto bg-transparent p-0 gap-0 rounded-none w-max">
-            {[
-              { v: "feed", label: "Voucher (pós-carimbo)" },
-              { v: "public-inbox", label: "Caixa (público)" },
-              { v: "alerts", label: "Alertas ≤2", icon: AlertTriangle },
-              { v: "insights", label: "Insights AI", icon: TrendingDown },
-              { v: "public-form", label: "Formulário público" },
-              { v: "public-ratings", label: "Notas 1–5" },
-              { v: "public-questions", label: "Perguntas extras" },
-              { v: "config", label: "Config. voucher" },
-            ].map(({ v, label, icon: Icon }) => (
-              <TabsTrigger
-                key={v}
-                value={v}
-                className="relative rounded-none border-0 bg-transparent px-4 md:px-5 py-3 text-xs font-bold uppercase tracking-widest text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none whitespace-nowrap data-[state=active]:after:absolute data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:-bottom-px data-[state=active]:after:h-0.5 data-[state=active]:after:bg-primary data-[state=active]:after:shadow-[0_0_10px_hsl(var(--primary))]"
-              >
-                {Icon && <Icon className="mr-1.5 h-3 w-3" />}
-                {label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
-        <TabsContent value="feed"><Feed estId={est.id} /></TabsContent>
-        <TabsContent value="public-inbox"><PublicInbox estId={est.id} /></TabsContent>
-        <TabsContent value="alerts"><LowRatingAlerts estId={est.id} /></TabsContent>
-        <TabsContent value="insights"><InsightsTab estId={est.id} /></TabsContent>
-        <TabsContent value="public-form"><PublicFormTab estId={est.id} slug={est.slug} /></TabsContent>
-        <TabsContent value="public-ratings"><PublicRatingsTab estId={est.id} /></TabsContent>
-        <TabsContent value="public-questions"><PublicQuestionsTab estId={est.id} /></TabsContent>
-        <TabsContent value="config"><Settings estId={est.id} /></TabsContent>
-      </Tabs>
+      <ReviewsNav est={est} />
     </div>
   );
 }
+
+/* -------- Compact grouped navigation -------- */
+const NAV_GROUPS = [
+  {
+    id: "respostas",
+    label: "Respostas",
+    icon: Inbox,
+    tabs: [
+      { v: "feed", label: "Voucher", icon: Ticket },
+      { v: "public-inbox", label: "Público", icon: Globe },
+      { v: "alerts", label: "Alertas ≤2", icon: AlertTriangle },
+      { v: "insights", label: "Insights AI", icon: TrendingDown },
+    ],
+  },
+  {
+    id: "formulario",
+    label: "Formulário público",
+    icon: FileText,
+    tabs: [
+      { v: "public-form", label: "Formulário", icon: FileText },
+      { v: "public-ratings", label: "Notas 1–5", icon: ListChecks },
+      { v: "public-questions", label: "Perguntas extras", icon: HelpCircle },
+    ],
+  },
+  {
+    id: "config",
+    label: "Configurações",
+    icon: Settings2,
+    tabs: [{ v: "config", label: "Config. voucher", icon: Settings2 }],
+  },
+] as const;
+
+function ReviewsNav({ est }: { est: { id: string; name: string; slug: string } }) {
+  const [group, setGroup] = useState<string>("respostas");
+  const activeGroup = NAV_GROUPS.find((g) => g.id === group) ?? NAV_GROUPS[0];
+  const [tab, setTab] = useState<string>(activeGroup.tabs[0].v);
+
+  function pickGroup(id: string) {
+    setGroup(id);
+    const g = NAV_GROUPS.find((x) => x.id === id);
+    if (g) setTab(g.tabs[0].v);
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-border/60 bg-muted/30 p-1">
+        {NAV_GROUPS.map((g) => {
+          const Icon = g.icon;
+          const active = g.id === group;
+          return (
+            <button
+              key={g.id}
+              type="button"
+              onClick={() => pickGroup(g.id)}
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                active
+                  ? "bg-background text-primary shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {g.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {activeGroup.tabs.length > 1 && (
+        <div className="-mx-4 overflow-x-auto no-scrollbar md:mx-0">
+          <div className="flex w-max items-center gap-1 px-4 md:px-0">
+            {activeGroup.tabs.map((t) => {
+              const Icon = t.icon;
+              const active = t.v === tab;
+              return (
+                <button
+                  key={t.v}
+                  type="button"
+                  onClick={() => setTab(t.v)}
+                  className={`flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                    active
+                      ? "border-primary/60 bg-primary/10 text-primary"
+                      : "border-border/60 bg-background text-muted-foreground hover:border-border hover:text-foreground"
+                  }`}
+                >
+                  {Icon && <Icon className="h-3.5 w-3.5" />}
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div>
+        {tab === "feed" && <Feed estId={est.id} />}
+        {tab === "public-inbox" && <PublicInbox estId={est.id} />}
+        {tab === "alerts" && <LowRatingAlerts estId={est.id} />}
+        {tab === "insights" && <InsightsTab estId={est.id} />}
+        {tab === "public-form" && <PublicFormTab estId={est.id} slug={est.slug} />}
+        {tab === "public-ratings" && <PublicRatingsTab estId={est.id} />}
+        {tab === "public-questions" && <PublicQuestionsTab estId={est.id} />}
+        {tab === "config" && <Settings estId={est.id} />}
+      </div>
+    </div>
+  );
+}
+
 
 
 function Feed({ estId }: { estId: string }) {
