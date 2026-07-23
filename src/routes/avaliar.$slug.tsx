@@ -44,6 +44,66 @@ function Stars({ n }: { n: number }) {
   );
 }
 
+function ReviewsSectionHeader() {
+  return (
+    <div className="mb-6 flex items-center gap-4">
+      <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/10" />
+      <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/60">
+        Avaliações Recentes
+      </span>
+      <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/10" />
+    </div>
+  );
+}
+
+function ReviewSkeleton() {
+  return (
+    <div className="animate-pulse rounded-xl border border-white/5 bg-[#0b0b0e]/60 p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-lg bg-white/5" />
+          <div className="space-y-2">
+            <div className="h-3 w-28 rounded bg-white/10" />
+            <div className="h-3 w-20 rounded bg-white/5" />
+          </div>
+        </div>
+        <div className="h-2.5 w-16 rounded bg-white/5" />
+      </div>
+      <div className="mt-4 space-y-2">
+        <div className="h-3 w-full rounded bg-white/5" />
+        <div className="h-3 w-11/12 rounded bg-white/5" />
+        <div className="h-3 w-2/3 rounded bg-white/5" />
+      </div>
+    </div>
+  );
+}
+
+function ReviewsEmptyState({ accent }: { accent: string }) {
+  return (
+    <div
+      className="relative overflow-hidden rounded-xl border border-white/5 bg-[#0b0b0e]/60 px-6 py-10 text-center"
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.15]"
+        style={{ background: `radial-gradient(300px 120px at 50% 0%, ${accent}, transparent 70%)` }}
+      />
+      <div
+        className="relative mx-auto grid h-12 w-12 place-items-center rounded-full border"
+        style={{ borderColor: `${accent}40`, background: `${accent}12` }}
+      >
+        <Star className="h-6 w-6" style={{ color: accent }} />
+      </div>
+      <h3 className="relative mt-4 text-sm font-semibold text-white">
+        Ainda não há avaliações por aqui
+      </h3>
+      <p className="relative mx-auto mt-1 max-w-xs text-xs text-gray-400">
+        Seja a primeira pessoa a compartilhar sua experiência — sua opinião ajuda outros clientes.
+      </p>
+    </div>
+  );
+}
+
 function initials(name: string) {
   return name.trim().split(/\s+/).slice(0, 2).map((s) => s[0]?.toUpperCase() ?? "").join("") || "?";
 }
