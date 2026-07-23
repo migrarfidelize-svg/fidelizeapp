@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VideosRouteImport } from './routes/videos'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as PreviewDockRouteImport } from './routes/preview-dock'
@@ -105,6 +106,11 @@ import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authe
 import { Route as ApiPublicWalletAppleTokenRouteImport } from './routes/api/public/wallet.apple.$token'
 import { Route as ApiPublicRQrSlugDestRouteImport } from './routes/api/public/r/qr/$slug/$dest'
 
+const VideosRoute = VideosRouteImport.update({
+  id: '/videos',
+  path: '/videos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermosRoute = TermosRouteImport.update({
   id: '/termos',
   path: '/termos',
@@ -640,6 +646,7 @@ export interface FileRoutesByFullPath {
   '/preview-dock': typeof PreviewDockRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
+  '/videos': typeof VideosRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/carteira': typeof AuthenticatedCarteiraRouteWithChildren
@@ -736,6 +743,7 @@ export interface FileRoutesByTo {
   '/preview-dock': typeof PreviewDockRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
+  '/videos': typeof VideosRoute
   '/lgpd': typeof AuthenticatedLgpdRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
@@ -831,6 +839,7 @@ export interface FileRoutesById {
   '/preview-dock': typeof PreviewDockRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
+  '/videos': typeof VideosRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/_authenticated/carteira': typeof AuthenticatedCarteiraRouteWithChildren
@@ -929,6 +938,7 @@ export interface FileRouteTypes {
     | '/preview-dock'
     | '/privacidade'
     | '/termos'
+    | '/videos'
     | '/admin'
     | '/app'
     | '/carteira'
@@ -1025,6 +1035,7 @@ export interface FileRouteTypes {
     | '/preview-dock'
     | '/privacidade'
     | '/termos'
+    | '/videos'
     | '/lgpd'
     | '/auth/nova-senha'
     | '/auth/recuperar'
@@ -1119,6 +1130,7 @@ export interface FileRouteTypes {
     | '/preview-dock'
     | '/privacidade'
     | '/termos'
+    | '/videos'
     | '/_authenticated/admin'
     | '/_authenticated/app'
     | '/_authenticated/carteira'
@@ -1217,6 +1229,7 @@ export interface RootRouteChildren {
   PreviewDockRoute: typeof PreviewDockRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   TermosRoute: typeof TermosRoute
+  VideosRoute: typeof VideosRoute
   AvaliacoesSlugRoute: typeof AvaliacoesSlugRoute
   AvaliarSlugRoute: typeof AvaliarSlugRoute
   CTokenRoute: typeof CTokenRoute
@@ -1249,6 +1262,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/videos': {
+      id: '/videos'
+      path: '/videos'
+      fullPath: '/videos'
+      preLoaderRoute: typeof VideosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/termos': {
       id: '/termos'
       path: '/termos'
@@ -2104,6 +2124,7 @@ const rootRouteChildren: RootRouteChildren = {
   PreviewDockRoute: PreviewDockRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   TermosRoute: TermosRoute,
+  VideosRoute: VideosRoute,
   AvaliacoesSlugRoute: AvaliacoesSlugRoute,
   AvaliarSlugRoute: AvaliarSlugRoute,
   CTokenRoute: CTokenRoute,
