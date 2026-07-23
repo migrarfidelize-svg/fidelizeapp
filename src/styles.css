@@ -2422,3 +2422,18 @@ html:not(.dark) .landing-scope .fz-ring-3 {
   .wallet-streak-flame { animation: none !important; }
 }
 
+
+/* Oculta a barra de rolagem em telas móveis (mantém o scroll funcional). */
+@media (max-width: 768px) {
+  html, body, * {
+    scrollbar-width: none;         /* Firefox */
+    -ms-overflow-style: none;      /* IE/Edge legado */
+  }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  *::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+    display: none;                 /* Chrome/Safari/WebKit */
+  }
+}
