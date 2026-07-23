@@ -95,6 +95,62 @@ function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promi
   });
 }
 
+function requestImmediateActivation(registration: ServiceWorkerRegistration) {
+  try {
+    registration.waiting?.postMessage({ type: "SKIP_WAITING" });
+    registration.installing?.postMessage({ type: "SKIP_WAITING" });
+    registration.installing?.addEventListener("statechange", (ev) => {
+      const sw = ev.target as ServiceWorker | null;
+      if (sw?.state === "installed") sw.postMessage({ type: "SKIP_WAITING" });
+    });
+  } catch { /* noop */ }
+}
+
+function waitForRegistrationActivation(registration: ServiceWorkerRegistration): Promise<ServiceWorkerRegistration> {
+  if (registration.active) return Promise.resolve(registration);
+
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const candidates = [registration.installing, registration.waiting].filter(
+      (sw): sw is ServiceWorker => Boolean(sw),
+    );
+
+    const cleanupFns: Array<() => void> = [];
+    const finish = () => {
+      if (settled) return;
+      if (registration.active) {
+        settled = true;
+        cleanupFns.forEach((fn) => fn());
+        resolve(registration);
+      }
+    };
+    const failIfRedundant = (sw: ServiceWorker) => {
+      if (settled) return;
+      if (sw.state === "redundant") {
+        settled = true;
+        cleanupFns.forEach((fn) => fn());
+        reject(new Error("O serviço de notificações não conseguiu instalar."));
+      }
+    };
+
+    const onControllerChange = () => finish();
+    navigator.serviceWorker.addEventListener("controllerchange", onControllerChange);
+    cleanupFns.push(() => navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange));
+
+    for (const sw of candidates) {
+      const onStateChange = () => {
+        if (sw.state === "activated") finish();
+        else failIfRedundant(sw);
+      };
+      sw.addEventListener("statechange", onStateChange);
+      cleanupFns.push(() => sw.removeEventListener("statechange", onStateChange));
+      onStateChange();
+    }
+
+    finish();
+  });
+}
+
 function registerServiceWorkerNow(): Promise<ServiceWorkerRegistration> {
   if (registrationPromise) return registrationPromise;
   registrationPromise = navigator.serviceWorker.register(SW_URL, { scope: "/" }).catch((error) => {
@@ -147,28 +203,29 @@ export async function ensurePwaRegistration(timeoutMs = SW_READY_TIMEOUT_MS): Pr
 
   const registration = await registerServiceWorkerNow();
 
+  // If a previous install attempt failed or a new SW is available, ask the
+  // browser to re-check without blocking the permission click flow.
+  void registration.update().catch(() => { /* noop */ });
+
   // If the SW is already active (any prior session), skip the ready race.
   if (registration.active) return registration;
 
   // Force any waiting worker to activate immediately so `ready` resolves.
-  try {
-    registration.waiting?.postMessage({ type: "SKIP_WAITING" });
-    registration.installing?.addEventListener("statechange", (ev) => {
-      const sw = ev.target as ServiceWorker | null;
-      if (sw?.state === "installed") sw.postMessage({ type: "SKIP_WAITING" });
-    });
-  } catch { /* noop */ }
+  requestImmediateActivation(registration);
 
   try {
     return await withTimeout(
-      navigator.serviceWorker.ready,
+      Promise.race([
+        navigator.serviceWorker.ready,
+        waitForRegistrationActivation(registration),
+      ]),
       timeoutMs,
       "O serviço de notificações demorou para iniciar. Recarregue o app e tente novamente.",
     );
   } catch (err) {
-    // Fallback: if we have any usable registration, return it so push subscribe can proceed.
+    // Fallback: if a usable registration appeared after the race, return it so push subscribe can proceed.
     const existing = await navigator.serviceWorker.getRegistration();
-    if (existing && (existing.active || existing.waiting)) return existing;
+    if (existing?.active) return existing;
     throw err;
   }
 }
