@@ -245,17 +245,6 @@ function Page() {
 /* -------- Compact grouped navigation -------- */
 const NAV_GROUPS = [
   {
-    id: "respostas",
-    label: "Respostas",
-    icon: Inbox,
-    tabs: [
-      { v: "feed", label: "Voucher", icon: Ticket },
-      { v: "public-inbox", label: "Público", icon: Globe },
-      { v: "alerts", label: "Alertas ≤2", icon: AlertTriangle },
-      { v: "insights", label: "Insights AI", icon: TrendingDown },
-    ],
-  },
-  {
     id: "formulario",
     label: "Formulário público",
     icon: FileText,
@@ -270,6 +259,30 @@ const NAV_GROUPS = [
     label: "Configurações",
     icon: Settings2,
     tabs: [{ v: "config", label: "Config. voucher", icon: Settings2 }],
+  },
+  {
+    id: "voucher",
+    label: "Voucher",
+    icon: Ticket,
+    tabs: [{ v: "feed", label: "Voucher", icon: Ticket }],
+  },
+  {
+    id: "publico",
+    label: "Público",
+    icon: Globe,
+    tabs: [{ v: "public-inbox", label: "Público", icon: Globe }],
+  },
+  {
+    id: "alertas",
+    label: "Alertas ≤2",
+    icon: AlertTriangle,
+    tabs: [{ v: "alerts", label: "Alertas ≤2", icon: AlertTriangle }],
+  },
+  {
+    id: "insights",
+    label: "Insights AI",
+    icon: TrendingDown,
+    tabs: [{ v: "insights", label: "Insights AI", icon: TrendingDown }],
   },
 ] as const;
 
@@ -287,6 +300,8 @@ function ReviewsNav({ est }: { est: { id: string; name: string; slug: string } }
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-border/60 bg-muted/30 p-1">
+
+
         {NAV_GROUPS.map((g) => {
           const Icon = g.icon;
           const active = g.id === group;
