@@ -758,5 +758,7 @@ function normalizeSegment(s: Segment): Segment {
   if (s.activity && s.activity !== "all") out.activity = s.activity;
   if (s.campaign_id) out.campaign_id = s.campaign_id;
   if (s.min_stamps && s.min_stamps > 0) out.min_stamps = s.min_stamps;
+  if (s.customer_ids && s.customer_ids.length > 0) out.customer_ids = s.customer_ids;
   return out;
+
 }
