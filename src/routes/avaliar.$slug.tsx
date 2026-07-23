@@ -111,7 +111,7 @@ function initials(name: string) {
 function Page() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(opts(slug));
-  const { data: reviews } = useQuery(listOpts(slug));
+  const { data: reviews, isLoading: reviewsLoading } = useQuery(listOpts(slug));
   const d = data!;
   const est = d.est;
   const accent = est.primary_color || "#00ffff";
