@@ -832,11 +832,24 @@ function ReviewQrPage() {
     } catch { /* cancelled */ }
   }
 
+  const [copiedPublic, setCopiedPublic] = useState(false);
   async function copyLink() {
     if (!targetUrl) return;
     await navigator.clipboard.writeText(targetUrl);
     toast.success("Link copiado");
   }
+  async function copyPublicUrl() {
+    if (!fidelizeUrl) return;
+    try {
+      await navigator.clipboard.writeText(fidelizeUrl);
+      setCopiedPublic(true);
+      toast.success("Link público copiado");
+      setTimeout(() => setCopiedPublic(false), 1800);
+    } catch {
+      toast.error("Não foi possível copiar");
+    }
+  }
+
 
   async function copyNfcUrl() {
     if (!targetUrl) return;
