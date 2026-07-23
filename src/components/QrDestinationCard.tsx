@@ -64,7 +64,7 @@ export function QrDestinationCard({ establishmentId }: { establishmentId: string
             <SelectContent>
               <SelectItem value="reviews">Avaliação de atendimento</SelectItem>
               <SelectItem value="linktree">Árvore de Links</SelectItem>
-              <SelectItem value="landing">Página do estabelecimento</SelectItem>
+              <SelectItem value="landing">Cartão Fidelidade</SelectItem>
             </SelectContent>
           </Select>
         </div>
