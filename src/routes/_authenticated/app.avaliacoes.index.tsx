@@ -25,7 +25,7 @@ import {
 } from "@/lib/public-reviews.functions";
 import { MerchantReplyDialog } from "@/components/MerchantReplyDialog";
 import { formatDate } from "@/lib/format";
-import { Trash2, Plus, ExternalLink as ExtLink, AlertTriangle, TrendingDown, Search, CheckCircle2, Lock, Sparkles } from "lucide-react";
+import { Trash2, Plus, ExternalLink as ExtLink, AlertTriangle, TrendingDown, Search, CheckCircle2, Lock, Sparkles, Inbox, Globe, ListChecks, HelpCircle, Settings2, Ticket, FileText } from "lucide-react";
 import { useMyFeature } from "@/hooks/useMyFeature";
 import { Link } from "@tanstack/react-router";
 
