@@ -53,8 +53,11 @@ function cleanupPwa() {
   void clearPwaCaches();
 }
 
-function isVoucherPath(pathname: string): boolean {
-  return pathname.startsWith("/c/");
+function isPwaPath(pathname: string): boolean {
+  // Customer PWA surfaces that need a service worker (offline voucher +
+  // Web Push subscription). Push opt-in lives on /carteira, so the SW must
+  // be registered there or `navigator.serviceWorker.ready` never resolves.
+  return pathname.startsWith("/c/") || pathname.startsWith("/carteira");
 }
 
 export function registerPWA() {
@@ -66,7 +69,7 @@ export function registerPWA() {
   const host = window.location.hostname;
   const killSwitch = new URLSearchParams(window.location.search).get("sw") === "off";
 
-  if (!isProd || inIframe || isPreviewHost(host) || killSwitch || !isVoucherPath(window.location.pathname)) {
+  if (!isProd || inIframe || isPreviewHost(host) || killSwitch || !isPwaPath(window.location.pathname)) {
     // Refuse and clean up any stale registration/cache outside the customer voucher PWA.
     cleanupPwa();
     return;
