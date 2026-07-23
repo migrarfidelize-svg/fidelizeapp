@@ -21,6 +21,7 @@ import { Route as AjudaIndexRouteImport } from './routes/ajuda.index'
 import { Route as SuporteMeusRouteImport } from './routes/suporte.meus'
 import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as LinksSlugRouteImport } from './routes/links.$slug'
+import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as ESlugRouteImport } from './routes/e.$slug'
 import { Route as DevQrDesignNameRouteImport } from './routes/dev.qr-design-name'
@@ -161,6 +162,11 @@ const RCodeRoute = RCodeRouteImport.update({
 const LinksSlugRoute = LinksSlugRouteImport.update({
   id: '/links/$slug',
   path: '/links/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LSlugRoute = LSlugRouteImport.update({
+  id: '/l/$slug',
+  path: '/l/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InviteTokenRoute = InviteTokenRouteImport.update({
@@ -647,6 +653,7 @@ export interface FileRoutesByFullPath {
   '/dev/qr-design-name': typeof DevQrDesignNameRoute
   '/e/$slug': typeof ESlugRoute
   '/invite/$token': typeof InviteTokenRoute
+  '/l/$slug': typeof LSlugRoute
   '/links/$slug': typeof LinksSlugRoute
   '/r/$code': typeof RCodeRoute
   '/suporte/meus': typeof SuporteMeusRoute
@@ -739,6 +746,7 @@ export interface FileRoutesByTo {
   '/dev/qr-design-name': typeof DevQrDesignNameRoute
   '/e/$slug': typeof ESlugRoute
   '/invite/$token': typeof InviteTokenRoute
+  '/l/$slug': typeof LSlugRoute
   '/links/$slug': typeof LinksSlugRoute
   '/r/$code': typeof RCodeRoute
   '/suporte/meus': typeof SuporteMeusRoute
@@ -836,6 +844,7 @@ export interface FileRoutesById {
   '/dev/qr-design-name': typeof DevQrDesignNameRoute
   '/e/$slug': typeof ESlugRoute
   '/invite/$token': typeof InviteTokenRoute
+  '/l/$slug': typeof LSlugRoute
   '/links/$slug': typeof LinksSlugRoute
   '/r/$code': typeof RCodeRoute
   '/suporte/meus': typeof SuporteMeusRoute
@@ -933,6 +942,7 @@ export interface FileRouteTypes {
     | '/dev/qr-design-name'
     | '/e/$slug'
     | '/invite/$token'
+    | '/l/$slug'
     | '/links/$slug'
     | '/r/$code'
     | '/suporte/meus'
@@ -1025,6 +1035,7 @@ export interface FileRouteTypes {
     | '/dev/qr-design-name'
     | '/e/$slug'
     | '/invite/$token'
+    | '/l/$slug'
     | '/links/$slug'
     | '/r/$code'
     | '/suporte/meus'
@@ -1121,6 +1132,7 @@ export interface FileRouteTypes {
     | '/dev/qr-design-name'
     | '/e/$slug'
     | '/invite/$token'
+    | '/l/$slug'
     | '/links/$slug'
     | '/r/$code'
     | '/suporte/meus'
@@ -1212,6 +1224,7 @@ export interface RootRouteChildren {
   DevQrDesignNameRoute: typeof DevQrDesignNameRoute
   ESlugRoute: typeof ESlugRoute
   InviteTokenRoute: typeof InviteTokenRoute
+  LSlugRoute: typeof LSlugRoute
   LinksSlugRoute: typeof LinksSlugRoute
   RCodeRoute: typeof RCodeRoute
   SuporteMeusRoute: typeof SuporteMeusRoute
@@ -1318,6 +1331,13 @@ declare module '@tanstack/react-router' {
       path: '/links/$slug'
       fullPath: '/links/$slug'
       preLoaderRoute: typeof LinksSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/l/$slug': {
+      id: '/l/$slug'
+      path: '/l/$slug'
+      fullPath: '/l/$slug'
+      preLoaderRoute: typeof LSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/invite/$token': {
@@ -2091,6 +2111,7 @@ const rootRouteChildren: RootRouteChildren = {
   DevQrDesignNameRoute: DevQrDesignNameRoute,
   ESlugRoute: ESlugRoute,
   InviteTokenRoute: InviteTokenRoute,
+  LSlugRoute: LSlugRoute,
   LinksSlugRoute: LinksSlugRoute,
   RCodeRoute: RCodeRoute,
   SuporteMeusRoute: SuporteMeusRoute,
