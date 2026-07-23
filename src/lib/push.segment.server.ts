@@ -6,6 +6,7 @@ export type PushSegment = {
   activity?: "all" | "active_30d" | "inactive_30d" | "inactive_60d";
   campaign_id?: string | null;
   min_stamps?: number | null;
+  customer_ids?: string[] | null;
 };
 
 export async function resolveSegmentCustomerIds(
@@ -25,6 +26,10 @@ export async function resolveSegmentCustomerIds(
     q = q.in("tier", seg.tiers);
   }
 
+  if (seg.customer_ids && seg.customer_ids.length > 0) {
+    q = q.in("id", seg.customer_ids);
+  }
+
   const now = Date.now();
   if (seg.activity === "active_30d") {
     q = q.gte("last_visit_at", new Date(now - 30 * 86400_000).toISOString());
@@ -42,6 +47,7 @@ export async function resolveSegmentCustomerIds(
   if (error) throw error;
   let ids = (baseCustomers ?? []).map((c) => c.id);
   if (ids.length === 0) return [];
+
 
   // Card-based filters
   if (seg.campaign_id || (seg.min_stamps ?? 0) > 0) {
