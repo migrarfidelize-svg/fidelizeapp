@@ -245,17 +245,6 @@ function Page() {
 /* -------- Compact grouped navigation -------- */
 const NAV_GROUPS = [
   {
-    id: "respostas",
-    label: "Respostas",
-    icon: Inbox,
-    tabs: [
-      { v: "feed", label: "Voucher", icon: Ticket },
-      { v: "public-inbox", label: "Público", icon: Globe },
-      { v: "alerts", label: "Alertas ≤2", icon: AlertTriangle },
-      { v: "insights", label: "Insights AI", icon: TrendingDown },
-    ],
-  },
-  {
     id: "formulario",
     label: "Formulário público",
     icon: FileText,
@@ -270,6 +259,30 @@ const NAV_GROUPS = [
     label: "Configurações",
     icon: Settings2,
     tabs: [{ v: "config", label: "Config. voucher", icon: Settings2 }],
+  },
+  {
+    id: "voucher",
+    label: "Voucher",
+    icon: Ticket,
+    tabs: [{ v: "feed", label: "Voucher", icon: Ticket }],
+  },
+  {
+    id: "publico",
+    label: "Público",
+    icon: Globe,
+    tabs: [{ v: "public-inbox", label: "Público", icon: Globe }],
+  },
+  {
+    id: "alertas",
+    label: "Alertas ≤2",
+    icon: AlertTriangle,
+    tabs: [{ v: "alerts", label: "Alertas ≤2", icon: AlertTriangle }],
+  },
+  {
+    id: "insights",
+    label: "Insights AI",
+    icon: TrendingDown,
+    tabs: [{ v: "insights", label: "Insights AI", icon: TrendingDown }],
   },
 ] as const;
 
