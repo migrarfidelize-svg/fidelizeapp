@@ -44,6 +44,38 @@ function rootDomain(host: string): string {
   return parts.length <= 2 ? host.toLowerCase() : parts.slice(-2).join(".");
 }
 
+type QrDest = "reviews" | "linktree" | "landing";
+type CopyPreset = {
+  title: string;
+  subtitle: string;
+  ctaNearQR: string;
+  ctaFooter: string;
+  primaryLabel: string;
+};
+const COPY_PRESETS: Record<QrDest, CopyPreset> = {
+  reviews: {
+    title: "Como foi seu atendimento?",
+    subtitle: "Sua opinião ajuda nossa equipe a melhorar. Leva menos de 30 segundos.",
+    ctaNearQR: "Aponte a câmera para avaliar",
+    ctaFooter: "Escaneie e conte pra gente",
+    primaryLabel: "Avalie nosso atendimento",
+  },
+  landing: {
+    title: "Ganhe carimbos a cada visita",
+    subtitle: "Junte carimbos e troque por recompensas exclusivas. Ative seu cartão em 10 segundos.",
+    ctaNearQR: "Aponte a câmera e ative seu cartão",
+    ctaFooter: "Escaneie e comece a acumular",
+    primaryLabel: "Meu Cartão Fidelidade",
+  },
+  linktree: {
+    title: "Tudo sobre a gente",
+    subtitle: "Cardápio, redes sociais, Wi‑Fi e Pix num só lugar. É só apontar a câmera.",
+    ctaNearQR: "Aponte a câmera para abrir",
+    ctaFooter: "Escaneie para ver tudo",
+    primaryLabel: "Nossos links",
+  },
+};
+
 export const Route = createFileRoute("/_authenticated/app/avaliacoes/qr")({
   head: () => ({ meta: [{ title: "QR de Avaliação — Fidelize" }] }),
   component: ReviewQrPage,
