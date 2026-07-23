@@ -8,7 +8,7 @@ describe("qrDestinationPath", () => {
   it.each([
     ["reviews", "avaliar"],
     ["linktree", "links"],
-    ["landing", "l"],
+    ["landing", "cartao"],
   ] as const)("mapeia %s → /%s", (dest, path) => {
     expect(qrDestinationPath(dest)).toBe(path);
   });
