@@ -9,7 +9,16 @@ import { test, expect, type Page } from "@playwright/test";
  * (`/dev/qr-design-name`), garantindo cobertura de UI sem depender de sessão.
  */
 
-test.use({ launchOptions: { args: ["--no-sandbox", "--disable-setuid-sandbox"] } });
+const CHROMIUM_EXECUTABLE =
+  process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ||
+  "/nix/store/2zqa6kavc8znbgrac1l3pix9lwr3w5nj-playwright-chromium/chrome-linux/chrome";
+
+test.use({
+  launchOptions: {
+    executablePath: CHROMIUM_EXECUTABLE,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  },
+});
 
 const CASES: Array<{ dest: "reviews" | "landing" | "linktree"; label: string }> = [
   { dest: "reviews", label: "Avaliação" },
