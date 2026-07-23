@@ -100,6 +100,7 @@ export function PublicRatingBlock({ slug, source = "linktree", compact = false }
   // ============ RESULT ============
   if (result) {
     const isLow = rating <= 2;
+    const isHigh = rating >= 4;
     return (
       <Card className="overflow-hidden border-2" style={{ borderColor: `${btnColor}44` }}>
         <CardContent className="space-y-4 p-6 text-center">
@@ -124,6 +125,36 @@ export function PublicRatingBlock({ slug, source = "linktree", compact = false }
               <ExternalLink className="mr-2 h-4 w-4" /> Avaliar também no Google
             </Button>
           )}
+
+          {/* CTA carteira — clientes satisfeitos viram fidelidade */}
+          {isHigh && (
+            <div
+              className="mt-2 rounded-xl border p-4 text-left"
+              style={{ borderColor: `${btnColor}33`, background: `linear-gradient(135deg, ${btnColor}12, #ff00ff10)` }}
+            >
+              <div className="mb-2 flex items-center gap-2">
+                <Sparkles className="h-4 w-4" style={{ color: btnColor }} />
+                <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: btnColor }}>
+                  Ganhe recompensas
+                </span>
+              </div>
+              <p className="mb-3 text-sm text-muted-foreground">
+                Adorou o atendimento em <strong className="text-foreground">{data.est.name}</strong>? Ative sua carteira digital e acumule carimbos a cada visita — na próxima você ganha prêmios de graça.
+              </p>
+              <Button
+                variant="outline"
+                className="w-full font-semibold"
+                style={{ borderColor: `${btnColor}66`, color: btnColor }}
+                onClick={() => {
+                  if (form) logFn({ data: { form_id: form.id, event_type: "wallet_cta_clicked" } }).catch(() => {});
+                  window.location.href = `/cartao/${data.est.slug}`;
+                }}
+              >
+                <Wallet className="mr-2 h-4 w-4" /> Ativar minha carteira em {data.est.name}
+              </Button>
+            </div>
+          )}
+
           {result.action === "invite_share" && typeof navigator !== "undefined" && "share" in navigator && (
             <Button
               variant="outline"
