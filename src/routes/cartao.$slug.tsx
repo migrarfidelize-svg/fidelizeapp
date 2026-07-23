@@ -21,7 +21,7 @@ const opts = (slug: string) => queryOptions({
   queryFn: () => getEstablishmentBySlug({ data: { slug } }),
 });
 
-export const Route = createFileRoute("/l/$slug")({
+export const Route = createFileRoute("/cartao/$slug")({
   ssr: false,
   beforeLoad: async ({ params }) => {
     // Se o visitante já está logado, tenta vincular esta empresa à conta e
