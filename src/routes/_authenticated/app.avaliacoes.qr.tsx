@@ -91,6 +91,31 @@ const COPY_PRESETS: Record<QrDest, CopyPreset> = {
   },
 };
 
+const DEST_LABEL: Record<QrDest, string> = {
+  reviews: "Avaliação",
+  landing: "Cartão Fidelidade",
+  linktree: "Árvore de Links",
+};
+
+function buildDefaultDesignName(
+  dest: QrDest,
+  cloud?: Array<{ name?: string | null }> | null,
+  local?: Array<{ name?: string | null }> | null,
+): string {
+  const label = DEST_LABEL[dest] ?? "Design";
+  const names = [
+    ...(cloud ?? []).map((d) => (d?.name ?? "").trim()),
+    ...(local ?? []).map((d) => (d?.name ?? "").trim()),
+  ];
+  const re = new RegExp(`^${label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s+(\\d+)$`, "i");
+  let max = 0;
+  for (const n of names) {
+    const m = n.match(re);
+    if (m) max = Math.max(max, parseInt(m[1], 10));
+  }
+  return `${label} ${max + 1}`;
+}
+
 export const Route = createFileRoute("/_authenticated/app/avaliacoes/qr")({
   head: () => ({ meta: [{ title: "QR de Avaliação — Fidelize" }] }),
   component: ReviewQrPage,
@@ -481,7 +506,7 @@ function ReviewQrPage() {
   }
 
   async function saveCurrentDesign() {
-    const name = designName.trim() || `Design ${(cloudDesigns?.length ?? designs.length) + 1}`;
+    const name = designName.trim() || buildDefaultDesignName(qrDest, cloudDesigns, designs);
     const payload = {
       template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale,
       title, subtitle, ctaNearQR, ctaFooter,
@@ -1700,7 +1725,7 @@ function ReviewQrPage() {
                   onClick={async () => {
                     const preset = presetDialog.preset;
                     try {
-                      const name = `Design ${new Date().toLocaleString("pt-BR")}`;
+                      const name = buildDefaultDesignName(qrDest, cloudDesigns, designs);
                       setDesignName(name);
                       await saveCurrentDesignRef.current?.();
                     } finally {
