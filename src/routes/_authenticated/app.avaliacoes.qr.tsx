@@ -329,10 +329,12 @@ function ReviewQrPage() {
     open: boolean;
     to: QrDest | null;
     preset: CopyPreset | null;
+    current: CopyPreset | null;
     hasEdits: boolean;
     fromLabel: string;
     toLabel: string;
-  }>({ open: false, to: null, preset: null, hasEdits: false, fromLabel: "", toLabel: "" });
+  }>({ open: false, to: null, preset: null, current: null, hasEdits: false, fromLabel: "", toLabel: "" });
+
 
   const applyPreset = (preset: CopyPreset) => {
     setTitle(preset.title);
