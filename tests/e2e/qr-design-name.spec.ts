@@ -30,8 +30,10 @@ async function saveTwice(page: Page, dest: string, label: string) {
   await page.locator('[data-testid="dest-select"]').selectOption(dest);
   await expect(page.locator('[data-testid="next-name"]')).toHaveText(`${label} 1`);
   await page.locator('[data-testid="save-design"]').click();
-
-  await expect(page.locator('[data-testid="next-name"]')).toHaveText(`${label} 2`);
+  // Aguarda a hidratação: o clique só atualiza a UI depois que o React monta.
+  await expect(page.locator('[data-testid="next-name"]')).toHaveText(`${label} 2`, {
+    timeout: 15_000,
+  });
   await page.locator('[data-testid="save-design"]').click();
 }
 
