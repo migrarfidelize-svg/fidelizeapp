@@ -6,6 +6,10 @@
 // - Never register more than once — this is the ONLY call site.
 
 const SW_URL = "/sw.js";
+const SW_READY_TIMEOUT_MS = 9000;
+
+let registrationPromise: Promise<ServiceWorkerRegistration> | null = null;
+let routeWatcherInstalled = false;
 
 function isPreviewHost(hostname: string): boolean {
   if (hostname.startsWith("id-preview--") || hostname.startsWith("preview--")) return true;
@@ -60,24 +64,112 @@ function isPwaPath(pathname: string): boolean {
   return pathname.startsWith("/c/") || pathname.startsWith("/carteira");
 }
 
-export function registerPWA() {
-  if (typeof window === "undefined") return;
-  if (!("serviceWorker" in navigator)) return;
+function isPwaLaunchAuth(pathname: string, search: string): boolean {
+  if (!pathname.startsWith("/auth")) return false;
+  try {
+    return new URLSearchParams(search).get("source") === "pwa";
+  } catch {
+    return false;
+  }
+}
 
+function shouldRegisterForLocation(location: Location): boolean {
+  return isPwaPath(location.pathname) || isPwaLaunchAuth(location.pathname, location.search);
+}
+
+function isHardRefusedContext(): boolean {
   const isProd = import.meta.env.PROD;
   const inIframe = window.self !== window.top;
   const host = window.location.hostname;
   const killSwitch = new URLSearchParams(window.location.search).get("sw") === "off";
+  return !isProd || inIframe || isPreviewHost(host) || killSwitch;
+}
 
-  if (!isProd || inIframe || isPreviewHost(host) || killSwitch || !isPwaPath(window.location.pathname)) {
-    // Refuse and clean up any stale registration/cache outside the customer voucher PWA.
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  const timeout = new Promise<T>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(message)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => {
+    if (timeoutId) clearTimeout(timeoutId);
+  });
+}
+
+function registerServiceWorkerNow(): Promise<ServiceWorkerRegistration> {
+  if (registrationPromise) return registrationPromise;
+  registrationPromise = navigator.serviceWorker.register(SW_URL, { scope: "/" }).catch((error) => {
+    registrationPromise = null;
+    throw error;
+  });
+  return registrationPromise;
+}
+
+function triggerRegistrationIfNeeded() {
+  if (isHardRefusedContext()) {
+    cleanupPwa();
+    return;
+  }
+  if (!shouldRegisterForLocation(window.location)) return;
+  void registerServiceWorkerNow().catch(() => { /* noop */ });
+}
+
+function installRouteWatcher() {
+  if (routeWatcherInstalled) return;
+  routeWatcherInstalled = true;
+
+  const notify = () => window.dispatchEvent(new Event("fidelize:pwa-route-change"));
+  const originalPushState = history.pushState;
+  const originalReplaceState = history.replaceState;
+
+  history.pushState = function pushState(...args) {
+    const result = originalPushState.apply(this, args);
+    notify();
+    return result;
+  };
+  history.replaceState = function replaceState(...args) {
+    const result = originalReplaceState.apply(this, args);
+    notify();
+    return result;
+  };
+
+  window.addEventListener("popstate", triggerRegistrationIfNeeded);
+  window.addEventListener("fidelize:pwa-route-change", triggerRegistrationIfNeeded);
+}
+
+export async function ensurePwaRegistration(timeoutMs = SW_READY_TIMEOUT_MS): Promise<ServiceWorkerRegistration> {
+  if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
+    throw new Error("Este aparelho não suporta notificações push.");
+  }
+  if (isHardRefusedContext()) {
+    cleanupPwa();
+    throw new Error("Notificações push funcionam no app publicado e instalado.");
+  }
+
+  await registerServiceWorkerNow();
+  return withTimeout(
+    navigator.serviceWorker.ready,
+    timeoutMs,
+    "O serviço de notificações demorou para iniciar. Recarregue o app e tente novamente.",
+  );
+}
+
+export function registerPWA() {
+  if (typeof window === "undefined") return;
+  if (!("serviceWorker" in navigator)) return;
+
+  if (isHardRefusedContext()) {
+    // Refuse and clean up any stale registration/cache in dev, preview, iframe or kill-switch contexts.
     cleanupPwa();
     return;
   }
 
+  installRouteWatcher();
+
+  if (!shouldRegisterForLocation(window.location)) return;
+
   // Defer registration until after load so first paint isn't blocked.
   const doRegister = () => {
-    navigator.serviceWorker.register(SW_URL, { scope: "/" }).catch(() => { /* noop */ });
+    void registerServiceWorkerNow().catch(() => { /* noop */ });
   };
   if (document.readyState === "complete") {
     doRegister();
