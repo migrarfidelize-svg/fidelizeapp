@@ -312,15 +312,31 @@ function ReviewQrPage() {
   // Ref to the latest saveCurrentDesign, defined further below in the file
   const saveCurrentDesignRef = useRef<null | (() => Promise<void>)>(null);
 
-  // Listen to QR destination changes → suggest/apply matching copy preset
+  // Dialog state for confirming preset application when destination changes
+  const [presetDialog, setPresetDialog] = useState<{
+    open: boolean;
+    to: QrDest | null;
+    preset: CopyPreset | null;
+    hasEdits: boolean;
+    fromLabel: string;
+    toLabel: string;
+  }>({ open: false, to: null, preset: null, hasEdits: false, fromLabel: "", toLabel: "" });
+
+  const applyPreset = (preset: CopyPreset) => {
+    setTitle(preset.title);
+    setSubtitle(preset.subtitle);
+    setCtaNearQR(preset.ctaNearQR);
+    setCtaFooter(preset.ctaFooter);
+    setPrimaryLabel(preset.primaryLabel);
+  };
+
+  // Listen to QR destination changes → open confirmation popup
   useEffect(() => {
-    function apply(preset: CopyPreset) {
-      setTitle(preset.title);
-      setSubtitle(preset.subtitle);
-      setCtaNearQR(preset.ctaNearQR);
-      setCtaFooter(preset.ctaFooter);
-      setPrimaryLabel(preset.primaryLabel);
-    }
+    const destLabels: Record<QrDest, string> = {
+      reviews: "Avaliação",
+      landing: "Cartão Fidelidade",
+      linktree: "Árvore de Links",
+    };
     function onChanged(e: Event) {
       const detail = (e as CustomEvent).detail as { from: QrDest; to: QrDest; establishmentId: string };
       if (!detail || !est?.id || detail.establishmentId !== est.id) return;
@@ -333,31 +349,19 @@ function ReviewQrPage() {
         ctaNearQR === from.ctaNearQR &&
         ctaFooter === from.ctaFooter &&
         primaryLabel === from.primaryLabel;
-      if (stillDefault) {
-        apply(to);
-        toast.success("Textos adaptados ao novo destino do QR.");
-      } else {
-        toast("Você tem edições nos textos atuais. Deseja salvá-las antes de trocar?", {
-          duration: 12000,
-          action: {
-            label: "Salvar e aplicar",
-            onClick: async () => {
-              try {
-                const name = `Design ${new Date().toLocaleString("pt-BR")}`;
-                setDesignName(name);
-                await saveCurrentDesignRef.current?.();
-              } finally {
-                apply(to);
-              }
-            },
-          },
-          cancel: { label: "Só aplicar", onClick: () => apply(to) },
-        });
-      }
+      setPresetDialog({
+        open: true,
+        to: detail.to,
+        preset: to,
+        hasEdits: !stillDefault,
+        fromLabel: destLabels[detail.from] ?? "",
+        toLabel: destLabels[detail.to] ?? "",
+      });
     }
     window.addEventListener("qr-destination-changed", onChanged as EventListener);
     return () => window.removeEventListener("qr-destination-changed", onChanged as EventListener);
   }, [est?.id, title, subtitle, ctaNearQR, ctaFooter, primaryLabel]);
+
 
 
   // Load persisted state (localStorage → IndexedDB fallback)
