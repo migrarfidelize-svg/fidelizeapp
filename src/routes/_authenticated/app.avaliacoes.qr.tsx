@@ -44,6 +44,7 @@ import {
   getQrScanStats,
 } from "@/lib/poster-designs.functions";
 import { persistJson, readJson } from "@/lib/idb-storage";
+import { getQrDestinationStatus } from "@/lib/linktree.functions";
 
 const URL_SHORTENERS = new Set([
   "bit.ly", "tinyurl.com", "goo.gl", "t.co", "ow.ly", "is.gd", "buff.ly",
@@ -251,6 +252,7 @@ function ReviewQrPage() {
   const [format, setFormat] = useState<FormatKey>("counter15x10");
 
   const [destination, setDestination] = useState<Destination>("fidelize");
+  const [qrDest, setQrDest] = useState<QrDest>("reviews");
   const [googleUrl, setGoogleUrl] = useState("");
   const [showGoogleLogo, setShowGoogleLogo] = useState(true);
   const [nfcMode, setNfcMode] = useState(false);
@@ -354,6 +356,7 @@ function ReviewQrPage() {
     function onChanged(e: Event) {
       const detail = (e as CustomEvent).detail as { from: QrDest; to: QrDest; establishmentId: string };
       if (!detail || !est?.id || detail.establishmentId !== est.id) return;
+      setQrDest(detail.to);
       const from = COPY_PRESETS[detail.from];
       const to = COPY_PRESETS[detail.to];
       if (!from || !to) return;
@@ -377,6 +380,20 @@ function ReviewQrPage() {
     window.addEventListener("qr-destination-changed", onChanged as EventListener);
     return () => window.removeEventListener("qr-destination-changed", onChanged as EventListener);
   }, [est?.id, title, subtitle, ctaNearQR, ctaFooter, primaryLabel]);
+
+  // Load current QR destination for this establishment so the pre-defined
+  // public URL in the editor reflects the destination selected in the card.
+  const getQrDestFn = useServerFn(getQrDestinationStatus);
+  const qrDestQuery = useQuery({
+    queryKey: ["qr-destination", est?.id],
+    queryFn: () => getQrDestFn({ data: { establishment_id: est!.id } }),
+    enabled: !!est?.id,
+  });
+  useEffect(() => {
+    const d = qrDestQuery.data?.destination as QrDest | undefined;
+    if (d) setQrDest(d);
+  }, [qrDestQuery.data?.destination]);
+
 
 
 
@@ -574,7 +591,8 @@ function ReviewQrPage() {
 
 
   const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const fidelizeUrl = est ? `${origin}/avaliar/${est.slug}` : "";
+  const qrDestPath = qrDest === "linktree" ? "links" : qrDest === "landing" ? "l" : "avaliar";
+  const fidelizeUrl = est ? `${origin}/${qrDestPath}/${est.slug}` : "";
   const rawTargetUrl = destination === "fidelize" ? fidelizeUrl : googleUrl.trim();
   const primaryIsPlaceholder = destination === "google" && !rawTargetUrl;
   const baseTargetUrl = rawTargetUrl || (destination === "google"
@@ -842,7 +860,7 @@ function ReviewQrPage() {
               </p>
             </div>
             <ul className="mx-auto max-w-md space-y-1 text-left text-sm text-muted-foreground">
-              <li className="flex gap-2"><Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Página pública <code>/avaliar/{est.slug}</code></li>
+              <li className="flex gap-2"><Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Página pública <code>/{qrDestPath}/{est.slug}</code></li>
               <li className="flex gap-2"><Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Cartaz 15×10 para balcão, mesa e recibo</li>
               <li className="flex gap-2"><Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Modo NFC + 2º QR para cardápio/loja</li>
             </ul>
