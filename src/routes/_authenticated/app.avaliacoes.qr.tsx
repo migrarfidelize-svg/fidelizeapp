@@ -309,6 +309,41 @@ function ReviewQrPage() {
   });
 
 
+  // Listen to QR destination changes → suggest/apply matching copy preset
+  useEffect(() => {
+    function apply(preset: CopyPreset) {
+      setTitle(preset.title);
+      setSubtitle(preset.subtitle);
+      setCtaNearQR(preset.ctaNearQR);
+      setCtaFooter(preset.ctaFooter);
+      setPrimaryLabel(preset.primaryLabel);
+    }
+    function onChanged(e: Event) {
+      const detail = (e as CustomEvent).detail as { from: QrDest; to: QrDest; establishmentId: string };
+      if (!detail || !est?.id || detail.establishmentId !== est.id) return;
+      const from = COPY_PRESETS[detail.from];
+      const to = COPY_PRESETS[detail.to];
+      if (!from || !to) return;
+      const stillDefault =
+        title === from.title &&
+        subtitle === from.subtitle &&
+        ctaNearQR === from.ctaNearQR &&
+        ctaFooter === from.ctaFooter &&
+        primaryLabel === from.primaryLabel;
+      if (stillDefault) {
+        apply(to);
+        toast.success("Textos adaptados ao novo destino do QR.");
+      } else {
+        toast("Aplicar textos sugeridos para este destino?", {
+          action: { label: "Aplicar", onClick: () => apply(to) },
+        });
+      }
+    }
+    window.addEventListener("qr-destination-changed", onChanged as EventListener);
+    return () => window.removeEventListener("qr-destination-changed", onChanged as EventListener);
+  }, [est?.id, title, subtitle, ctaNearQR, ctaFooter, primaryLabel]);
+
+
   // Load persisted state (localStorage → IndexedDB fallback)
   useEffect(() => {
     if (typeof window === "undefined") return;
