@@ -121,13 +121,13 @@ function installRouteWatcher() {
   const originalPushState = history.pushState;
   const originalReplaceState = history.replaceState;
 
-  history.pushState = function pushState(...args) {
-    const result = originalPushState.apply(this, args);
+  history.pushState = function pushState(data: unknown, unused: string, url?: string | URL | null) {
+    const result = originalPushState.call(history, data, unused, url);
     notify();
     return result;
   };
-  history.replaceState = function replaceState(...args) {
-    const result = originalReplaceState.apply(this, args);
+  history.replaceState = function replaceState(data: unknown, unused: string, url?: string | URL | null) {
+    const result = originalReplaceState.call(history, data, unused, url);
     notify();
     return result;
   };
