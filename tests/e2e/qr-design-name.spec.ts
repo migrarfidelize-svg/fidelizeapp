@@ -9,6 +9,8 @@ import { test, expect, type Page } from "@playwright/test";
  * (`/dev/qr-design-name`), garantindo cobertura de UI sem depender de sessão.
  */
 
+test.use({ launchOptions: { args: ["--no-sandbox", "--disable-setuid-sandbox"] } });
+
 const CASES: Array<{ dest: "reviews" | "landing" | "linktree"; label: string }> = [
   { dest: "reviews", label: "Avaliação" },
   { dest: "landing", label: "Cartão Fidelidade" },
