@@ -237,7 +237,7 @@ export const logPublicReviewEvent = createServerFn({ method: "POST" })
   .inputValidator((d: { form_id: string; event_type: string; review_id?: string }) =>
     z.object({
       form_id: z.string().uuid(),
-      event_type: z.enum(["page_opened", "rating_selected", "google_shown", "google_clicked"]),
+      event_type: z.enum(["page_opened", "rating_selected", "google_shown", "google_clicked", "wallet_cta_clicked"]),
       review_id: z.string().uuid().optional(),
     }).parse(d))
   .handler(async ({ data }) => {

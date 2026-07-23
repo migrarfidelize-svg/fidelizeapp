@@ -21,14 +21,33 @@ export const Route = createFileRoute("/avaliar/$slug")({
     if (!d) throw notFound();
     return d;
   },
-  head: ({ loaderData }) => {
+  head: ({ loaderData, params }) => {
     if (!loaderData) return { meta: [{ title: "Avaliar — Fidelize" }, { name: "robots", content: "noindex" }] };
-    const title = `Avaliar ${loaderData.est.name}`;
-    const desc = `Como foi seu atendimento em ${loaderData.est.name}? Sua opinião ajuda a melhorar.`;
-    return { meta: [
-      { title }, { name: "description", content: desc },
-      { property: "og:title", content: title }, { property: "og:description", content: desc },
-    ] };
+    const url = `https://fidelizeapp.lovable.app/avaliar/${params.slug}`;
+    const stats = loaderData.stats;
+    const avgTxt = stats && stats.count > 0 ? ` · ${stats.avg.toFixed(1)}★ (${stats.count} avaliações)` : "";
+    const title = `Avaliar ${loaderData.est.name}${avgTxt}`;
+    const desc = loaderData.est.description?.trim()
+      ? `${loaderData.est.description.trim().slice(0, 140)} — deixe sua avaliação em menos de 30 segundos.`
+      : `Como foi seu atendimento em ${loaderData.est.name}? Sua opinião ajuda a melhorar. Leva menos de 30 segundos.`;
+    const img = loaderData.est.logo_url && /^https?:\/\//i.test(loaderData.est.logo_url) ? loaderData.est.logo_url : null;
+    return {
+      meta: [
+        { title }, { name: "description", content: desc },
+        { property: "og:title", content: title },
+        { property: "og:description", content: desc },
+        { property: "og:type", content: "website" },
+        { property: "og:url", content: url },
+        { name: "twitter:card", content: img ? "summary_large_image" : "summary" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: desc },
+        ...(img ? [
+          { property: "og:image", content: img },
+          { name: "twitter:image", content: img },
+        ] : []),
+      ],
+      links: [{ rel: "canonical", href: url }],
+    };
   },
   component: Page,
   notFoundComponent: () => <div className="grid min-h-dvh place-items-center text-muted-foreground">Página não encontrada.</div>,
