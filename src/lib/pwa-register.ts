@@ -6,7 +6,7 @@
 // - Never register more than once — this is the ONLY call site.
 
 const SW_URL = "/sw.js";
-const SW_READY_TIMEOUT_MS = 9000;
+const SW_READY_TIMEOUT_MS = 20000;
 
 let registrationPromise: Promise<ServiceWorkerRegistration> | null = null;
 let routeWatcherInstalled = false;
@@ -145,12 +145,32 @@ export async function ensurePwaRegistration(timeoutMs = SW_READY_TIMEOUT_MS): Pr
     throw new Error("Notificações push funcionam no app publicado e instalado.");
   }
 
-  await registerServiceWorkerNow();
-  return withTimeout(
-    navigator.serviceWorker.ready,
-    timeoutMs,
-    "O serviço de notificações demorou para iniciar. Recarregue o app e tente novamente.",
-  );
+  const registration = await registerServiceWorkerNow();
+
+  // If the SW is already active (any prior session), skip the ready race.
+  if (registration.active) return registration;
+
+  // Force any waiting worker to activate immediately so `ready` resolves.
+  try {
+    registration.waiting?.postMessage({ type: "SKIP_WAITING" });
+    registration.installing?.addEventListener("statechange", (ev) => {
+      const sw = ev.target as ServiceWorker | null;
+      if (sw?.state === "installed") sw.postMessage({ type: "SKIP_WAITING" });
+    });
+  } catch { /* noop */ }
+
+  try {
+    return await withTimeout(
+      navigator.serviceWorker.ready,
+      timeoutMs,
+      "O serviço de notificações demorou para iniciar. Recarregue o app e tente novamente.",
+    );
+  } catch (err) {
+    // Fallback: if we have any usable registration, return it so push subscribe can proceed.
+    const existing = await navigator.serviceWorker.getRegistration();
+    if (existing && (existing.active || existing.waiting)) return existing;
+    throw err;
+  }
 }
 
 export function registerPWA() {
