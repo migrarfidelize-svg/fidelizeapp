@@ -53,6 +53,7 @@ test.describe("QR editor — nomes automáticos de designs salvos", () => {
 
   test("cada destino numera de forma independente", async ({ page }) => {
     await page.goto("/dev/qr-design-name");
+    await page.waitForLoadState("networkidle");
     for (const { dest, label } of CASES) {
       await saveTwice(page, dest, label);
     }
