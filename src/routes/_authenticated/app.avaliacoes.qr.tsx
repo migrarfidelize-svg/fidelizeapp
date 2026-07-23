@@ -28,6 +28,18 @@ import { useMyFeature } from "@/hooks/useMyFeature";
 import { DisplayStorePreview } from "@/components/DisplayStorePreview";
 import { PrintOrderDialog } from "@/components/PrintOrderDialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Sparkles } from "lucide-react";
+
+import {
   listPosterDesigns, savePosterDesign, applyPosterDesign, deletePosterDesign,
   getQrScanStats,
 } from "@/lib/poster-designs.functions";
