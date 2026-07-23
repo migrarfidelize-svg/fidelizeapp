@@ -293,64 +293,61 @@ function Feed({ estId }: { estId: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card><CardContent className="p-4">
-          <div className="text-xs text-muted-foreground">Nota média (30d)</div>
-          <div className="mt-1 flex items-end gap-2">
-            <div className="text-3xl font-bold">{stats ? stats.avg.toFixed(1) : "—"}</div>
-            {stats && <Stars n={Math.round(stats.avg)} />}
-          </div>
-        </CardContent></Card>
-        <Card><CardContent className="p-4">
-          <div className="text-xs text-muted-foreground">Avaliações (30d)</div>
-          <div className="mt-1 text-3xl font-bold">{stats?.count ?? "—"}</div>
-        </CardContent></Card>
-        <Card><CardContent className="p-4">
-          <div className="text-xs text-muted-foreground">NPS (30d)</div>
-          <div className="mt-1 text-3xl font-bold">{stats?.nps ?? "—"}</div>
-          <div className="text-xs text-muted-foreground">{stats?.npsResponses ?? 0} respostas</div>
-        </CardContent></Card>
-        <Card><CardContent className="p-4">
-          <div className="text-xs text-muted-foreground">Distribuição</div>
-          <div className="mt-2 space-y-1">
-            {[5, 4, 3, 2, 1].map((n) => (
-              <div key={n} className="flex items-center gap-2 text-xs">
-                <span className="w-3">{n}</span>
-                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                  <div className="h-full rounded-full bg-yellow-400"
-                    style={{ width: `${((stats?.dist?.[n] ?? 0) / distMax) * 100}%` }} />
-                </div>
-                <span className="w-6 text-right text-muted-foreground">{stats?.dist?.[n] ?? 0}</span>
-              </div>
-            ))}
-          </div>
-        </CardContent></Card>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <Label className="text-sm">Filtrar por nota</Label>
-        <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas</SelectItem>
-            {[5, 4, 3, 2, 1].map((n) => <SelectItem key={n} value={String(n)}>{n} estrelas</SelectItem>)}
-          </SelectContent>
-        </Select>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3">
+          <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Filtrar por nota</Label>
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas</SelectItem>
+              {[5, 4, 3, 2, 1].map((n) => <SelectItem key={n} value={String(n)}>{n} estrelas</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+          {rows?.length ?? 0} resultado(s)
+        </div>
       </div>
 
       {isLoading ? (
         <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+      ) : (rows ?? []).length === 0 ? (
+        <div className="relative overflow-hidden rounded-2xl border border-dashed border-border/60 bg-gradient-to-b from-primary/[0.03] to-transparent py-16 px-8 text-center">
+          <div className="pointer-events-none absolute inset-0 opacity-30">
+            <svg width="100%" height="100%" viewBox="0 0 800 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0 200H180L220 240H580L620 200H800" stroke="hsl(var(--primary))" strokeWidth="1" strokeDasharray="4 6" />
+              <circle cx="220" cy="240" r="3" fill="hsl(var(--primary))" />
+              <circle cx="580" cy="240" r="3" fill="hsl(var(--primary))" />
+            </svg>
+          </div>
+          <div className="relative">
+            <div className="mx-auto mb-5 h-16 w-16 rounded-full border border-primary/40 grid place-items-center relative">
+              <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse" />
+              <MessageSquare className="relative h-7 w-7 text-primary" />
+            </div>
+            <h3 className="text-lg font-bold text-foreground">Aguardando sinais…</h3>
+            <p className="mx-auto mt-1.5 max-w-sm text-sm text-muted-foreground">
+              Seu radar de reputação está ativo. Divulgue o QR no balcão ou no voucher para acelerar os primeiros feedbacks.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
+              <Button asChild size="sm" className="shadow-[0_0_20px_hsl(var(--primary)/0.25)]">
+                <Link to="/app/avaliacoes/qr"><Sparkles className="h-3.5 w-3.5" /> Gerar QR Code</Link>
+              </Button>
+              <Button asChild size="sm" variant="outline">
+                <a href={`/avaliacoes/${estId}`} target="_blank" rel="noopener">Ver página pública</a>
+              </Button>
+            </div>
+          </div>
+        </div>
       ) : (
         <div className="space-y-3">
-          {(rows ?? []).length === 0 && (
-            <Card><CardContent className="p-8 text-center text-muted-foreground">Sem avaliações ainda.</CardContent></Card>
-          )}
           {(rows ?? []).map((r) => <ReviewRow key={r.id} r={r} estId={estId} />)}
         </div>
       )}
     </div>
   );
 }
+
 
 function ReviewRow({ r, estId }: { r: any; estId: string }) {
   const replyFn = useServerFn(replyReview);
