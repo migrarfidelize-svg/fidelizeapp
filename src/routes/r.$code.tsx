@@ -132,7 +132,7 @@ function ReferralLanding() {
             className="w-full"
             onClick={() =>
               navigate({
-                to: "/l/$slug",
+                to: "/cartao/$slug",
                 params: { slug: est.slug },
                 search: { ref: code.toUpperCase() },
               })

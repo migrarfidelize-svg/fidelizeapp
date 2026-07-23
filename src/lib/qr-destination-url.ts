@@ -7,7 +7,7 @@ export type QrDest = "reviews" | "linktree" | "landing";
 
 export function qrDestinationPath(dest: QrDest): "avaliar" | "links" | "l" {
   if (dest === "linktree") return "links";
-  if (dest === "landing") return "l";
+  if (dest === "landing") return "cartao";
   return "avaliar";
 }
 

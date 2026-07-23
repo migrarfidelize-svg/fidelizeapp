@@ -89,7 +89,7 @@ function Dashboard() {
               </Link>
             </Button>
             <Button asChild variant="outline" className="border-primary/30 hover:border-primary/60">
-              <Link to="/l/$slug" params={{ slug: est.slug }}>
+              <Link to="/cartao/$slug" params={{ slug: est.slug }}>
                 <QrCode className="mr-1 h-4 w-4" /> Página pública
               </Link>
             </Button>

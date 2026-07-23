@@ -84,7 +84,7 @@ function EmpresaDetail() {
           <div className="mt-1 text-sm text-muted-foreground flex items-center gap-3 flex-wrap">
             <span>/{e.slug}</span>
             <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded ${e.active ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>{e.active ? "Ativa" : "Bloqueada"}</span>
-            <Link to="/l/$slug" params={{ slug: e.slug }} target="_blank" className="inline-flex items-center gap-1 text-primary hover:underline text-xs"><ExternalLink className="h-3 w-3" /> página pública</Link>
+            <Link to="/cartao/$slug" params={{ slug: e.slug }} target="_blank" className="inline-flex items-center gap-1 text-primary hover:underline text-xs"><ExternalLink className="h-3 w-3" /> página pública</Link>
           </div>
         </div>
         <div className="flex gap-2 flex-wrap">

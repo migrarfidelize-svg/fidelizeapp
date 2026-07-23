@@ -18,7 +18,7 @@ describe("buildFidelizeUrl — link público pré-definido do QR", () => {
   const cases: Array<{ dest: QrDest; expected: string }> = [
     { dest: "reviews", expected: `${ORIGIN}/avaliar/${SLUG}` },
     { dest: "linktree", expected: `${ORIGIN}/links/${SLUG}` },
-    { dest: "landing", expected: `${ORIGIN}/l/${SLUG}` },
+    { dest: "landing", expected: `${ORIGIN}/cartao/${SLUG}` },
   ];
 
   it.each(cases)("destino $dest → $expected", ({ dest, expected }) => {
