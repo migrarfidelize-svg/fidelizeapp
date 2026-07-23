@@ -356,6 +356,7 @@ function ReviewQrPage() {
     function onChanged(e: Event) {
       const detail = (e as CustomEvent).detail as { from: QrDest; to: QrDest; establishmentId: string };
       if (!detail || !est?.id || detail.establishmentId !== est.id) return;
+      setQrDest(detail.to);
       const from = COPY_PRESETS[detail.from];
       const to = COPY_PRESETS[detail.to];
       if (!from || !to) return;
