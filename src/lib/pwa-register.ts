@@ -69,7 +69,7 @@ export function registerPWA() {
   const host = window.location.hostname;
   const killSwitch = new URLSearchParams(window.location.search).get("sw") === "off";
 
-  if (!isProd || inIframe || isPreviewHost(host) || killSwitch || !isVoucherPath(window.location.pathname)) {
+  if (!isProd || inIframe || isPreviewHost(host) || killSwitch || !isPwaPath(window.location.pathname)) {
     // Refuse and clean up any stale registration/cache outside the customer voucher PWA.
     cleanupPwa();
     return;
