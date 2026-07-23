@@ -309,6 +309,9 @@ function ReviewQrPage() {
   });
 
 
+  // Ref to the latest saveCurrentDesign, defined further below in the file
+  const saveCurrentDesignRef = useRef<null | (() => Promise<void>)>(null);
+
   // Listen to QR destination changes → suggest/apply matching copy preset
   useEffect(() => {
     function apply(preset: CopyPreset) {
