@@ -309,6 +309,9 @@ function ReviewQrPage() {
   });
 
 
+  // Ref to the latest saveCurrentDesign, defined further below in the file
+  const saveCurrentDesignRef = useRef<null | (() => Promise<void>)>(null);
+
   // Listen to QR destination changes → suggest/apply matching copy preset
   useEffect(() => {
     function apply(preset: CopyPreset) {
@@ -334,8 +337,21 @@ function ReviewQrPage() {
         apply(to);
         toast.success("Textos adaptados ao novo destino do QR.");
       } else {
-        toast("Aplicar textos sugeridos para este destino?", {
-          action: { label: "Aplicar", onClick: () => apply(to) },
+        toast("Você tem edições nos textos atuais. Deseja salvá-las antes de trocar?", {
+          duration: 12000,
+          action: {
+            label: "Salvar e aplicar",
+            onClick: async () => {
+              try {
+                const name = `Design ${new Date().toLocaleString("pt-BR")}`;
+                setDesignName(name);
+                await saveCurrentDesignRef.current?.();
+              } finally {
+                apply(to);
+              }
+            },
+          },
+          cancel: { label: "Só aplicar", onClick: () => apply(to) },
         });
       }
     }
@@ -459,6 +475,7 @@ function ReviewQrPage() {
     setDesignName("");
     toast.success(`Design "${name}" salvo (offline)`);
   }
+  saveCurrentDesignRef.current = saveCurrentDesign;
 
   function loadDesign(d: SavedDesign) {
     const s = d.data;
