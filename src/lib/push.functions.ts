@@ -253,8 +253,10 @@ const segmentSchema = z
     activity: z.enum(["all", "active_30d", "inactive_30d", "inactive_60d"]).optional(),
     campaign_id: z.string().uuid().nullable().optional(),
     min_stamps: z.number().int().min(0).max(999).nullable().optional(),
+    customer_ids: z.array(z.string().uuid()).max(5000).nullable().optional(),
   })
   .default({});
+
 
 /** Preview: how many customers/subscribers match a given segment. */
 export const previewPushSegment = createServerFn({ method: "POST" })

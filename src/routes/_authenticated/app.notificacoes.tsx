@@ -13,8 +13,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Send, Bell, Users, Zap, AlertTriangle, Sparkles, Clock, X, Wallet, Gift, Compass, QrCode, Link2, Megaphone } from "lucide-react";
-import { getMyEstablishments } from "@/lib/loyalty.functions";
+import { Loader2, Send, Bell, Users, Zap, AlertTriangle, Sparkles, Clock, X, Wallet, Gift, Compass, QrCode, Link2, Megaphone, Search, UserCheck, Info } from "lucide-react";
+import { getMyEstablishments, listCustomers } from "@/lib/loyalty.functions";
+
 import {
   listPushLogs,
   broadcastPush,
@@ -36,7 +37,9 @@ type Segment = {
   activity?: "all" | "active_30d" | "inactive_30d" | "inactive_60d";
   campaign_id?: string | null;
   min_stamps?: number | null;
+  customer_ids?: string[] | null;
 };
+
 
 const TIERS = [
   { key: "bronze", label: "Bronze" },
@@ -76,6 +79,31 @@ function NotifPage() {
   const [url, setUrl] = useState("");
   const [segment, setSegment] = useState<Segment>({ activity: "all" });
   const [scheduleAt, setScheduleAt] = useState<string>("");
+
+  const [customerMode, setCustomerMode] = useState<"all" | "specific">("all");
+  const [customerQuery, setCustomerQuery] = useState("");
+  const listCustomersFn = useServerFn(listCustomers);
+
+  const { data: customersData, isFetching: loadingCustomers } = useQuery({
+    queryKey: ["notif_customers", activeEst?.id, customerQuery],
+    enabled: !!activeEst?.id && customerMode === "specific",
+    queryFn: () =>
+      listCustomersFn({
+        data: { establishment_id: activeEst!.id, query: customerQuery, page: 1, page_size: 50 },
+      }),
+    staleTime: 15_000,
+  });
+
+  function toggleCustomer(id: string) {
+    setSegment((s) => {
+      const cur = new Set(s.customer_ids ?? []);
+      if (cur.has(id)) cur.delete(id);
+      else cur.add(id);
+      return { ...s, customer_ids: cur.size ? Array.from(cur) : null };
+    });
+  }
+
+
 
   // Campaigns for segment "specific card"
   const { data: campaigns } = useQuery({
@@ -431,7 +459,105 @@ function NotifPage() {
                 placeholder="ex.: 5 (clientes prestes a resgatar)"
               />
             </div>
+
+            {/* Individual customer picker */}
+            <div className="space-y-2 border-t pt-3">
+              <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <UserCheck className="h-3.5 w-3.5" /> Clientes
+              </Label>
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomerMode("all");
+                    setSegment((s) => ({ ...s, customer_ids: null }));
+                  }}
+                  className={`px-2.5 py-1 rounded-full text-xs border transition ${
+                    customerMode === "all"
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background hover:bg-muted border-border"
+                  }`}
+                >
+                  Todos que casarem com o segmento
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCustomerMode("specific")}
+                  className={`px-2.5 py-1 rounded-full text-xs border transition ${
+                    customerMode === "specific"
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background hover:bg-muted border-border"
+                  }`}
+                >
+                  Escolher cliente por cliente
+                </button>
+              </div>
+
+              {customerMode === "specific" && (
+                <div className="space-y-2 rounded-md border bg-muted/30 p-2">
+                  <div className="relative">
+                    <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      value={customerQuery}
+                      onChange={(e) => setCustomerQuery(e.target.value)}
+                      placeholder="Buscar por nome, telefone ou código"
+                      className="h-8 pl-7 text-xs"
+                    />
+                  </div>
+                  {(segment.customer_ids?.length ?? 0) > 0 && (
+                    <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                      <span>{segment.customer_ids!.length} selecionado(s)</span>
+                      <button
+                        type="button"
+                        className="underline hover:text-foreground"
+                        onClick={() => setSegment((s) => ({ ...s, customer_ids: null }))}
+                      >
+                        Limpar seleção
+                      </button>
+                    </div>
+                  )}
+                  <div className="max-h-60 overflow-y-auto rounded border bg-background divide-y">
+                    {loadingCustomers && (
+                      <div className="p-3 text-center text-xs text-muted-foreground">
+                        <Loader2 className="h-3 w-3 animate-spin inline mr-1" /> Carregando…
+                      </div>
+                    )}
+                    {!loadingCustomers && (customersData?.customers ?? []).length === 0 && (
+                      <div className="p-3 text-center text-xs text-muted-foreground">
+                        Nenhum cliente encontrado.
+                      </div>
+                    )}
+                    {(customersData?.customers ?? []).map((c: any) => {
+                      const checked = (segment.customer_ids ?? []).includes(c.id);
+                      return (
+                        <label
+                          key={c.id}
+                          className={`flex items-center gap-2 px-2 py-1.5 text-xs cursor-pointer hover:bg-muted/60 ${
+                            checked ? "bg-primary/5" : ""
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleCustomer(c.id)}
+                            className="h-3.5 w-3.5 accent-primary"
+                          />
+                          <span className="flex-1 truncate font-medium">{c.name || "—"}</span>
+                          <span className="text-muted-foreground">{c.phone || c.code || ""}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  {customersData && customersData.total > (customersData.customers?.length ?? 0) && (
+                    <p className="text-[10px] text-muted-foreground">
+                      Mostrando {customersData.customers?.length ?? 0} de {customersData.total}. Refine a busca para ver mais.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
+
 
           {/* Schedule */}
           <div className="rounded-lg border p-3 space-y-2">
@@ -482,6 +608,23 @@ function NotifPage() {
               </Button>
             )}
           </div>
+
+          {previewCount && previewCount.subscribers === 0 && !blockedByPlan && (
+            <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs">
+              <Info className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
+              <div className="space-y-1">
+                <div className="font-semibold text-foreground">
+                  Nenhum cliente inscrito neste segmento ainda.
+                </div>
+                <div className="text-muted-foreground">
+                  Só recebem push quem instalou o app na tela inicial <strong>e</strong> tocou em "Ativar notificações".
+                  Divulgue o QR do cartão fidelidade e peça para o cliente adicionar à tela inicial —
+                  no primeiro acesso pelo ícone o app pede permissão automaticamente (exceto iOS, onde é feito com um toque no card).
+                </div>
+              </div>
+            </div>
+          )}
+
         </CardContent>
       </Card>
 
@@ -615,5 +758,7 @@ function normalizeSegment(s: Segment): Segment {
   if (s.activity && s.activity !== "all") out.activity = s.activity;
   if (s.campaign_id) out.campaign_id = s.campaign_id;
   if (s.min_stamps && s.min_stamps > 0) out.min_stamps = s.min_stamps;
+  if (s.customer_ids && s.customer_ids.length > 0) out.customer_ids = s.customer_ids;
   return out;
+
 }
