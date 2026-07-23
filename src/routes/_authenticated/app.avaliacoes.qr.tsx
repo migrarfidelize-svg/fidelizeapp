@@ -481,7 +481,7 @@ function ReviewQrPage() {
   }
 
   async function saveCurrentDesign() {
-    const name = designName.trim() || `Design ${(cloudDesigns?.length ?? designs.length) + 1}`;
+    const name = designName.trim() || buildDefaultDesignName(qrDest, cloudDesigns, designs);
     const payload = {
       template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale,
       title, subtitle, ctaNearQR, ctaFooter,
