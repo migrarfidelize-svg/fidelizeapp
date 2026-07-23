@@ -605,10 +605,16 @@ function VideosPage() {
       scene: <ScenePreview2 />,
     },
     {
-      title: "Árvore de links + display + cartão NFC",
+      title: "Árvore de links no seu perfil",
       subtitle: "Ep. 03 · Presença",
       pill: "Presença",
       scene: <ScenePreview3 />,
+    },
+    {
+      title: "Display acrílico + cartão NFC no balcão",
+      subtitle: "Ep. 04 · Ponto de venda",
+      pill: "Balcão",
+      scene: <ScenePreview4 />,
     },
   ];
 
