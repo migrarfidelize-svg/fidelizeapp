@@ -36,7 +36,9 @@ type Segment = {
   activity?: "all" | "active_30d" | "inactive_30d" | "inactive_60d";
   campaign_id?: string | null;
   min_stamps?: number | null;
+  customer_ids?: string[] | null;
 };
+
 
 const TIERS = [
   { key: "bronze", label: "Bronze" },
