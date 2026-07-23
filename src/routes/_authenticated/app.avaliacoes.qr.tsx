@@ -367,10 +367,12 @@ function ReviewQrPage() {
         open: true,
         to: detail.to,
         preset: to,
+        current: { title, subtitle, ctaNearQR, ctaFooter, primaryLabel },
         hasEdits: !stillDefault,
         fromLabel: destLabels[detail.from] ?? "",
         toLabel: destLabels[detail.to] ?? "",
       });
+
     }
     window.addEventListener("qr-destination-changed", onChanged as EventListener);
     return () => window.removeEventListener("qr-destination-changed", onChanged as EventListener);
