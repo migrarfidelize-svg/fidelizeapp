@@ -647,13 +647,13 @@ function VideosPage() {
             </span>
           </h1>
           <p className="mx-auto mt-3 max-w-xl text-sm text-white/60">
-            Simulação em estilo Remotion — três episódios curtos mostrando as
+            Simulação em estilo Remotion — quatro episódios curtos mostrando as
             funcionalidades da plataforma em loop, com barra de progresso e
             micro-animações prontas para produção.
           </p>
         </header>
 
-        <section className="mt-14 grid gap-8 lg:grid-cols-3">
+        <section className="mt-14 grid gap-8 md:grid-cols-2 xl:grid-cols-2">
           {previews.map((p, i) => (
             <motion.div
               key={p.title}
