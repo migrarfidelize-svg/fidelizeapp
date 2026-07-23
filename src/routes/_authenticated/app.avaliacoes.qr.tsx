@@ -1593,9 +1593,10 @@ function ReviewQrPage() {
             </div>
           )}
 
-          <AlertDialogFooter className="sm:flex-col sm:space-x-0 sm:gap-2">
+          <AlertDialogFooter className="sm:flex-col sm:space-x-0 sm:gap-2.5">
             {presetDialog.hasEdits ? (
               <>
+                {/* PRIMARY — verde/emerald: ação recomendada (não perde nada) */}
                 <AlertDialogAction
                   onClick={async () => {
                     const preset = presetDialog.preset;
@@ -1607,30 +1608,74 @@ function ReviewQrPage() {
                       if (preset) applyPreset(preset);
                     }
                   }}
-                  className="w-full"
+                  className="group relative w-full h-auto justify-start gap-3 rounded-xl bg-emerald-600 px-4 py-3 text-left text-white shadow-lg shadow-emerald-600/25 ring-1 ring-emerald-400/40 hover:bg-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-300"
                 >
-                  Salvar design atual e aplicar
+                  <span className="flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-white/15 ring-1 ring-white/25">
+                    <Save className="h-4 w-4" />
+                  </span>
+                  <span className="flex flex-col leading-tight">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-white/80">Recomendado</span>
+                    <span className="text-sm font-semibold">Salvar design atual e aplicar</span>
+                    <span className="text-[11px] font-normal text-white/80">Guarda uma cópia antes de trocar os textos</span>
+                  </span>
                 </AlertDialogAction>
+
+                {/* SECONDARY — âmbar: aplica sem salvar (perde edições) */}
                 <AlertDialogAction
                   onClick={() => presetDialog.preset && applyPreset(presetDialog.preset)}
-                  className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  className="group relative w-full h-auto justify-start gap-3 rounded-xl bg-amber-500 px-4 py-3 text-left text-white shadow-md shadow-amber-500/20 ring-1 ring-amber-300/40 hover:bg-amber-400 focus-visible:ring-2 focus-visible:ring-amber-200"
                 >
-                  Aplicar sem salvar
+                  <span className="flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-white/15 ring-1 ring-white/25">
+                    <Sparkles className="h-4 w-4" />
+                  </span>
+                  <span className="flex flex-col leading-tight">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-white/85">Atenção</span>
+                    <span className="text-sm font-semibold">Aplicar sem salvar</span>
+                    <span className="text-[11px] font-normal text-white/85">Descarta as edições atuais do cartaz</span>
+                  </span>
                 </AlertDialogAction>
-                <AlertDialogCancel className="w-full mt-0">Manter meus textos</AlertDialogCancel>
+
+                {/* CANCEL — outline neutro: mantém como está */}
+                <AlertDialogCancel className="mt-0 w-full h-auto justify-start gap-3 rounded-xl border-2 border-border bg-background px-4 py-3 text-left hover:bg-muted">
+                  <span className="flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-muted ring-1 ring-border">
+                    <X className="h-4 w-4" />
+                  </span>
+                  <span className="flex flex-col leading-tight">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Cancelar</span>
+                    <span className="text-sm font-semibold text-foreground">Manter meus textos</span>
+                    <span className="text-[11px] font-normal text-muted-foreground">Não altera nada no cartaz</span>
+                  </span>
+                </AlertDialogCancel>
               </>
             ) : (
               <>
                 <AlertDialogAction
                   onClick={() => presetDialog.preset && applyPreset(presetDialog.preset)}
-                  className="w-full"
+                  className="group relative w-full h-auto justify-start gap-3 rounded-xl bg-emerald-600 px-4 py-3 text-left text-white shadow-lg shadow-emerald-600/25 ring-1 ring-emerald-400/40 hover:bg-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-300"
                 >
-                  Aplicar textos sugeridos
+                  <span className="flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-white/15 ring-1 ring-white/25">
+                    <CheckCircle2 className="h-4 w-4" />
+                  </span>
+                  <span className="flex flex-col leading-tight">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-white/80">Recomendado</span>
+                    <span className="text-sm font-semibold">Aplicar textos sugeridos</span>
+                    <span className="text-[11px] font-normal text-white/80">Otimizado para {presetDialog.toLabel || "este destino"}</span>
+                  </span>
                 </AlertDialogAction>
-                <AlertDialogCancel className="w-full mt-0">Agora não</AlertDialogCancel>
+                <AlertDialogCancel className="mt-0 w-full h-auto justify-start gap-3 rounded-xl border-2 border-border bg-background px-4 py-3 text-left hover:bg-muted">
+                  <span className="flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-muted ring-1 ring-border">
+                    <X className="h-4 w-4" />
+                  </span>
+                  <span className="flex flex-col leading-tight">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Cancelar</span>
+                    <span className="text-sm font-semibold text-foreground">Agora não</span>
+                    <span className="text-[11px] font-normal text-muted-foreground">Continuar com os textos atuais</span>
+                  </span>
+                </AlertDialogCancel>
               </>
             )}
           </AlertDialogFooter>
+
         </AlertDialogContent>
       </AlertDialog>
 
