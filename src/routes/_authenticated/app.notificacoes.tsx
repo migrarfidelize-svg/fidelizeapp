@@ -608,6 +608,23 @@ function NotifPage() {
               </Button>
             )}
           </div>
+
+          {previewCount && previewCount.subscribers === 0 && !blockedByPlan && (
+            <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs">
+              <Info className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
+              <div className="space-y-1">
+                <div className="font-semibold text-foreground">
+                  Nenhum cliente inscrito neste segmento ainda.
+                </div>
+                <div className="text-muted-foreground">
+                  Só recebem push quem instalou o app na tela inicial <strong>e</strong> tocou em "Ativar notificações".
+                  Divulgue o QR do cartão fidelidade e peça para o cliente adicionar à tela inicial —
+                  no primeiro acesso pelo ícone o app pede permissão automaticamente (exceto iOS, onde é feito com um toque no card).
+                </div>
+              </div>
+            </div>
+          )}
+
         </CardContent>
       </Card>
 
