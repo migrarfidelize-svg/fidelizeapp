@@ -329,10 +329,12 @@ function ReviewQrPage() {
     open: boolean;
     to: QrDest | null;
     preset: CopyPreset | null;
+    current: CopyPreset | null;
     hasEdits: boolean;
     fromLabel: string;
     toLabel: string;
-  }>({ open: false, to: null, preset: null, hasEdits: false, fromLabel: "", toLabel: "" });
+  }>({ open: false, to: null, preset: null, current: null, hasEdits: false, fromLabel: "", toLabel: "" });
+
 
   const applyPreset = (preset: CopyPreset) => {
     setTitle(preset.title);
@@ -365,10 +367,12 @@ function ReviewQrPage() {
         open: true,
         to: detail.to,
         preset: to,
+        current: { title, subtitle, ctaNearQR, ctaFooter, primaryLabel },
         hasEdits: !stillDefault,
         fromLabel: destLabels[detail.from] ?? "",
         toLabel: destLabels[detail.to] ?? "",
       });
+
     }
     window.addEventListener("qr-destination-changed", onChanged as EventListener);
     return () => window.removeEventListener("qr-destination-changed", onChanged as EventListener);
@@ -1575,23 +1579,74 @@ function ReviewQrPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          {presetDialog.preset && (
-            <div className="rounded-lg border border-border/60 bg-muted/40 p-3 text-sm">
-              <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                Prévia dos textos
+          {presetDialog.preset && presetDialog.current && (() => {
+            const fields: Array<{ key: keyof CopyPreset; label: string }> = [
+              { key: "title", label: "Título" },
+              { key: "subtitle", label: "Subtítulo" },
+              { key: "ctaNearQR", label: "CTA próx. ao QR" },
+              { key: "ctaFooter", label: "CTA rodapé" },
+              { key: "primaryLabel", label: "Botão primário" },
+            ];
+            const rows = fields.map((f) => {
+              const from = (presetDialog.current as CopyPreset)[f.key] ?? "";
+              const to = (presetDialog.preset as CopyPreset)[f.key] ?? "";
+              return { ...f, from, to, changed: from !== to };
+            });
+            const changedCount = rows.filter((r) => r.changed).length;
+            return (
+              <div className="rounded-lg border border-border/60 bg-muted/30 p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                    Diferenças
+                  </div>
+                  <div className="text-[10px] font-mono text-muted-foreground">
+                    {changedCount === 0
+                      ? "Nenhuma mudança"
+                      : `${changedCount} campo${changedCount > 1 ? "s" : ""} alterado${changedCount > 1 ? "s" : ""}`}
+                  </div>
+                </div>
+                <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
+                  {rows.map((r) => (
+                    <div
+                      key={r.key as string}
+                      className={`rounded-md border p-2 text-xs ${
+                        r.changed
+                          ? "border-amber-500/40 bg-amber-500/[0.04]"
+                          : "border-border/40 bg-background/40 opacity-70"
+                      }`}
+                    >
+                      <div className="mb-1 flex items-center justify-between">
+                        <span className="font-semibold text-foreground">{r.label}</span>
+                        <span
+                          className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                            r.changed
+                              ? "bg-amber-500/15 text-amber-500"
+                              : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {r.changed ? "muda" : "igual"}
+                        </span>
+                      </div>
+                      {r.changed ? (
+                        <div className="grid grid-cols-1 gap-1 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+                          <div className="rounded bg-rose-500/10 px-2 py-1 text-rose-300 line-through decoration-rose-500/50">
+                            {r.from || <span className="italic opacity-60">vazio</span>}
+                          </div>
+                          <div className="hidden text-center text-muted-foreground sm:block">→</div>
+                          <div className="rounded bg-emerald-500/10 px-2 py-1 text-emerald-300">
+                            {r.to || <span className="italic opacity-60">vazio</span>}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-muted-foreground truncate">{r.to || "—"}</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="font-semibold text-foreground">{presetDialog.preset.title}</div>
-              <div className="text-muted-foreground">{presetDialog.preset.subtitle}</div>
-              <div className="mt-2 flex flex-wrap gap-1.5 text-[11px]">
-                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-primary">
-                  CTA: {presetDialog.preset.primaryLabel}
-                </span>
-                <span className="rounded-full bg-muted px-2 py-0.5 text-muted-foreground">
-                  {presetDialog.preset.ctaNearQR}
-                </span>
-              </div>
-            </div>
-          )}
+            );
+          })()}
+
 
           <AlertDialogFooter className="sm:flex-col sm:space-x-0 sm:gap-2.5">
             {presetDialog.hasEdits ? (
