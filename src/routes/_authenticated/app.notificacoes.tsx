@@ -78,7 +78,30 @@ function NotifPage() {
   const [body, setBody] = useState("");
   const [url, setUrl] = useState("");
   const [segment, setSegment] = useState<Segment>({ activity: "all" });
-  const [scheduleAt, setScheduleAt] = useState<string>("");
+  const [customerMode, setCustomerMode] = useState<"all" | "specific">("all");
+  const [customerQuery, setCustomerQuery] = useState("");
+  const listCustomersFn = useServerFn(listCustomers);
+
+  const { data: customersData, isFetching: loadingCustomers } = useQuery({
+    queryKey: ["notif_customers", activeEst?.id, customerQuery],
+    enabled: !!activeEst?.id && customerMode === "specific",
+    queryFn: () =>
+      listCustomersFn({
+        data: { establishment_id: activeEst!.id, query: customerQuery, page: 1, page_size: 50 },
+      }),
+    staleTime: 15_000,
+  });
+
+  function toggleCustomer(id: string) {
+    setSegment((s) => {
+      const cur = new Set(s.customer_ids ?? []);
+      if (cur.has(id)) cur.delete(id);
+      else cur.add(id);
+      return { ...s, customer_ids: cur.size ? Array.from(cur) : null };
+    });
+  }
+
+
 
   // Campaigns for segment "specific card"
   const { data: campaigns } = useQuery({
