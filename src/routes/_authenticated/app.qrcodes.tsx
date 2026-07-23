@@ -242,7 +242,7 @@ function QRCodes() {
   });
 
   const activeCampaign = campaigns?.find((c) => c.active) ?? campaigns?.[0];
-  const publicUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/l/${est.slug}` : "";
+  const publicUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/cartao/${est.slug}` : "";
 
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
 

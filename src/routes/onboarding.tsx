@@ -169,7 +169,7 @@ function Onboarding() {
             <div>
               <Label>Endereço público</Label>
               <div className="flex items-center gap-1">
-                <span className="text-sm text-muted-foreground">fidelize.app/l/</span>
+                <span className="text-sm text-muted-foreground">fidelize.app/cartao/</span>
                 <Input value={f.slug} onChange={(e) => set("slug", slugify(e.target.value))} required minLength={3} placeholder="cafe-do-centro" />
               </div>
             </div>

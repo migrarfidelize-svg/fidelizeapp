@@ -76,7 +76,7 @@ export const Route = createFileRoute("/api/public/r/qr/$slug/$dest")({
           if (qd === "linktree") {
             target = `${origin}/links/${slug}`;
           } else if (qd === "landing") {
-            target = `${origin}/l/${slug}`;
+            target = `${origin}/cartao/${slug}`;
           } else {
             target = `${origin}/avaliar/${slug}`;
           }
