@@ -34,21 +34,166 @@ export const Route = createFileRoute("/_authenticated/app/avaliacoes/")({
   component: Page,
 });
 
-function Stars({ n }: { n: number }) {
+function Stars({ n, size = "sm" }: { n: number; size?: "sm" | "md" }) {
+  const cls = size === "md" ? "h-5 w-5" : "h-4 w-4";
   return (
     <div className="flex gap-0.5">
-      <PageHero
-        icon={HeroIcon}
-        eyebrow={"Reputação · CSAT"}
-        title={"Avaliações do público"}
-        subtitle={"Colete estrelas, comentários e reaja em tempo real aos clientes."}
-      />
       {[1, 2, 3, 4, 5].map((i) => (
-        <Star key={i} className={`h-4 w-4 ${i <= n ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/30"}`} />
+        <Star key={i} className={`${cls} ${i <= n ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/30"}`} />
       ))}
     </div>
   );
 }
+
+/* ============ Circuit Cockpit HUD ============ */
+function CockpitHero({ est }: { est: { id: string; name: string; slug: string } }) {
+  const statsFn = useServerFn(getReviewStats);
+  const { data: stats } = useQuery({
+    queryKey: ["review-stats", est.id],
+    queryFn: () => statsFn({ data: { establishmentId: est.id, days: 30 } }),
+  });
+  const { data: prev } = useQuery({
+    queryKey: ["review-stats", est.id, "prev60"],
+    queryFn: () => statsFn({ data: { establishmentId: est.id, days: 60 } }),
+  });
+
+  const publicUrl = typeof window !== "undefined"
+    ? `${window.location.origin}/avaliacoes/${est.slug}`
+    : `/avaliacoes/${est.slug}`;
+
+  const copyLink = async () => {
+    try { await navigator.clipboard.writeText(publicUrl); toast.success("Link público copiado."); }
+    catch { toast.error("Não foi possível copiar."); }
+  };
+
+  const avg = stats?.avg ?? 0;
+  const prevAvg = prev && prev.count > (stats?.count ?? 0)
+    ? ((prev.avg * prev.count) - ((stats?.avg ?? 0) * (stats?.count ?? 0))) / Math.max(1, prev.count - (stats?.count ?? 0))
+    : 0;
+  const delta = prevAvg ? +(avg - prevAvg).toFixed(2) : 0;
+  const npsLabel = stats?.nps == null
+    ? "—"
+    : stats.nps >= 50 ? "Excelente" : stats.nps >= 0 ? "Bom" : "Crítico";
+  const npsTone = stats?.nps == null
+    ? "text-muted-foreground/60 bg-muted/40"
+    : stats.nps >= 50 ? "text-emerald-400 bg-emerald-500/10"
+    : stats.nps >= 0 ? "text-yellow-300 bg-yellow-500/10"
+    : "text-rose-400 bg-rose-500/10";
+  const distTotal = Math.max(1, Object.values(stats?.dist ?? {}).reduce((a, b) => a + b, 0));
+
+  return (
+    <div className="space-y-6">
+      {/* Header cockpit */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-l-2 border-primary pl-5">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="h-2 w-2 rounded-full bg-primary shadow-[0_0_10px_hsl(var(--primary))] animate-pulse" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-primary/80">
+              Reputação · Monitoramento em tempo real
+            </span>
+          </div>
+          <h1 className="text-3xl md:text-4xl font-black tracking-tight text-foreground">
+            Avaliações de atendimento
+          </h1>
+          <p className="mt-1.5 text-sm text-muted-foreground max-w-xl">
+            Acompanhe a percepção dos seus clientes e transforme cada feedback em inteligência de crescimento.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline" size="sm" className="border-primary/40 text-primary hover:bg-primary/10">
+            <Link to="/app/avaliacoes/qr">
+              <Sparkles className="h-3.5 w-3.5" /> Configurar QR
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" onClick={copyLink}>
+            Copiar link
+          </Button>
+          <Button asChild size="sm" className="shadow-[0_0_20px_hsl(var(--primary)/0.25)]">
+            <a href={publicUrl} target="_blank" rel="noopener">
+              Ver página pública <ExtLink className="ml-1 h-3.5 w-3.5" />
+            </a>
+          </Button>
+        </div>
+      </div>
+
+      {/* KPI Band */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        {/* Nota média */}
+        <div className="relative overflow-hidden rounded-xl border border-border/60 bg-card/60 backdrop-blur p-4 group">
+          <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-primary/10 blur-2xl group-hover:bg-primary/20 transition-all" />
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Nota média · 30d</p>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-3xl font-black text-foreground">{stats ? avg.toFixed(1) : "—"}</span>
+            <span className="text-xs text-muted-foreground">/ 5.0</span>
+            {delta !== 0 && (
+              <span className={`ml-auto text-[10px] font-bold font-mono ${delta > 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                {delta > 0 ? "▲" : "▼"} {Math.abs(delta).toFixed(2)}
+              </span>
+            )}
+          </div>
+          <div className="mt-3 h-1 w-full rounded-full bg-muted/60 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))] transition-all duration-700"
+              style={{ width: `${(avg / 5) * 100}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Volume */}
+        <div className="relative overflow-hidden rounded-xl border border-border/60 bg-card/60 backdrop-blur p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Avaliações · 30d</p>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-3xl font-black text-foreground">{stats?.count ?? 0}</span>
+          </div>
+          <p className="mt-3 text-[10px] font-mono text-muted-foreground">
+            {stats?.count ? `${stats.count} respostas coletadas` : "Nenhuma resposta ainda"}
+          </p>
+        </div>
+
+        {/* NPS */}
+        <div className="relative overflow-hidden rounded-xl border border-border/60 bg-card/60 backdrop-blur p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">NPS · 30d</p>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-3xl font-black text-foreground">{stats?.nps ?? "—"}</span>
+            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${npsTone}`}>{npsLabel}</span>
+          </div>
+          <div className="mt-3 flex gap-1">
+            <div className="h-1 flex-1 rounded-sm bg-rose-500/30" />
+            <div className="h-1 flex-1 rounded-sm bg-yellow-500/30" />
+            <div className="h-1 flex-[4] rounded-sm bg-emerald-500/70 shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
+          </div>
+          <p className="mt-2 text-[10px] font-mono text-muted-foreground">
+            {stats?.npsResponses ?? 0} respostas NPS
+          </p>
+        </div>
+
+        {/* Distribuição */}
+        <div className="relative overflow-hidden rounded-xl border border-border/60 bg-card/60 backdrop-blur p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Distribuição</p>
+          <div className="mt-2 space-y-1">
+            {[5, 4, 3, 2, 1].map((n) => {
+              const v = stats?.dist?.[n] ?? 0;
+              const pct = (v / distTotal) * 100;
+              return (
+                <div key={n} className="flex items-center gap-2">
+                  <span className="text-[10px] w-3 font-mono text-muted-foreground">{n}</span>
+                  <div className="h-1.5 flex-1 rounded-full bg-muted/60 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-700 ${n >= 4 ? "bg-primary shadow-[0_0_6px_hsl(var(--primary))]" : n === 3 ? "bg-yellow-400" : "bg-rose-500"}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <span className="w-6 text-right text-[10px] font-mono text-muted-foreground">{v}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 function Page() {
   const getEsts = useServerFn(getMyEstablishments);
@@ -88,28 +233,34 @@ function Page() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-4 md:p-8">
-      <header className="flex items-end justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Avaliações de atendimento</h1>
-          <p className="text-sm text-muted-foreground">Acompanhe o feedback dos seus clientes e responda com agilidade.</p>
-        </div>
-        <a href={`/avaliacoes/${est.slug}`} target="_blank" rel="noopener" className="text-sm text-primary hover:underline">
-          Ver página pública →
-        </a>
-      </header>
+    <div className="mx-auto max-w-6xl space-y-8 p-4 md:p-8">
 
-      <Tabs defaultValue="feed" className="space-y-4">
-        <TabsList className="flex-wrap">
-          <TabsTrigger value="feed">Voucher (pós-carimbo)</TabsTrigger>
-          <TabsTrigger value="public-inbox">Caixa (público)</TabsTrigger>
-          <TabsTrigger value="alerts"><AlertTriangle className="mr-1 h-3 w-3" />Alertas ≤2</TabsTrigger>
-          <TabsTrigger value="insights"><TrendingDown className="mr-1 h-3 w-3" />Insights</TabsTrigger>
-          <TabsTrigger value="public-form">Formulário público</TabsTrigger>
-          <TabsTrigger value="public-ratings">Notas 1–5</TabsTrigger>
-          <TabsTrigger value="public-questions">Perguntas extras</TabsTrigger>
-          <TabsTrigger value="config">Config. voucher</TabsTrigger>
-        </TabsList>
+      <CockpitHero est={est} />
+
+      <Tabs defaultValue="feed" className="space-y-6">
+        <div className="border-b border-border/50 -mx-4 md:mx-0 overflow-x-auto no-scrollbar">
+          <TabsList className="h-auto bg-transparent p-0 gap-0 rounded-none w-max">
+            {[
+              { v: "feed", label: "Voucher (pós-carimbo)" },
+              { v: "public-inbox", label: "Caixa (público)" },
+              { v: "alerts", label: "Alertas ≤2", icon: AlertTriangle },
+              { v: "insights", label: "Insights AI", icon: TrendingDown },
+              { v: "public-form", label: "Formulário público" },
+              { v: "public-ratings", label: "Notas 1–5" },
+              { v: "public-questions", label: "Perguntas extras" },
+              { v: "config", label: "Config. voucher" },
+            ].map(({ v, label, icon: Icon }) => (
+              <TabsTrigger
+                key={v}
+                value={v}
+                className="relative rounded-none border-0 bg-transparent px-4 md:px-5 py-3 text-xs font-bold uppercase tracking-widest text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none whitespace-nowrap data-[state=active]:after:absolute data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:-bottom-px data-[state=active]:after:h-0.5 data-[state=active]:after:bg-primary data-[state=active]:after:shadow-[0_0_10px_hsl(var(--primary))]"
+              >
+                {Icon && <Icon className="mr-1.5 h-3 w-3" />}
+                {label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
         <TabsContent value="feed"><Feed estId={est.id} /></TabsContent>
         <TabsContent value="public-inbox"><PublicInbox estId={est.id} /></TabsContent>
         <TabsContent value="alerts"><LowRatingAlerts estId={est.id} /></TabsContent>
@@ -122,6 +273,7 @@ function Page() {
     </div>
   );
 }
+
 
 function Feed({ estId }: { estId: string }) {
   const statsFn = useServerFn(getReviewStats);
@@ -141,64 +293,61 @@ function Feed({ estId }: { estId: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card><CardContent className="p-4">
-          <div className="text-xs text-muted-foreground">Nota média (30d)</div>
-          <div className="mt-1 flex items-end gap-2">
-            <div className="text-3xl font-bold">{stats ? stats.avg.toFixed(1) : "—"}</div>
-            {stats && <Stars n={Math.round(stats.avg)} />}
-          </div>
-        </CardContent></Card>
-        <Card><CardContent className="p-4">
-          <div className="text-xs text-muted-foreground">Avaliações (30d)</div>
-          <div className="mt-1 text-3xl font-bold">{stats?.count ?? "—"}</div>
-        </CardContent></Card>
-        <Card><CardContent className="p-4">
-          <div className="text-xs text-muted-foreground">NPS (30d)</div>
-          <div className="mt-1 text-3xl font-bold">{stats?.nps ?? "—"}</div>
-          <div className="text-xs text-muted-foreground">{stats?.npsResponses ?? 0} respostas</div>
-        </CardContent></Card>
-        <Card><CardContent className="p-4">
-          <div className="text-xs text-muted-foreground">Distribuição</div>
-          <div className="mt-2 space-y-1">
-            {[5, 4, 3, 2, 1].map((n) => (
-              <div key={n} className="flex items-center gap-2 text-xs">
-                <span className="w-3">{n}</span>
-                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                  <div className="h-full rounded-full bg-yellow-400"
-                    style={{ width: `${((stats?.dist?.[n] ?? 0) / distMax) * 100}%` }} />
-                </div>
-                <span className="w-6 text-right text-muted-foreground">{stats?.dist?.[n] ?? 0}</span>
-              </div>
-            ))}
-          </div>
-        </CardContent></Card>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <Label className="text-sm">Filtrar por nota</Label>
-        <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas</SelectItem>
-            {[5, 4, 3, 2, 1].map((n) => <SelectItem key={n} value={String(n)}>{n} estrelas</SelectItem>)}
-          </SelectContent>
-        </Select>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3">
+          <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Filtrar por nota</Label>
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas</SelectItem>
+              {[5, 4, 3, 2, 1].map((n) => <SelectItem key={n} value={String(n)}>{n} estrelas</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+          {rows?.length ?? 0} resultado(s)
+        </div>
       </div>
 
       {isLoading ? (
         <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+      ) : (rows ?? []).length === 0 ? (
+        <div className="relative overflow-hidden rounded-2xl border border-dashed border-border/60 bg-gradient-to-b from-primary/[0.03] to-transparent py-16 px-8 text-center">
+          <div className="pointer-events-none absolute inset-0 opacity-30">
+            <svg width="100%" height="100%" viewBox="0 0 800 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0 200H180L220 240H580L620 200H800" stroke="hsl(var(--primary))" strokeWidth="1" strokeDasharray="4 6" />
+              <circle cx="220" cy="240" r="3" fill="hsl(var(--primary))" />
+              <circle cx="580" cy="240" r="3" fill="hsl(var(--primary))" />
+            </svg>
+          </div>
+          <div className="relative">
+            <div className="mx-auto mb-5 h-16 w-16 rounded-full border border-primary/40 grid place-items-center relative">
+              <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse" />
+              <MessageSquare className="relative h-7 w-7 text-primary" />
+            </div>
+            <h3 className="text-lg font-bold text-foreground">Aguardando sinais…</h3>
+            <p className="mx-auto mt-1.5 max-w-sm text-sm text-muted-foreground">
+              Seu radar de reputação está ativo. Divulgue o QR no balcão ou no voucher para acelerar os primeiros feedbacks.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
+              <Button asChild size="sm" className="shadow-[0_0_20px_hsl(var(--primary)/0.25)]">
+                <Link to="/app/avaliacoes/qr"><Sparkles className="h-3.5 w-3.5" /> Gerar QR Code</Link>
+              </Button>
+              <Button asChild size="sm" variant="outline">
+                <a href={`/avaliacoes/${estId}`} target="_blank" rel="noopener">Ver página pública</a>
+              </Button>
+            </div>
+          </div>
+        </div>
       ) : (
         <div className="space-y-3">
-          {(rows ?? []).length === 0 && (
-            <Card><CardContent className="p-8 text-center text-muted-foreground">Sem avaliações ainda.</CardContent></Card>
-          )}
           {(rows ?? []).map((r) => <ReviewRow key={r.id} r={r} estId={estId} />)}
         </div>
       )}
     </div>
   );
 }
+
 
 function ReviewRow({ r, estId }: { r: any; estId: string }) {
   const replyFn = useServerFn(replyReview);
