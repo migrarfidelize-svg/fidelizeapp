@@ -1546,6 +1546,96 @@ function ReviewQrPage() {
         />
       )}
 
+      <AlertDialog
+        open={presetDialog.open}
+        onOpenChange={(open) => setPresetDialog((s) => ({ ...s, open }))}
+      >
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-full bg-primary/15 ring-1 ring-primary/40">
+              <Sparkles className="h-7 w-7 text-primary" />
+            </div>
+            <AlertDialogTitle className="text-center text-xl">
+              Aplicar textos sugeridos para {presetDialog.toLabel || "este destino"}?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              {presetDialog.hasEdits ? (
+                <>
+                  Você tem <strong>edições personalizadas</strong> no cartaz atual
+                  {presetDialog.fromLabel ? <> ({presetDialog.fromLabel})</> : null}.
+                  Escolha se deseja salvar o design atual antes de trocar pelos textos otimizados para{" "}
+                  <strong>{presetDialog.toLabel}</strong>.
+                </>
+              ) : (
+                <>
+                  Vamos adaptar título, subtítulo e chamadas do cartaz para o segmento{" "}
+                  <strong>{presetDialog.toLabel}</strong>. Você pode editar depois.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          {presetDialog.preset && (
+            <div className="rounded-lg border border-border/60 bg-muted/40 p-3 text-sm">
+              <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                Prévia dos textos
+              </div>
+              <div className="font-semibold text-foreground">{presetDialog.preset.title}</div>
+              <div className="text-muted-foreground">{presetDialog.preset.subtitle}</div>
+              <div className="mt-2 flex flex-wrap gap-1.5 text-[11px]">
+                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-primary">
+                  CTA: {presetDialog.preset.primaryLabel}
+                </span>
+                <span className="rounded-full bg-muted px-2 py-0.5 text-muted-foreground">
+                  {presetDialog.preset.ctaNearQR}
+                </span>
+              </div>
+            </div>
+          )}
+
+          <AlertDialogFooter className="sm:flex-col sm:space-x-0 sm:gap-2">
+            {presetDialog.hasEdits ? (
+              <>
+                <AlertDialogAction
+                  onClick={async () => {
+                    const preset = presetDialog.preset;
+                    try {
+                      const name = `Design ${new Date().toLocaleString("pt-BR")}`;
+                      setDesignName(name);
+                      await saveCurrentDesignRef.current?.();
+                    } finally {
+                      if (preset) applyPreset(preset);
+                    }
+                  }}
+                  className="w-full"
+                >
+                  Salvar design atual e aplicar
+                </AlertDialogAction>
+                <AlertDialogAction
+                  onClick={() => presetDialog.preset && applyPreset(presetDialog.preset)}
+                  className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                >
+                  Aplicar sem salvar
+                </AlertDialogAction>
+                <AlertDialogCancel className="w-full mt-0">Manter meus textos</AlertDialogCancel>
+              </>
+            ) : (
+              <>
+                <AlertDialogAction
+                  onClick={() => presetDialog.preset && applyPreset(presetDialog.preset)}
+                  className="w-full"
+                >
+                  Aplicar textos sugeridos
+                </AlertDialogAction>
+                <AlertDialogCancel className="w-full mt-0">Agora não</AlertDialogCancel>
+              </>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+
+
       {fullscreen && (
         <div
           className="fixed inset-0 z-[100] flex flex-col bg-black/95 backdrop-blur-sm"
