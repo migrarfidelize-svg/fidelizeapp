@@ -44,6 +44,66 @@ function Stars({ n }: { n: number }) {
   );
 }
 
+function ReviewsSectionHeader() {
+  return (
+    <div className="mb-6 flex items-center gap-4">
+      <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/10" />
+      <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/60">
+        Avaliações Recentes
+      </span>
+      <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/10" />
+    </div>
+  );
+}
+
+function ReviewSkeleton() {
+  return (
+    <div className="animate-pulse rounded-xl border border-white/5 bg-[#0b0b0e]/60 p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-lg bg-white/5" />
+          <div className="space-y-2">
+            <div className="h-3 w-28 rounded bg-white/10" />
+            <div className="h-3 w-20 rounded bg-white/5" />
+          </div>
+        </div>
+        <div className="h-2.5 w-16 rounded bg-white/5" />
+      </div>
+      <div className="mt-4 space-y-2">
+        <div className="h-3 w-full rounded bg-white/5" />
+        <div className="h-3 w-11/12 rounded bg-white/5" />
+        <div className="h-3 w-2/3 rounded bg-white/5" />
+      </div>
+    </div>
+  );
+}
+
+function ReviewsEmptyState({ accent }: { accent: string }) {
+  return (
+    <div
+      className="relative overflow-hidden rounded-xl border border-white/5 bg-[#0b0b0e]/60 px-6 py-10 text-center"
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.15]"
+        style={{ background: `radial-gradient(300px 120px at 50% 0%, ${accent}, transparent 70%)` }}
+      />
+      <div
+        className="relative mx-auto grid h-12 w-12 place-items-center rounded-full border"
+        style={{ borderColor: `${accent}40`, background: `${accent}12` }}
+      >
+        <Star className="h-6 w-6" style={{ color: accent }} />
+      </div>
+      <h3 className="relative mt-4 text-sm font-semibold text-white">
+        Ainda não há avaliações por aqui
+      </h3>
+      <p className="relative mx-auto mt-1 max-w-xs text-xs text-gray-400">
+        Seja a primeira pessoa a compartilhar sua experiência — sua opinião ajuda outros clientes.
+      </p>
+    </div>
+  );
+}
+
 function initials(name: string) {
   return name.trim().split(/\s+/).slice(0, 2).map((s) => s[0]?.toUpperCase() ?? "").join("") || "?";
 }
@@ -51,7 +111,7 @@ function initials(name: string) {
 function Page() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(opts(slug));
-  const { data: reviews } = useQuery(listOpts(slug));
+  const { data: reviews, isLoading: reviewsLoading } = useQuery(listOpts(slug));
   const d = data!;
   const est = d.est;
   const accent = est.primary_color || "#00ffff";
@@ -128,56 +188,60 @@ function Page() {
         </section>
 
         {/* Reviews list */}
-        {reviews && reviews.length > 0 && (
+        {d.form && (
           <section className="mt-12">
-            <div className="mb-6 flex items-center gap-4">
-              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/10" />
-              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/60">
-                Avaliações Recentes
-              </span>
-              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/10" />
-            </div>
+            <ReviewsSectionHeader />
 
-            <div className="space-y-4">
-              {reviews.map((r) => (
-                <article
-                  key={r.id}
-                  className="group relative rounded-xl border border-white/5 bg-[#0b0b0e]/60 p-5 transition hover:border-white/10"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="grid h-9 w-9 place-items-center rounded-lg border font-mono text-[11px] font-bold"
-                        style={{ borderColor: `${accent}40`, background: `${accent}12`, color: accent }}
-                      >
-                        {initials(r.author)}
+            {reviewsLoading ? (
+              <div className="space-y-4" aria-busy="true" aria-label="Carregando avaliações">
+                <ReviewSkeleton />
+                <ReviewSkeleton />
+                <ReviewSkeleton />
+              </div>
+            ) : !reviews || reviews.length === 0 ? (
+              <ReviewsEmptyState accent={accent} />
+            ) : (
+              <div className="space-y-4">
+                {reviews.map((r) => (
+                  <article
+                    key={r.id}
+                    className="group relative rounded-xl border border-white/5 bg-[#0b0b0e]/60 p-5 transition hover:border-white/10"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="grid h-9 w-9 place-items-center rounded-lg border font-mono text-[11px] font-bold"
+                          style={{ borderColor: `${accent}40`, background: `${accent}12`, color: accent }}
+                        >
+                          {initials(r.author)}
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold text-white">{r.author}</div>
+                          <div className="mt-1"><Stars n={r.rating} /></div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="text-sm font-semibold text-white">{r.author}</div>
-                        <div className="mt-1"><Stars n={r.rating} /></div>
-                      </div>
+                      <span className="font-mono text-[10px] uppercase tracking-widest text-white/40">
+                        {formatDate(r.created_at)}
+                      </span>
                     </div>
-                    <span className="font-mono text-[10px] uppercase tracking-widest text-white/40">
-                      {formatDate(r.created_at)}
-                    </span>
-                  </div>
 
-                  {r.comment && (
-                    <p className="mt-3 text-sm leading-relaxed text-gray-400">{r.comment}</p>
-                  )}
+                    {r.comment && (
+                      <p className="mt-3 text-sm leading-relaxed text-gray-400">{r.comment}</p>
+                    )}
 
-                  {r.merchant_reply && (
-                    <div className="mt-4 rounded-lg border-l-2 border-fuchsia-500/60 bg-fuchsia-500/[0.04] py-3 pl-4 pr-3">
-                      <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-fuchsia-400">
-                        Resposta de {est.name}
-                        {r.merchant_reply_at ? ` · ${formatDate(r.merchant_reply_at)}` : ""}
+                    {r.merchant_reply && (
+                      <div className="mt-4 rounded-lg border-l-2 border-fuchsia-500/60 bg-fuchsia-500/[0.04] py-3 pl-4 pr-3">
+                        <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-fuchsia-400">
+                          Resposta de {est.name}
+                          {r.merchant_reply_at ? ` · ${formatDate(r.merchant_reply_at)}` : ""}
+                        </div>
+                        <p className="mt-1 text-sm italic text-gray-400">{r.merchant_reply}</p>
                       </div>
-                      <p className="mt-1 text-sm italic text-gray-400">{r.merchant_reply}</p>
-                    </div>
-                  )}
-                </article>
-              ))}
-            </div>
+                    )}
+                  </article>
+                ))}
+              </div>
+            )}
           </section>
         )}
 
