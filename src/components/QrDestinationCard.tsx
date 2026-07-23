@@ -30,11 +30,17 @@ export function QrDestinationCard({ establishmentId }: { establishmentId: string
   const reviewsReady = !!q.data?.review_form_active;
 
   async function save(next: Dest) {
+    const prev = dest;
     setDest(next);
     setSaving(true);
     try {
       await setFn({ data: { establishment_id: establishmentId, destination: next } });
       toast.success("Destino do QR atualizado.");
+      if (typeof window !== "undefined" && prev !== next) {
+        window.dispatchEvent(
+          new CustomEvent("qr-destination-changed", { detail: { from: prev, to: next, establishmentId } })
+        );
+      }
       q.refetch();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao salvar");
