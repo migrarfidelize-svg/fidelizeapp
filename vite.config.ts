@@ -24,6 +24,11 @@ export default defineConfig({
         clientsClaim: true,
         skipWaiting: true,
         cleanupOutdatedCaches: true,
+        // TanStack Start emits browser files under a build-time `client/` folder,
+        // but the deployed site serves them from `/`. If Workbox precaches the
+        // raw `client/...` URLs, install fails with 404s and
+        // navigator.serviceWorker.ready times out during push opt-in.
+        modifyURLPrefix: { "client/": "" },
         // Offline fallback is only for customer vouchers. Admin/app pages must
         // always load fresh code on refresh to avoid stale UI/runtime chunks.
         navigateFallback: "/",
