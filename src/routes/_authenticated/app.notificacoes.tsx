@@ -78,6 +78,8 @@ function NotifPage() {
   const [body, setBody] = useState("");
   const [url, setUrl] = useState("");
   const [segment, setSegment] = useState<Segment>({ activity: "all" });
+  const [scheduleAt, setScheduleAt] = useState<string>("");
+
   const [customerMode, setCustomerMode] = useState<"all" | "specific">("all");
   const [customerQuery, setCustomerQuery] = useState("");
   const listCustomersFn = useServerFn(listCustomers);
