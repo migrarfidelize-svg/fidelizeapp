@@ -1,9 +1,17 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Bell, BellOff, Loader2, X } from "lucide-react";
+import { Bell, BellOff, CheckCircle2, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { ensurePwaRegistration } from "@/lib/pwa-register";
 import { VAPID_PUBLIC_KEY, urlBase64ToUint8Array } from "@/lib/vapid";
 import {
@@ -14,6 +22,7 @@ import {
 
 const DISMISS_KEY = "fidelize:notifications:dismissed";
 const PWA_AUTOPROMPT_KEY = "fidelize:notifications:pwa-autoprompt";
+const PWA_MODAL_SESSION_KEY = "fidelize:notifications:pwa-modal-shown";
 
 function isRunningAsPwa(): boolean {
   if (typeof window === "undefined") return false;
@@ -44,6 +53,7 @@ export function EnableNotificationsCard() {
   const [dismissed, setDismissed] = useState<boolean>(false);
   const [busy, setBusy] = useState(false);
   const [runningAsPwa, setRunningAsPwa] = useState(false);
+  const [promptOpen, setPromptOpen] = useState(false);
 
   const subscribeAll = useServerFn(subscribePushForAllMyCards);
   const unsubscribeAll = useServerFn(unsubscribePushForAllMyCards);
@@ -77,28 +87,20 @@ export function EnableNotificationsCard() {
     })();
   }, [getStatus]);
 
-  // Auto-prompt on first launch from installed PWA shortcut.
-  // Chrome/Android permite requestPermission sem gesto quando disparado logo
-  // após load do PWA; iOS Safari standalone exige toque — nesses casos o
-  // fluxo simplesmente cai no card visual abaixo (que já é um gesto).
+  // Installed apps cannot rely on the native permission prompt appearing
+  // automatically: most browsers require a clear user tap. So we open a
+  // first-launch in-app prompt and let the CTA trigger the real permission.
   useEffect(() => {
     if (!supported || subscribed !== false) return;
     if (permission !== "default") return;
     if (!runningAsPwa) return;
     if (localStorage.getItem(PWA_AUTOPROMPT_KEY) === "1") return;
-    // iOS não permite prompt automático — não gasta a "única chance".
-    const isIOS = /iP(hone|ad|od)/i.test(navigator.userAgent);
-    if (isIOS) return;
     const t = setTimeout(() => {
-      enable()
-        .then(() => localStorage.setItem(PWA_AUTOPROMPT_KEY, "1"))
-        .catch(() => {
-          // Se falhou por falta de gesto, não marca — deixa o card visível
-          // para o próximo abrir/tocar.
-        });
-    }, 1200);
+      if (sessionStorage.getItem(PWA_MODAL_SESSION_KEY) === "1") return;
+      sessionStorage.setItem(PWA_MODAL_SESSION_KEY, "1");
+      setPromptOpen(true);
+    }, 700);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supported, subscribed, permission, runningAsPwa]);
 
   async function enable() {
@@ -130,6 +132,7 @@ export function EnableNotificationsCard() {
         },
       });
       setSubscribed(true);
+      setPromptOpen(false);
       localStorage.setItem(PWA_AUTOPROMPT_KEY, "1");
       toast.success(
         res.count
@@ -175,47 +178,97 @@ export function EnableNotificationsCard() {
   const denied = permission === "denied";
 
   return (
-    <Card className="relative overflow-hidden border-primary/40 bg-gradient-to-br from-primary/15 via-background to-background shadow-lg">
-      <button
-        type="button"
-        onClick={dismiss}
-        aria-label="Dispensar"
-        className="absolute right-2 top-2 rounded-full p-1 text-muted-foreground hover:bg-muted"
-      >
-        <X className="h-4 w-4" />
-      </button>
-      <CardContent className="flex items-start gap-3 p-4">
-        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
-          {denied ? <BellOff className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
-        </div>
-        <div className="min-w-0 flex-1 space-y-2">
-          <div>
-            <p className="font-semibold leading-tight">
-              {runningAsPwa ? "Ative as notificações do app" : "Ative as notificações"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Avise-me quando eu ganhar um carimbo, faltar pouco para o prêmio ou surgir uma
-              oferta.
-            </p>
+    <>
+      <Dialog open={promptOpen} onOpenChange={setPromptOpen}>
+        <DialogContent className="max-w-sm overflow-hidden p-0 sm:rounded-2xl">
+          <div className="relative border-b border-primary/20 bg-gradient-to-br from-primary/20 via-background to-background px-6 pb-5 pt-6">
+            <div className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
+              <Bell className="h-7 w-7" />
+            </div>
+            <DialogHeader className="text-left">
+              <DialogTitle className="font-display text-xl">Ativar notificações do app?</DialogTitle>
+              <DialogDescription className="text-sm leading-relaxed">
+                Receba avisos quando ganhar carimbos, liberar recompensas e aparecer uma oferta
+                nova nos seus estabelecimentos favoritos.
+              </DialogDescription>
+            </DialogHeader>
           </div>
-          {denied ? (
-            <p className="text-xs text-destructive">
-              Notificações bloqueadas neste aparelho. Abra Ajustes → Notificações e libere para o
-              Fidelize.
-            </p>
-          ) : (
-            <Button size="sm" onClick={enable} disabled={busy} className="gap-2">
-              {busy ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Bell className="h-4 w-4" />
-              )}
-              Ativar agora
+          <div className="space-y-3 px-6 py-5">
+            <div className="flex items-start gap-2 rounded-xl border border-border/60 bg-muted/30 p-3 text-xs text-muted-foreground">
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              Você pode desativar quando quiser em Perfil → Notificações.
+            </div>
+            {denied ? (
+              <p className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+                Notificações bloqueadas neste aparelho. Abra os ajustes do navegador/app e libere
+                as notificações para o Fidelize.
+              </p>
+            ) : null}
+          </div>
+          <DialogFooter className="gap-2 px-6 pb-6 sm:flex-col sm:space-x-0">
+            {!denied ? (
+              <Button onClick={enable} disabled={busy} className="w-full gap-2" size="lg">
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bell className="h-4 w-4" />}
+                Ativar notificações
+              </Button>
+            ) : null}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setPromptOpen(false)}
+              disabled={busy}
+              className="w-full"
+            >
+              Agora não
             </Button>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Card className="relative overflow-hidden border-primary/40 bg-gradient-to-br from-primary/15 via-background to-background shadow-lg">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={dismiss}
+          aria-label="Dispensar"
+          className="absolute right-2 top-2 h-7 w-7 rounded-full text-muted-foreground hover:bg-muted"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+        <CardContent className="flex items-start gap-3 p-4">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
+            {denied ? <BellOff className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
+          </div>
+          <div className="min-w-0 flex-1 space-y-2">
+            <div>
+              <p className="font-semibold leading-tight">
+                {runningAsPwa ? "Ative as notificações do app" : "Ative as notificações"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Avise-me quando eu ganhar um carimbo, faltar pouco para o prêmio ou surgir uma
+                oferta.
+              </p>
+            </div>
+            {denied ? (
+              <p className="text-xs text-destructive">
+                Notificações bloqueadas neste aparelho. Abra Ajustes → Notificações e libere para o
+                Fidelize.
+              </p>
+            ) : (
+              <Button size="sm" onClick={enable} disabled={busy} className="gap-2">
+                {busy ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Bell className="h-4 w-4" />
+                )}
+                Ativar agora
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </>
   );
 }
 
