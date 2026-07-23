@@ -475,6 +475,7 @@ function ReviewQrPage() {
     setDesignName("");
     toast.success(`Design "${name}" salvo (offline)`);
   }
+  saveCurrentDesignRef.current = saveCurrentDesign;
 
   function loadDesign(d: SavedDesign) {
     const s = d.data;
