@@ -592,8 +592,8 @@ function ReviewQrPage() {
 
 
   const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const qrDestPath = qrDest === "linktree" ? "links" : qrDest === "landing" ? "l" : "avaliar";
-  const fidelizeUrl = est ? `${origin}/${qrDestPath}/${est.slug}` : "";
+  const qrDestPath = qrDestinationPath(qrDest);
+  const fidelizeUrl = est ? buildFidelizeUrl(origin, est.slug, qrDest) : "";
   const rawTargetUrl = destination === "fidelize" ? fidelizeUrl : googleUrl.trim();
   const primaryIsPlaceholder = destination === "google" && !rawTargetUrl;
   const baseTargetUrl = rawTargetUrl || (destination === "google"
