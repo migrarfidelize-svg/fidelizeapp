@@ -912,9 +912,20 @@ function ReviewQrPage() {
                 <div className="text-muted-foreground">Link público (pré-definido)</div>
                 <div className="mt-1 flex items-center gap-2">
                   <code className="flex-1 truncate rounded bg-muted/60 px-2 py-1 text-primary">{fidelizeUrl}</code>
-                  <Button size="sm" variant="ghost" className="h-7 px-2" onClick={copyLink}><Copy className="h-3.5 w-3.5" /></Button>
+                  <Button
+                    size="sm"
+                    variant={copiedPublic ? "default" : "outline"}
+                    className="h-8 gap-1.5 px-2.5"
+                    onClick={copyPublicUrl}
+                    disabled={!fidelizeUrl || copiedPublic}
+                    aria-label="Copiar link público"
+                  >
+                    {copiedPublic ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                    <span className="hidden sm:inline">{copiedPublic ? "Copiado" : "Copiar"}</span>
+                  </Button>
                 </div>
               </div>
+
 
 
               {/* Editable label shown ON the poster below the main QR */}
