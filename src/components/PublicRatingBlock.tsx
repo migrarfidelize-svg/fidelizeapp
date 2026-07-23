@@ -207,7 +207,7 @@ export function PublicRatingBlock({ slug, source = "linktree", compact = false }
                   onClick={() => {
                     if (!enabled) return;
                     setRating(n);
-                    if (form) logFn({ data: { form.id, event_type: "rating_selected" } as never }).catch(() => {});
+                    if (form) logFn({ data: { form_id: form.id, event_type: "rating_selected" } }).catch(() => {});
                   }}
                   className="group relative transition hover:scale-110 active:scale-95 disabled:opacity-25 disabled:cursor-not-allowed"
                 >
