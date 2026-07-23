@@ -58,8 +58,8 @@ function CockpitHero({ est }: { est: { id: string; name: string; slug: string } 
   });
 
   const publicUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/avaliacoes/${est.slug}`
-    : `/avaliacoes/${est.slug}`;
+    ? `${window.location.origin}/avaliar/${est.slug}`
+    : `/avaliar/${est.slug}`;
 
   const copyLink = async () => {
     try { await navigator.clipboard.writeText(publicUrl); toast.success("Link público copiado."); }
