@@ -300,13 +300,7 @@ function ReviewsNav({ est }: { est: { id: string; name: string; slug: string } }
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-border/60 bg-muted/30 p-1">
-        {NAV_GROUPS.map((g) => {
-          void 0;
-          return null;
-        })}
-      </div>
-      <div className="hidden">{/* keep-original-map-below */}</div>
-      <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-border/60 bg-muted/30 p-1 -mt-4">
+
 
         {NAV_GROUPS.map((g) => {
           const Icon = g.icon;
