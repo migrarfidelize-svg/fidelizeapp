@@ -139,63 +139,117 @@ export function PublicRatingBlock({ slug, source = "linktree", compact = false }
   }
 
   return (
-    <Card className="overflow-hidden border-2 shadow-lg" style={{ borderColor: `${btnColor}44` }}>
-      <CardContent className={compact ? "p-4" : "p-6"}>
-        <div className="text-center">
-          <h3 className="text-lg font-bold tracking-tight">{form.title}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">{form.question}</p>
-          {form.description && <p className="mt-1 text-xs text-muted-foreground">{form.description}</p>}
+    <Card
+      className="relative overflow-hidden border shadow-2xl"
+      style={{ background: "#0d0d0f", borderColor: "rgba(255,255,255,0.08)" }}
+    >
+      {/* Glow decorativo atrás do card */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -inset-1 opacity-25 blur-2xl"
+        style={{ background: `linear-gradient(90deg, ${btnColor}, #ff00ff)` }}
+      />
+      <CardContent className={`relative ${compact ? "p-5" : "p-7"}`}>
+        {/* Header chips */}
+        <div className="mb-5 flex items-start justify-between gap-3">
+          <span
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.2em]"
+            style={{ color: btnColor }}
+          >
+            <span className="relative flex h-2 w-2">
+              <span
+                className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
+                style={{ background: btnColor }}
+              />
+              <span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: btnColor }} />
+            </span>
+            Avaliação
+          </span>
+
           {stats && stats.count > 0 && (form.show_average || form.show_review_count) && (
-            <div className="mt-2 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-              {form.show_average && <span className="flex items-center gap-1 font-semibold text-foreground"><Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />{stats.avg.toFixed(1)}</span>}
-              {form.show_review_count && <span>({stats.count} avaliações)</span>}
+            <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/40 px-3 py-1">
+              {form.show_average && (
+                <>
+                  <span className="text-sm font-bold text-white">{stats.avg.toFixed(1)}</span>
+                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                </>
+              )}
+              {form.show_review_count && (
+                <span className="text-[10px] font-medium text-white/50">{stats.count}+</span>
+              )}
             </div>
           )}
         </div>
 
-        {/* Stars */}
-        <div className="mt-5 flex justify-center gap-1" role="radiogroup" aria-label="Nota">
-          {[1, 2, 3, 4, 5].map((n) => {
-            const enabled = options.some((o) => o.rating === n);
-            const filled = (hover || rating) >= n;
-            return (
-              <button
-                key={n}
-                type="button"
-                role="radio"
-                aria-checked={rating === n}
-                aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"}`}
-                disabled={!enabled}
-                onMouseEnter={() => enabled && setHover(n)}
-                onMouseLeave={() => setHover(0)}
-                onClick={() => {
-                  if (!enabled) return;
-                  setRating(n);
-                  if (form) logFn({ data: { form_id: form.id, event_type: "rating_selected" } }).catch(() => {});
-                }}
-                className="rounded-full p-1 transition hover:scale-110 disabled:opacity-25 disabled:cursor-not-allowed"
-              >
-                <Star
-                  className="h-10 w-10"
-                  style={{
-                    fill: filled ? starColor : "transparent",
-                    color: filled ? starColor : "currentColor",
-                    opacity: filled ? 1 : 0.35,
-                  }}
-                />
-              </button>
-            );
-          })}
+        {/* Título + descrição */}
+        <div className="mb-8 space-y-2">
+          <h3 className="text-2xl font-bold tracking-tight text-white">{form.title}</h3>
+          <p className="text-sm leading-relaxed text-white/50">{form.question}</p>
+          {form.description && <p className="text-xs text-white/40">{form.description}</p>}
         </div>
 
-        {currentOpt && (
-          <div className="mt-2 text-center text-sm font-semibold" style={{ color: btnColor }}>
-            {currentOpt.label}
+        {/* Estrelas */}
+        <div className="flex flex-col items-center gap-6">
+          <div className="flex gap-3" role="radiogroup" aria-label="Nota">
+            {[1, 2, 3, 4, 5].map((n) => {
+              const enabled = options.some((o) => o.rating === n);
+              const filled = (hover || rating) >= n;
+              return (
+                <button
+                  key={n}
+                  type="button"
+                  role="radio"
+                  aria-checked={rating === n}
+                  aria-label={`${n} ${n === 1 ? "estrela" : "estrelas"}`}
+                  disabled={!enabled}
+                  onMouseEnter={() => enabled && setHover(n)}
+                  onMouseLeave={() => setHover(0)}
+                  onClick={() => {
+                    if (!enabled) return;
+                    setRating(n);
+                    if (form) logFn({ data: { form_id: form.id, event_type: "rating_selected" } }).catch(() => {});
+                  }}
+                  className="group relative transition hover:scale-110 active:scale-95 disabled:opacity-25 disabled:cursor-not-allowed"
+                >
+                  <span
+                    aria-hidden
+                    className={`absolute -inset-2 rounded-full blur-md transition-opacity ${filled ? "opacity-100" : "opacity-0 group-hover:opacity-70"}`}
+                    style={{ background: `${filled ? starColor : btnColor}33` }}
+                  />
+                  <Star
+                    className="relative h-10 w-10 transition-colors"
+                    style={{
+                      fill: filled ? starColor : "transparent",
+                      color: filled ? starColor : "rgba(255,255,255,0.25)",
+                      filter: filled ? `drop-shadow(0 0 8px ${starColor}99)` : undefined,
+                      strokeWidth: filled ? 0 : 1.25,
+                    }}
+                  />
+                </button>
+              );
+            })}
           </div>
-        )}
-        {currentOpt?.selection_message && (
-          <p className="mt-1 text-center text-xs text-muted-foreground">{currentOpt.selection_message}</p>
-        )}
+
+          {currentOpt && (
+            <div
+              className="rounded-full border border-white/10 bg-gradient-to-r px-5 py-2"
+              style={{
+                backgroundImage: `linear-gradient(90deg, ${btnColor}1a, #ff00ff1a)`,
+              }}
+            >
+              <span
+                className="bg-clip-text font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-transparent"
+                style={{ backgroundImage: `linear-gradient(90deg, ${btnColor}, #ff5cf7)` }}
+              >
+                {currentOpt.label}
+              </span>
+            </div>
+          )}
+          {currentOpt?.selection_message && (
+            <p className="-mt-3 text-center text-xs text-white/50">{currentOpt.selection_message}</p>
+          )}
+        </div>
+
 
         {rating > 0 && (
           <div className="mt-4 space-y-3">
