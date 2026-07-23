@@ -320,99 +320,274 @@ function ScenePreview2() {
   );
 }
 
-// ---------- Preview 3 — LinkTree + Display + NFC venda ----------
+// ---------- Preview 3 — Árvore de links (foco no phone) ----------
 function ScenePreview3() {
   const t = useLoop(DURATION);
   const items = useMemo(
     () => [
-      { icon: <QrCode className="h-4 w-4" />, label: "Cartão Fidelidade" },
-      { icon: <Star className="h-4 w-4" />, label: "Avaliar atendimento" },
-      { icon: <LinkIcon className="h-4 w-4" />, label: "WhatsApp da loja" },
-      { icon: <Store className="h-4 w-4" />, label: "Cardápio digital" },
+      { icon: <QrCode className="h-4 w-4" />, label: "Cartão Fidelidade", tint: ACCENT },
+      { icon: <Star className="h-4 w-4" />, label: "Avaliar atendimento", tint: MAGENTA },
+      { icon: <LinkIcon className="h-4 w-4" />, label: "WhatsApp da loja", tint: "#22d3ee" },
+      { icon: <Store className="h-4 w-4" />, label: "Cardápio digital", tint: "#a78bfa" },
+      { icon: <Sparkles className="h-4 w-4" />, label: "Promoções da semana", tint: "#f472b6" },
     ],
     []
   );
 
-  return (
-    <div className="relative flex w-full items-center justify-center gap-4">
-      {/* Display / totem */}
-      <motion.div
-        initial={{ rotate: -6, x: -20, opacity: 0 }}
-        animate={{ rotate: [-6, -2, -6], x: [-20, -8, -20], opacity: [0, 1, 0] }}
-        transition={{ duration: DURATION, repeat: Infinity, times: [0, 0.15, 1] }}
-        className="relative hidden h-56 w-28 rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-2 shadow-2xl sm:block"
-      >
-        <div className="grid h-full place-items-center rounded-xl border border-cyan-300/30 bg-black/60">
-          <div className="flex flex-col items-center gap-2">
-            <div className="grid h-14 w-14 place-items-center rounded-lg bg-white p-1">
-              <QrCode className="h-full w-full text-black" />
-            </div>
-            <div className="font-mono text-[8px] uppercase tracking-widest text-cyan-300">
-              Escaneie
-            </div>
-          </div>
-        </div>
-        <div className="mt-1 text-center font-mono text-[8px] uppercase tracking-widest text-white/40">
-          Display Acrílico
-        </div>
-      </motion.div>
+  const tapProgress = Math.min(1, (t % DURATION) / (DURATION * 0.9));
 
-      {/* Phone linktree */}
+  return (
+    <div className="relative flex w-full items-center justify-center">
+      {/* Phone frame */}
       <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: [20, 0, 0, 10], opacity: [0, 1, 1, 0] }}
-        transition={{ duration: DURATION, repeat: Infinity, times: [0, 0.15, 0.85, 1] }}
-        className="w-52 rounded-[28px] border border-white/10 bg-[#0a0a12] p-3 shadow-[0_20px_60px_-20px_rgba(255,47,214,0.5)]"
+        initial={{ y: 24, opacity: 0 }}
+        animate={{ y: [24, 0, 0, 8], opacity: [0, 1, 1, 0] }}
+        transition={{ duration: DURATION, repeat: Infinity, times: [0, 0.12, 0.9, 1] }}
+        className="relative w-64 rounded-[36px] border border-white/10 bg-black p-2 shadow-[0_30px_80px_-25px_rgba(0,255,255,0.45)]"
       >
-        <div className="rounded-2xl bg-gradient-to-b from-[#0e0e1a] to-[#050508] p-3">
-          <div className="text-center">
-            <div className="mx-auto grid h-10 w-10 place-items-center rounded-full border border-cyan-300/40 bg-cyan-300/10">
-              <Sparkles className="h-4 w-4 text-cyan-300" />
+        {/* Notch */}
+        <div className="mx-auto h-4 w-20 rounded-b-2xl bg-black" />
+        <div className="rounded-[28px] bg-gradient-to-b from-[#0b0b14] to-[#050508] p-4">
+          {/* Status bar */}
+          <div className="flex items-center justify-between font-mono text-[9px] text-white/50">
+            <span>09:41</span>
+            <span className="flex items-center gap-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              5G
+            </span>
+          </div>
+
+          {/* Profile */}
+          <div className="mt-3 text-center">
+            <div className="mx-auto grid h-14 w-14 place-items-center rounded-full border border-cyan-300/40 bg-gradient-to-br from-cyan-300/20 to-fuchsia-400/20">
+              <Sparkles className="h-5 w-5 text-cyan-300" />
             </div>
-            <div className="mt-2 text-xs font-bold text-white">@caferitual</div>
-            <div className="font-mono text-[9px] uppercase tracking-widest text-white/40">
+            <div className="mt-2 text-sm font-bold text-white">@caferitual</div>
+            <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-white/40">
               Tudo em um só link
             </div>
           </div>
-          <div className="mt-3 space-y-1.5">
+
+          {/* Links */}
+          <div className="mt-4 space-y-2">
             {items.map((item, i) => {
-              const delay = 0.2 + i * 0.15;
+              const appearAt = 0.15 + i * 0.11;
+              const visible = t / DURATION > appearAt;
               return (
                 <motion.div
                   key={item.label}
                   initial={{ opacity: 0, x: 20 }}
                   animate={{
-                    opacity: t > delay * DURATION * 0.15 ? 1 : 0,
-                    x: t > delay * DURATION * 0.15 ? 0 : 20,
+                    opacity: visible ? 1 : 0,
+                    x: visible ? 0 : 20,
                   }}
-                  transition={{ duration: 0.4 }}
-                  className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-2"
+                  transition={{ duration: 0.35 }}
+                  className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5"
+                  style={{
+                    boxShadow: visible ? `inset 0 0 0 1px ${item.tint}22` : undefined,
+                  }}
                 >
-                  <span className="text-cyan-300">{item.icon}</span>
-                  <span className="text-[11px] font-medium text-white">{item.label}</span>
+                  <span
+                    className="grid h-7 w-7 place-items-center rounded-lg"
+                    style={{ background: `${item.tint}18`, color: item.tint }}
+                  >
+                    {item.icon}
+                  </span>
+                  <span className="text-[12px] font-medium text-white">{item.label}</span>
                 </motion.div>
               );
             })}
           </div>
+
+          {/* Footer chip */}
+          <div className="mt-4 flex items-center justify-center gap-1.5 font-mono text-[9px] uppercase tracking-widest text-white/40">
+            <Sparkles className="h-3 w-3" style={{ color: ACCENT }} />
+            Powered by Fidelize
+          </div>
         </div>
       </motion.div>
 
-      {/* NFC card */}
+      {/* Tap ripple over a random link */}
       <motion.div
-        initial={{ rotate: 8, x: 20, opacity: 0 }}
-        animate={{ rotate: [8, 3, 8], x: [20, 4, 20], opacity: [0, 1, 0] }}
-        transition={{ duration: DURATION, repeat: Infinity, times: [0, 0.2, 1] }}
-        className="hidden w-24 rounded-xl border border-white/10 bg-gradient-to-br from-fuchsia-500/20 to-cyan-500/20 p-3 shadow-2xl sm:block"
+        className="pointer-events-none absolute rounded-full border-2"
+        style={{ borderColor: ACCENT }}
+        initial={{ opacity: 0, scale: 0.4 }}
+        animate={{
+          opacity: [0, 0.7, 0],
+          scale: [0.4, 1.6, 2.2],
+          top: `${45 + tapProgress * 2}%`,
+        }}
+        transition={{ duration: 1.4, repeat: Infinity, delay: 1.5 }}
       >
-        <Nfc className="h-4 w-4 text-white" />
-        <div className="mt-6 font-mono text-[8px] uppercase tracking-widest text-white/70">
-          NFC Card
-        </div>
-        <div className="text-[10px] font-bold text-white">Toque & Abra</div>
+        <span className="block h-8 w-8" />
       </motion.div>
     </div>
   );
 }
+
+// ---------- Preview 4 — Display acrílico + Cartão NFC ----------
+function ScenePreview4() {
+  const t = useLoop(DURATION);
+  // Card slides in and taps the display around mid-loop
+  const tapPhase = t / DURATION;
+
+  return (
+    <div className="relative flex w-full items-end justify-center gap-2">
+      {/* Wooden counter base */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 bottom-0 h-24"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(120,80,40,0) 0%, rgba(80,50,25,0.55) 60%, rgba(40,25,10,0.9) 100%)",
+        }}
+      />
+      {/* Wood grain lines */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 bottom-0 h-24 opacity-40"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(90deg, rgba(255,220,180,0.08) 0px, rgba(255,220,180,0.08) 1px, transparent 1px, transparent 22px)",
+        }}
+      />
+      {/* Reflection ellipse under display */}
+      <div
+        aria-hidden
+        className="absolute bottom-2 left-1/2 h-6 w-52 -translate-x-1/2 rounded-full opacity-40 blur-xl"
+        style={{ background: `radial-gradient(closest-side, ${ACCENT}88, transparent 70%)` }}
+      />
+
+      {/* Acrylic display / totem */}
+      <div className="relative z-10 flex flex-col items-center">
+        {/* Acrylic panel */}
+        <div
+          className="relative w-44 rounded-t-xl border border-white/25 bg-gradient-to-b from-white/[0.14] to-white/[0.05] p-3 shadow-[0_25px_50px_-20px_rgba(0,255,255,0.35),inset_0_1px_0_rgba(255,255,255,0.5)] backdrop-blur"
+          style={{
+            borderTopColor: "rgba(255,255,255,0.55)",
+            borderLeftColor: "rgba(255,255,255,0.35)",
+          }}
+        >
+          {/* Edge highlight */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 rounded-t-xl"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(255,255,255,0.25) 0%, transparent 12%, transparent 88%, rgba(255,255,255,0.15) 100%)",
+            }}
+          />
+          {/* Reflection sheen */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 overflow-hidden rounded-t-xl"
+            animate={{ opacity: [0.4, 0.15, 0.4] }}
+            transition={{ duration: DURATION, repeat: Infinity }}
+          >
+            <div
+              className="absolute inset-y-0 -left-1/2 w-1/2 rotate-12"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)",
+              }}
+            />
+          </motion.div>
+
+          {/* Printed card inside acrylic */}
+          <div className="relative rounded-lg border border-white/10 bg-black/70 p-3 text-center">
+            <div
+              className="font-mono text-[9px] uppercase tracking-[0.3em]"
+              style={{ color: ACCENT }}
+            >
+              Escaneie ou aproxime
+            </div>
+            <div className="mt-1 text-[11px] font-bold text-white">Café Ritual</div>
+
+            {/* QR */}
+            <div className="mx-auto mt-2 grid h-20 w-20 place-items-center rounded-md bg-white p-1.5">
+              <QrCode className="h-full w-full text-black" strokeWidth={2.5} />
+            </div>
+
+            {/* NFC ripple target */}
+            <div className="relative mx-auto mt-2 grid h-9 w-9 place-items-center rounded-full border border-cyan-300/40 bg-cyan-300/10">
+              <Nfc className="h-4 w-4 text-cyan-300" />
+              {/* Ripples on tap */}
+              {[0, 1, 2].map((r) => (
+                <motion.span
+                  key={r}
+                  className="absolute inset-0 rounded-full border"
+                  style={{ borderColor: ACCENT }}
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{
+                    opacity: tapPhase > 0.55 ? [0, 0.7, 0] : 0,
+                    scale: tapPhase > 0.55 ? [0.6, 2.4, 3] : 0.6,
+                  }}
+                  transition={{
+                    duration: 1.3,
+                    delay: r * 0.25,
+                    repeat: Infinity,
+                    repeatDelay: DURATION - 1.5,
+                  }}
+                />
+              ))}
+            </div>
+
+            <div className="mt-2 font-mono text-[8px] uppercase tracking-widest text-white/50">
+              Tap · NFC · QR
+            </div>
+          </div>
+
+          {/* Base label */}
+          <div className="mt-2 text-center font-mono text-[8px] uppercase tracking-[0.3em] text-white/50">
+            Display Acrílico
+          </div>
+        </div>
+
+        {/* Acrylic stand base */}
+        <div
+          className="h-3 w-48 rounded-b-md border-x border-b border-white/20"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02))",
+            boxShadow: "0 6px 16px -6px rgba(0,255,255,0.35)",
+          }}
+        />
+      </div>
+
+      {/* NFC card being tapped */}
+      <motion.div
+        initial={{ x: 90, y: 60, rotate: 18, opacity: 0 }}
+        animate={{
+          x: [90, 30, 30, 90],
+          y: [60, 10, 10, 60],
+          rotate: [18, 6, 6, 18],
+          opacity: [0, 1, 1, 0],
+        }}
+        transition={{ duration: DURATION, repeat: Infinity, times: [0, 0.45, 0.75, 1] }}
+        className="absolute bottom-14 right-2 z-20 w-24 rounded-xl border border-white/15 bg-gradient-to-br from-fuchsia-500/30 via-black/60 to-cyan-500/30 p-2.5 shadow-[0_20px_40px_-15px_rgba(255,47,214,0.6)] backdrop-blur"
+      >
+        <div className="flex items-center justify-between">
+          <Nfc className="h-3.5 w-3.5 text-white" />
+          <span className="font-mono text-[7px] uppercase tracking-widest text-white/70">
+            Fidelize
+          </span>
+        </div>
+        <div className="mt-4">
+          <div className="font-mono text-[8px] uppercase tracking-widest text-white/60">
+            NFC Card
+          </div>
+          <div className="text-[10px] font-bold text-white">Toque & Abra</div>
+        </div>
+        {/* Chip */}
+        <div
+          className="mt-1 h-2 w-6 rounded-sm"
+          style={{ background: `linear-gradient(90deg, ${ACCENT}, ${MAGENTA})` }}
+        />
+      </motion.div>
+    </div>
+  );
+}
+
 
 // ---------- Page ----------
 function VideosPage() {
@@ -430,10 +605,16 @@ function VideosPage() {
       scene: <ScenePreview2 />,
     },
     {
-      title: "Árvore de links + display + cartão NFC",
+      title: "Árvore de links no seu perfil",
       subtitle: "Ep. 03 · Presença",
       pill: "Presença",
       scene: <ScenePreview3 />,
+    },
+    {
+      title: "Display acrílico + cartão NFC no balcão",
+      subtitle: "Ep. 04 · Ponto de venda",
+      pill: "Balcão",
+      scene: <ScenePreview4 />,
     },
   ];
 
@@ -466,13 +647,13 @@ function VideosPage() {
             </span>
           </h1>
           <p className="mx-auto mt-3 max-w-xl text-sm text-white/60">
-            Simulação em estilo Remotion — três episódios curtos mostrando as
+            Simulação em estilo Remotion — quatro episódios curtos mostrando as
             funcionalidades da plataforma em loop, com barra de progresso e
             micro-animações prontas para produção.
           </p>
         </header>
 
-        <section className="mt-14 grid gap-8 lg:grid-cols-3">
+        <section className="mt-14 grid gap-8 md:grid-cols-2 xl:grid-cols-2">
           {previews.map((p, i) => (
             <motion.div
               key={p.title}
