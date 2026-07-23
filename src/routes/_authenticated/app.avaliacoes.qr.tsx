@@ -37,7 +37,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Sparkles } from "lucide-react";
+
 
 import {
   listPosterDesigns, savePosterDesign, applyPosterDesign, deletePosterDesign,
