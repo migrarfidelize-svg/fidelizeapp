@@ -424,7 +424,7 @@ function Feed({ estId }: { estId: string }) {
                 <Link to="/app/avaliacoes/qr"><Sparkles className="h-3.5 w-3.5" /> Gerar QR Code</Link>
               </Button>
               <Button asChild size="sm" variant="outline">
-                <a href={`/avaliacoes/${estId}`} target="_blank" rel="noopener">Ver página pública</a>
+                <a href={`/avaliar/${estId}`} target="_blank" rel="noopener">Ver página pública</a>
               </Button>
             </div>
           </div>
@@ -560,7 +560,7 @@ function Settings({ estId }: { estId: string }) {
         </div>
         <div className="flex items-center justify-between rounded-lg border p-3 md:col-span-2">
           <div><div className="text-sm font-medium">Página pública de avaliações</div>
-            <div className="text-xs text-muted-foreground">Fica em <code>/avaliacoes/seu-slug</code>. Bom para SEO.</div></div>
+            <div className="text-xs text-muted-foreground">Fica em <code>/avaliar/seu-slug</code>. Bom para SEO.</div></div>
           <Switch checked={state.public_page_enabled} onCheckedChange={(v) => upd({ public_page_enabled: v })} />
         </div>
         <div className="space-y-2 md:col-span-2">
