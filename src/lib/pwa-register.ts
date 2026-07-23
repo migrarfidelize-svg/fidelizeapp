@@ -205,7 +205,7 @@ export async function ensurePwaRegistration(timeoutMs = SW_READY_TIMEOUT_MS): Pr
 
   // If a previous install attempt failed or a new SW is available, ask the
   // browser to re-check without blocking the permission click flow.
-  try { void registration.update(); } catch { /* noop */ }
+  void registration.update().catch(() => { /* noop */ });
 
   // If the SW is already active (any prior session), skip the ready race.
   if (registration.active) return registration;
