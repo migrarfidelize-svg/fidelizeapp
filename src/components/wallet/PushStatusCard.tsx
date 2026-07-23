@@ -12,6 +12,7 @@ import {
   Wifi,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ensurePwaRegistration } from "@/lib/pwa-register";
 import { VAPID_PUBLIC_KEY, urlBase64ToUint8Array } from "@/lib/vapid";
 import {
   subscribePushForAllMyCards,
@@ -59,7 +60,7 @@ export function PushStatusCard() {
       }
       setPermission(Notification.permission as PermState);
 
-      const reg = await navigator.serviceWorker.ready;
+      const reg = await ensurePwaRegistration();
       const sub = await reg.pushManager.getSubscription();
       setEndpoint(sub?.endpoint ?? null);
 
@@ -95,7 +96,7 @@ export function PushStatusCard() {
             : "Permissão não concedida.",
         );
       }
-      const reg = await navigator.serviceWorker.ready;
+      const reg = await ensurePwaRegistration();
       let sub = await reg.pushManager.getSubscription();
       if (!sub) {
         sub = await reg.pushManager.subscribe({
@@ -134,7 +135,7 @@ export function PushStatusCard() {
     setBusy("disable");
     setErrorMsg(null);
     try {
-      const reg = await navigator.serviceWorker.ready;
+      const reg = await ensurePwaRegistration();
       const sub = await reg.pushManager.getSubscription();
       if (sub) {
         await unsubscribeAll({ data: { endpoint: sub.endpoint } });

@@ -4,6 +4,7 @@ import { Bell, BellOff, Loader2, Smartphone, Share, Plus, Info, AlertTriangle } 
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ensurePwaRegistration } from "@/lib/pwa-register";
 import { VAPID_PUBLIC_KEY, urlBase64ToUint8Array } from "@/lib/vapid";
 import {
   subscribeCustomerPush,
@@ -93,7 +94,7 @@ export function PushOptIn({ token }: { token: string }) {
 
     (async () => {
       try {
-        const reg = await navigator.serviceWorker.ready;
+        const reg = await ensurePwaRegistration();
         const sub = await reg.pushManager.getSubscription();
         if (sub) {
           setEndpoint(sub.endpoint);
@@ -139,7 +140,7 @@ export function PushOptIn({ token }: { token: string }) {
       // Step 2: service worker
       let reg: ServiceWorkerRegistration;
       try {
-        reg = await navigator.serviceWorker.ready;
+        reg = await ensurePwaRegistration();
       } catch (e) {
         throw new Error(
           `SW_ERROR::O service worker não está ativo neste navegador. Recarregue a página e tente novamente. ${
@@ -229,7 +230,7 @@ export function PushOptIn({ token }: { token: string }) {
     setErrorMsg(null);
     setErrorHint(null);
     try {
-      const reg = await navigator.serviceWorker.ready;
+      const reg = await ensurePwaRegistration();
       const sub = await reg.pushManager.getSubscription();
       if (sub) {
         await unsubscribe({ data: { token, endpoint: sub.endpoint } });

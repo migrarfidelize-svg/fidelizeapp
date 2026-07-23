@@ -4,6 +4,7 @@ import { Bell, BellOff, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ensurePwaRegistration } from "@/lib/pwa-register";
 import { VAPID_PUBLIC_KEY, urlBase64ToUint8Array } from "@/lib/vapid";
 import {
   subscribePushForAllMyCards,
@@ -62,7 +63,7 @@ export function EnableNotificationsCard() {
 
     (async () => {
       try {
-        const reg = await navigator.serviceWorker.ready;
+        const reg = await ensurePwaRegistration();
         const sub = await reg.pushManager.getSubscription();
         if (sub) {
           const st = await getStatus({ data: { endpoint: sub.endpoint } });
@@ -111,7 +112,7 @@ export function EnableNotificationsCard() {
         }
         return;
       }
-      const reg = await navigator.serviceWorker.ready;
+      const reg = await ensurePwaRegistration();
       let sub = await reg.pushManager.getSubscription();
       if (!sub) {
         sub = await reg.pushManager.subscribe({
@@ -146,7 +147,7 @@ export function EnableNotificationsCard() {
   async function disable() {
     setBusy(true);
     try {
-      const reg = await navigator.serviceWorker.ready;
+      const reg = await ensurePwaRegistration();
       const sub = await reg.pushManager.getSubscription();
       if (sub) {
         await unsubscribeAll({ data: { endpoint: sub.endpoint } });
