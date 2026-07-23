@@ -1725,7 +1725,7 @@ function ReviewQrPage() {
                   onClick={async () => {
                     const preset = presetDialog.preset;
                     try {
-                      const name = `Design ${new Date().toLocaleString("pt-BR")}`;
+                      const name = buildDefaultDesignName(qrDest, cloudDesigns, designs);
                       setDesignName(name);
                       await saveCurrentDesignRef.current?.();
                     } finally {
