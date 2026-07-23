@@ -381,6 +381,20 @@ function ReviewQrPage() {
     return () => window.removeEventListener("qr-destination-changed", onChanged as EventListener);
   }, [est?.id, title, subtitle, ctaNearQR, ctaFooter, primaryLabel]);
 
+  // Load current QR destination for this establishment so the pre-defined
+  // public URL in the editor reflects the destination selected in the card.
+  const getQrDestFn = useServerFn(getQrDestinationStatus);
+  const qrDestQuery = useQuery({
+    queryKey: ["qr-destination", est?.id],
+    queryFn: () => getQrDestFn({ data: { establishment_id: est!.id } }),
+    enabled: !!est?.id,
+  });
+  useEffect(() => {
+    const d = qrDestQuery.data?.destination as QrDest | undefined;
+    if (d) setQrDest(d);
+  }, [qrDestQuery.data?.destination]);
+
+
 
 
   // Load persisted state (localStorage → IndexedDB fallback)
