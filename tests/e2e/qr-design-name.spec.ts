@@ -41,6 +41,7 @@ test.describe("QR editor — nomes automáticos de designs salvos", () => {
   for (const { dest, label } of CASES) {
     test(`destino ${dest} salva como "${label} 1" e "${label} 2"`, async ({ page }) => {
       await page.goto("/dev/qr-design-name");
+      await page.waitForLoadState("networkidle");
       await saveTwice(page, dest, label);
 
       const items = page.locator(`[data-testid="design-item"][data-dest="${dest}"]`);
