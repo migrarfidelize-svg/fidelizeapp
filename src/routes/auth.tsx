@@ -242,11 +242,10 @@ function AuthPage() {
             if (walletFlow && ((error.message || "").toLowerCase().includes("invalid"))) {
               // Cliente ainda não tem conta — leva direto ao cadastro mantendo o WhatsApp.
               toast.info("Não encontramos seu WhatsApp. Complete seu nome para criar sua conta.");
-              const url = new URL(window.location.href);
-              url.searchParams.set("mode", "signup");
-              window.location.assign(url.toString());
+              await router.navigate({ to: "/auth", search: { ...search, mode: "signup" }, replace: true });
               return;
             }
+
             throw error;
           }
         }
