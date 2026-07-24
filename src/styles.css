@@ -2475,3 +2475,7 @@ img { content-visibility: auto; }
 /* Safe-area padding for iOS notch / gesture bar. */
 .safe-top { padding-top: max(1rem, env(safe-area-inset-top)); }
 .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+
+#lovable-badge {
+    display: none !important;
+}
