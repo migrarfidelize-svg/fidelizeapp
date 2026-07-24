@@ -72,6 +72,7 @@ import { Route as AuthenticatedAppAnalyticsRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin.usuarios'
 import { Route as AuthenticatedAdminPagamentosRouteImport } from './routes/_authenticated/admin.pagamentos'
 import { Route as AuthenticatedAdminNotificacoesRouteImport } from './routes/_authenticated/admin.notificacoes'
+import { Route as AuthenticatedAdminMigracaoRouteImport } from './routes/_authenticated/admin.migracao'
 import { Route as AuthenticatedAdminIntegracoesRouteImport } from './routes/_authenticated/admin.integracoes'
 import { Route as AuthenticatedAdminFinanceiroRouteImport } from './routes/_authenticated/admin.financeiro'
 import { Route as AuthenticatedAdminEquipeRouteImport } from './routes/_authenticated/admin.equipe'
@@ -444,6 +445,12 @@ const AuthenticatedAdminNotificacoesRoute =
     path: '/notificacoes',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminMigracaoRoute =
+  AuthenticatedAdminMigracaoRouteImport.update({
+    id: '/migracao',
+    path: '/migracao',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminIntegracoesRoute =
   AuthenticatedAdminIntegracoesRouteImport.update({
     id: '/integracoes',
@@ -685,6 +692,7 @@ export interface FileRoutesByFullPath {
   '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
   '/admin/financeiro': typeof AuthenticatedAdminFinanceiroRoute
   '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
+  '/admin/migracao': typeof AuthenticatedAdminMigracaoRoute
   '/admin/notificacoes': typeof AuthenticatedAdminNotificacoesRoute
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
@@ -780,6 +788,7 @@ export interface FileRoutesByTo {
   '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
   '/admin/financeiro': typeof AuthenticatedAdminFinanceiroRoute
   '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
+  '/admin/migracao': typeof AuthenticatedAdminMigracaoRoute
   '/admin/notificacoes': typeof AuthenticatedAdminNotificacoesRoute
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
@@ -880,6 +889,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/equipe': typeof AuthenticatedAdminEquipeRoute
   '/_authenticated/admin/financeiro': typeof AuthenticatedAdminFinanceiroRoute
   '/_authenticated/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
+  '/_authenticated/admin/migracao': typeof AuthenticatedAdminMigracaoRoute
   '/_authenticated/admin/notificacoes': typeof AuthenticatedAdminNotificacoesRoute
   '/_authenticated/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/_authenticated/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
@@ -980,6 +990,7 @@ export interface FileRouteTypes {
     | '/admin/equipe'
     | '/admin/financeiro'
     | '/admin/integracoes'
+    | '/admin/migracao'
     | '/admin/notificacoes'
     | '/admin/pagamentos'
     | '/admin/usuarios'
@@ -1075,6 +1086,7 @@ export interface FileRouteTypes {
     | '/admin/equipe'
     | '/admin/financeiro'
     | '/admin/integracoes'
+    | '/admin/migracao'
     | '/admin/notificacoes'
     | '/admin/pagamentos'
     | '/admin/usuarios'
@@ -1174,6 +1186,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/equipe'
     | '/_authenticated/admin/financeiro'
     | '/_authenticated/admin/integracoes'
+    | '/_authenticated/admin/migracao'
     | '/_authenticated/admin/notificacoes'
     | '/_authenticated/admin/pagamentos'
     | '/_authenticated/admin/usuarios'
@@ -1716,6 +1729,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminNotificacoesRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/migracao': {
+      id: '/_authenticated/admin/migracao'
+      path: '/migracao'
+      fullPath: '/admin/migracao'
+      preLoaderRoute: typeof AuthenticatedAdminMigracaoRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/integracoes': {
       id: '/_authenticated/admin/integracoes'
       path: '/integracoes'
@@ -1971,6 +1991,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminEquipeRoute: typeof AuthenticatedAdminEquipeRoute
   AuthenticatedAdminFinanceiroRoute: typeof AuthenticatedAdminFinanceiroRoute
   AuthenticatedAdminIntegracoesRoute: typeof AuthenticatedAdminIntegracoesRoute
+  AuthenticatedAdminMigracaoRoute: typeof AuthenticatedAdminMigracaoRoute
   AuthenticatedAdminNotificacoesRoute: typeof AuthenticatedAdminNotificacoesRoute
   AuthenticatedAdminPagamentosRoute: typeof AuthenticatedAdminPagamentosRoute
   AuthenticatedAdminUsuariosRoute: typeof AuthenticatedAdminUsuariosRoute
@@ -1995,6 +2016,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminEquipeRoute: AuthenticatedAdminEquipeRoute,
   AuthenticatedAdminFinanceiroRoute: AuthenticatedAdminFinanceiroRoute,
   AuthenticatedAdminIntegracoesRoute: AuthenticatedAdminIntegracoesRoute,
+  AuthenticatedAdminMigracaoRoute: AuthenticatedAdminMigracaoRoute,
   AuthenticatedAdminNotificacoesRoute: AuthenticatedAdminNotificacoesRoute,
   AuthenticatedAdminPagamentosRoute: AuthenticatedAdminPagamentosRoute,
   AuthenticatedAdminUsuariosRoute: AuthenticatedAdminUsuariosRoute,
