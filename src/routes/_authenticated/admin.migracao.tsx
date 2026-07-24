@@ -9,9 +9,12 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/
 import {
   Download, Puzzle, FileText, Database, Server, Rocket, CheckCircle2,
   Copy, ExternalLink, ShieldCheck, Terminal, Globe, Sparkles, Users, Loader2,
+  FolderArchive,
 } from "lucide-react";
 import { toast } from "sonner";
 import { exportAuthUsersJson } from "@/lib/migration-export.functions";
+import { listStorageForMigration } from "@/lib/migration-storage.functions";
+import { zipSync, strToU8 } from "fflate";
 
 export const Route = createFileRoute("/_authenticated/admin/migracao")({
   head: () => ({
@@ -126,7 +129,10 @@ const VPS_STEPS = [
 function MigracaoPage() {
   const [copiedCmd, setCopiedCmd] = useState<string | null>(null);
   const [exportingUsers, setExportingUsers] = useState(false);
+  const [exportingStorage, setExportingStorage] = useState(false);
+  const [storageProgress, setStorageProgress] = useState<{ done: number; total: number } | null>(null);
   const exportUsersFn = useServerFn(exportAuthUsersJson);
+  const listStorageFn = useServerFn(listStorageForMigration);
 
   async function handleExportUsers() {
     setExportingUsers(true);
@@ -145,6 +151,69 @@ function MigracaoPage() {
       toast.error(`Falha: ${e.message}`);
     } finally {
       setExportingUsers(false);
+    }
+  }
+
+  async function handleExportStorage() {
+    setExportingStorage(true);
+    setStorageProgress(null);
+    try {
+      toast.info("Listando arquivos do Storage...");
+      const { files, count, totalBytes } = await listStorageFn();
+      if (!count) {
+        toast.warning("Nenhum arquivo encontrado nos buckets.");
+        return;
+      }
+      toast.info(`${count} arquivos (${(totalBytes / 1024 / 1024).toFixed(1)} MB). Baixando...`);
+      setStorageProgress({ done: 0, total: count });
+
+      // Baixa em paralelo (concorrência 6) para não sufocar
+      const zipEntries: Record<string, Uint8Array> = {};
+      let done = 0;
+      const concurrency = 6;
+      let idx = 0;
+      async function worker() {
+        while (idx < files.length) {
+          const i = idx++;
+          const f = files[i];
+          try {
+            const res = await fetch(f.signedUrl);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const buf = new Uint8Array(await res.arrayBuffer());
+            zipEntries[`${f.bucket}/${f.path}`] = buf;
+          } catch (e: any) {
+            console.warn(`Falha em ${f.bucket}/${f.path}:`, e.message);
+          }
+          done++;
+          setStorageProgress({ done, total: files.length });
+        }
+      }
+      await Promise.all(Array.from({ length: concurrency }, worker));
+
+      // Manifest para a extensão saber o que tem
+      zipEntries["_manifest.json"] = strToU8(JSON.stringify({
+        generated_at: new Date().toISOString(),
+        count,
+        totalBytes,
+        files: files.map((f) => ({ bucket: f.bucket, path: f.path, size: f.size })),
+      }, null, 2));
+
+      toast.info("Compactando ZIP...");
+      const zipped = zipSync(zipEntries, { level: 0 }); // store-only (já são binários)
+      const blob = new Blob([zipped as BlobPart], { type: "application/zip" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `storage-${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+      toast.success(`ZIP com ${count} arquivos baixado!`);
+    } catch (e: any) {
+      toast.error(`Falha: ${e.message}`);
+    } finally {
+      setExportingStorage(false);
+      setStorageProgress(null);
     }
   }
 
@@ -244,9 +313,62 @@ function MigracaoPage() {
         </Card>
       </section>
 
+      {/* EXPORT STORAGE ZIP */}
+      <section>
+        <Card className="relative overflow-hidden border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 via-blue-500/5 to-emerald-500/10">
+          <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-cyan-500/20 blur-3xl" />
+          <CardHeader className="relative">
+            <div className="flex items-start gap-3">
+              <div className="rounded-xl bg-cyan-500/15 p-3 text-cyan-500">
+                <FolderArchive className="h-5 w-5" />
+              </div>
+              <div className="flex-1">
+                <CardTitle className="flex items-center gap-2">
+                  Exportar arquivos do Storage
+                  <Badge variant="secondary">Opcional</Badge>
+                </CardTitle>
+                <CardDescription className="mt-1">
+                  Gera um <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">.zip</code> com pastas nomeadas por bucket
+                  (<code className="text-xs">logos/</code>, <code className="text-xs">promotions/</code>,{" "}
+                  <code className="text-xs">ticket-attachments/</code>, <code className="text-xs">poster-print-orders/</code>).
+                  Alimente-o na aba <b>2. Arquivos</b> da extensão — ela vai fazer upload de cada arquivo no bucket certo do destino.
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="relative">
+            <Button
+              onClick={handleExportStorage}
+              disabled={exportingStorage}
+              className="w-full md:w-auto bg-cyan-500 hover:bg-cyan-600 text-white"
+            >
+              {exportingStorage ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {storageProgress
+                    ? `Baixando ${storageProgress.done}/${storageProgress.total}...`
+                    : "Listando arquivos..."}
+                </>
+              ) : (
+                <><Download className="mr-2 h-4 w-4" /> Exportar Storage como ZIP</>
+              )}
+            </Button>
+            {storageProgress && (
+              <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full bg-cyan-500 transition-all"
+                  style={{ width: `${(storageProgress.done / storageProgress.total) * 100}%` }}
+                />
+              </div>
+            )}
+            <p className="mt-3 text-xs text-muted-foreground">
+              🔒 Apenas super admin. Os arquivos são baixados via URLs assinadas (7 dias) direto do seu navegador — nada trafega por outro servidor.
+              Inclui um <code className="rounded bg-muted px-1 text-xs">_manifest.json</code> no root do ZIP.
+            </p>
+          </CardContent>
+        </Card>
+      </section>
 
-
-      {/* PASSO A PASSO */}
       <section>
         <Tabs defaultValue="extensao" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
