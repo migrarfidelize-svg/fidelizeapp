@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Fidelize Migrator</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0b0f1a;
+      --panel: #111827;
+      --panel-2: #0f172a;
+      --border: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --cyan: #22d3ee;
+      --cyan-2: #06b6d4;
+      --magenta: #d946ef;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --err: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text);
+      font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif; }
+    body { width: 460px; max-height: 620px; overflow-y: auto; }
+    header {
+      padding: 14px 16px; border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(34,211,238,.12), rgba(217,70,239,.12));
+    }
+    header h1 { margin: 0; font-size: 15px; font-weight: 700; letter-spacing:.2px; }
+    header p { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
+    .tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--panel-2); }
+    .tab { flex: 1; padding: 9px 8px; text-align: center; cursor: pointer; font-size: 12px; color: var(--muted); border-bottom: 2px solid transparent; }
+    .tab.active { color: var(--cyan); border-color: var(--cyan); background: rgba(34,211,238,.06); }
+    section { padding: 14px 16px; display: none; }
+    section.active { display: block; }
+    label { display:block; font-size: 11px; color: var(--muted); margin: 10px 0 4px; text-transform: uppercase; letter-spacing:.4px; }
+    input[type=text], input[type=password], input[type=url], textarea, select {
+      width: 100%; background: var(--panel); border: 1px solid var(--border); color: var(--text);
+      border-radius: 8px; padding: 8px 10px; font-size: 12px; outline: none;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--cyan); }
+    textarea { min-height: 70px; resize: vertical; font-family: ui-monospace, Menlo, monospace; }
+    .row { display: flex; gap: 8px; }
+    .row > * { flex: 1; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      background: var(--cyan-2); color: #0b0f1a; border: 0; border-radius: 8px;
+      padding: 9px 12px; font-weight: 700; font-size: 12px; cursor: pointer; width: 100%;
+    }
+    .btn:hover { background: var(--cyan); }
+    .btn.secondary { background: var(--panel); color: var(--text); border: 1px solid var(--border); }
+    .btn.danger { background: #7f1d1d; color: #fff; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn + .btn { margin-top: 8px; }
+    .hint { color: var(--muted); font-size: 11px; margin-top: 6px; line-height: 1.5; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-top: 10px; }
+    .status { display:flex; align-items:center; gap:6px; font-size: 12px; }
+    .dot { width:8px; height:8px; border-radius:50%; background: var(--muted); }
+    .dot.ok { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+    .dot.err { background: var(--err); box-shadow: 0 0 8px var(--err); }
+    .log { background:#000; color:#a7f3d0; border-radius:8px; padding:10px; height:180px; overflow:auto;
+      font: 11px/1.4 ui-monospace, Menlo, monospace; margin-top: 10px; white-space:pre-wrap; }
+    .log .err { color:#fca5a5; }
+    .log .warn { color:#fcd34d; }
+    .log .ok { color:#86efac; }
+    .step { display:flex; justify-content: space-between; padding:6px 0; border-bottom:1px dashed var(--border); font-size: 12px;}
+    .step:last-child { border: 0; }
+    .step .k { color: var(--muted); }
+    .step .v { font-weight: 600; }
+    .badge { display:inline-block; padding:2px 6px; border-radius:6px; font-size:10px; }
+    .badge.wait { background:#374151; color:#d1d5db; }
+    .badge.run { background:#164e63; color:#67e8f9; }
+    .badge.ok { background:#14532d; color:#86efac; }
+    .badge.err { background:#7f1d1d; color:#fecaca; }
+    footer { padding: 10px 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 11px; text-align:center; }
+    a { color: var(--cyan); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🚀 Fidelize Migrator</h1>
+    <p>Migração assistida para o seu Supabase (VPS)</p>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="conn">1. Destino</div>
+    <div class="tab" data-tab="files">2. Arquivos</div>
+    <div class="tab" data-tab="run">3. Migrar</div>
+  </div>
+
+  <!-- CONEXÃO -->
+  <section id="tab-conn" class="active">
+    <div class="card">
+      <div class="status"><span id="destDot" class="dot"></span><span id="destStatus">Não testado</span></div>
+    </div>
+
+    <label>URL do Supabase de destino</label>
+    <input id="destUrl" type="url" placeholder="https://xxxx.supabase.co" />
+
+    <label>Service Role Key (destino)</label>
+    <input id="destKey" type="password" placeholder="eyJhbGciOi... (JWT service_role)" />
+    <div class="hint">Encontrada em <b>Project Settings → API</b> do novo Supabase. Nunca exponha essa chave no navegador em produção — a extensão a usa apenas localmente.</div>
+
+    <label>Senha do banco (opcional — para migrar auth.users com hash)</label>
+    <input id="destDbPass" type="password" placeholder="senha do banco Postgres" />
+    <div class="hint">Só é usada para gerar o comando <code>psql</code> mostrado no final. A extensão em si NÃO conecta direto no Postgres.</div>
+
+    <button id="testDest" class="btn">Testar conexão</button>
+    <button id="saveDest" class="btn secondary">Salvar</button>
+  </section>
+
+  <!-- ARQUIVOS -->
+  <section id="tab-files">
+    <div class="card">
+      <div class="step"><span class="k">📄 Dump SQL (schema + dados)</span><span id="sqlStatus" class="badge wait">pendente</span></div>
+      <div class="step"><span class="k">👥 auth.users (JSON)</span><span id="usersStatus" class="badge wait">opcional</span></div>
+      <div class="step"><span class="k">🗂️ Arquivos Storage (ZIP)</span><span id="storageStatus" class="badge wait">opcional</span></div>
+    </div>
+
+    <label>Dump SQL do banco (obrigatório)</label>
+    <input id="sqlFile" type="file" accept=".sql,.txt" />
+    <div class="hint">Exporte em <b>Cloud → Advanced settings → Export data</b> do Lovable. Salve como <code>.sql</code>.</div>
+
+    <label>Export de usuários (opcional)</label>
+    <input id="usersFile" type="file" accept=".json" />
+    <div class="hint">JSON array de <code>auth.users</code>. Sem isso, ninguém consegue logar no destino. Gere via API Admin do Supabase de origem.</div>
+
+    <label>Arquivos Storage (opcional)</label>
+    <input id="storageZip" type="file" accept=".zip" />
+    <div class="hint">ZIP com pastas nomeadas por bucket. Ex.: <code>logos/uuid.png</code>, <code>promotions/xxx.jpg</code>. Buckets: <b>logos, promotions, ticket-attachments, poster-print-orders</b>.</div>
+  </section>
+
+  <!-- MIGRAÇÃO -->
+  <section id="tab-run">
+    <div class="card">
+      <div class="step"><span class="k">1. Verificar conexão</span><span id="s1" class="badge wait">aguardando</span></div>
+      <div class="step"><span class="k">2. Criar buckets</span><span id="s2" class="badge wait">aguardando</span></div>
+      <div class="step"><span class="k">3. Executar SQL</span><span id="s3" class="badge wait">aguardando</span></div>
+      <div class="step"><span class="k">4. Importar usuários</span><span id="s4" class="badge wait">aguardando</span></div>
+      <div class="step"><span class="k">5. Enviar arquivos</span><span id="s5" class="badge wait">aguardando</span></div>
+      <div class="step"><span class="k">6. Validação final</span><span id="s6" class="badge wait">aguardando</span></div>
+    </div>
+
+    <button id="runBtn" class="btn">▶️  Iniciar migração</button>
+    <button id="dryBtn" class="btn secondary">🧪 Simular (dry-run)</button>
+    <button id="clearBtn" class="btn secondary">Limpar log</button>
+
+    <div id="log" class="log">> Pronto. Configure destino, escolha arquivos e clique em Iniciar.\n</div>
+
+    <div class="hint" style="margin-top:8px">
+      💡 Se o dump SQL for grande (>5MB) ou usar extensões que exigem <code>SUPERUSER</code>,
+      execute-o manualmente com <code>psql</code> — a extensão gera o comando pronto no log.
+    </div>
+  </section>
+
+  <footer>Fidelize • Migração privada • Nenhum dado sai da sua máquina</footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>
