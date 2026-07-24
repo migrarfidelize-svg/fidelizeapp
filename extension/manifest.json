@@ -1,17 +1,33 @@
 {
   "manifest_version": 3,
   "name": "Fidelize Migrator",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Migra o banco de dados, usuários (auth) e arquivos de Storage do Fidelize (Lovable Cloud) para um projeto Supabase próprio (VPS).",
-  "permissions": ["storage"],
+  "permissions": ["storage", "scripting", "activeTab"],
   "host_permissions": [
     "https://*.supabase.co/*",
-    "https://*.supabase.in/*"
+    "https://*.supabase.in/*",
+    "http://*/*",
+    "https://*/*"
   ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": "icon.png",
     "default_title": "Fidelize Migrator"
   },
-  "icons": { "48": "icon.png", "128": "icon.png" }
+  "icons": { "48": "icon.png", "128": "icon.png" },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["popup.html", "popup.js", "icon.png"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
