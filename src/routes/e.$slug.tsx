@@ -438,7 +438,7 @@ function PromoRow({
               {current.type === "video" ? (
                 <video src={current.url ?? undefined} className="h-full w-full object-contain" controls playsInline />
               ) : (
-                <img src={current.url ?? undefined} alt="" className="h-full w-full object-cover" />
+                <img src={current.url ?? undefined} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
               )}
               {media.length > 1 && (
                 <>
