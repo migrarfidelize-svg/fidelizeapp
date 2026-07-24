@@ -154,6 +154,69 @@ function MigracaoPage() {
     }
   }
 
+  async function handleExportStorage() {
+    setExportingStorage(true);
+    setStorageProgress(null);
+    try {
+      toast.info("Listando arquivos do Storage...");
+      const { files, count, totalBytes } = await listStorageFn();
+      if (!count) {
+        toast.warning("Nenhum arquivo encontrado nos buckets.");
+        return;
+      }
+      toast.info(`${count} arquivos (${(totalBytes / 1024 / 1024).toFixed(1)} MB). Baixando...`);
+      setStorageProgress({ done: 0, total: count });
+
+      // Baixa em paralelo (concorrência 6) para não sufocar
+      const zipEntries: Record<string, Uint8Array> = {};
+      let done = 0;
+      const concurrency = 6;
+      let idx = 0;
+      async function worker() {
+        while (idx < files.length) {
+          const i = idx++;
+          const f = files[i];
+          try {
+            const res = await fetch(f.signedUrl);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const buf = new Uint8Array(await res.arrayBuffer());
+            zipEntries[`${f.bucket}/${f.path}`] = buf;
+          } catch (e: any) {
+            console.warn(`Falha em ${f.bucket}/${f.path}:`, e.message);
+          }
+          done++;
+          setStorageProgress({ done, total: files.length });
+        }
+      }
+      await Promise.all(Array.from({ length: concurrency }, worker));
+
+      // Manifest para a extensão saber o que tem
+      zipEntries["_manifest.json"] = strToU8(JSON.stringify({
+        generated_at: new Date().toISOString(),
+        count,
+        totalBytes,
+        files: files.map((f) => ({ bucket: f.bucket, path: f.path, size: f.size })),
+      }, null, 2));
+
+      toast.info("Compactando ZIP...");
+      const zipped = zipSync(zipEntries, { level: 0 }); // store-only (já são binários)
+      const blob = new Blob([zipped as BlobPart], { type: "application/zip" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `storage-${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+      toast.success(`ZIP com ${count} arquivos baixado!`);
+    } catch (e: any) {
+      toast.error(`Falha: ${e.message}`);
+    } finally {
+      setExportingStorage(false);
+      setStorageProgress(null);
+    }
+  }
+
 
 
   return (
