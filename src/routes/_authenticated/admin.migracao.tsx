@@ -313,9 +313,62 @@ function MigracaoPage() {
         </Card>
       </section>
 
+      {/* EXPORT STORAGE ZIP */}
+      <section>
+        <Card className="relative overflow-hidden border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 via-blue-500/5 to-emerald-500/10">
+          <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-cyan-500/20 blur-3xl" />
+          <CardHeader className="relative">
+            <div className="flex items-start gap-3">
+              <div className="rounded-xl bg-cyan-500/15 p-3 text-cyan-500">
+                <FolderArchive className="h-5 w-5" />
+              </div>
+              <div className="flex-1">
+                <CardTitle className="flex items-center gap-2">
+                  Exportar arquivos do Storage
+                  <Badge variant="secondary">Opcional</Badge>
+                </CardTitle>
+                <CardDescription className="mt-1">
+                  Gera um <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">.zip</code> com pastas nomeadas por bucket
+                  (<code className="text-xs">logos/</code>, <code className="text-xs">promotions/</code>,{" "}
+                  <code className="text-xs">ticket-attachments/</code>, <code className="text-xs">poster-print-orders/</code>).
+                  Alimente-o na aba <b>2. Arquivos</b> da extensão — ela vai fazer upload de cada arquivo no bucket certo do destino.
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="relative">
+            <Button
+              onClick={handleExportStorage}
+              disabled={exportingStorage}
+              className="w-full md:w-auto bg-cyan-500 hover:bg-cyan-600 text-white"
+            >
+              {exportingStorage ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {storageProgress
+                    ? `Baixando ${storageProgress.done}/${storageProgress.total}...`
+                    : "Listando arquivos..."}
+                </>
+              ) : (
+                <><Download className="mr-2 h-4 w-4" /> Exportar Storage como ZIP</>
+              )}
+            </Button>
+            {storageProgress && (
+              <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full bg-cyan-500 transition-all"
+                  style={{ width: `${(storageProgress.done / storageProgress.total) * 100}%` }}
+                />
+              </div>
+            )}
+            <p className="mt-3 text-xs text-muted-foreground">
+              🔒 Apenas super admin. Os arquivos são baixados via URLs assinadas (7 dias) direto do seu navegador — nada trafega por outro servidor.
+              Inclui um <code className="rounded bg-muted px-1 text-xs">_manifest.json</code> no root do ZIP.
+            </p>
+          </CardContent>
+        </Card>
+      </section>
 
-
-      {/* PASSO A PASSO */}
       <section>
         <Tabs defaultValue="extensao" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
