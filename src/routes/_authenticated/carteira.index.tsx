@@ -477,7 +477,7 @@ export function WalletCard({ item }: { item: WalletItem }) {
           style={{ color: est.primary_color || undefined }}
         >
           {est.logo_url ? (
-            <img src={est.logo_url} alt={est.name} className="h-full w-full object-cover" />
+            <img src={est.logo_url} alt={est.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
           ) : (
             est.name.slice(0, 2)
           )}

@@ -351,7 +351,7 @@ function PromocoesPage() {
                       playsInline
                     />
                   ) : (
-                    <img src={p.media[0].url} alt="" className="h-full w-full object-cover" />
+                    <img src={p.media[0].url} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                   )
                 ) : (
                   <div className="grid h-full w-full place-items-center text-muted-foreground">
