@@ -1,10 +1,10 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
-import { Coffee, Check, ArrowRight, Sparkles, Wifi, Store, User } from "lucide-react";
+import { Coffee, Check, ArrowRight, Sparkles, Wifi, Store, User, Loader2 } from "lucide-react";
 import { claimCustomerByToken, attachEstablishmentBySlug } from "@/lib/my-wallet.functions";
 
 const AUTH_SYNC_CHANNEL = "fidelize-auth-sync";
@@ -20,12 +20,6 @@ function notifyAuthSync(type: "SIGNED_IN" | "SIGNED_UP") {
   } catch {}
 }
 
-async function completeAuthRedirect(to: string, type: "SIGNED_IN" | "SIGNED_UP") {
-  notifyAuthSync(type);
-  await supabase.auth.getSession();
-  const url = new URL(to, window.location.origin);
-  window.location.assign(url.toString());
-}
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup"]).default("signin"),
