@@ -98,8 +98,10 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const search = Route.useSearch();
+  const router = useRouter();
   const { mode } = search;
   const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -110,6 +112,18 @@ function AuthPage() {
   const [role, setRole] = useState<"customer" | "establishment">(
     search.as ?? (search.claim || search.est_slug || search.source === "pwa" ? "customer" : "establishment"),
   );
+
+  async function completeAuthRedirect(to: string, type: "SIGNED_IN" | "SIGNED_UP") {
+    notifyAuthSync(type);
+    // Garante que a sessão está hidratada antes do guard do /_authenticated rodar.
+    await supabase.auth.getSession();
+    setRedirecting(true);
+    // Invalida caches de rota (loaders/beforeLoad) para o próximo destino recomputar auth.
+    try { await router.invalidate(); } catch {}
+    // SPA navigation — sem reload de página inteira, evita o flash de telas anteriores.
+    await router.navigate({ to, replace: true });
+  }
+
 
 
   const isSignup = mode === "signup";
