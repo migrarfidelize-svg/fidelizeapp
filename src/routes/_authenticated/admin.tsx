@@ -79,6 +79,7 @@ const NAV_GROUPS: NavGroup[] = [
     icon: Cog,
     items: [
       { to: "/admin/integracoes", label: "Integrações", icon: Plug },
+      { to: "/admin/migracao", label: "Migração & Downloads", icon: Rocket },
       { to: "/admin/config", label: "Configurações", icon: Settings },
     ],
   },
