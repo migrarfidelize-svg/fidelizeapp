@@ -1,10 +1,10 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
-import { Coffee, Check, ArrowRight, Sparkles, Wifi, Store, User } from "lucide-react";
+import { Coffee, Check, ArrowRight, Sparkles, Wifi, Store, User, Loader2 } from "lucide-react";
 import { claimCustomerByToken, attachEstablishmentBySlug } from "@/lib/my-wallet.functions";
 
 const AUTH_SYNC_CHANNEL = "fidelize-auth-sync";
@@ -20,12 +20,6 @@ function notifyAuthSync(type: "SIGNED_IN" | "SIGNED_UP") {
   } catch {}
 }
 
-async function completeAuthRedirect(to: string, type: "SIGNED_IN" | "SIGNED_UP") {
-  notifyAuthSync(type);
-  await supabase.auth.getSession();
-  const url = new URL(to, window.location.origin);
-  window.location.assign(url.toString());
-}
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup"]).default("signin"),
@@ -104,8 +98,10 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const search = Route.useSearch();
+  const router = useRouter();
   const { mode } = search;
   const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -116,6 +112,18 @@ function AuthPage() {
   const [role, setRole] = useState<"customer" | "establishment">(
     search.as ?? (search.claim || search.est_slug || search.source === "pwa" ? "customer" : "establishment"),
   );
+
+  async function completeAuthRedirect(to: string, type: "SIGNED_IN" | "SIGNED_UP") {
+    notifyAuthSync(type);
+    // Garante que a sessão está hidratada antes do guard do /_authenticated rodar.
+    await supabase.auth.getSession();
+    setRedirecting(true);
+    // Invalida caches de rota (loaders/beforeLoad) para o próximo destino recomputar auth.
+    try { await router.invalidate(); } catch {}
+    // SPA navigation — sem reload de página inteira, evita o flash de telas anteriores.
+    await router.navigate({ to, replace: true });
+  }
+
 
 
   const isSignup = mode === "signup";
@@ -234,11 +242,10 @@ function AuthPage() {
             if (walletFlow && ((error.message || "").toLowerCase().includes("invalid"))) {
               // Cliente ainda não tem conta — leva direto ao cadastro mantendo o WhatsApp.
               toast.info("Não encontramos seu WhatsApp. Complete seu nome para criar sua conta.");
-              const url = new URL(window.location.href);
-              url.searchParams.set("mode", "signup");
-              window.location.assign(url.toString());
+              await router.navigate({ to: "/auth", search: { ...search, mode: "signup" }, replace: true });
               return;
             }
+
             throw error;
           }
         }
@@ -257,10 +264,19 @@ function AuthPage() {
 
   return (
     <div className="auth-cinema relative min-h-screen w-full overflow-hidden bg-[oklch(0.14_0.02_230)] px-6 py-10">
+      {/* Overlay de transição — cobre a tela durante o redirect pós-login para eliminar qualquer flash de telas anteriores. */}
+      {redirecting && (
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-4 bg-[oklch(0.14_0.02_230)] animate-in fade-in duration-150">
+          <div className="pointer-events-none absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#00ffff]/8 blur-[120px]" />
+          <Loader2 className="h-10 w-10 animate-spin text-[#00ffff]" />
+          <div className="text-xs uppercase tracking-[0.3em] text-white/60">Carregando seu painel…</div>
+        </div>
+      )}
       {/* Ambient glows */}
       <div className="pointer-events-none absolute left-1/2 top-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#00ffff]/5 blur-[120px]" />
       <div className="pointer-events-none absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-[oklch(0.78_0.19_330)]/10 blur-[100px]" />
       <div className="pointer-events-none absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(#00ffff 1px, transparent 1px), linear-gradient(90deg, #00ffff 1px, transparent 1px)", backgroundSize: "100px 100px" }} />
+
 
       {/* Top bar */}
       <div className="relative z-10 mx-auto flex max-w-6xl items-center justify-between">
