@@ -60,10 +60,35 @@ export function GreetingVoice({ gender, scope }: Props) {
     (async () => {
       try {
         const res = await speak({ data: { text, voice, instructions } });
+
+        // Fallback: Web Speech API nativa (100% independente, sem custo, sem API externa)
+        if (!res.audio && "speechSynthesis" in window) {
+          const utter = new SpeechSynthesisUtterance(text);
+          utter.lang = "pt-BR";
+          utter.rate = 0.95;
+          utter.pitch = gender === "female" ? 1.15 : 0.85;
+          utter.volume = 0.9;
+          const voices = window.speechSynthesis.getVoices();
+          const ptVoice = voices.find(
+            (v) =>
+              v.lang.startsWith("pt") &&
+              (gender === "female" ? /female|mulher|luciana|joana/i.test(v.name) : /male|homem|daniel|felipe/i.test(v.name)),
+          ) || voices.find((v) => v.lang.startsWith("pt"));
+          if (ptVoice) utter.voice = ptVoice;
+          const play = () => window.speechSynthesis.speak(utter);
+          try {
+            play();
+          } catch {
+            window.addEventListener("pointerdown", play, { once: true });
+          }
+          sessionStorage.setItem(key, "1");
+          return;
+        }
+
+        if (!res.audio) return;
         const audio = new Audio(`data:${res.mime};base64,${res.audio}`);
         audio.volume = 0.9;
         await audio.play().catch(() => {
-          // autoplay blocked — play on next user interaction
           const resume = () => {
             audio.play().catch(() => {});
             window.removeEventListener("pointerdown", resume);
@@ -77,6 +102,7 @@ export function GreetingVoice({ gender, scope }: Props) {
         /* silent */
       }
     })();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
