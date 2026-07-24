@@ -129,7 +129,10 @@ const VPS_STEPS = [
 function MigracaoPage() {
   const [copiedCmd, setCopiedCmd] = useState<string | null>(null);
   const [exportingUsers, setExportingUsers] = useState(false);
+  const [exportingStorage, setExportingStorage] = useState(false);
+  const [storageProgress, setStorageProgress] = useState<{ done: number; total: number } | null>(null);
   const exportUsersFn = useServerFn(exportAuthUsersJson);
+  const listStorageFn = useServerFn(listStorageForMigration);
 
   async function handleExportUsers() {
     setExportingUsers(true);
