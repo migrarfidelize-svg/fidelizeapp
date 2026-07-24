@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,9 +8,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import {
   Download, Puzzle, FileText, Database, Server, Rocket, CheckCircle2,
-  Copy, ExternalLink, ShieldCheck, Terminal, Globe, Sparkles,
+  Copy, ExternalLink, ShieldCheck, Terminal, Globe, Sparkles, Users, Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { exportAuthUsersJson } from "@/lib/migration-export.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/migracao")({
   head: () => ({
@@ -123,6 +125,30 @@ const VPS_STEPS = [
 
 function MigracaoPage() {
   const [copiedCmd, setCopiedCmd] = useState<string | null>(null);
+  const [exportingUsers, setExportingUsers] = useState(false);
+  const exportUsersFn = useServerFn(exportAuthUsersJson);
+
+  async function handleExportUsers() {
+    setExportingUsers(true);
+    try {
+      const res = await exportUsersFn();
+      const blob = new Blob([JSON.stringify(res.users, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `auth-users-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+      toast.success(`${res.count} usuários exportados!`);
+    } catch (e: any) {
+      toast.error(`Falha: ${e.message}`);
+    } finally {
+      setExportingUsers(false);
+    }
+  }
+
+
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 space-y-8">
@@ -176,6 +202,49 @@ function MigracaoPage() {
           ))}
         </div>
       </section>
+
+      {/* EXPORT AUTH USERS */}
+      <section>
+        <Card className="relative overflow-hidden border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-500/10 via-purple-500/5 to-cyan-500/10">
+          <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-fuchsia-500/20 blur-3xl" />
+          <CardHeader className="relative">
+            <div className="flex items-start gap-3">
+              <div className="rounded-xl bg-fuchsia-500/15 p-3 text-fuchsia-500">
+                <Users className="h-5 w-5" />
+              </div>
+              <div className="flex-1">
+                <CardTitle className="flex items-center gap-2">
+                  Exportar usuários (auth.users)
+                  <Badge variant="secondary">Recomendado</Badge>
+                </CardTitle>
+                <CardDescription className="mt-1">
+                  Gera um <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">.json</code> com todos os
+                  usuários (email, telefone, metadata e hash de senha). Sem este arquivo, ninguém consegue logar no destino.
+                  Alimente-o na aba <b>2. Arquivos</b> da extensão.
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="relative">
+            <Button
+              onClick={handleExportUsers}
+              disabled={exportingUsers}
+              className="w-full md:w-auto bg-fuchsia-500 hover:bg-fuchsia-600 text-white"
+            >
+              {exportingUsers ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gerando JSON...</>
+              ) : (
+                <><Download className="mr-2 h-4 w-4" /> Exportar auth.users como JSON</>
+              )}
+            </Button>
+            <p className="mt-3 text-xs text-muted-foreground">
+              🔒 Apenas super admin. O hash bcrypt é preservado — os usuários continuarão logando com a mesma senha no destino.
+            </p>
+          </CardContent>
+        </Card>
+      </section>
+
+
 
       {/* PASSO A PASSO */}
       <section>
