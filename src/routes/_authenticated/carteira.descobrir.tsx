@@ -244,7 +244,7 @@ function DiscoverRow({
           style={{ color: brand }}
         >
           {e.logo_url ? (
-            <img src={e.logo_url} alt="" className="h-full w-full object-cover" />
+            <img src={e.logo_url} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
           ) : (
             e.name.slice(0, 2)
           )}
