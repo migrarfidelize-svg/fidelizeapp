@@ -9,9 +9,12 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/
 import {
   Download, Puzzle, FileText, Database, Server, Rocket, CheckCircle2,
   Copy, ExternalLink, ShieldCheck, Terminal, Globe, Sparkles, Users, Loader2,
+  FolderArchive,
 } from "lucide-react";
 import { toast } from "sonner";
 import { exportAuthUsersJson } from "@/lib/migration-export.functions";
+import { listStorageForMigration } from "@/lib/migration-storage.functions";
+import { zipSync, strToU8 } from "fflate";
 
 export const Route = createFileRoute("/_authenticated/admin/migracao")({
   head: () => ({
