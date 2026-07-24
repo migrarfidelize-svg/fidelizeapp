@@ -15,6 +15,7 @@ import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as PreviewDockRouteImport } from './routes/preview-dock'
 import { Route as PrecosRouteImport } from './routes/precos'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as BaixarMigratorRouteImport } from './routes/baixar-migrator'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -134,6 +135,11 @@ const PrecosRoute = PrecosRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BaixarMigratorRoute = BaixarMigratorRouteImport.update({
+  id: '/baixar-migrator',
+  path: '/baixar-migrator',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -641,6 +647,7 @@ const ApiPublicRQrSlugDestRoute = ApiPublicRQrSlugDestRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/baixar-migrator': typeof BaixarMigratorRoute
   '/onboarding': typeof OnboardingRoute
   '/precos': typeof PrecosRoute
   '/preview-dock': typeof PreviewDockRoute
@@ -738,6 +745,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/baixar-migrator': typeof BaixarMigratorRoute
   '/onboarding': typeof OnboardingRoute
   '/precos': typeof PrecosRoute
   '/preview-dock': typeof PreviewDockRoute
@@ -834,6 +842,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
+  '/baixar-migrator': typeof BaixarMigratorRoute
   '/onboarding': typeof OnboardingRoute
   '/precos': typeof PrecosRoute
   '/preview-dock': typeof PreviewDockRoute
@@ -933,6 +942,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/baixar-migrator'
     | '/onboarding'
     | '/precos'
     | '/preview-dock'
@@ -1030,6 +1040,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/baixar-migrator'
     | '/onboarding'
     | '/precos'
     | '/preview-dock'
@@ -1125,6 +1136,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/baixar-migrator'
     | '/onboarding'
     | '/precos'
     | '/preview-dock'
@@ -1224,6 +1236,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
+  BaixarMigratorRoute: typeof BaixarMigratorRoute
   OnboardingRoute: typeof OnboardingRoute
   PrecosRoute: typeof PrecosRoute
   PreviewDockRoute: typeof PreviewDockRoute
@@ -1302,6 +1315,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/baixar-migrator': {
+      id: '/baixar-migrator'
+      path: '/baixar-migrator'
+      fullPath: '/baixar-migrator'
+      preLoaderRoute: typeof BaixarMigratorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -2119,6 +2139,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
+  BaixarMigratorRoute: BaixarMigratorRoute,
   OnboardingRoute: OnboardingRoute,
   PrecosRoute: PrecosRoute,
   PreviewDockRoute: PreviewDockRoute,
