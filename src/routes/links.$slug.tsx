@@ -133,7 +133,7 @@ function PublicLinkTreePage() {
     <div className="min-h-dvh w-full" style={{ background: bg, color: text }}>
       {cover && (
         <div className="h-40 w-full overflow-hidden">
-          <img src={cover} alt="" className="h-full w-full object-cover opacity-60" />
+          <img src={cover} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover opacity-60" />
         </div>
       )}
       <div className="mx-auto max-w-md px-5 pb-16 pt-8 text-center">
