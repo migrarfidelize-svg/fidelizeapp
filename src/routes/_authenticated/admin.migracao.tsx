@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,9 +8,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import {
   Download, Puzzle, FileText, Database, Server, Rocket, CheckCircle2,
-  Copy, ExternalLink, ShieldCheck, Terminal, Globe, Sparkles,
+  Copy, ExternalLink, ShieldCheck, Terminal, Globe, Sparkles, Users, Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { exportAuthUsersJson } from "@/lib/migration-export.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/migracao")({
   head: () => ({
@@ -123,6 +125,30 @@ const VPS_STEPS = [
 
 function MigracaoPage() {
   const [copiedCmd, setCopiedCmd] = useState<string | null>(null);
+  const [exportingUsers, setExportingUsers] = useState(false);
+  const exportUsersFn = useServerFn(exportAuthUsersJson);
+
+  async function handleExportUsers() {
+    setExportingUsers(true);
+    try {
+      const res = await exportUsersFn();
+      const blob = new Blob([JSON.stringify(res.users, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `auth-users-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+      toast.success(`${res.count} usuários exportados!`);
+    } catch (e: any) {
+      toast.error(`Falha: ${e.message}`);
+    } finally {
+      setExportingUsers(false);
+    }
+  }
+
+
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 space-y-8">
