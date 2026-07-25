@@ -140,8 +140,18 @@ function NotifPage() {
     enabled: !!activeEst?.id,
   });
 
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
   // Debounced segment preview
-  const [previewCount, setPreviewCount] = useState<{ customers: number; subscribers: number; operators?: number } | null>(null);
+  type PreviewData = {
+    customers: number;
+    subscribers: number;
+    operators?: number;
+    reachable_customers?: number;
+    without_device?: number;
+    sample?: Array<{ id: string; name: string | null; phone: string | null; tier: string | null }>;
+  };
+  const [previewCount, setPreviewCount] = useState<PreviewData | null>(null);
   useEffect(() => {
     if (!activeEst?.id) return;
     const t = setTimeout(async () => {
