@@ -14,7 +14,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock, Wallet2,
   UsersRound, Settings, Mail, FileText, ListChecks, LifeBuoy, Package,
-  DollarSign, Wallet, Megaphone, Cog, BookOpen, Menu, Star, Plug, Rocket, FileJson,
+  DollarSign, Wallet, Megaphone, Cog, BookOpen, Menu, Star, Plug, Rocket, FileJson, KeyRound,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
