@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Palette, Check, ImageIcon, Trash2, ExternalLink, Loader2 } from "lucide-react";
 
 import { getMyEstablishments } from "@/lib/loyalty.functions";
-import { getMyMenuOverview, updateMenuTheme } from "@/lib/menu.functions";
+import { getMyMenuOverview, updateMenuTheme, listMenuItems } from "@/lib/menu.functions";
 import {
   MENU_PRESETS, MENU_LAYOUTS, MENU_PATTERNS, resolveMenuTheme, menuBackgroundCss,
   type MenuLayoutId, type MenuPatternId, type MenuPresetId, type MenuPreset,
@@ -38,12 +38,21 @@ function MenuAppearancePage() {
   const saveTheme = useServerFn(updateMenuTheme);
 
   const ests = useQuery({ queryKey: ["my-establishments"], queryFn: () => fetchEsts() });
-  const est = ests.data?.[0]?.establishment as { id: string; slug: string; primary_color?: string | null } | undefined;
+  const est = ests.data?.[0]?.establishment as
+    | { id: string; slug: string; name?: string | null; logo_url?: string | null; primary_color?: string | null }
+    | undefined;
   const estId = est?.id;
 
   const overview = useQuery({
     queryKey: ["menu-overview", estId],
     queryFn: () => fetchOverview({ data: { establishment_id: estId! } }),
+    enabled: !!estId,
+  });
+
+  const fetchItems = useServerFn(listMenuItems);
+  const menuData = useQuery({
+    queryKey: ["menu-preview-data", estId],
+    queryFn: () => fetchItems({ data: { establishment_id: estId! } }),
     enabled: !!estId,
   });
 
@@ -112,7 +121,7 @@ function MenuAppearancePage() {
           {/* TEMAS */}
           <Card>
             <CardHeader><CardTitle>1. Tema de cores</CardTitle></CardHeader>
-            <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {MENU_PRESETS.map((p) => (
                 <button
                   key={p.id}
@@ -302,7 +311,15 @@ function MenuAppearancePage() {
         <Card className="xl:sticky xl:top-4 h-fit">
           <CardHeader><CardTitle>Prévia ao vivo</CardTitle></CardHeader>
           <CardContent>
-            <MenuPreview preset={preset} layout={layout} pattern={pattern} bgImage={bgImage} bgColor={bgColor} accent={accent} />
+            <MenuPreview
+              preset={preset} layout={layout} pattern={pattern}
+              bgImage={bgImage} bgColor={bgColor} accent={accent}
+              name={est?.name ?? "Seu Restaurante"}
+              logoUrl={est?.logo_url ?? null}
+              categories={(menuData.data?.categories ?? []).map((c: any) => c.name)}
+              items={(menuData.data?.items ?? []) as PreviewItem[]}
+              loading={menuData.isLoading}
+            />
           </CardContent>
         </Card>
       </div>
