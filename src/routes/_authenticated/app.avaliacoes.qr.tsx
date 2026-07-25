@@ -709,7 +709,53 @@ function ReviewQrPage() {
     }).then(setSecondaryQrDataUrl).catch(() => setSecondaryQrDataUrl(""));
   }, [secondaryEnabled, qrEncodedSecondaryUrl, ecc]);
 
-  const dims = FORMATS[format];
+  const baseDims = FORMATS[format];
+  const dims = landscape
+    ? {
+        ...baseDims,
+        label: `${baseDims.label} · horizontal`,
+        aspect: baseDims.aspect.split("/").reverse().join(" / "),
+        mm: { w: baseDims.mm.h, h: baseDims.mm.w },
+        orientation: "landscape" as const,
+      }
+    : baseDims;
+
+  // Ao trocar de formato ou orientação, migra o layout se estava no default
+  // do formato anterior (evita elementos sobrepostos, principalmente no Feed
+  // 1:1 e na versão horizontal). Se o usuário customizou, apenas clampa.
+  useEffect(() => {
+    const prevF = prevFormatRef.current;
+    const prevL = prevLandscapeRef.current;
+    if (prevF === format && prevL === landscape) return;
+    const prevDefault = prevL ? LAYOUT_LANDSCAPE : LAYOUT_BY_FORMAT[prevF];
+    const isPristine = JSON.stringify(layout) === JSON.stringify(prevDefault);
+    const nextDefault = landscape ? LAYOUT_LANDSCAPE : LAYOUT_BY_FORMAT[format];
+    if (isPristine) {
+      setLayout(nextDefault);
+    } else {
+      // Clampa cada item na área útil (2–98%) para evitar overflow silencioso.
+      setLayout((cur) => {
+        const out = { ...cur } as PosterLayout;
+        (Object.keys(out) as LayoutKey[]).forEach((k) => {
+          out[k] = {
+            x: Math.max(4, Math.min(96, out[k].x)),
+            y: Math.max(4, Math.min(96, out[k].y)),
+          };
+        });
+        return out;
+      });
+    }
+    // Clampa badges também.
+    setBadges((prev) =>
+      prev.map((b) => ({
+        ...b,
+        x: Math.max(4, Math.min(96, b.x)),
+        y: Math.max(4, Math.min(96, b.y)),
+      }))
+    );
+    prevFormatRef.current = format;
+    prevLandscapeRef.current = landscape;
+  }, [format, landscape, layout]);
 
   /**
    * Renders the poster to PNG at 300 DPI print resolution.
