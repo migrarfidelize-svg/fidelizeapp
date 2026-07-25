@@ -1642,11 +1642,30 @@ function ReviewQrPage() {
               <Button
                 type="button"
                 size="sm"
+                variant={landscape ? "default" : "outline"}
+                onClick={() => setLandscape((v) => !v)}
+                aria-label={landscape ? "Voltar para orientação vertical" : "Girar para orientação horizontal"}
+                aria-pressed={landscape}
+                title={landscape ? "Voltar para vertical" : "Girar para horizontal"}
+                className="flex h-10 w-full flex-row items-center justify-center gap-1.5 px-2 text-xs sm:h-32 sm:w-10 sm:flex-col sm:px-0"
+              >
+                <FlipHorizontal2 className="h-3.5 w-3.5" />
+                <span className="font-semibold tracking-wider sm:[writing-mode:vertical-rl] sm:[transform:rotate(180deg)]">
+                  {landscape ? "Vertical" : "Horizontal"}
+                </span>
+              </Button>
+              <Button
+                type="button"
+                size="sm"
                 variant="ghost"
-                onClick={() => { setLayout(DEFAULT_LAYOUT); toast.success("Posições restauradas"); }}
+                onClick={() => {
+                  const def = landscape ? LAYOUT_LANDSCAPE : LAYOUT_BY_FORMAT[format];
+                  setLayout(def);
+                  toast.success("Posições restauradas");
+                }}
                 aria-label="Restaurar posições padrão"
                 className="flex h-10 w-full flex-row items-center justify-center gap-1.5 px-2 text-xs sm:h-32 sm:w-10 sm:flex-col sm:px-0"
-                disabled={JSON.stringify(layout) === JSON.stringify(DEFAULT_LAYOUT)}
+                disabled={JSON.stringify(layout) === JSON.stringify(landscape ? LAYOUT_LANDSCAPE : LAYOUT_BY_FORMAT[format])}
               >
                 <RotateCcw className="h-3.5 w-3.5" />
                 <span
