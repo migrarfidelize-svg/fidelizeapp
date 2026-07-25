@@ -261,6 +261,48 @@ function WalletEstablishment() {
           <PushOptIn token={d.customer.token} />
         )}
 
+        {/* Atalhos do estabelecimento: cardápio digital e promoções ativas */}
+        {(d.hasMenu || hasPromotions) && (
+          <section className="grid gap-2.5">
+            {d.hasMenu && (
+              <a
+                href={`/cardapio/${est.slug}`}
+                className="group flex items-center gap-3 rounded-2xl border border-border/60 bg-card/40 p-3.5 transition-all hover:border-primary/40 hover:bg-card/60"
+              >
+                <div
+                  className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-border/60 bg-background"
+                  style={{ color: brand }}
+                >
+                  <UtensilsCrossed className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-display text-sm font-bold">Ver cardápio digital</div>
+                  <p className="text-xs text-muted-foreground">Pratos, fotos e preços de {est.name}.</p>
+                </div>
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+              </a>
+            )}
+
+            {hasPromotions && (
+              <Link
+                to="/carteira/$slug/promocoes"
+                params={{ slug }}
+                className="group flex items-center gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/5 p-3.5 transition-all hover:border-amber-500/60"
+              >
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-300">
+                  <Tag className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-display text-sm font-bold">Promoções ativas</div>
+                  <p className="text-xs text-muted-foreground">Ofertas disponíveis agora nesta loja.</p>
+                </div>
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            )}
+          </section>
+        )}
+
+
         {/* Outros programas nesta loja (cascata de prêmios) */}
         {otherCards.length > 0 && (
           <section className="rounded-2xl border border-border/60 bg-card/40 p-4">
