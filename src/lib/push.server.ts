@@ -9,10 +9,13 @@ export type PushPayload = {
   tag?: string;
   icon?: string;
   badge?: string;
+  image?: string;
   type?: string;
   slug?: string;
   requireInteraction?: boolean;
+  actions?: Array<{ action: string; title: string }>;
 };
+
 
 type SubRow = Pick<
   Database["public"]["Tables"]["push_subscriptions"]["Row"],
@@ -44,38 +47,53 @@ export async function sendPushToSub(
       url: payload.url,
       icon: payload.icon ?? "/icon-192.png",
       badge: payload.badge ?? "/icon-192.png",
+      image: payload.image,
       type: payload.type,
       slug: payload.slug,
       tag: payload.tag ? `${payload.tag}-${notificationId}` : `fidelize-${notificationId}`,
       notificationId,
       timestamp: Date.now(),
-      requireInteraction: payload.requireInteraction ?? true,
+      // Deixa o SW decidir requireInteraction por tipo se não vier explicitado.
+      requireInteraction: payload.requireInteraction,
+      actions: payload.actions,
       silent: false,
     };
-    const res = await webpush.sendNotification(
-      {
-        endpoint: sub.endpoint,
-        keys: { p256dh: sub.p256dh, auth: sub.auth_key },
-      },
-      JSON.stringify(normalizedPayload),
-      { TTL: 60 * 60 * 24 },
-    );
-    return { ok: true, status: res.statusCode };
-  } catch (e: unknown) {
-    const err = e as { statusCode?: number; body?: string; message?: string };
-    const status = err.statusCode ?? 0;
-    const expired = status === 404 || status === 410;
-    // Mark subscription inactive if endpoint is gone.
-    if (expired) {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      await supabaseAdmin
-        .from("push_subscriptions")
-        .update({ active: false, last_error: `expired:${status}` })
-        .eq("id", sub.id);
+    const body = JSON.stringify(normalizedPayload);
+    const target = { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth_key } };
+
+    // Retry com backoff apenas em erros transitórios; 404/410 desativam a inscrição.
+    const transientStatuses = new Set([0, 408, 425, 429, 500, 502, 503, 504]);
+    let lastError: { statusCode?: number; body?: string; message?: string } | null = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const res = await webpush.sendNotification(target, body, { TTL: 60 * 60 * 24 });
+        return { ok: true, status: res.statusCode };
+      } catch (e: unknown) {
+        const err = e as { statusCode?: number; body?: string; message?: string };
+        lastError = err;
+        const status = err.statusCode ?? 0;
+        if (status === 404 || status === 410) {
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          await supabaseAdmin
+            .from("push_subscriptions")
+            .update({ active: false, last_error: `expired:${status}` })
+            .eq("id", sub.id);
+          return { ok: false, status, error: err.body || err.message };
+        }
+        if (!transientStatuses.has(status) || attempt === 2) {
+          return { ok: false, status, error: err.body || err.message };
+        }
+        // backoff: 250ms, 750ms
+        await new Promise((r) => setTimeout(r, 250 * Math.pow(3, attempt)));
+      }
     }
-    return { ok: false, status, error: err.body || err.message };
+    return { ok: false, status: lastError?.statusCode ?? 0, error: lastError?.body || lastError?.message };
+  } catch (e: unknown) {
+    const err = e as { message?: string };
+    return { ok: false, error: err.message ?? "unknown" };
   }
 }
+
 
 /**
  * Send a push to all active subscriptions of a customer, then log every attempt.
