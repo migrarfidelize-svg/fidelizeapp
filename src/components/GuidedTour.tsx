@@ -208,41 +208,44 @@ const PREVIEWS: Record<NonNullable<TourStep["preview"]>, ReactNode> = {
 
 export function GuidedTour({
   steps,
+  mobileSteps,
   storageKey,
   onDone,
 }: {
   steps: TourStep[];
+  /** Versão enxuta usada em telas pequenas (< 768px). */
+  mobileSteps?: TourStep[];
   storageKey: string;
   onDone?: () => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [manual, setManual] = useState(false);
+  const [autoWanted, setAutoWanted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [i, setI] = useState(0);
+  const myTurn = useOnboardingSlot("tour", autoWanted);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const done = window.localStorage.getItem(storageKey);
-    let cleanup: (() => void) | undefined;
-    if (!done) {
-      const t = window.setTimeout(() => setOpen(true), 500);
-      cleanup = () => window.clearTimeout(t);
-    }
-    const onStart = () => { setI(0); setOpen(true); };
+    setIsMobile(window.innerWidth < 768);
+    if (!window.localStorage.getItem(storageKey)) setAutoWanted(true);
+    const onStart = () => { setI(0); setManual(true); };
     window.addEventListener("fidelize:start-tour", onStart);
-    return () => {
-      cleanup?.();
-      window.removeEventListener("fidelize:start-tour", onStart);
-    };
+    return () => window.removeEventListener("fidelize:start-tour", onStart);
   }, [storageKey]);
 
-  const step = steps[i];
+  const activeSteps = isMobile && mobileSteps?.length ? mobileSteps : steps;
+  const open = manual || (autoWanted && myTurn);
+  const step = activeSteps[i];
   if (!open || !step) return null;
   if (typeof document === "undefined") return null;
 
   function close(done: boolean) {
-    setOpen(false);
+    setManual(false);
+    setAutoWanted(false);
     try { window.localStorage.setItem(storageKey, done ? "done" : "skipped"); } catch { /* noop */ }
     onDone?.();
   }
+
 
   const preview = step.previewNode ?? (step.preview ? PREVIEWS[step.preview] : PREVIEWS.welcome);
 
