@@ -371,7 +371,14 @@ function ItemDialog({
       setBadges(Array.isArray(initial?.badges) ? (initial!.badges as string[]) : []);
       setIngredientsText((initial?.ingredients ?? []).join(", "));
       setAllergensText((initial?.allergens ?? []).join(", "));
+      setVariants(
+        (Array.isArray(initial?.variants) ? initial!.variants! : []).map((v) => ({
+          label: v?.label ?? "",
+          price: v?.price != null ? String(v.price) : "",
+        }))
+      );
       setActive(initial?.active ?? true);
+
     }
   }, [open, initial]);
 
