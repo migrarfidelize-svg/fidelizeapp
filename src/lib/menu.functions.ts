@@ -596,6 +596,7 @@ export const seedMenuFromTemplate = createServerFn({ method: "POST" })
             allergens: [],
             prep_minutes: it.prep_minutes ?? null,
             active: true,
+            image_url: catImage,
             position: maxItemPos,
           };
         });
