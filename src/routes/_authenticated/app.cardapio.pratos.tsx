@@ -491,6 +491,44 @@ function ItemDialog({
           </div>
 
           <div className="space-y-2 md:col-span-2">
+            <Label>Tamanhos / pesos (opcional)</Label>
+            <p className="text-[11px] text-muted-foreground">
+              Use para vender o mesmo prato em opções diferentes (ex.: 300g / 500g, Pequena / Grande). Cada opção pode ter seu próprio preço.
+            </p>
+            <div className="space-y-2">
+              {variants.map((v, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <Input
+                    value={v.label}
+                    maxLength={40}
+                    placeholder="Ex.: 500g ou Grande"
+                    onChange={(e) => setVariants(prev => prev.map((x, i) => i === idx ? { ...x, label: e.target.value } : x))}
+                  />
+                  <Input
+                    value={v.price}
+                    inputMode="decimal"
+                    placeholder="Preço (R$)"
+                    className="w-36"
+                    onChange={(e) => setVariants(prev => prev.map((x, i) => i === idx ? { ...x, price: e.target.value } : x))}
+                  />
+                  <Button type="button" variant="ghost" size="icon"
+                    onClick={() => setVariants(prev => prev.filter((_, i) => i !== idx))}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+            {variants.length < 10 && (
+              <Button type="button" variant="outline" size="sm"
+                onClick={() => setVariants(prev => [...prev, { label: "", price: "" }])}>
+                <Plus className="mr-1 h-4 w-4" /> Adicionar tamanho
+              </Button>
+            )}
+          </div>
+
+
+
+          <div className="space-y-2 md:col-span-2">
             <Label>Mídia</Label>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <MediaSlot
