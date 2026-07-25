@@ -152,19 +152,20 @@ export function FirstStepsCard({
               </span>
             )}
 
-            <div className="min-w-0">
-              <div className={`truncate text-sm font-medium ${s.done ? "text-muted-foreground line-through" : ""}`}>
+            <div className="min-w-0 flex-1">
+              <div className={`text-sm font-medium leading-snug break-words ${s.done ? "text-muted-foreground line-through" : ""}`}>
                 {s.label}
               </div>
-              <div className="truncate text-xs text-muted-foreground">{s.hint}</div>
+              <div className="line-clamp-2 text-xs leading-snug text-muted-foreground">{s.hint}</div>
             </div>
 
-            <Button asChild size="sm" variant={s.done ? "ghost" : "outline"} className="shrink-0">
+            <Button asChild size="sm" variant={s.done ? "ghost" : "outline"} className="shrink-0 px-2.5 sm:px-3">
               <Link to={s.to}>
                 {s.done ? "Ver" : "Fazer"}
-                <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                <ArrowRight className="ml-1 hidden h-3.5 w-3.5 min-[380px]:inline" />
               </Link>
             </Button>
+
           </li>
         ))}
       </ul>
