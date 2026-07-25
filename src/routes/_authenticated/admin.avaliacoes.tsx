@@ -31,16 +31,15 @@ export const Route = createFileRoute("/_authenticated/admin/avaliacoes")({
 });
 
 function Stars({ n, size = 4 }: { n: number; size?: number }) {
+  const px = size * 4;
   return (
     <div className="flex gap-0.5">
-      <PageHero
-        icon={HeroIcon}
-        eyebrow={"Super Admin · Moderação"}
-        title={"Moderação de avaliações"}
-        subtitle={"Aprovar, ocultar ou responder avaliações públicas de qualquer empresa."}
-      />
       {[1, 2, 3, 4, 5].map((i) => (
-        <Star key={i} className={`h-${size} w-${size} ${i <= n ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/30"}`} />
+        <Star
+          key={i}
+          style={{ width: px, height: px }}
+          className={i <= n ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/30"}
+        />
       ))}
     </div>
   );
@@ -63,11 +62,14 @@ function Page() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">Avaliações da Plataforma</h1>
-          <p className="text-sm text-muted-foreground">Visão consolidada, moderação central e sinais de fraude.</p>
-        </div>
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Super Admin · Moderação"}
+        title={"Avaliações da Plataforma"}
+        subtitle={"Visão consolidada, moderação central e sinais de fraude."}
+      />
+      <div className="flex items-center justify-end flex-wrap gap-3">
+
         <Select value={String(days)} onValueChange={(v) => setDays(Number(v))}>
           <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
           <SelectContent>
