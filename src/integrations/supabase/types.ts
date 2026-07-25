@@ -233,6 +233,59 @@ export type Database = {
           },
         ]
       }
+      channel_events: {
+        Row: {
+          channel: string
+          establishment_id: string
+          event_type: string
+          id: number
+          ip_hash: string | null
+          occurred_at: string
+          ref_id: string | null
+          ref_label: string | null
+          ua: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          channel: string
+          establishment_id: string
+          event_type: string
+          id?: never
+          ip_hash?: string | null
+          occurred_at?: string
+          ref_id?: string | null
+          ref_label?: string | null
+          ua?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          channel?: string
+          establishment_id?: string
+          event_type?: string
+          id?: never
+          ip_hash?: string | null
+          occurred_at?: string
+          ref_id?: string | null
+          ref_label?: string | null
+          ua?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_events_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consents: {
         Row: {
           accepted_at: string
