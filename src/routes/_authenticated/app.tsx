@@ -93,10 +93,11 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    key: "clientes",
-    label: "Clientes",
+    key: "pessoas",
+    label: "Pessoas",
     items: [
       { to: "/app/clientes", label: "Clientes", icon: Users },
+      { to: "/app/equipe", label: "Equipe", icon: UsersRound },
     ],
   },
   {
