@@ -1031,8 +1031,8 @@ function ReviewQrPage() {
               {/* Fidelize-only destination */}
               <div className="rounded-lg border bg-background/50 p-3 text-xs">
                 <div className="text-muted-foreground">Link público (pré-definido)</div>
-                <div className="mt-1 flex items-center gap-2">
-                  <code className="flex-1 truncate rounded bg-muted/60 px-2 py-1 text-primary">{fidelizeUrl}</code>
+                <div className="mt-1 flex min-w-0 items-center gap-2">
+                  <code className="min-w-0 flex-1 truncate rounded bg-muted/60 px-2 py-1 text-primary">{fidelizeUrl}</code>
                   <Button
                     size="sm"
                     variant={copiedPublic ? "default" : "outline"}

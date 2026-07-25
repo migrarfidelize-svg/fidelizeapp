@@ -117,8 +117,8 @@ function AnalyticsPage() {
           </div>
           <span className="card-icon" aria-hidden><TrendingUp /></span>
         </div>
-        <div className="mt-6 h-80">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="mt-6 h-80 w-full min-w-0">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={200} debounce={80}>
             <AreaChart data={data.weeks} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
               <defs>
                 <linearGradient id="stFill" x1="0" y1="0" x2="0" y2="1">
@@ -176,8 +176,8 @@ function AnalyticsPage() {
               </div>
               <span className="card-icon card-icon-accent" aria-hidden><TrendingUp /></span>
             </div>
-            <div className="mt-6 h-72">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="mt-6 h-72 w-full min-w-0">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={200} debounce={80}>
                 <AreaChart data={data.channels.weekly} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
                   <defs>
                     <linearGradient id="lkFill" x1="0" y1="0" x2="0" y2="1">
@@ -303,8 +303,8 @@ function AnalyticsPage() {
             </div>
             <span className="card-icon" aria-hidden><Building2 /></span>
           </div>
-          <div className="mt-6 h-72">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="mt-6 h-72 w-full min-w-0">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={200} debounce={80}>
               <BarChart data={data.perEstablishment} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" opacity={0.12} />
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="currentColor" opacity={0.5} />
