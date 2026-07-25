@@ -52,7 +52,7 @@ export function MenuTemplatePicker({ establishmentId }: Props) {
           <Sparkles className="mr-2 h-4 w-4" /> Modelos prontos
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" /> Comece com um modelo de cardápio
