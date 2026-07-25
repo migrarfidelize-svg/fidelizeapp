@@ -72,8 +72,10 @@ function MenuAppearancePage() {
   const [bgImage, setBgImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  useEffect(() => {
-    const t = resolveMenuTheme(overview.data?.menu?.theme);
+  const applyThemeToForm = (t: {
+    preset: MenuPresetId; layout: MenuLayoutId; pattern: MenuPatternId; entry: MenuEntryId;
+    bg_color: string | null; accent_color: string | null; text_color: string | null; bg_image_url: string | null;
+  }) => {
     setPreset(t.preset);
     setLayout(t.layout);
     setPattern(t.pattern);
@@ -82,7 +84,33 @@ function MenuAppearancePage() {
     setAccentColor(t.accent_color);
     setTextColor(t.text_color);
     setBgImage(t.bg_image_url);
-  }, [overview.data?.menu?.theme]);
+  };
+
+  const savedTheme = useMemo(() => resolveMenuTheme(overview.data?.menu?.theme), [overview.data?.menu?.theme]);
+
+  useEffect(() => {
+    applyThemeToForm(savedTheme);
+  }, [savedTheme]);
+
+  const current = { preset, layout, pattern, entry, bg_color: bgColor, accent_color: accentColor, text_color: textColor, bg_image_url: bgImage };
+  const dirty =
+    JSON.stringify(current) !==
+    JSON.stringify({
+      preset: savedTheme.preset, layout: savedTheme.layout, pattern: savedTheme.pattern, entry: savedTheme.entry,
+      bg_color: savedTheme.bg_color, accent_color: savedTheme.accent_color, text_color: savedTheme.text_color,
+      bg_image_url: savedTheme.bg_image_url,
+    });
+
+  useBlocker({
+    shouldBlockFn: () => dirty && !window.confirm("Você tem alterações de aparência não salvas. Sair mesmo assim?"),
+    enableBeforeUnload: () => dirty,
+  });
+
+  const restoreDefaults = () => {
+    if (!window.confirm("Restaurar a aparência padrão? Suas cores e layout personalizados serão descartados (salve para confirmar).")) return;
+    applyThemeToForm(DEFAULT_MENU_THEME);
+    toast.info("Padrão restaurado na prévia. Clique em Salvar aparência para aplicar.");
+  };
 
   const mut = useMutation({
     mutationFn: () =>
@@ -93,6 +121,7 @@ function MenuAppearancePage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const uploadBg = async (file: File) => {
     if (!estId) return;
