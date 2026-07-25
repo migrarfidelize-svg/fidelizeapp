@@ -129,6 +129,14 @@ const NAV_GROUPS: NavGroup[] = [
 
 const FLAT_NAV = NAV_GROUPS.flatMap((g) => g.items);
 
+/** Atalhos fixos da barra inferior no mobile (operação do balcão). */
+const MOBILE_TABS: NavItem[] = [
+  { to: "/app", label: "Painel", icon: LayoutDashboard, exact: true },
+  { to: "/app/carimbar", label: "Carimbar", icon: Stamp },
+  { to: "/app/clientes", label: "Clientes", icon: Users },
+  { to: "/app/qr", label: "QR Codes", icon: QrCode },
+];
+
 function AppLayout() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
