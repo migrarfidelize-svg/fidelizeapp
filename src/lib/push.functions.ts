@@ -23,7 +23,7 @@ export const subscribeCustomerPush = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => subInput.parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: customer, error } = await s
+    const { data: customer, error } = await supabaseAdmin
       .from("customers")
       .select("id, establishment_id, user_id")
       .eq("access_token", data.token)
