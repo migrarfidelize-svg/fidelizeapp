@@ -11,6 +11,40 @@ async function assertManager(supabase: any, userId: string, estId: string) {
   if (!data) throw new Error("Sem permissão");
 }
 
+// Lista todos os membros do estabelecimento (com overrides quando existirem).
+export const listEstablishmentMembers = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ establishment_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertManager(supabase, userId, data.establishment_id);
+
+    const { data: members, error } = await supabase
+      .from("establishment_members")
+      .select("id, user_id, role, active, display_name, invited_email, created_at")
+      .eq("establishment_id", data.establishment_id)
+      .order("created_at", { ascending: true });
+    if (error) throw new Error(error.message);
+
+    const ids = (members ?? []).map((m: any) => m.id);
+    let overridesByMember: Record<string, Record<string, boolean>> = {};
+    if (ids.length) {
+      const { data: perms } = await supabase
+        .from("member_permissions")
+        .select("member_id, overrides")
+        .in("member_id", ids);
+      for (const p of perms ?? []) {
+        overridesByMember[(p as any).member_id] = ((p as any).overrides ?? {}) as Record<string, boolean>;
+      }
+    }
+
+    return (members ?? []).map((m: any) => ({
+      ...m,
+      overrides: overridesByMember[m.id] ?? {},
+      override_count: Object.keys(overridesByMember[m.id] ?? {}).length,
+    }));
+  });
+
 // ------------------------------------------------------------------
 // Permissões efetivas do usuário logado no estabelecimento ativo.
 // Retorna um mapa { action: boolean } cobrindo todas as ações do catálogo.
