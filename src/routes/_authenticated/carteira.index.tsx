@@ -590,3 +590,12 @@ export function WalletCard({ item }: { item: WalletItem }) {
     </Link>
   );
 }
+
+/** Rótulo curto de validade da recompensa liberada ("expira hoje", "3 dias"). */
+function expiryLabel(ts: number): string {
+  const diff = ts - Date.now();
+  if (diff <= 0) return "Expirada";
+  const days = Math.ceil(diff / 86_400_000);
+  if (days <= 1) return "Expira hoje";
+  return `Expira em ${days} dias`;
+}
