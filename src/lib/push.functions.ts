@@ -1,23 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { createClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { Database } from "@/integrations/supabase/types";
-
-function publicClient() {
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
-  return createClient<Database>(process.env.SUPABASE_URL!, key, {
-    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
-    global: {
-      fetch: (input, init) => {
-        const h = new Headers(init?.headers);
-        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
-        h.set("apikey", key);
-        return fetch(input, { ...init, headers: h });
-      },
-    },
-  });
-}
 
 const subInput = z.object({
   token: z.string().min(20).max(80), // customer access_token from voucher URL
@@ -39,15 +22,14 @@ const subInput = z.object({
 export const subscribeCustomerPush = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => subInput.parse(d))
   .handler(async ({ data }) => {
-    const s = publicClient();
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: customer, error } = await s
       .from("customers")
-      .select("id, establishment_id")
+      .select("id, establishment_id, user_id")
       .eq("access_token", data.token)
       .maybeSingle();
     if (error || !customer) throw new Error("Cartão não encontrado.");
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Upsert by unique endpoint.
     const { error: upErr } = await supabaseAdmin
       .from("push_subscriptions")
@@ -55,6 +37,7 @@ export const subscribeCustomerPush = createServerFn({ method: "POST" })
         {
           customer_id: customer.id,
           establishment_id: customer.establishment_id,
+          user_id: customer.user_id ?? null,
           endpoint: data.endpoint,
           p256dh: data.p256dh,
           auth_key: data.auth,
@@ -79,14 +62,13 @@ export const unsubscribeCustomerPush = createServerFn({ method: "POST" })
     z.object({ token: z.string().min(20).max(80), endpoint: z.string().url() }).parse(d),
   )
   .handler(async ({ data }) => {
-    const s = publicClient();
-    const { data: customer } = await s
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: customer } = await supabaseAdmin
       .from("customers")
       .select("id")
       .eq("access_token", data.token)
       .maybeSingle();
     if (!customer) return { ok: true };
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin
       .from("push_subscriptions")
       .update({ active: false })
@@ -111,14 +93,13 @@ export const updateCustomerPushPrefs = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data }) => {
-    const s = publicClient();
-    const { data: customer } = await s
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: customer } = await supabaseAdmin
       .from("customers")
       .select("id")
       .eq("access_token", data.token)
       .maybeSingle();
     if (!customer) throw new Error("Cartão não encontrado.");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin
       .from("push_subscriptions")
       .update({ preferences: data.preferences })
@@ -133,14 +114,13 @@ export const getCustomerPushStatus = createServerFn({ method: "GET" })
     z.object({ token: z.string().min(20).max(80), endpoint: z.string().url() }).parse(d),
   )
   .handler(async ({ data }) => {
-    const s = publicClient();
-    const { data: customer } = await s
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: customer } = await supabaseAdmin
       .from("customers")
       .select("id")
       .eq("access_token", data.token)
       .maybeSingle();
     if (!customer) return { subscribed: false as const };
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row } = await supabaseAdmin
       .from("push_subscriptions")
       .select("id, active, preferences")
@@ -659,11 +639,17 @@ export const adminPushOverview = createServerFn({ method: "GET" })
     const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
 
     const [subsAll, subsActive, logs30, ests] = await Promise.all([
-      supabaseAdmin.from("push_subscriptions").select("id", { count: "exact", head: true }),
       supabaseAdmin
         .from("push_subscriptions")
         .select("id", { count: "exact", head: true })
-        .eq("active", true),
+        .not("customer_id", "is", null)
+        .not("establishment_id", "is", null),
+      supabaseAdmin
+        .from("push_subscriptions")
+        .select("id", { count: "exact", head: true })
+        .eq("active", true)
+        .not("customer_id", "is", null)
+        .not("establishment_id", "is", null),
       supabaseAdmin
         .from("push_logs")
         .select("id, status, establishment_id, created_at")
@@ -685,7 +671,9 @@ export const adminPushOverview = createServerFn({ method: "GET" })
     const { data: perEst } = await supabaseAdmin
       .from("push_subscriptions")
       .select("establishment_id")
-      .eq("active", true);
+      .eq("active", true)
+      .not("customer_id", "is", null)
+      .not("establishment_id", "is", null);
     const subsPerEst = new Map<string, number>();
     for (const r of perEst ?? []) {
       const k = r.establishment_id ?? "unknown";
@@ -772,7 +760,9 @@ export const adminBroadcastPush = createServerFn({ method: "POST" })
     let q = supabaseAdmin
       .from("push_subscriptions")
       .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, preferences")
-      .eq("active", true);
+      .eq("active", true)
+      .not("customer_id", "is", null)
+      .not("establishment_id", "is", null);
     if (data.establishment_ids && data.establishment_ids.length > 0) {
       q = q.in("establishment_id", data.establishment_ids);
     }
@@ -846,6 +836,7 @@ export const subscribePushForAllMyCards = createServerFn({ method: "POST" })
     const rows = list.map((c) => ({
       customer_id: c.id,
       establishment_id: c.establishment_id,
+      user_id: context.userId,
       endpoint: data.endpoint,
       p256dh: data.p256dh,
       auth_key: data.auth,
