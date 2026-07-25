@@ -11,6 +11,7 @@ import {
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { getMyMenuOverview, setMenuStatus } from "@/lib/menu.functions";
 import { PageHero } from "@/components/PageHero";
+import { ConfigureQrButton } from "@/components/merchant/ConfigureQrButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
