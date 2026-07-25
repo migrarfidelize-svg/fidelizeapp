@@ -4,7 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   MapPin, Phone, Instagram, MessageCircle, Clock, ChevronLeft, ChevronRight,
   X, Search, Flame, Leaf, Wheat, Beef, Fish, Milk, Egg, Nut, Play, Download,
+  ArrowLeft, Pause, Volume2, VolumeX, List, Heart, Share2,
 } from "lucide-react";
+
 import { getPublicMenuBySlug } from "@/lib/menu.functions";
 import { generateMenuPdf } from "@/lib/menu-pdf";
 import { trackChannelEvent, useChannelPageView } from "@/lib/tracking";
@@ -605,12 +607,14 @@ function PublicMenuPage() {
           items={stories.list}
           startIndex={stories.index}
           primary={primary}
+          catName={(id) => categories.find((c) => c.id === id)?.name ?? ""}
           onClose={() => setStories(null)}
           onDetails={(i) => { setStories(null); setOpen(i); }}
           onItemView={(i) =>
             trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_id: i.id, ref_label: `stories:${i.name}` })
           }
         />
+
       )}
 
     </div>
@@ -809,14 +813,19 @@ function ItemModal({ item, primary, onClose }: { item: Item; primary: string; on
 const STORY_MS = 5000;
 
 function StoriesViewer({
-  items, startIndex, primary, onClose, onItemView, onDetails,
+  items, startIndex, primary, catName, onClose, onItemView, onDetails,
 }: {
   items: Item[]; startIndex: number; primary: string;
+  catName: (id: string | null) => string;
   onClose: () => void; onItemView: (i: Item) => void; onDetails: (i: Item) => void;
 }) {
   const [i, setI] = useState(startIndex);
   const [progress, setProgress] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [muted, setMuted] = useState(true);
+  const [showList, setShowList] = useState(false);
+  const [liked, setLiked] = useState<Record<string, boolean>>({});
+
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const touchY = useRef<number | null>(null);
   const current = items[i];
@@ -874,6 +883,16 @@ function StoriesViewer({
 
   if (!current) return null;
   const hasPromo = current.promo_price != null && current.price != null && current.promo_price < current.price;
+  const isVideo = !!current.video_url;
+  const thumb = current.image_url || current.video_poster_url || null;
+
+  const share = async () => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    try {
+      if (navigator.share) await navigator.share({ title: current.name, text: current.short_desc || current.name, url });
+      else await navigator.clipboard.writeText(url);
+    } catch { /* cancelado */ }
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-black grid place-items-center animate-in fade-in duration-200">
@@ -890,13 +909,13 @@ function StoriesViewer({
         onMouseUp={() => setPaused(false)}
       >
         {/* media */}
-        {current.video_url ? (
+        {isVideo ? (
           <video
             key={current.id}
             ref={videoRef}
-            src={current.video_url}
+            src={current.video_url!}
             poster={current.video_poster_url || current.image_url || undefined}
-            autoPlay muted playsInline
+            autoPlay muted={muted} playsInline
             preload="auto"
             className="absolute inset-0 w-full h-full object-cover"
           />
@@ -911,27 +930,42 @@ function StoriesViewer({
         )}
 
         {/* tap zones */}
-        <button aria-label="Anterior" onClick={prev} className="absolute left-0 top-0 bottom-0 w-1/3 z-10" />
-        <button aria-label="Próximo" onClick={next} className="absolute right-0 top-0 bottom-0 w-1/3 z-10" />
+        <button aria-label="Anterior" onClick={prev} className="absolute left-0 top-16 bottom-40 w-1/3 z-10" />
+        <button aria-label="Próximo" onClick={next} className="absolute right-0 top-16 bottom-40 w-1/3 z-10" />
 
-        {/* progress bars */}
-        <div className="absolute top-3 left-3 right-3 z-20 flex gap-1">
-          {items.map((_, idx) => (
-            <span key={idx} className="flex-1 h-[3px] rounded-full overflow-hidden bg-white/25">
-              <span
-                className="block h-full bg-white rounded-full"
-                style={{ width: idx < i ? "100%" : idx === i ? `${progress * 100}%` : "0%" }}
-              />
-            </span>
-          ))}
+        {/* top bar */}
+        <div className="absolute top-0 inset-x-0 z-30 pt-3 pb-6 bg-gradient-to-b from-black/70 to-transparent pointer-events-none">
+          <div className="flex items-center justify-between px-4 pointer-events-auto">
+            <button aria-label="Voltar" onClick={onClose} className="text-white/95 p-1.5 -ml-1.5">
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+            <div className="flex items-center gap-4 text-white/95">
+              <button aria-label={paused ? "Retomar" : "Pausar"} onClick={(e) => { e.stopPropagation(); setPaused((p) => !p); }}>
+                {paused ? <Play className="w-[22px] h-[22px]" /> : <Pause className="w-[22px] h-[22px]" />}
+              </button>
+              {isVideo && (
+                <button aria-label={muted ? "Ativar som" : "Silenciar"} onClick={(e) => { e.stopPropagation(); setMuted((m) => !m); }}>
+                  {muted ? <VolumeX className="w-[22px] h-[22px]" /> : <Volume2 className="w-[22px] h-[22px]" />}
+                </button>
+              )}
+              <button aria-label="Lista de itens" onClick={(e) => { e.stopPropagation(); setPaused(true); setShowList(true); }}>
+                <List className="w-[22px] h-[22px]" />
+              </button>
+            </div>
+          </div>
+
+          {/* progress bars */}
+          <div className="mt-3 px-4 flex gap-[5px]">
+            {items.map((_, idx) => (
+              <span key={idx} className="flex-1 h-[3px] rounded-full overflow-hidden bg-white/30">
+                <span
+                  className="block h-full bg-white rounded-full"
+                  style={{ width: idx < i ? "100%" : idx === i ? `${progress * 100}%` : "0%" }}
+                />
+              </span>
+            ))}
+          </div>
         </div>
-
-        <button
-          onClick={onClose}
-          className="absolute top-7 right-3 z-30 grid place-items-center w-9 h-9 rounded-full bg-black/40 text-white backdrop-blur"
-        >
-          <X className="w-4 h-4" />
-        </button>
 
         {/* desktop arrows */}
         {i > 0 && (
@@ -945,33 +979,97 @@ function StoriesViewer({
           </button>
         )}
 
-        {/* caption */}
-        <div
-          className="absolute bottom-0 inset-x-0 z-20 p-5 pb-8 text-white pointer-events-none"
-          style={{ background: "linear-gradient(180deg, transparent, rgba(0,0,0,0.8) 60%)" }}
-        >
-          <h3 style={{ fontFamily: "Outfit" }} className="text-2xl font-bold leading-tight">{current.name}</h3>
-          {current.short_desc && <p className="text-sm opacity-90 mt-1 line-clamp-2">{current.short_desc}</p>}
-          <div className="flex items-center gap-3 mt-3 pointer-events-auto">
+        {/* bottom info */}
+        <div className="absolute bottom-0 inset-x-0 z-20 text-white">
+          <div className="px-4 pt-16 pb-3" style={{ background: "linear-gradient(180deg, transparent, rgba(0,0,0,0.85) 45%)" }}>
+            <div className="flex items-start gap-3">
+              <button
+                onClick={(e) => { e.stopPropagation(); onDetails(current); }}
+                className="shrink-0 w-[72px] h-[72px] rounded-xl overflow-hidden bg-white/10 ring-1 ring-white/25"
+              >
+                {thumb ? (
+                  <img src={thumb} alt={current.name} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="grid place-items-center w-full h-full text-xs opacity-70">Ver</span>
+                )}
+              </button>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-white/70 leading-tight">{catName(current.category_id)}</p>
+                <h3 style={{ fontFamily: "Outfit" }} className="text-[26px] font-bold leading-tight truncate">{current.name}</h3>
+              </div>
+              <button aria-label="Fechar" onClick={(e) => { e.stopPropagation(); onClose(); }} className="p-1 text-white/90">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {current.short_desc && (
+              <p className="mt-3 text-[15px] leading-snug text-white/85 line-clamp-3">{current.short_desc}</p>
+            )}
+          </div>
+
+          {/* action bar */}
+          <div className="flex items-center gap-6 px-5 py-3 bg-black/90">
+            <button aria-label="Ver detalhes" onClick={(e) => { e.stopPropagation(); onDetails(current); }}>
+              <MessageCircle className="w-6 h-6 text-white/90" />
+            </button>
+            <button
+              aria-label="Favoritar"
+              onClick={(e) => { e.stopPropagation(); setLiked((l) => ({ ...l, [current.id]: !l[current.id] })); }}
+            >
+              <Heart
+                className="w-6 h-6 transition"
+                style={liked[current.id] ? { color: primary, fill: primary } : { color: "rgba(255,255,255,0.9)" }}
+              />
+            </button>
+            <button aria-label="Compartilhar" onClick={(e) => { e.stopPropagation(); void share(); }} className="flex items-center gap-2 mx-auto">
+              <Share2 className="w-6 h-6 text-white/90" />
+              <span className="text-[15px] font-medium text-white/90">Share</span>
+            </button>
             {current.price != null && (
               <span className="flex items-baseline gap-2">
-                <span className="font-bold text-xl" style={{ fontFamily: "Outfit" }}>
+                {hasPromo && <span className="text-xs opacity-60 line-through">{fmt(current.price, current.currency)}</span>}
+                <span className="text-xl font-bold" style={{ fontFamily: "Outfit" }}>
                   {fmt(hasPromo ? current.promo_price : current.price, current.currency)}
                 </span>
-                {hasPromo && <span className="text-sm opacity-60 line-through">{fmt(current.price, current.currency)}</span>}
               </span>
             )}
-            <button
-              onClick={(e) => { e.stopPropagation(); onDetails(current); }}
-              className="ml-auto rounded-full px-4 py-2 text-sm font-semibold text-white shadow-lg"
-              style={{ background: primary }}
-            >
-              Ver detalhes
-            </button>
           </div>
         </div>
+
+        {/* item list sheet */}
+        {showList && (
+          <div className="absolute inset-0 z-40 bg-black/80 backdrop-blur-sm flex flex-col justify-end animate-in fade-in duration-150"
+            onClick={() => { setShowList(false); setPaused(false); }}>
+            <div className="bg-neutral-950 rounded-t-3xl max-h-[70%] overflow-y-auto p-4" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-white font-semibold">Todos os itens</h4>
+                <button onClick={() => { setShowList(false); setPaused(false); }} className="text-white/70"><X className="w-5 h-5" /></button>
+              </div>
+              <div className="space-y-1">
+                {items.map((it, idx) => (
+                  <button
+                    key={it.id}
+                    onClick={() => { setI(idx); setShowList(false); setPaused(false); }}
+                    className={`w-full flex items-center gap-3 rounded-xl p-2 text-left ${idx === i ? "bg-white/10" : ""}`}
+                  >
+                    <span className="w-11 h-11 rounded-lg overflow-hidden bg-white/10 shrink-0">
+                      {(it.image_url || it.video_poster_url) && (
+                        <img src={(it.image_url || it.video_poster_url)!} alt={it.name} className="w-full h-full object-cover" />
+                      )}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-white text-sm font-medium truncate">{it.name}</span>
+                      <span className="block text-white/50 text-xs">{catName(it.category_id)}</span>
+                    </span>
+                    {it.price != null && <span className="text-white/80 text-sm">{fmt(it.price, it.currency)}</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
-
 }
+
