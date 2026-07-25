@@ -156,6 +156,35 @@ const DEFAULT_LAYOUT: PosterLayout = {
   ctaFooter:   { x: 50, y: 93 },
 };
 
+/** Layouts ajustados por formato — canvas quadrado (feed) e paisagem precisam
+ * de espaçamento vertical mais denso para não sobrepor a estrela ao QR. */
+const LAYOUT_BY_FORMAT: Record<FormatKey, PosterLayout> = {
+  counter15x10: DEFAULT_LAYOUT,
+  a5:           DEFAULT_LAYOUT,
+  story:        DEFAULT_LAYOUT,
+  feed: {
+    header:      { x: 50, y: 11 },
+    title:       { x: 50, y: 24 },
+    subtitle:    { x: 50, y: 33 },
+    primaryQr:   { x: 50, y: 55 },
+    secondaryQr: { x: 72, y: 55 },
+    nfc:         { x: 50, y: 78 },
+    ctaNear:     { x: 50, y: 88 },
+    ctaFooter:   { x: 50, y: 95 },
+  },
+};
+
+const LAYOUT_LANDSCAPE: PosterLayout = {
+  header:      { x: 22, y: 22 },
+  title:       { x: 22, y: 42 },
+  subtitle:    { x: 22, y: 55 },
+  primaryQr:   { x: 74, y: 50 },
+  secondaryQr: { x: 74, y: 78 },
+  nfc:         { x: 22, y: 74 },
+  ctaNear:     { x: 22, y: 68 },
+  ctaFooter:   { x: 50, y: 94 },
+};
+
 /** Preset badges the merchant can drop onto the poster. */
 type BadgeKey = "stars5" | "wifi" | "pix" | "card" | "pet" | "delivery" | "ac" | "parking";
 const BADGE_CATALOG: Record<BadgeKey, { label: string; Icon: LucideIcon; short: string }> = {
