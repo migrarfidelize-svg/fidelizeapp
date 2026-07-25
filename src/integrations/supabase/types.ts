@@ -3923,6 +3923,7 @@ export type Database = {
           cycle: number
           establishment_id: string
           expires_at: string | null
+          expiry_notified_at: string | null
           id: string
           redeemed_at: string | null
           redeemed_by: string | null
@@ -3934,6 +3935,7 @@ export type Database = {
           cycle: number
           establishment_id: string
           expires_at?: string | null
+          expiry_notified_at?: string | null
           id?: string
           redeemed_at?: string | null
           redeemed_by?: string | null
@@ -3945,6 +3947,7 @@ export type Database = {
           cycle?: number
           establishment_id?: string
           expires_at?: string | null
+          expiry_notified_at?: string | null
           id?: string
           redeemed_at?: string | null
           redeemed_by?: string | null

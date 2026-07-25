@@ -103,6 +103,7 @@ import { Route as ApiPublicWebhooksAsaasRouteImport } from './routes/api/public/
 import { Route as ApiPublicTEventRouteImport } from './routes/api/public/t/event'
 import { Route as ApiPublicMercadopagoPublicKeyRouteImport } from './routes/api/public/mercadopago/public-key'
 import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/api/public/hooks/process-email-queue'
+import { Route as ApiPublicHooksNotifyExpiringRewardsRouteImport } from './routes/api/public/hooks/notify-expiring-rewards'
 import { Route as ApiPublicHooksMercadopagoRetryRouteImport } from './routes/api/public/hooks/mercadopago-retry'
 import { Route as ApiPublicHooksDispatchScheduledPushRouteImport } from './routes/api/public/hooks/dispatch-scheduled-push'
 import { Route as ApiPublicCronReengagementRouteImport } from './routes/api/public/cron/reengagement'
@@ -635,6 +636,12 @@ const ApiPublicHooksProcessEmailQueueRoute =
     path: '/api/public/hooks/process-email-queue',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksNotifyExpiringRewardsRoute =
+  ApiPublicHooksNotifyExpiringRewardsRouteImport.update({
+    id: '/api/public/hooks/notify-expiring-rewards',
+    path: '/api/public/hooks/notify-expiring-rewards',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksMercadopagoRetryRoute =
   ApiPublicHooksMercadopagoRetryRouteImport.update({
     id: '/api/public/hooks/mercadopago-retry',
@@ -816,6 +823,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
   '/api/public/hooks/dispatch-scheduled-push': typeof ApiPublicHooksDispatchScheduledPushRoute
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
+  '/api/public/hooks/notify-expiring-rewards': typeof ApiPublicHooksNotifyExpiringRewardsRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
   '/api/public/t/event': typeof ApiPublicTEventRoute
@@ -922,6 +930,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
   '/api/public/hooks/dispatch-scheduled-push': typeof ApiPublicHooksDispatchScheduledPushRoute
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
+  '/api/public/hooks/notify-expiring-rewards': typeof ApiPublicHooksNotifyExpiringRewardsRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
   '/api/public/t/event': typeof ApiPublicTEventRoute
@@ -1034,6 +1043,7 @@ export interface FileRoutesById {
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
   '/api/public/hooks/dispatch-scheduled-push': typeof ApiPublicHooksDispatchScheduledPushRoute
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
+  '/api/public/hooks/notify-expiring-rewards': typeof ApiPublicHooksNotifyExpiringRewardsRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
   '/api/public/t/event': typeof ApiPublicTEventRoute
@@ -1146,6 +1156,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/reengagement'
     | '/api/public/hooks/dispatch-scheduled-push'
     | '/api/public/hooks/mercadopago-retry'
+    | '/api/public/hooks/notify-expiring-rewards'
     | '/api/public/hooks/process-email-queue'
     | '/api/public/mercadopago/public-key'
     | '/api/public/t/event'
@@ -1252,6 +1263,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/reengagement'
     | '/api/public/hooks/dispatch-scheduled-push'
     | '/api/public/hooks/mercadopago-retry'
+    | '/api/public/hooks/notify-expiring-rewards'
     | '/api/public/hooks/process-email-queue'
     | '/api/public/mercadopago/public-key'
     | '/api/public/t/event'
@@ -1363,6 +1375,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/reengagement'
     | '/api/public/hooks/dispatch-scheduled-push'
     | '/api/public/hooks/mercadopago-retry'
+    | '/api/public/hooks/notify-expiring-rewards'
     | '/api/public/hooks/process-email-queue'
     | '/api/public/mercadopago/public-key'
     | '/api/public/t/event'
@@ -1415,6 +1428,7 @@ export interface RootRouteChildren {
   ApiPublicCronReengagementRoute: typeof ApiPublicCronReengagementRoute
   ApiPublicHooksDispatchScheduledPushRoute: typeof ApiPublicHooksDispatchScheduledPushRoute
   ApiPublicHooksMercadopagoRetryRoute: typeof ApiPublicHooksMercadopagoRetryRoute
+  ApiPublicHooksNotifyExpiringRewardsRoute: typeof ApiPublicHooksNotifyExpiringRewardsRoute
   ApiPublicHooksProcessEmailQueueRoute: typeof ApiPublicHooksProcessEmailQueueRoute
   ApiPublicMercadopagoPublicKeyRoute: typeof ApiPublicMercadopagoPublicKeyRoute
   ApiPublicTEventRoute: typeof ApiPublicTEventRoute
@@ -2086,6 +2100,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessEmailQueueRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/notify-expiring-rewards': {
+      id: '/api/public/hooks/notify-expiring-rewards'
+      path: '/api/public/hooks/notify-expiring-rewards'
+      fullPath: '/api/public/hooks/notify-expiring-rewards'
+      preLoaderRoute: typeof ApiPublicHooksNotifyExpiringRewardsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/mercadopago-retry': {
       id: '/api/public/hooks/mercadopago-retry'
       path: '/api/public/hooks/mercadopago-retry'
@@ -2437,6 +2458,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksDispatchScheduledPushRoute:
     ApiPublicHooksDispatchScheduledPushRoute,
   ApiPublicHooksMercadopagoRetryRoute: ApiPublicHooksMercadopagoRetryRoute,
+  ApiPublicHooksNotifyExpiringRewardsRoute:
+    ApiPublicHooksNotifyExpiringRewardsRoute,
   ApiPublicHooksProcessEmailQueueRoute: ApiPublicHooksProcessEmailQueueRoute,
   ApiPublicMercadopagoPublicKeyRoute: ApiPublicMercadopagoPublicKeyRoute,
   ApiPublicTEventRoute: ApiPublicTEventRoute,
