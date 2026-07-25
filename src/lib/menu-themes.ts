@@ -88,6 +88,7 @@ export type MenuThemeConfig = {
   layout: MenuLayoutId;
   pattern: MenuPatternId;
   entry: MenuEntryId;
+  bg_color: string | null;
   bg_image_url: string | null;
 };
 
@@ -96,8 +97,45 @@ export const DEFAULT_MENU_THEME: MenuThemeConfig = {
   layout: "list",
   pattern: "grain",
   entry: "dishes",
+  bg_color: null,
   bg_image_url: null,
 };
+
+/** Cores de fundo sugeridas (o lojista também pode escolher qualquer cor). */
+export const MENU_BG_SWATCHES = [
+  "#FBF7F0", "#FFFFFF", "#F6FAF6", "#F3F0FF",
+  "#FFF4E8", "#EAF2FB", "#1B1B1F", "#0D0D0D",
+];
+
+function hexLuminance(hex: string): number {
+  const h = hex.replace("#", "");
+  const full = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
+  const r = parseInt(full.slice(0, 2), 16) / 255;
+  const g = parseInt(full.slice(2, 4), 16) / 255;
+  const b = parseInt(full.slice(4, 6), 16) / 255;
+  if ([r, g, b].some((v) => Number.isNaN(v))) return 1;
+  const f = (v: number) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+}
+
+export function isValidHex(v: string): boolean {
+  return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v.trim());
+}
+
+/** Aplica uma cor de fundo customizada sobre o preset, ajustando texto/superfícies para manter contraste. */
+export function applyBgColor(preset: MenuPreset, bgColor: string | null): MenuPreset {
+  if (!bgColor || !isValidHex(bgColor)) return preset;
+  const dark = hexLuminance(bgColor) < 0.4;
+  return {
+    ...preset,
+    bg: bgColor,
+    surface: dark ? "rgba(255,255,255,0.07)" : "#FFFFFF",
+    ink: dark ? "#F5F3EE" : "#17130E",
+    line: dark ? "rgba(245,243,238,0.16)" : "rgba(23,19,14,0.14)",
+    bar: dark ? "#F5F3EE" : preset.bar,
+    barInk: dark ? "#111111" : preset.barInk,
+  };
+}
 
 export function resolveMenuTheme(raw: unknown): MenuThemeConfig & { preset_def: MenuPreset } {
   const t = (raw && typeof raw === "object" ? raw : {}) as Partial<MenuThemeConfig>;
@@ -105,13 +143,15 @@ export function resolveMenuTheme(raw: unknown): MenuThemeConfig & { preset_def: 
   const layout = MENU_LAYOUTS.some((l) => l.id === t.layout) ? (t.layout as MenuLayoutId) : DEFAULT_MENU_THEME.layout;
   const pattern = MENU_PATTERNS.some((p) => p.id === t.pattern) ? (t.pattern as MenuPatternId) : DEFAULT_MENU_THEME.pattern;
   const entry = MENU_ENTRIES.some((e) => e.id === t.entry) ? (t.entry as MenuEntryId) : DEFAULT_MENU_THEME.entry;
+  const bg_color = typeof t.bg_color === "string" && isValidHex(t.bg_color) ? t.bg_color : null;
   return {
     preset,
     layout,
     pattern,
     entry,
+    bg_color,
     bg_image_url: typeof t.bg_image_url === "string" && t.bg_image_url ? t.bg_image_url : null,
-    preset_def: MENU_PRESETS.find((p) => p.id === preset)!,
+    preset_def: applyBgColor(MENU_PRESETS.find((p) => p.id === preset)!, bg_color),
   };
 }
 
