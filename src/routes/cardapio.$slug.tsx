@@ -1079,7 +1079,10 @@ function StoriesViewer({
             {current.price != null && (
               <span className="flex items-baseline gap-2">
                 {hasPromo && <span className="text-xs opacity-60 line-through">{fmt(current.price, current.currency)}</span>}
-                <span className="text-xl font-bold" style={{ fontFamily: "Outfit" }}>
+                <span
+                  className="text-lg font-bold px-3 py-1 rounded-full"
+                  style={{ fontFamily: "Outfit", background: primary, color: readableInk(primary) }}
+                >
                   {fmt(hasPromo ? current.promo_price : current.price, current.currency)}
                 </span>
               </span>
