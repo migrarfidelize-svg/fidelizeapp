@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getMyEstablishmentCard } from "@/lib/my-wallet.functions";
+import { getMyEstablishmentCard, getPromotedEstablishmentIds } from "@/lib/my-wallet.functions";
 import { listPublicReviewsBySlug } from "@/lib/public-reviews.functions";
 import { LoyaltyVoucher } from "@/components/LoyaltyVoucher";
 import { formatDate } from "@/lib/format";
@@ -20,6 +20,8 @@ import {
   Check,
   Star,
   ChevronRight,
+  UtensilsCrossed,
+  Tag,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
