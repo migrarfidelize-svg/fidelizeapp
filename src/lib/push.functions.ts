@@ -758,10 +758,14 @@ export const adminBroadcastPush = createServerFn({ method: "POST" })
       .from("push_subscriptions")
       .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, preferences")
       .eq("active", true)
-      .not("customer_id", "is", null)
       .not("establishment_id", "is", null);
     if (data.establishment_ids && data.establishment_ids.length > 0) {
+      // Targeted broadcast: include ALL devices of that establishment
+      // (customers AND merchant/staff devices).
       q = q.in("establishment_id", data.establishment_ids);
+    } else {
+      // Global broadcast: customers only.
+      q = q.not("customer_id", "is", null);
     }
     const { data: subs } = await q;
 
