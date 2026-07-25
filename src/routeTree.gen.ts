@@ -112,6 +112,7 @@ import { Route as AuthenticatedAppCardapioCategoriasRouteImport } from './routes
 import { Route as AuthenticatedAdminSuporteIdRouteImport } from './routes/_authenticated/admin.suporte.$id'
 import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authenticated/admin.empresa.$id'
 import { Route as ApiPublicWalletAppleTokenRouteImport } from './routes/api/public/wallet.apple.$token'
+import { Route as ApiPublicRTCodeRouteImport } from './routes/api/public/r/t/$code'
 import { Route as AuthenticatedAppFidelizeTicketIdRouteImport } from './routes/_authenticated/app.fidelize.ticket.$id'
 import { Route as ApiPublicRQrSlugDestRouteImport } from './routes/api/public/r/qr/$slug/$dest'
 
@@ -684,6 +685,11 @@ const ApiPublicWalletAppleTokenRoute =
     path: '/api/public/wallet/apple/$token',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicRTCodeRoute = ApiPublicRTCodeRouteImport.update({
+  id: '/api/public/r/t/$code',
+  path: '/api/public/r/t/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAppFidelizeTicketIdRoute =
   AuthenticatedAppFidelizeTicketIdRouteImport.update({
     id: '/fidelize/ticket/$id',
@@ -799,6 +805,7 @@ export interface FileRoutesByFullPath {
   '/app/fidelize/': typeof AuthenticatedAppFidelizeIndexRoute
   '/app/planos/': typeof AuthenticatedAppPlanosIndexRoute
   '/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
+  '/api/public/r/t/$code': typeof ApiPublicRTCodeRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
   '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
 }
@@ -901,6 +908,7 @@ export interface FileRoutesByTo {
   '/app/fidelize': typeof AuthenticatedAppFidelizeIndexRoute
   '/app/planos': typeof AuthenticatedAppPlanosIndexRoute
   '/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
+  '/api/public/r/t/$code': typeof ApiPublicRTCodeRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
   '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
 }
@@ -1009,6 +1017,7 @@ export interface FileRoutesById {
   '/_authenticated/app/fidelize/': typeof AuthenticatedAppFidelizeIndexRoute
   '/_authenticated/app/planos/': typeof AuthenticatedAppPlanosIndexRoute
   '/_authenticated/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
+  '/api/public/r/t/$code': typeof ApiPublicRTCodeRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
   '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
 }
@@ -1117,6 +1126,7 @@ export interface FileRouteTypes {
     | '/app/fidelize/'
     | '/app/planos/'
     | '/app/fidelize/ticket/$id'
+    | '/api/public/r/t/$code'
     | '/api/public/wallet/apple/$token'
     | '/api/public/r/qr/$slug/$dest'
   fileRoutesByTo: FileRoutesByTo
@@ -1219,6 +1229,7 @@ export interface FileRouteTypes {
     | '/app/fidelize'
     | '/app/planos'
     | '/app/fidelize/ticket/$id'
+    | '/api/public/r/t/$code'
     | '/api/public/wallet/apple/$token'
     | '/api/public/r/qr/$slug/$dest'
   id:
@@ -1326,6 +1337,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/fidelize/'
     | '/_authenticated/app/planos/'
     | '/_authenticated/app/fidelize/ticket/$id'
+    | '/api/public/r/t/$code'
     | '/api/public/wallet/apple/$token'
     | '/api/public/r/qr/$slug/$dest'
   fileRoutesById: FileRoutesById
@@ -1370,6 +1382,7 @@ export interface RootRouteChildren {
   ApiPublicWebhooksAsaasRoute: typeof ApiPublicWebhooksAsaasRoute
   ApiPublicWebhooksMercadopagoRoute: typeof ApiPublicWebhooksMercadopagoRoute
   SuporteSlugKbArticleRoute: typeof SuporteSlugKbArticleRoute
+  ApiPublicRTCodeRoute: typeof ApiPublicRTCodeRoute
   ApiPublicWalletAppleTokenRoute: typeof ApiPublicWalletAppleTokenRoute
   ApiPublicRQrSlugDestRoute: typeof ApiPublicRQrSlugDestRoute
 }
@@ -2097,6 +2110,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWalletAppleTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/r/t/$code': {
+      id: '/api/public/r/t/$code'
+      path: '/api/public/r/t/$code'
+      fullPath: '/api/public/r/t/$code'
+      preLoaderRoute: typeof ApiPublicRTCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/app/fidelize/ticket/$id': {
       id: '/_authenticated/app/fidelize/ticket/$id'
       path: '/fidelize/ticket/$id'
@@ -2356,6 +2376,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicWebhooksAsaasRoute: ApiPublicWebhooksAsaasRoute,
   ApiPublicWebhooksMercadopagoRoute: ApiPublicWebhooksMercadopagoRoute,
   SuporteSlugKbArticleRoute: SuporteSlugKbArticleRoute,
+  ApiPublicRTCodeRoute: ApiPublicRTCodeRoute,
   ApiPublicWalletAppleTokenRoute: ApiPublicWalletAppleTokenRoute,
   ApiPublicRQrSlugDestRoute: ApiPublicRQrSlugDestRoute,
 }
