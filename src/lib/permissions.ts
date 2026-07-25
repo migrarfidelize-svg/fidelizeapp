@@ -58,6 +58,7 @@ export const PERMISSION_CATALOG: PermissionEntry[] = [
   { action: "reviews.reply",      group: "reputacao", label: "Responder avaliações",     description: "Publicar respostas públicas." },
   { action: "qr.manage",          group: "reputacao", label: "QR Codes",                 description: "Editar cartazes, banners e materiais de QR." },
   { action: "linktree.manage",    group: "reputacao", label: "Árvore de links",          description: "Editar página pública de links." },
+  { action: "menu.manage",        group: "reputacao", label: "Cardápio Virtual",         description: "Criar e publicar o cardápio digital do restaurante." },
 
   // Comunicação
   { action: "push.send",          group: "comunicacao", label: "Notificações push",      description: "Disparar notificações para clientes." },
