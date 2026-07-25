@@ -243,6 +243,12 @@ export const addStamp = createServerFn({ method: "POST" })
       }
     } catch { /* push falhas nunca bloqueiam */ }
 
+    try {
+      const { maybeNotifyStampGoalReached } = await import("@/lib/merchant-notify.server");
+      await maybeNotifyStampGoalReached(card.establishment_id);
+    } catch { /* noop */ }
+
+
     return { completed, stamps: completed ? 0 : newStamps, required: campaign.stamps_required, cycle: completed ? card.cycle + 1 : card.cycle };
 
   });
