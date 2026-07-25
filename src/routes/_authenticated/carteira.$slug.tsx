@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQuery, useQueryClient } from "@tanstack/react-query";
+import { trackChannelEvent } from "@/lib/tracking";
 import { getMyEstablishmentCard, getPromotedEstablishmentIds } from "@/lib/my-wallet.functions";
 import { listPublicReviewsBySlug } from "@/lib/public-reviews.functions";
 import { LoyaltyVoucher } from "@/components/LoyaltyVoucher";
@@ -280,6 +281,14 @@ function WalletEstablishment() {
             {d.hasMenu && (
               <a
                 href={`/cardapio/${est.slug}`}
+                onClick={() =>
+                  trackChannelEvent({
+                    slug: est.slug,
+                    channel: "loyalty",
+                    event_type: "link_click",
+                    ref_label: "wallet_menu",
+                  })
+                }
                 className="group flex items-center gap-3 rounded-2xl border border-border/60 bg-card/40 p-3.5 transition-all hover:border-primary/40 hover:bg-card/60"
               >
                 <div
@@ -300,6 +309,14 @@ function WalletEstablishment() {
               <Link
                 to="/carteira/$slug/promocoes"
                 params={{ slug }}
+                onClick={() =>
+                  trackChannelEvent({
+                    slug: est.slug,
+                    channel: "loyalty",
+                    event_type: "link_click",
+                    ref_label: "wallet_promotions",
+                  })
+                }
                 className="group flex items-center gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/5 p-3.5 transition-all hover:border-amber-500/60"
               >
                 <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-300">
