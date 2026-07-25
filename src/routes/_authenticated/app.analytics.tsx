@@ -412,3 +412,30 @@ function RetentionCell({ pct, size }: { pct: number; size: number }) {
     </td>
   );
 }
+
+function ChannelKpi({
+  icon: Icon, label, primary, primaryLabel, secondary,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  primary: number;
+  primaryLabel: string;
+  secondary: string;
+}) {
+  return (
+    <div className="dash-card p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
+          <div className="mt-1 flex items-baseline gap-1.5">
+            <span className="metric-number text-2xl">{primary.toLocaleString("pt-BR")}</span>
+            <span className="text-[11px] text-muted-foreground">{primaryLabel}</span>
+          </div>
+          <div className="mt-1 text-[11px] text-muted-foreground truncate">{secondary}</div>
+        </div>
+        <span className="card-icon shrink-0" aria-hidden><Icon /></span>
+      </div>
+    </div>
+  );
+}
+
