@@ -121,23 +121,23 @@ function MenuAppearancePage() {
           {/* TEMAS */}
           <Card>
             <CardHeader><CardTitle>1. Tema de cores</CardTitle></CardHeader>
-            <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <CardContent className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {MENU_PRESETS.map((p) => (
                 <button
                   key={p.id}
                   onClick={() => setPreset(p.id)}
-                  className={`relative overflow-hidden rounded-2xl border p-3 text-left transition ${
+                  className={`relative overflow-hidden rounded-xl border p-2 text-left transition ${
                     preset === p.id ? "border-primary ring-2 ring-primary/40" : "border-border/60 hover:border-primary/50"
                   }`}
                 >
                   {preset === p.id && (
-                    <span className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-primary text-primary-foreground">
-                      <Check className="h-3.5 w-3.5" />
+                    <span className="absolute right-1.5 top-1.5 grid h-5 w-5 place-items-center rounded-full bg-primary text-primary-foreground">
+                      <Check className="h-3 w-3" />
                     </span>
                   )}
                   <ThemeSwatch p={p} />
-                  <div className="mt-3 text-sm font-semibold">{p.name}</div>
-                  <p className="mt-1 text-xs text-muted-foreground">{p.description}</p>
+                  <div className="mt-2 truncate text-xs font-semibold">{p.name}</div>
+                  <p className="mt-0.5 line-clamp-2 text-[11px] leading-tight text-muted-foreground">{p.description}</p>
                 </button>
               ))}
             </CardContent>
@@ -330,13 +330,13 @@ function MenuAppearancePage() {
 
 function ThemeSwatch({ p }: { p: MenuPreset }) {
   return (
-    <div className="h-16 w-full overflow-hidden rounded-xl border border-border/40" style={{ background: p.bg }}>
-      <div className="flex h-full items-center gap-2 p-2">
-        <span className="h-10 w-10 rounded-lg" style={{ background: p.bar }} />
+    <div className="h-11 w-full overflow-hidden rounded-lg border border-border/40" style={{ background: p.bg }}>
+      <div className="flex h-full items-center gap-1.5 p-1.5">
+        <span className="h-7 w-7 rounded-md" style={{ background: p.bar }} />
         <span className="flex-1 space-y-1">
-          <span className="block h-2.5 w-3/4 rounded-full" style={{ background: p.ink, opacity: 0.85 }} />
-          <span className="block h-2 w-1/2 rounded-full" style={{ background: p.ink, opacity: 0.35 }} />
-          <span className="block h-6 rounded-md" style={{ background: p.surface, border: `1px solid ${p.line}` }} />
+          <span className="block h-1.5 w-3/4 rounded-full" style={{ background: p.ink, opacity: 0.85 }} />
+          <span className="block h-1.5 w-1/2 rounded-full" style={{ background: p.ink, opacity: 0.35 }} />
+          <span className="block h-3 rounded" style={{ background: p.surface, border: `1px solid ${p.line}` }} />
         </span>
       </div>
     </div>
