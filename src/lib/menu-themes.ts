@@ -4,7 +4,7 @@
  */
 
 export type MenuLayoutId = "list" | "grid" | "magazine";
-export type MenuPresetId = "papel" | "noir" | "fresh" | "terracota" | "oceano";
+export type MenuPresetId = "papel" | "noir" | "fresh" | "terracota" | "oceano" | "citrico" | "rose";
 export type MenuPatternId = "none" | "grain" | "dots" | "grid" | "aurora";
 export type MenuEntryId = "dishes" | "categories";
 
