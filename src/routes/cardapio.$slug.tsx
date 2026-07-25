@@ -452,21 +452,45 @@ function PublicMenuPage() {
               const count = (items as Item[]).filter((i) => i.category_id === c.id).length;
               if (count === 0) return null;
               const cover = (items as Item[]).find((i) => i.category_id === c.id && !!i.image_url)?.image_url || null;
+              const storyCount = (items as Item[]).filter((i) => i.category_id === c.id && !!(i.video_url || i.image_url)).length;
               return (
-                <button
+                <div
                   key={c.id}
-                  onClick={() => scrollToCat(c.id)}
                   className="fx-pill overflow-hidden rounded-2xl border text-left"
                   style={{ background: "var(--mk-surface)", borderColor: "var(--mk-line)" }}
                 >
-                  <div className="aspect-[4/3] w-full overflow-hidden" style={{ background: "var(--mk-line)" }}>
-                    {cover && <img src={cover} alt={c.name} loading="lazy" className="h-full w-full object-cover" />}
-                  </div>
-                  <div className="p-3">
-                    <div className="fx-serif text-base font-bold leading-tight">{c.name}</div>
-                    <div className="text-xs opacity-60 mt-0.5">{count} {count === 1 ? "item" : "itens"}</div>
-                  </div>
-                </button>
+                  <button
+                    onClick={() => (storyCount > 0 ? openCategoryStories(c.id, c.name) : scrollToCat(c.id))}
+                    className="block w-full text-left"
+                  >
+                    <div className="aspect-[4/3] w-full overflow-hidden relative" style={{ background: "var(--mk-line)" }}>
+                      {cover && <img src={cover} alt={c.name} loading="lazy" className="h-full w-full object-cover" />}
+                      {storyCount > 0 && (
+                        <>
+                          <span className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.45))" }} />
+                          <span className="absolute inset-0 grid place-items-center">
+                            <span className="grid place-items-center w-11 h-11 rounded-full bg-white/25 backdrop-blur border border-white/50">
+                              <Play className="w-5 h-5 text-white" />
+                            </span>
+                          </span>
+                          <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-black/55 text-white">
+                            {storyCount} stories
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    <div className="px-3 pt-3">
+                      <div className="fx-serif text-base font-bold leading-tight">{c.name}</div>
+                      <div className="text-xs opacity-60 mt-0.5">{count} {count === 1 ? "item" : "itens"}</div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => scrollToCat(c.id)}
+                    className="w-full text-left px-3 pb-3 pt-1.5 text-[11px] font-semibold underline underline-offset-2 opacity-70"
+                  >
+                    ver lista
+                  </button>
+                </div>
               );
             })}
             <button
@@ -482,16 +506,29 @@ function PublicMenuPage() {
           const list = byCat.get(c.id) || [];
           if (list.length === 0 && (activeCat === c.id || q)) return null;
           if (list.length === 0) return null;
+          const storyList = list.filter((i) => !!(i.video_url || i.image_url));
           return (
             <section key={c.id} ref={(el) => { catRefs.current[c.id] = el; }} className="scroll-mt-32">
-              <div className="flex items-end justify-between mb-3">
+              <div className="flex items-end justify-between gap-2 mb-3">
                 <h2 className="fx-serif text-xl sm:text-2xl font-bold">{c.name}</h2>
-                {c.featured && (
-                  <span className="text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-full" style={{ background: primary, color: "#fff" }}>
-                    Destaque
-                  </span>
-                )}
+                <div className="flex items-center gap-2 shrink-0">
+                  {c.featured && (
+                    <span className="text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-full" style={{ background: primary, color: "#fff" }}>
+                      Destaque
+                    </span>
+                  )}
+                  {storyList.length > 0 && (
+                    <button
+                      onClick={() => openStories(storyList, 0)}
+                      className="fx-pill inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full text-white"
+                      style={{ background: primary }}
+                    >
+                      <Play className="w-3 h-3" /> Assistir
+                    </button>
+                  )}
+                </div>
               </div>
+
               {c.description && <p className="text-sm opacity-60 -mt-2 mb-4">{c.description}</p>}
               <div className={theme.layout === "grid" ? "grid gap-4 grid-cols-2" : "grid gap-4"}>
                 {list.map((i) => (
