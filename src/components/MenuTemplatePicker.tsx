@@ -109,6 +109,14 @@ export function MenuTemplatePicker({ establishmentId }: Props) {
               {current.categories.map((c) => (
                 <div key={c.name} className="rounded-md border bg-muted/30 p-2">
                   <div className="flex items-center gap-2">
+                    {templateCategoryImage(current.key, c.name) && (
+                      <img
+                        src={templateCategoryImage(current.key, c.name)!}
+                        alt={c.name}
+                        loading="lazy"
+                        className="h-8 w-8 shrink-0 rounded object-cover"
+                      />
+                    )}
                     <span className="text-sm font-semibold">{c.name}</span>
                     {c.featured && <Badge className="h-4 px-1.5 text-[10px]">Destaque</Badge>}
                     <span className="ml-auto text-[11px] text-muted-foreground">{c.items.length} pratos</span>
