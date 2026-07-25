@@ -268,8 +268,11 @@ function PublicMenuPage() {
 
   const cover = est.cover_url || null;
   const theme = resolveMenuTheme((menu as any)?.theme);
-  const primary = theme.accent_color || est.primary_color || "#B8371D";
   const T = theme.preset_def;
+  // A cor de destaque escolhida (ou a cor do tema) manda no visual público —
+  // a cor da marca só entra se o tema não definir nada.
+  const primary = theme.accent_color || T.bar || est.primary_color || "#B8371D";
+
   const pageBg = menuBackgroundCss(theme, T, primary);
   const showCatPicker = theme.entry === "categories" && !catPicked && !q.trim() && categories.length > 0;
 
