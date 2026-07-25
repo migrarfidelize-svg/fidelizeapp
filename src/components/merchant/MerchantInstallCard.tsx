@@ -4,6 +4,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Download, Smartphone, X } from "lucide-react";
 import { trackEngagement } from "@/lib/engagement";
 import { IosSetupGuide } from "@/components/pwa/IosSetupGuide";
+import { useOnboardingSlot } from "@/lib/onboarding-queue";
+
 
 type BIPEvent = Event & {
   prompt: () => Promise<void>;
