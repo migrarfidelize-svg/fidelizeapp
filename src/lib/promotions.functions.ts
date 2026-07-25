@@ -194,10 +194,11 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
       stamp_validity_days: number | null;
       reward_validity_days: number | null;
     };
-    const empty: { establishment: PublicEst | null; promotions: PublicPromo[]; campaigns: PublicCampaign[] } = {
+    const empty: { establishment: PublicEst | null; promotions: PublicPromo[]; campaigns: PublicCampaign[]; has_menu: boolean } = {
       establishment: null,
       promotions: [],
       campaigns: [],
+      has_menu: false,
     };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: est } = await supabaseAdmin
