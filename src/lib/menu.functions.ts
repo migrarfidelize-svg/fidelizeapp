@@ -477,3 +477,128 @@ export const moveMenuItem = createServerFn({ method: "POST" })
     await supabase.from("menu_items").update({ position: a.position }).eq("id", b.id);
     return { ok: true };
   });
+
+// ========================================================================
+// SEED — Modelos prontos de cardápio por segmento
+// ========================================================================
+
+export const seedMenuFromTemplate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    establishment_id: z.string().uuid(),
+    template_key: z.string().min(1).max(40),
+    mode: z.enum(["append", "reset"]).optional(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { findTemplate } = await import("./menu-templates");
+    const tpl = findTemplate(data.template_key);
+    if (!tpl) throw new Error("Modelo não encontrado.");
+
+    const { supabase } = context;
+    const menuId = await ensureMenuId(supabase, data.establishment_id);
+
+    if (data.mode === "reset") {
+      await supabase.from("menu_items").delete().eq("menu_id", menuId);
+      await supabase.from("menu_categories").delete().eq("menu_id", menuId);
+    }
+
+    // Categorias existentes (para deduplicar por nome, case-insensitive)
+    const { data: existingCats } = await supabase
+      .from("menu_categories")
+      .select("id, name, position")
+      .eq("menu_id", menuId);
+    const existingByName = new Map<string, { id: string; position: number }>();
+    let maxCatPos = -1;
+    for (const c of existingCats ?? []) {
+      existingByName.set(String(c.name).trim().toLowerCase(), { id: c.id, position: c.position ?? 0 });
+      if ((c.position ?? 0) > maxCatPos) maxCatPos = c.position ?? 0;
+    }
+
+    let categoriesCreated = 0;
+    let itemsCreated = 0;
+    let itemsSkipped = 0;
+
+    for (const cat of tpl.categories) {
+      const key = cat.name.trim().toLowerCase();
+      let categoryId: string;
+      const found = existingByName.get(key);
+      if (found) {
+        categoryId = found.id;
+      } else {
+        maxCatPos += 1;
+        const { data: createdCat, error: catErr } = await supabase
+          .from("menu_categories")
+          .insert({
+            establishment_id: data.establishment_id,
+            menu_id: menuId,
+            name: cat.name,
+            description: cat.description ?? null,
+            featured: cat.featured ?? false,
+            active: true,
+            position: maxCatPos,
+          })
+          .select("id")
+          .single();
+        if (catErr || !createdCat) continue;
+        categoryId = createdCat.id;
+        existingByName.set(key, { id: categoryId, position: maxCatPos });
+        categoriesCreated += 1;
+      }
+
+      // Deduplicar itens por nome dentro da categoria
+      const { data: existingItems } = await supabase
+        .from("menu_items")
+        .select("id, name, position")
+        .eq("menu_id", menuId)
+        .eq("category_id", categoryId);
+      const existingItemNames = new Set(
+        (existingItems ?? []).map((i: any) => String(i.name).trim().toLowerCase())
+      );
+      let maxItemPos = -1;
+      for (const i of existingItems ?? []) {
+        if ((i.position ?? 0) > maxItemPos) maxItemPos = i.position ?? 0;
+      }
+
+      const toInsert = cat.items
+        .filter((it) => {
+          const dup = existingItemNames.has(it.name.trim().toLowerCase());
+          if (dup) itemsSkipped += 1;
+          return !dup;
+        })
+        .map((it) => {
+          maxItemPos += 1;
+          return {
+            establishment_id: data.establishment_id,
+            menu_id: menuId,
+            category_id: categoryId,
+            name: it.name,
+            short_desc: it.short_desc ?? null,
+            price: it.price ?? null,
+            currency: "BRL",
+            badges: (it.badges ?? []) as any,
+            ingredients: [],
+            allergens: [],
+            prep_minutes: it.prep_minutes ?? null,
+            active: true,
+            position: maxItemPos,
+          };
+        });
+
+      if (toInsert.length > 0) {
+        const { error: insErr, data: inserted } = await supabase
+          .from("menu_items")
+          .insert(toInsert)
+          .select("id");
+        if (!insErr && inserted) itemsCreated += inserted.length;
+      }
+    }
+
+    return {
+      ok: true,
+      template: tpl.key,
+      categories_created: categoriesCreated,
+      items_created: itemsCreated,
+      items_skipped_duplicated: itemsSkipped,
+    };
+  });
+
