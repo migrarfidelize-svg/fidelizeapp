@@ -475,6 +475,7 @@ function AppLayout() {
     cardapio: UtensilsCrossed,
     comunicacao: Bell,
     financeiro: Wallet,
+    ajuda: Wallet,
     ajuda: LifeBuoy,
   };
   const unreadByGroup: Record<string, number> = {
