@@ -629,6 +629,8 @@ function ItemCard({
 }: { item: Item; primary: string; onOpen: () => void; layout?: "list" | "grid" | "magazine" }) {
   const hasPromo = item.promo_price != null && item.price != null && item.promo_price < item.price;
   const badges = Array.isArray(item.badges) ? (item.badges as string[]) : [];
+  const variants = (Array.isArray(item.variants) ? item.variants : []).filter((v) => v?.label);
+  const variantPrices = variants.map((v) => v.price).filter((p): p is number => p != null);
   const surface = { background: "var(--mk-surface)", border: "1px solid var(--mk-line)" } as const;
 
   const Price = ({ size = "text-lg" }: { size?: string }) =>
@@ -639,7 +641,29 @@ function ItemCard({
       </>
     ) : item.price != null ? (
       <span className={`fx-serif font-bold ${size}`}>{fmt(item.price, item.currency)}</span>
+    ) : variantPrices.length > 0 ? (
+      <span className={`fx-serif font-bold ${size}`}>
+        <span className="text-[10px] font-medium opacity-60 mr-1">a partir de</span>
+        {fmt(Math.min(...variantPrices), item.currency)}
+      </span>
     ) : null;
+
+  const VariantChips = () =>
+    variants.length === 0 ? null : (
+      <div className="flex flex-wrap gap-1 mt-1.5">
+        {variants.slice(0, 3).map((v, idx) => (
+          <span
+            key={idx}
+            className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+            style={{ background: `${primary}18`, color: primary }}
+          >
+            {v.label}{v.price != null ? ` · ${fmt(v.price, item.currency)}` : ""}
+          </span>
+        ))}
+        {variants.length > 3 && <span className="text-[10px] opacity-60">+{variants.length - 3}</span>}
+      </div>
+    );
+
 
   const Thumb = ({ className }: { className: string }) => (
     <div className={`${className} shrink-0 overflow-hidden relative`} style={{ background: `${primary}12` }}>
