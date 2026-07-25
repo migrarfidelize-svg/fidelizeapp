@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ExternalLink, Instagram, MessageCircle, Globe, MapPin, Youtube, Facebook,
   Music2, Mail, Phone, Star, Trash2, ArrowUp, ArrowDown, Plus, Eye, Copy, QrCode, Wifi, KeyRound,
+  UtensilsCrossed, CreditCard,
 } from "lucide-react";
 
 
@@ -27,7 +28,7 @@ export const Route = createFileRoute("/_authenticated/app/linktree")({
   component: LinkTreeEditor,
 });
 
-type LinkKind = "whatsapp" | "instagram" | "facebook" | "tiktok" | "youtube" | "site" | "google" | "maps" | "email" | "phone" | "wifi" | "pix" | "custom";
+type LinkKind = "whatsapp" | "instagram" | "facebook" | "tiktok" | "youtube" | "site" | "google" | "maps" | "email" | "phone" | "wifi" | "pix" | "cardapio" | "cartao" | "custom";
 
 type LinkRow = {
   id?: string;
@@ -52,6 +53,8 @@ const KIND_META: Record<LinkKind, { label: string; icon: any; placeholder: strin
   phone: { label: "Telefone", icon: Phone, placeholder: "1130000000" },
   wifi: { label: "Wi-Fi", icon: Wifi, placeholder: "WIFI:S:Rede;T:WPA;P:senha;;" },
   pix: { label: "Chave Pix", icon: KeyRound, placeholder: "PIX:T:email;K:chave;;" },
+  cardapio: { label: "Cardápio Digital", icon: UtensilsCrossed, placeholder: "/cardapio/seu-slug" },
+  cartao: { label: "Cartão Fidelidade", icon: CreditCard, placeholder: "/cartao/seu-slug" },
   custom: { label: "Link personalizado", icon: ExternalLink, placeholder: "https://…" },
 };
 
