@@ -95,6 +95,7 @@ function PublicPage() {
   const applyRef = useServerFn(applyReferralByToken);
   const [f, setF] = useState({ name: "", phone: "", email: "", opt: true });
   const [loading, setLoading] = useState(false);
+  useChannelPageView(slug, "loyalty");
 
   const est = data!.establishment;
   const campaign = data!.campaigns[0];
