@@ -37,10 +37,43 @@ export const listMyInbox = createServerFn({ method: "GET" })
       readSet = new Set((reads ?? []).map((r) => r.message_id));
     }
 
-    return (msgs ?? []).map((m) => ({
+    const merchantItems = (msgs ?? []).map((m) => ({
       ...m,
       read: readSet.has(m.id),
     }));
+
+    const { data: appNotifications, error: appError } = await supabase
+      .from("user_notifications")
+      .select(
+        `id, establishment_id, kind, title, body, url, read_at, created_at,
+         establishment:establishments(id, slug, name, logo_url, primary_color)`,
+      )
+      .order("created_at", { ascending: false })
+      .limit(80);
+    if (appError) throw appError;
+
+    const appItems = (appNotifications ?? []).map((n) => ({
+      id: n.id,
+      establishment_id: n.establishment_id,
+      kind: n.kind === "push" ? "aviso" : n.kind,
+      title: n.title,
+      body: n.body ?? "",
+      image_url: null as string | null,
+      link_url: n.url,
+      published_at: n.created_at,
+      establishment: n.establishment ?? {
+        id: n.establishment_id ?? "system",
+        slug: "",
+        name: "Fidelize",
+        logo_url: null,
+        primary_color: "",
+      },
+      read: !!n.read_at,
+    }));
+
+    return [...merchantItems, ...appItems]
+      .sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime())
+      .slice(0, 80);
   });
 
 export const countUnread = createServerFn({ method: "GET" })
@@ -60,7 +93,14 @@ export const countUnread = createServerFn({ method: "GET" })
       .eq("user_id", userId)
       .in("message_id", ids);
     const readSet = new Set((reads ?? []).map((r) => r.message_id));
-    return ids.filter((i) => !readSet.has(i)).length;
+    const manualUnread = ids.filter((i) => !readSet.has(i)).length;
+
+    const { count: appUnread } = await supabase
+      .from("user_notifications")
+      .select("id", { count: "exact", head: true })
+      .is("read_at", null);
+
+    return manualUnread + (appUnread ?? 0);
   });
 
 export const markMessagesRead = createServerFn({ method: "POST" })
@@ -70,11 +110,30 @@ export const markMessagesRead = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const rows = data.ids.map((id) => ({ message_id: id, user_id: userId }));
-    const { error } = await supabase
-      .from("merchant_message_reads")
-      .upsert(rows, { onConflict: "message_id,user_id", ignoreDuplicates: true });
-    if (error) throw error;
+    const { data: merchantMessages, error: msgError } = await supabase
+      .from("merchant_messages")
+      .select("id")
+      .in("id", data.ids);
+    if (msgError) throw msgError;
+
+    const merchantIds = (merchantMessages ?? []).map((m) => m.id);
+    if (merchantIds.length) {
+      const rows = merchantIds.map((id) => ({ message_id: id, user_id: userId }));
+      const { error } = await supabase
+        .from("merchant_message_reads")
+        .upsert(rows, { onConflict: "message_id,user_id", ignoreDuplicates: true });
+      if (error) throw error;
+    }
+
+    const notificationIds = data.ids.filter((id) => !merchantIds.includes(id));
+    if (notificationIds.length) {
+      const { error } = await supabase
+        .from("user_notifications")
+        .update({ read_at: new Date().toISOString() })
+        .in("id", notificationIds)
+        .is("read_at", null);
+      if (error) throw error;
+    }
     return { ok: true };
   });
 
