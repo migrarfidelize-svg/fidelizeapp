@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { QUICK_SEARCH_KEY } from "@/components/merchant/QuickSearch";
 import { PageHero } from "@/components/PageHero";
 import { Zap as HeroIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -65,6 +66,18 @@ function Carimbar() {
 
   // Search state
   const [q, setQ] = useState("");
+
+  // Termo vindo da busca rápida global (⌘K) — preenche e busca automaticamente.
+  useEffect(() => {
+    try {
+      const pending = sessionStorage.getItem(QUICK_SEARCH_KEY);
+      if (pending) {
+        sessionStorage.removeItem(QUICK_SEARCH_KEY);
+        setQ(pending);
+        setSearchTerm(pending);
+      }
+    } catch { /* noop */ }
+  }, []);
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const pageSize = 10;

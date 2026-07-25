@@ -676,7 +676,7 @@ function AppLayout() {
               </Button>
 
               <QuickSearch
-                establishmentId={activeEst?.id ?? null}
+                establishmentId={activeEstId ?? null}
                 navTargets={FLAT_NAV.map((n) => ({ to: n.to, label: n.label }))}
               />
 
