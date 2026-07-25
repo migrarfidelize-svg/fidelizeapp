@@ -160,7 +160,9 @@ export const createPixPayment = createServerFn({ method: "POST" })
     const { supabase, userId, claims } = context;
     await assertOwner(supabase, userId, data.establishment_id);
     const plan = await getPlanOrThrow(supabase, data.plan_slug);
-    const amount = Number(plan.price_monthly ?? 0);
+    const { computeUpgradeCharge } = await import("@/lib/plan-proration.server");
+    const quote = await computeUpgradeCharge(data.establishment_id, plan as never);
+    const amount = quote.amount;
     if (!(amount > 0)) throw new Error("Este plano não é cobrado (grátis) — nada a pagar.");
 
     const idempotencyKey = crypto.randomUUID();
@@ -243,7 +245,9 @@ export const createCardPayment = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertOwner(supabase, userId, data.establishment_id);
     const plan = await getPlanOrThrow(supabase, data.plan_slug);
-    const amount = Number(plan.price_monthly ?? 0);
+    const { computeUpgradeCharge } = await import("@/lib/plan-proration.server");
+    const quote = await computeUpgradeCharge(data.establishment_id, plan as never);
+    const amount = quote.amount;
     if (!(amount > 0)) throw new Error("Este plano não é cobrado (grátis) — nada a pagar.");
     await assertMercadoPagoPaymentReady(data.payer_email);
 
@@ -318,7 +322,9 @@ export const createBoletoPayment = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertOwner(supabase, userId, data.establishment_id);
     const plan = await getPlanOrThrow(supabase, data.plan_slug);
-    const amount = Number(plan.price_monthly ?? 0);
+    const { computeUpgradeCharge } = await import("@/lib/plan-proration.server");
+    const quote = await computeUpgradeCharge(data.establishment_id, plan as never);
+    const amount = quote.amount;
     if (!(amount > 0)) throw new Error("Este plano não é cobrado (grátis).");
     await assertMercadoPagoPaymentReady(data.payer_email);
 

@@ -122,13 +122,16 @@ export const createAsaasPayment = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!plan || !plan.is_active || plan.archived_at) throw new Error("Plano indisponível.");
 
+    const { computeUpgradeCharge } = await import("@/lib/plan-proration.server");
+    const quote = await computeUpgradeCharge(data.establishmentId, plan as never);
+
     const customerId = await ensureAsaasCustomer(data.payer);
     const dueDate = new Date(Date.now() + 3 * 24 * 3600_000).toISOString().slice(0, 10);
 
     const payload: Record<string, unknown> = {
       customer: customerId,
       billingType: data.billingType,
-      value: Number(plan.price_monthly ?? 0),
+      value: quote.amount,
       dueDate,
       description: `Assinatura ${plan.name} — Fidelize`,
       externalReference: `est:${data.establishmentId}|plan:${plan.slug}`,
@@ -169,7 +172,7 @@ export const createAsaasPayment = createServerFn({ method: "POST" })
       plan_slug: plan.slug,
       provider: "asaas",
       provider_payment_id: String(charge.id),
-      amount: Number(plan.price_monthly ?? 0),
+      amount: quote.amount,
       currency: "BRL",
       method: data.billingType === "PIX" ? "pix" : data.billingType === "BOLETO" ? "boleto" : "credit_card",
       status: mapAsaasStatus(String(charge.status ?? "PENDING")),
