@@ -48,6 +48,8 @@ export function InstallAppCard() {
   function dismiss() {
     localStorage.setItem(DISMISS_KEY, "1");
     setVisible(false);
+    // Libera a vez para o próximo convite da fila (notificações).
+    window.dispatchEvent(new Event("wallet:onboarding-changed"));
   }
 
   async function install() {
