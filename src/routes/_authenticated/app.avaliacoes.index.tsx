@@ -101,8 +101,8 @@ function CockpitHero({ est }: { est: { id: string; name: string; slug: string } 
         </div>
         <div className="flex flex-wrap gap-2">
           <Button asChild variant="outline" size="sm" className="border-primary/40 text-primary hover:bg-primary/10">
-            <Link to="/app/qr">
-              <Sparkles className="h-3.5 w-3.5" /> Configurar QR
+            <Link to="/app/qr" search={{ dest: "reviews" as const }}>
+              <Sparkles className="h-3.5 w-3.5" /> Configurar QR Code
             </Link>
           </Button>
           <Button variant="outline" size="sm" onClick={copyLink}>
