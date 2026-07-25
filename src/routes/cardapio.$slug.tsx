@@ -12,7 +12,7 @@ import { getPublicMenuBySlug } from "@/lib/menu.functions";
 import { trackChannelEvent, useChannelPageView } from "@/lib/tracking";
 import { LazyImg } from "@/components/LazyImg";
 import { buildMenuJsonLd } from "@/lib/menu-jsonld";
-import { resolveMenuTheme, menuBackgroundCss } from "@/lib/menu-themes";
+import { resolveMenuTheme, menuBackgroundCss, readableInk } from "@/lib/menu-themes";
 
 const opts = (slug: string) =>
   queryOptions({
@@ -497,15 +497,15 @@ function PublicMenuPage() {
                 <h2 className="fx-serif text-xl sm:text-2xl font-bold">{c.name}</h2>
                 <div className="flex items-center gap-2 shrink-0">
                   {c.featured && (
-                    <span className="text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-full" style={{ background: primary, color: "#fff" }}>
+                    <span className="text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-full" style={{ background: primary, color: readableInk(primary) }}>
                       Destaque
                     </span>
                   )}
                   {storyList.length > 0 && (
                     <button
                       onClick={() => openStories(storyList, 0)}
-                      className="fx-pill inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full text-white"
-                      style={{ background: primary }}
+                      className="fx-pill inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full"
+                      style={{ background: primary, color: readableInk(primary) }}
                     >
                       <Play className="w-3 h-3" /> Assistir
                     </button>
