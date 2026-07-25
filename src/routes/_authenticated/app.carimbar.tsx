@@ -1,5 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { QUICK_SEARCH_KEY } from "@/components/merchant/QuickSearch";
+import {
+  saveOfflineCustomers, searchOfflineCustomers, enqueueStamp, readStampQueue,
+  flushStampQueue, isOfflineError, type PendingStamp,
+} from "@/lib/merchant-offline";
 import { PageHero } from "@/components/PageHero";
 import { Zap as HeroIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -102,8 +106,42 @@ function Carimbar() {
     queryKey: ["carimbar-customers", est?.id, searchTerm, page],
     queryFn: () => listAll({ data: { establishment_id: est!.id, query: searchTerm, page, page_size: pageSize } }),
   });
-  const results = listData?.customers ?? [];
-  const total = listData?.total ?? 0;
+  // ---- Offline no balcão ----
+  const [online, setOnline] = useState(true);
+  const [pending, setPending] = useState<PendingStamp[]>([]);
+
+  useEffect(() => {
+    setOnline(navigator.onLine);
+    setPending(readStampQueue());
+    const up = () => setOnline(true);
+    const down = () => setOnline(false);
+    window.addEventListener("online", up);
+    window.addEventListener("offline", down);
+    return () => { window.removeEventListener("online", up); window.removeEventListener("offline", down); };
+  }, []);
+
+  // Guarda os clientes vistos para busca sem internet.
+  useEffect(() => {
+    if (est?.id && listData?.customers?.length) saveOfflineCustomers(est.id, listData.customers);
+  }, [est?.id, listData]);
+
+  const flushPending = useCallback(async () => {
+    if (readStampQueue().length === 0) return;
+    const { sent } = await flushStampQueue((item) => addStampFn({ data: { card_id: item.card_id } }));
+    setPending(readStampQueue());
+    if (sent > 0) {
+      toast.success(`${sent} carimbo(s) pendente(s) sincronizado(s)`);
+      void queryClient.invalidateQueries({ queryKey: ["carimbar-customers"] });
+    }
+  }, [addStampFn, queryClient]);
+
+  useEffect(() => { if (online) void flushPending(); }, [online, flushPending]);
+
+  const offlineFallback = !online && est?.id
+    ? searchOfflineCustomers(est.id, searchTerm).customers
+    : [];
+  const results = listData?.customers ?? (offlineFallback as typeof listData extends never ? never : NonNullable<typeof listData>["customers"]);
+  const total = listData?.total ?? offlineFallback.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   function doSearch() {
@@ -174,13 +212,21 @@ function Carimbar() {
     }
   }
 
-  async function handleStamp(cardId: string, opts?: { source?: string }) {
+  async function handleStamp(cardId: string, opts?: { source?: string; customerName?: string | null }) {
     setBusy(true);
     try {
       const r = await stampWithPinRetry(cardId);
       toast.success(r.completed ? "🎉 Recompensa desbloqueada!" : `Carimbo adicionado (${r.stamps}/${r.required})`);
       if (selectedToken) await loadByToken(selectedToken);
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
+    } catch (e) {
+      if (isOfflineError(e) && est?.id) {
+        enqueueStamp({ card_id: cardId, customer_name: opts?.customerName ?? null, establishment_id: est.id });
+        setPending(readStampQueue());
+        toast.success("Sem internet: carimbo salvo e será enviado ao reconectar.");
+      } else {
+        toast.error(e instanceof Error ? e.message : "Erro");
+      }
+    }
     finally { setBusy(false); void opts; }
   }
 
