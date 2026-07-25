@@ -64,12 +64,33 @@ function RewardsHub() {
 
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "ready" | "close" | "inactive">("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
   const q = query.trim().toLowerCase();
+
+  // Categorias únicas presentes na carteira do usuário (fallback "Outros" para vazio).
+  const categories = useMemo(() => {
+    const map = new Map<string, { key: string; label: string; count: number }>();
+    for (const i of items) {
+      const seg = ((i.establishment as { segment: string | null }).segment ?? "").trim();
+      const key = seg ? seg.toLowerCase() : "__none__";
+      const label = seg || "Outros";
+      const prev = map.get(key);
+      if (prev) prev.count++;
+      else map.set(key, { key, label, count: 1 });
+    }
+    return Array.from(map.values()).sort((a, b) => b.count - a.count);
+  }, [items]);
+
   const filtered = useMemo(() => {
     return items.filter((i) => {
-      const est = i.establishment as { name: string; active: boolean };
+      const est = i.establishment as { name: string; active: boolean; segment: string | null };
       if (q && !est.name.toLowerCase().includes(q)) return false;
+      if (categoryFilter !== "all") {
+        const seg = (est.segment ?? "").trim().toLowerCase();
+        const key = seg || "__none__";
+        if (key !== categoryFilter) return false;
+      }
       const req = i.card ? (i.card.campaign as { stamps_required: number }).stamps_required || 1 : 1;
       const stamps = i.card?.stamps ?? 0;
       const pct = stamps / req;
@@ -86,7 +107,7 @@ function RewardsHub() {
           return true;
       }
     });
-  }, [items, q, statusFilter]);
+  }, [items, q, statusFilter, categoryFilter]);
 
   const counts = useMemo(() => {
     let readyCount = 0;
