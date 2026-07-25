@@ -9,6 +9,8 @@ import { VAPID_PUBLIC_KEY, urlBase64ToUint8Array } from "@/lib/vapid";
 import { subscribeAdminPush, getAdminPushStatus } from "@/lib/push.functions";
 import { trackEngagement } from "@/lib/engagement";
 import { IosSetupGuide } from "@/components/pwa/IosSetupGuide";
+import { useOnboardingSlot } from "@/lib/onboarding-queue";
+
 
 const DISMISS_KEY = "fidelize:merchant-push-dismissed:v1";
 const SKIP_UNTIL_KEY = "fidelize:merchant-push-skip-until:v1";
