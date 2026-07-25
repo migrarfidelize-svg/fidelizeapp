@@ -550,7 +550,7 @@ function AppLayout() {
                   onMouseEnter={() => openGroup(g.key)}
                   onMouseLeave={scheduleCloseGroup}
                 >
-                  <div className="dock-flyout max-h-[80vh] min-w-[240px] overflow-y-auto rounded-2xl p-2">to
+                  <div className="dock-flyout max-h-[80vh] min-w-[240px] overflow-y-auto rounded-2xl p-2">
                     <div className="dock-flyout-title px-2 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em]">
                       {g.label}
                     </div>
