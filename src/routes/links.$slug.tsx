@@ -100,6 +100,7 @@ function PublicLinkTreePage() {
   const est = data!.establishment;
   const page = data!.page;
   const links = data!.links ?? [];
+  useChannelPageView(slug, "linktree");
 
   const theme = (page?.theme as Record<string, string> | null) ?? {};
   const primary = theme.primary || est.primary_color || "#0ea5e9";
