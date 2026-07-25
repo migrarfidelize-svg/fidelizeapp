@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import qrDisplayAsset from "@/assets/qr-display.png.asset.json";
 import {
   Sparkles,
   Star,
@@ -13,6 +14,7 @@ import {
   Volume2,
   MoreHorizontal,
 } from "lucide-react";
+
 
 export const Route = createFileRoute("/videos")({
   head: () => ({
@@ -143,25 +145,26 @@ function PlayerChrome({
   );
 }
 
-// ---------- Preview 1 — Cartão Fidelidade + NFC ----------
+// ---------- Preview 1 — Cartão Fidelidade ----------
 function ScenePreview1() {
   const t = useLoop(DURATION);
   const stampsFilled = Math.min(10, Math.floor((t / DURATION) * 10) + 1);
 
   return (
     <div className="relative flex w-full max-w-xs flex-col items-center gap-6">
-      {/* NFC ping */}
+      {/* Scan hint */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: [0, 1, 1, 0], y: [-8, 0, 0, -4] }}
         transition={{ duration: DURATION, repeat: Infinity, times: [0, 0.1, 0.85, 1] }}
         className="inline-flex items-center gap-2 rounded-full border border-cyan-400/40 bg-cyan-400/10 px-3 py-1"
       >
-        <Nfc className="h-3.5 w-3.5 text-cyan-300" />
+        <QrCode className="h-3.5 w-3.5 text-cyan-300" />
         <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-cyan-200">
-          Aproxime o cartão
+          Escaneie seu cartão
         </span>
       </motion.div>
+
 
       {/* Card */}
       <motion.div
@@ -493,49 +496,40 @@ function ScenePreview4() {
             />
           </motion.div>
 
-          {/* Printed card inside acrylic */}
-          <div className="relative rounded-lg border border-white/10 bg-black/70 p-3 text-center">
-            <div
-              className="font-mono text-[9px] uppercase tracking-[0.3em]"
-              style={{ color: ACCENT }}
-            >
-              Escaneie ou aproxime
-            </div>
-            <div className="mt-1 text-[11px] font-bold text-white">Café Ritual</div>
-
-            {/* QR */}
-            <div className="mx-auto mt-2 grid h-20 w-20 place-items-center rounded-md bg-white p-1.5">
-              <QrCode className="h-full w-full text-black" strokeWidth={2.5} />
-            </div>
-
-            {/* NFC ripple target */}
-            <div className="relative mx-auto mt-2 grid h-9 w-9 place-items-center rounded-full border border-cyan-300/40 bg-cyan-300/10">
-              <Nfc className="h-4 w-4 text-cyan-300" />
-              {/* Ripples on tap */}
-              {[0, 1, 2].map((r) => (
-                <motion.span
-                  key={r}
-                  className="absolute inset-0 rounded-full border"
-                  style={{ borderColor: ACCENT }}
-                  initial={{ opacity: 0, scale: 0.6 }}
-                  animate={{
-                    opacity: tapPhase > 0.55 ? [0, 0.7, 0] : 0,
-                    scale: tapPhase > 0.55 ? [0.6, 2.4, 3] : 0.6,
-                  }}
-                  transition={{
-                    duration: 1.3,
-                    delay: r * 0.25,
-                    repeat: Infinity,
-                    repeatDelay: DURATION - 1.5,
-                  }}
-                />
-              ))}
-            </div>
-
-            <div className="mt-2 font-mono text-[8px] uppercase tracking-widest text-white/50">
-              Tap · NFC · QR
+          {/* Printed image inside acrylic */}
+          <div className="relative overflow-hidden rounded-lg border border-white/10 bg-black">
+            <img
+              src={qrDisplayAsset.url}
+              alt="QR do estabelecimento"
+              className="block h-auto w-full select-none"
+              draggable={false}
+            />
+            {/* NFC ripple target (overlay hint) */}
+            <div className="pointer-events-none absolute inset-x-0 bottom-1 flex justify-center">
+              <div className="relative grid h-7 w-7 place-items-center rounded-full border border-cyan-300/40 bg-cyan-300/10 backdrop-blur">
+                <Nfc className="h-3.5 w-3.5 text-cyan-300" />
+                {[0, 1, 2].map((r) => (
+                  <motion.span
+                    key={r}
+                    className="absolute inset-0 rounded-full border"
+                    style={{ borderColor: ACCENT }}
+                    initial={{ opacity: 0, scale: 0.6 }}
+                    animate={{
+                      opacity: tapPhase > 0.55 ? [0, 0.7, 0] : 0,
+                      scale: tapPhase > 0.55 ? [0.6, 2.4, 3] : 0.6,
+                    }}
+                    transition={{
+                      duration: 1.3,
+                      delay: r * 0.25,
+                      repeat: Infinity,
+                      repeatDelay: DURATION - 1.5,
+                    }}
+                  />
+                ))}
+              </div>
             </div>
           </div>
+
 
           {/* Base label */}
           <div className="mt-2 text-center font-mono text-[8px] uppercase tracking-[0.3em] text-white/50">
@@ -593,11 +587,13 @@ function ScenePreview4() {
 function VideosPage() {
   const previews = [
     {
-      title: "Cartão fidelidade digital + NFC",
+
+      title: "Cartão fidelidade digital",
       subtitle: "Ep. 01 · Retenção",
       pill: "Retenção",
       scene: <ScenePreview1 />,
     },
+
     {
       title: "Avaliação de atendimento em tempo real",
       subtitle: "Ep. 02 · Reputação",
