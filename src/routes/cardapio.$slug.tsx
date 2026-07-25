@@ -1010,8 +1010,8 @@ function StoriesViewer({
             {items.map((_, idx) => (
               <span key={idx} className="flex-1 h-[3px] rounded-full overflow-hidden bg-white/30">
                 <span
-                  className="block h-full bg-white rounded-full"
-                  style={{ width: idx < i ? "100%" : idx === i ? `${progress * 100}%` : "0%" }}
+                  className="block h-full rounded-full"
+                  style={{ width: idx < i ? "100%" : idx === i ? `${progress * 100}%` : "0%", background: primary }}
                 />
               </span>
             ))}
