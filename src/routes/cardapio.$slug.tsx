@@ -238,6 +238,17 @@ function PublicMenuPage() {
     trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_id: it?.id ?? null, ref_label: `stories_open:${it?.name ?? ""}` });
   };
 
+  // Abre a categoria em modo story: passa 1 vídeo ou 1 imagem por produto
+  const openCategoryStories = (catId: string, catName: string) => {
+    const pool = (items as Item[]).filter(
+      (x) => x.category_id === catId && !!(x.video_url || x.image_url),
+    );
+    if (pool.length === 0) { scrollToCat(catId); return; }
+    setStories({ list: pool, index: 0 });
+    trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_id: catId, ref_label: `stories_category:${catName}` });
+  };
+
+
   const onSearchChange = (value: string) => {
     setQ(value);
     if (value.trim()) setCatPicked(true);
