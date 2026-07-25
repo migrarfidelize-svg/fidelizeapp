@@ -57,8 +57,10 @@ type Item = {
   badges: any;
   ingredients: string[];
   allergens: string[];
+  variants?: { label: string; price: number | null }[] | null;
   position: number;
 };
+
 
 type Category = { id: string; name: string; position: number };
 
