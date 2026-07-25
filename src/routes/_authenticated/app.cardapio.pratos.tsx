@@ -424,8 +424,12 @@ function ItemDialog({
       badges,
       ingredients: ingredientsText.split(",").map(s => s.trim()).filter(Boolean),
       allergens: allergensText.split(",").map(s => s.trim()).filter(Boolean),
+      variants: variants
+        .filter(v => v.label.trim())
+        .map(v => ({ label: v.label.trim(), price: parseNum(v.price) })),
       active,
     });
+
   };
 
   return (
