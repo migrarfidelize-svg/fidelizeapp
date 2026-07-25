@@ -39,7 +39,6 @@ import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/ap
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as SuporteSlugIndexRouteImport } from './routes/suporte.$slug.index'
 import { Route as AjudaCategoryIndexRouteImport } from './routes/ajuda.$category.index'
-import { Route as AuthenticatedSuporteIndexRouteImport } from './routes/_authenticated/suporte.index'
 import { Route as AuthenticatedCarteiraIndexRouteImport } from './routes/_authenticated/carteira.index'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
@@ -88,6 +87,7 @@ import { Route as AuthenticatedAdminAssinaturasRouteImport } from './routes/_aut
 import { Route as AuthenticatedAdminAlertasRouteImport } from './routes/_authenticated/admin.alertas'
 import { Route as AuthenticatedAdminAjudaRouteImport } from './routes/_authenticated/admin.ajuda'
 import { Route as AuthenticatedAppPlanosIndexRouteImport } from './routes/_authenticated/app.planos.index'
+import { Route as AuthenticatedAppFidelizeIndexRouteImport } from './routes/_authenticated/app.fidelize.index'
 import { Route as AuthenticatedAppAvaliacoesIndexRouteImport } from './routes/_authenticated/app.avaliacoes.index'
 import { Route as AuthenticatedAdminSuporteIndexRouteImport } from './routes/_authenticated/admin.suporte.index'
 import { Route as AuthenticatedAdminPlanosIndexRouteImport } from './routes/_authenticated/admin.planos.index'
@@ -101,12 +101,12 @@ import { Route as ApiPublicHooksMercadopagoRetryRouteImport } from './routes/api
 import { Route as ApiPublicHooksDispatchScheduledPushRouteImport } from './routes/api/public/hooks/dispatch-scheduled-push'
 import { Route as ApiPublicCronReengagementRouteImport } from './routes/api/public/cron/reengagement'
 import { Route as ApiPublicCronBirthdayRouteImport } from './routes/api/public/cron/birthday'
-import { Route as AuthenticatedSuporteTicketIdRouteImport } from './routes/_authenticated/suporte.ticket.$id'
 import { Route as AuthenticatedCarteiraESlugRouteImport } from './routes/_authenticated/carteira.e.$slug'
 import { Route as AuthenticatedCarteiraSlugPromocoesRouteImport } from './routes/_authenticated/carteira.$slug.promocoes'
 import { Route as AuthenticatedAdminSuporteIdRouteImport } from './routes/_authenticated/admin.suporte.$id'
 import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authenticated/admin.empresa.$id'
 import { Route as ApiPublicWalletAppleTokenRouteImport } from './routes/api/public/wallet.apple.$token'
+import { Route as AuthenticatedAppFidelizeTicketIdRouteImport } from './routes/_authenticated/app.fidelize.ticket.$id'
 import { Route as ApiPublicRQrSlugDestRouteImport } from './routes/api/public/r/qr/$slug/$dest'
 
 const VideosRoute = VideosRouteImport.update({
@@ -258,12 +258,6 @@ const AjudaCategoryIndexRoute = AjudaCategoryIndexRouteImport.update({
   path: '/ajuda/$category/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedSuporteIndexRoute =
-  AuthenticatedSuporteIndexRouteImport.update({
-    id: '/suporte/',
-    path: '/suporte/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedCarteiraIndexRoute =
   AuthenticatedCarteiraIndexRouteImport.update({
     id: '/',
@@ -540,6 +534,12 @@ const AuthenticatedAppPlanosIndexRoute =
     path: '/planos/',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppFidelizeIndexRoute =
+  AuthenticatedAppFidelizeIndexRouteImport.update({
+    id: '/fidelize/',
+    path: '/fidelize/',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppAvaliacoesIndexRoute =
   AuthenticatedAppAvaliacoesIndexRouteImport.update({
     id: '/avaliacoes/',
@@ -614,12 +614,6 @@ const ApiPublicCronBirthdayRoute = ApiPublicCronBirthdayRouteImport.update({
   path: '/api/public/cron/birthday',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedSuporteTicketIdRoute =
-  AuthenticatedSuporteTicketIdRouteImport.update({
-    id: '/suporte/ticket/$id',
-    path: '/suporte/ticket/$id',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedCarteiraESlugRoute =
   AuthenticatedCarteiraESlugRouteImport.update({
     id: '/e/$slug',
@@ -649,6 +643,12 @@ const ApiPublicWalletAppleTokenRoute =
     id: '/api/public/wallet/apple/$token',
     path: '/api/public/wallet/apple/$token',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedAppFidelizeTicketIdRoute =
+  AuthenticatedAppFidelizeTicketIdRouteImport.update({
+    id: '/fidelize/ticket/$id',
+    path: '/fidelize/ticket/$id',
+    getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const ApiPublicRQrSlugDestRoute = ApiPublicRQrSlugDestRouteImport.update({
   id: '/api/public/r/qr/$slug/$dest',
@@ -731,14 +731,12 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/app/': typeof AuthenticatedAppIndexRoute
   '/carteira/': typeof AuthenticatedCarteiraIndexRoute
-  '/suporte/': typeof AuthenticatedSuporteIndexRoute
   '/ajuda/$category/': typeof AjudaCategoryIndexRoute
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
   '/carteira/e/$slug': typeof AuthenticatedCarteiraESlugRoute
-  '/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
   '/api/public/hooks/dispatch-scheduled-push': typeof ApiPublicHooksDispatchScheduledPushRoute
@@ -752,7 +750,9 @@ export interface FileRoutesByFullPath {
   '/admin/planos/': typeof AuthenticatedAdminPlanosIndexRoute
   '/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
   '/app/avaliacoes/': typeof AuthenticatedAppAvaliacoesIndexRoute
+  '/app/fidelize/': typeof AuthenticatedAppFidelizeIndexRoute
   '/app/planos/': typeof AuthenticatedAppPlanosIndexRoute
+  '/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
   '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
 }
@@ -828,14 +828,12 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/app': typeof AuthenticatedAppIndexRoute
   '/carteira': typeof AuthenticatedCarteiraIndexRoute
-  '/suporte': typeof AuthenticatedSuporteIndexRoute
   '/ajuda/$category': typeof AjudaCategoryIndexRoute
   '/suporte/$slug': typeof SuporteSlugIndexRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
   '/carteira/e/$slug': typeof AuthenticatedCarteiraESlugRoute
-  '/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
   '/api/public/hooks/dispatch-scheduled-push': typeof ApiPublicHooksDispatchScheduledPushRoute
@@ -849,7 +847,9 @@ export interface FileRoutesByTo {
   '/admin/planos': typeof AuthenticatedAdminPlanosIndexRoute
   '/admin/suporte': typeof AuthenticatedAdminSuporteIndexRoute
   '/app/avaliacoes': typeof AuthenticatedAppAvaliacoesIndexRoute
+  '/app/fidelize': typeof AuthenticatedAppFidelizeIndexRoute
   '/app/planos': typeof AuthenticatedAppPlanosIndexRoute
+  '/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
   '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
 }
@@ -930,14 +930,12 @@ export interface FileRoutesById {
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
   '/_authenticated/carteira/': typeof AuthenticatedCarteiraIndexRoute
-  '/_authenticated/suporte/': typeof AuthenticatedSuporteIndexRoute
   '/ajuda/$category/': typeof AjudaCategoryIndexRoute
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
   '/_authenticated/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/_authenticated/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/_authenticated/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
   '/_authenticated/carteira/e/$slug': typeof AuthenticatedCarteiraESlugRoute
-  '/_authenticated/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
   '/api/public/hooks/dispatch-scheduled-push': typeof ApiPublicHooksDispatchScheduledPushRoute
@@ -951,7 +949,9 @@ export interface FileRoutesById {
   '/_authenticated/admin/planos/': typeof AuthenticatedAdminPlanosIndexRoute
   '/_authenticated/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
   '/_authenticated/app/avaliacoes/': typeof AuthenticatedAppAvaliacoesIndexRoute
+  '/_authenticated/app/fidelize/': typeof AuthenticatedAppFidelizeIndexRoute
   '/_authenticated/app/planos/': typeof AuthenticatedAppPlanosIndexRoute
+  '/_authenticated/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
   '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
 }
@@ -1032,14 +1032,12 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/app/'
     | '/carteira/'
-    | '/suporte/'
     | '/ajuda/$category/'
     | '/suporte/$slug/'
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
     | '/carteira/$slug/promocoes'
     | '/carteira/e/$slug'
-    | '/suporte/ticket/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
     | '/api/public/hooks/dispatch-scheduled-push'
@@ -1053,7 +1051,9 @@ export interface FileRouteTypes {
     | '/admin/planos/'
     | '/admin/suporte/'
     | '/app/avaliacoes/'
+    | '/app/fidelize/'
     | '/app/planos/'
+    | '/app/fidelize/ticket/$id'
     | '/api/public/wallet/apple/$token'
     | '/api/public/r/qr/$slug/$dest'
   fileRoutesByTo: FileRoutesByTo
@@ -1129,14 +1129,12 @@ export interface FileRouteTypes {
     | '/admin'
     | '/app'
     | '/carteira'
-    | '/suporte'
     | '/ajuda/$category'
     | '/suporte/$slug'
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
     | '/carteira/$slug/promocoes'
     | '/carteira/e/$slug'
-    | '/suporte/ticket/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
     | '/api/public/hooks/dispatch-scheduled-push'
@@ -1150,7 +1148,9 @@ export interface FileRouteTypes {
     | '/admin/planos'
     | '/admin/suporte'
     | '/app/avaliacoes'
+    | '/app/fidelize'
     | '/app/planos'
+    | '/app/fidelize/ticket/$id'
     | '/api/public/wallet/apple/$token'
     | '/api/public/r/qr/$slug/$dest'
   id:
@@ -1230,14 +1230,12 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/_authenticated/app/'
     | '/_authenticated/carteira/'
-    | '/_authenticated/suporte/'
     | '/ajuda/$category/'
     | '/suporte/$slug/'
     | '/_authenticated/admin/empresa/$id'
     | '/_authenticated/admin/suporte/$id'
     | '/_authenticated/carteira/$slug/promocoes'
     | '/_authenticated/carteira/e/$slug'
-    | '/_authenticated/suporte/ticket/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
     | '/api/public/hooks/dispatch-scheduled-push'
@@ -1251,7 +1249,9 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/planos/'
     | '/_authenticated/admin/suporte/'
     | '/_authenticated/app/avaliacoes/'
+    | '/_authenticated/app/fidelize/'
     | '/_authenticated/app/planos/'
+    | '/_authenticated/app/fidelize/ticket/$id'
     | '/api/public/wallet/apple/$token'
     | '/api/public/r/qr/$slug/$dest'
   fileRoutesById: FileRoutesById
@@ -1509,13 +1509,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/ajuda/$category/'
       preLoaderRoute: typeof AjudaCategoryIndexRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/suporte/': {
-      id: '/_authenticated/suporte/'
-      path: '/suporte'
-      fullPath: '/suporte/'
-      preLoaderRoute: typeof AuthenticatedSuporteIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/carteira/': {
       id: '/_authenticated/carteira/'
@@ -1853,6 +1846,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppPlanosIndexRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/fidelize/': {
+      id: '/_authenticated/app/fidelize/'
+      path: '/fidelize'
+      fullPath: '/app/fidelize/'
+      preLoaderRoute: typeof AuthenticatedAppFidelizeIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/app/avaliacoes/': {
       id: '/_authenticated/app/avaliacoes/'
       path: '/avaliacoes'
@@ -1944,13 +1944,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronBirthdayRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/suporte/ticket/$id': {
-      id: '/_authenticated/suporte/ticket/$id'
-      path: '/suporte/ticket/$id'
-      fullPath: '/suporte/ticket/$id'
-      preLoaderRoute: typeof AuthenticatedSuporteTicketIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/carteira/e/$slug': {
       id: '/_authenticated/carteira/e/$slug'
       path: '/e/$slug'
@@ -1985,6 +1978,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/wallet/apple/$token'
       preLoaderRoute: typeof ApiPublicWalletAppleTokenRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/app/fidelize/ticket/$id': {
+      id: '/_authenticated/app/fidelize/ticket/$id'
+      path: '/fidelize/ticket/$id'
+      fullPath: '/app/fidelize/ticket/$id'
+      preLoaderRoute: typeof AuthenticatedAppFidelizeTicketIdRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
     '/api/public/r/qr/$slug/$dest': {
       id: '/api/public/r/qr/$slug/$dest'
@@ -2068,7 +2068,9 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppSuporteRoute: typeof AuthenticatedAppSuporteRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
   AuthenticatedAppAvaliacoesIndexRoute: typeof AuthenticatedAppAvaliacoesIndexRoute
+  AuthenticatedAppFidelizeIndexRoute: typeof AuthenticatedAppFidelizeIndexRoute
   AuthenticatedAppPlanosIndexRoute: typeof AuthenticatedAppPlanosIndexRoute
+  AuthenticatedAppFidelizeTicketIdRoute: typeof AuthenticatedAppFidelizeTicketIdRoute
 }
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
@@ -2090,7 +2092,9 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppSuporteRoute: AuthenticatedAppSuporteRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
   AuthenticatedAppAvaliacoesIndexRoute: AuthenticatedAppAvaliacoesIndexRoute,
+  AuthenticatedAppFidelizeIndexRoute: AuthenticatedAppFidelizeIndexRoute,
   AuthenticatedAppPlanosIndexRoute: AuthenticatedAppPlanosIndexRoute,
+  AuthenticatedAppFidelizeTicketIdRoute: AuthenticatedAppFidelizeTicketIdRoute,
 }
 
 const AuthenticatedAppRouteWithChildren =
@@ -2148,8 +2152,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
   AuthenticatedCarteiraRoute: typeof AuthenticatedCarteiraRouteWithChildren
   AuthenticatedLgpdRoute: typeof AuthenticatedLgpdRoute
-  AuthenticatedSuporteIndexRoute: typeof AuthenticatedSuporteIndexRoute
-  AuthenticatedSuporteTicketIdRoute: typeof AuthenticatedSuporteTicketIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -2157,8 +2159,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
   AuthenticatedCarteiraRoute: AuthenticatedCarteiraRouteWithChildren,
   AuthenticatedLgpdRoute: AuthenticatedLgpdRoute,
-  AuthenticatedSuporteIndexRoute: AuthenticatedSuporteIndexRoute,
-  AuthenticatedSuporteTicketIdRoute: AuthenticatedSuporteTicketIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

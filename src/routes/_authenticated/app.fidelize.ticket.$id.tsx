@@ -13,7 +13,7 @@ import { ArrowLeft, Send, Info, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { LoadingSkeleton } from "@/components/states";
 
-export const Route = createFileRoute("/_authenticated/suporte/ticket/$id")({
+export const Route = createFileRoute("/_authenticated/app/fidelize/ticket/$id")({
   head: () => ({ meta: [{ title: "Ticket — Suporte" }] }),
   component: Ticket,
 });
@@ -28,7 +28,7 @@ const STATUS: Record<string, { label: string; color: string }> = {
 };
 
 function Ticket() {
-  const { id } = useParams({ from: "/_authenticated/suporte/ticket/$id" });
+  const { id } = useParams({ from: "/_authenticated/app/fidelize/ticket/$id" });
   const qc = useQueryClient();
   const getFn = useServerFn(getMySupportTicket);
   const replyFn = useServerFn(replyMySupportTicket);
@@ -58,7 +58,7 @@ function Ticket() {
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [data?.messages.length]);
 
   if (isLoading) return <div className="p-8"><LoadingSkeleton variant="page" /></div>;
-  if (!data) return <div className="p-8 text-center">Ticket não encontrado. <Link to="/suporte" className="text-primary underline">Voltar</Link></div>;
+  if (!data) return <div className="p-8 text-center">Ticket não encontrado. <Link to="/app/fidelize" className="text-primary underline">Voltar</Link></div>;
 
   const { ticket, messages } = data;
   const status = STATUS[ticket.status] ?? STATUS.open;
@@ -79,7 +79,7 @@ function Ticket() {
   return (
     <div className="min-h-dvh bg-muted/30">
       <div className="max-w-3xl mx-auto p-6 space-y-4">
-        <Link to="/suporte" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+        <Link to="/app/fidelize" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Voltar
         </Link>
 
