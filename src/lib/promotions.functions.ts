@@ -250,7 +250,11 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
       stamp_validity_days: (c.stamp_validity_days as number | null) ?? null,
       reward_validity_days: (c.reward_validity_days as number | null) ?? null,
     }));
+    // Vitrine digital: só expomos o atalho quando o plano libera e o cardápio está publicado.
+    const { isMenuDestinationValid } = await import("@/lib/qr-target.server");
+    const hasMenu = await isMenuDestinationValid(supabaseAdmin, est.id as string);
     return {
+      has_menu: hasMenu,
       establishment: {
         id: est.id,
         name: est.name,
