@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   UtensilsCrossed, LayoutList, FolderTree, Video, Eye,
-  Copy, ExternalLink, CheckCircle2, Circle, Sparkles, QrCode, Palette,
+  Copy, ExternalLink, CheckCircle2, Circle, Sparkles, QrCode, Palette, ArrowRight,
 } from "lucide-react";
 
 import { getMyEstablishments } from "@/lib/loyalty.functions";
@@ -102,7 +102,18 @@ function CardapioOverview() {
         <MetricCard icon={FolderTree} label="Categorias"     value={counts?.categories ?? 0} />
         <MetricCard icon={LayoutList} label="Pratos"         value={counts?.items ?? 0} />
         <MetricCard icon={Video}      label="Com vídeo"      value={counts?.videos ?? 0} />
-        <MetricCard icon={Eye}        label="Acessos (7d)"   value={counts?.recent7d ?? 0} />
+        <MetricCard
+          icon={Eye}
+          label="Acessos (7d)"
+          value={counts?.recent7d ?? 0}
+          hint={
+            (counts?.recent7d ?? 0) === 0
+              ? "Ainda sem acessos: a contagem começa quando alguém abre o link público ou escaneia o QR do cardápio."
+              : "Aberturas do cardápio público nos últimos 7 dias (link ou QR)."
+          }
+          linkTo="/app/analytics"
+          linkLabel="Ver no Analytics"
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
@@ -208,16 +219,27 @@ function CardapioOverview() {
   );
 }
 
-function MetricCard({ icon: Icon, label, value }: { icon: any; label: string; value: number }) {
+function MetricCard({
+  icon: Icon, label, value, hint, linkTo, linkLabel,
+}: { icon: any; label: string; value: number; hint?: string; linkTo?: string; linkLabel?: string }) {
   return (
     <Card>
-      <CardContent className="flex items-center gap-4 py-6">
+      <CardContent className="flex items-start gap-4 py-6">
         <div className="card-icon">
           <Icon className="h-5 w-5" />
         </div>
         <div className="min-w-0">
           <div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
           <div className="metric-number mt-1 text-2xl font-bold">{value}</div>
+          {hint && <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{hint}</p>}
+          {linkTo && (
+            <Link
+              to={linkTo as any}
+              className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+            >
+              {linkLabel ?? "Ver mais"} <ArrowRight className="h-3 w-3" />
+            </Link>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -226,15 +248,22 @@ function MetricCard({ icon: Icon, label, value }: { icon: any; label: string; va
 
 function StepCard({ icon: Icon, title, description, to, disabled }: { icon: any; title: string; description: string; to: string; disabled?: boolean }) {
   const inner = (
-    <div className={`flex h-full flex-col gap-2 rounded-2xl border border-border/60 p-4 transition ${disabled ? "opacity-60" : "hover:border-primary/60 hover:bg-primary/5"}`}>
+    <div className={`group flex h-full flex-col gap-2 rounded-2xl border border-border/60 bg-card/40 p-4 transition ${disabled ? "opacity-60" : "cursor-pointer hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/5 hover:shadow-lg"}`}>
       <div className="flex items-center gap-2 text-sm font-semibold">
         <Icon className="h-4 w-4 text-primary" />
         {title}
-        {disabled && <Badge variant="outline" className="ml-auto text-[10px]">em breve</Badge>}
+        {disabled
+          ? <Badge variant="outline" className="ml-auto text-[10px]">em breve</Badge>
+          : <ArrowRight className="ml-auto h-4 w-4 text-primary transition-transform group-hover:translate-x-0.5" />}
       </div>
       <p className="text-sm text-muted-foreground">{description}</p>
+      {!disabled && (
+        <span className="mt-auto pt-2 text-xs font-medium text-primary underline underline-offset-4">
+          Abrir
+        </span>
+      )}
     </div>
   );
   if (disabled) return inner;
-  return <Link to={to as any}>{inner}</Link>;
+  return <Link to={to as any} className="block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl">{inner}</Link>;
 }
