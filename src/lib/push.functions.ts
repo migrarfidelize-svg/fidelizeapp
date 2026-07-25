@@ -970,6 +970,17 @@ export const subscribeAdminPush = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => adminSubInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Derive establishment_id from the user's active membership so merchant devices
+    // show up under "Empresas com push ativo".
+    const { data: membership } = await supabaseAdmin
+      .from("establishment_members")
+      .select("establishment_id")
+      .eq("user_id", context.userId)
+      .eq("active", true)
+      .limit(1)
+      .maybeSingle();
+    const establishmentId = membership?.establishment_id ?? null;
+
     // Look up existing row on (user_id, endpoint) to preserve id/created_at.
     const { data: existing } = await supabaseAdmin
       .from("push_subscriptions")
@@ -981,7 +992,7 @@ export const subscribeAdminPush = createServerFn({ method: "POST" })
     const payload: any = {
       user_id: context.userId,
       customer_id: null,
-      establishment_id: null,
+      establishment_id: establishmentId,
       endpoint: data.endpoint,
       p256dh: data.p256dh,
       auth_key: data.auth,
