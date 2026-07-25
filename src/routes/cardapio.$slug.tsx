@@ -166,6 +166,7 @@ function PublicMenuPage() {
   const [open, setOpen] = useState<Item | null>(null);
   const [stories, setStories] = useState<{ list: Item[]; index: number } | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [logoErr, setLogoErr] = useState(false);
   const catRefs = useRef<Record<string, HTMLElement | null>>({});
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
