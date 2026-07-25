@@ -2,6 +2,13 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Check, Circle, Rocket, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { useMyFeature } from "@/hooks/useMyFeature";
+import { getMyLinkTree } from "@/lib/linktree.functions";
+import { getMyMenuOverview } from "@/lib/menu.functions";
+import { getReviewStats } from "@/lib/reviews.functions";
+import { getEstablishmentFull } from "@/lib/settings.functions";
 
 type Step = {
   key: string;
@@ -32,6 +39,35 @@ export function FirstStepsCard({
   const [manualDone, setManualDone] = useState<string[]>([]);
   const [hidden, setHidden] = useState(false);
 
+  const { allowed: menuAllowed } = useMyFeature(establishmentId, "digital_menu");
+
+  const getLinkTree = useServerFn(getMyLinkTree);
+  const getMenu = useServerFn(getMyMenuOverview);
+  const getReviews = useServerFn(getReviewStats);
+  const getEst = useServerFn(getEstablishmentFull);
+
+  const { data: linkTree } = useQuery({
+    queryKey: ["fs-linktree", establishmentId],
+    queryFn: () => getLinkTree({ data: { establishment_id: establishmentId } }),
+    staleTime: 60_000,
+  });
+  const { data: menu } = useQuery({
+    enabled: menuAllowed,
+    queryKey: ["fs-menu", establishmentId],
+    queryFn: () => getMenu({ data: { establishment_id: establishmentId } }),
+    staleTime: 60_000,
+  });
+  const { data: reviews } = useQuery({
+    queryKey: ["fs-reviews", establishmentId],
+    queryFn: () => getReviews({ data: { establishmentId, days: 365 } }),
+    staleTime: 60_000,
+  });
+  const { data: estFull } = useQuery({
+    queryKey: ["fs-est", establishmentId],
+    queryFn: () => getEst({ data: { establishment_id: establishmentId } }),
+    staleTime: 60_000,
+  });
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem(key);
@@ -48,6 +84,15 @@ export function FirstStepsCard({
     try { localStorage.setItem(key, JSON.stringify(payload)); } catch { /* noop */ }
   }
 
+  const est = estFull?.establishment as Record<string, any> | undefined;
+  const profileDone = !!est
+    && !!est.logo_url
+    && !!(est.phone || est.whatsapp)
+    && !!est.address
+    && !!est.city
+    && !!est.state
+    && !!est.cep;
+
   const steps: Step[] = [
     {
       key: "campaign",
@@ -55,6 +100,13 @@ export function FirstStepsCard({
       hint: "Defina carimbos, recompensa e visual",
       to: "/app/campanhas",
       done: hasCampaign,
+    },
+    {
+      key: "profile",
+      label: "Completar o perfil do estabelecimento",
+      hint: "Logo, contato e endereço completo (CEP, cidade e UF)",
+      to: "/app/perfil",
+      done: profileDone,
     },
     {
       key: "qr",
@@ -79,6 +131,29 @@ export function FirstStepsCard({
       done: stampsCount > 0,
     },
     {
+      key: "linktree",
+      label: "Criar sua árvore de links",
+      hint: "Reúna WhatsApp, redes e cardápio em um link só",
+      to: "/app/linktree",
+      done: !!linkTree?.page && (linkTree?.links?.length ?? 0) > 0,
+    },
+    ...(menuAllowed
+      ? [{
+          key: "menu",
+          label: "Publicar seu cardápio digital",
+          hint: "Adicione pratos e deixe o cardápio no ar",
+          to: "/app/cardapio",
+          done: (menu?.counts?.items ?? 0) > 0 && (menu?.menu as any)?.status === "published",
+        } as Step]
+      : []),
+    {
+      key: "reviews",
+      label: "Ativar avaliações de atendimento",
+      hint: "Peça a primeira avaliação e acompanhe a nota",
+      to: "/app/avaliacoes",
+      done: (reviews?.count ?? 0) > 0,
+    },
+    {
       key: "team",
       label: "Convidar sua equipe",
       hint: "Atendentes com permissões próprias",
@@ -86,6 +161,7 @@ export function FirstStepsCard({
       done: teamCount > 1,
     },
   ];
+
 
   const doneCount = steps.filter((s) => s.done).length;
   const pct = Math.round((doneCount / steps.length) * 100);
