@@ -222,9 +222,15 @@ function PublicMenuPage() {
   };
 
   const openItem = (i: Item) => {
-    setOpen(i);
     trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_id: i.id, ref_label: `item:${i.name}` });
+    const hasMedia = (x: Item) => !!(x.video_url || x.image_url);
+    if (!hasMedia(i)) { setOpen(i); return; }
+    const pool = (filtered as Item[]).filter(hasMedia);
+    const idx = pool.findIndex((x) => x.id === i.id);
+    if (idx < 0) { setOpen(i); return; }
+    setStories({ list: pool, index: idx });
   };
+
 
   const openStories = (list: Item[], index: number) => {
     setStories({ list, index });
