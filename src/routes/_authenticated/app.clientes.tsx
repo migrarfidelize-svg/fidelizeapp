@@ -329,9 +329,10 @@ function Clientes() {
                 return (
                   <div
                     key={c.id}
-                    className={`group relative grid grid-cols-[36px_minmax(0,2.2fr)_1fr_120px_140px_44px] items-center gap-3 px-4 py-3.5 transition-colors ${
+                    className={`group relative grid grid-cols-[28px_minmax(0,1fr)_40px] md:grid-cols-[36px_minmax(0,2.2fr)_1fr_120px_140px_44px] items-center gap-2 md:gap-3 px-3 md:px-4 py-3.5 transition-colors ${
                       isSel ? "bg-[color:color-mix(in_oklab,var(--primary)_10%,transparent)]" : "hover:bg-[color:color-mix(in_oklab,var(--primary)_5%,transparent)]"
                     }`}
+
                   >
                     {/* left cyan indicator when selected */}
                     <span
@@ -347,9 +348,9 @@ function Clientes() {
                     />
 
                     {/* Cliente */}
-                    <button onClick={() => setOpenId(c.id)} className="flex items-center gap-3 text-left min-w-0">
+                    <button onClick={() => setOpenId(c.id)} className="flex items-center gap-2.5 md:gap-3 text-left min-w-0">
                       <div className="relative shrink-0">
-                        <div className="grid h-11 w-11 place-items-center rounded-full border border-primary/30 bg-primary/10 text-primary font-semibold text-sm">
+                        <div className="grid h-9 w-9 md:h-11 md:w-11 place-items-center rounded-full border border-primary/30 bg-primary/10 text-primary font-semibold text-xs md:text-sm">
                           {initialsOf(c.name)}
                         </div>
                         {!c.blocked && (
@@ -367,11 +368,20 @@ function Clientes() {
                         <div className="text-xs text-muted-foreground truncate mt-0.5">
                           {formatPhone(c.phone)}{c.email ? ` · ${c.email}` : ""} · #{c.code}
                         </div>
+                        {/* Meta compacta (mobile) */}
+                        <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground md:hidden">
+                          <span className={`inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[10px] font-medium ${seg.className}`}>
+                            <span className="h-1.5 w-1.5 rounded-full" style={{ background: "currentColor" }} />
+                            {seg.label}
+                          </span>
+                          <span className="tabular-nums">{c.visits_count} visitas</span>
+                          {c.last_visit_at && <span className="tabular-nums">· {formatDate(c.last_visit_at)}</span>}
+                        </div>
                       </div>
                     </button>
 
                     {/* Segmento */}
-                    <div className="min-w-0">
+                    <div className="hidden md:block min-w-0">
                       <span className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium ${seg.className}`}>
                         <span className="h-1.5 w-1.5 rounded-full" style={{ background: "currentColor" }} />
                         {seg.label}
@@ -379,15 +389,16 @@ function Clientes() {
                     </div>
 
                     {/* Visitas */}
-                    <div className="text-right">
+                    <div className="hidden md:block text-right">
                       <div className="font-display text-lg leading-none tabular-nums text-foreground">{c.visits_count}</div>
                       <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">visitas</div>
                     </div>
 
                     {/* Última visita */}
-                    <div className="text-right text-sm text-muted-foreground tabular-nums">
+                    <div className="hidden md:block text-right text-sm text-muted-foreground tabular-nums">
                       {c.last_visit_at ? formatDate(c.last_visit_at) : <span className="italic">—</span>}
                     </div>
+
 
                     {/* Ações */}
                     <DropdownMenu>
@@ -561,9 +572,10 @@ function ProStat({
       <span aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent opacity-70" />
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{label}</div>
+          <div className="text-[10px] uppercase tracking-[0.16em] leading-tight text-muted-foreground break-words">{label}</div>
           <div className={`metric-number mt-1 tabular-nums ${toneClass}`}>{value.toLocaleString("pt-BR")}</div>
-          {hint && <div className="text-[11px] text-muted-foreground mt-0.5 truncate">{hint}</div>}
+          {hint && <div className="text-[11px] leading-tight text-muted-foreground mt-0.5 break-words">{hint}</div>}
+
         </div>
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-primary/30 bg-primary/10 text-primary shadow-[0_0_18px_-6px_var(--primary)]">
           <Icon className="h-4 w-4" />
