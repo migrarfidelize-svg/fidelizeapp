@@ -42,6 +42,19 @@ function Dashboard() {
     queryFn: () => getData({ data: { establishment_id: est!.id } }),
   });
 
+  const getCampaigns = useServerFn(getEstablishmentCampaigns);
+  const getTeam = useServerFn(listTeam);
+  const { data: campaigns } = useQuery({
+    enabled: !!est,
+    queryKey: ["dash-campaigns", est?.id],
+    queryFn: () => getCampaigns({ data: { establishment_id: est!.id } }),
+  });
+  const { data: team } = useQuery({
+    enabled: !!est,
+    queryKey: ["dash-team", est?.id],
+    queryFn: () => getTeam({ data: { establishment_id: est!.id } }),
+  });
+
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 30_000);
