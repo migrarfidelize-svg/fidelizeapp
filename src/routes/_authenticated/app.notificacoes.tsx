@@ -607,13 +607,13 @@ function NotifPage() {
                     ? "Bloqueado pelo plano"
                     : limitReached
                       ? "Limite diário atingido"
-                      : `Enviar para ${previewCount?.subscribers ?? 0} inscritos`}
+                      : `Enviar para ${(previewCount?.subscribers ?? 0) + (previewCount?.operators ?? 0)} inscritos`}
                 </span>
               </Button>
             )}
           </div>
 
-          {previewCount && previewCount.subscribers === 0 && !blockedByPlan && (
+          {previewCount && previewCount.subscribers === 0 && !previewCount.operators && !blockedByPlan && (
             <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs">
               <Info className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
               <div className="space-y-1">
