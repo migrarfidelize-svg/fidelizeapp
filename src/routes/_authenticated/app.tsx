@@ -24,6 +24,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { QuickSearch } from "@/components/merchant/QuickSearch";
 import { GuidedTour, type TourStep } from "@/components/GuidedTour";
+import { PageGuidePrompt } from "@/components/merchant/PageGuidePrompt";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePermissions } from "@/hooks/usePermissions";
 import { AppShellSkeleton } from "@/components/AppShellSkeleton";
