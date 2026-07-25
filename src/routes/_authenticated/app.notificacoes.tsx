@@ -167,6 +167,26 @@ function NotifPage() {
     return () => clearTimeout(t);
   }, [segment, activeEst?.id, previewFn]);
 
+  const segmentChips = useMemo<string[]>(() => {
+    const chips: string[] = [];
+    chips.push(segment.tiers?.length ? `Níveis: ${segment.tiers.join(", ")}` : "Todos os níveis");
+    const act: Record<string, string> = {
+      all: "Qualquer atividade",
+      active_30d: "Ativos (30 dias)",
+      inactive_30d: "Inativos (30+ dias)",
+      inactive_60d: "Inativos (60+ dias)",
+    };
+    chips.push(act[segment.activity ?? "all"]);
+    if (segment.campaign_id) {
+      const c = (campaigns ?? []).find((x: any) => x.id === segment.campaign_id);
+      chips.push(`Cartão: ${c?.name ?? "selecionado"}`);
+    }
+    if (segment.min_stamps) chips.push(`Mín. ${segment.min_stamps} carimbos`);
+    if (segment.customer_ids?.length) chips.push(`${segment.customer_ids.length} cliente(s) escolhidos`);
+    return chips;
+  }, [segment, campaigns]);
+
+
   const send = useMutation({
     mutationFn: async () => {
       if (!activeEst) return;
