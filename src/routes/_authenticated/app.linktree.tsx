@@ -199,8 +199,13 @@ function LinkTreeEditor() {
   const publicUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/links/${est.slug}` : "";
 
   function addLink(kind: LinkKind) {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const slug = est?.slug ?? "";
+    const prefill =
+      kind === "cardapio" && slug ? `${origin}/cardapio/${slug}` :
+      kind === "cartao" && slug ? `${origin}/cartao/${slug}` : "";
     setLinks((prev) => [...prev, {
-      kind, label: KIND_META[kind].label, url: "", enabled: true, sort_order: prev.length,
+      kind, label: KIND_META[kind].label, url: prefill, enabled: true, sort_order: prev.length,
     }]);
   }
   function updateLink(i: number, patch: Partial<LinkRow>) {
@@ -452,7 +457,7 @@ function LinkTreeEditor() {
             <CardHeader className="flex-row items-center justify-between space-y-0">
               <CardTitle className="text-base">Links ({links.length})</CardTitle>
               <div className="flex flex-wrap gap-1">
-                {(["whatsapp","instagram","site","google","maps","wifi","pix","custom"] as LinkKind[]).map((k) => {
+                {(["cardapio","cartao","whatsapp","instagram","site","google","maps","wifi","pix","custom"] as LinkKind[]).map((k) => {
                   const M = KIND_META[k];
                   return (
                     <Button key={k} size="sm" variant="outline" onClick={() => addLink(k)}>
