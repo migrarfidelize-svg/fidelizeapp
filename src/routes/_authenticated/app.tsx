@@ -473,14 +473,13 @@ function AppLayout() {
 
   const GROUP_ICONS: Record<string, any> = {
     "visao-geral": LayoutDashboard,
-    clientes: Users,
+    pessoas: Users,
     qrcodes: QrCode,
     fidelidade: CreditCard,
     linktree: Link2,
     avaliacoes: Star,
     cardapio: UtensilsCrossed,
     comunicacao: Bell,
-    equipe: UsersRound,
     financeiro: Wallet,
     ajuda: LifeBuoy,
   };
