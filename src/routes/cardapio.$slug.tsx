@@ -162,6 +162,7 @@ function PublicMenuPage() {
 
   const [activeCat, setActiveCat] = useState<string | "all">("all");
   const [q, setQ] = useState("");
+  const [catPicked, setCatPicked] = useState(false);
   const [open, setOpen] = useState<Item | null>(null);
   const [stories, setStories] = useState<{ list: Item[]; index: number } | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
@@ -210,6 +211,7 @@ function PublicMenuPage() {
   }, [filtered, categories]);
 
   const scrollToCat = (id: string) => {
+    setCatPicked(true);
     setActiveCat(id === "all" ? "all" : id);
     const el = catRefs.current[id];
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -231,6 +233,7 @@ function PublicMenuPage() {
 
   const onSearchChange = (value: string) => {
     setQ(value);
+    if (value.trim()) setCatPicked(true);
     if (searchTimer.current) clearTimeout(searchTimer.current);
     const term = value.trim();
     if (!term) return;
@@ -258,6 +261,7 @@ function PublicMenuPage() {
   const theme = resolveMenuTheme((menu as any)?.theme);
   const T = theme.preset_def;
   const pageBg = menuBackgroundCss(theme, T, primary);
+  const showCatPicker = theme.entry === "categories" && !catPicked && !q.trim() && categories.length > 0;
 
   return (
     <div
@@ -415,7 +419,39 @@ function PublicMenuPage() {
 
       {/* ---------- FEED ---------- */}
       <main className="max-w-3xl mx-auto px-5 pb-32 pt-6 space-y-10">
-        {categories.map((c) => {
+        {showCatPicker ? (
+          <div className="grid grid-cols-2 gap-4">
+            {categories.map((c) => {
+              const count = (items as Item[]).filter((i) => i.category_id === c.id).length;
+              if (count === 0) return null;
+              const cover = (items as Item[]).find((i) => i.category_id === c.id && !!i.image_url)?.image_url || null;
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => scrollToCat(c.id)}
+                  className="fx-pill overflow-hidden rounded-2xl border text-left"
+                  style={{ background: "var(--mk-surface)", borderColor: "var(--mk-line)" }}
+                >
+                  <div className="aspect-[4/3] w-full overflow-hidden" style={{ background: "var(--mk-line)" }}>
+                    {cover && <img src={cover} alt={c.name} loading="lazy" className="h-full w-full object-cover" />}
+                  </div>
+                  <div className="p-3">
+                    <div className="fx-serif text-base font-bold leading-tight">{c.name}</div>
+                    <div className="text-xs opacity-60 mt-0.5">{count} {count === 1 ? "item" : "itens"}</div>
+                  </div>
+                </button>
+              );
+            })}
+            <button
+              onClick={() => scrollToCat("all")}
+              className="fx-pill col-span-2 rounded-2xl border px-4 py-3 text-sm font-semibold"
+              style={{ background: "var(--mk-bar)", color: "var(--mk-barink)", borderColor: "var(--mk-bar)" }}
+            >
+              Ver cardápio completo
+            </button>
+          </div>
+        ) : null}
+        {!showCatPicker && categories.map((c) => {
           const list = byCat.get(c.id) || [];
           if (list.length === 0 && (activeCat === c.id || q)) return null;
           if (list.length === 0) return null;
@@ -438,7 +474,7 @@ function PublicMenuPage() {
             </section>
           );
         })}
-        {(byCat.get("__uncat") || []).length > 0 && (
+        {!showCatPicker && (byCat.get("__uncat") || []).length > 0 && (
           <section ref={(el) => { catRefs.current["__uncat"] = el; }}>
             <h2 className="fx-serif text-xl font-bold mb-3">Outros</h2>
             <div className={theme.layout === "grid" ? "grid gap-4 grid-cols-2" : "grid gap-4"}>
@@ -449,7 +485,7 @@ function PublicMenuPage() {
           </section>
         )}
 
-        {filtered.length === 0 && (
+        {!showCatPicker && filtered.length === 0 && (
           <div className="text-center py-16 opacity-60">
             <p className="fx-serif text-lg">Nenhum item encontrado</p>
             <p className="text-sm mt-1">Tente outra busca ou categoria.</p>

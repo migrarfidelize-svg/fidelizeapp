@@ -6,6 +6,7 @@
 export type MenuLayoutId = "list" | "grid" | "magazine";
 export type MenuPresetId = "papel" | "noir" | "fresh";
 export type MenuPatternId = "none" | "grain" | "dots" | "grid" | "aurora";
+export type MenuEntryId = "dishes" | "categories";
 
 export type MenuPreset = {
   id: MenuPresetId;
@@ -77,10 +78,16 @@ export const MENU_PATTERNS: { id: MenuPatternId; name: string }[] = [
   { id: "aurora", name: "Brilho suave" },
 ];
 
+export const MENU_ENTRIES: { id: MenuEntryId; name: string; description: string }[] = [
+  { id: "dishes", name: "Abrir nos pratos", description: "O cliente já vê os pratos direto, com as categorias como atalho no topo." },
+  { id: "categories", name: "Abrir nas categorias", description: "O cliente escolhe primeiro a categoria e depois vê os pratos dela." },
+];
+
 export type MenuThemeConfig = {
   preset: MenuPresetId;
   layout: MenuLayoutId;
   pattern: MenuPatternId;
+  entry: MenuEntryId;
   bg_image_url: string | null;
 };
 
@@ -88,6 +95,7 @@ export const DEFAULT_MENU_THEME: MenuThemeConfig = {
   preset: "papel",
   layout: "list",
   pattern: "grain",
+  entry: "dishes",
   bg_image_url: null,
 };
 
@@ -96,10 +104,12 @@ export function resolveMenuTheme(raw: unknown): MenuThemeConfig & { preset_def: 
   const preset = MENU_PRESETS.some((p) => p.id === t.preset) ? (t.preset as MenuPresetId) : DEFAULT_MENU_THEME.preset;
   const layout = MENU_LAYOUTS.some((l) => l.id === t.layout) ? (t.layout as MenuLayoutId) : DEFAULT_MENU_THEME.layout;
   const pattern = MENU_PATTERNS.some((p) => p.id === t.pattern) ? (t.pattern as MenuPatternId) : DEFAULT_MENU_THEME.pattern;
+  const entry = MENU_ENTRIES.some((e) => e.id === t.entry) ? (t.entry as MenuEntryId) : DEFAULT_MENU_THEME.entry;
   return {
     preset,
     layout,
     pattern,
+    entry,
     bg_image_url: typeof t.bg_image_url === "string" && t.bg_image_url ? t.bg_image_url : null,
     preset_def: MENU_PRESETS.find((p) => p.id === preset)!,
   };
