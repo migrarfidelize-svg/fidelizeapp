@@ -98,13 +98,16 @@ export function MerchantPushCard() {
     })();
   }, [getStatus]);
 
-  // Convite em popup: aparece na entrada e só volta 24h depois se não ativar.
+  // Convite em popup: entra na fila única de convites (instalar → push → tour)
+  // e só volta 24h depois se não ativar.
+  const wantsPrompt = subscribed === false && !dismissed && !skipped && supported;
+  const myTurn = useOnboardingSlot("push", wantsPrompt || showHelp);
   useEffect(() => {
-    if (subscribed !== false) return;
-    if (dismissed || skipped || !supported) return;
-    const t = setTimeout(() => setPromptOpen(true), 600);
+    if (!wantsPrompt || !myTurn) return;
+    const t = setTimeout(() => setPromptOpen(true), 300);
     return () => clearTimeout(t);
-  }, [subscribed, dismissed, skipped, supported]);
+  }, [wantsPrompt, myTurn]);
+
 
   function snooze() {
     try {
