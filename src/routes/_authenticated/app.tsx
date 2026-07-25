@@ -240,6 +240,18 @@ function AppLayout() {
 
   const activeEst = memberships?.[0]?.establishment as { id: string; name: string; slug: string; logo_url: string | null } | undefined;
 
+  const { can, isLoading: permsLoading } = usePermissions(activeEst?.id);
+  const filteredGroups = NAV_GROUPS.map((g) => ({
+    ...g,
+    items: g.items.filter((it) => {
+      const action = ROUTE_PERMISSIONS[it.to];
+      if (!action) return true;
+      if (permsLoading) return true;
+      return can(action);
+    }),
+  })).filter((g) => g.items.length > 0);
+  const FLAT_ALLOWED = filteredGroups.flatMap((g) => g.items);
+
   if (isLoading) return <div className="grid min-h-screen place-items-center text-muted-foreground">Carregando…</div>;
   if (!memberships?.length) {
     if (typeof window !== "undefined" && !pathname.startsWith("/onboarding")) {
@@ -249,7 +261,7 @@ function AppLayout() {
   }
 
   const isItemActive = (n: NavItem) => (n.exact ? pathname === n.to : pathname.startsWith(n.to));
-  const activeNav = FLAT_NAV.find((n) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))) ?? FLAT_NAV[0];
+  const activeNav = FLAT_ALLOWED.find((n) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))) ?? FLAT_NAV.find((n) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))) ?? FLAT_NAV[0];
 
   async function signOut() {
     await queryClient.cancelQueries();
