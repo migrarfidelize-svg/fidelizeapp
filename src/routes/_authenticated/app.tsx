@@ -262,12 +262,12 @@ function AppLayout() {
   })).filter((g) => g.items.length > 0);
   const FLAT_ALLOWED = filteredGroups.flatMap((g) => g.items);
 
-  if (isLoading) return <div className="grid min-h-screen place-items-center text-muted-foreground">Carregando…</div>;
+  if (isLoading) return <AppShellSkeleton />;
   if (!memberships?.length) {
     if (typeof window !== "undefined" && !pathname.startsWith("/onboarding")) {
       navigate({ to: "/onboarding" });
     }
-    return <div className="grid min-h-screen place-items-center text-muted-foreground">Configurando sua empresa…</div>;
+    return <AppShellSkeleton label="Configurando sua empresa…" />;
   }
 
   const isItemActive = (n: NavItem) => (n.exact ? pathname === n.to : pathname.startsWith(n.to));
