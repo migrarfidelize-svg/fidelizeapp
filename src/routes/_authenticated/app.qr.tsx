@@ -29,6 +29,8 @@ import { useMyFeature } from "@/hooks/useMyFeature";
 import { DisplayStorePreview } from "@/components/DisplayStorePreview";
 import { PrintOrderDialog } from "@/components/PrintOrderDialog";
 import { LogoUploadButton } from "@/components/LogoUploadButton";
+import { QrTagsManager } from "@/components/QrTagsManager";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -1003,6 +1005,10 @@ function ReviewQrPage() {
       />
 
       <QrDestinationCard establishmentId={est.id} />
+
+      <QrTagsManager establishmentId={est.id} />
+
+
 
 
 

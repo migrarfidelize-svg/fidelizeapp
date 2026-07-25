@@ -3134,6 +3134,53 @@ export type Database = {
           },
         ]
       }
+      qr_tags: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          destination: string | null
+          establishment_id: string
+          id: string
+          label: string
+          location: string | null
+          scans_count: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          destination?: string | null
+          establishment_id: string
+          id?: string
+          label: string
+          location?: string | null
+          scans_count?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          destination?: string | null
+          establishment_id?: string
+          id?: string
+          label?: string
+          location?: string | null
+          scans_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qr_tags_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       restaurant_menus: {
         Row: {
           closed_message: string | null
