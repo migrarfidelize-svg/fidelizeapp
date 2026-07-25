@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
+import { AdminPushDiagnostics } from "@/components/AdminPushDiagnostics";
 import { BellDot as HeroIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
