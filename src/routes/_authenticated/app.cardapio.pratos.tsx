@@ -350,7 +350,9 @@ function ItemDialog({
   const [badges, setBadges] = useState<string[]>([]);
   const [ingredientsText, setIngredientsText] = useState("");
   const [allergensText, setAllergensText] = useState("");
+  const [variants, setVariants] = useState<{ label: string; price: string }[]>([]);
   const [active, setActive] = useState(true);
+
   const [uploading, setUploading] = useState<"img" | "vid" | null>(null);
   const imgRef = useRef<HTMLInputElement>(null);
   const vidRef = useRef<HTMLInputElement>(null);
