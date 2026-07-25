@@ -40,12 +40,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Bell, Loader2, Send, Users, CheckCircle2, XCircle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Bell, Loader2, Send, Users, CheckCircle2, XCircle, AlertTriangle, FlaskConical, Rocket } from "lucide-react";
 import {
   adminPushOverview,
   adminListPushLogs,
   adminBroadcastPush,
 } from "@/lib/push.functions";
+
 
 export const Route = createFileRoute("/_authenticated/admin/notificacoes")({
   component: AdminNotifPage,
@@ -78,6 +81,7 @@ function AdminNotifPage() {
   const [url, setUrl] = useState("");
   const [respectPrefs, setRespectPrefs] = useState(true);
   const [target, setTarget] = useState<"all" | "select">("all");
+  const [audience, setAudience] = useState<"customers" | "operators" | "both">("customers");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const ests = overview?.establishments ?? [];
@@ -101,6 +105,8 @@ function AdminNotifPage() {
           establishment_ids:
             target === "select" ? Array.from(selected) : undefined,
           respect_prefs: respectPrefs,
+          audience,
+
         },
       }),
     onSuccess: (r) => {
@@ -142,14 +148,48 @@ function AdminNotifPage() {
           <Bell className="h-5 w-5" /> Notificações Push — Admin
         </h1>
         <p className="text-sm text-muted-foreground">
-          Visão global de inscrições e envio de broadcast para os clientes finais das empresas.
+          Duas áreas separadas: <strong>Envio Real</strong> dispara para clientes finais e/ou operadores das empresas.
+          <strong> Testes & Diagnóstico</strong> valida entrega no seu próprio dispositivo antes de subir para produção.
         </p>
       </header>
 
-      <PWAInstallCard />
-      <EstablishmentTestPushPanel defaultName="NextStage" />
-      <AdminPushDiagnostics />
-      <DeviceDiagnostic />
+      <Tabs defaultValue="real" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 md:w-auto">
+          <TabsTrigger value="real" className="gap-2">
+            <Rocket className="h-4 w-4" /> Envio Real
+          </TabsTrigger>
+          <TabsTrigger value="test" className="gap-2">
+            <FlaskConical className="h-4 w-4" /> Testes & Diagnóstico
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="test" className="space-y-6 pt-4">
+          <div className="flex items-start gap-3 rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-sm">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+            <div>
+              <p className="font-medium">Zona de testes</p>
+              <p className="text-muted-foreground">
+                Dispara apenas para o seu dispositivo ou empresa alvo escolhida. Nenhum cliente final recebe daqui.
+              </p>
+            </div>
+          </div>
+          <PWAInstallCard />
+          <EstablishmentTestPushPanel defaultName="NextStage" />
+          <AdminPushDiagnostics />
+          <DeviceDiagnostic />
+        </TabsContent>
+
+        <TabsContent value="real" className="space-y-6 pt-4">
+          <div className="flex items-start gap-3 rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm">
+            <Rocket className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+            <div>
+              <p className="font-medium">Envio real em produção</p>
+              <p className="text-muted-foreground">
+                Escolha o público (clientes finais, operadores das empresas ou ambos) e as empresas de destino antes de disparar.
+              </p>
+            </div>
+          </div>
+
 
 
 
@@ -218,7 +258,42 @@ function AdminNotifPage() {
             />
           </div>
 
+          <div className="space-y-2 rounded-md border border-dashed p-3">
+            <Label className="text-sm font-semibold">Público-alvo</Label>
+            <p className="text-xs text-muted-foreground">
+              Escolha quem recebe esta notificação dentro das empresas selecionadas.
+            </p>
+            <RadioGroup
+              value={audience}
+              onValueChange={(v) => setAudience(v as "customers" | "operators" | "both")}
+              className="grid gap-2 md:grid-cols-3"
+            >
+              <label className="flex cursor-pointer items-start gap-2 rounded-md border p-2 hover:bg-muted/50">
+                <RadioGroupItem value="customers" id="aud-c" className="mt-0.5" />
+                <div>
+                  <div className="text-sm font-medium">Clientes finais</div>
+                  <div className="text-xs text-muted-foreground">Titulares dos cartões fidelidade.</div>
+                </div>
+              </label>
+              <label className="flex cursor-pointer items-start gap-2 rounded-md border p-2 hover:bg-muted/50">
+                <RadioGroupItem value="operators" id="aud-o" className="mt-0.5" />
+                <div>
+                  <div className="text-sm font-medium">Empresas / operadores</div>
+                  <div className="text-xs text-muted-foreground">Donos e atendentes logados no painel.</div>
+                </div>
+              </label>
+              <label className="flex cursor-pointer items-start gap-2 rounded-md border p-2 hover:bg-muted/50">
+                <RadioGroupItem value="both" id="aud-b" className="mt-0.5" />
+                <div>
+                  <div className="text-sm font-medium">Ambos</div>
+                  <div className="text-xs text-muted-foreground">Clientes finais + operadores.</div>
+                </div>
+              </label>
+            </RadioGroup>
+          </div>
+
           <div className="space-y-2">
+
             <Label>Destino</Label>
             <Select value={target} onValueChange={(v) => setTarget(v as "all" | "select")}>
               <SelectTrigger className="w-full md:w-72">
@@ -393,9 +468,12 @@ function AdminNotifPage() {
           )}
         </CardContent>
       </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
+
 
 function Kpi({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
   return (
