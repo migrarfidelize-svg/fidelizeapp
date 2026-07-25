@@ -149,17 +149,11 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    key: "financeiro",
-    label: "Financeiro",
+    key: "ajuda",
+    label: "Planos e Suporte",
     items: [
       { to: "/app/planos", label: "Planos", icon: Package },
       { to: "/app/pagamentos", label: "Pagamentos", icon: Receipt },
-    ],
-  },
-  {
-    key: "ajuda",
-    label: "Suporte",
-    items: [
       { to: "/app/kb", label: "Central de Ajuda", icon: BookOpen },
       { to: "/app/fidelize", label: "Fale com a Fidelize", icon: LifeBuoy },
     ],
