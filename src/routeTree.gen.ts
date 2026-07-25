@@ -28,6 +28,7 @@ import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as ESlugRouteImport } from './routes/e.$slug'
 import { Route as DevQrDesignNameRouteImport } from './routes/dev.qr-design-name'
 import { Route as CartaoSlugRouteImport } from './routes/cartao.$slug'
+import { Route as CardapioSlugRouteImport } from './routes/cardapio.$slug'
 import { Route as CTokenRouteImport } from './routes/c.$token'
 import { Route as AvaliarSlugRouteImport } from './routes/avaliar.$slug'
 import { Route as AvaliacoesSlugRouteImport } from './routes/avaliacoes.$slug'
@@ -205,6 +206,11 @@ const DevQrDesignNameRoute = DevQrDesignNameRouteImport.update({
 const CartaoSlugRoute = CartaoSlugRouteImport.update({
   id: '/cartao/$slug',
   path: '/cartao/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CardapioSlugRoute = CardapioSlugRouteImport.update({
+  id: '/cardapio/$slug',
+  path: '/cardapio/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CTokenRoute = CTokenRouteImport.update({
@@ -703,6 +709,7 @@ export interface FileRoutesByFullPath {
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
   '/avaliar/$slug': typeof AvaliarSlugRoute
   '/c/$token': typeof CTokenRoute
+  '/cardapio/$slug': typeof CardapioSlugRoute
   '/cartao/$slug': typeof CartaoSlugRoute
   '/dev/qr-design-name': typeof DevQrDesignNameRoute
   '/e/$slug': typeof ESlugRoute
@@ -804,6 +811,7 @@ export interface FileRoutesByTo {
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
   '/avaliar/$slug': typeof AvaliarSlugRoute
   '/c/$token': typeof CTokenRoute
+  '/cardapio/$slug': typeof CardapioSlugRoute
   '/cartao/$slug': typeof CartaoSlugRoute
   '/dev/qr-design-name': typeof DevQrDesignNameRoute
   '/e/$slug': typeof ESlugRoute
@@ -909,6 +917,7 @@ export interface FileRoutesById {
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
   '/avaliar/$slug': typeof AvaliarSlugRoute
   '/c/$token': typeof CTokenRoute
+  '/cardapio/$slug': typeof CardapioSlugRoute
   '/cartao/$slug': typeof CartaoSlugRoute
   '/dev/qr-design-name': typeof DevQrDesignNameRoute
   '/e/$slug': typeof ESlugRoute
@@ -1015,6 +1024,7 @@ export interface FileRouteTypes {
     | '/avaliacoes/$slug'
     | '/avaliar/$slug'
     | '/c/$token'
+    | '/cardapio/$slug'
     | '/cartao/$slug'
     | '/dev/qr-design-name'
     | '/e/$slug'
@@ -1116,6 +1126,7 @@ export interface FileRouteTypes {
     | '/avaliacoes/$slug'
     | '/avaliar/$slug'
     | '/c/$token'
+    | '/cardapio/$slug'
     | '/cartao/$slug'
     | '/dev/qr-design-name'
     | '/e/$slug'
@@ -1220,6 +1231,7 @@ export interface FileRouteTypes {
     | '/avaliacoes/$slug'
     | '/avaliar/$slug'
     | '/c/$token'
+    | '/cardapio/$slug'
     | '/cartao/$slug'
     | '/dev/qr-design-name'
     | '/e/$slug'
@@ -1320,6 +1332,7 @@ export interface RootRouteChildren {
   AvaliacoesSlugRoute: typeof AvaliacoesSlugRoute
   AvaliarSlugRoute: typeof AvaliarSlugRoute
   CTokenRoute: typeof CTokenRoute
+  CardapioSlugRoute: typeof CardapioSlugRoute
   CartaoSlugRoute: typeof CartaoSlugRoute
   DevQrDesignNameRoute: typeof DevQrDesignNameRoute
   ESlugRoute: typeof ESlugRoute
@@ -1481,6 +1494,13 @@ declare module '@tanstack/react-router' {
       path: '/cartao/$slug'
       fullPath: '/cartao/$slug'
       preLoaderRoute: typeof CartaoSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cardapio/$slug': {
+      id: '/cardapio/$slug'
+      path: '/cardapio/$slug'
+      fullPath: '/cardapio/$slug'
+      preLoaderRoute: typeof CardapioSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/c/$token': {
@@ -2289,6 +2309,7 @@ const rootRouteChildren: RootRouteChildren = {
   AvaliacoesSlugRoute: AvaliacoesSlugRoute,
   AvaliarSlugRoute: AvaliarSlugRoute,
   CTokenRoute: CTokenRoute,
+  CardapioSlugRoute: CardapioSlugRoute,
   CartaoSlugRoute: CartaoSlugRoute,
   DevQrDesignNameRoute: DevQrDesignNameRoute,
   ESlugRoute: ESlugRoute,
