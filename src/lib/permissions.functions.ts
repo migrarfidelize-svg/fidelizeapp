@@ -140,11 +140,11 @@ export const updateMemberPermissions = createServerFn({ method: "POST" })
 
     await supabase.from("audit_logs").insert({
       establishment_id: data.establishment_id,
-      actor_id: userId,
+      user_id: userId,
       action: "team.permissions_updated",
       entity_type: "establishment_member",
       entity_id: data.member_id,
-      details: { overrides: clean },
+      metadata: { overrides: clean },
     });
 
     return { ok: true };
