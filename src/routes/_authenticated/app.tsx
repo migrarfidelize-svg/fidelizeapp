@@ -31,21 +31,36 @@ import { AppShellSkeleton } from "@/components/AppShellSkeleton";
 import { ROUTE_PERMISSIONS } from "@/lib/permissions";
 
 const MERCHANT_TOUR_STEPS: TourStep[] = [
-  { preview: "welcome", title: "Bem-vindo à Fidelize!", description: "Vamos dar um tour rápido pelas áreas essenciais da plataforma. Leva menos de 1 minuto." },
+  { preview: "welcome", title: "Bem-vindo à Fidelize!", description: "Vamos dar um tour completo pelas áreas da plataforma. Leva cerca de 2 minutos e você já sai sabendo usar tudo." },
   { preview: "dashboard", title: "Painel em tempo real", description: "Acompanhe carimbos, clientes ativos, recompensas resgatadas e sua meta do mês em tempo real." },
   { preview: "stamp", title: "Carimbar cliente", description: "Adicione carimbos por busca, leitura do QR Code do voucher ou câmera. É o coração operacional do dia a dia." },
-  { preview: "customers", title: "Base de clientes", description: "Todos os seus clientes fidelizados com filtros avançados, importação em CSV e histórico completo de visitas." },
-  { preview: "campaigns", title: "Campanhas", description: "Crie e personalize seus cartões: quantos carimbos, qual recompensa, ícones, cores e regras de bônus." },
-  { preview: "qrcodes", title: "Divulgação profissional", description: "Gere materiais prontos para Instagram, Story e balcão. Baixe em alta resolução, formatos Story, Feed e A5." },
-  { preview: "plans", title: "Seu plano e uso", description: "Acompanhe o uso do seu plano em tempo real e faça upgrade quando precisar de mais recursos." },
+  { preview: "customers", title: "Base de clientes", description: "Todos os seus clientes fidelizados com filtros avançados, importação em CSV, ações em massa e histórico de cada visita." },
+  { preview: "campaigns", title: "Campanhas e cartão", description: "Crie e personalize seus cartões: quantos carimbos, qual recompensa, ícones, cores, validade e regras de bônus." },
+  { preview: "qrcodes", title: "QR Code e materiais gráficos", description: "Gere cartazes prontos para Instagram, Story, balcão e mesa (7x10cm). Baixe em alta resolução e escolha o destino do QR." },
+  { preview: "campaigns", title: "Cardápio digital", description: "Monte seu cardápio online com fotos, categorias, preços e QR por mesa ou balcão — tudo com link público próprio." },
+  { preview: "customers", title: "Avaliações", description: "Receba avaliações dos clientes após o atendimento, acompanhe a nota média e responda quem avaliou." },
+  { preview: "qrcodes", title: "Árvore de links", description: "Uma página única com seus links: WhatsApp, redes sociais, cardápio, promoções e cartão fidelidade." },
+  { preview: "campaigns", title: "Notificações e retenção", description: "Envie push segmentado, veja a prévia do público antes de disparar e ative rotinas de aniversário, inatividade e níveis." },
+  { preview: "dashboard", title: "Analytics", description: "Veja de onde vêm os acessos (cardápio, árvore de links, avaliações, cartão), evolução de carimbos e engajamento." },
+  { preview: "customers", title: "Equipe e permissões", description: "Convide atendentes, defina o que cada um pode acessar e acompanhe tudo pelos logs de auditoria." },
+  { preview: "dashboard", title: "Configurações", description: "Dados do negócio, logo, horários, integrações, e-mails e preferências ficam centralizados nas Configurações." },
+  { preview: "plans", title: "Seu plano e suporte", description: "Acompanhe o uso do plano, faça upgrade quando precisar e abra chamados no Help Desk direto pelo painel." },
 ];
 
-/** No celular o tour é enxuto: só o essencial da operação de balcão. */
+/** No celular o tour cobre as mesmas áreas, em textos curtos. */
 const MERCHANT_TOUR_STEPS_MOBILE: TourStep[] = [
+  { preview: "welcome", title: "Bem-vindo!", description: "Tour rápido pelas áreas do painel no celular." },
   { preview: "stamp", title: "Carimbar é aqui", description: "O botão “Carimbar” na barra de baixo abre a busca do cliente e o leitor de QR Code." },
   { preview: "dashboard", title: "Painel do dia", description: "Carimbos de hoje, clientes ativos e recompensas resgatadas em tempo real." },
-  { preview: "qrcodes", title: "Divulgue seu QR", description: "Em “Mais” você gera cartazes e materiais prontos para o balcão e o Instagram." },
+  { preview: "customers", title: "Clientes", description: "Busque qualquer cliente, veja o histórico e importe sua base por CSV." },
+  { preview: "campaigns", title: "Campanhas", description: "Defina quantos carimbos valem a recompensa e personalize o cartão." },
+  { preview: "qrcodes", title: "QR e materiais", description: "Em “Mais” você gera cartazes e materiais prontos para o balcão e o Instagram." },
+  { preview: "campaigns", title: "Cardápio digital", description: "Cardápio online com fotos e QR por mesa, em “Mais”." },
+  { preview: "customers", title: "Avaliações", description: "Acompanhe notas e comentários dos clientes após o atendimento." },
+  { preview: "campaigns", title: "Notificações", description: "Dispare push para seus clientes e ative rotinas automáticas de retenção." },
+  { preview: "plans", title: "Plano e suporte", description: "Veja o uso do plano, faça upgrade e fale com o suporte em “Mais”." },
 ];
+
 
 
 
