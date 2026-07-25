@@ -503,13 +503,16 @@ function AppLayout() {
             <LogoMark size={22} className="relative z-10 text-primary" />
           </Link>
 
-          {filteredGroups.map((g) => {
+          {filteredGroups.map((g, gi) => {
             const Icon = GROUP_ICONS[g.key] ?? LayoutDashboard;
             const isActive = g.items.some((it) =>
               it.exact ? pathname === it.to : pathname.startsWith(it.to),
             );
             const isOpen = pinnedGroup === g.key;
             const badge = unreadByGroup[g.key] ?? 0;
+            // Grupos na metade de baixo abrem o flyout ancorado embaixo,
+            // para os últimos itens não ficarem fora da tela.
+            const anchorBottom = gi >= Math.ceil(filteredGroups.length / 2);
             return (
               <div
                 key={g.key}
@@ -538,7 +541,8 @@ function AppLayout() {
                 {/* Flyout — com ponte de hover (pl-3) para eliminar o gap morto */}
                 <div
                   className={[
-                    "absolute left-full top-0 pl-3 origin-left transition-all duration-200",
+                    "absolute left-full pl-3 origin-left transition-all duration-200",
+                    anchorBottom ? "bottom-0" : "top-0",
                     isOpen
                       ? "pointer-events-auto scale-100 opacity-100"
                       : "pointer-events-none scale-95 opacity-0",
@@ -546,7 +550,7 @@ function AppLayout() {
                   onMouseEnter={() => openGroup(g.key)}
                   onMouseLeave={scheduleCloseGroup}
                 >
-                  <div className="dock-flyout min-w-[240px] rounded-2xl p-2">
+                  <div className="dock-flyout max-h-[80vh] min-w-[240px] overflow-y-auto rounded-2xl p-2">
                     <div className="dock-flyout-title px-2 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em]">
                       {g.label}
                     </div>
