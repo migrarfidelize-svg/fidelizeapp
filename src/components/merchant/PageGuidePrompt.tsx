@@ -30,18 +30,20 @@ export function PageGuidePrompt({ scope }: { scope: string }) {
     setI(0);
     if (!match) return;
     if (typeof window === "undefined") return;
+    // Marca por módulo (ex.: todo o /app/cardapio/*), não por subaba.
+    const key = storageKey(scope, match.module);
     let seen = false;
-    try { seen = !!window.localStorage.getItem(storageKey(scope, match.path)); } catch { /* noop */ }
+    try { seen = !!window.localStorage.getItem(key); } catch { /* noop */ }
     if (seen) return;
     // Pequeno atraso: deixa a página montar antes de convidar.
     const t = setTimeout(() => {
       setGuide(match.guide);
-      setPath(match.path);
+      setPath(match.module);
       setPhase("ask");
     }, 900);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [match?.path, scope]);
+  }, [match?.module, scope]);
 
   function remember() {
     if (!path) return;
