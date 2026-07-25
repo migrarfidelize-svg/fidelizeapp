@@ -108,9 +108,7 @@ function WalletHome() {
           </p>
         </div>
 
-        <PWAInstallCard compact />
-        <InstallAppCard />
-        <EnableNotificationsCard />
+        <WalletOnboarding />
 
 
 
