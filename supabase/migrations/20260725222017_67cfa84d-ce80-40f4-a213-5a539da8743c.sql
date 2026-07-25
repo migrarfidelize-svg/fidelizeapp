@@ -1,0 +1,1 @@
+ALTER TABLE public.review_settings ADD COLUMN IF NOT EXISTS theme jsonb NOT NULL DEFAULT '{"preset":"circuit","accent":null,"bg_color":null,"pattern":"grid","headline":null,"subheadline":null,"show_reviews":true,"show_powered_by":true}'::jsonb;

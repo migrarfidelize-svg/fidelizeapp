@@ -3782,6 +3782,7 @@ export type Database = {
           prompt_title: string
           public_page_enabled: boolean
           thank_you_message: string
+          theme: Json
           updated_at: string
         }
         Insert: {
@@ -3797,6 +3798,7 @@ export type Database = {
           prompt_title?: string
           public_page_enabled?: boolean
           thank_you_message?: string
+          theme?: Json
           updated_at?: string
         }
         Update: {
@@ -3812,6 +3814,7 @@ export type Database = {
           prompt_title?: string
           public_page_enabled?: boolean
           thank_you_message?: string
+          theme?: Json
           updated_at?: string
         }
         Relationships: [
