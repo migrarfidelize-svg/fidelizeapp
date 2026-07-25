@@ -75,12 +75,14 @@ function MenuAppearancePage() {
     setPattern(t.pattern);
     setEntry(t.entry);
     setBgColor(t.bg_color);
+    setAccentColor(t.accent_color);
+    setTextColor(t.text_color);
     setBgImage(t.bg_image_url);
   }, [overview.data?.menu?.theme]);
 
   const mut = useMutation({
     mutationFn: () =>
-      saveTheme({ data: { establishment_id: estId!, theme: { preset, layout, pattern, entry, bg_color: bgColor, bg_image_url: bgImage } } }),
+      saveTheme({ data: { establishment_id: estId!, theme: { preset, layout, pattern, entry, bg_color: bgColor, accent_color: accentColor, text_color: textColor, bg_image_url: bgImage } } }),
     onSuccess: () => {
       toast.success("Aparência salva. A vitrine pública já está atualizada.");
       qc.invalidateQueries({ queryKey: ["menu-overview", estId] });
