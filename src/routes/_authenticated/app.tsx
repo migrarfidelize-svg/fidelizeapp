@@ -38,6 +38,14 @@ const MERCHANT_TOUR_STEPS: TourStep[] = [
   { preview: "plans", title: "Seu plano e uso", description: "Acompanhe o uso do seu plano em tempo real e faça upgrade quando precisar de mais recursos." },
 ];
 
+/** No celular o tour é enxuto: só o essencial da operação de balcão. */
+const MERCHANT_TOUR_STEPS_MOBILE: TourStep[] = [
+  { preview: "stamp", title: "Carimbar é aqui", description: "O botão “Carimbar” na barra de baixo abre a busca do cliente e o leitor de QR Code." },
+  { preview: "dashboard", title: "Painel do dia", description: "Carimbos de hoje, clientes ativos e recompensas resgatadas em tempo real." },
+  { preview: "qrcodes", title: "Divulgue seu QR", description: "Em “Mais” você gera cartazes e materiais prontos para o balcão e o Instagram." },
+];
+
+
 
 export const Route = createFileRoute("/_authenticated/app")({
   beforeLoad: async () => {
