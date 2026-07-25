@@ -293,6 +293,20 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
       }));
     }
 
+    // Cardápio digital: só oferecemos o atalho quando a vitrine está publicada
+    // e o recurso está liberado no plano do lojista.
+    let hasMenu = false;
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { isMenuDestinationValid } = await import("@/lib/qr-target.server");
+      hasMenu = await isMenuDestinationValid(
+        supabaseAdmin,
+        (row.establishment as unknown as { id: string }).id,
+      );
+    } catch {
+      hasMenu = false;
+    }
+
     return {
       customer: {
         id: row.id,
@@ -306,6 +320,7 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
       },
 
       establishment: row.establishment,
+      hasMenu,
       cards: cards ?? [],
       recentStamps,
       redeemedRewards,
