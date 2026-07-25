@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
 import { AdminPushDiagnostics } from "@/components/AdminPushDiagnostics";
+import { PWAInstallCard } from "@/components/pwa/PWAInstallCard";
+import { DeviceDiagnostic } from "@/components/pwa/DeviceDiagnostic";
+
 import { BellDot as HeroIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -141,7 +144,11 @@ function AdminNotifPage() {
         </p>
       </header>
 
+      <PWAInstallCard />
       <AdminPushDiagnostics />
+      <DeviceDiagnostic />
+
+
 
 
       {/* KPIs */}
