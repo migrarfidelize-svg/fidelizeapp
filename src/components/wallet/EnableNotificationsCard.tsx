@@ -19,6 +19,7 @@ import {
   unsubscribePushForAllMyCards,
   getMyWalletPushStatus,
 } from "@/lib/push.functions";
+import { trackEngagement } from "@/lib/engagement";
 
 const DISMISS_KEY = "fidelize:notifications:dismissed";
 const PWA_AUTOPROMPT_KEY = "fidelize:notifications:pwa-autoprompt";
@@ -109,6 +110,9 @@ export function EnableNotificationsCard() {
       const perm = await Notification.requestPermission();
       setPermission(perm);
       if (perm !== "granted") {
+        trackEngagement("customer", perm === "denied" ? "push_denied" : "push_dismissed", {
+          stage: "permission",
+        });
         if (perm === "denied") {
           toast.error("Permissão negada. Habilite nas configurações do navegador.");
         }
@@ -137,6 +141,7 @@ export function EnableNotificationsCard() {
       }
       setSubscribed(true);
       setPromptOpen(false);
+      trackEngagement("customer", "push_enabled", { source: "wallet-card" });
       localStorage.setItem(PWA_AUTOPROMPT_KEY, "1");
       toast.success(
         st.cardCount
@@ -160,6 +165,7 @@ export function EnableNotificationsCard() {
         await unsubscribeAll({ data: { endpoint: sub.endpoint } });
       }
       setSubscribed(false);
+      trackEngagement("customer", "push_disabled", { source: "wallet-card" });
       toast.success("Notificações desativadas.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao desativar.");

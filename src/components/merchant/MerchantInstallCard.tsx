@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Download, Share, PlusSquare, Smartphone, X } from "lucide-react";
+import { trackEngagement } from "@/lib/engagement";
 
 type BIPEvent = Event & {
   prompt: () => Promise<void>;
@@ -62,9 +63,15 @@ export function MerchantInstallCard() {
     if (deferred) {
       await deferred.prompt();
       const choice = await deferred.userChoice;
+      trackEngagement(
+        "merchant",
+        choice.outcome === "accepted" ? "install_accepted" : "install_dismissed",
+        { source: "beforeinstallprompt" },
+      );
       if (choice.outcome === "accepted") dismiss();
       setDeferred(null);
     } else {
+      trackEngagement("merchant", "install_manual_guide", { source: "manual" });
       setShowIosHelp(true);
     }
   }

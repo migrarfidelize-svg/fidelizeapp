@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { ensurePwaRegistration } from "@/lib/pwa-register";
 import { VAPID_PUBLIC_KEY, urlBase64ToUint8Array } from "@/lib/vapid";
 import { subscribeAdminPush, getAdminPushStatus } from "@/lib/push.functions";
+import { trackEngagement } from "@/lib/engagement";
 
 const DISMISS_KEY = "fidelize:merchant-push-dismissed:v1";
 const SKIP_UNTIL_KEY = "fidelize:merchant-push-skip-until:v1";
@@ -101,6 +102,7 @@ export function MerchantPushCard() {
       if (Notification.permission === "denied") {
         setPermission("denied");
         setShowHelp(true);
+        trackEngagement("merchant", "push_blocked", { stage: "pre-check" });
         toast.error("As notificações estão bloqueadas para este site no navegador.");
         return;
       }
@@ -117,11 +119,13 @@ export function MerchantPushCard() {
 
       if (perm === "denied") {
         setShowHelp(true);
+        trackEngagement("merchant", "push_denied", { stage: "permission" });
         toast.error("Permissão negada. Dá para reverter nas configurações do site.");
         return;
       }
       if (perm === "default") {
         // Usuário fechou/pulou o aviso do navegador sem escolher.
+        trackEngagement("merchant", "push_dismissed", { stage: "permission" });
         setFailure("Você fechou o aviso sem escolher. Toque em “Ativar notificações” e responda “Permitir”.");
         toast.info("Pedido de permissão ignorado. Você pode tentar de novo quando quiser.");
         return;
@@ -140,6 +144,7 @@ export function MerchantPushCard() {
           if (name === "NotAllowedError") {
             setPermission("denied");
             setShowHelp(true);
+            trackEngagement("merchant", "push_blocked", { stage: "subscribe" });
             setFailure("O navegador bloqueou a assinatura de notificações para este site.");
             toast.error("Notificações bloqueadas pelo navegador.");
           } else if (name === "AbortError" || name === "InvalidStateError") {
@@ -167,8 +172,10 @@ export function MerchantPushCard() {
       setSubscribed(!!st.subscribed);
       if (st.subscribed) {
         setFailure(null);
+        trackEngagement("merchant", "push_enabled", { source: "merchant-card" });
         toast.success("Notificações ativadas neste aparelho 🎉");
       } else {
+        trackEngagement("merchant", "push_failed", { stage: "server-confirm" });
         setFailure("O aparelho foi registrado, mas o servidor não confirmou. Tente novamente em instantes.");
         toast.error("Não conseguimos concluir a ativação. Tente novamente.");
       }
