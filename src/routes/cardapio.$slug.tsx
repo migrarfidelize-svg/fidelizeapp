@@ -793,12 +793,23 @@ function ItemModal({ item, primary, onClose }: { item: Item; primary: string; on
           )}
           {(Array.isArray(item.variants) ? item.variants : []).filter((v) => v?.label).length > 0 && (
             <div className="mt-4">
-              <h4 className="text-xs uppercase tracking-widest font-bold opacity-60 mb-2">Tamanhos</h4>
-              <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--mk-line)" }}>
+              <h4 className="text-xs uppercase tracking-widest font-bold mb-2" style={{ color: primary }}>Tamanhos</h4>
+              <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${primary}33` }}>
                 {(item.variants ?? []).filter((v) => v?.label).map((v, idx) => (
-                  <div key={idx} className="flex items-center justify-between px-3 py-2 text-sm border-b last:border-b-0" style={{ borderColor: "var(--mk-line)" }}>
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between px-3 py-2 text-sm border-b last:border-b-0"
+                    style={{ borderColor: `${primary}22`, background: idx % 2 === 0 ? `${primary}0D` : "transparent" }}
+                  >
                     <span className="font-medium">{v.label}</span>
-                    {v.price != null && <span className="font-bold" style={{ color: primary }}>{fmt(v.price, item.currency)}</span>}
+                    {v.price != null && (
+                      <span
+                        className="font-bold text-xs px-2 py-0.5 rounded-full"
+                        style={{ background: primary, color: readableInk(primary) }}
+                      >
+                        {fmt(v.price, item.currency)}
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>
