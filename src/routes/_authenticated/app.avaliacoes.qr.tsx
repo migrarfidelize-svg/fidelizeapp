@@ -28,6 +28,7 @@ import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { useMyFeature } from "@/hooks/useMyFeature";
 import { DisplayStorePreview } from "@/components/DisplayStorePreview";
 import { PrintOrderDialog } from "@/components/PrintOrderDialog";
+import { LogoUploadButton } from "@/components/LogoUploadButton";
 import {
   AlertDialog,
   AlertDialogAction,
