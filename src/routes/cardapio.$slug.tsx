@@ -258,8 +258,8 @@ function PublicMenuPage() {
   };
 
   const cover = est.cover_url || null;
-  const primary = est.primary_color || "#B8371D";
   const theme = resolveMenuTheme((menu as any)?.theme);
+  const primary = theme.accent_color || est.primary_color || "#B8371D";
   const T = theme.preset_def;
   const pageBg = menuBackgroundCss(theme, T, primary);
   const showCatPicker = theme.entry === "categories" && !catPicked && !q.trim() && categories.length > 0;
