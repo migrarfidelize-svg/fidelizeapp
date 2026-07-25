@@ -38,7 +38,7 @@ function CardapioOverview() {
   const mutateStatus = useServerFn(setMenuStatus);
 
   const ests = useQuery({ queryKey: ["my-establishments"], queryFn: () => fetchEsts() });
-  const est = ests.data?.[0];
+  const est = ests.data?.[0]?.establishment;
   const estId = est?.id;
 
   const overview = useQuery({
