@@ -11,7 +11,7 @@ import {
   Save, Layers, Eye, Trash2, Palette, ShoppingBag, Move, RotateCcw, XCircle,
   Wifi, QrCode as QrCodeIcon, CreditCard, PawPrint, Bike, Snowflake, ParkingCircle,
   Printer, ScanLine, Cloud, UserCircle2, Maximize2, Ruler, X, Check,
-
+  FlipHorizontal2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -156,6 +156,35 @@ const DEFAULT_LAYOUT: PosterLayout = {
   ctaFooter:   { x: 50, y: 93 },
 };
 
+/** Layouts ajustados por formato — canvas quadrado (feed) e paisagem precisam
+ * de espaçamento vertical mais denso para não sobrepor a estrela ao QR. */
+const LAYOUT_BY_FORMAT: Record<FormatKey, PosterLayout> = {
+  counter15x10: DEFAULT_LAYOUT,
+  a5:           DEFAULT_LAYOUT,
+  story:        DEFAULT_LAYOUT,
+  feed: {
+    header:      { x: 50, y: 11 },
+    title:       { x: 50, y: 24 },
+    subtitle:    { x: 50, y: 33 },
+    primaryQr:   { x: 50, y: 55 },
+    secondaryQr: { x: 72, y: 55 },
+    nfc:         { x: 50, y: 78 },
+    ctaNear:     { x: 50, y: 88 },
+    ctaFooter:   { x: 50, y: 95 },
+  },
+};
+
+const LAYOUT_LANDSCAPE: PosterLayout = {
+  header:      { x: 22, y: 22 },
+  title:       { x: 22, y: 42 },
+  subtitle:    { x: 22, y: 55 },
+  primaryQr:   { x: 74, y: 50 },
+  secondaryQr: { x: 74, y: 78 },
+  nfc:         { x: 22, y: 74 },
+  ctaNear:     { x: 22, y: 68 },
+  ctaFooter:   { x: 50, y: 94 },
+};
+
 /** Preset badges the merchant can drop onto the poster. */
 type BadgeKey = "stars5" | "wifi" | "pix" | "card" | "pet" | "delivery" | "ac" | "parking";
 const BADGE_CATALOG: Record<BadgeKey, { label: string; Icon: LucideIcon; short: string }> = {
@@ -285,6 +314,11 @@ function ReviewQrPage() {
   const [designName, setDesignName] = useState("");
   const [layout, setLayout] = useState<PosterLayout>(DEFAULT_LAYOUT);
   const [editLayout, setEditLayout] = useState(false);
+  const [landscape, setLandscape] = useState(false);
+  // Track the previous format so we can migrate default layouts on change
+  // without wiping user customizations.
+  const prevFormatRef = useRef<FormatKey>("counter15x10");
+  const prevLandscapeRef = useRef(false);
   const [badges, setBadges] = useState<BadgeInstance[]>([{ key: "wifi", x: 50, y: 18 }]);
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [savedTarget, setSavedTarget] = useState<"ls" | "idb" | "fail">("ls");
@@ -675,7 +709,53 @@ function ReviewQrPage() {
     }).then(setSecondaryQrDataUrl).catch(() => setSecondaryQrDataUrl(""));
   }, [secondaryEnabled, qrEncodedSecondaryUrl, ecc]);
 
-  const dims = FORMATS[format];
+  const baseDims = FORMATS[format];
+  const dims = landscape
+    ? {
+        ...baseDims,
+        label: `${baseDims.label} · horizontal`,
+        aspect: baseDims.aspect.split("/").reverse().join(" / "),
+        mm: { w: baseDims.mm.h, h: baseDims.mm.w },
+        orientation: "landscape" as const,
+      }
+    : baseDims;
+
+  // Ao trocar de formato ou orientação, migra o layout se estava no default
+  // do formato anterior (evita elementos sobrepostos, principalmente no Feed
+  // 1:1 e na versão horizontal). Se o usuário customizou, apenas clampa.
+  useEffect(() => {
+    const prevF = prevFormatRef.current;
+    const prevL = prevLandscapeRef.current;
+    if (prevF === format && prevL === landscape) return;
+    const prevDefault = prevL ? LAYOUT_LANDSCAPE : LAYOUT_BY_FORMAT[prevF];
+    const isPristine = JSON.stringify(layout) === JSON.stringify(prevDefault);
+    const nextDefault = landscape ? LAYOUT_LANDSCAPE : LAYOUT_BY_FORMAT[format];
+    if (isPristine) {
+      setLayout(nextDefault);
+    } else {
+      // Clampa cada item na área útil (2–98%) para evitar overflow silencioso.
+      setLayout((cur) => {
+        const out = { ...cur } as PosterLayout;
+        (Object.keys(out) as LayoutKey[]).forEach((k) => {
+          out[k] = {
+            x: Math.max(4, Math.min(96, out[k].x)),
+            y: Math.max(4, Math.min(96, out[k].y)),
+          };
+        });
+        return out;
+      });
+    }
+    // Clampa badges também.
+    setBadges((prev) =>
+      prev.map((b) => ({
+        ...b,
+        x: Math.max(4, Math.min(96, b.x)),
+        y: Math.max(4, Math.min(96, b.y)),
+      }))
+    );
+    prevFormatRef.current = format;
+    prevLandscapeRef.current = landscape;
+  }, [format, landscape, layout]);
 
   /**
    * Renders the poster to PNG at 300 DPI print resolution.
@@ -1562,11 +1642,30 @@ function ReviewQrPage() {
               <Button
                 type="button"
                 size="sm"
+                variant={landscape ? "default" : "outline"}
+                onClick={() => setLandscape((v) => !v)}
+                aria-label={landscape ? "Voltar para orientação vertical" : "Girar para orientação horizontal"}
+                aria-pressed={landscape}
+                title={landscape ? "Voltar para vertical" : "Girar para horizontal"}
+                className="flex h-10 w-full flex-row items-center justify-center gap-1.5 px-2 text-xs sm:h-32 sm:w-10 sm:flex-col sm:px-0"
+              >
+                <FlipHorizontal2 className="h-3.5 w-3.5" />
+                <span className="font-semibold tracking-wider sm:[writing-mode:vertical-rl] sm:[transform:rotate(180deg)]">
+                  {landscape ? "Vertical" : "Horizontal"}
+                </span>
+              </Button>
+              <Button
+                type="button"
+                size="sm"
                 variant="ghost"
-                onClick={() => { setLayout(DEFAULT_LAYOUT); toast.success("Posições restauradas"); }}
+                onClick={() => {
+                  const def = landscape ? LAYOUT_LANDSCAPE : LAYOUT_BY_FORMAT[format];
+                  setLayout(def);
+                  toast.success("Posições restauradas");
+                }}
                 aria-label="Restaurar posições padrão"
                 className="flex h-10 w-full flex-row items-center justify-center gap-1.5 px-2 text-xs sm:h-32 sm:w-10 sm:flex-col sm:px-0"
-                disabled={JSON.stringify(layout) === JSON.stringify(DEFAULT_LAYOUT)}
+                disabled={JSON.stringify(layout) === JSON.stringify(landscape ? LAYOUT_LANDSCAPE : LAYOUT_BY_FORMAT[format])}
               >
                 <RotateCcw className="h-3.5 w-3.5" />
                 <span
@@ -2368,9 +2467,9 @@ function BrandLogo({ url, name, primary, sizePx = 40 }: { url: string | null; na
 
 function Stars({ color, size, center }: { color: string; size: number; center?: boolean }) {
   return (
-    <div className={`flex gap-0.5 ${center ? "justify-center" : ""}`} style={{ color }}>
+    <div className={`${center ? "inline-flex mx-auto" : "flex"} items-center gap-[2px] leading-none`} style={{ color }}>
       {Array.from({ length: 5 }).map((_, i) => (
-        <svg key={i} width={size} height={size} viewBox="0 0 20 20" fill="currentColor">
+        <svg key={i} width={size} height={size} viewBox="0 0 20 20" fill="currentColor" style={{ display: "block", flexShrink: 0 }}>
           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
         </svg>
       ))}
