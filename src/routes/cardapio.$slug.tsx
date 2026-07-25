@@ -103,7 +103,7 @@ function PublicMenuPage() {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<Item | null>(null);
   const [stories, setStories] = useState<{ list: Item[]; index: number } | null>(null);
-  const catRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const catRefs = useRef<Record<string, HTMLElement | null>>({});
 
   if (!data || !data.menu) {
     return (
