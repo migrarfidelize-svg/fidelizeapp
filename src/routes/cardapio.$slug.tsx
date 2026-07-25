@@ -300,12 +300,15 @@ function PublicMenuPage() {
         />
         <div className="max-w-3xl mx-auto px-4 sm:px-5 -mt-10 sm:-mt-12 relative">
           <div className="rounded-2xl sm:rounded-3xl fx-shadow p-3.5 sm:p-5 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 sm:gap-4" style={{ background: "var(--mk-surface)", border: "1px solid var(--mk-line)" }}>
-            {est.logo_url ? (
-              <LazyImg
+            {est.logo_url && !logoErr ? (
+              <img
                 src={est.logo_url}
                 alt={est.name}
-                className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-2xl object-contain bg-white/60 ring-1 ring-black/5"
-                eager
+                width={80}
+                height={80}
+                loading="eager"
+                onError={() => setLogoErr(true)}
+                className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-2xl object-contain bg-white ring-1 ring-black/5 p-1"
               />
             ) : (
               <div
@@ -316,11 +319,12 @@ function PublicMenuPage() {
               </div>
             )}
             <div className="min-w-0">
-              {est.logo_url ? (
+              {est.logo_url && !logoErr ? (
                 <h1 className="sr-only">{est.name}</h1>
               ) : (
                 <h1 className="fx-serif text-xl sm:text-2xl font-bold truncate">{est.name}</h1>
               )}
+
               {(menu.tagline || est.description) && (
                 <p className="text-[13px] sm:text-sm opacity-70 line-clamp-2">
                   {menu.tagline || est.description}
