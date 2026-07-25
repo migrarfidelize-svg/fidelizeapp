@@ -330,13 +330,13 @@ function MenuAppearancePage() {
 
 function ThemeSwatch({ p }: { p: MenuPreset }) {
   return (
-    <div className="h-16 w-full overflow-hidden rounded-xl border border-border/40" style={{ background: p.bg }}>
-      <div className="flex h-full items-center gap-2 p-2">
-        <span className="h-10 w-10 rounded-lg" style={{ background: p.bar }} />
+    <div className="h-11 w-full overflow-hidden rounded-lg border border-border/40" style={{ background: p.bg }}>
+      <div className="flex h-full items-center gap-1.5 p-1.5">
+        <span className="h-7 w-7 rounded-md" style={{ background: p.bar }} />
         <span className="flex-1 space-y-1">
-          <span className="block h-2.5 w-3/4 rounded-full" style={{ background: p.ink, opacity: 0.85 }} />
-          <span className="block h-2 w-1/2 rounded-full" style={{ background: p.ink, opacity: 0.35 }} />
-          <span className="block h-6 rounded-md" style={{ background: p.surface, border: `1px solid ${p.line}` }} />
+          <span className="block h-1.5 w-3/4 rounded-full" style={{ background: p.ink, opacity: 0.85 }} />
+          <span className="block h-1.5 w-1/2 rounded-full" style={{ background: p.ink, opacity: 0.35 }} />
+          <span className="block h-3 rounded" style={{ background: p.surface, border: `1px solid ${p.line}` }} />
         </span>
       </div>
     </div>
