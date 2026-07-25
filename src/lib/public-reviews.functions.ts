@@ -5,6 +5,7 @@ import { createHash } from "crypto";
 import type { Database } from "@/integrations/supabase/types";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertFeature } from "@/lib/plans.functions";
+import type { ReviewThemeConfig } from "@/lib/review-themes";
 
 function publicClient() {
   const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
@@ -67,7 +68,7 @@ export const getPublicReviewForm = createServerFn({ method: "GET" })
       .select("theme")
       .eq("establishment_id", est.id)
       .maybeSingle();
-    const theme = (settings?.theme ?? null) as unknown;
+    const theme = (settings?.theme ?? null) as ReviewThemeConfig | null;
 
     const { data: form } = await sb
       .from("review_forms")
