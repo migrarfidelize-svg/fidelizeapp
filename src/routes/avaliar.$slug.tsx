@@ -5,6 +5,7 @@ import { PublicRatingBlock } from "@/components/PublicRatingBlock";
 import { getPublicReviewForm, getPublicReviewsList } from "@/lib/public-reviews.functions";
 import { useChannelPageView } from "@/lib/tracking";
 import { formatDate } from "@/lib/format";
+import { resolveReviewTheme, reviewPatternStyle } from "@/lib/review-themes";
 
 const opts = (slug: string) => queryOptions({
   queryKey: ["public-review-form", slug],
@@ -63,11 +64,15 @@ export const Route = createFileRoute("/avaliar/$slug")({
   notFoundComponent: () => <div className="grid min-h-dvh place-items-center text-muted-foreground">Página não encontrada.</div>,
 });
 
-function Stars({ n }: { n: number }) {
+function Stars({ n, color = "#00ffff" }: { n: number; color?: string }) {
   return (
     <div className="flex gap-0.5">
       {[1, 2, 3, 4, 5].map((i) => (
-        <Star key={i} className={`h-3.5 w-3.5 ${i <= n ? "fill-cyan-400 text-cyan-400" : "text-white/15"}`} />
+        <Star
+          key={i}
+          className="h-3.5 w-3.5"
+          style={i <= n ? { fill: color, color } : { color: "currentColor", opacity: 0.25 }}
+        />
       ))}
     </div>
   );
