@@ -6,8 +6,8 @@ import {
 } from "@/lib/merchant-offline";
 import { PageHero } from "@/components/PageHero";
 import { Zap as HeroIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useCallback, useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getMyEstablishments, addStamp, undoLastStamp, getCardByToken, redeemReward, listCustomers } from "@/lib/loyalty.functions";
 import { consumeRedeemToken } from "@/lib/redeem.functions";
@@ -59,6 +59,7 @@ function Carimbar() {
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
   const est = memberships?.[0]?.establishment as { id: string; name: string } | undefined;
 
+  const queryClient = useQueryClient();
   const [staffName, setStaffName] = useState<string>("");
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -140,7 +141,7 @@ function Carimbar() {
   const offlineFallback = !online && est?.id
     ? searchOfflineCustomers(est.id, searchTerm).customers
     : [];
-  const results = listData?.customers ?? (offlineFallback as typeof listData extends never ? never : NonNullable<typeof listData>["customers"]);
+  const results = listData?.customers ?? (offlineFallback as unknown as NonNullable<typeof listData>["customers"]);
   const total = listData?.total ?? offlineFallback.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
