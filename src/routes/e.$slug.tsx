@@ -23,6 +23,7 @@ import {
   LogIn,
   Wallet,
   UserCircle2,
+  UtensilsCrossed,
 
 } from "lucide-react";
 import { getStampIcon } from "@/lib/stampIcons";
