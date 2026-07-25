@@ -324,7 +324,8 @@ export const getMyRewards = createServerFn({ method: "GET" })
     if (cErr) throw cErr;
     const ids = (customers ?? []).map((c) => c.id);
     if (!ids.length) return [] as Array<{
-      cardId: string; rewardId: string | null; stamps: number; required: number; reward: string;
+      cardId: string; rewardId: string | null; expiresAt: string | null; stamps: number;
+      required: number; reward: string;
       campaignName: string; icon: string; establishment: any; ready: boolean; pct: number;
     }>;
 
