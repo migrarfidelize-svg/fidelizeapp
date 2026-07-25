@@ -103,6 +103,56 @@ export type Database = {
           },
         ]
       }
+      app_engagement_events: {
+        Row: {
+          audience: string
+          browser: string | null
+          establishment_id: string | null
+          event_type: string
+          id: number
+          meta: Json
+          occurred_at: string
+          platform: string | null
+          standalone: boolean | null
+          ua: string | null
+          user_id: string | null
+        }
+        Insert: {
+          audience: string
+          browser?: string | null
+          establishment_id?: string | null
+          event_type: string
+          id?: never
+          meta?: Json
+          occurred_at?: string
+          platform?: string | null
+          standalone?: boolean | null
+          ua?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          audience?: string
+          browser?: string | null
+          establishment_id?: string | null
+          event_type?: string
+          id?: never
+          meta?: Json
+          occurred_at?: string
+          platform?: string | null
+          standalone?: boolean | null
+          ua?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "app_engagement_events_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_roles: {
         Row: {
           created_at: string
