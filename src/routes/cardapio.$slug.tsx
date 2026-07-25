@@ -780,7 +780,7 @@ function ItemModal({ item, primary, onClose }: { item: Item; primary: string; on
                 <span className="text-sm opacity-50 line-through">{fmt(item.price, item.currency)}</span>
               </>
             ) : (
-              item.price != null && <span className="fx-serif font-bold text-xl" style={{ fontFamily: "Outfit" }}>{fmt(item.price, item.currency)}</span>
+              item.price != null && <span className="fx-serif font-bold text-xl" style={{ color: primary, fontFamily: "Outfit" }}>{fmt(item.price, item.currency)}</span>
             )}
             {item.prep_minutes != null && (
               <span className="ml-auto inline-flex items-center gap-1 text-xs opacity-70">
