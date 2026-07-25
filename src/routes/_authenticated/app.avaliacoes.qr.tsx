@@ -1915,7 +1915,7 @@ function ReviewQrPage() {
 
           <div className="border-t border-white/10 bg-black/60 px-4 py-2 text-center text-[11px] text-white/60">
             {realScale
-              ? "Renderizado em milímetros — a proporção física entre Balcão 10×15 e A5 é fiel na sua tela (aprox. 96dpi)."
+              ? "Renderizado em milímetros — a proporção física entre Balcão 10×15 e Mesa 7×10 é fiel na sua tela (aprox. 96dpi)."
               : "Ajustado à tela mantendo a proporção do formato. Ative Escala 1:1 para comparar tamanhos reais."}
           </div>
         </div>
