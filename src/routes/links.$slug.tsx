@@ -3,6 +3,7 @@ import { useState } from "react";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getPublicLinkTreeBySlug } from "@/lib/linktree.functions";
+import { trackChannelEvent, useChannelPageView } from "@/lib/tracking";
 import { ExternalLink, Instagram, MessageCircle, Globe, MapPin, Youtube, Facebook, Music2, Mail, Phone, Star, Wifi, KeyRound, Copy, Check, Eye, EyeOff } from "lucide-react";
 
 
