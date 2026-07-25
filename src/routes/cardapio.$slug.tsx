@@ -570,7 +570,8 @@ function PublicMenuPage() {
             <a
               href={`tel:${est.phone}`}
               onClick={() => trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_label: "cta:phone" })}
-              className="grid place-items-center w-10 h-10 rounded-full text-white bg-white/10"
+              className="grid place-items-center w-10 h-10 rounded-full"
+              style={{ background: primary, color: readableInk(primary) }}
               aria-label="Telefone"
             >
               <Phone className="w-4 h-4" />
