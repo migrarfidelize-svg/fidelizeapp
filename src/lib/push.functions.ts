@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { VAPID_PUBLIC_KEY as FRONTEND_VAPID_PUBLIC_KEY } from "@/lib/vapid";
+import { notificationTargetKey, recordPushDelivery } from "@/lib/push-inbox.server";
 
 const subInput = z.object({
   token: z.string().min(20).max(80), // customer access_token from voucher URL
@@ -355,7 +356,7 @@ export const broadcastPush = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     let subsQuery = supabaseAdmin
       .from("push_subscriptions")
-      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, preferences")
+      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id, preferences")
       .eq("establishment_id", data.establishment_id)
       .eq("active", true);
     // If no segment filter was applied, targetIds is the full base; we still filter to avoid
@@ -369,26 +370,23 @@ export const broadcastPush = createServerFn({ method: "POST" })
     const { sendPushToSub } = await import("@/lib/push.server");
     let sent = 0;
     let failed = 0;
+    const notifiedTargets = new Set<string>();
     for (const s of subs ?? []) {
       const prefs = (s.preferences ?? {}) as Record<string, boolean>;
       if (prefs.campaign === false) continue;
+      const inAppTarget = notificationTargetKey(s);
       const r = await sendPushToSub(s, {
         title: data.title,
         body: data.body,
         url: data.url,
         tag: `broadcast-${data.establishment_id}`,
+        type: "message",
       });
-      await supabaseAdmin.from("push_logs").insert({
-        establishment_id: data.establishment_id,
-        subscription_id: s.id,
-        customer_id: s.customer_id,
-        title: data.title,
-        body: data.body ?? null,
-        url: data.url ?? null,
-        status: r.ok ? "sent" : r.status === 410 || r.status === 404 ? "expired" : "failed",
-        status_code: r.status ?? null,
-        error: r.error ?? null,
+      await recordPushDelivery(supabaseAdmin, s, { title: data.title, body: data.body, url: data.url, kind: "push" }, r, {
+        persistInApp: !notifiedTargets.has(inAppTarget),
+        audience: s.customer_id ? "customer" : "operator",
       });
+      notifiedTargets.add(inAppTarget);
       if (r.ok) sent++;
       else failed++;
     }
@@ -553,7 +551,7 @@ export async function dispatchDueScheduledBroadcasts() {
       );
       let sq = supabaseAdmin
         .from("push_subscriptions")
-        .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, preferences")
+        .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id, preferences")
         .eq("establishment_id", row.establishment_id)
         .eq("active", true);
       const seg = (row.segment ?? {}) as Record<string, unknown>;
@@ -574,26 +572,29 @@ export async function dispatchDueScheduledBroadcasts() {
 
       let sent = 0;
       let failed = 0;
+      const notifiedTargets = new Set<string>();
       for (const s of subs ?? []) {
         const prefs = (s.preferences ?? {}) as Record<string, boolean>;
         if (prefs.campaign === false) continue;
+        const inAppTarget = notificationTargetKey(s);
         const r = await sendPushToSub(s as any, {
           title: row.title,
           body: row.body ?? undefined,
           url: row.url ?? undefined,
           tag: `broadcast-${row.establishment_id}`,
+          type: "message",
         });
-        await supabaseAdmin.from("push_logs").insert({
-          establishment_id: row.establishment_id,
-          subscription_id: s.id,
-          customer_id: s.customer_id,
-          title: row.title,
-          body: row.body ?? null,
-          url: row.url ?? null,
-          status: r.ok ? "sent" : r.status === 410 || r.status === 404 ? "expired" : "failed",
-          status_code: r.status ?? null,
-          error: r.error ?? null,
-        });
+        await recordPushDelivery(
+          supabaseAdmin,
+          s,
+          { title: row.title, body: row.body ?? null, url: row.url ?? null, kind: "push" },
+          r,
+          {
+            persistInApp: !notifiedTargets.has(inAppTarget),
+            audience: s.customer_id ? "customer" : "operator",
+          },
+        );
+        notifiedTargets.add(inAppTarget);
         if (r.ok) sent++;
         else failed++;
       }
@@ -757,7 +758,7 @@ export const adminBroadcastPush = createServerFn({ method: "POST" })
 
     let q = supabaseAdmin
       .from("push_subscriptions")
-      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, preferences")
+      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id, preferences")
       .eq("active", true)
       .not("establishment_id", "is", null);
     if (data.establishment_ids && data.establishment_ids.length > 0) {
@@ -775,29 +776,26 @@ export const adminBroadcastPush = createServerFn({ method: "POST" })
     let sent = 0;
     let failed = 0;
     let skipped = 0;
+    const notifiedTargets = new Set<string>();
     for (const s of subs ?? []) {
       const prefs = (s.preferences ?? {}) as Record<string, boolean>;
       if (respect && prefs.campaign === false) {
         skipped++;
         continue;
       }
+      const inAppTarget = notificationTargetKey(s);
       const r = await sendPushToSub(s, {
         title: data.title,
         body: data.body,
         url: data.url,
         tag: "admin-broadcast",
+        type: "message",
       });
-      await supabaseAdmin.from("push_logs").insert({
-        establishment_id: s.establishment_id,
-        subscription_id: s.id,
-        customer_id: s.customer_id,
-        title: data.title,
-        body: data.body ?? null,
-        url: data.url ?? null,
-        status: r.ok ? "sent" : r.status === 410 || r.status === 404 ? "expired" : "failed",
-        status_code: r.status ?? null,
-        error: r.error ?? null,
+      await recordPushDelivery(supabaseAdmin, s, { title: data.title, body: data.body, url: data.url, kind: "push" }, r, {
+        persistInApp: !notifiedTargets.has(inAppTarget),
+        audience: s.customer_id ? "customer" : "admin",
       });
+      notifiedTargets.add(inAppTarget);
       if (r.ok) sent++;
       else failed++;
     }
@@ -914,7 +912,7 @@ export const sendTestPushToMe = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: subs } = await supabaseAdmin
       .from("push_subscriptions")
-      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id")
+      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id")
       .in("customer_id", ids)
       .eq("endpoint", data.endpoint)
       .eq("active", true)
@@ -929,17 +927,18 @@ export const sendTestPushToMe = createServerFn({ method: "POST" })
       url: "/carteira/perfil",
       tag: "fidelize-test",
     });
-    await supabaseAdmin.from("push_logs").insert({
-      establishment_id: sub.establishment_id,
-      subscription_id: sub.id,
-      customer_id: sub.customer_id,
-      title: "Fidelize — teste de push",
-      body: "Smoke test manual do usuário",
-      url: "/carteira/perfil",
-      status: r.ok ? "sent" : r.status === 410 || r.status === 404 ? "expired" : "failed",
-      status_code: r.status ?? null,
-      error: r.error ?? null,
-    });
+    await recordPushDelivery(
+      supabaseAdmin,
+      sub,
+      {
+        title: "Fidelize — teste de push",
+        body: "Smoke test manual do usuário",
+        url: "/carteira/perfil",
+        kind: "aviso",
+      },
+      r,
+      { persistInApp: true, audience: "customer" },
+    );
     if (!r.ok) {
       throw new Error(
         r.error
@@ -1066,7 +1065,7 @@ export const sendAdminTestPush = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: sub } = await supabaseAdmin
       .from("push_subscriptions")
-      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id")
+      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id")
       .eq("user_id", context.userId)
       .eq("endpoint", data.endpoint)
       .eq("active", true)
@@ -1095,17 +1094,18 @@ export const sendAdminTestPush = createServerFn({ method: "POST" })
       error_code: r.status != null ? String(r.status) : null,
       error_message: r.error ?? null,
     });
-    await supabaseAdmin.from("push_logs").insert({
-      establishment_id: sub.establishment_id,
-      subscription_id: sub.id,
-      customer_id: sub.customer_id,
-      title: "Notificações ativadas",
-      body: "Seu dispositivo está pronto para receber novidades.",
-      url: "/admin/notificacoes",
-      status: r.ok ? "sent" : r.status === 410 || r.status === 404 ? "expired" : "failed",
-      status_code: r.status ?? null,
-      error: r.error ?? null,
-    });
+    await recordPushDelivery(
+      supabaseAdmin,
+      sub,
+      {
+        title: "Notificações ativadas",
+        body: "Seu dispositivo está pronto para receber novidades.",
+        url: "/admin/notificacoes",
+        kind: "aviso",
+      },
+      r,
+      { persistInApp: true, audience: "admin" },
+    );
     if (!r.ok) {
       // Only mark inactive on 404/410 — sendPushToSub already does that.
       throw new Error(
