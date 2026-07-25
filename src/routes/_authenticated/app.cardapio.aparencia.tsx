@@ -155,7 +155,7 @@ function MenuAppearancePage() {
             <CardContent className="space-y-4">
               <div className="flex flex-wrap gap-2">
                 {MENU_PATTERNS.map((pt) => {
-                  const p = applyBgColor(MENU_PRESETS.find((x) => x.id === preset)!, bgColor);
+                  const p = applyCustomColors(MENU_PRESETS.find((x) => x.id === preset)!, { bg_color: bgColor, accent_color: accentColor, text_color: textColor });
                   return (
                     <button
                       key={pt.id}
