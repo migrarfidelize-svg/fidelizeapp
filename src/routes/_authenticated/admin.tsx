@@ -79,6 +79,7 @@ const NAV_GROUPS: NavGroup[] = [
     icon: Cog,
     items: [
       { to: "/admin/integracoes", label: "Integrações", icon: Plug },
+      { to: "/admin/liberacoes", label: "Liberações de recursos", icon: KeyRound },
       { to: "/admin/cardapio-jsonld", label: "JSON-LD do cardápio", icon: FileJson },
       { to: "/admin/migracao", label: "Migração & Downloads", icon: Rocket },
       { to: "/admin/config", label: "Configurações", icon: Settings },
