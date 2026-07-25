@@ -51,7 +51,7 @@ function AdminPlansPage() {
   // Features with a numeric daily/monthly limit editable inline
   const LIMIT_FEATURES = new Set(["push_notifications"]);
   // Features whose changes are business-critical → require confirmation
-  const SENSITIVE_FEATURES = new Set(["public_reviews"]);
+  const SENSITIVE_FEATURES = new Set(["public_reviews", "digital_menu"]);
 
   // Reconcile / repair feature-access modal
   const reconcileFn = useServerFn(adminReconcileFeatureAccess);
