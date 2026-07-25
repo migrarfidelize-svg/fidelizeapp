@@ -2008,6 +2008,7 @@ function ReviewQrPage() {
                   editable={false}
                   badges={badges}
                   moveBadge={moveBadge}
+                  landscape={landscape}
                 />
               </div>
             </div>
