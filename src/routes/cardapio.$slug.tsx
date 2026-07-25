@@ -3,9 +3,10 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   MapPin, Phone, Instagram, MessageCircle, Clock, ChevronLeft, ChevronRight,
-  X, Search, Flame, Leaf, Wheat, Beef, Fish, Milk, Egg, Nut, Play,
+  X, Search, Flame, Leaf, Wheat, Beef, Fish, Milk, Egg, Nut, Play, Download,
 } from "lucide-react";
 import { getPublicMenuBySlug } from "@/lib/menu.functions";
+import { generateMenuPdf } from "@/lib/menu-pdf";
 import { trackChannelEvent, useChannelPageView } from "@/lib/tracking";
 
 const opts = (slug: string) =>
@@ -146,13 +147,15 @@ function fmt(v: number | null, currency = "BRL") {
 function PublicMenuPage() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(opts(slug));
-  useChannelPageView(slug, "menu" as any);
+  useChannelPageView(slug, "menu");
 
   const [activeCat, setActiveCat] = useState<string | "all">("all");
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<Item | null>(null);
   const [stories, setStories] = useState<{ list: Item[]; index: number } | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const catRefs = useRef<Record<string, HTMLElement | null>>({});
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   if (!data || !data.menu) {
     return (
@@ -199,11 +202,44 @@ function PublicMenuPage() {
     setActiveCat(id === "all" ? "all" : id);
     const el = catRefs.current[id];
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    const label =
+      id === "all" ? "category:all" : `category:${categories.find((c) => c.id === id)?.name ?? id}`;
+    trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_id: id, ref_label: label });
   };
 
   const openItem = (i: Item) => {
     setOpen(i);
-    trackChannelEvent({ slug, channel: "menu" as any, event_type: "link_click", ref_id: i.id, ref_label: i.name });
+    trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_id: i.id, ref_label: `item:${i.name}` });
+  };
+
+  const openStories = (list: Item[], index: number) => {
+    setStories({ list, index });
+    const it = list[index];
+    trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_id: it?.id ?? null, ref_label: `stories_open:${it?.name ?? ""}` });
+  };
+
+  const onSearchChange = (value: string) => {
+    setQ(value);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    const term = value.trim();
+    if (!term) return;
+    searchTimer.current = setTimeout(() => {
+      trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_label: `search:${term.slice(0, 40)}` });
+    }, 900);
+  };
+
+  const downloadPdf = async () => {
+    if (pdfLoading) return;
+    setPdfLoading(true);
+    trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_label: "pdf_download" });
+    try {
+      await generateMenuPdf(data as any, slug);
+    } catch (e) {
+      console.error("[menu-pdf]", e);
+      alert("Não foi possível gerar o PDF agora. Tente novamente.");
+    } finally {
+      setPdfLoading(false);
+    }
   };
 
   const cover = est.cover_url || null;
@@ -272,7 +308,7 @@ function PublicMenuPage() {
               {videoItems.slice(0, 12).map((v, idx) => (
                 <button
                   key={v.id}
-                  onClick={() => setStories({ list: videoItems, index: idx })}
+                  onClick={() => openStories(videoItems, idx)}
                   className="shrink-0 flex flex-col items-center gap-1"
                 >
                   <span
@@ -304,12 +340,23 @@ function PublicMenuPage() {
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 opacity-50" />
               <input
                 value={q}
-                onChange={(e) => setQ(e.target.value)}
+                onChange={(e) => onSearchChange(e.target.value)}
                 placeholder="Buscar no cardápio…"
                 className="w-full pl-9 pr-3 py-2.5 rounded-full border outline-none text-sm"
                 style={{ borderColor: "rgba(23,19,14,0.15)", background: "#fff" }}
               />
             </div>
+            <button
+              onClick={downloadPdf}
+              disabled={pdfLoading}
+              className="fx-pill shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2.5 rounded-full border disabled:opacity-60"
+              style={{ background: "#17130E", color: "#FBF7F0", borderColor: "#17130E" }}
+              aria-label="Baixar cardápio em PDF"
+              title="Baixar cardápio em PDF"
+            >
+              <Download className="w-4 h-4" />
+              <span className="hidden sm:inline">{pdfLoading ? "Gerando…" : "PDF"}</span>
+            </button>
           </div>
           <div className="flex gap-2 overflow-x-auto fx-hide-scroll pb-1">
             <button
@@ -392,7 +439,7 @@ function PublicMenuPage() {
             <a
               href={`https://wa.me/${(est.whatsapp || "").replace(/\D/g, "")}`}
               target="_blank" rel="noreferrer"
-              onClick={() => trackChannelEvent({ slug, channel: "menu" as any, event_type: "link_click", ref_label: "whatsapp" })}
+              onClick={() => trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_label: "cta:whatsapp" })}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold"
               style={{ background: "#25D366", color: "#fff" }}
             >
@@ -403,7 +450,7 @@ function PublicMenuPage() {
             <a
               href={est.instagram.startsWith("http") ? est.instagram : `https://instagram.com/${est.instagram.replace(/^@/, "")}`}
               target="_blank" rel="noreferrer"
-              onClick={() => trackChannelEvent({ slug, channel: "menu" as any, event_type: "link_click", ref_label: "instagram" })}
+              onClick={() => trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_label: "cta:instagram" })}
               className="grid place-items-center w-10 h-10 rounded-full text-white"
               style={{ background: "linear-gradient(135deg, #833AB4, #E1306C, #FCAF45)" }}
               aria-label="Instagram"
@@ -414,6 +461,7 @@ function PublicMenuPage() {
           {est.phone && (
             <a
               href={`tel:${est.phone}`}
+              onClick={() => trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_label: "cta:phone" })}
               className="grid place-items-center w-10 h-10 rounded-full text-white bg-white/10"
               aria-label="Telefone"
             >
@@ -433,7 +481,7 @@ function PublicMenuPage() {
           startIndex={stories.index}
           onClose={() => setStories(null)}
           onItemView={(i) =>
-            trackChannelEvent({ slug, channel: "menu" as any, event_type: "link_click", ref_id: i.id, ref_label: `stories:${i.name}` })
+            trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_id: i.id, ref_label: `stories:${i.name}` })
           }
         />
       )}
