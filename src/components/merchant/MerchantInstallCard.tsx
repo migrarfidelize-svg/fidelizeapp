@@ -77,7 +77,7 @@ export function MerchantInstallCard() {
     }
   }
 
-  if (!visible) return null;
+  if (!visible || !myTurn) return null;
 
   return (
     <>
