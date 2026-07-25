@@ -222,16 +222,13 @@ export const getPushQuotaStatus = createServerFn({ method: "POST" })
     }
     const sentToday = broadcastKeys.size;
 
-    // Recipient count: active subs that accept campaign.
+    // Recipient count: active subs that accept campaign (clientes + operadores).
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: subs } = await supabaseAdmin
-      .from("push_subscriptions")
-      .select("id, preferences")
-      .eq("establishment_id", data.establishment_id)
-      .eq("active", true);
-    const recipients = (subs ?? []).filter(
-      (s: any) => ((s.preferences ?? {}) as Record<string, boolean>).campaign !== false,
-    ).length;
+    const { resolveEstablishmentSubs, splitAudience } = await import("@/lib/push.audience.server");
+    const allSubs = await resolveEstablishmentSubs(supabaseAdmin, data.establishment_id);
+    const split = splitAudience(allSubs, null);
+    const recipients = split.customers.length + split.operators.length;
+
 
     const remaining = dailyLimit == null ? null : Math.max(0, dailyLimit - sentToday);
     return {
@@ -275,18 +272,16 @@ export const previewPushSegment = createServerFn({ method: "POST" })
     if (!isManager) throw new Error("Sem permissão.");
     const { resolveSegmentCustomerIds } = await import("@/lib/push.segment.server");
     const ids = await resolveSegmentCustomerIds(data.establishment_id, data.segment ?? {});
-    if (ids.length === 0) return { customers: 0, subscribers: 0 };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: subs } = await supabaseAdmin
-      .from("push_subscriptions")
-      .select("id, preferences")
-      .eq("establishment_id", data.establishment_id)
-      .eq("active", true)
-      .in("customer_id", ids);
-    const subscribers = (subs ?? []).filter(
-      (s: any) => ((s.preferences ?? {}) as Record<string, boolean>).campaign !== false,
-    ).length;
-    return { customers: ids.length, subscribers };
+    const { resolveEstablishmentSubs, splitAudience } = await import("@/lib/push.audience.server");
+    const allSubs = await resolveEstablishmentSubs(supabaseAdmin, data.establishment_id);
+    const split = splitAudience(allSubs, ids);
+    return {
+      customers: ids.length,
+      subscribers: split.customers.length,
+      operators: split.operators.length,
+    };
+
   });
 
 async function checkAndConsumeQuota(
@@ -369,27 +364,21 @@ export const broadcastPush = createServerFn({ method: "POST" })
     const targetIds = await resolveSegmentCustomerIds(data.establishment_id, data.segment ?? {});
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    let subsQuery = supabaseAdmin
-      .from("push_subscriptions")
-      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id, preferences")
-      .eq("establishment_id", data.establishment_id)
-      .eq("active", true);
-    // If no segment filter was applied, targetIds is the full base; we still filter to avoid
-    // sending to blocked customers. When empty base, skip.
-    if (targetIds.length > 0) subsQuery = subsQuery.in("customer_id", targetIds);
-    else if (data.segment && Object.keys(data.segment).length > 0) {
-      return { sent: 0, failed: 0, total: 0 };
-    }
-    const { data: subs } = await subsQuery;
+    const { resolveEstablishmentSubs, splitAudience } = await import("@/lib/push.audience.server");
+    const hasSegment = !!data.segment && Object.keys(data.segment).length > 0;
+    const allSubs = await resolveEstablishmentSubs(supabaseAdmin, data.establishment_id);
+    const split = splitAudience(allSubs, targetIds);
+    // Sem segmento explícito, os dispositivos da equipe também recebem o aviso.
+    const subs = hasSegment ? split.customers : [...split.customers, ...split.operators];
+    if (subs.length === 0) return { sent: 0, failed: 0, total: 0 };
+
 
     const { sendPushToSub } = await import("@/lib/push.server");
     const { notificationTargetKey, recordPushDelivery } = await import("@/lib/push-inbox.server");
     let sent = 0;
     let failed = 0;
     const notifiedTargets = new Set<string>();
-    for (const s of subs ?? []) {
-      const prefs = (s.preferences ?? {}) as Record<string, boolean>;
-      if (prefs.campaign === false) continue;
+    for (const s of subs) {
       const inAppTarget = notificationTargetKey(s);
       const r = await sendPushToSub(s, {
         title: data.title,
@@ -400,13 +389,14 @@ export const broadcastPush = createServerFn({ method: "POST" })
       });
       await recordPushDelivery(supabaseAdmin, s, { title: data.title, body: data.body, url: data.url, kind: "push" }, r, {
         persistInApp: !notifiedTargets.has(inAppTarget),
-        audience: s.customer_id ? "customer" : "operator",
+        audience: s.resolved_customer_id ? "customer" : "operator",
       });
       notifiedTargets.add(inAppTarget);
       if (r.ok) sent++;
       else failed++;
     }
-    return { sent, failed, total: subs?.length ?? 0 };
+    return { sent, failed, total: subs.length };
+
   });
 
 // ============================================================

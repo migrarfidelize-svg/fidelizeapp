@@ -140,7 +140,7 @@ function NotifPage() {
   });
 
   // Debounced segment preview
-  const [previewCount, setPreviewCount] = useState<{ customers: number; subscribers: number } | null>(null);
+  const [previewCount, setPreviewCount] = useState<{ customers: number; subscribers: number; operators?: number } | null>(null);
   useEffect(() => {
     if (!activeEst?.id) return;
     const t = setTimeout(async () => {
@@ -293,7 +293,11 @@ function NotifPage() {
               </div>
               <div className="mt-1 text-lg font-semibold">{previewCount?.subscribers ?? "—"}</div>
               <div className="text-[11px] text-muted-foreground">
-                {previewCount ? `${previewCount.customers} clientes · ${previewCount.subscribers} inscritos` : "Ajuste o segmento abaixo"}
+                {previewCount
+                  ? `${previewCount.customers} clientes · ${previewCount.subscribers} inscritos${
+                      previewCount.operators ? ` · ${previewCount.operators} dispositivos da equipe` : ""
+                    }`
+                  : "Ajuste o segmento abaixo"}
               </div>
             </CardContent>
           </Card>
@@ -603,13 +607,13 @@ function NotifPage() {
                     ? "Bloqueado pelo plano"
                     : limitReached
                       ? "Limite diário atingido"
-                      : `Enviar para ${previewCount?.subscribers ?? 0} inscritos`}
+                      : `Enviar para ${(previewCount?.subscribers ?? 0) + (previewCount?.operators ?? 0)} inscritos`}
                 </span>
               </Button>
             )}
           </div>
 
-          {previewCount && previewCount.subscribers === 0 && !blockedByPlan && (
+          {previewCount && previewCount.subscribers === 0 && !previewCount.operators && !blockedByPlan && (
             <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs">
               <Info className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
               <div className="space-y-1">
