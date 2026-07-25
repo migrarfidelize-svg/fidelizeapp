@@ -9,6 +9,7 @@ import { getPublicMenuBySlug } from "@/lib/menu.functions";
 import { generateMenuPdf } from "@/lib/menu-pdf";
 import { trackChannelEvent, useChannelPageView } from "@/lib/tracking";
 import { LazyImg } from "@/components/LazyImg";
+import { buildMenuJsonLd } from "@/lib/menu-jsonld";
 
 const opts = (slug: string) =>
   queryOptions({
