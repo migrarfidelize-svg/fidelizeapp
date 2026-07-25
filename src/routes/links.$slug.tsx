@@ -180,6 +180,7 @@ function PublicLinkTreePage() {
                     href={normalizeUrl(l.kind, l.url)}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => trackChannelEvent({ slug, channel: "linktree", event_type: "link_click", ref_id: l.id, ref_label: l.label })}
                     className={`flex items-center justify-center gap-3 px-5 py-4 text-sm font-semibold transition-transform active:scale-[0.97] hover:scale-[1.02] ${cfg.className}`}
                     style={cfg.style}
                   >
