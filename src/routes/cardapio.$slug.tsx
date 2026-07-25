@@ -749,7 +749,12 @@ function ItemModal({ item, primary, onClose }: { item: Item; primary: string; on
         className="relative w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden max-h-[92dvh] flex flex-col"
         style={{ color: "var(--mk-ink)", background: "var(--mk-surface)" }}
       >
-        <button onClick={onClose} className="absolute top-3 right-3 z-10 grid place-items-center w-9 h-9 rounded-full bg-black/40 text-white backdrop-blur">
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 z-10 grid place-items-center w-9 h-9 rounded-full backdrop-blur shadow-lg"
+          style={{ background: primary, color: readableInk(primary) }}
+          aria-label="Fechar"
+        >
           <X className="w-4 h-4" />
         </button>
         {item.video_url ? (
