@@ -1750,6 +1750,375 @@ export type Database = {
           },
         ]
       }
+      menu_categories: {
+        Row: {
+          active: boolean
+          available_days: number[]
+          available_end: string | null
+          available_start: string | null
+          created_at: string
+          description: string | null
+          establishment_id: string
+          featured: boolean
+          id: string
+          image_url: string | null
+          menu_id: string
+          name: string
+          position: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          available_days?: number[]
+          available_end?: string | null
+          available_start?: string | null
+          created_at?: string
+          description?: string | null
+          establishment_id: string
+          featured?: boolean
+          id?: string
+          image_url?: string | null
+          menu_id: string
+          name: string
+          position?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          available_days?: number[]
+          available_end?: string | null
+          available_start?: string | null
+          created_at?: string
+          description?: string | null
+          establishment_id?: string
+          featured?: boolean
+          id?: string
+          image_url?: string | null
+          menu_id?: string
+          name?: string
+          position?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_categories_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_categories_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "restaurant_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_item_favorites: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_item_favorites_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_item_media: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          establishment_id: string
+          height: number | null
+          id: string
+          item_id: string
+          kind: Database["public"]["Enums"]["menu_media_kind"]
+          mime: string | null
+          position: number
+          poster_url: string | null
+          size_bytes: number | null
+          url: string
+          width: number | null
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          establishment_id: string
+          height?: number | null
+          id?: string
+          item_id: string
+          kind: Database["public"]["Enums"]["menu_media_kind"]
+          mime?: string | null
+          position?: number
+          poster_url?: string | null
+          size_bytes?: number | null
+          url: string
+          width?: number | null
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          establishment_id?: string
+          height?: number | null
+          id?: string
+          item_id?: string
+          kind?: Database["public"]["Enums"]["menu_media_kind"]
+          mime?: string | null
+          position?: number
+          poster_url?: string | null
+          size_bytes?: number | null
+          url?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_item_media_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_item_media_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_items: {
+        Row: {
+          active: boolean
+          addons: Json
+          allergens: string[]
+          available_days: number[]
+          badges: Json
+          category_id: string | null
+          created_at: string
+          currency: string
+          establishment_id: string
+          id: string
+          image_url: string | null
+          ingredients: string[]
+          long_desc: string | null
+          menu_id: string
+          name: string
+          notes: string | null
+          order_action: Json
+          position: number
+          prep_minutes: number | null
+          price: number | null
+          promo_price: number | null
+          short_desc: string | null
+          time_end: string | null
+          time_start: string | null
+          updated_at: string
+          video_poster_url: string | null
+          video_url: string | null
+        }
+        Insert: {
+          active?: boolean
+          addons?: Json
+          allergens?: string[]
+          available_days?: number[]
+          badges?: Json
+          category_id?: string | null
+          created_at?: string
+          currency?: string
+          establishment_id: string
+          id?: string
+          image_url?: string | null
+          ingredients?: string[]
+          long_desc?: string | null
+          menu_id: string
+          name: string
+          notes?: string | null
+          order_action?: Json
+          position?: number
+          prep_minutes?: number | null
+          price?: number | null
+          promo_price?: number | null
+          short_desc?: string | null
+          time_end?: string | null
+          time_start?: string | null
+          updated_at?: string
+          video_poster_url?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          active?: boolean
+          addons?: Json
+          allergens?: string[]
+          available_days?: number[]
+          badges?: Json
+          category_id?: string | null
+          created_at?: string
+          currency?: string
+          establishment_id?: string
+          id?: string
+          image_url?: string | null
+          ingredients?: string[]
+          long_desc?: string | null
+          menu_id?: string
+          name?: string
+          notes?: string | null
+          order_action?: Json
+          position?: number
+          prep_minutes?: number | null
+          price?: number | null
+          promo_price?: number | null
+          short_desc?: string | null
+          time_end?: string | null
+          time_start?: string | null
+          updated_at?: string
+          video_poster_url?: string | null
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "menu_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_items_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_items_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "restaurant_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_publish_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          establishment_id: string
+          from_status: Database["public"]["Enums"]["menu_status"] | null
+          id: string
+          menu_id: string
+          notes: string | null
+          to_status: Database["public"]["Enums"]["menu_status"]
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          establishment_id: string
+          from_status?: Database["public"]["Enums"]["menu_status"] | null
+          id?: string
+          menu_id: string
+          notes?: string | null
+          to_status: Database["public"]["Enums"]["menu_status"]
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          establishment_id?: string
+          from_status?: Database["public"]["Enums"]["menu_status"] | null
+          id?: string
+          menu_id?: string
+          notes?: string | null
+          to_status?: Database["public"]["Enums"]["menu_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_publish_events_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_publish_events_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "restaurant_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_qr_designs: {
+        Row: {
+          color: string
+          created_at: string
+          establishment_id: string
+          format: string
+          id: string
+          layout: Json
+          logo_url: string | null
+          menu_id: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          establishment_id: string
+          format?: string
+          id?: string
+          layout?: Json
+          logo_url?: string | null
+          menu_id: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          establishment_id?: string
+          format?: string
+          id?: string
+          layout?: Json
+          logo_url?: string | null
+          menu_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_qr_designs_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_qr_designs_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "restaurant_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       merchant_message_reads: {
         Row: {
           message_id: string
@@ -2760,6 +3129,71 @@ export type Database = {
             foreignKeyName: "qr_scans_establishment_id_fkey"
             columns: ["establishment_id"]
             isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      restaurant_menus: {
+        Row: {
+          closed_message: string | null
+          contact: Json
+          cover_url: string | null
+          created_at: string
+          default_view: Database["public"]["Enums"]["menu_default_view"]
+          display_name: string | null
+          establishment_id: string
+          hours: Json
+          id: string
+          logo_url: string | null
+          order_defaults: Json
+          published_at: string | null
+          status: Database["public"]["Enums"]["menu_status"]
+          tagline: string | null
+          theme: Json
+          updated_at: string
+        }
+        Insert: {
+          closed_message?: string | null
+          contact?: Json
+          cover_url?: string | null
+          created_at?: string
+          default_view?: Database["public"]["Enums"]["menu_default_view"]
+          display_name?: string | null
+          establishment_id: string
+          hours?: Json
+          id?: string
+          logo_url?: string | null
+          order_defaults?: Json
+          published_at?: string | null
+          status?: Database["public"]["Enums"]["menu_status"]
+          tagline?: string | null
+          theme?: Json
+          updated_at?: string
+        }
+        Update: {
+          closed_message?: string | null
+          contact?: Json
+          cover_url?: string | null
+          created_at?: string
+          default_view?: Database["public"]["Enums"]["menu_default_view"]
+          display_name?: string | null
+          establishment_id?: string
+          hours?: Json
+          id?: string
+          logo_url?: string | null
+          order_defaults?: Json
+          published_at?: string | null
+          status?: Database["public"]["Enums"]["menu_status"]
+          tagline?: string | null
+          theme?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurant_menus_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: true
             referencedRelation: "establishments"
             referencedColumns: ["id"]
           },
@@ -4311,6 +4745,7 @@ export type Database = {
         Args: { _action: string; _est: string; _user: string }
         Returns: boolean
       }
+      menu_storage_est_id: { Args: { _path: string }; Returns: string }
       my_account_type: {
         Args: never
         Returns: Database["public"]["Enums"]["account_type"]
@@ -4322,6 +4757,9 @@ export type Database = {
       customer_tier: "bronze" | "prata" | "ouro" | "diamante"
       helpdesk_role: "hd_admin" | "hd_agent"
       member_role: "owner" | "manager" | "staff"
+      menu_default_view: "stories" | "list"
+      menu_media_kind: "image" | "video"
+      menu_status: "draft" | "published" | "paused"
       plan_tier: "free" | "starter" | "pro" | "enterprise"
       platform_role: "super_admin"
       public_review_action:
@@ -4501,6 +4939,9 @@ export const Constants = {
       customer_tier: ["bronze", "prata", "ouro", "diamante"],
       helpdesk_role: ["hd_admin", "hd_agent"],
       member_role: ["owner", "manager", "staff"],
+      menu_default_view: ["stories", "list"],
+      menu_media_kind: ["image", "video"],
+      menu_status: ["draft", "published", "paused"],
       plan_tier: ["free", "starter", "pro", "enterprise"],
       platform_role: ["super_admin"],
       public_review_action: [

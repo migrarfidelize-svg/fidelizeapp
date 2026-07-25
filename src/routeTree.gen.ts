@@ -67,6 +67,7 @@ import { Route as AuthenticatedAppKbRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAppEquipeRouteImport } from './routes/_authenticated/app.equipe'
 import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated/app.clientes'
 import { Route as AuthenticatedAppCarimbarRouteImport } from './routes/_authenticated/app.carimbar'
+import { Route as AuthenticatedAppCardapioRouteImport } from './routes/_authenticated/app.cardapio'
 import { Route as AuthenticatedAppCampanhasRouteImport } from './routes/_authenticated/app.campanhas'
 import { Route as AuthenticatedAppAnalyticsRouteImport } from './routes/_authenticated/app.analytics'
 import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin.usuarios'
@@ -88,6 +89,7 @@ import { Route as AuthenticatedAdminAlertasRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminAjudaRouteImport } from './routes/_authenticated/admin.ajuda'
 import { Route as AuthenticatedAppPlanosIndexRouteImport } from './routes/_authenticated/app.planos.index'
 import { Route as AuthenticatedAppFidelizeIndexRouteImport } from './routes/_authenticated/app.fidelize.index'
+import { Route as AuthenticatedAppCardapioIndexRouteImport } from './routes/_authenticated/app.cardapio.index'
 import { Route as AuthenticatedAppAvaliacoesIndexRouteImport } from './routes/_authenticated/app.avaliacoes.index'
 import { Route as AuthenticatedAdminSuporteIndexRouteImport } from './routes/_authenticated/admin.suporte.index'
 import { Route as AuthenticatedAdminPlanosIndexRouteImport } from './routes/_authenticated/admin.planos.index'
@@ -415,6 +417,12 @@ const AuthenticatedAppCarimbarRoute =
     path: '/carimbar',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppCardapioRoute =
+  AuthenticatedAppCardapioRouteImport.update({
+    id: '/cardapio',
+    path: '/cardapio',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppCampanhasRoute =
   AuthenticatedAppCampanhasRouteImport.update({
     id: '/campanhas',
@@ -539,6 +547,12 @@ const AuthenticatedAppFidelizeIndexRoute =
     id: '/fidelize/',
     path: '/fidelize/',
     getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppCardapioIndexRoute =
+  AuthenticatedAppCardapioIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAppCardapioRoute,
   } as any)
 const AuthenticatedAppAvaliacoesIndexRoute =
   AuthenticatedAppAvaliacoesIndexRouteImport.update({
@@ -703,6 +717,7 @@ export interface FileRoutesByFullPath {
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/app/analytics': typeof AuthenticatedAppAnalyticsRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
+  '/app/cardapio': typeof AuthenticatedAppCardapioRouteWithChildren
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
   '/app/equipe': typeof AuthenticatedAppEquipeRoute
@@ -750,6 +765,7 @@ export interface FileRoutesByFullPath {
   '/admin/planos/': typeof AuthenticatedAdminPlanosIndexRoute
   '/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
   '/app/avaliacoes/': typeof AuthenticatedAppAvaliacoesIndexRoute
+  '/app/cardapio/': typeof AuthenticatedAppCardapioIndexRoute
   '/app/fidelize/': typeof AuthenticatedAppFidelizeIndexRoute
   '/app/planos/': typeof AuthenticatedAppPlanosIndexRoute
   '/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
@@ -847,6 +863,7 @@ export interface FileRoutesByTo {
   '/admin/planos': typeof AuthenticatedAdminPlanosIndexRoute
   '/admin/suporte': typeof AuthenticatedAdminSuporteIndexRoute
   '/app/avaliacoes': typeof AuthenticatedAppAvaliacoesIndexRoute
+  '/app/cardapio': typeof AuthenticatedAppCardapioIndexRoute
   '/app/fidelize': typeof AuthenticatedAppFidelizeIndexRoute
   '/app/planos': typeof AuthenticatedAppPlanosIndexRoute
   '/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
@@ -902,6 +919,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/_authenticated/app/analytics': typeof AuthenticatedAppAnalyticsRoute
   '/_authenticated/app/campanhas': typeof AuthenticatedAppCampanhasRoute
+  '/_authenticated/app/cardapio': typeof AuthenticatedAppCardapioRouteWithChildren
   '/_authenticated/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/_authenticated/app/clientes': typeof AuthenticatedAppClientesRoute
   '/_authenticated/app/equipe': typeof AuthenticatedAppEquipeRoute
@@ -949,6 +967,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/planos/': typeof AuthenticatedAdminPlanosIndexRoute
   '/_authenticated/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
   '/_authenticated/app/avaliacoes/': typeof AuthenticatedAppAvaliacoesIndexRoute
+  '/_authenticated/app/cardapio/': typeof AuthenticatedAppCardapioIndexRoute
   '/_authenticated/app/fidelize/': typeof AuthenticatedAppFidelizeIndexRoute
   '/_authenticated/app/planos/': typeof AuthenticatedAppPlanosIndexRoute
   '/_authenticated/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
@@ -1004,6 +1023,7 @@ export interface FileRouteTypes {
     | '/admin/usuarios'
     | '/app/analytics'
     | '/app/campanhas'
+    | '/app/cardapio'
     | '/app/carimbar'
     | '/app/clientes'
     | '/app/equipe'
@@ -1051,6 +1071,7 @@ export interface FileRouteTypes {
     | '/admin/planos/'
     | '/admin/suporte/'
     | '/app/avaliacoes/'
+    | '/app/cardapio/'
     | '/app/fidelize/'
     | '/app/planos/'
     | '/app/fidelize/ticket/$id'
@@ -1148,6 +1169,7 @@ export interface FileRouteTypes {
     | '/admin/planos'
     | '/admin/suporte'
     | '/app/avaliacoes'
+    | '/app/cardapio'
     | '/app/fidelize'
     | '/app/planos'
     | '/app/fidelize/ticket/$id'
@@ -1202,6 +1224,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/usuarios'
     | '/_authenticated/app/analytics'
     | '/_authenticated/app/campanhas'
+    | '/_authenticated/app/cardapio'
     | '/_authenticated/app/carimbar'
     | '/_authenticated/app/clientes'
     | '/_authenticated/app/equipe'
@@ -1249,6 +1272,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/planos/'
     | '/_authenticated/admin/suporte/'
     | '/_authenticated/app/avaliacoes/'
+    | '/_authenticated/app/cardapio/'
     | '/_authenticated/app/fidelize/'
     | '/_authenticated/app/planos/'
     | '/_authenticated/app/fidelize/ticket/$id'
@@ -1706,6 +1730,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppCarimbarRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/cardapio': {
+      id: '/_authenticated/app/cardapio'
+      path: '/cardapio'
+      fullPath: '/app/cardapio'
+      preLoaderRoute: typeof AuthenticatedAppCardapioRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/app/campanhas': {
       id: '/_authenticated/app/campanhas'
       path: '/campanhas'
@@ -1852,6 +1883,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/fidelize/'
       preLoaderRoute: typeof AuthenticatedAppFidelizeIndexRouteImport
       parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/cardapio/': {
+      id: '/_authenticated/app/cardapio/'
+      path: '/'
+      fullPath: '/app/cardapio/'
+      preLoaderRoute: typeof AuthenticatedAppCardapioIndexRouteImport
+      parentRoute: typeof AuthenticatedAppCardapioRoute
     }
     '/_authenticated/app/avaliacoes/': {
       id: '/_authenticated/app/avaliacoes/'
@@ -2049,9 +2087,24 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
 const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
+interface AuthenticatedAppCardapioRouteChildren {
+  AuthenticatedAppCardapioIndexRoute: typeof AuthenticatedAppCardapioIndexRoute
+}
+
+const AuthenticatedAppCardapioRouteChildren: AuthenticatedAppCardapioRouteChildren =
+  {
+    AuthenticatedAppCardapioIndexRoute: AuthenticatedAppCardapioIndexRoute,
+  }
+
+const AuthenticatedAppCardapioRouteWithChildren =
+  AuthenticatedAppCardapioRoute._addFileChildren(
+    AuthenticatedAppCardapioRouteChildren,
+  )
+
 interface AuthenticatedAppRouteChildren {
   AuthenticatedAppAnalyticsRoute: typeof AuthenticatedAppAnalyticsRoute
   AuthenticatedAppCampanhasRoute: typeof AuthenticatedAppCampanhasRoute
+  AuthenticatedAppCardapioRoute: typeof AuthenticatedAppCardapioRouteWithChildren
   AuthenticatedAppCarimbarRoute: typeof AuthenticatedAppCarimbarRoute
   AuthenticatedAppClientesRoute: typeof AuthenticatedAppClientesRoute
   AuthenticatedAppEquipeRoute: typeof AuthenticatedAppEquipeRoute
@@ -2076,6 +2129,7 @@ interface AuthenticatedAppRouteChildren {
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppAnalyticsRoute: AuthenticatedAppAnalyticsRoute,
   AuthenticatedAppCampanhasRoute: AuthenticatedAppCampanhasRoute,
+  AuthenticatedAppCardapioRoute: AuthenticatedAppCardapioRouteWithChildren,
   AuthenticatedAppCarimbarRoute: AuthenticatedAppCarimbarRoute,
   AuthenticatedAppClientesRoute: AuthenticatedAppClientesRoute,
   AuthenticatedAppEquipeRoute: AuthenticatedAppEquipeRoute,
