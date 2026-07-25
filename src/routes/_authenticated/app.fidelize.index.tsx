@@ -16,7 +16,7 @@ import { LifeBuoy, Plus, ArrowRight, Circle, CheckCircle2, Clock, MessageCircle,
 import { toast } from "sonner";
 import { LoadingSkeleton } from "@/components/states";
 
-export const Route = createFileRoute("/_authenticated/suporte/")({
+export const Route = createFileRoute("/_authenticated/app/fidelize/")({
   head: () => ({ meta: [{ title: "Central de Suporte — Fidelize" }] }),
   component: SupportInbox,
 });
@@ -85,7 +85,7 @@ function SupportInbox() {
                 const Icon = s.icon;
                 return (
                   <li key={t.id}>
-                    <Link to="/suporte/ticket/$id" params={{ id: t.id }}
+                    <Link to="/app/fidelize/ticket/$id" params={{ id: t.id }}
                       className="block rounded-xl border bg-card p-4 hover:border-primary/40 hover:shadow-sm transition">
                       <div className="flex items-start gap-3">
                         <div className="flex-1 min-w-0">

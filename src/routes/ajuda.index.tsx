@@ -44,7 +44,7 @@ function HelpHome() {
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/"><Logo /></Link>
           <div className="flex items-center gap-2">
-            <Link to="/suporte"><Button variant="outline" size="sm"><LifeBuoy className="mr-2 h-4 w-4" />Falar com suporte</Button></Link>
+            <Link to="/app/fidelize"><Button variant="outline" size="sm"><LifeBuoy className="mr-2 h-4 w-4" />Falar com suporte</Button></Link>
           </div>
         </div>
       </header>
@@ -70,7 +70,7 @@ function HelpHome() {
           <div>
             <h2 className="font-display text-xl font-semibold mb-4">Resultados para "{q}"</h2>
             {results.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nenhum artigo encontrado. Tente outros termos ou <Link to="/suporte" className="text-primary underline">abra um ticket</Link>.</p>
+              <p className="text-sm text-muted-foreground">Nenhum artigo encontrado. Tente outros termos ou <Link to="/app/fidelize" className="text-primary underline">abra um ticket</Link>.</p>
             ) : (
               <div className="grid gap-3">
                 {results.map((r: any) => (

@@ -111,7 +111,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Suporte",
     items: [
       { to: "/app/kb", label: "Central de Ajuda", icon: BookOpen },
-      { to: "/suporte", label: "Fale com a Fidelize", icon: LifeBuoy },
+      { to: "/app/fidelize", label: "Fale com a Fidelize", icon: LifeBuoy },
       { to: "/app/suporte", label: "Meus Chamados (clientes)", icon: Ticket },
     ],
   },
@@ -185,7 +185,7 @@ function AppLayout() {
             if (n.has_unread_customer) {
               toast.message("Nova resposta do suporte", {
                 description: `${n.protocol ?? ""} — ${n.subject ?? ""}`.trim(),
-                action: { label: "Ver", onClick: () => navigate({ to: "/suporte" }) },
+                action: { label: "Ver", onClick: () => navigate({ to: "/app/fidelize" }) },
               });
               queryClient.invalidateQueries({ queryKey: ["support-unread"] });
               queryClient.invalidateQueries({ queryKey: ["my-support-tickets"] });
