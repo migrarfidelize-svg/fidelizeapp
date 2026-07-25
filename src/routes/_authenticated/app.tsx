@@ -412,6 +412,9 @@ function AppLayout() {
   const GROUP_ICONS: Record<string, any> = {
     operacao: LayoutDashboard,
     marketing: Megaphone,
+    reputacao: Star,
+    cardapio: UtensilsCrossed,
+    comunicacao: Bell,
     conta: UserCircle2,
     ajuda: LifeBuoy,
   };
