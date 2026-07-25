@@ -587,7 +587,7 @@ function ScenePreview4() {
 function VideosPage() {
   const previews = [
     {
-    {
+
       title: "Cartão fidelidade digital",
       subtitle: "Ep. 01 · Retenção",
       pill: "Retenção",
