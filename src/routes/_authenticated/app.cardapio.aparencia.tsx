@@ -121,23 +121,23 @@ function MenuAppearancePage() {
           {/* TEMAS */}
           <Card>
             <CardHeader><CardTitle>1. Tema de cores</CardTitle></CardHeader>
-            <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <CardContent className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {MENU_PRESETS.map((p) => (
                 <button
                   key={p.id}
                   onClick={() => setPreset(p.id)}
-                  className={`relative overflow-hidden rounded-2xl border p-3 text-left transition ${
+                  className={`relative overflow-hidden rounded-xl border p-2 text-left transition ${
                     preset === p.id ? "border-primary ring-2 ring-primary/40" : "border-border/60 hover:border-primary/50"
                   }`}
                 >
                   {preset === p.id && (
-                    <span className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-primary text-primary-foreground">
-                      <Check className="h-3.5 w-3.5" />
+                    <span className="absolute right-1.5 top-1.5 grid h-5 w-5 place-items-center rounded-full bg-primary text-primary-foreground">
+                      <Check className="h-3 w-3" />
                     </span>
                   )}
                   <ThemeSwatch p={p} />
-                  <div className="mt-3 text-sm font-semibold">{p.name}</div>
-                  <p className="mt-1 text-xs text-muted-foreground">{p.description}</p>
+                  <div className="mt-2 truncate text-xs font-semibold">{p.name}</div>
+                  <p className="mt-0.5 line-clamp-2 text-[11px] leading-tight text-muted-foreground">{p.description}</p>
                 </button>
               ))}
             </CardContent>
