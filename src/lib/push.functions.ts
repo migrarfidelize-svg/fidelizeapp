@@ -865,10 +865,23 @@ export const subscribePushForAllMyCards = createServerFn({ method: "POST" })
       last_error: null,
     };
 
-    async function upsertRow(row: Record<string, unknown>, matcher: Record<string, unknown>) {
+    type PushRow = {
+      user_id: string;
+      endpoint: string;
+      p256dh: string;
+      auth_key: string;
+      user_agent: string | null;
+      preferences: Record<string, boolean>;
+      active: boolean;
+      last_error: string | null;
+      customer_id: string | null;
+      establishment_id: string | null;
+    };
+
+    async function upsertRow(row: PushRow, matcher: Record<string, string | null>) {
       let q = supabaseAdmin.from("push_subscriptions").select("id").eq("endpoint", data.endpoint);
       for (const [k, v] of Object.entries(matcher)) {
-        q = v === null ? q.is(k, null) : q.eq(k, v as never);
+        q = v === null ? q.is(k, null) : q.eq(k, v);
       }
       const { data: existing } = await q.maybeSingle();
       if (existing) {
@@ -882,6 +895,7 @@ export const subscribePushForAllMyCards = createServerFn({ method: "POST" })
         if (insErr) throw insErr;
       }
     }
+
 
     // Always register a device-level row (customer_id NULL) so the endpoint is
     // never lost even when the user has no customer cards yet, or when we hit
