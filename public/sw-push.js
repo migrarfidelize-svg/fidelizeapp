@@ -104,7 +104,7 @@ self.addEventListener("push", (event) => {
     ? data.actions.slice(0, 2).map((a) => ({ action: String(a.action || "open"), title: String(a.title || "Abrir") }))
     : [{ action: "open", title: "Abrir" }];
   const options = {
-    body: data.body || "",
+    body: (data.body || "").trim() || "Toque para abrir o Fidelize.",
     icon: assetUrl(data.icon, "/icon-192.png"),
     badge: assetUrl(data.badge, "/icon-192.png"),
     image: data.image ? assetUrl(data.image, "/icon-512.png") : undefined,
