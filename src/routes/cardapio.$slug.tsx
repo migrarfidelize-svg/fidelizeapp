@@ -813,14 +813,19 @@ function ItemModal({ item, primary, onClose }: { item: Item; primary: string; on
 const STORY_MS = 5000;
 
 function StoriesViewer({
-  items, startIndex, primary, onClose, onItemView, onDetails,
+  items, startIndex, primary, catName, onClose, onItemView, onDetails,
 }: {
   items: Item[]; startIndex: number; primary: string;
+  catName: (id: string | null) => string;
   onClose: () => void; onItemView: (i: Item) => void; onDetails: (i: Item) => void;
 }) {
   const [i, setI] = useState(startIndex);
   const [progress, setProgress] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [muted, setMuted] = useState(true);
+  const [showList, setShowList] = useState(false);
+  const [liked, setLiked] = useState<Record<string, boolean>>({});
+
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const touchY = useRef<number | null>(null);
   const current = items[i];
