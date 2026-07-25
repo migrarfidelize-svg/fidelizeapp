@@ -102,7 +102,18 @@ function CardapioOverview() {
         <MetricCard icon={FolderTree} label="Categorias"     value={counts?.categories ?? 0} />
         <MetricCard icon={LayoutList} label="Pratos"         value={counts?.items ?? 0} />
         <MetricCard icon={Video}      label="Com vídeo"      value={counts?.videos ?? 0} />
-        <MetricCard icon={Eye}        label="Acessos (7d)"   value={counts?.recent7d ?? 0} />
+        <MetricCard
+          icon={Eye}
+          label="Acessos (7d)"
+          value={counts?.recent7d ?? 0}
+          hint={
+            (counts?.recent7d ?? 0) === 0
+              ? "Ainda sem acessos: a contagem começa quando alguém abre o link público ou escaneia o QR do cardápio."
+              : "Aberturas do cardápio público nos últimos 7 dias (link ou QR)."
+          }
+          linkTo="/app/analytics"
+          linkLabel="Ver no Analytics"
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
