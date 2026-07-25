@@ -17,8 +17,10 @@ import {
   MENU_TEXT_SWATCHES,
   applyCustomColors,
   isValidHex,
+  DEFAULT_MENU_THEME,
   type MenuEntryId,
 } from "@/lib/menu-themes";
+
 import { supabase } from "@/integrations/supabase/client";
 import { PageHero } from "@/components/PageHero";
 import { LogoUploadButton } from "@/components/LogoUploadButton";
