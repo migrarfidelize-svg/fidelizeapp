@@ -4,7 +4,7 @@
  */
 
 export type MenuLayoutId = "list" | "grid" | "magazine";
-export type MenuPresetId = "papel" | "noir" | "fresh";
+export type MenuPresetId = "papel" | "noir" | "fresh" | "terracota" | "oceano";
 export type MenuPatternId = "none" | "grain" | "dots" | "grid" | "aurora";
 export type MenuEntryId = "dishes" | "categories";
 
@@ -62,6 +62,32 @@ export const MENU_PRESETS: MenuPreset[] = [
     fontHead: "'Outfit', ui-sans-serif, system-ui, sans-serif",
     headHref: "https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap",
   },
+  {
+    id: "terracota",
+    name: "Terracota & Sálvia",
+    description: "Barro quente com verde sálvia. Ótimo para comida caseira, pizzarias e cantinas.",
+    bg: "#FDF3EC",
+    surface: "#FFFFFF",
+    ink: "#2A1810",
+    line: "rgba(42,24,16,0.14)",
+    bar: "#C4654A",
+    barInk: "#FFF7F2",
+    fontHead: "'Outfit', ui-sans-serif, system-ui, sans-serif",
+    headHref: "https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap",
+  },
+  {
+    id: "oceano",
+    name: "Oceano Profundo",
+    description: "Azul noite com turquesa. Combina com frutos do mar, sushi e drinks.",
+    bg: "#0C2340",
+    surface: "#123255",
+    ink: "#EAF4FB",
+    line: "rgba(234,244,251,0.16)",
+    bar: "#5CBDB9",
+    barInk: "#062033",
+    fontHead: "'Outfit', ui-sans-serif, system-ui, sans-serif",
+    headHref: "https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap",
+  },
 ];
 
 export const MENU_LAYOUTS: { id: MenuLayoutId; name: string; description: string }[] = [
@@ -103,8 +129,14 @@ export const DEFAULT_MENU_THEME: MenuThemeConfig = {
 
 /** Cores de fundo sugeridas (o lojista também pode escolher qualquer cor). */
 export const MENU_BG_SWATCHES = [
-  "#FBF7F0", "#FFFFFF", "#F6FAF6", "#F3F0FF",
-  "#FFF4E8", "#EAF2FB", "#1B1B1F", "#0D0D0D",
+  // Claros
+  "#FFFFFF", "#FBF7F0", "#F5F3EE", "#FDF3EC", "#FFF4E8", "#FFF0F3",
+  "#F6FAF6", "#EAF7F0", "#EAF2FB", "#F3F0FF", "#F2F5F7", "#FFFBEA",
+  // Médios
+  "#E8D9C5", "#D8E7DA", "#CBDCEB", "#E4D6E9",
+  // Escuros
+  "#2A1810", "#14261C", "#0C2340", "#1B1B1F", "#0D0D0D", "#101A2B",
+  "#1E1B16", "#171F1A",
 ];
 
 function hexLuminance(hex: string): number {
