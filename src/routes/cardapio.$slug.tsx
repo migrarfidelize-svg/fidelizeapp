@@ -340,8 +340,6 @@ function PublicMenuPage() {
             </div>
           </div>
 
-          </div>
-
           {/* Stories strip */}
           {videoItems.length > 0 && (
             <div className="mt-3 -mx-1 px-1 flex gap-3 overflow-x-auto fx-hide-scroll">
