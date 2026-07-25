@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Disallow: /app
+Disallow: /admin
+Disallow: /auth
+Disallow: /onboarding
+Disallow: /invite/
+Disallow: /r/
+Disallow: /c/
+Disallow: /l/
+Disallow: /e/
+Disallow: /api/
+Disallow: /preview-dock
+Disallow: /dev/
+
+Sitemap: https://fidelizeapp.lovable.app/sitemap.xml
