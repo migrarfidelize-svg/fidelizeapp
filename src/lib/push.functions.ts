@@ -834,6 +834,13 @@ const walletSubInput = z.object({
   user_agent: z.string().max(400).optional(),
 });
 
+const walletTestPushInput = z.object({
+  endpoint: z.string().url(),
+  p256dh: z.string().min(10).optional(),
+  auth: z.string().min(4).optional(),
+  user_agent: z.string().max(400).optional(),
+});
+
 /**
  * Wallet-level push opt-in. Subscribes the current device for every card
  * the authenticated user owns, so a single "Ativar notificações" action on
@@ -853,6 +860,16 @@ export const subscribePushForAllMyCards = createServerFn({ method: "POST" })
       .eq("user_id", context.userId);
     if (error) throw error;
     const list = customers ?? [];
+
+    // One physical browser push endpoint can remain registered while the user
+    // logs out/in or reinstalls the PWA. Before persisting the current owner,
+    // retire stale rows for this same endpoint so status/test lookups cannot
+    // point to an old account and say "not subscribed" after activation.
+    await supabaseAdmin
+      .from("push_subscriptions")
+      .update({ active: false, last_error: "superseded_by_current_wallet_user" })
+      .eq("endpoint", data.endpoint)
+      .neq("user_id", context.userId);
 
     const basePatch = {
       user_id: context.userId,
@@ -913,7 +930,31 @@ export const subscribePushForAllMyCards = createServerFn({ method: "POST" })
         { customer_id: c.id },
       );
     }
-    return { ok: true, count: list.length };
+
+    const { data: activeRows } = await supabaseAdmin
+      .from("push_subscriptions")
+      .select("id, customer_id")
+      .eq("endpoint", data.endpoint)
+      .eq("user_id", context.userId)
+      .eq("active", true);
+    const persistedRows = activeRows ?? [];
+    await supabaseAdmin.from("push_events").insert({
+      user_id: context.userId,
+      event_type: "wallet_subscription_persist_success",
+      status: "active",
+      metadata: {
+        card_count: list.length,
+        persisted_rows: persistedRows.length,
+        device_row: persistedRows.some((r) => r.customer_id === null),
+      },
+    });
+    return {
+      ok: persistedRows.length > 0,
+      count: list.length,
+      persistedRows: persistedRows.length,
+      deviceActive: persistedRows.some((r) => r.customer_id === null),
+      cardRows: persistedRows.filter((r) => r.customer_id !== null).length,
+    };
   });
 
 
@@ -944,7 +985,7 @@ export const getMyWalletPushStatus = createServerFn({ method: "POST" })
     const ids = (customers ?? []).map((c) => c.id);
     const { data: rows } = await supabaseAdmin
       .from("push_subscriptions")
-      .select("id, customer_id, active")
+      .select("id, customer_id, active, updated_at")
       .eq("endpoint", data.endpoint)
       .eq("active", true)
       .eq("user_id", context.userId);
@@ -954,6 +995,13 @@ export const getMyWalletPushStatus = createServerFn({ method: "POST" })
       subscribed: list.length > 0,
       cardCount: cardRows.length,
       totalCards: ids.length,
+      deviceActive: list.some((r) => r.customer_id === null),
+      serverRows: list.length,
+      lastSyncedAt: list
+        .map((r) => r.updated_at)
+        .filter((v): v is string => typeof v === "string")
+        .sort()
+        .at(-1) ?? null,
     };
   });
 
@@ -965,15 +1013,16 @@ export const getMyWalletPushStatus = createServerFn({ method: "POST" })
  */
 export const sendTestPushToMe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ endpoint: z.string().url() }).parse(d))
+  .inputValidator((d: unknown) => walletTestPushInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { data: customers } = await context.supabase
-      .from("customers")
-      .select("id")
-      .eq("user_id", context.userId);
-    const ids = (customers ?? []).map((c) => c.id);
-
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: customers } = await supabaseAdmin
+      .from("customers")
+      .select("id, establishment_id")
+      .eq("user_id", context.userId);
+    const ownedCustomers = customers ?? [];
+    const ids = ownedCustomers.map((c) => c.id);
+
     // Look up this device's subscription. Match either a subscription owned
     // directly by the logged-in user (merchant/admin devices) OR one tied to
     // one of the user's customer cards.
@@ -982,14 +1031,109 @@ export const sendTestPushToMe = createServerFn({ method: "POST" })
       .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id")
       .eq("endpoint", data.endpoint)
       .eq("active", true)
-      .limit(1);
+      .limit(10);
     if (ids.length > 0) {
       query = query.or(`user_id.eq.${context.userId},customer_id.in.(${ids.join(",")})`);
     } else {
       query = query.eq("user_id", context.userId);
     }
-    const { data: subs } = await query;
-    const sub = subs?.[0];
+    let { data: subs } = await query;
+    let sub = (subs ?? []).sort((a, b) => {
+      if (a.customer_id && !b.customer_id) return -1;
+      if (!a.customer_id && b.customer_id) return 1;
+      return 0;
+    })[0];
+
+    // Self-healing path: if the browser has a native PushSubscription but the
+    // database row is missing/stale, the test button repairs the subscription
+    // before sending instead of dead-ending with "ative primeiro".
+    if (!sub && data.p256dh && data.auth) {
+      const basePatch = {
+        user_id: context.userId,
+        endpoint: data.endpoint,
+        p256dh: data.p256dh,
+        auth_key: data.auth,
+        user_agent: data.user_agent ?? null,
+        preferences: { stamp: true, reward: true, campaign: true, birthday: true },
+        active: true,
+        last_error: null,
+      };
+
+      type RepairRow = typeof basePatch & {
+        customer_id: string | null;
+        establishment_id: string | null;
+      };
+
+      async function repairRow(row: RepairRow, matcher: Record<string, string | null>) {
+        let existingQuery = supabaseAdmin
+          .from("push_subscriptions")
+          .select("id")
+          .eq("endpoint", data.endpoint);
+        for (const [key, value] of Object.entries(matcher)) {
+          existingQuery = value === null ? existingQuery.is(key, null) : existingQuery.eq(key, value);
+        }
+        const { data: existing } = await existingQuery.maybeSingle();
+        if (existing) {
+          const { error: updateError } = await supabaseAdmin
+            .from("push_subscriptions")
+            .update(row)
+            .eq("id", existing.id);
+          if (updateError) throw updateError;
+          return existing.id;
+        }
+        const { data: inserted, error: insertError } = await supabaseAdmin
+          .from("push_subscriptions")
+          .insert(row)
+          .select("id")
+          .single();
+        if (insertError) throw insertError;
+        return inserted.id;
+      }
+
+      await supabaseAdmin
+        .from("push_subscriptions")
+        .update({ active: false, last_error: "repaired_by_wallet_test" })
+        .eq("endpoint", data.endpoint)
+        .neq("user_id", context.userId);
+
+      await repairRow(
+        { ...basePatch, customer_id: null, establishment_id: null },
+        { user_id: context.userId, customer_id: null },
+      );
+      for (const customer of ownedCustomers) {
+        await repairRow(
+          { ...basePatch, customer_id: customer.id, establishment_id: customer.establishment_id },
+          { customer_id: customer.id },
+        );
+      }
+
+      await supabaseAdmin.from("push_events").insert({
+        user_id: context.userId,
+        event_type: "wallet_subscription_repaired_before_test",
+        status: "active",
+        metadata: { card_count: ownedCustomers.length },
+      });
+
+      let repairedQuery = supabaseAdmin
+        .from("push_subscriptions")
+        .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id")
+        .eq("endpoint", data.endpoint)
+        .eq("active", true)
+        .limit(10);
+      if (ids.length > 0) {
+        repairedQuery = repairedQuery.or(`user_id.eq.${context.userId},customer_id.in.(${ids.join(",")})`);
+      } else {
+        repairedQuery = repairedQuery.eq("user_id", context.userId);
+      }
+      const repaired = await repairedQuery;
+      subs = repaired.data ?? [];
+      sub = subs.sort((a, b) => {
+        if (a.customer_id && !b.customer_id) return -1;
+        if (!a.customer_id && b.customer_id) return 1;
+        return 0;
+      })[0];
+    }
+
     if (!sub) throw new Error("Este aparelho não está inscrito. Ative as notificações primeiro.");
 
     const { sendPushToSub } = await import("./push.server");
@@ -1038,6 +1182,17 @@ const adminSubInput = z.object({
   permission_status: z.string().max(20).optional(),
 });
 
+const adminTestPushInput = z.object({
+  endpoint: z.string().url(),
+  p256dh: z.string().min(10).optional(),
+  auth: z.string().min(4).optional(),
+  user_agent: z.string().max(400).optional(),
+  device_type: z.string().max(40).optional(),
+  operating_system: z.string().max(60).optional(),
+  browser: z.string().max(60).optional(),
+  permission_status: z.string().max(20).optional(),
+});
+
 /** Subscribe the currently authenticated user (admin/merchant) — no customer link. */
 export const subscribeAdminPush = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -1063,6 +1218,13 @@ export const subscribeAdminPush = createServerFn({ method: "POST" })
       .eq("endpoint", data.endpoint)
       .is("customer_id", null)
       .maybeSingle();
+
+    await supabaseAdmin
+      .from("push_subscriptions")
+      .update({ active: false, last_error: "superseded_by_current_admin_user" })
+      .eq("endpoint", data.endpoint)
+      .neq("user_id", context.userId);
+
     const payload: any = {
       user_id: context.userId,
       customer_id: null,
@@ -1133,10 +1295,19 @@ export const getAdminPushStatus = createServerFn({ method: "POST" })
 
 export const sendAdminTestPush = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ endpoint: z.string().url() }).parse(d))
+  .inputValidator((d: unknown) => adminTestPushInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: sub } = await supabaseAdmin
+    const { data: membership } = await supabaseAdmin
+      .from("establishment_members")
+      .select("establishment_id")
+      .eq("user_id", context.userId)
+      .eq("active", true)
+      .limit(1)
+      .maybeSingle();
+    const establishmentId = membership?.establishment_id ?? null;
+
+    let { data: sub } = await supabaseAdmin
       .from("push_subscriptions")
       .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id")
       .eq("user_id", context.userId)
@@ -1144,6 +1315,66 @@ export const sendAdminTestPush = createServerFn({ method: "POST" })
       .eq("active", true)
       .is("customer_id", null)
       .maybeSingle();
+
+    // Same self-healing guarantee as the wallet test: if the browser still has
+    // a PushSubscription but the DB row was never saved (or belonged to a stale
+    // session), repair it and continue with the actual test send.
+    if (!sub && data.p256dh && data.auth) {
+      const payload = {
+        user_id: context.userId,
+        customer_id: null,
+        establishment_id: establishmentId,
+        endpoint: data.endpoint,
+        p256dh: data.p256dh,
+        auth_key: data.auth,
+        user_agent: data.user_agent ?? null,
+        device_type: data.device_type ?? null,
+        operating_system: data.operating_system ?? null,
+        browser: data.browser ?? null,
+        permission_status: data.permission_status ?? "granted",
+        preferences: { stamp: true, reward: true, campaign: true, birthday: true },
+        active: true,
+        last_error: null,
+        last_seen_at: new Date().toISOString(),
+      };
+      await supabaseAdmin
+        .from("push_subscriptions")
+        .update({ active: false, last_error: "repaired_by_admin_test" })
+        .eq("endpoint", data.endpoint)
+        .neq("user_id", context.userId);
+
+      const { data: existing } = await supabaseAdmin
+        .from("push_subscriptions")
+        .select("id")
+        .eq("user_id", context.userId)
+        .eq("endpoint", data.endpoint)
+        .is("customer_id", null)
+        .maybeSingle();
+      if (existing) {
+        const { error } = await supabaseAdmin
+          .from("push_subscriptions")
+          .update(payload)
+          .eq("id", existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabaseAdmin.from("push_subscriptions").insert(payload);
+        if (error) throw error;
+      }
+      await supabaseAdmin.from("push_events").insert({
+        user_id: context.userId,
+        event_type: "admin_subscription_repaired_before_test",
+        status: "active",
+      });
+      const repaired = await supabaseAdmin
+        .from("push_subscriptions")
+        .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id")
+        .eq("user_id", context.userId)
+        .eq("endpoint", data.endpoint)
+        .eq("active", true)
+        .is("customer_id", null)
+        .maybeSingle();
+      sub = repaired.data ?? null;
+    }
     if (!sub) throw new Error("Este aparelho não está inscrito. Ative primeiro.");
 
     await supabaseAdmin.from("push_events").insert({

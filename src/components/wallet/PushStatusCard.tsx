@@ -43,6 +43,20 @@ export function PushStatusCard() {
   const getStatus = useServerFn(getMyWalletPushStatus);
   const sendTest = useServerFn(sendTestPushToMe);
 
+  async function getBrowserSubscription() {
+    const reg = await ensurePwaRegistration();
+    const sub = await reg.pushManager.getSubscription();
+    if (!sub) return null;
+    const json = sub.toJSON();
+    return {
+      sub,
+      keys: {
+        p256dh: json.keys?.p256dh ?? "",
+        auth: json.keys?.auth ?? "",
+      },
+    };
+  }
+
   const refresh = useCallback(async () => {
     setErrorMsg(null);
     setSubState("checking");
@@ -113,12 +127,16 @@ export function PushStatusCard() {
           user_agent: navigator.userAgent.slice(0, 300),
         },
       });
+      const st = await getStatus({ data: { endpoint: sub.endpoint } });
+      if (!res.ok || !st.subscribed) {
+        throw new Error("A permissão foi concedida, mas o aparelho não foi salvo. Tente novamente.");
+      }
       setEndpoint(sub.endpoint);
-      setCardCount(res.count ?? 0);
+      setCardCount(st.cardCount ?? res.count ?? 0);
       setSubState("active");
       toast.success(
-        res.count
-          ? `Notificações ativadas em ${res.count} ${res.count === 1 ? "cartão" : "cartões"}.`
+        st.cardCount
+          ? `Notificações ativadas em ${st.cardCount} ${st.cardCount === 1 ? "cartão" : "cartões"}.`
           : "Notificações ativadas!",
       );
     } catch (e) {
@@ -158,11 +176,25 @@ export function PushStatusCard() {
   }
 
   async function handleTest() {
-    if (!endpoint) return;
     setBusy("test");
     setErrorMsg(null);
     try {
-      await sendTest({ data: { endpoint } });
+      const current = await getBrowserSubscription();
+      if (!current) {
+        throw new Error("Este aparelho ainda não tem uma assinatura do navegador. Toque em Ativar notificações primeiro.");
+      }
+      setEndpoint(current.sub.endpoint);
+      await sendTest({
+        data: {
+          endpoint: current.sub.endpoint,
+          p256dh: current.keys.p256dh,
+          auth: current.keys.auth,
+          user_agent: navigator.userAgent.slice(0, 300),
+        },
+      });
+      const st = await getStatus({ data: { endpoint: current.sub.endpoint } });
+      setCardCount(st.cardCount ?? 0);
+      setSubState(st.subscribed ? "active" : "inactive");
       toast.success("Push de teste enviado. Confira a notificação no seu aparelho.");
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Falha ao enviar push de teste.";

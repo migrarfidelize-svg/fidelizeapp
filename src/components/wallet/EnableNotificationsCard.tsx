@@ -131,12 +131,16 @@ export function EnableNotificationsCard() {
           user_agent: navigator.userAgent.slice(0, 300),
         },
       });
+      const st = await getStatus({ data: { endpoint: sub.endpoint } });
+      if (!res.ok || !st.subscribed) {
+        throw new Error("A permissão foi concedida, mas o aparelho não foi salvo. Tente novamente.");
+      }
       setSubscribed(true);
       setPromptOpen(false);
       localStorage.setItem(PWA_AUTOPROMPT_KEY, "1");
       toast.success(
-        res.count
-          ? `Notificações ativadas em ${res.count} ${res.count === 1 ? "cartão" : "cartões"}.`
+        st.cardCount
+          ? `Notificações ativadas em ${st.cardCount} ${st.cardCount === 1 ? "cartão" : "cartões"}.`
           : "Notificações ativadas!",
       );
     } catch (e) {
