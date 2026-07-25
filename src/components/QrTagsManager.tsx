@@ -21,7 +21,7 @@ import {
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { MapPin, Copy, Download, Trash2, QrCode, Plus, Layers, Power } from "lucide-react";
+import { MapPin, Copy, Download, Trash2, QrCode, Plus, Layers, Power, ChevronDown } from "lucide-react";
 import {
   listQrTags, createQrTag, bulkCreateQrTags, updateQrTag, deleteQrTag,
 } from "@/lib/qr-tags.functions";
@@ -59,6 +59,10 @@ export function QrTagsManager({ establishmentId }: Props) {
     enabled: !!establishmentId,
   });
 
+  const [expanded, setExpanded] = useState(false);
+  const isEmpty = !isLoading && tags.length === 0;
+  const open = expanded || (!isLoading && tags.length > 0);
+
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const invalidate = () => qc.invalidateQueries({ queryKey: ["qr-tags", establishmentId] });
 
@@ -75,12 +79,19 @@ export function QrTagsManager({ establishmentId }: Props) {
               Gere um QR único para cada mesa, balcão ou suporte — com nome próprio e contagem de acessos.
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            {isEmpty && (
+              <Button variant="ghost" size="sm" onClick={() => setExpanded((v) => !v)}>
+                <ChevronDown className={`mr-1.5 h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`} />
+                {expanded ? "Ocultar" : "Saiba mais"}
+              </Button>
+            )}
             <CreateSingleDialog establishmentId={establishmentId} onDone={invalidate} createFn={createFn} />
             <BulkCreateDialog establishmentId={establishmentId} onDone={invalidate} bulkFn={bulkFn} />
           </div>
         </div>
       </CardHeader>
+      {(isLoading || open) && (
       <CardContent>
         {isLoading ? (
           <div className="py-8 text-center text-sm text-muted-foreground">Carregando…</div>
@@ -120,6 +131,7 @@ export function QrTagsManager({ establishmentId }: Props) {
           </div>
         )}
       </CardContent>
+      )}
     </Card>
   );
 }
