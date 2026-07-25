@@ -78,7 +78,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Reputação",
     items: [
       { to: "/app/avaliacoes", label: "Avaliações", icon: Star },
-      { to: "/app/qr", label: "QR de avaliação", icon: QrCode },
+      { to: "/app/qr", label: "QR Codes", icon: QrCode },
       { to: "/app/linktree", label: "Árvore de Links", icon: Link2 },
     ],
   },
