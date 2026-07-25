@@ -14,6 +14,7 @@ export type PermissionAction =
   | "reviews.reply"
   | "qr.manage"
   | "linktree.manage"
+  | "menu.manage"
   | "push.send"
   | "promotions.manage"
   | "messages.manage"
@@ -26,6 +27,7 @@ export type PermissionAction =
   | "team.manage"
   | "team.roles.manage"
   | "billing.manage";
+
 
 export type MemberRole = "owner" | "manager" | "staff";
 
