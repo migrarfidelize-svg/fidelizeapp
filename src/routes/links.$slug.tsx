@@ -396,3 +396,94 @@ function PixCard({
   );
 }
 
+function vcardEscape(v: string) {
+  return v.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/,/g, "\\,").replace(/;/g, "\\;");
+}
+
+function buildVCard(opts: {
+  name: string;
+  description: string | null;
+  logoUrl: string | null;
+  phones: string[];
+  emails: string[];
+  urls: string[];
+}) {
+  const lines = ["BEGIN:VCARD", "VERSION:3.0", `FN:${vcardEscape(opts.name)}`, `N:${vcardEscape(opts.name)};;;;`, `ORG:${vcardEscape(opts.name)}`];
+  if (opts.description) lines.push(`NOTE:${vcardEscape(opts.description)}`);
+  opts.phones.forEach((p) => lines.push(`TEL;TYPE=CELL,VOICE:${p}`));
+  opts.emails.forEach((e) => lines.push(`EMAIL;TYPE=INTERNET:${e}`));
+  opts.urls.forEach((u) => lines.push(`URL:${u}`));
+  if (opts.logoUrl) lines.push(`PHOTO;VALUE=URI:${opts.logoUrl}`);
+  lines.push("END:VCARD");
+  return lines.join("\r\n");
+}
+
+function SaveContactButton({
+  slug, name, logo, description, links, text, primary,
+}: {
+  slug: string;
+  name: string;
+  logo: string | null;
+  description: string | null;
+  links: { id: string; kind: string; label: string; url: string }[];
+  text: string;
+  primary: string;
+}) {
+  const phones = Array.from(
+    new Set(
+      links
+        .filter((l) => l.kind === "phone" || l.kind === "whatsapp")
+        .map((l) => {
+          const digits = l.url.replace(/\D/g, "");
+          if (!digits) return "";
+          return l.kind === "whatsapp" || digits.length > 10 ? `+${digits}` : digits;
+        })
+        .filter(Boolean),
+    ),
+  );
+  const emails = Array.from(
+    new Set(
+      links
+        .filter((l) => l.kind === "email")
+        .map((l) => l.url.replace(/^mailto:/i, "").trim())
+        .filter((v) => v.includes("@")),
+    ),
+  );
+  const urls = Array.from(
+    new Set(
+      links
+        .filter((l) => ["site", "instagram", "facebook", "tiktok", "youtube", "maps", "google", "custom"].includes(l.kind))
+        .map((l) => normalizeUrl(l.kind, l.url)),
+    ),
+  );
+
+  const handleDownload = () => {
+    const vcf = buildVCard({ name, description, logoUrl: logo, phones, emails, urls });
+    const blob = new Blob([vcf], { type: "text/vcard;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${name.replace(/[^\w\-]+/g, "_") || "contato"}.vcf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    toast.success("Contato baixado", { description: "Abra o arquivo para adicionar à sua agenda." });
+    trackChannelEvent({ slug, channel: "linktree", event_type: "link_click", ref_id: "save-contact", ref_label: "Salvar contato" });
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleDownload}
+      aria-label="Salvar contato na agenda"
+      title="Salvar contato na agenda"
+      className="group inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] font-medium opacity-70 transition hover:opacity-100 hover:bg-white/10 backdrop-blur"
+      style={{ color: text, borderColor: `${primary}55` }}
+    >
+      <UserPlus className="h-3.5 w-3.5" />
+      <span>Salvar contato</span>
+    </button>
+  );
+}
+
