@@ -8,11 +8,17 @@ import {
 import { getPublicMenuBySlug } from "@/lib/menu.functions";
 import { generateMenuPdf } from "@/lib/menu-pdf";
 import { trackChannelEvent, useChannelPageView } from "@/lib/tracking";
+import { LazyImg } from "@/components/LazyImg";
 
 const opts = (slug: string) =>
   queryOptions({
     queryKey: ["public-menu", slug],
     queryFn: () => getPublicMenuBySlug({ data: { slug } }),
+    // Vitrine pública: dados mudam raramente durante a sessão do cliente
+    staleTime: 5 * 60 * 1000,      // 5 min sem refetch
+    gcTime: 30 * 60 * 1000,        // mantém em memória por 30 min
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
 export const Route = createFileRoute("/cardapio/$slug")({
