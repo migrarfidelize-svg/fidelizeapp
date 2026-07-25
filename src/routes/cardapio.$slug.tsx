@@ -807,6 +807,20 @@ function ItemModal({ item, primary, onClose }: { item: Item; primary: string; on
           {(item.long_desc || item.short_desc) && (
             <p className="text-sm opacity-80 mt-3 whitespace-pre-line">{item.long_desc || item.short_desc}</p>
           )}
+          {(Array.isArray(item.variants) ? item.variants : []).filter((v) => v?.label).length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-xs uppercase tracking-widest font-bold opacity-60 mb-2">Tamanhos</h4>
+              <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--mk-line)" }}>
+                {(item.variants ?? []).filter((v) => v?.label).map((v, idx) => (
+                  <div key={idx} className="flex items-center justify-between px-3 py-2 text-sm border-b last:border-b-0" style={{ borderColor: "var(--mk-line)" }}>
+                    <span className="font-medium">{v.label}</span>
+                    {v.price != null && <span className="font-bold" style={{ color: primary }}>{fmt(v.price, item.currency)}</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {badges.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-4">
               {badges.map((b) => {
