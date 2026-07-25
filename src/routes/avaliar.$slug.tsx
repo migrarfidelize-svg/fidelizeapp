@@ -135,6 +135,7 @@ function Page() {
   const d = data!;
   const est = d.est;
   const accent = est.primary_color || "#00ffff";
+  useChannelPageView(slug, "reviews");
 
   return (
     <div
