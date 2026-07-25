@@ -63,6 +63,8 @@ function MenuAppearancePage() {
   const [pattern, setPattern] = useState<MenuPatternId>("grain");
   const [entry, setEntry] = useState<MenuEntryId>("dishes");
   const [bgColor, setBgColor] = useState<string | null>(null);
+  const [accentColor, setAccentColor] = useState<string | null>(null);
+  const [textColor, setTextColor] = useState<string | null>(null);
   const [bgImage, setBgImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
