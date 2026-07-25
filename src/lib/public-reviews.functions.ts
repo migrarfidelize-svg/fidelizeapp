@@ -61,13 +61,21 @@ export const getPublicReviewForm = createServerFn({ method: "GET" })
       .maybeSingle();
     if (!est) return null;
 
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: settings } = await supabaseAdmin
+      .from("review_settings")
+      .select("theme")
+      .eq("establishment_id", est.id)
+      .maybeSingle();
+    const theme = (settings?.theme ?? null) as unknown;
+
     const { data: form } = await sb
       .from("review_forms")
       .select("*")
       .eq("establishment_id", est.id)
       .eq("active", true)
       .maybeSingle();
-    if (!form) return { est, form: null, options: [], questions: [], stats: null };
+    if (!form) return { est, form: null, options: [], questions: [], stats: null, theme };
 
     const [{ data: options }, { data: questions }] = await Promise.all([
       sb.from("review_rating_options").select("*").eq("review_form_id", form.id).eq("enabled", true).order("display_order"),
@@ -86,7 +94,7 @@ export const getPublicReviewForm = createServerFn({ method: "GET" })
         avg: list.length ? list.reduce((a, r) => a + r.rating, 0) / list.length : 0,
       };
     }
-    return { est, form, options: options ?? [], questions: questions ?? [], stats };
+    return { est, form, options: options ?? [], questions: questions ?? [], stats, theme };
   });
 
 // ============ PUBLIC: submit ============
