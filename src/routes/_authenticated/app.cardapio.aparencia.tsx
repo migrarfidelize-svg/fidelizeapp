@@ -214,6 +214,88 @@ function MenuAppearancePage() {
                 </div>
               </div>
 
+              <div className="rounded-2xl border border-border/70 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold">Cor de destaque</div>
+                    <p className="text-xs text-muted-foreground">
+                      Usada em preços, botões e na categoria ativa. O texto sobre ela se ajusta sozinho.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      aria-label="Escolher cor de destaque"
+                      value={accentColor && isValidHex(accentColor) ? accentColor : MENU_PRESETS.find((x) => x.id === preset)!.bar}
+                      onChange={(e) => setAccentColor(e.target.value)}
+                      className="h-9 w-12 cursor-pointer rounded-lg border border-border/60 bg-transparent p-1"
+                    />
+                    {accentColor && (
+                      <Button variant="ghost" size="sm" onClick={() => setAccentColor(null)}>
+                        Usar cor do tema
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {MENU_ACCENT_SWATCHES.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setAccentColor(c)}
+                      title={c}
+                      className={`h-8 w-8 rounded-full border transition ${
+                        accentColor?.toLowerCase() === c.toLowerCase()
+                          ? "border-primary ring-2 ring-primary/40"
+                          : "border-border/60 hover:border-primary/50"
+                      }`}
+                      style={{ background: c }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-border/70 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold">Cor do texto</div>
+                    <p className="text-xs text-muted-foreground">
+                      Nomes dos pratos, descrições e títulos. Escolha uma cor com bom contraste no seu fundo.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      aria-label="Escolher cor do texto"
+                      value={textColor && isValidHex(textColor) ? textColor : MENU_PRESETS.find((x) => x.id === preset)!.ink}
+                      onChange={(e) => setTextColor(e.target.value)}
+                      className="h-9 w-12 cursor-pointer rounded-lg border border-border/60 bg-transparent p-1"
+                    />
+                    {textColor && (
+                      <Button variant="ghost" size="sm" onClick={() => setTextColor(null)}>
+                        Usar cor do tema
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {MENU_TEXT_SWATCHES.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setTextColor(c)}
+                      title={c}
+                      className={`h-8 w-8 rounded-full border transition ${
+                        textColor?.toLowerCase() === c.toLowerCase()
+                          ? "border-primary ring-2 ring-primary/40"
+                          : "border-border/60 hover:border-primary/50"
+                      }`}
+                      style={{ background: c }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+
+
               <div className="rounded-2xl border border-dashed border-border/70 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="min-w-0">
