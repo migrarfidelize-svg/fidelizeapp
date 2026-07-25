@@ -4,6 +4,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Download, Smartphone, X } from "lucide-react";
 import { trackEngagement } from "@/lib/engagement";
 import { IosSetupGuide } from "@/components/pwa/IosSetupGuide";
+import { useOnboardingSlot } from "@/lib/onboarding-queue";
+
 
 type BIPEvent = Event & {
   prompt: () => Promise<void>;
@@ -36,6 +38,8 @@ export function MerchantInstallCard() {
   const [deferred, setDeferred] = useState<BIPEvent | null>(null);
   const [visible, setVisible] = useState(false);
   const [showIosHelp, setShowIosHelp] = useState(false);
+  const myTurn = useOnboardingSlot("install", visible || showIosHelp);
+
 
   useEffect(() => {
     if (isStandalone()) return;
@@ -77,7 +81,7 @@ export function MerchantInstallCard() {
     }
   }
 
-  if (!visible) return null;
+  if (!visible || !myTurn) return null;
 
   return (
     <>

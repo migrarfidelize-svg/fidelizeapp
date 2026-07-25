@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ComponentType, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { useOnboardingSlot } from "@/lib/onboarding-queue";
+
 import {
   X, ArrowRight, ArrowLeft, Sparkles,
   LayoutDashboard, Stamp, Users, Megaphone, QrCode, Crown, Compass,
@@ -208,41 +210,44 @@ const PREVIEWS: Record<NonNullable<TourStep["preview"]>, ReactNode> = {
 
 export function GuidedTour({
   steps,
+  mobileSteps,
   storageKey,
   onDone,
 }: {
   steps: TourStep[];
+  /** Versão enxuta usada em telas pequenas (< 768px). */
+  mobileSteps?: TourStep[];
   storageKey: string;
   onDone?: () => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [manual, setManual] = useState(false);
+  const [autoWanted, setAutoWanted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [i, setI] = useState(0);
+  const myTurn = useOnboardingSlot("tour", autoWanted);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const done = window.localStorage.getItem(storageKey);
-    let cleanup: (() => void) | undefined;
-    if (!done) {
-      const t = window.setTimeout(() => setOpen(true), 500);
-      cleanup = () => window.clearTimeout(t);
-    }
-    const onStart = () => { setI(0); setOpen(true); };
+    setIsMobile(window.innerWidth < 768);
+    if (!window.localStorage.getItem(storageKey)) setAutoWanted(true);
+    const onStart = () => { setI(0); setManual(true); };
     window.addEventListener("fidelize:start-tour", onStart);
-    return () => {
-      cleanup?.();
-      window.removeEventListener("fidelize:start-tour", onStart);
-    };
+    return () => window.removeEventListener("fidelize:start-tour", onStart);
   }, [storageKey]);
 
-  const step = steps[i];
+  const activeSteps = isMobile && mobileSteps?.length ? mobileSteps : steps;
+  const open = manual || (autoWanted && myTurn);
+  const step = activeSteps[i];
   if (!open || !step) return null;
   if (typeof document === "undefined") return null;
 
   function close(done: boolean) {
-    setOpen(false);
+    setManual(false);
+    setAutoWanted(false);
     try { window.localStorage.setItem(storageKey, done ? "done" : "skipped"); } catch { /* noop */ }
     onDone?.();
   }
+
 
   const preview = step.previewNode ?? (step.preview ? PREVIEWS[step.preview] : PREVIEWS.welcome);
 
@@ -271,14 +276,14 @@ export function GuidedTour({
         <div className="px-5 pb-5">
           <div className="flex items-center gap-2 text-xs font-medium text-primary">
             <Sparkles className="h-3.5 w-3.5" />
-            Passo {i + 1} de {steps.length}
+            Passo {i + 1} de {activeSteps.length}
           </div>
           <h3 id="tour-title" className="mt-2 text-xl font-semibold">{step.title}</h3>
           <p className="mt-1 text-sm text-muted-foreground">{step.description}</p>
 
           {/* Progress dots */}
           <div className="mt-4 flex items-center gap-1.5">
-            {steps.map((_, idx) => (
+            {activeSteps.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => setI(idx)}
@@ -298,7 +303,7 @@ export function GuidedTour({
                   <ArrowLeft className="mr-1 h-3.5 w-3.5" /> Voltar
                 </Button>
               )}
-              {i < steps.length - 1 ? (
+              {i < activeSteps.length - 1 ? (
                 <Button size="sm" onClick={() => setI(i + 1)} className="bg-primary text-primary-foreground hover:bg-primary/90">
                   Próximo <ArrowRight className="ml-1 h-3.5 w-3.5" />
                 </Button>

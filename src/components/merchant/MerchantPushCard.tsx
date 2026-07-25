@@ -9,6 +9,8 @@ import { VAPID_PUBLIC_KEY, urlBase64ToUint8Array } from "@/lib/vapid";
 import { subscribeAdminPush, getAdminPushStatus } from "@/lib/push.functions";
 import { trackEngagement } from "@/lib/engagement";
 import { IosSetupGuide } from "@/components/pwa/IosSetupGuide";
+import { useOnboardingSlot } from "@/lib/onboarding-queue";
+
 
 const DISMISS_KEY = "fidelize:merchant-push-dismissed:v1";
 const SKIP_UNTIL_KEY = "fidelize:merchant-push-skip-until:v1";
@@ -98,13 +100,16 @@ export function MerchantPushCard() {
     })();
   }, [getStatus]);
 
-  // Convite em popup: aparece na entrada e só volta 24h depois se não ativar.
+  // Convite em popup: entra na fila única de convites (instalar → push → tour)
+  // e só volta 24h depois se não ativar.
+  const wantsPrompt = subscribed === false && !dismissed && !skipped && supported;
+  const myTurn = useOnboardingSlot("push", wantsPrompt || showHelp);
   useEffect(() => {
-    if (subscribed !== false) return;
-    if (dismissed || skipped || !supported) return;
-    const t = setTimeout(() => setPromptOpen(true), 600);
+    if (!wantsPrompt || !myTurn) return;
+    const t = setTimeout(() => setPromptOpen(true), 300);
     return () => clearTimeout(t);
-  }, [subscribed, dismissed, skipped, supported]);
+  }, [wantsPrompt, myTurn]);
+
 
   function snooze() {
     try {
