@@ -85,58 +85,79 @@ type NavGroup = { key: string; label: string; items: NavItem[] };
 
 const NAV_GROUPS: NavGroup[] = [
   {
-    key: "operacao",
-    label: "Operação",
+    key: "visao-geral",
+    label: "Visão geral",
     items: [
       { to: "/app", label: "Painel", icon: LayoutDashboard, exact: true },
-      { to: "/app/carimbar", label: "Carimbar", icon: Stamp },
+      { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
+    ],
+  },
+  {
+    key: "clientes",
+    label: "Clientes",
+    items: [
       { to: "/app/clientes", label: "Clientes", icon: Users },
     ],
   },
   {
-    key: "marketing",
-    label: "Marketing",
+    key: "qrcodes",
+    label: "QR Codes",
     items: [
-      { to: "/app/campanhas", label: "Campanhas", icon: Sparkles },
-      { to: "/app/retencao", label: "Retenção", icon: HeartHandshake },
+      { to: "/app/qr", label: "QR Codes", icon: QrCode },
     ],
   },
   {
-    key: "reputacao",
-    label: "Reputação",
+    key: "fidelidade",
+    label: "Cartão fidelidade",
     items: [
-      { to: "/app/avaliacoes", label: "Avaliações", icon: Star },
-      { to: "/app/qr", label: "QR Codes", icon: QrCode },
+      { to: "/app/carimbar", label: "Carimbar", icon: Stamp },
+      { to: "/app/campanhas", label: "Campanhas de fidelidade", icon: Sparkles },
+    ],
+  },
+  {
+    key: "linktree",
+    label: "Árvore de links",
+    items: [
       { to: "/app/linktree", label: "Árvore de Links", icon: Link2 },
     ],
   },
   {
+    key: "avaliacoes",
+    label: "Avaliações",
+    items: [
+      { to: "/app/avaliacoes", label: "Avaliações", icon: Star },
+    ],
+  },
+  {
     key: "cardapio",
-    label: "Cardápio Virtual",
+    label: "Cardápio",
     items: [
       { to: "/app/cardapio", label: "Visão geral", icon: UtensilsCrossed, exact: true },
       { to: "/app/cardapio/categorias", label: "Categorias", icon: FolderTree },
       { to: "/app/cardapio/pratos", label: "Pratos", icon: LayoutList },
     ],
   },
-
   {
     key: "comunicacao",
     label: "Comunicação",
     items: [
+      { to: "/app/retencao", label: "Retenção", icon: HeartHandshake },
       { to: "/app/notificacoes", label: "Notificações", icon: Bell },
       { to: "/app/promocoes", label: "Promoções", icon: Megaphone },
       { to: "/app/mensagens", label: "Mensagens", icon: MessageSquare },
-      { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
     ],
   },
-
-
   {
-    key: "conta",
-    label: "Conta",
+    key: "equipe",
+    label: "Equipe",
     items: [
       { to: "/app/equipe", label: "Equipe", icon: UsersRound },
+    ],
+  },
+  {
+    key: "financeiro",
+    label: "Financeiro",
+    items: [
       { to: "/app/planos", label: "Planos", icon: Package },
       { to: "/app/pagamentos", label: "Pagamentos", icon: Receipt },
     ],
@@ -147,7 +168,6 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: "/app/kb", label: "Central de Ajuda", icon: BookOpen },
       { to: "/app/fidelize", label: "Fale com a Fidelize", icon: LifeBuoy },
-      { to: "/app/suporte", label: "Meus Chamados (clientes)", icon: Ticket },
     ],
   },
 ];
