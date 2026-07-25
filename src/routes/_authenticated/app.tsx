@@ -111,7 +111,8 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Suporte",
     items: [
       { to: "/app/kb", label: "Central de Ajuda", icon: BookOpen },
-      { to: "/app/suporte", label: "Fale com a Fidelize", icon: LifeBuoy },
+      { to: "/suporte", label: "Fale com a Fidelize", icon: LifeBuoy },
+      { to: "/app/suporte", label: "Meus Chamados (clientes)", icon: Ticket },
     ],
   },
 ];
