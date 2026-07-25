@@ -20,6 +20,7 @@ import {
 } from "@/lib/menu-themes";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHero } from "@/components/PageHero";
+import { LogoUploadButton } from "@/components/LogoUploadButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -124,6 +125,43 @@ function MenuAppearancePage() {
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.5fr_1fr]">
         <div className="space-y-4">
+          {/* LOGO */}
+          {est && (
+            <Card>
+              <CardHeader><CardTitle>Logo do cardápio</CardTitle></CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border/70 p-3">
+                  <div
+                    className="flex h-16 w-16 flex-none items-center justify-center overflow-hidden rounded-xl border border-border/60"
+                    style={{ background: est.logo_url ? "#ffffff" : "hsl(var(--muted))" }}
+                  >
+                    {est.logo_url ? (
+                      <img src={est.logo_url} alt={est.name ?? ""} className="h-full w-full object-contain" />
+                    ) : (
+                      <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                        {(est.name ?? "??").slice(0, 2)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1 space-y-1.5">
+                    <p className="text-xs text-muted-foreground">
+                      {est.logo_url
+                        ? "Aparece no topo da página pública do cardápio."
+                        : "Envie uma logo para exibir no topo do cardápio público."}
+                    </p>
+                    <LogoUploadButton
+                      establishmentId={est.id}
+                      currentLogoUrl={est.logo_url}
+                      size="sm"
+                      variant="outline"
+                      invalidateKeys={[["my-establishments"], ["menu-overview", est.id]]}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* TEMAS */}
           <Card>
             <CardHeader><CardTitle>1. Tema de cores</CardTitle></CardHeader>
