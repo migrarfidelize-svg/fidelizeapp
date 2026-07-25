@@ -272,18 +272,16 @@ export const previewPushSegment = createServerFn({ method: "POST" })
     if (!isManager) throw new Error("Sem permissão.");
     const { resolveSegmentCustomerIds } = await import("@/lib/push.segment.server");
     const ids = await resolveSegmentCustomerIds(data.establishment_id, data.segment ?? {});
-    if (ids.length === 0) return { customers: 0, subscribers: 0 };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: subs } = await supabaseAdmin
-      .from("push_subscriptions")
-      .select("id, preferences")
-      .eq("establishment_id", data.establishment_id)
-      .eq("active", true)
-      .in("customer_id", ids);
-    const subscribers = (subs ?? []).filter(
-      (s: any) => ((s.preferences ?? {}) as Record<string, boolean>).campaign !== false,
-    ).length;
-    return { customers: ids.length, subscribers };
+    const { resolveEstablishmentSubs, splitAudience } = await import("@/lib/push.audience.server");
+    const allSubs = await resolveEstablishmentSubs(supabaseAdmin, data.establishment_id);
+    const split = splitAudience(allSubs, ids);
+    return {
+      customers: ids.length,
+      subscribers: split.customers.length,
+      operators: split.operators.length,
+    };
+
   });
 
 async function checkAndConsumeQuota(
