@@ -858,6 +858,50 @@ export type Database = {
         }
         Relationships: []
       }
+      establishment_feature_overrides: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          establishment_id: string
+          expires_at: string | null
+          feature_key: string
+          granted_by: string | null
+          id: string
+          note: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          establishment_id: string
+          expires_at?: string | null
+          feature_key: string
+          granted_by?: string | null
+          id?: string
+          note?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          establishment_id?: string
+          expires_at?: string | null
+          feature_key?: string
+          granted_by?: string | null
+          id?: string
+          note?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "establishment_feature_overrides_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       establishment_goals: {
         Row: {
           created_at: string
@@ -4768,6 +4812,10 @@ export type Database = {
         Returns: boolean
       }
       has_plan_feature: {
+        Args: { _est: string; _feature: string }
+        Returns: boolean
+      }
+      has_plan_feature_strict: {
         Args: { _est: string; _feature: string }
         Returns: boolean
       }
