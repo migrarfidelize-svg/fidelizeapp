@@ -319,7 +319,7 @@ function MenuAppearancePage() {
           <CardContent>
             <MenuPreview
               preset={preset} layout={layout} pattern={pattern}
-              bgImage={bgImage} bgColor={bgColor} accent={accent}
+              bgImage={bgImage} bgColor={bgColor} accentColor={accentColor} textColor={textColor} accent={accent}
               name={est?.name ?? "Seu Restaurante"}
               logoUrl={est?.logo_url ?? null}
               coverUrl={est?.cover_url ?? null}
