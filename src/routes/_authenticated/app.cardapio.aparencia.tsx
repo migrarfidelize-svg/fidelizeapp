@@ -1,9 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useBlocker } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Palette, Check, ImageIcon, Trash2, ExternalLink, Loader2 } from "lucide-react";
+import { Palette, Check, ImageIcon, Trash2, ExternalLink, Loader2, RotateCcw, Undo2 } from "lucide-react";
+
 
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { getMyMenuOverview, updateMenuTheme, listMenuItems } from "@/lib/menu.functions";
@@ -16,8 +17,10 @@ import {
   MENU_TEXT_SWATCHES,
   applyCustomColors,
   isValidHex,
+  DEFAULT_MENU_THEME,
   type MenuEntryId,
 } from "@/lib/menu-themes";
+
 import { supabase } from "@/integrations/supabase/client";
 import { PageHero } from "@/components/PageHero";
 import { LogoUploadButton } from "@/components/LogoUploadButton";
@@ -69,8 +72,10 @@ function MenuAppearancePage() {
   const [bgImage, setBgImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  useEffect(() => {
-    const t = resolveMenuTheme(overview.data?.menu?.theme);
+  const applyThemeToForm = (t: {
+    preset: MenuPresetId; layout: MenuLayoutId; pattern: MenuPatternId; entry: MenuEntryId;
+    bg_color: string | null; accent_color: string | null; text_color: string | null; bg_image_url: string | null;
+  }) => {
     setPreset(t.preset);
     setLayout(t.layout);
     setPattern(t.pattern);
@@ -79,7 +84,33 @@ function MenuAppearancePage() {
     setAccentColor(t.accent_color);
     setTextColor(t.text_color);
     setBgImage(t.bg_image_url);
-  }, [overview.data?.menu?.theme]);
+  };
+
+  const savedTheme = useMemo(() => resolveMenuTheme(overview.data?.menu?.theme), [overview.data?.menu?.theme]);
+
+  useEffect(() => {
+    applyThemeToForm(savedTheme);
+  }, [savedTheme]);
+
+  const current = { preset, layout, pattern, entry, bg_color: bgColor, accent_color: accentColor, text_color: textColor, bg_image_url: bgImage };
+  const dirty =
+    JSON.stringify(current) !==
+    JSON.stringify({
+      preset: savedTheme.preset, layout: savedTheme.layout, pattern: savedTheme.pattern, entry: savedTheme.entry,
+      bg_color: savedTheme.bg_color, accent_color: savedTheme.accent_color, text_color: savedTheme.text_color,
+      bg_image_url: savedTheme.bg_image_url,
+    });
+
+  useBlocker({
+    shouldBlockFn: () => dirty && !window.confirm("Você tem alterações de aparência não salvas. Sair mesmo assim?"),
+    enableBeforeUnload: () => dirty,
+  });
+
+  const restoreDefaults = () => {
+    if (!window.confirm("Restaurar a aparência padrão? Suas cores e layout personalizados serão descartados (salve para confirmar).")) return;
+    applyThemeToForm(DEFAULT_MENU_THEME);
+    toast.info("Padrão restaurado na prévia. Clique em Salvar aparência para aplicar.");
+  };
 
   const mut = useMutation({
     mutationFn: () =>
@@ -90,6 +121,7 @@ function MenuAppearancePage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const uploadBg = async (file: File) => {
     if (!estId) return;
@@ -418,11 +450,23 @@ function MenuAppearancePage() {
             </CardContent>
           </Card>
 
-          <div className="sticky bottom-3 z-20 flex flex-wrap gap-2 rounded-2xl border border-border/60 bg-background/90 p-3 backdrop-blur">
-            <Button onClick={() => mut.mutate()} disabled={!estId || mut.isPending}>
+          <div className="sticky bottom-3 z-20 flex flex-wrap items-center gap-2 rounded-2xl border border-border/60 bg-background/90 p-3 backdrop-blur">
+            <Button onClick={() => mut.mutate()} disabled={!estId || mut.isPending || !dirty}>
               {mut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Salvar aparência
             </Button>
+            <Button variant="outline" onClick={restoreDefaults} disabled={!estId}>
+              <RotateCcw className="mr-2 h-4 w-4" /> Restaurar padrão
+            </Button>
+            {dirty && (
+              <Button variant="ghost" onClick={() => applyThemeToForm(savedTheme)}>
+                <Undo2 className="mr-2 h-4 w-4" /> Descartar alterações
+              </Button>
+            )}
+            {dirty && (
+              <span className="text-xs font-medium text-amber-500">Alterações não salvas</span>
+            )}
+
             {publicUrl && (
               <Button asChild variant="outline">
                 <a href={publicUrl} target="_blank" rel="noreferrer">
@@ -539,7 +583,7 @@ function Thumb({
 }
 
 function MenuPreview({
-  preset, layout, pattern, bgImage, bgColor, accentColor, textColor, accent, name, logoUrl, coverUrl, categories, items, loading,
+  preset, layout, pattern, bgImage, bgColor, accentColor, textColor, accent: brandAccent, name, logoUrl, coverUrl, categories, items, loading,
 }: {
   preset: MenuPresetId; layout: MenuLayoutId; pattern: MenuPatternId;
   bgImage: string | null; bgColor: string | null; accentColor?: string | null; textColor?: string | null; accent: string;
@@ -549,7 +593,9 @@ function MenuPreview({
   const p = applyCustomColors(MENU_PRESETS.find((x) => x.id === preset)!, {
     bg_color: bgColor, accent_color: accentColor ?? null, text_color: textColor ?? null,
   });
-  const bg = menuBackgroundCss({ pattern, bg_image_url: bgImage }, p, accentColor ?? accent);
+  const accent = accentColor || p.bar || brandAccent;
+  const bg = menuBackgroundCss({ pattern, bg_image_url: bgImage }, p, accent);
+
 
   const fallback: PreviewItem[] = [
     { name: "Burguer da casa", short_desc: "Blend 180g, cheddar e picles", price: 39.9 },
