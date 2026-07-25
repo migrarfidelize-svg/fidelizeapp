@@ -1,5 +1,5 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +11,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
 import { toast } from "sonner";
-import { Upload, X, Loader2 } from "lucide-react";
+import {
+  Upload,
+  X,
+  Loader2,
+  LogOut,
+  Building2,
+  Palette,
+  Gift,
+  Rocket,
+  ArrowRight,
+  ShieldCheck,
+} from "lucide-react";
 import { LogoCropper } from "@/components/LogoCropper";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { STAMP_ICON_OPTIONS, getStampIcon, stampIconLabel } from "@/lib/stampIcons";
@@ -21,10 +32,6 @@ export const Route = createFileRoute("/onboarding")({
   beforeLoad: async () => {
     const { data } = await supabase.auth.getUser();
     if (!data.user) throw redirect({ to: "/auth" });
-    // Onboarding é exclusivo para donos de estabelecimento — clientes finais
-    // vão direto para /carteira. Consulta a coluna profiles.account_type
-    // (definida explicitamente), pois o RPC depende de memberships que ainda
-    // não existem no momento do primeiro onboarding do lojista.
     try {
       const { data: p } = await supabase
         .from("profiles")
@@ -42,7 +49,13 @@ export const Route = createFileRoute("/onboarding")({
 });
 
 function slugify(v: string) {
-  return v.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
+  return v
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 40);
 }
 
 function IconRow({ value }: { value: string }) {
@@ -57,7 +70,14 @@ function IconRow({ value }: { value: string }) {
   );
 }
 
-const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 10; // 10 anos
+const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 10;
+
+type StepId = "empresa" | "marca" | "campanha";
+const STEPS: { id: StepId; label: string; icon: typeof Building2 }[] = [
+  { id: "empresa", label: "Empresa", icon: Building2 },
+  { id: "marca", label: "Marca", icon: Palette },
+  { id: "campanha", label: "Campanha", icon: Gift },
+];
 
 function Onboarding() {
   const navigate = useNavigate();
@@ -67,19 +87,60 @@ function Onboarding() {
 
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const [cropOpen, setCropOpen] = useState(false);
   const [rawFile, setRawFile] = useState<File | null>(null);
-  const [logoRev, setLogoRev] = useState(0); // força reload da <img> quando trocamos o logo
+  const [logoRev, setLogoRev] = useState(0);
   const [f, setF] = useState({
-    name: "", slug: "", description: "", primary_color: "#5B21B6", accent_color: "#F97066",
+    name: "",
+    slug: "",
+    description: "",
+    primary_color: "#22d3ee",
+    accent_color: "#e879f9",
     logo_url: "" as string,
-    campaign_name: "Cartão Fidelidade", stamps_required: 10, reward_title: "", reward_description: "",
+    campaign_name: "Cartão Fidelidade",
+    stamps_required: 10,
+    reward_title: "",
+    reward_description: "",
     stamp_icon: "coffee",
   });
 
   function set<K extends keyof typeof f>(k: K, v: (typeof f)[K]) {
-    setF((s) => ({ ...s, [k]: v, ...(k === "name" && !s.slug ? { slug: slugify(v as string) } : {}) }));
+    setF((s) => ({
+      ...s,
+      [k]: v,
+      ...(k === "name" && !s.slug ? { slug: slugify(v as string) } : {}),
+    }));
+  }
+
+  const completion = useMemo(() => {
+    const checks = {
+      empresa: f.name.trim().length >= 2 && slugify(f.slug).length >= 3,
+      marca: !!f.logo_url || (!!f.primary_color && !!f.accent_color),
+      campanha: f.reward_title.trim().length >= 2 && f.stamps_required >= 2,
+    };
+    const done = Object.values(checks).filter(Boolean).length;
+    return { checks, done, total: STEPS.length, pct: Math.round((done / STEPS.length) * 100) };
+  }, [f]);
+
+  const activeStep: StepId = !completion.checks.empresa
+    ? "empresa"
+    : !completion.checks.marca
+      ? "marca"
+      : "campanha";
+
+  async function signOut() {
+    setSigningOut(true);
+    try {
+      await supabase.auth.signOut();
+      qc.clear();
+      navigate({ to: "/auth" });
+    } catch {
+      toast.error("Não foi possível encerrar a sessão.");
+    } finally {
+      setSigningOut(false);
+    }
   }
 
   async function onPickLogo(e: React.ChangeEvent<HTMLInputElement>) {
@@ -106,10 +167,14 @@ function Onboarding() {
       if (!uid) throw new Error("Sessão expirada");
       const path = `${uid}/${crypto.randomUUID()}.png`;
       const { error: upErr } = await supabase.storage.from("logos").upload(path, blob, {
-        cacheControl: "31536000", upsert: false, contentType: "image/png",
+        cacheControl: "31536000",
+        upsert: false,
+        contentType: "image/png",
       });
       if (upErr) throw upErr;
-      const { data: signed, error: sErr } = await supabase.storage.from("logos").createSignedUrl(path, SIGNED_URL_TTL);
+      const { data: signed, error: sErr } = await supabase.storage
+        .from("logos")
+        .createSignedUrl(path, SIGNED_URL_TTL);
       if (sErr || !signed?.signedUrl) throw sErr || new Error("Falha ao gerar link");
       set("logo_url", signed.signedUrl);
       setLogoRev((r) => r + 1);
@@ -131,11 +196,17 @@ function Onboarding() {
     e.preventDefault();
     const cleanSlug = slugify(f.slug);
     if (cleanSlug.length < 3) {
-      toast.error("O endereço público precisa ter pelo menos 3 caracteres (letras, números ou hífens).");
+      toast.error("O endereço público precisa ter pelo menos 3 caracteres.");
       return;
     }
-    if (f.name.trim().length < 2) { toast.error("Informe o nome da empresa."); return; }
-    if (f.reward_title.trim().length < 2) { toast.error("Descreva a recompensa da campanha."); return; }
+    if (f.name.trim().length < 2) {
+      toast.error("Informe o nome da empresa.");
+      return;
+    }
+    if (f.reward_title.trim().length < 2) {
+      toast.error("Descreva a recompensa da campanha.");
+      return;
+    }
     setLoading(true);
     try {
       await create({ data: { ...f, slug: cleanSlug } });
@@ -146,101 +217,268 @@ function Onboarding() {
       navigate({ to: "/app/qrcodes" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro");
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div className="min-h-dvh bg-muted/30">
-      <header className="border-b bg-card">
-        <div className="mx-auto max-w-5xl p-4"><Logo /></div>
+    <div className="relative min-h-dvh overflow-hidden bg-background text-foreground">
+      {/* Circuit background */}
+      <div className="pointer-events-none absolute inset-0 opacity-[0.08] dark:opacity-[0.10]">
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="ob-circuit" x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
+              <path
+                d="M0 60 H36 L48 48 H84 L96 60 H120 M60 0 V36 L72 48 V84 L60 96 V120"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="0.6"
+                className="text-primary"
+              />
+              <circle cx="48" cy="48" r="1.6" className="fill-primary" />
+              <circle cx="72" cy="48" r="1.6" className="fill-primary" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#ob-circuit)" />
+        </svg>
+      </div>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-40 left-1/2 h-[520px] w-[820px] -translate-x-1/2 rounded-full opacity-30 blur-[120px]"
+        style={{ background: "radial-gradient(closest-side, var(--primary), transparent)" }}
+      />
+
+      {/* Header */}
+      <header className="relative z-10 border-b border-border/40 bg-background/70 backdrop-blur-xl">
+        <div className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-4 md:px-8">
+          <div className="min-w-0">
+            <Logo />
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={signOut}
+            disabled={signingOut}
+            className="shrink-0 gap-2 border-border/60 text-muted-foreground hover:border-destructive/50 hover:text-destructive"
+          >
+            {signingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
+            <span className="hidden sm:inline">Sair da conta</span>
+            <span className="sm:hidden">Sair</span>
+          </Button>
+        </div>
       </header>
-      <div className="mx-auto max-w-5xl p-4 md:p-8 grid gap-8 md:grid-cols-[1fr_360px]">
-        <form onSubmit={submit} className="space-y-6 rounded-3xl border bg-card p-6 md:p-8">
-          <div>
-            <h1 className="font-display text-2xl font-bold">Vamos configurar seu cartão fidelidade</h1>
-            <p className="text-sm text-muted-foreground mt-1">Leva 2 minutos. Você pode ajustar tudo depois.</p>
-          </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <Label>Nome da empresa</Label>
-              <Input value={f.name} onChange={(e) => set("name", e.target.value)} required minLength={2} maxLength={80} placeholder="Ex: Café do Centro" />
-            </div>
-            <div>
-              <Label>Endereço público</Label>
-              <div className="flex items-center gap-1">
-                <span className="text-sm text-muted-foreground">fidelize.app/cartao/</span>
-                <Input value={f.slug} onChange={(e) => set("slug", slugify(e.target.value))} required minLength={3} placeholder="cafe-do-centro" />
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <Label>Descrição (opcional)</Label>
-            <Textarea value={f.description} onChange={(e) => set("description", e.target.value)} maxLength={500} rows={2} placeholder="Uma frase sobre o seu negócio" />
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <Label>Cor principal</Label>
-              <div className="flex gap-2 items-center">
-                <input type="color" value={f.primary_color} onChange={(e) => set("primary_color", e.target.value)} className="h-10 w-14 rounded border" />
-                <Input value={f.primary_color} onChange={(e) => set("primary_color", e.target.value)} />
-              </div>
-            </div>
-            <div>
-              <Label>Cor de destaque</Label>
-              <div className="flex gap-2 items-center">
-                <input type="color" value={f.accent_color} onChange={(e) => set("accent_color", e.target.value)} className="h-10 w-14 rounded border" />
-                <Input value={f.accent_color} onChange={(e) => set("accent_color", e.target.value)} />
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <Label>Logo do seu negócio (opcional)</Label>
-            <div className="mt-2 flex items-center gap-4">
-              <div className="h-20 w-20 shrink-0 grid place-items-center overflow-hidden">
-                {f.logo_url ? (
-                  <img key={logoRev} src={f.logo_url} alt="Logo" className="h-full w-full object-contain" />
-                ) : (
-                  <div className="h-full w-full rounded-2xl border bg-muted/40 grid place-items-center">
-                    <span className="text-xs font-display font-bold text-muted-foreground">{(f.name || "?").trim().split(/\s+/).slice(0,2).map(w=>w[0]).join("").toUpperCase().slice(0,2) || "?"}</span>
+      <main className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 py-10 md:px-8 md:py-12 lg:grid-cols-[minmax(0,1fr)_400px]">
+        {/* Left: form */}
+        <form onSubmit={submit} className="min-w-0 space-y-10">
+          {/* Stepper */}
+          <nav aria-label="Progresso" className="flex flex-wrap items-center gap-3">
+            {STEPS.map((s, i) => {
+              const done = completion.checks[s.id];
+              const active = activeStep === s.id;
+              const StepIcon = s.icon;
+              return (
+                <div key={s.id} className="flex items-center gap-3">
+                  <div
+                    className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium tracking-wide transition-all ${
+                      active
+                        ? "border-primary/60 bg-primary/10 text-primary shadow-[0_0_20px_-6px_var(--primary)]"
+                        : done
+                          ? "border-primary/30 bg-primary/5 text-primary/80"
+                          : "border-border/60 bg-muted/30 text-muted-foreground"
+                    }`}
+                  >
+                    <span
+                      className={`grid h-5 w-5 place-items-center rounded-full text-[10px] font-bold ${
+                        done
+                          ? "bg-primary text-primary-foreground"
+                          : active
+                            ? "bg-primary/20 text-primary"
+                            : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {done ? "✓" : i + 1}
+                    </span>
+                    <StepIcon className="h-3.5 w-3.5" />
+                    <span>{s.label}</span>
                   </div>
-                )}
-              </div>
-              <div className="flex-1 space-y-2">
-                <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden" onChange={onPickLogo} />
-                <div className="flex gap-2 flex-wrap">
-                  <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => fileRef.current?.click()}>
-                    {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
-                    {f.logo_url ? "Trocar logo" : "Enviar logo"}
-                  </Button>
-                  {f.logo_url && (
-                    <Button type="button" variant="ghost" size="sm" onClick={removeLogo}>
-                      <X className="h-4 w-4 mr-1" /> Remover
-                    </Button>
+                  {i < STEPS.length - 1 && (
+                    <span className="h-px w-6 bg-gradient-to-r from-border to-transparent" />
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground">PNG, JPG, WEBP ou SVG. Até 5 MB. Você recorta antes de enviar.</p>
-              </div>
-            </div>
-          </div>
+              );
+            })}
+          </nav>
 
-
-          <div className="border-t pt-6 space-y-4">
-            <h2 className="font-display text-lg font-semibold">Primeira campanha</h2>
-            <div>
-              <Label>Nome da campanha</Label>
-              <Input value={f.campaign_name} onChange={(e) => set("campaign_name", e.target.value)} maxLength={80} />
-            </div>
+          {/* Section: Empresa */}
+          <Section
+            icon={Building2}
+            title="Configurar sua empresa"
+            subtitle="Comece com a identidade base do seu negócio."
+          >
             <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <Label>Carimbos necessários</Label>
-                <Input type="number" min={2} max={50} value={f.stamps_required} onChange={(e) => set("stamps_required", Number(e.target.value))} />
+              <Field label="Nome da empresa">
+                <Input
+                  value={f.name}
+                  onChange={(e) => set("name", e.target.value)}
+                  required
+                  minLength={2}
+                  maxLength={80}
+                  placeholder="Ex: Café do Centro"
+                />
+              </Field>
+              <Field label="Endereço público">
+                <div className="flex items-stretch overflow-hidden rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring">
+                  <span className="hidden items-center border-r border-input bg-muted/50 px-3 text-xs text-muted-foreground sm:flex">
+                    fidelize.app/cartao/
+                  </span>
+                  <Input
+                    value={f.slug}
+                    onChange={(e) => set("slug", slugify(e.target.value))}
+                    required
+                    minLength={3}
+                    placeholder="cafe-do-centro"
+                    className="border-0 focus-visible:ring-0"
+                  />
+                </div>
+              </Field>
+            </div>
+
+            <Field label="Descrição (opcional)">
+              <Textarea
+                value={f.description}
+                onChange={(e) => set("description", e.target.value)}
+                maxLength={500}
+                rows={2}
+                placeholder="Uma frase sobre o seu negócio"
+              />
+            </Field>
+          </Section>
+
+          {/* Section: Marca */}
+          <Section
+            icon={Palette}
+            title="Identidade visual"
+            subtitle="Cores e logo que aparecem no cartão dos seus clientes."
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              <Field label="Cor principal">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={f.primary_color}
+                    onChange={(e) => set("primary_color", e.target.value)}
+                    className="h-10 w-14 cursor-pointer rounded-md border border-input bg-background"
+                  />
+                  <Input
+                    value={f.primary_color}
+                    onChange={(e) => set("primary_color", e.target.value)}
+                  />
+                </div>
+              </Field>
+              <Field label="Cor de destaque">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={f.accent_color}
+                    onChange={(e) => set("accent_color", e.target.value)}
+                    className="h-10 w-14 cursor-pointer rounded-md border border-input bg-background"
+                  />
+                  <Input
+                    value={f.accent_color}
+                    onChange={(e) => set("accent_color", e.target.value)}
+                  />
+                </div>
+              </Field>
+            </div>
+
+            <Field label="Logo do seu negócio (opcional)">
+              <div className="flex items-center gap-4">
+                <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl border border-border/60 bg-muted/40">
+                  {f.logo_url ? (
+                    <img
+                      key={logoRev}
+                      src={f.logo_url}
+                      alt="Logo"
+                      className="h-full w-full object-contain"
+                    />
+                  ) : (
+                    <span className="font-display text-xs font-bold text-muted-foreground">
+                      {(f.name || "?")
+                        .trim()
+                        .split(/\s+/)
+                        .slice(0, 2)
+                        .map((w) => w[0])
+                        .join("")
+                        .toUpperCase()
+                        .slice(0, 2) || "?"}
+                    </span>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1 space-y-2">
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    className="hidden"
+                    onChange={onPickLogo}
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={uploading}
+                      onClick={() => fileRef.current?.click()}
+                    >
+                      {uploading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Upload className="mr-2 h-4 w-4" />
+                      )}
+                      {f.logo_url ? "Trocar logo" : "Enviar logo"}
+                    </Button>
+                    {f.logo_url && (
+                      <Button type="button" variant="ghost" size="sm" onClick={removeLogo}>
+                        <X className="mr-1 h-4 w-4" /> Remover
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    PNG, JPG, WEBP ou SVG. Até 5 MB. Você recorta antes de enviar.
+                  </p>
+                </div>
               </div>
-              <div>
-                <Label>Ícone do carimbo</Label>
+            </Field>
+          </Section>
+
+          {/* Section: Campanha */}
+          <Section
+            icon={Gift}
+            title="Primeira campanha"
+            subtitle="Configure a regra do primeiro cartão fidelidade."
+          >
+            <Field label="Nome da campanha">
+              <Input
+                value={f.campaign_name}
+                onChange={(e) => set("campaign_name", e.target.value)}
+                maxLength={80}
+              />
+            </Field>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <Field label="Carimbos necessários">
+                <Input
+                  type="number"
+                  min={2}
+                  max={50}
+                  value={f.stamps_required}
+                  onChange={(e) => set("stamps_required", Number(e.target.value))}
+                />
+              </Field>
+              <Field label="Ícone do carimbo">
                 <Select value={f.stamp_icon} onValueChange={(v) => set("stamp_icon", v)}>
                   <SelectTrigger>
                     <SelectValue asChild>
@@ -255,49 +493,146 @@ function Onboarding() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </Field>
             </div>
-            <div className="grid gap-4 md:grid-cols-1">
-              <div>
-                <Label>Recompensa (título)</Label>
-                <Input value={f.reward_title} onChange={(e) => set("reward_title", e.target.value)} required maxLength={120} placeholder="Um café grátis" />
-              </div>
-            </div>
-            <div>
-              <Label>Recompensa (detalhes)</Label>
-              <Textarea value={f.reward_description} onChange={(e) => set("reward_description", e.target.value)} maxLength={500} rows={2} placeholder="Ex: válido de segunda a sexta, exceto especiais" />
-            </div>
-          </div>
 
-          <Button type="submit" disabled={loading} className="w-full gradient-brand text-primary-foreground" size="lg">
-            {loading ? "Criando…" : "Criar minha empresa"}
-          </Button>
+            <Field label="Recompensa (título)">
+              <Input
+                value={f.reward_title}
+                onChange={(e) => set("reward_title", e.target.value)}
+                required
+                maxLength={120}
+                placeholder="Um café grátis"
+              />
+            </Field>
+
+            <Field label="Recompensa (detalhes)">
+              <Textarea
+                value={f.reward_description}
+                onChange={(e) => set("reward_description", e.target.value)}
+                maxLength={500}
+                rows={2}
+                placeholder="Ex: válido de segunda a sexta, exceto especiais"
+              />
+            </Field>
+          </Section>
+
+          {/* CTA */}
+          <div className="sticky bottom-4 z-10 flex flex-col-reverse items-stretch gap-3 rounded-2xl border border-border/60 bg-card/80 p-4 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <ShieldCheck className="h-4 w-4 text-primary" />
+              <span>
+                {completion.done}/{completion.total} etapas concluídas · {completion.pct}%
+              </span>
+            </div>
+            <Button
+              type="submit"
+              disabled={loading}
+              size="lg"
+              className="group relative overflow-hidden bg-gradient-to-r from-primary to-accent font-semibold text-primary-foreground shadow-[0_0_30px_-8px_var(--primary)]"
+            >
+              <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+              <Rocket className="mr-2 h-4 w-4" />
+              {loading ? "Criando…" : "Publicar minha empresa"}
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Button>
+          </div>
         </form>
 
-        <div className="hidden md:block">
-          <div className="sticky top-8">
-            <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Prévia</div>
-            <StampCard
-              key={logoRev}
-              brandName={f.name || "Sua empresa"}
-              logoUrl={f.logo_url || undefined}
-              customerName="Cliente exemplo"
-              stamps={Math.min(3, f.stamps_required)}
-              required={f.stamps_required}
-              reward={f.reward_title || "Sua recompensa aqui"}
-              primary={f.primary_color}
-              accent={f.accent_color}
-              icon={f.stamp_icon}
-            />
+        {/* Right: sticky preview */}
+        <aside className="hidden lg:block">
+          <div className="sticky top-24">
+            <div className="relative">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -inset-6 rounded-[2rem] opacity-40 blur-3xl animate-pulse"
+                style={{
+                  background:
+                    "conic-gradient(from 0deg, var(--primary), var(--accent), var(--primary))",
+                }}
+              />
+              <div className="relative rounded-[2rem] border border-border/60 bg-card/70 p-5 backdrop-blur-xl">
+                <div className="mb-4 flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                    Prévia ao vivo
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60" />
+                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
+                    </span>
+                    LIVE
+                  </span>
+                </div>
+                <StampCard
+                  key={logoRev}
+                  brandName={f.name || "Sua empresa"}
+                  logoUrl={f.logo_url || undefined}
+                  customerName="Cliente exemplo"
+                  stamps={Math.min(3, f.stamps_required)}
+                  required={f.stamps_required}
+                  reward={f.reward_title || "Sua recompensa aqui"}
+                  primary={f.primary_color}
+                  accent={f.accent_color}
+                  icon={f.stamp_icon}
+                />
+                <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
+                  Este é o cartão que seus clientes verão ao escanear o QR Code do seu
+                  estabelecimento. Ajuste e veja em tempo real.
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </aside>
+      </main>
+
       <LogoCropper
         file={rawFile}
         open={cropOpen}
-        onOpenChange={(o) => { setCropOpen(o); if (!o) setRawFile(null); }}
+        onOpenChange={(o) => {
+          setCropOpen(o);
+          if (!o) setRawFile(null);
+        }}
         onCropped={uploadCropped}
       />
+    </div>
+  );
+}
+
+function Section({
+  icon: Icon,
+  title,
+  subtitle,
+  children,
+}: {
+  icon: typeof Building2;
+  title: string;
+  subtitle: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="animate-fade-in space-y-5 rounded-2xl border border-border/60 bg-card/60 p-5 backdrop-blur-sm md:p-7">
+      <header className="flex items-center gap-4">
+        <span className="card-icon shrink-0">
+          <Icon className="h-5 w-5" />
+        </span>
+        <div className="min-w-0">
+          <h2 className="font-display truncate text-lg font-bold md:text-xl">{title}</h2>
+          <p className="text-xs text-muted-foreground md:text-sm">{subtitle}</p>
+        </div>
+      </header>
+      <div className="space-y-4">{children}</div>
+    </section>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
+        {label}
+      </Label>
+      {children}
     </div>
   );
 }
