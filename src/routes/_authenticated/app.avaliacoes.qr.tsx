@@ -104,7 +104,7 @@ export const Route = createFileRoute("/_authenticated/app/avaliacoes/qr")({
 type FormatKey = "counter15x10" | "story" | "feed" | "a5";
 const FORMATS: Record<FormatKey, { label: string; aspect: string; mm: { w: number; h: number }; description: string; orientation: "landscape" | "portrait" | "square" }> = {
   counter15x10: { label: "Balcão 10×15", aspect: "2 / 3", mm: { w: 100, h: 150 }, description: "Padrão vertical para balcão e mesa", orientation: "portrait" },
-  a5:           { label: "A5 vertical", aspect: "1 / 1.414", mm: { w: 148, h: 210 }, description: "Cartaz de parede", orientation: "portrait" },
+  a5:           { label: "Mesa 7×10cm", aspect: "7 / 10", mm: { w: 70, h: 100 }, description: "Adesivo frontal para suporte de mesa (7×10cm + 3mm sangria)", orientation: "portrait" },
   feed:         { label: "Feed 1:1", aspect: "1 / 1", mm: { w: 200, h: 200 }, description: "Instagram/Feed", orientation: "square" },
   story:        { label: "Story 9:16", aspect: "9 / 16", mm: { w: 108, h: 192 }, description: "Story/Reels", orientation: "portrait" },
 };
@@ -1915,7 +1915,7 @@ function ReviewQrPage() {
 
           <div className="border-t border-white/10 bg-black/60 px-4 py-2 text-center text-[11px] text-white/60">
             {realScale
-              ? "Renderizado em milímetros — a proporção física entre Balcão 10×15 e A5 é fiel na sua tela (aprox. 96dpi)."
+              ? "Renderizado em milímetros — a proporção física entre Balcão 10×15 e Mesa 7×10 é fiel na sua tela (aprox. 96dpi)."
               : "Ajustado à tela mantendo a proporção do formato. Ative Escala 1:1 para comparar tamanhos reais."}
           </div>
         </div>

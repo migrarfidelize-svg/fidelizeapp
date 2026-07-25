@@ -14,12 +14,13 @@ export type Segment = "espetinhos" | "cafeteria" | "barbearia" | "petshop" | "la
  * Dimensions verified:
  *  Story Instagram: 1080×1920 (9:16)  — sem sangria
  *  Feed Instagram:  1080×1080 (1:1)   — sem sangria
- *  Balcão A5:       trim 148×210mm + 3mm sangria = 154×216mm  @≈288dpi → 1748×2480px
+ *  Mesa 7×10cm:     trim 70×100mm + 3mm sangria = 76×106mm  @≈288dpi → 862×1202px
+ *                   área segura ~5mm (57px), QR alvo ~35mm (397px)
  */
 export const FORMATS: Record<PromoFormat, { label: string; w: number; h: number; bleed: number; safe: number; mm?: { w: number; h: number }; print: boolean; description: string }> = {
   story:   { label: "Story Instagram", w: 1080, h: 1920, bleed: 0,  safe: 96, print: false, description: "1080×1920 · 9:16 · Story / Reels / Status" },
   feed:    { label: "Feed Instagram",  w: 1080, h: 1080, bleed: 0,  safe: 84, print: false, description: "1080×1080 · 1:1 · Feed / Post quadrado" },
-  counter: { label: "Balcão A5",       w: 1748, h: 2480, bleed: 36, safe: 96, mm: { w: 154, h: 216 }, print: true, description: "A5 148×210mm + 3mm sangria · display de balcão" },
+  counter: { label: "Mesa 7×10cm",     w: 862,  h: 1202, bleed: 34, safe: 57, mm: { w: 76, h: 106 }, print: true, description: "Adesivo frontal 70×100mm + 3mm sangria · suporte de mesa" },
 };
 
 const SEGMENT_ICON: Record<Segment, any> = {
