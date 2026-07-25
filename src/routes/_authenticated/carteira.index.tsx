@@ -98,6 +98,23 @@ function WalletHome() {
     return bP - aP;
   });
 
+  // Busca local por estabelecimento — carteiras grandes viram lista navegável.
+  const [query, setQuery] = useState("");
+  const term = query.trim().toLowerCase();
+  const visibleFeatured = term
+    ? featured.filter((i) =>
+        (i.establishment as { name: string }).name.toLowerCase().includes(term),
+      )
+    : featured;
+
+  // Recompensa liberada mais próxima de expirar (avisa antes de perder).
+  const soonestExpiry = (rewards ?? [])
+    .filter((r) => r.ready && r.expiresAt)
+    .map((r) => new Date(r.expiresAt as string).getTime())
+    .filter((t) => Number.isFinite(t))
+    .sort((a, b) => a - b)[0] ?? null;
+
+
   return (
     <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["my-wallet"] })}>
       <div className="space-y-5">
