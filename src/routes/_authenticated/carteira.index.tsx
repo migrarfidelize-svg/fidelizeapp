@@ -134,10 +134,17 @@ function WalletHome() {
                     Você tem {readyRewards} {readyRewards === 1 ? "recompensa disponível" : "recompensas disponíveis"}
                   </div>
                   <div className="text-[11px] text-muted-foreground">Toque no botão <b>Meu QR</b> abaixo para retirar.</div>
+                  {soonestExpiry !== null && (
+                    <div className="mt-1 inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-amber-600 dark:text-amber-300">
+                      <Clock className="h-3 w-3" />
+                      {expiryLabel(soonestExpiry)}
+                    </div>
+                  )}
                 </div>
                 <ChevronRight className="h-4 w-4 text-primary transition-transform group-hover:translate-x-0.5" />
               </Link>
             )}
+
 
             {(streak.weeks >= 2 || streak.atRisk) && (
               <StreakCard weeks={streak.weeks} lastVisit={streak.lastVisit} atRisk={streak.atRisk} daysLeft={streak.daysLeft} />
