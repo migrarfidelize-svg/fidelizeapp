@@ -1711,6 +1711,45 @@ export type Database = {
           },
         ]
       }
+      member_permissions: {
+        Row: {
+          establishment_id: string
+          member_id: string
+          overrides: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          establishment_id: string
+          member_id: string
+          overrides?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          establishment_id?: string
+          member_id?: string
+          overrides?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_permissions_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_permissions_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: true
+            referencedRelation: "establishment_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       merchant_message_reads: {
         Row: {
           message_id: string
@@ -4267,6 +4306,10 @@ export type Database = {
           blocked: number
           marked_past_due: number
         }[]
+      }
+      member_can: {
+        Args: { _action: string; _est: string; _user: string }
+        Returns: boolean
       }
       my_account_type: {
         Args: never
