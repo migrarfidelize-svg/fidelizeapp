@@ -293,7 +293,11 @@ function NotifPage() {
               </div>
               <div className="mt-1 text-lg font-semibold">{previewCount?.subscribers ?? "—"}</div>
               <div className="text-[11px] text-muted-foreground">
-                {previewCount ? `${previewCount.customers} clientes · ${previewCount.subscribers} inscritos` : "Ajuste o segmento abaixo"}
+                {previewCount
+                  ? `${previewCount.customers} clientes · ${previewCount.subscribers} inscritos${
+                      previewCount.operators ? ` · ${previewCount.operators} dispositivos da equipe` : ""
+                    }`
+                  : "Ajuste o segmento abaixo"}
               </div>
             </CardContent>
           </Card>
