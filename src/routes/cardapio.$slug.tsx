@@ -1036,7 +1036,8 @@ function StoriesViewer({
             <div className="flex items-start gap-3">
               <button
                 onClick={(e) => { e.stopPropagation(); onDetails(current); }}
-                className="shrink-0 w-[72px] h-[72px] rounded-xl overflow-hidden bg-white/10 ring-1 ring-white/25"
+                className="shrink-0 w-[72px] h-[72px] rounded-xl overflow-hidden bg-white/10 ring-2"
+                style={{ boxShadow: `0 0 0 2px ${primary}` }}
               >
                 {thumb ? (
                   <img src={thumb} alt={current.name} className="w-full h-full object-cover" />
