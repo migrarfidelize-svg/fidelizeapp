@@ -255,6 +255,7 @@ export function AdminPushDiagnostics() {
     { label: "Hostname", value: typeof window !== "undefined" ? window.location.hostname : "-" },
     { label: "VAPID pública carregada (frontend)", value: !!VAPID_PUBLIC_KEY, ok: !!VAPID_PUBLIC_KEY },
     { label: "VAPID pública configurada (backend)", value: !!vapid?.public_key_present, ok: !!vapid?.public_key_format_ok },
+    { label: "VAPID frontend/backend iguais", value: !!vapid?.public_key_matches_frontend, ok: !!vapid?.public_key_matches_frontend, hint: vapid && !vapid.public_key_matches_frontend ? "Reative as notificações após corrigir/publicar." : undefined },
     { label: "VAPID privada configurada (backend)", value: !!vapid?.private_key_present, ok: !!vapid?.private_key_format_ok },
     { label: "VAPID subject", value: vapid?.subject ?? "-", ok: !!vapid?.subject_present },
     { label: "Subscription persistida", value: subscribed, ok: subscribed },
