@@ -19,6 +19,11 @@ import { PageHero } from "@/components/PageHero";
 import { DashboardHeroVisual } from "@/components/DashboardHeroVisual";
 import { ErrorState, LoadingSkeleton } from "@/components/states";
 import { GreetingVoice } from "@/components/GreetingVoice";
+import { MerchantInstallCard } from "@/components/merchant/MerchantInstallCard";
+import { MerchantPushCard } from "@/components/merchant/MerchantPushCard";
+import { FirstStepsCard } from "@/components/merchant/FirstStepsCard";
+import { getEstablishmentCampaigns } from "@/lib/loyalty.functions";
+import { listTeam } from "@/lib/settings.functions";
 
 
 export const Route = createFileRoute("/_authenticated/app/")({
@@ -35,6 +40,19 @@ function Dashboard() {
     enabled: !!est,
     queryKey: ["dashboard", est?.id],
     queryFn: () => getData({ data: { establishment_id: est!.id } }),
+  });
+
+  const getCampaigns = useServerFn(getEstablishmentCampaigns);
+  const getTeam = useServerFn(listTeam);
+  const { data: campaigns } = useQuery({
+    enabled: !!est,
+    queryKey: ["dash-campaigns", est?.id],
+    queryFn: () => getCampaigns({ data: { establishment_id: est!.id } }),
+  });
+  const { data: team } = useQuery({
+    enabled: !!est,
+    queryKey: ["dash-team", est?.id],
+    queryFn: () => getTeam({ data: { establishment_id: est!.id } }),
   });
 
   const [now, setNow] = useState(() => new Date());
@@ -74,6 +92,21 @@ function Dashboard() {
   return (
     <div className="space-y-8">
       <GreetingVoice gender="female" scope="merchant" />
+
+      {/* Mobile: instalar app + ativar notificações (mesma experiência da Carteira) */}
+      <div className="space-y-3 md:hidden">
+        <MerchantInstallCard />
+        <MerchantPushCard />
+      </div>
+
+      <FirstStepsCard
+        establishmentId={est.id}
+        hasCampaign={(campaigns?.length ?? 0) > 0}
+        customersCount={data.customersCount}
+        stampsCount={data.stampsCount}
+        teamCount={team?.members?.length ?? 0}
+      />
+
 
       <PageHero
         icon={LayoutDashboard}
