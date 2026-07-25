@@ -2410,6 +2410,79 @@ export type Database = {
           },
         ]
       }
+      push_events: {
+        Row: {
+          browser: string | null
+          created_at: string
+          customer_id: string | null
+          error_code: string | null
+          error_message: string | null
+          establishment_id: string | null
+          event_type: string
+          hostname: string | null
+          id: string
+          metadata: Json
+          operating_system: string | null
+          status: string | null
+          subscription_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          browser?: string | null
+          created_at?: string
+          customer_id?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          establishment_id?: string | null
+          event_type: string
+          hostname?: string | null
+          id?: string
+          metadata?: Json
+          operating_system?: string | null
+          status?: string | null
+          subscription_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          browser?: string | null
+          created_at?: string
+          customer_id?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          establishment_id?: string | null
+          event_type?: string
+          hostname?: string | null
+          id?: string
+          metadata?: Json
+          operating_system?: string | null
+          status?: string | null
+          subscription_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_events_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_events_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_events_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "push_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       push_logs: {
         Row: {
           body: string | null
@@ -2478,13 +2551,18 @@ export type Database = {
         Row: {
           active: boolean
           auth_key: string
+          browser: string | null
           created_at: string
           customer_id: string | null
+          device_type: string | null
           endpoint: string
           establishment_id: string | null
           id: string
           last_error: string | null
+          last_seen_at: string | null
+          operating_system: string | null
           p256dh: string
+          permission_status: string | null
           preferences: Json
           updated_at: string
           user_agent: string | null
@@ -2493,13 +2571,18 @@ export type Database = {
         Insert: {
           active?: boolean
           auth_key: string
+          browser?: string | null
           created_at?: string
           customer_id?: string | null
+          device_type?: string | null
           endpoint: string
           establishment_id?: string | null
           id?: string
           last_error?: string | null
+          last_seen_at?: string | null
+          operating_system?: string | null
           p256dh: string
+          permission_status?: string | null
           preferences?: Json
           updated_at?: string
           user_agent?: string | null
@@ -2508,13 +2591,18 @@ export type Database = {
         Update: {
           active?: boolean
           auth_key?: string
+          browser?: string | null
           created_at?: string
           customer_id?: string | null
+          device_type?: string | null
           endpoint?: string
           establishment_id?: string | null
           id?: string
           last_error?: string | null
+          last_seen_at?: string | null
+          operating_system?: string | null
           p256dh?: string
+          permission_status?: string | null
           preferences?: Json
           updated_at?: string
           user_agent?: string | null
