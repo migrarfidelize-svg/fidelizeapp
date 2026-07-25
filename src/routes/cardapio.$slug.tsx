@@ -758,77 +758,172 @@ function ItemModal({ item, primary, onClose }: { item: Item; primary: string; on
 }
 
 // ------------ Stories Viewer ------------
+const STORY_MS = 5000;
+
 function StoriesViewer({
-  items, startIndex, onClose, onItemView,
+  items, startIndex, primary, onClose, onItemView, onDetails,
 }: {
-  items: Item[]; startIndex: number; onClose: () => void; onItemView: (i: Item) => void;
+  items: Item[]; startIndex: number; primary: string;
+  onClose: () => void; onItemView: (i: Item) => void; onDetails: (i: Item) => void;
 }) {
   const [i, setI] = useState(startIndex);
+  const [progress, setProgress] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const touchY = useRef<number | null>(null);
   const current = items[i];
+
+  const next = () => setI((x) => (x >= items.length - 1 ? (onClose(), x) : x + 1));
+  const prev = () => setI((x) => Math.max(0, x - 1));
+
   useEffect(() => {
     if (current) onItemView(current);
+    setProgress(0);
   }, [i]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // auto-advance
+  useEffect(() => {
+    if (!current || paused) return;
+    const start = performance.now();
+    let raf = 0;
+    const tick = (t: number) => {
+      const v = videoRef.current;
+      let p: number;
+      if (current.video_url && v && v.duration && isFinite(v.duration)) {
+        p = Math.min(1, v.currentTime / v.duration);
+      } else {
+        p = Math.min(1, (t - start) / STORY_MS);
+      }
+      setProgress(p);
+      if (p >= 1) { next(); return; }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [i, paused, current]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (paused) v.pause(); else void v.play().catch(() => {});
+  }, [paused, i]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
-      if (e.key === "ArrowRight") setI((x) => Math.min(items.length - 1, x + 1));
-      if (e.key === "ArrowLeft") setI((x) => Math.max(0, x - 1));
+      if (e.key === "ArrowRight") next();
+      if (e.key === "ArrowLeft") prev();
+      if (e.key === " ") setPaused((p) => !p);
     };
     document.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
+    const prevOv = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
+      document.body.style.overflow = prevOv;
     };
-  }, [items.length, onClose]);
+  }, [items.length, onClose]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!current) return null;
+  const hasPromo = current.promo_price != null && current.price != null && current.promo_price < current.price;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black grid place-items-center">
-      <button onClick={onClose} className="absolute top-4 right-4 z-20 grid place-items-center w-10 h-10 rounded-full bg-white/15 text-white backdrop-blur">
-        <X className="w-5 h-5" />
-      </button>
-      <div className="absolute top-3 left-3 right-16 z-20 flex gap-1">
-        {items.map((_, idx) => (
-          <span key={idx} className="flex-1 h-0.5 rounded-full" style={{ background: idx <= i ? "#fff" : "rgba(255,255,255,0.3)" }} />
-        ))}
-      </div>
-      {i > 0 && (
-        <button onClick={() => setI(i - 1)} className="absolute left-2 sm:left-6 z-20 grid place-items-center w-10 h-10 rounded-full bg-white/10 text-white">
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-      )}
-      {i < items.length - 1 && (
-        <button onClick={() => setI(i + 1)} className="absolute right-2 sm:right-6 z-20 grid place-items-center w-10 h-10 rounded-full bg-white/10 text-white">
-          <ChevronRight className="w-5 h-5" />
-        </button>
-      )}
-      <div className="w-full max-w-md h-full max-h-[95dvh] relative">
+    <div className="fixed inset-0 z-50 bg-black grid place-items-center animate-in fade-in duration-200">
+      <div
+        className="relative w-full h-full sm:w-auto sm:h-[95dvh] sm:aspect-[9/16] sm:rounded-3xl overflow-hidden bg-black select-none"
+        onTouchStart={(e) => { touchY.current = e.touches[0].clientY; setPaused(true); }}
+        onTouchEnd={(e) => {
+          setPaused(false);
+          const dy = touchY.current == null ? 0 : e.changedTouches[0].clientY - touchY.current;
+          touchY.current = null;
+          if (dy > 90) onClose();
+        }}
+        onMouseDown={() => setPaused(true)}
+        onMouseUp={() => setPaused(false)}
+      >
+        {/* media */}
         {current.video_url ? (
           <video
             key={current.id}
+            ref={videoRef}
             src={current.video_url}
             poster={current.video_poster_url || current.image_url || undefined}
-            autoPlay muted playsInline loop
+            autoPlay muted playsInline
             preload="auto"
-            className="w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
           />
         ) : (
-          <LazyImg src={current.image_url || ""} alt={current.name} className="w-full h-full object-cover" eager />
+          <LazyImg
+            key={current.id}
+            src={current.image_url || ""}
+            alt={current.name}
+            className="absolute inset-0 w-full h-full object-cover animate-in zoom-in-105 duration-[5000ms]"
+            eager
+          />
         )}
-        <div className="absolute bottom-0 inset-x-0 p-5 pb-8 text-white" style={{ background: "linear-gradient(180deg, transparent, rgba(0,0,0,0.75))" }}>
-          <h3 style={{ fontFamily: "Outfit" }} className="text-2xl font-bold">{current.name}</h3>
-          {current.short_desc && <p className="text-sm opacity-90 mt-1 line-clamp-3">{current.short_desc}</p>}
-          {current.price != null && (
-            <p className="mt-2 font-bold text-xl" style={{ fontFamily: "Outfit" }}>
-              {fmt(current.promo_price ?? current.price, current.currency)}
-            </p>
-          )}
+
+        {/* tap zones */}
+        <button aria-label="Anterior" onClick={prev} className="absolute left-0 top-0 bottom-0 w-1/3 z-10" />
+        <button aria-label="Próximo" onClick={next} className="absolute right-0 top-0 bottom-0 w-1/3 z-10" />
+
+        {/* progress bars */}
+        <div className="absolute top-3 left-3 right-3 z-20 flex gap-1">
+          {items.map((_, idx) => (
+            <span key={idx} className="flex-1 h-[3px] rounded-full overflow-hidden bg-white/25">
+              <span
+                className="block h-full bg-white rounded-full"
+                style={{ width: idx < i ? "100%" : idx === i ? `${progress * 100}%` : "0%" }}
+              />
+            </span>
+          ))}
+        </div>
+
+        <button
+          onClick={onClose}
+          className="absolute top-7 right-3 z-30 grid place-items-center w-9 h-9 rounded-full bg-black/40 text-white backdrop-blur"
+        >
+          <X className="w-4 h-4" />
+        </button>
+
+        {/* desktop arrows */}
+        {i > 0 && (
+          <button onClick={prev} className="hidden sm:grid absolute left-2 top-1/2 -translate-y-1/2 z-30 place-items-center w-10 h-10 rounded-full bg-white/15 text-white backdrop-blur">
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+        )}
+        {i < items.length - 1 && (
+          <button onClick={next} className="hidden sm:grid absolute right-2 top-1/2 -translate-y-1/2 z-30 place-items-center w-10 h-10 rounded-full bg-white/15 text-white backdrop-blur">
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        )}
+
+        {/* caption */}
+        <div
+          className="absolute bottom-0 inset-x-0 z-20 p-5 pb-8 text-white pointer-events-none"
+          style={{ background: "linear-gradient(180deg, transparent, rgba(0,0,0,0.8) 60%)" }}
+        >
+          <h3 style={{ fontFamily: "Outfit" }} className="text-2xl font-bold leading-tight">{current.name}</h3>
+          {current.short_desc && <p className="text-sm opacity-90 mt-1 line-clamp-2">{current.short_desc}</p>}
+          <div className="flex items-center gap-3 mt-3 pointer-events-auto">
+            {current.price != null && (
+              <span className="flex items-baseline gap-2">
+                <span className="font-bold text-xl" style={{ fontFamily: "Outfit" }}>
+                  {fmt(hasPromo ? current.promo_price : current.price, current.currency)}
+                </span>
+                {hasPromo && <span className="text-sm opacity-60 line-through">{fmt(current.price, current.currency)}</span>}
+              </span>
+            )}
+            <button
+              onClick={(e) => { e.stopPropagation(); onDetails(current); }}
+              className="ml-auto rounded-full px-4 py-2 text-sm font-semibold text-white shadow-lg"
+              style={{ background: primary }}
+            >
+              Ver detalhes
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
+
 }
