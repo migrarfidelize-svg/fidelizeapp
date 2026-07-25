@@ -504,6 +504,7 @@ export const seedMenuFromTemplate = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { findTemplate } = await import("./menu-templates");
+    const { templateCategoryImage } = await import("./menu-template-media");
     const tpl = findTemplate(data.template_key);
     if (!tpl) throw new Error("Modelo não encontrado.");
 
@@ -533,6 +534,7 @@ export const seedMenuFromTemplate = createServerFn({ method: "POST" })
 
     for (const cat of tpl.categories) {
       const key = cat.name.trim().toLowerCase();
+      const catImage = templateCategoryImage(tpl.key, cat.name);
       let categoryId: string;
       const found = existingByName.get(key);
       if (found) {
@@ -549,6 +551,7 @@ export const seedMenuFromTemplate = createServerFn({ method: "POST" })
             featured: cat.featured ?? false,
             active: true,
             position: maxCatPos,
+            image_url: catImage,
           })
           .select("id")
           .single();
@@ -593,6 +596,7 @@ export const seedMenuFromTemplate = createServerFn({ method: "POST" })
             allergens: [],
             prep_minutes: it.prep_minutes ?? null,
             active: true,
+            image_url: catImage,
             position: maxItemPos,
           };
         });

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Sparkles, Loader2, CheckCircle2 } from "lucide-react";
 
 import { MENU_TEMPLATES } from "@/lib/menu-templates";
+import { templateCategoryImage, templateCoverImage } from "@/lib/menu-template-media";
 import { seedMenuFromTemplate } from "@/lib/menu.functions";
 import { Button } from "@/components/ui/button";
 import {
@@ -71,21 +72,32 @@ export function MenuTemplatePicker({ establishmentId }: Props) {
                 key={t.key}
                 type="button"
                 onClick={() => setSelected(t.key)}
-                className={`group relative rounded-xl border p-3 text-left transition-all ${
+                className={`group relative overflow-hidden rounded-xl border text-left transition-all ${
                   active
                     ? "border-primary bg-primary/5 shadow-[0_0_0_1px_hsl(var(--primary))]"
                     : "border-border hover:border-primary/40 hover:bg-muted/40"
                 }`}
               >
-                <div className="text-2xl">{t.emoji}</div>
-                <div className="mt-1 font-semibold leading-tight">{t.label}</div>
-                <div className="mt-1 text-[11px] text-muted-foreground">
-                  {t.categories.length} categorias · {itemCount} pratos
+                {templateCoverImage(t.key) && (
+                  <img
+                    src={templateCoverImage(t.key)!}
+                    alt={`Modelo de cardápio ${t.label}`}
+                    loading="lazy"
+                    className="h-20 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                )}
+                <div className="p-3">
+                  <div className="text-2xl">{t.emoji}</div>
+                  <div className="mt-1 font-semibold leading-tight">{t.label}</div>
+                  <div className="mt-1 text-[11px] text-muted-foreground">
+                    {t.categories.length} categorias · {itemCount} pratos
+                  </div>
                 </div>
                 {active && (
-                  <CheckCircle2 className="absolute right-2 top-2 h-4 w-4 text-primary" />
+                  <CheckCircle2 className="absolute right-2 top-2 h-4 w-4 text-primary drop-shadow" />
                 )}
               </button>
+
             );
           })}
         </div>
@@ -97,6 +109,14 @@ export function MenuTemplatePicker({ establishmentId }: Props) {
               {current.categories.map((c) => (
                 <div key={c.name} className="rounded-md border bg-muted/30 p-2">
                   <div className="flex items-center gap-2">
+                    {templateCategoryImage(current.key, c.name) && (
+                      <img
+                        src={templateCategoryImage(current.key, c.name)!}
+                        alt={c.name}
+                        loading="lazy"
+                        className="h-8 w-8 shrink-0 rounded object-cover"
+                      />
+                    )}
                     <span className="text-sm font-semibold">{c.name}</span>
                     {c.featured && <Badge className="h-4 px-1.5 text-[10px]">Destaque</Badge>}
                     <span className="ml-auto text-[11px] text-muted-foreground">{c.items.length} pratos</span>
