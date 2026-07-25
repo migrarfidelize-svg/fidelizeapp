@@ -299,7 +299,7 @@ function PublicMenuPage() {
           if (list.length === 0 && (activeCat === c.id || q)) return null;
           if (list.length === 0) return null;
           return (
-            <section key={c.id} ref={(el) => (catRefs.current[c.id] = el)} className="scroll-mt-32">
+            <section key={c.id} ref={(el) => { catRefs.current[c.id] = el; }} className="scroll-mt-32">
               <div className="flex items-end justify-between mb-3">
                 <h2 className="fx-serif text-xl sm:text-2xl font-bold">{c.name}</h2>
                 {c.featured && (
