@@ -1,8 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { QUICK_SEARCH_KEY } from "@/components/merchant/QuickSearch";
+import {
+  saveOfflineCustomers, searchOfflineCustomers, enqueueStamp, readStampQueue,
+  flushStampQueue, isOfflineError, type PendingStamp,
+} from "@/lib/merchant-offline";
 import { PageHero } from "@/components/PageHero";
 import { Zap as HeroIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useCallback, useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getMyEstablishments, addStamp, undoLastStamp, getCardByToken, redeemReward, listCustomers } from "@/lib/loyalty.functions";
 import { consumeRedeemToken } from "@/lib/redeem.functions";
@@ -54,6 +59,7 @@ function Carimbar() {
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
   const est = memberships?.[0]?.establishment as { id: string; name: string } | undefined;
 
+  const queryClient = useQueryClient();
   const [staffName, setStaffName] = useState<string>("");
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -65,6 +71,18 @@ function Carimbar() {
 
   // Search state
   const [q, setQ] = useState("");
+
+  // Termo vindo da busca rápida global (⌘K) — preenche e busca automaticamente.
+  useEffect(() => {
+    try {
+      const pending = sessionStorage.getItem(QUICK_SEARCH_KEY);
+      if (pending) {
+        sessionStorage.removeItem(QUICK_SEARCH_KEY);
+        setQ(pending);
+        setSearchTerm(pending);
+      }
+    } catch { /* noop */ }
+  }, []);
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const pageSize = 10;
@@ -89,8 +107,42 @@ function Carimbar() {
     queryKey: ["carimbar-customers", est?.id, searchTerm, page],
     queryFn: () => listAll({ data: { establishment_id: est!.id, query: searchTerm, page, page_size: pageSize } }),
   });
-  const results = listData?.customers ?? [];
-  const total = listData?.total ?? 0;
+  // ---- Offline no balcão ----
+  const [online, setOnline] = useState(true);
+  const [pending, setPending] = useState<PendingStamp[]>([]);
+
+  useEffect(() => {
+    setOnline(navigator.onLine);
+    setPending(readStampQueue());
+    const up = () => setOnline(true);
+    const down = () => setOnline(false);
+    window.addEventListener("online", up);
+    window.addEventListener("offline", down);
+    return () => { window.removeEventListener("online", up); window.removeEventListener("offline", down); };
+  }, []);
+
+  // Guarda os clientes vistos para busca sem internet.
+  useEffect(() => {
+    if (est?.id && listData?.customers?.length) saveOfflineCustomers(est.id, listData.customers);
+  }, [est?.id, listData]);
+
+  const flushPending = useCallback(async () => {
+    if (readStampQueue().length === 0) return;
+    const { sent } = await flushStampQueue((item) => addStampFn({ data: { card_id: item.card_id } }));
+    setPending(readStampQueue());
+    if (sent > 0) {
+      toast.success(`${sent} carimbo(s) pendente(s) sincronizado(s)`);
+      void queryClient.invalidateQueries({ queryKey: ["carimbar-customers"] });
+    }
+  }, [addStampFn, queryClient]);
+
+  useEffect(() => { if (online) void flushPending(); }, [online, flushPending]);
+
+  const offlineFallback = !online && est?.id
+    ? searchOfflineCustomers(est.id, searchTerm).customers
+    : [];
+  const results = listData?.customers ?? (offlineFallback as unknown as NonNullable<typeof listData>["customers"]);
+  const total = listData?.total ?? offlineFallback.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   function doSearch() {
@@ -161,13 +213,21 @@ function Carimbar() {
     }
   }
 
-  async function handleStamp(cardId: string, opts?: { source?: string }) {
+  async function handleStamp(cardId: string, opts?: { source?: string; customerName?: string | null }) {
     setBusy(true);
     try {
       const r = await stampWithPinRetry(cardId);
       toast.success(r.completed ? "🎉 Recompensa desbloqueada!" : `Carimbo adicionado (${r.stamps}/${r.required})`);
       if (selectedToken) await loadByToken(selectedToken);
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
+    } catch (e) {
+      if (isOfflineError(e) && est?.id) {
+        enqueueStamp({ card_id: cardId, customer_name: opts?.customerName ?? null, establishment_id: est.id });
+        setPending(readStampQueue());
+        toast.success("Sem internet: carimbo salvo e será enviado ao reconectar.");
+      } else {
+        toast.error(e instanceof Error ? e.message : "Erro");
+      }
+    }
     finally { setBusy(false); void opts; }
   }
 
@@ -221,6 +281,27 @@ function Carimbar() {
         title={"Carimbar cliente"}
         subtitle={"Registre visitas por leitura de QR ou busca em segundos."}
       />
+
+      {(!online || pending.length > 0) && (
+        <div
+          role="status"
+          className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm"
+        >
+          <span className="font-medium">
+            {online ? "Sincronizando carimbos pendentes" : "Sem internet — modo balcão offline"}
+          </span>
+          <span className="min-w-0 flex-1 text-muted-foreground">
+            {pending.length > 0
+              ? `${pending.length} carimbo(s) na fila serão enviados automaticamente.`
+              : "Busca usando a lista salva no aparelho; carimbos entram na fila."}
+          </span>
+          {pending.length > 0 && online && (
+            <Button size="sm" variant="outline" onClick={() => void flushPending()}>
+              Enviar agora
+            </Button>
+          )}
+        </div>
+      )}
 
       <Tabs defaultValue="scan" className="w-full">
         <TabsList className="grid w-full grid-cols-2 max-w-md bg-[color:color-mix(in_oklab,var(--muted)_60%,transparent)] border border-border/60">

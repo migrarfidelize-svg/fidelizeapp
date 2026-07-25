@@ -254,6 +254,15 @@ export const adminReplySupportTicket = createServerFn({ method: "POST" })
           </div>`;
         await notify(t.requester_email, `Resposta — ${t.protocol} ${t.subject}`, html, t.id);
       }
+      try {
+        const { data: full } = await context.supabase.from("support_tickets")
+          .select("establishment_id, requester_user_id, protocol, subject")
+          .eq("id", data.ticket_id).maybeSingle();
+        if (full) {
+          const { notifySupportReply } = await import("@/lib/merchant-notify.server");
+          await notifySupportReply(full.establishment_id, full.requester_user_id, full);
+        }
+      } catch { /* push nunca bloqueia a resposta */ }
     }
     return { ok: true };
   });

@@ -22,6 +22,7 @@ import {
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { QuickSearch } from "@/components/merchant/QuickSearch";
 import { GuidedTour, type TourStep } from "@/components/GuidedTour";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -673,6 +674,11 @@ function AppLayout() {
                 <Compass className="h-4 w-4" />
                 <span className="text-xs font-medium">Fazer tour</span>
               </Button>
+
+              <QuickSearch
+                establishmentId={activeEstId ?? null}
+                navTargets={FLAT_NAV.map((n) => ({ to: n.to, label: n.label }))}
+              />
 
               <div className="hidden md:block"><ThemeToggle /></div>
             </div>
