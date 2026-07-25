@@ -355,7 +355,7 @@ export const broadcastPush = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     let subsQuery = supabaseAdmin
       .from("push_subscriptions")
-      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, preferences")
+      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id, preferences")
       .eq("establishment_id", data.establishment_id)
       .eq("active", true);
     // If no segment filter was applied, targetIds is the full base; we still filter to avoid
@@ -367,28 +367,26 @@ export const broadcastPush = createServerFn({ method: "POST" })
     const { data: subs } = await subsQuery;
 
     const { sendPushToSub } = await import("@/lib/push.server");
+    const { notificationTargetKey, recordPushDelivery } = await import("@/lib/push-inbox.server");
     let sent = 0;
     let failed = 0;
+    const notifiedTargets = new Set<string>();
     for (const s of subs ?? []) {
       const prefs = (s.preferences ?? {}) as Record<string, boolean>;
       if (prefs.campaign === false) continue;
+      const inAppTarget = notificationTargetKey(s);
       const r = await sendPushToSub(s, {
         title: data.title,
         body: data.body,
         url: data.url,
         tag: `broadcast-${data.establishment_id}`,
+        type: "message",
       });
-      await supabaseAdmin.from("push_logs").insert({
-        establishment_id: data.establishment_id,
-        subscription_id: s.id,
-        customer_id: s.customer_id,
-        title: data.title,
-        body: data.body ?? null,
-        url: data.url ?? null,
-        status: r.ok ? "sent" : r.status === 410 || r.status === 404 ? "expired" : "failed",
-        status_code: r.status ?? null,
-        error: r.error ?? null,
+      await recordPushDelivery(supabaseAdmin, s, { title: data.title, body: data.body, url: data.url, kind: "push" }, r, {
+        persistInApp: !notifiedTargets.has(inAppTarget),
+        audience: s.customer_id ? "customer" : "operator",
       });
+      notifiedTargets.add(inAppTarget);
       if (r.ok) sent++;
       else failed++;
     }
@@ -553,7 +551,7 @@ export async function dispatchDueScheduledBroadcasts() {
       );
       let sq = supabaseAdmin
         .from("push_subscriptions")
-        .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, preferences")
+        .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id, preferences")
         .eq("establishment_id", row.establishment_id)
         .eq("active", true);
       const seg = (row.segment ?? {}) as Record<string, unknown>;
@@ -572,28 +570,32 @@ export async function dispatchDueScheduledBroadcasts() {
       }
       const { data: subs } = await sq;
 
+      const { notificationTargetKey, recordPushDelivery } = await import("@/lib/push-inbox.server");
       let sent = 0;
       let failed = 0;
+      const notifiedTargets = new Set<string>();
       for (const s of subs ?? []) {
         const prefs = (s.preferences ?? {}) as Record<string, boolean>;
         if (prefs.campaign === false) continue;
+        const inAppTarget = notificationTargetKey(s);
         const r = await sendPushToSub(s as any, {
           title: row.title,
           body: row.body ?? undefined,
           url: row.url ?? undefined,
           tag: `broadcast-${row.establishment_id}`,
+          type: "message",
         });
-        await supabaseAdmin.from("push_logs").insert({
-          establishment_id: row.establishment_id,
-          subscription_id: s.id,
-          customer_id: s.customer_id,
-          title: row.title,
-          body: row.body ?? null,
-          url: row.url ?? null,
-          status: r.ok ? "sent" : r.status === 410 || r.status === 404 ? "expired" : "failed",
-          status_code: r.status ?? null,
-          error: r.error ?? null,
-        });
+        await recordPushDelivery(
+          supabaseAdmin,
+          s,
+          { title: row.title, body: row.body ?? null, url: row.url ?? null, kind: "push" },
+          r,
+          {
+            persistInApp: !notifiedTargets.has(inAppTarget),
+            audience: s.customer_id ? "customer" : "operator",
+          },
+        );
+        notifiedTargets.add(inAppTarget);
         if (r.ok) sent++;
         else failed++;
       }
@@ -757,7 +759,7 @@ export const adminBroadcastPush = createServerFn({ method: "POST" })
 
     let q = supabaseAdmin
       .from("push_subscriptions")
-      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, preferences")
+      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id, preferences")
       .eq("active", true)
       .not("establishment_id", "is", null);
     if (data.establishment_ids && data.establishment_ids.length > 0) {
@@ -771,33 +773,31 @@ export const adminBroadcastPush = createServerFn({ method: "POST" })
     const { data: subs } = await q;
 
     const { sendPushToSub } = await import("@/lib/push.server");
+    const { notificationTargetKey, recordPushDelivery } = await import("@/lib/push-inbox.server");
     const respect = data.respect_prefs !== false;
     let sent = 0;
     let failed = 0;
     let skipped = 0;
+    const notifiedTargets = new Set<string>();
     for (const s of subs ?? []) {
       const prefs = (s.preferences ?? {}) as Record<string, boolean>;
       if (respect && prefs.campaign === false) {
         skipped++;
         continue;
       }
+      const inAppTarget = notificationTargetKey(s);
       const r = await sendPushToSub(s, {
         title: data.title,
         body: data.body,
         url: data.url,
         tag: "admin-broadcast",
+        type: "message",
       });
-      await supabaseAdmin.from("push_logs").insert({
-        establishment_id: s.establishment_id,
-        subscription_id: s.id,
-        customer_id: s.customer_id,
-        title: data.title,
-        body: data.body ?? null,
-        url: data.url ?? null,
-        status: r.ok ? "sent" : r.status === 410 || r.status === 404 ? "expired" : "failed",
-        status_code: r.status ?? null,
-        error: r.error ?? null,
+      await recordPushDelivery(supabaseAdmin, s, { title: data.title, body: data.body, url: data.url, kind: "push" }, r, {
+        persistInApp: !notifiedTargets.has(inAppTarget),
+        audience: s.customer_id ? "customer" : "admin",
       });
+      notifiedTargets.add(inAppTarget);
       if (r.ok) sent++;
       else failed++;
     }
@@ -914,7 +914,7 @@ export const sendTestPushToMe = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: subs } = await supabaseAdmin
       .from("push_subscriptions")
-      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id")
+      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id")
       .in("customer_id", ids)
       .eq("endpoint", data.endpoint)
       .eq("active", true)
@@ -923,23 +923,25 @@ export const sendTestPushToMe = createServerFn({ method: "POST" })
     if (!sub) throw new Error("Este aparelho não está inscrito. Ative as notificações primeiro.");
 
     const { sendPushToSub } = await import("./push.server");
+    const { recordPushDelivery } = await import("./push-inbox.server");
     const r = await sendPushToSub(sub, {
       title: "Fidelize — teste de push",
       body: "Se você recebeu esta notificação, está tudo funcionando! 🎉",
       url: "/carteira/perfil",
       tag: "fidelize-test",
     });
-    await supabaseAdmin.from("push_logs").insert({
-      establishment_id: sub.establishment_id,
-      subscription_id: sub.id,
-      customer_id: sub.customer_id,
-      title: "Fidelize — teste de push",
-      body: "Smoke test manual do usuário",
-      url: "/carteira/perfil",
-      status: r.ok ? "sent" : r.status === 410 || r.status === 404 ? "expired" : "failed",
-      status_code: r.status ?? null,
-      error: r.error ?? null,
-    });
+    await recordPushDelivery(
+      supabaseAdmin,
+      sub,
+      {
+        title: "Fidelize — teste de push",
+        body: "Smoke test manual do usuário",
+        url: "/carteira/perfil",
+        kind: "aviso",
+      },
+      r,
+      { persistInApp: true, audience: "customer" },
+    );
     if (!r.ok) {
       throw new Error(
         r.error
@@ -1066,7 +1068,7 @@ export const sendAdminTestPush = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: sub } = await supabaseAdmin
       .from("push_subscriptions")
-      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id")
+      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id")
       .eq("user_id", context.userId)
       .eq("endpoint", data.endpoint)
       .eq("active", true)
@@ -1081,6 +1083,7 @@ export const sendAdminTestPush = createServerFn({ method: "POST" })
       status: "pending",
     });
     const { sendPushToSub } = await import("./push.server");
+    const { recordPushDelivery } = await import("./push-inbox.server");
     const r = await sendPushToSub(sub as any, {
       title: "Notificações ativadas",
       body: "Seu dispositivo está pronto para receber novidades.",
@@ -1095,17 +1098,18 @@ export const sendAdminTestPush = createServerFn({ method: "POST" })
       error_code: r.status != null ? String(r.status) : null,
       error_message: r.error ?? null,
     });
-    await supabaseAdmin.from("push_logs").insert({
-      establishment_id: sub.establishment_id,
-      subscription_id: sub.id,
-      customer_id: sub.customer_id,
-      title: "Notificações ativadas",
-      body: "Seu dispositivo está pronto para receber novidades.",
-      url: "/admin/notificacoes",
-      status: r.ok ? "sent" : r.status === 410 || r.status === 404 ? "expired" : "failed",
-      status_code: r.status ?? null,
-      error: r.error ?? null,
-    });
+    await recordPushDelivery(
+      supabaseAdmin,
+      sub,
+      {
+        title: "Notificações ativadas",
+        body: "Seu dispositivo está pronto para receber novidades.",
+        url: "/admin/notificacoes",
+        kind: "aviso",
+      },
+      r,
+      { persistInApp: true, audience: "admin" },
+    );
     if (!r.ok) {
       // Only mark inactive on 404/410 — sendPushToSub already does that.
       throw new Error(

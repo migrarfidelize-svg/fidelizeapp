@@ -1695,6 +1695,8 @@ export type Database = {
           kind: string
           link_url: string | null
           published_at: string
+          push_log_id: string | null
+          source: string
           title: string
           updated_at: string
         }
@@ -1708,6 +1710,8 @@ export type Database = {
           kind?: string
           link_url?: string | null
           published_at?: string
+          push_log_id?: string | null
+          source?: string
           title: string
           updated_at?: string
         }
@@ -1721,6 +1725,8 @@ export type Database = {
           kind?: string
           link_url?: string | null
           published_at?: string
+          push_log_id?: string | null
+          source?: string
           title?: string
           updated_at?: string
         }
@@ -1730,6 +1736,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "merchant_messages_push_log_id_fkey"
+            columns: ["push_log_id"]
+            isOneToOne: false
+            referencedRelation: "push_logs"
             referencedColumns: ["id"]
           },
         ]
@@ -3953,6 +3966,76 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_notifications: {
+        Row: {
+          audience: string
+          body: string | null
+          created_at: string
+          customer_id: string | null
+          establishment_id: string | null
+          id: string
+          kind: string
+          push_log_id: string | null
+          read_at: string | null
+          title: string
+          updated_at: string
+          url: string | null
+          user_id: string | null
+        }
+        Insert: {
+          audience?: string
+          body?: string | null
+          created_at?: string
+          customer_id?: string | null
+          establishment_id?: string | null
+          id?: string
+          kind?: string
+          push_log_id?: string | null
+          read_at?: string | null
+          title: string
+          updated_at?: string
+          url?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          audience?: string
+          body?: string | null
+          created_at?: string
+          customer_id?: string | null
+          establishment_id?: string | null
+          id?: string
+          kind?: string
+          push_log_id?: string | null
+          read_at?: string | null
+          title?: string
+          updated_at?: string
+          url?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_notifications_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_notifications_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_notifications_push_log_id_fkey"
+            columns: ["push_log_id"]
+            isOneToOne: false
+            referencedRelation: "push_logs"
             referencedColumns: ["id"]
           },
         ]
