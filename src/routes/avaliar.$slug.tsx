@@ -23,10 +23,10 @@ export const Route = createFileRoute("/avaliar/$slug")({
     const { applySeoCacheHeaders } = await import("@/lib/seo-cache.server");
     applySeoCacheHeaders({
       version: [
-        d.est?.updated_at,
-        d.est?.logo_url,
-        d.stats?.count,
-        d.stats?.avg,
+        (d.est as any)?.updated_at,
+        (d.est as any)?.logo_url,
+        (d.stats as any)?.count,
+        (d.stats as any)?.avg,
       ],
     });
     return d;

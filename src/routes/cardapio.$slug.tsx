@@ -28,11 +28,11 @@ export const Route = createFileRoute("/cardapio/$slug")({
     const { applySeoCacheHeaders } = await import("@/lib/seo-cache.server");
     applySeoCacheHeaders({
       version: [
-        d.menu?.updated_at,
-        d.menu?.status,
-        d.establishment?.updated_at,
-        d.establishment?.cover_url,
-        d.establishment?.logo_url,
+        (d.menu as any)?.updated_at,
+        (d.menu as any)?.status,
+        (d.establishment as any)?.updated_at,
+        (d.establishment as any)?.cover_url,
+        (d.establishment as any)?.logo_url,
         d.items?.length,
       ],
     });
