@@ -148,14 +148,48 @@ function AdminNotifPage() {
           <Bell className="h-5 w-5" /> Notificações Push — Admin
         </h1>
         <p className="text-sm text-muted-foreground">
-          Visão global de inscrições e envio de broadcast para os clientes finais das empresas.
+          Duas áreas separadas: <strong>Envio Real</strong> dispara para clientes finais e/ou operadores das empresas.
+          <strong> Testes & Diagnóstico</strong> valida entrega no seu próprio dispositivo antes de subir para produção.
         </p>
       </header>
 
-      <PWAInstallCard />
-      <EstablishmentTestPushPanel defaultName="NextStage" />
-      <AdminPushDiagnostics />
-      <DeviceDiagnostic />
+      <Tabs defaultValue="real" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 md:w-auto">
+          <TabsTrigger value="real" className="gap-2">
+            <Rocket className="h-4 w-4" /> Envio Real
+          </TabsTrigger>
+          <TabsTrigger value="test" className="gap-2">
+            <FlaskConical className="h-4 w-4" /> Testes & Diagnóstico
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="test" className="space-y-6 pt-4">
+          <div className="flex items-start gap-3 rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-sm">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+            <div>
+              <p className="font-medium">Zona de testes</p>
+              <p className="text-muted-foreground">
+                Dispara apenas para o seu dispositivo ou empresa alvo escolhida. Nenhum cliente final recebe daqui.
+              </p>
+            </div>
+          </div>
+          <PWAInstallCard />
+          <EstablishmentTestPushPanel defaultName="NextStage" />
+          <AdminPushDiagnostics />
+          <DeviceDiagnostic />
+        </TabsContent>
+
+        <TabsContent value="real" className="space-y-6 pt-4">
+          <div className="flex items-start gap-3 rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm">
+            <Rocket className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+            <div>
+              <p className="font-medium">Envio real em produção</p>
+              <p className="text-muted-foreground">
+                Escolha o público (clientes finais, operadores das empresas ou ambos) e as empresas de destino antes de disparar.
+              </p>
+            </div>
+          </div>
+
 
 
 
