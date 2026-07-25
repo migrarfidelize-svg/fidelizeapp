@@ -642,13 +642,11 @@ export const adminPushOverview = createServerFn({ method: "GET" })
       supabaseAdmin
         .from("push_subscriptions")
         .select("id", { count: "exact", head: true })
-        .not("customer_id", "is", null)
         .not("establishment_id", "is", null),
       supabaseAdmin
         .from("push_subscriptions")
         .select("id", { count: "exact", head: true })
         .eq("active", true)
-        .not("customer_id", "is", null)
         .not("establishment_id", "is", null),
       supabaseAdmin
         .from("push_logs")
@@ -667,12 +665,11 @@ export const adminPushOverview = createServerFn({ method: "GET" })
       byEst.set(k, cur);
     }
 
-    // active subs per establishment
+    // active subs per establishment (clientes + lojistas)
     const { data: perEst } = await supabaseAdmin
       .from("push_subscriptions")
       .select("establishment_id")
       .eq("active", true)
-      .not("customer_id", "is", null)
       .not("establishment_id", "is", null);
     const subsPerEst = new Map<string, number>();
     for (const r of perEst ?? []) {
