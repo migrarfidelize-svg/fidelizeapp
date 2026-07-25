@@ -103,12 +103,23 @@ export const Route = createFileRoute("/api/public/r/qr/$slug/$dest")({
             const ipHash = ipRaw
               ? await sha256Hex(`${dayKey}:${truncateIp(ipRaw)}`)
               : null;
-            // Do not await Supabase insert — Cloudflare Workers keep the promise
-            // alive via waitUntil semantics of the platform; if it fails we
-            // still redirect.
             void supabaseAdmin
               .from("qr_scans")
               .insert({ establishment_id: est.id, dest, ua, ip_hash: ipHash });
+            // Unified channel_events (for the new Analytics section)
+            void supabaseAdmin
+              .from("channel_events")
+              .insert({
+                establishment_id: est.id,
+                channel: "qr",
+                event_type: "qr_scan",
+                ref_id: dest,
+                ua,
+                ip_hash: ipHash,
+                utm_source: forwardedQs.get("utm_source"),
+                utm_medium: forwardedQs.get("utm_medium"),
+                utm_campaign: forwardedQs.get("utm_campaign"),
+              });
           } catch {
             /* swallow — analytics must never break the redirect */
           }
