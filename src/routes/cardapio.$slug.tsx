@@ -264,19 +264,8 @@ function PublicMenuPage() {
     }, 900);
   };
 
-  const downloadPdf = async () => {
-    if (pdfLoading) return;
-    setPdfLoading(true);
-    trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_label: "pdf_download" });
-    try {
-      await generateMenuPdf(data as any, slug);
-    } catch (e) {
-      console.error("[menu-pdf]", e);
-      alert("Não foi possível gerar o PDF agora. Tente novamente.");
-    } finally {
-      setPdfLoading(false);
-    }
-  };
+
+
 
   const cover = est.cover_url || null;
   const theme = resolveMenuTheme((menu as any)?.theme);
