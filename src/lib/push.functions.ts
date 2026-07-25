@@ -1340,6 +1340,9 @@ export const sendEstablishmentTestPush = createServerFn({ method: "POST" })
       other_establishments_affected: 0,
       note: "Provider aceitou o envio. A exibição visual ainda depende do navegador e do sistema operacional.",
     };
+  });
+
+
 
 
 export const logAdminPushEvent = createServerFn({ method: "POST" })
