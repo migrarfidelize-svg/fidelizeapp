@@ -945,16 +945,23 @@ export const sendTestPushToMe = createServerFn({ method: "POST" })
       .select("id")
       .eq("user_id", context.userId);
     const ids = (customers ?? []).map((c) => c.id);
-    if (ids.length === 0) throw new Error("Nenhum cartão vinculado.");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: subs } = await supabaseAdmin
+    // Look up this device's subscription. Match either a subscription owned
+    // directly by the logged-in user (merchant/admin devices) OR one tied to
+    // one of the user's customer cards.
+    let query = supabaseAdmin
       .from("push_subscriptions")
       .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id")
-      .in("customer_id", ids)
       .eq("endpoint", data.endpoint)
       .eq("active", true)
       .limit(1);
+    if (ids.length > 0) {
+      query = query.or(`user_id.eq.${context.userId},customer_id.in.(${ids.join(",")})`);
+    } else {
+      query = query.eq("user_id", context.userId);
+    }
+    const { data: subs } = await query;
     const sub = subs?.[0];
     if (!sub) throw new Error("Este aparelho não está inscrito. Ative as notificações primeiro.");
 
