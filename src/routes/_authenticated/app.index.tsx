@@ -93,6 +93,21 @@ function Dashboard() {
     <div className="space-y-8">
       <GreetingVoice gender="female" scope="merchant" />
 
+      {/* Mobile: instalar app + ativar notificações (mesma experiência da Carteira) */}
+      <div className="space-y-3 md:hidden">
+        <MerchantInstallCard />
+        <MerchantPushCard />
+      </div>
+
+      <FirstStepsCard
+        establishmentId={est.id}
+        hasCampaign={(campaigns?.length ?? 0) > 0}
+        customersCount={data.customersCount}
+        stampsCount={data.stampsCount}
+        teamCount={team?.length ?? 0}
+      />
+
+
       <PageHero
         icon={LayoutDashboard}
         liveLabel="Ao vivo"
