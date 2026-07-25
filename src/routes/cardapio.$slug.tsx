@@ -515,57 +515,102 @@ function PublicMenuPage() {
 }
 
 // ------------ Item Card ------------
-function ItemCard({ item, primary, onOpen }: { item: Item; primary: string; onOpen: () => void }) {
+function ItemCard({
+  item, primary, onOpen, layout = "list",
+}: { item: Item; primary: string; onOpen: () => void; layout?: "list" | "grid" | "magazine" }) {
   const hasPromo = item.promo_price != null && item.price != null && item.promo_price < item.price;
   const badges = Array.isArray(item.badges) ? (item.badges as string[]) : [];
-  return (
-    <button onClick={onOpen} className="fx-card text-left w-full rounded-2xl overflow-hidden bg-white fx-shadow flex gap-3 sm:gap-4 p-3">
-      <div className="w-28 h-28 sm:w-32 sm:h-32 shrink-0 rounded-xl overflow-hidden bg-neutral-100 relative">
-        {item.image_url ? (
-          <LazyImg src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full grid place-items-center text-3xl" style={{ background: "#f3ede2" }}>🍽️</div>
-        )}
-        {item.video_url && (
-          <span className="absolute top-1.5 right-1.5 grid place-items-center w-6 h-6 rounded-full bg-black/60 text-white">
-            <Play className="w-3 h-3" />
+  const surface = { background: "var(--mk-surface)", border: "1px solid var(--mk-line)" } as const;
+
+  const Price = ({ size = "text-lg" }: { size?: string }) =>
+    hasPromo ? (
+      <>
+        <span className={`fx-serif font-bold ${size}`} style={{ color: primary }}>{fmt(item.promo_price, item.currency)}</span>
+        <span className="text-xs opacity-50 line-through">{fmt(item.price, item.currency)}</span>
+      </>
+    ) : item.price != null ? (
+      <span className={`fx-serif font-bold ${size}`}>{fmt(item.price, item.currency)}</span>
+    ) : null;
+
+  const Thumb = ({ className }: { className: string }) => (
+    <div className={`${className} shrink-0 overflow-hidden relative`} style={{ background: `${primary}12` }}>
+      {item.image_url ? (
+        <LazyImg src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+      ) : (
+        <div className="w-full h-full grid place-items-center text-2xl">🍽️</div>
+      )}
+      {item.video_url && (
+        <span className="absolute top-1.5 right-1.5 grid place-items-center w-6 h-6 rounded-full bg-black/60 text-white">
+          <Play className="w-3 h-3" />
+        </span>
+      )}
+    </div>
+  );
+
+  const Badges = () => (
+    <div className="flex flex-wrap gap-1 mt-1.5">
+      {badges.slice(0, 3).map((b) => {
+        const meta = BADGE_META[b];
+        if (!meta) return null;
+        const Ico = meta.icon;
+        return (
+          <span key={b} className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: `${meta.tone}22`, color: meta.tone }}>
+            <Ico className="w-2.5 h-2.5" /> {meta.label}
           </span>
-        )}
-      </div>
+        );
+      })}
+      {item.prep_minutes != null && (
+        <span className="inline-flex items-center gap-1 text-[10px] font-semibold opacity-60">
+          <Clock className="w-2.5 h-2.5" /> {item.prep_minutes} min
+        </span>
+      )}
+    </div>
+  );
+
+  if (layout === "grid") {
+    return (
+      <button onClick={onOpen} className="fx-card text-left w-full rounded-2xl overflow-hidden fx-shadow flex flex-col" style={surface}>
+        <Thumb className="w-full h-32 sm:h-40" />
+        <div className="p-3 flex-1 flex flex-col">
+          <h3 className="fx-serif font-bold text-sm sm:text-base leading-tight line-clamp-2">{item.name}</h3>
+          {item.short_desc && <p className="text-xs opacity-70 line-clamp-2 mt-1">{item.short_desc}</p>}
+          <Badges />
+          <div className="mt-auto pt-2 flex items-baseline gap-2"><Price size="text-base" /></div>
+        </div>
+      </button>
+    );
+  }
+
+  if (layout === "magazine") {
+    return (
+      <button onClick={onOpen} className="fx-card text-left w-full rounded-2xl overflow-hidden fx-shadow flex items-center gap-3 p-3" style={surface}>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-baseline gap-2">
+            <h3 className="fx-serif font-bold text-base sm:text-lg leading-tight truncate">{item.name}</h3>
+            <span className="flex-1 border-b border-dashed opacity-30" style={{ borderColor: "var(--mk-ink)" }} />
+            <span className="flex items-baseline gap-2 shrink-0"><Price size="text-base" /></span>
+          </div>
+          {item.short_desc && <p className="text-xs sm:text-sm opacity-70 line-clamp-2 mt-1">{item.short_desc}</p>}
+          <Badges />
+        </div>
+        <Thumb className="w-16 h-16 rounded-xl" />
+      </button>
+    );
+  }
+
+  return (
+    <button onClick={onOpen} className="fx-card text-left w-full rounded-2xl overflow-hidden fx-shadow flex gap-3 sm:gap-4 p-3" style={surface}>
+      <Thumb className="w-28 h-28 sm:w-32 sm:h-32 rounded-xl" />
       <div className="flex-1 min-w-0 py-1 flex flex-col">
         <h3 className="fx-serif font-bold text-base sm:text-lg leading-tight line-clamp-2">{item.name}</h3>
         {item.short_desc && <p className="text-xs sm:text-sm opacity-70 line-clamp-2 mt-1">{item.short_desc}</p>}
-        <div className="flex flex-wrap gap-1 mt-1.5">
-          {badges.slice(0, 3).map((b) => {
-            const meta = BADGE_META[b];
-            if (!meta) return null;
-            const Ico = meta.icon;
-            return (
-              <span key={b} className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: `${meta.tone}15`, color: meta.tone }}>
-                <Ico className="w-2.5 h-2.5" /> {meta.label}
-              </span>
-            );
-          })}
-          {item.prep_minutes != null && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold opacity-60">
-              <Clock className="w-2.5 h-2.5" /> {item.prep_minutes} min
-            </span>
-          )}
-        </div>
-        <div className="mt-auto pt-2 flex items-baseline gap-2">
-          {hasPromo ? (
-            <>
-              <span className="fx-serif font-bold text-lg" style={{ color: primary }}>{fmt(item.promo_price, item.currency)}</span>
-              <span className="text-xs opacity-50 line-through">{fmt(item.price, item.currency)}</span>
-            </>
-          ) : (
-            item.price != null && <span className="fx-serif font-bold text-lg">{fmt(item.price, item.currency)}</span>
-          )}
-        </div>
+        <Badges />
+        <div className="mt-auto pt-2 flex items-baseline gap-2"><Price /></div>
       </div>
     </button>
   );
 }
+
 
 // ------------ Item Modal ------------
 function ItemModal({ item, primary, onClose }: { item: Item; primary: string; onClose: () => void }) {
