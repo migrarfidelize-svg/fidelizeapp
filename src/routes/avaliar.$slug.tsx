@@ -3,6 +3,7 @@ import { queryOptions, useSuspenseQuery, useQuery } from "@tanstack/react-query"
 import { Star } from "lucide-react";
 import { PublicRatingBlock } from "@/components/PublicRatingBlock";
 import { getPublicReviewForm, getPublicReviewsList } from "@/lib/public-reviews.functions";
+import { useChannelPageView } from "@/lib/tracking";
 import { formatDate } from "@/lib/format";
 
 const opts = (slug: string) => queryOptions({
