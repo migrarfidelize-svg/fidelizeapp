@@ -308,39 +308,23 @@ export function MerchantPushCard() {
             </DialogDescription>
           </DialogHeader>
 
-          <ol className="space-y-3 text-sm">
-            {needsInstall ? (
-              <>
-                <li className="flex items-start gap-3">
-                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">1</span>
-                  <span className="flex items-center gap-2">Toque em <Share className="inline h-4 w-4" /> <strong>Compartilhar</strong> no Safari.</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">2</span>
-                  <span className="flex items-center gap-2">Escolha <PlusSquare className="inline h-4 w-4" /> <strong>Adicionar à Tela de Início</strong>.</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">3</span>
-                  <span>Abra o Fidelize pelo ícone e toque em <strong>Ativar notificações</strong>.</span>
-                </li>
-              </>
-            ) : isIos() ? (
-              <>
-                <li className="flex items-start gap-3">
-                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">1</span>
-                  <span>Abra <strong>Ajustes</strong> do iPhone e vá em <strong>Notificações</strong>.</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">2</span>
-                  <span>Encontre <strong>Fidelize</strong> e ligue <strong>Permitir Notificações</strong>.</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">3</span>
-                  <span>Volte aqui e toque em <strong>Já liberei</strong>.</span>
-                </li>
-              </>
-            ) : (
-              <>
+          {needsInstall ? (
+            <IosSetupGuide
+              withNotifications
+              subscribed={!!subscribed}
+              onEnable={enable}
+              busy={busy}
+            />
+          ) : isIos() ? (
+            <IosSetupGuide
+              withNotifications
+              subscribed={!!subscribed}
+              onEnable={enable}
+              busy={busy}
+            />
+          ) : (
+            <>
+              <ol className="space-y-3 text-sm">
                 <li className="flex items-start gap-3">
                   <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">1</span>
                   <span>Toque no <strong>cadeado</strong> (ou ⋮ &gt; Informações do site) ao lado do endereço.</span>
@@ -353,13 +337,13 @@ export function MerchantPushCard() {
                   <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">3</span>
                   <span>Recarregue a página e toque em <strong>Já liberei</strong>.</span>
                 </li>
-              </>
-            )}
-          </ol>
+              </ol>
+              <p className="text-xs text-muted-foreground">
+                Se o bloqueio persistir, apague os dados do site nas configurações do navegador e tente de novo.
+              </p>
+            </>
+          )}
 
-          <p className="text-xs text-muted-foreground">
-            Se o bloqueio persistir, apague os dados do site nas configurações do navegador e tente de novo.
-          </p>
         </DialogContent>
       </Dialog>
     </>
