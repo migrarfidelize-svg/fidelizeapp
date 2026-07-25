@@ -168,11 +168,11 @@ export const resetMemberPermissions = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     await supabase.from("audit_logs").insert({
       establishment_id: data.establishment_id,
-      actor_id: userId,
+      user_id: userId,
       action: "team.permissions_reset",
       entity_type: "establishment_member",
       entity_id: data.member_id,
-      details: {},
+      metadata: {},
     });
     return { ok: true };
   });
