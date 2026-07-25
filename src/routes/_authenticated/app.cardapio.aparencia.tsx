@@ -39,7 +39,7 @@ function MenuAppearancePage() {
 
   const ests = useQuery({ queryKey: ["my-establishments"], queryFn: () => fetchEsts() });
   const est = ests.data?.[0]?.establishment as
-    | { id: string; slug: string; name?: string | null; logo_url?: string | null; primary_color?: string | null }
+    | { id: string; slug: string; name?: string | null; logo_url?: string | null; cover_url?: string | null; primary_color?: string | null }
     | undefined;
   const estId = est?.id;
 
