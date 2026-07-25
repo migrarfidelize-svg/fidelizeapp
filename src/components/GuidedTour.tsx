@@ -276,14 +276,14 @@ export function GuidedTour({
         <div className="px-5 pb-5">
           <div className="flex items-center gap-2 text-xs font-medium text-primary">
             <Sparkles className="h-3.5 w-3.5" />
-            Passo {i + 1} de {steps.length}
+            Passo {i + 1} de {activeSteps.length}
           </div>
           <h3 id="tour-title" className="mt-2 text-xl font-semibold">{step.title}</h3>
           <p className="mt-1 text-sm text-muted-foreground">{step.description}</p>
 
           {/* Progress dots */}
           <div className="mt-4 flex items-center gap-1.5">
-            {steps.map((_, idx) => (
+            {activeSteps.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => setI(idx)}
@@ -303,7 +303,7 @@ export function GuidedTour({
                   <ArrowLeft className="mr-1 h-3.5 w-3.5" /> Voltar
                 </Button>
               )}
-              {i < steps.length - 1 ? (
+              {i < activeSteps.length - 1 ? (
                 <Button size="sm" onClick={() => setI(i + 1)} className="bg-primary text-primary-foreground hover:bg-primary/90">
                   Próximo <ArrowRight className="ml-1 h-3.5 w-3.5" />
                 </Button>
