@@ -147,7 +147,7 @@ function fmt(v: number | null, currency = "BRL") {
 function PublicMenuPage() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(opts(slug));
-  useChannelPageView(slug, "menu" as any);
+  useChannelPageView(slug, "menu");
 
   const [activeCat, setActiveCat] = useState<string | "all">("all");
   const [q, setQ] = useState("");
@@ -481,7 +481,7 @@ function PublicMenuPage() {
           startIndex={stories.index}
           onClose={() => setStories(null)}
           onItemView={(i) =>
-            trackChannelEvent({ slug, channel: "menu" as any, event_type: "link_click", ref_id: i.id, ref_label: `stories:${i.name}` })
+            trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_id: i.id, ref_label: `stories:${i.name}` })
           }
         />
       )}
