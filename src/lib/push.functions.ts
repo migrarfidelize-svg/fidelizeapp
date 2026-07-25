@@ -222,16 +222,13 @@ export const getPushQuotaStatus = createServerFn({ method: "POST" })
     }
     const sentToday = broadcastKeys.size;
 
-    // Recipient count: active subs that accept campaign.
+    // Recipient count: active subs that accept campaign (clientes + operadores).
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: subs } = await supabaseAdmin
-      .from("push_subscriptions")
-      .select("id, preferences")
-      .eq("establishment_id", data.establishment_id)
-      .eq("active", true);
-    const recipients = (subs ?? []).filter(
-      (s: any) => ((s.preferences ?? {}) as Record<string, boolean>).campaign !== false,
-    ).length;
+    const { resolveEstablishmentSubs, splitAudience } = await import("@/lib/push.audience.server");
+    const allSubs = await resolveEstablishmentSubs(supabaseAdmin, data.establishment_id);
+    const split = splitAudience(allSubs, null);
+    const recipients = split.customers.length + split.operators.length;
+
 
     const remaining = dailyLimit == null ? null : Math.max(0, dailyLimit - sentToday);
     return {
