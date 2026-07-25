@@ -272,6 +272,8 @@ export function FirstStepsCard({
           </li>
         ))}
       </ul>
+      )}
+
     </div>
   );
 }
