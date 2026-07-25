@@ -66,10 +66,11 @@ async function reconcileAsaasPayment(remotePayment: any) {
 
   const { data: existing } = await supabaseAdmin
     .from("payments")
-    .select("id, establishment_id, plan_slug, plan_id")
+    .select("id, establishment_id, plan_slug, plan_id, status")
     .eq("provider", "asaas")
     .eq("provider_payment_id", paymentId)
     .maybeSingle();
+
 
   const update: Record<string, unknown> = {
     status: newStatus,
@@ -110,9 +111,23 @@ async function reconcileAsaasPayment(remotePayment: any) {
     } as never);
   }
 
-  if (newStatus === "approved" && estId && planSlug) {
-    await activatePlanAsaas(estId, planSlug, paymentId);
+  if (newStatus === "approved") {
+    if (estId && planSlug) {
+      await activatePlanAsaas(estId, planSlug, paymentId);
+    }
+    if ((existing as any)?.status !== "approved") {
+      const { notifyAdminsOfSale } = await import("@/lib/admin-sales-notify.server");
+      await notifyAdminsOfSale({
+        establishmentId: estId,
+        planSlug,
+        amount: Number(remotePayment.value ?? 0),
+        currency: "BRL",
+        provider: "asaas",
+        paymentId,
+      });
+    }
   }
+
 }
 
 async function activatePlanAsaas(establishmentId: string, planSlug: string, providerPaymentId: string) {

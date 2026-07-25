@@ -117,7 +117,20 @@ async function processPaymentEvent(paymentId: string) {
     if (estId && planSlug) {
       await activatePlan(estId, planSlug, String(mp.id));
     }
+    // Notifica os super admins apenas na transição para aprovado (webhook pode repetir).
+    if (pay?.status !== "approved") {
+      const { notifyAdminsOfSale } = await import("@/lib/admin-sales-notify.server");
+      await notifyAdminsOfSale({
+        establishmentId: estId,
+        planSlug,
+        amount: mp.transaction_amount ?? null,
+        currency: mp.currency_id ?? "BRL",
+        provider: "mercadopago",
+        paymentId: String(mp.id),
+      });
+    }
   }
+
 }
 
 async function processMerchantOrderEvent(orderId: string) {
