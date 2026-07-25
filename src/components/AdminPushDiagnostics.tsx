@@ -221,7 +221,7 @@ export function AdminPushDiagnostics() {
         if (perm !== "granted") throw new Error("Permissão não concedida.");
       }
       const reg = await ensurePwaRegistration();
-      await reg.showNotification("Teste local Fidelize", {
+      const localNotificationOptions = {
         body: "Se este alerta aparecer, a exibição do navegador/Windows está liberada.",
         icon: "/icon-192.png",
         badge: "/icon-192.png",
@@ -230,7 +230,8 @@ export function AdminPushDiagnostics() {
         requireInteraction: true,
         silent: false,
         data: { url: "/admin/notificacoes" },
-      });
+      } as NotificationOptions;
+      await reg.showNotification("Teste local Fidelize", localNotificationOptions);
       toast.success("Teste local disparado. Se não apareceu, o bloqueio está no navegador ou no sistema operacional.");
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
