@@ -570,7 +570,8 @@ function PublicMenuPage() {
             <a
               href={`tel:${est.phone}`}
               onClick={() => trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_label: "cta:phone" })}
-              className="grid place-items-center w-10 h-10 rounded-full text-white bg-white/10"
+              className="grid place-items-center w-10 h-10 rounded-full"
+              style={{ background: primary, color: readableInk(primary) }}
               aria-label="Telefone"
             >
               <Phone className="w-4 h-4" />
@@ -749,7 +750,12 @@ function ItemModal({ item, primary, onClose }: { item: Item; primary: string; on
         className="relative w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden max-h-[92dvh] flex flex-col"
         style={{ color: "var(--mk-ink)", background: "var(--mk-surface)" }}
       >
-        <button onClick={onClose} className="absolute top-3 right-3 z-10 grid place-items-center w-9 h-9 rounded-full bg-black/40 text-white backdrop-blur">
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 z-10 grid place-items-center w-9 h-9 rounded-full backdrop-blur shadow-lg"
+          style={{ background: primary, color: readableInk(primary) }}
+          aria-label="Fechar"
+        >
           <X className="w-4 h-4" />
         </button>
         {item.video_url ? (
@@ -775,7 +781,7 @@ function ItemModal({ item, primary, onClose }: { item: Item; primary: string; on
                 <span className="text-sm opacity-50 line-through">{fmt(item.price, item.currency)}</span>
               </>
             ) : (
-              item.price != null && <span className="fx-serif font-bold text-xl" style={{ fontFamily: "Outfit" }}>{fmt(item.price, item.currency)}</span>
+              item.price != null && <span className="fx-serif font-bold text-xl" style={{ color: primary, fontFamily: "Outfit" }}>{fmt(item.price, item.currency)}</span>
             )}
             {item.prep_minutes != null && (
               <span className="ml-auto inline-flex items-center gap-1 text-xs opacity-70">
@@ -788,12 +794,23 @@ function ItemModal({ item, primary, onClose }: { item: Item; primary: string; on
           )}
           {(Array.isArray(item.variants) ? item.variants : []).filter((v) => v?.label).length > 0 && (
             <div className="mt-4">
-              <h4 className="text-xs uppercase tracking-widest font-bold opacity-60 mb-2">Tamanhos</h4>
-              <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--mk-line)" }}>
+              <h4 className="text-xs uppercase tracking-widest font-bold mb-2" style={{ color: primary }}>Tamanhos</h4>
+              <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${primary}33` }}>
                 {(item.variants ?? []).filter((v) => v?.label).map((v, idx) => (
-                  <div key={idx} className="flex items-center justify-between px-3 py-2 text-sm border-b last:border-b-0" style={{ borderColor: "var(--mk-line)" }}>
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between px-3 py-2 text-sm border-b last:border-b-0"
+                    style={{ borderColor: `${primary}22`, background: idx % 2 === 0 ? `${primary}0D` : "transparent" }}
+                  >
                     <span className="font-medium">{v.label}</span>
-                    {v.price != null && <span className="font-bold" style={{ color: primary }}>{fmt(v.price, item.currency)}</span>}
+                    {v.price != null && (
+                      <span
+                        className="font-bold text-xs px-2 py-0.5 rounded-full"
+                        style={{ background: primary, color: readableInk(primary) }}
+                      >
+                        {fmt(v.price, item.currency)}
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>
@@ -826,6 +843,18 @@ function ItemModal({ item, primary, onClose }: { item: Item; primary: string; on
               <p className="text-sm">{item.allergens.join(", ")}</p>
             </div>
           )}
+        </div>
+        <div
+          className="p-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t"
+          style={{ borderColor: "var(--mk-line)", background: "var(--mk-surface)" }}
+        >
+          <button
+            onClick={onClose}
+            className="fx-pill w-full rounded-full py-3 text-sm font-bold"
+            style={{ background: primary, color: readableInk(primary) }}
+          >
+            Voltar ao cardápio
+          </button>
         </div>
       </div>
     </div>
@@ -982,8 +1011,8 @@ function StoriesViewer({
             {items.map((_, idx) => (
               <span key={idx} className="flex-1 h-[3px] rounded-full overflow-hidden bg-white/30">
                 <span
-                  className="block h-full bg-white rounded-full"
-                  style={{ width: idx < i ? "100%" : idx === i ? `${progress * 100}%` : "0%" }}
+                  className="block h-full rounded-full"
+                  style={{ width: idx < i ? "100%" : idx === i ? `${progress * 100}%` : "0%", background: primary }}
                 />
               </span>
             ))}
@@ -1008,7 +1037,8 @@ function StoriesViewer({
             <div className="flex items-start gap-3">
               <button
                 onClick={(e) => { e.stopPropagation(); onDetails(current); }}
-                className="shrink-0 w-[72px] h-[72px] rounded-xl overflow-hidden bg-white/10 ring-1 ring-white/25"
+                className="shrink-0 w-[72px] h-[72px] rounded-xl overflow-hidden bg-white/10 ring-2"
+                style={{ boxShadow: `0 0 0 2px ${primary}` }}
               >
                 {thumb ? (
                   <img src={thumb} alt={current.name} className="w-full h-full object-cover" />
@@ -1051,7 +1081,10 @@ function StoriesViewer({
             {current.price != null && (
               <span className="flex items-baseline gap-2">
                 {hasPromo && <span className="text-xs opacity-60 line-through">{fmt(current.price, current.currency)}</span>}
-                <span className="text-xl font-bold" style={{ fontFamily: "Outfit" }}>
+                <span
+                  className="text-lg font-bold px-3 py-1 rounded-full"
+                  style={{ fontFamily: "Outfit", background: primary, color: readableInk(primary) }}
+                >
                   {fmt(hasPromo ? current.promo_price : current.price, current.currency)}
                 </span>
               </span>
@@ -1073,7 +1106,8 @@ function StoriesViewer({
                   <button
                     key={it.id}
                     onClick={() => { setI(idx); setShowList(false); setPaused(false); }}
-                    className={`w-full flex items-center gap-3 rounded-xl p-2 text-left ${idx === i ? "bg-white/10" : ""}`}
+                    className="w-full flex items-center gap-3 rounded-xl p-2 text-left"
+                    style={idx === i ? { background: `${primary}33`, boxShadow: `inset 0 0 0 1px ${primary}` } : undefined}
                   >
                     <span className="w-11 h-11 rounded-lg overflow-hidden bg-white/10 shrink-0">
                       {(it.image_url || it.video_poster_url) && (
