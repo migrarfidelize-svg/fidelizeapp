@@ -307,6 +307,8 @@ function ReviewQrPage() {
 
   const { allowed, isLoading: featLoading } = useMyFeature(est?.id, "public_reviews");
 
+  const search = Route.useSearch();
+
   // Persisted preferences
   const storageKey = est ? `review-qr:${est.id}` : "review-qr:draft";
   const designsKey = est ? `review-qr-designs:${est.id}` : "review-qr-designs:draft";
