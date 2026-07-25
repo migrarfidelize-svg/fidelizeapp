@@ -62,11 +62,14 @@ function Page() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">Avaliações da Plataforma</h1>
-          <p className="text-sm text-muted-foreground">Visão consolidada, moderação central e sinais de fraude.</p>
-        </div>
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Super Admin · Moderação"}
+        title={"Avaliações da Plataforma"}
+        subtitle={"Visão consolidada, moderação central e sinais de fraude."}
+      />
+      <div className="flex items-center justify-end flex-wrap gap-3">
+
         <Select value={String(days)} onValueChange={(v) => setDays(Number(v))}>
           <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
           <SelectContent>
