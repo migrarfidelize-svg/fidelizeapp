@@ -2,7 +2,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { VAPID_PUBLIC_KEY as FRONTEND_VAPID_PUBLIC_KEY } from "@/lib/vapid";
-import { notificationTargetKey, recordPushDelivery } from "@/lib/push-inbox.server";
 
 const subInput = z.object({
   token: z.string().min(20).max(80), // customer access_token from voucher URL
@@ -368,6 +367,7 @@ export const broadcastPush = createServerFn({ method: "POST" })
     const { data: subs } = await subsQuery;
 
     const { sendPushToSub } = await import("@/lib/push.server");
+    const { notificationTargetKey, recordPushDelivery } = await import("@/lib/push-inbox.server");
     let sent = 0;
     let failed = 0;
     const notifiedTargets = new Set<string>();
@@ -570,6 +570,7 @@ export async function dispatchDueScheduledBroadcasts() {
       }
       const { data: subs } = await sq;
 
+      const { notificationTargetKey, recordPushDelivery } = await import("@/lib/push-inbox.server");
       let sent = 0;
       let failed = 0;
       const notifiedTargets = new Set<string>();
@@ -772,6 +773,7 @@ export const adminBroadcastPush = createServerFn({ method: "POST" })
     const { data: subs } = await q;
 
     const { sendPushToSub } = await import("@/lib/push.server");
+    const { notificationTargetKey, recordPushDelivery } = await import("@/lib/push-inbox.server");
     const respect = data.respect_prefs !== false;
     let sent = 0;
     let failed = 0;
@@ -921,6 +923,7 @@ export const sendTestPushToMe = createServerFn({ method: "POST" })
     if (!sub) throw new Error("Este aparelho não está inscrito. Ative as notificações primeiro.");
 
     const { sendPushToSub } = await import("./push.server");
+    const { recordPushDelivery } = await import("./push-inbox.server");
     const r = await sendPushToSub(sub, {
       title: "Fidelize — teste de push",
       body: "Se você recebeu esta notificação, está tudo funcionando! 🎉",
@@ -1080,6 +1083,7 @@ export const sendAdminTestPush = createServerFn({ method: "POST" })
       status: "pending",
     });
     const { sendPushToSub } = await import("./push.server");
+    const { recordPushDelivery } = await import("./push-inbox.server");
     const r = await sendPushToSub(sub as any, {
       title: "Notificações ativadas",
       body: "Seu dispositivo está pronto para receber novidades.",
