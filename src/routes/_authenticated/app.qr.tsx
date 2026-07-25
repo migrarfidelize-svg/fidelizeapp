@@ -635,7 +635,7 @@ function ReviewQrPage() {
     setBadges((prev) => {
       const exists = prev.find((b) => b.key === key);
       if (exists) return prev.filter((b) => b.key !== key);
-      const def = DEFAULT_BADGE_POS[key];
+      const def = defaultBadgePosition(key, landscape);
       return [...prev, { key, x: def.x, y: def.y }];
     });
   }
@@ -760,13 +760,21 @@ function ReviewQrPage() {
         return out;
       });
     }
-    // Clampa badges também.
+    // Migra badges que ainda estavam no default anterior; em especial a
+    // estrela 5★, que no horizontal precisa ficar acima do título para não
+    // encavalar com texto/QR. Se o usuário moveu manualmente, apenas clampa.
     setBadges((prev) =>
-      prev.map((b) => ({
-        ...b,
-        x: Math.max(4, Math.min(96, b.x)),
-        y: Math.max(4, Math.min(96, b.y)),
-      }))
+      prev.map((b) => {
+        const prevBadgeDefault = defaultBadgePosition(b.key, prevL);
+        const badgePristine = Math.abs(b.x - prevBadgeDefault.x) < 0.01 && Math.abs(b.y - prevBadgeDefault.y) < 0.01;
+        const nextBadgeDefault = defaultBadgePosition(b.key, landscape);
+        const next = badgePristine ? nextBadgeDefault : b;
+        return {
+          ...b,
+          x: Math.max(4, Math.min(96, next.x)),
+          y: Math.max(4, Math.min(96, next.y)),
+        };
+      })
     );
     prevFormatRef.current = format;
     prevLandscapeRef.current = landscape;
