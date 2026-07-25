@@ -97,7 +97,7 @@ function fmt(v: number | null, currency = "BRL") {
 function PublicMenuPage() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(opts(slug));
-  useChannelPageView({ slug, channel: "menu" as any });
+  useChannelPageView(slug, "menu" as any);
 
   const [activeCat, setActiveCat] = useState<string | "all">("all");
   const [q, setQ] = useState("");
