@@ -657,15 +657,53 @@ function AppLayout() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                className="px-4 py-5 md:px-6 md:py-7 max-w-[1400px] w-full mx-auto"
+                className="px-4 py-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:px-6 md:py-7 md:pb-7 max-w-[1400px] w-full mx-auto"
               >
                 <Outlet />
               </motion.div>
             </AnimatePresence>
           </main>
+
+          {/* Barra inferior (mobile) — atalhos da operação diária */}
+          <nav
+            aria-label="Navegação rápida"
+            className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-card/90 backdrop-blur-xl pb-[env(safe-area-inset-bottom)] md:hidden"
+          >
+            <ul className="grid grid-cols-5">
+              {MOBILE_TABS.map((t) => {
+                const active = t.exact ? pathname === t.to : pathname.startsWith(t.to);
+                return (
+                  <li key={t.to}>
+                    <Link
+                      to={t.to}
+                      className={[
+                        "flex h-16 flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors",
+                        active ? "text-primary" : "text-muted-foreground",
+                      ].join(" ")}
+                    >
+                      <t.icon className="h-5 w-5" strokeWidth={active ? 2.4 : 1.8} />
+                      <span className="max-w-full truncate px-1">{t.label}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+              <li>
+                <button
+                  type="button"
+                  onClick={() => setMobileOpen(true)}
+                  className="flex h-16 w-full flex-col items-center justify-center gap-1 text-[10px] font-medium text-muted-foreground"
+                >
+                  <Menu className="h-5 w-5" strokeWidth={1.8} />
+                  <span>Mais</span>
+                </button>
+              </li>
+            </ul>
+          </nav>
         </div>
 
-        <GuidedTour steps={MERCHANT_TOUR_STEPS} storageKey={`fidelize_tour_v1_${activeEst?.id ?? "user"}`} />
+        {pathname === "/app" && (
+          <GuidedTour steps={MERCHANT_TOUR_STEPS} storageKey={`fidelize_tour_v1_${activeEst?.id ?? "user"}`} />
+        )}
       </div>
     </TooltipProvider>
   );
