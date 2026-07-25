@@ -95,19 +95,29 @@ self.addEventListener("push", (event) => {
   const title = data.title || "Fidelize";
   const targetUrl = resolveTargetUrl(data);
   const notificationId = data.notificationId || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  // requireInteraction default por tipo: urgentes true, comuns false.
+  const urgentTypes = ["reward", "prize", "birthday", "urgent"];
+  const defaultRequire = urgentTypes.includes(String(data.type || "").toLowerCase());
+  const requireInteraction =
+    typeof data.requireInteraction === "boolean" ? data.requireInteraction : defaultRequire;
+  const actions = Array.isArray(data.actions) && data.actions.length
+    ? data.actions.slice(0, 2).map((a) => ({ action: String(a.action || "open"), title: String(a.title || "Abrir") }))
+    : [{ action: "open", title: "Abrir" }];
   const options = {
     body: data.body || "",
     icon: assetUrl(data.icon, "/icon-192.png"),
     badge: assetUrl(data.badge, "/icon-192.png"),
+    image: data.image ? assetUrl(data.image, "/icon-512.png") : undefined,
     tag: data.tag || `fidelize-${notificationId}`,
     data: { url: targetUrl, type: data.type || null, slug: data.slug || null, notificationId },
     renotify: true,
-    requireInteraction: data.requireInteraction !== false,
+    requireInteraction,
     silent: false,
     timestamp: typeof data.timestamp === "number" ? data.timestamp : Date.now(),
     vibrate: [120, 60, 120],
-    actions: [{ action: "open", title: "Abrir" }],
+    actions,
   };
+
   event.waitUntil(
     (async () => {
       await notifyOpenClients({

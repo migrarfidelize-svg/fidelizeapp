@@ -15,6 +15,8 @@ import { WalletStack } from "@/components/wallet/WalletStack";
 import { WalletHomeSkeleton } from "@/components/wallet/WalletCardSkeleton";
 import { InstallAppCard } from "@/components/wallet/InstallAppCard";
 import { EnableNotificationsCard } from "@/components/wallet/EnableNotificationsCard";
+import { PWAInstallCard } from "@/components/pwa/PWAInstallCard";
+
 
 
 type WalletItem = Awaited<ReturnType<typeof getMyWallet>>[number];
@@ -106,8 +108,10 @@ function WalletHome() {
           </p>
         </div>
 
+        <PWAInstallCard compact />
         <InstallAppCard />
         <EnableNotificationsCard />
+
 
 
 
