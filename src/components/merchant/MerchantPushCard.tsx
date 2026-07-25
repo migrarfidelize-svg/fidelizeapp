@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Bell, BellRing, BellOff, CheckCircle2, Loader2, X, AlertTriangle, Share, PlusSquare, Settings, RefreshCw } from "lucide-react";
+import { Bell, BellRing, BellOff, Loader2, AlertTriangle, Share, Settings, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -12,7 +12,8 @@ import { IosSetupGuide } from "@/components/pwa/IosSetupGuide";
 
 const DISMISS_KEY = "fidelize:merchant-push-dismissed:v1";
 const SKIP_UNTIL_KEY = "fidelize:merchant-push-skip-until:v1";
-const SKIP_DAYS = 3;
+/** Só reabrimos o convite depois de 24h sem aceite. */
+const SNOOZE_HOURS = 24;
 
 function isIos() {
   if (typeof navigator === "undefined") return false;
@@ -54,6 +55,7 @@ export function MerchantPushCard() {
   const [skipped, setSkipped] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
   const [showHelp, setShowHelp] = useState(false);
+  const [promptOpen, setPromptOpen] = useState(false);
 
   const subscribe = useServerFn(subscribeAdminPush);
   const getStatus = useServerFn(getAdminPushStatus);
@@ -95,6 +97,21 @@ export function MerchantPushCard() {
       }
     })();
   }, [getStatus]);
+
+  // Convite em popup: aparece na entrada e só volta 24h depois se não ativar.
+  useEffect(() => {
+    if (subscribed !== false) return;
+    if (dismissed || skipped || !supported) return;
+    const t = setTimeout(() => setPromptOpen(true), 600);
+    return () => clearTimeout(t);
+  }, [subscribed, dismissed, skipped, supported]);
+
+  function snooze() {
+    try {
+      localStorage.setItem(SKIP_UNTIL_KEY, String(Date.now() + SNOOZE_HOURS * 3600000));
+    } catch { /* noop */ }
+    setPromptOpen(false);
+  }
 
   async function enable() {
     setBusy(true);
@@ -190,111 +207,88 @@ export function MerchantPushCard() {
   }
 
   function skipForNow() {
-    try { localStorage.setItem(SKIP_UNTIL_KEY, String(Date.now() + SKIP_DAYS * 86400000)); } catch { /* noop */ }
+    snooze();
     setSkipped(true);
-    toast.info(`Tudo bem — vamos lembrar você em ${SKIP_DAYS} dias.`);
+    toast.info("Tudo bem — voltamos a lembrar em 24 horas.");
   }
 
   function dismiss() {
     try { localStorage.setItem(DISMISS_KEY, "1"); } catch { /* noop */ }
     setDismissed(true);
+    setPromptOpen(false);
   }
 
   if (dismissed || skipped) return null;
   if (subscribed === null) return null;
-
-  // Navegador sem suporte a Web Push (ex.: navegadores antigos / in-app browsers).
-  if (!supported) {
-    return (
-      <div className="flex items-start gap-3 rounded-2xl border border-border bg-muted/40 p-3 text-sm">
-        <BellOff className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-        <div className="min-w-0">
-          <p className="font-medium">Notificações indisponíveis neste navegador</p>
-          <p className="text-xs text-muted-foreground">
-            Abra o Fidelize no Chrome, Edge, Safari ou Samsung Internet para receber alertas no celular.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (subscribed) {
-    return (
-      <div className="flex items-center gap-3 rounded-2xl border border-success/30 bg-success/5 p-3 text-sm">
-        <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
-        <span className="min-w-0">Notificações ativas neste aparelho.</span>
-      </div>
-    );
-  }
+  // Nada fixo na página: browser sem suporte ou já ativo não renderiza card.
+  if (!supported || subscribed) return null;
 
   const denied = permission === "denied";
 
   return (
     <>
-      <div className="relative rounded-2xl border border-accent/30 bg-gradient-to-br from-accent/10 via-background to-background p-4 shadow-lg">
-        <button
-          type="button"
-          onClick={dismiss}
-          aria-label="Dispensar"
-          className="absolute right-2 top-2 rounded-full p-1 text-muted-foreground hover:bg-muted"
-        >
-          <X className="h-4 w-4" />
-        </button>
-        <div className="flex items-start gap-3">
-          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-accent/15 text-accent">
-            {denied ? <BellOff className="h-5 w-5" /> : <BellRing className="h-5 w-5" />}
-          </div>
-          <div className="min-w-0 flex-1">
-            <h3 className="font-semibold">
+      <Dialog
+        open={promptOpen}
+        onOpenChange={(o) => {
+          if (!o) snooze();
+          else setPromptOpen(true);
+        }}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <div className="mb-1 grid h-11 w-11 place-items-center rounded-xl bg-accent/15 text-accent">
+              {denied ? <BellOff className="h-5 w-5" /> : <BellRing className="h-5 w-5" />}
+            </div>
+            <DialogTitle>
               {needsInstall
                 ? "Instale o app para receber notificações"
                 : denied
                   ? "Notificações bloqueadas"
                   : "Ative as notificações"}
-            </h3>
-            <p className="mt-0.5 text-sm text-muted-foreground">
+            </DialogTitle>
+            <DialogDescription>
               {needsInstall
                 ? "No iPhone, o aviso só funciona com o Fidelize adicionado à tela de início."
                 : denied
                   ? "Seu navegador está bloqueando os avisos deste site. Leva 20 segundos para reverter."
                   : "Receba avisos de novas avaliações, respostas do suporte e alertas do seu programa."}
+            </DialogDescription>
+          </DialogHeader>
+
+          {failure && !denied && (
+            <p className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-2 text-xs text-destructive">
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <span className="min-w-0">{failure}</span>
             </p>
+          )}
 
-            {failure && !denied && (
-              <p className="mt-2 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-2 text-xs text-destructive">
-                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                <span className="min-w-0">{failure}</span>
-              </p>
+          <div className="flex flex-wrap gap-2">
+            {needsInstall ? (
+              <Button size="sm" onClick={() => { setPromptOpen(false); setShowHelp(true); }}>
+                <Share className="mr-2 h-4 w-4" />
+                Como instalar
+              </Button>
+            ) : denied ? (
+              <>
+                <Button size="sm" onClick={() => { setPromptOpen(false); setShowHelp(true); }}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  Como desbloquear
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => { setPermission(Notification.permission); void enable(); }}>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Já liberei
+                </Button>
+              </>
+            ) : (
+              <Button size="sm" onClick={enable} disabled={busy}>
+                {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bell className="mr-2 h-4 w-4" />}
+                {failure ? "Tentar novamente" : "Ativar notificações"}
+              </Button>
             )}
-
-            <div className="mt-3 flex flex-wrap gap-2">
-              {needsInstall ? (
-                <Button size="sm" onClick={() => setShowHelp(true)}>
-                  <Share className="mr-2 h-4 w-4" />
-                  Como instalar
-                </Button>
-              ) : denied ? (
-                <>
-                  <Button size="sm" onClick={() => setShowHelp(true)}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    Como desbloquear
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => { setPermission(Notification.permission); void enable(); }}>
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Já liberei
-                  </Button>
-                </>
-              ) : (
-                <Button size="sm" onClick={enable} disabled={busy}>
-                  {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bell className="mr-2 h-4 w-4" />}
-                  {failure ? "Tentar novamente" : "Ativar notificações"}
-                </Button>
-              )}
-              <Button size="sm" variant="ghost" onClick={skipForNow}>Agora não</Button>
-            </div>
+            <Button size="sm" variant="ghost" onClick={skipForNow}>Agora não</Button>
           </div>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showHelp} onOpenChange={setShowHelp}>
         <DialogContent className="max-w-sm">
