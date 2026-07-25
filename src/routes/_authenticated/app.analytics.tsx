@@ -154,6 +154,100 @@ function AnalyticsPage() {
         </div>
       </div>
 
+      {/* Canais & Alcance */}
+      <div className="space-y-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <ChannelKpi icon={Link2} label="Árvore de Links" primary={data.channels.linktree.views} primaryLabel="visualizações"
+            secondary={`${data.channels.linktree.clicks} cliques · CTR ${data.channels.linktree.ctr}%`} />
+          <ChannelKpi icon={StarIcon} label="Página de Avaliação" primary={data.channels.reviews.views} primaryLabel="visualizações"
+            secondary={data.totals.stamps > 0 ? "canal público" : "aguardando tráfego"} />
+          <ChannelKpi icon={CreditCard} label="Cartão Fidelidade" primary={data.channels.loyalty.views} primaryLabel="visualizações"
+            secondary="landing pública" />
+          <ChannelKpi icon={QrCode} label="QR Code" primary={data.channels.qr.total} primaryLabel="scans"
+            secondary={`${data.channels.qr.scansMain} principal · ${data.channels.qr.scansSecond} secundário`} />
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="dash-card p-6 lg:col-span-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-xs uppercase tracking-widest text-muted-foreground">Alcance por canal</div>
+                <h3 className="sec-title mt-1 text-lg">Visualizações & cliques por semana</h3>
+              </div>
+              <span className="card-icon card-icon-accent" aria-hidden><TrendingUp /></span>
+            </div>
+            <div className="mt-6 h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={data.channels.weekly} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="lkFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.35} />
+                      <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="qrFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#22d3ee" stopOpacity={0.35} />
+                      <stop offset="100%" stopColor="#22d3ee" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.12} />
+                  <XAxis dataKey="week" tick={{ fontSize: 10 }} stroke="currentColor" opacity={0.5}
+                    tickFormatter={(v) => v.slice(5)} />
+                  <YAxis tick={{ fontSize: 11 }} allowDecimals={false} stroke="currentColor" opacity={0.5} />
+                  <Tooltip
+                    contentStyle={{
+                      background: "color-mix(in oklab, var(--card) 92%, transparent)",
+                      border: "1px solid color-mix(in oklab, var(--primary) 40%, transparent)",
+                      borderRadius: 12,
+                    }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Area name="Árvore views" type="monotone" dataKey="linktreeViews" stroke="var(--color-primary)" strokeWidth={2} fill="url(#lkFill)" />
+                  <Area name="Árvore cliques" type="monotone" dataKey="linktreeClicks" stroke="#f0abfc" strokeWidth={2} fill="transparent" />
+                  <Area name="Avaliação" type="monotone" dataKey="reviewsViews" stroke="#fbbf24" strokeWidth={2} fill="transparent" />
+                  <Area name="Cartão" type="monotone" dataKey="loyaltyViews" stroke="#a78bfa" strokeWidth={2} fill="transparent" />
+                  <Area name="QR scans" type="monotone" dataKey="qrScans" stroke="#22d3ee" strokeWidth={2} fill="url(#qrFill)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="dash-card p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-xs uppercase tracking-widest text-muted-foreground">Ranking</div>
+                <h3 className="sec-title mt-1 text-lg">Top links clicados</h3>
+              </div>
+              <span className="card-icon" aria-hidden><MousePointerClick /></span>
+            </div>
+            <div className="mt-4 space-y-3">
+              {data.channels.linktree.topLinks.length === 0 && (
+                <div className="py-6 text-center text-sm text-muted-foreground">
+                  Nenhum clique registrado ainda.
+                </div>
+              )}
+              {data.channels.linktree.topLinks.map((l, i) => {
+                const max = data.channels.linktree.topLinks[0]?.clicks || 1;
+                const pct = Math.max(6, Math.round((l.clicks / max) * 100));
+                return (
+                  <div key={l.ref_id} className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="inline-grid h-6 w-6 place-items-center rounded-full border border-primary/30 bg-primary/10 text-primary text-[10px] font-semibold shrink-0">{i + 1}</span>
+                        <span className="truncate text-sm font-medium">{l.label}</span>
+                      </div>
+                      <span className="text-xs font-mono text-primary shrink-0">{l.clicks}</span>
+                    </div>
+                    <div className="rank-bar"><span style={{ width: `${pct}%` }} /></div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
       {/* Coortes */}
       <div className="dash-card p-6">
         <div className="flex items-center justify-between">
