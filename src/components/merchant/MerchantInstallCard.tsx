@@ -36,6 +36,8 @@ export function MerchantInstallCard() {
   const [deferred, setDeferred] = useState<BIPEvent | null>(null);
   const [visible, setVisible] = useState(false);
   const [showIosHelp, setShowIosHelp] = useState(false);
+  const myTurn = useOnboardingSlot("install", visible || showIosHelp);
+
 
   useEffect(() => {
     if (isStandalone()) return;
