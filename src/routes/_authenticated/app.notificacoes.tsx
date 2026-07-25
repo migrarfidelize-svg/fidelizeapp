@@ -140,7 +140,7 @@ function NotifPage() {
   });
 
   // Debounced segment preview
-  const [previewCount, setPreviewCount] = useState<{ customers: number; subscribers: number } | null>(null);
+  const [previewCount, setPreviewCount] = useState<{ customers: number; subscribers: number; operators?: number } | null>(null);
   useEffect(() => {
     if (!activeEst?.id) return;
     const t = setTimeout(async () => {
