@@ -6,6 +6,7 @@ import {
   getPaymentStatus, getMercadoPagoPublicKey, getMercadoPagoAccountHint,
 } from "@/lib/mercadopago.functions";
 import { getActivePaymentProviders } from "@/lib/payment-providers.functions";
+import { getUpgradeQuote } from "@/lib/plan-proration.functions";
 import { AsaasPaymentTabs } from "@/components/AsaasPaymentTabs";
 import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -152,6 +153,22 @@ export function PaymentDialog({
     };
     return tierMap[plan?.tier ?? ""] ?? ["Ativação imediata", "Cancele quando quiser", "Nota fiscal automática", "Suporte incluso"];
   }, [plan?.tier]);
+
+  // Crédito pró-rata: upgrade em até 7 dias da compra paga só a diferença.
+  const quoteFn = useServerFn(getUpgradeQuote);
+  const { data: quote } = useQuery({
+    queryKey: ["upgrade-quote", establishmentId, plan?.slug],
+    queryFn: () => quoteFn({ data: { establishment_id: establishmentId, plan_slug: plan!.slug } }) as Promise<{
+      base_amount: number; credit: number; amount: number; is_upgrade_credit: boolean;
+      days_since_payment: number | null; window_days: number; previous_plan_slug: string | null;
+    }>,
+    enabled: open && !!plan && !!establishmentId,
+    staleTime: 30_000,
+  });
+  const hasCredit = !!quote?.is_upgrade_credit;
+  const dueNow = hasCredit ? quote!.amount : (plan?.price_monthly ?? 0);
+  const chargePlan = plan ? { ...plan, price_monthly: dueNow } : null;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[92vh] overflow-hidden p-0 gap-0 border-0 shadow-2xl sm:rounded-3xl" style={{ fontFamily: "'Manrope', system-ui, sans-serif" }}>
@@ -195,10 +212,21 @@ export function PaymentDialog({
                     <span className="text-[11px] text-slate-500">BRL</span>
                   </div>
                   <div className="mt-2 flex items-baseline gap-1" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
-                    <span className="text-4xl font-extrabold tracking-tight">{fmt(plan.price_monthly)}</span>
-                    <span className="text-sm text-slate-400">/mês</span>
+                    {hasCredit && <span className="mr-1 text-lg text-slate-500 line-through">{fmt(plan.price_monthly)}</span>}
+                    <span className="text-4xl font-extrabold tracking-tight">{fmt(dueNow)}</span>
+                    <span className="text-sm text-slate-400">{hasCredit ? "agora" : "/mês"}</span>
                   </div>
-                  <p className="mt-1 text-xs text-slate-500">Cancele quando quiser · Sem fidelidade</p>
+                  {hasCredit ? (
+                    <div className="mt-3 rounded-xl border border-emerald-400/30 bg-emerald-400/10 p-3 text-xs text-emerald-200">
+                      <p className="font-semibold">Crédito de upgrade aplicado — {fmt(quote!.credit)}</p>
+                      <p className="mt-1 text-emerald-200/80">
+                        Você assinou há {quote!.days_since_payment ?? 0} dia(s) (dentro dos {quote!.window_days} dias).
+                        Descontamos o que já foi pago: você paga só a diferença. Nas próximas cobranças, o valor mensal volta a ser {fmt(plan.price_monthly)}.
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="mt-1 text-xs text-slate-500">Cancele quando quiser · Sem fidelidade</p>
+                  )}
                 </div>
 
                 <div className="mt-5 flex flex-wrap items-center gap-3 text-[11px] text-slate-400">
@@ -252,19 +280,19 @@ export function PaymentDialog({
                       <TabsTrigger value="boleto" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-neutral-800"><FileText className="mr-2 h-4 w-4" />Boleto</TabsTrigger>
                     </TabsList>
                     <TabsContent value="pix" className="mt-5 focus-visible:outline-none">
-                      <PixForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
+                      <PixForm plan={chargePlan!} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
                     </TabsContent>
                     <TabsContent value="card" className="mt-5 focus-visible:outline-none">
-                      <CardForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
+                      <CardForm plan={chargePlan!} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
                     </TabsContent>
                     <TabsContent value="boleto" className="mt-5 focus-visible:outline-none">
-                      <BoletoForm plan={plan} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
+                      <BoletoForm plan={chargePlan!} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
                     </TabsContent>
                   </Tabs>
                 </div>
               ) : (
                 <AsaasPaymentTabs
-                  plan={plan}
+                  plan={chargePlan!}
                   establishmentId={establishmentId}
                   payerEmailDefault={payerEmailDefault}
                   isSandboxLike={asaasMode === "sandbox"}
