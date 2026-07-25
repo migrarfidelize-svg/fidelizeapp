@@ -1016,7 +1016,7 @@ function ReviewQrPage() {
         subtitle="Um único cartaz, três destinos: Avaliação, Árvore de Links ou Cartão Fidelidade. Escolha abaixo para onde o cliente será direcionado ao escanear."
       />
 
-      <QrDestinationCard establishmentId={est.id} />
+      <QrDestinationCard establishmentId={est.id} initialDest={search.dest} />
 
       <QrTagsManager establishmentId={est.id} />
 
