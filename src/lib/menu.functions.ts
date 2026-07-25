@@ -627,6 +627,7 @@ export const updateMenuTheme = createServerFn({ method: "POST" })
       preset: z.enum(["papel", "noir", "fresh"]),
       layout: z.enum(["list", "grid", "magazine"]),
       pattern: z.enum(["none", "grain", "dots", "grid", "aurora"]),
+      entry: z.enum(["dishes", "categories"]).optional(),
       bg_image_url: z.string().url().max(500).nullable().optional(),
     }),
   }).parse(d))
@@ -635,7 +636,7 @@ export const updateMenuTheme = createServerFn({ method: "POST" })
     const menuId = await ensureMenuId(supabase, data.establishment_id);
     const { data: menu, error } = await supabase
       .from("restaurant_menus")
-      .update({ theme: { ...data.theme, bg_image_url: data.theme.bg_image_url ?? null } })
+      .update({ theme: { ...data.theme, entry: data.theme.entry ?? "dishes", bg_image_url: data.theme.bg_image_url ?? null } })
       .eq("id", menuId)
       .select("*")
       .single();
