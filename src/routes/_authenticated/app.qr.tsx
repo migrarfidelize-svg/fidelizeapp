@@ -175,14 +175,14 @@ const LAYOUT_BY_FORMAT: Record<FormatKey, PosterLayout> = {
 };
 
 const LAYOUT_LANDSCAPE: PosterLayout = {
-  header:      { x: 22, y: 22 },
-  title:       { x: 22, y: 42 },
-  subtitle:    { x: 22, y: 55 },
-  primaryQr:   { x: 74, y: 50 },
+  header:      { x: 26, y: 20 },
+  title:       { x: 26, y: 44 },
+  subtitle:    { x: 26, y: 58 },
+  ctaNear:     { x: 26, y: 72 },
+  nfc:         { x: 26, y: 85 },
+  primaryQr:   { x: 74, y: 40 },
   secondaryQr: { x: 74, y: 78 },
-  nfc:         { x: 22, y: 74 },
-  ctaNear:     { x: 22, y: 68 },
-  ctaFooter:   { x: 50, y: 94 },
+  ctaFooter:   { x: 50, y: 96 },
 };
 
 /** Preset badges the merchant can drop onto the poster. */
@@ -1546,6 +1546,7 @@ function ReviewQrPage() {
                   editable={editLayout}
                   badges={badges}
                   moveBadge={moveBadge}
+                  landscape={landscape}
                 />
 
 
@@ -2007,6 +2008,7 @@ function ReviewQrPage() {
                   editable={false}
                   badges={badges}
                   moveBadge={moveBadge}
+                  landscape={landscape}
                 />
               </div>
             </div>
@@ -2056,6 +2058,7 @@ interface PosterProps {
   editable: boolean;
   badges: BadgeInstance[];
   moveBadge: (key: BadgeKey, x: number, y: number) => void;
+  landscape?: boolean;
 }
 
 const PosterCanvas = forwardRef<HTMLDivElement, PosterProps>(function PosterCanvas(props, ref) {
@@ -2189,11 +2192,16 @@ function PortraitBody(p: PosterProps) {
   // Format-aware multiplier: harmoniza tipografia e QRs quando o canvas
   // muda drasticamente de proporção (Feed é quadrado/curto, Story é bem alto).
   // Referência 1.0 = Balcão 10×15.
-  const formatMult =
+  const baseMult =
     p.format === "feed" ? 0.72 :
     p.format === "story" ? 0.82 :
     p.format === "a5" ? 0.95 :
     1;
+  // Em modo horizontal a altura útil vira a menor dimensão, então
+  // reduzimos tipografia e QRs para caberem em duas colunas sem
+  // sobrepor os elementos vizinhos.
+  const landscapePenalty = p.landscape ? 0.62 : 1;
+  const formatMult = baseMult * landscapePenalty;
   const effectiveScale = p.contentScale * formatMult;
   // Story é 9:16 (muito estreito): reduz ainda mais o QR quando o 2º está ativo
   // para evitar que os dois balões estourem a largura útil e se sobreponham.
