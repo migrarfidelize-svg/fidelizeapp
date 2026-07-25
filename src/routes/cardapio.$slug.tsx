@@ -91,7 +91,7 @@ export const Route = createFileRoute("/cardapio/$slug")({
               : {}),
             hasMenu: {
               "@type": "Menu",
-              name: loaderData.menu?.title || `Cardápio de ${name}`,
+              name: loaderData.menu?.display_name || `Cardápio de ${name}`,
             },
           }),
         },
