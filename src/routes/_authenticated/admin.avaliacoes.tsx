@@ -31,16 +31,15 @@ export const Route = createFileRoute("/_authenticated/admin/avaliacoes")({
 });
 
 function Stars({ n, size = 4 }: { n: number; size?: number }) {
+  const px = size * 4;
   return (
     <div className="flex gap-0.5">
-      <PageHero
-        icon={HeroIcon}
-        eyebrow={"Super Admin · Moderação"}
-        title={"Moderação de avaliações"}
-        subtitle={"Aprovar, ocultar ou responder avaliações públicas de qualquer empresa."}
-      />
       {[1, 2, 3, 4, 5].map((i) => (
-        <Star key={i} className={`h-${size} w-${size} ${i <= n ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/30"}`} />
+        <Star
+          key={i}
+          style={{ width: px, height: px }}
+          className={i <= n ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/30"}
+        />
       ))}
     </div>
   );
