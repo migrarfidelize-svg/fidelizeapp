@@ -159,8 +159,39 @@ function WalletHome() {
                   Ver todos →
                 </Link>
               </div>
-              <WalletStack items={featured.slice(0, 5)} />
+
+              {items.length >= 4 && (
+                <div className="relative mb-3">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Buscar estabelecimento…"
+                    aria-label="Buscar estabelecimento na minha carteira"
+                    className="h-11 w-full rounded-2xl border border-border/60 bg-card/40 pl-9 pr-9 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50"
+                  />
+                  {query && (
+                    <button
+                      type="button"
+                      onClick={() => setQuery("")}
+                      aria-label="Limpar busca"
+                      className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-xl text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {visibleFeatured.length === 0 ? (
+                <p className="rounded-2xl border border-dashed border-border/60 bg-card/30 p-6 text-center text-sm text-muted-foreground">
+                  Nenhum cartão encontrado para “{query}”.
+                </p>
+              ) : (
+                <WalletStack key={term} items={visibleFeatured.slice(0, 5)} />
+              )}
             </section>
+
 
             {feed.length > 0 && (
               <section>
