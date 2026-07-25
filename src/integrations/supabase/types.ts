@@ -4745,6 +4745,7 @@ export type Database = {
         Args: { _action: string; _est: string; _user: string }
         Returns: boolean
       }
+      menu_storage_est_id: { Args: { _path: string }; Returns: string }
       my_account_type: {
         Args: never
         Returns: Database["public"]["Enums"]["account_type"]
