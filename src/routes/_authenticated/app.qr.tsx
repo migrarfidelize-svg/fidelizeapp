@@ -2190,11 +2190,16 @@ function PortraitBody(p: PosterProps) {
   // Format-aware multiplier: harmoniza tipografia e QRs quando o canvas
   // muda drasticamente de proporção (Feed é quadrado/curto, Story é bem alto).
   // Referência 1.0 = Balcão 10×15.
-  const formatMult =
+  const baseMult =
     p.format === "feed" ? 0.72 :
     p.format === "story" ? 0.82 :
     p.format === "a5" ? 0.95 :
     1;
+  // Em modo horizontal a altura útil vira a menor dimensão, então
+  // reduzimos tipografia e QRs para caberem em duas colunas sem
+  // sobrepor os elementos vizinhos.
+  const landscapePenalty = p.landscape ? 0.62 : 1;
+  const formatMult = baseMult * landscapePenalty;
   const effectiveScale = p.contentScale * formatMult;
   // Story é 9:16 (muito estreito): reduz ainda mais o QR quando o 2º está ativo
   // para evitar que os dois balões estourem a largura útil e se sobreponham.
