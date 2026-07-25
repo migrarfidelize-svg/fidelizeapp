@@ -25,6 +25,17 @@ export const Route = createFileRoute("/cardapio/$slug")({
   loader: async ({ params, context }) => {
     const d = await context.queryClient.ensureQueryData(opts(params.slug));
     if (!d) throw notFound();
+    const { applySeoCacheHeaders } = await import("@/lib/seo-cache.server");
+    applySeoCacheHeaders({
+      version: [
+        d.menu?.updated_at,
+        d.menu?.status,
+        d.establishment?.updated_at,
+        d.establishment?.cover_url,
+        d.establishment?.logo_url,
+        d.items?.length,
+      ],
+    });
     return d;
   },
   head: ({ params, loaderData }) => {

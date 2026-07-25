@@ -20,6 +20,15 @@ export const Route = createFileRoute("/avaliar/$slug")({
   loader: async ({ params, context }) => {
     const d = await context.queryClient.ensureQueryData(opts(params.slug));
     if (!d) throw notFound();
+    const { applySeoCacheHeaders } = await import("@/lib/seo-cache.server");
+    applySeoCacheHeaders({
+      version: [
+        d.est?.updated_at,
+        d.est?.logo_url,
+        d.stats?.count,
+        d.stats?.avg,
+      ],
+    });
     return d;
   },
   head: ({ loaderData, params }) => {
