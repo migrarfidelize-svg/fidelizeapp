@@ -843,6 +843,18 @@ function ItemModal({ item, primary, onClose }: { item: Item; primary: string; on
             </div>
           )}
         </div>
+        <div
+          className="p-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t"
+          style={{ borderColor: "var(--mk-line)", background: "var(--mk-surface)" }}
+        >
+          <button
+            onClick={onClose}
+            className="fx-pill w-full rounded-full py-3 text-sm font-bold"
+            style={{ background: primary, color: readableInk(primary) }}
+          >
+            Voltar ao cardápio
+          </button>
+        </div>
       </div>
     </div>
   );
