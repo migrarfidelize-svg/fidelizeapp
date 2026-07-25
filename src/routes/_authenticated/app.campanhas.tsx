@@ -86,6 +86,12 @@ const emptyForm: FormState = {
   accent_color: "#F97066",
 };
 
+const COLOR_PRESETS: { name: string; primary: string; accent: string }[] = [
+  { name: "Roxo Fidelize", primary: "#5B21B6", accent: "#F97066" },
+  { name: "Cyan Circuit", primary: "#00B8D4", accent: "#FF3DAA" },
+  { name: "Ouro Premium", primary: "#0F172A", accent: "#F4B740" },
+];
+
 function CampanhasPage() {
   const qc = useQueryClient();
   const getEsts = useServerFn(getMyEstablishments);
@@ -429,18 +435,43 @@ function CampaignDialog({
               />
             </div>
             {form.use_custom_colors && (
-              <div className="grid grid-cols-2 gap-3">
-                <ColorField
-                  label="Cor principal"
-                  value={form.primary_color}
-                  onChange={(v) => setForm({ ...form, primary_color: v })}
-                />
-                <ColorField
-                  label="Cor de destaque"
-                  value={form.accent_color}
-                  onChange={(v) => setForm({ ...form, accent_color: v })}
-                />
-              </div>
+              <>
+                <div>
+                  <Label className="text-xs uppercase tracking-widest text-muted-foreground mb-2 block">Paletas sugeridas</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {COLOR_PRESETS.map((p) => {
+                      const active = form.primary_color.toLowerCase() === p.primary.toLowerCase() && form.accent_color.toLowerCase() === p.accent.toLowerCase();
+                      return (
+                        <button
+                          key={p.name}
+                          type="button"
+                          onClick={() => setForm({ ...form, primary_color: p.primary, accent_color: p.accent })}
+                          className={`group rounded-xl border p-2 text-left transition ${active ? "border-primary ring-2 ring-primary/40" : "hover:border-primary/40"}`}
+                          aria-label={`Aplicar paleta ${p.name}`}
+                        >
+                          <div className="flex h-8 rounded-md overflow-hidden ring-1 ring-black/5">
+                            <span className="flex-1" style={{ background: p.primary }} />
+                            <span className="flex-1" style={{ background: p.accent }} />
+                          </div>
+                          <div className="mt-1.5 text-[11px] font-medium truncate">{p.name}</div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <ColorField
+                    label="Cor principal"
+                    value={form.primary_color}
+                    onChange={(v) => setForm({ ...form, primary_color: v })}
+                  />
+                  <ColorField
+                    label="Cor de destaque"
+                    value={form.accent_color}
+                    onChange={(v) => setForm({ ...form, accent_color: v })}
+                  />
+                </div>
+              </>
             )}
           </div>
         </div>
