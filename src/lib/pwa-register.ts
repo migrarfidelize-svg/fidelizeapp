@@ -57,11 +57,11 @@ function cleanupPwa() {
   void clearPwaCaches();
 }
 
-function isPwaPath(pathname: string): boolean {
-  // Customer PWA surfaces that need a service worker (offline voucher +
-  // Web Push subscription). Push opt-in lives on /carteira, so the SW must
-  // be registered there or `navigator.serviceWorker.ready` never resolves.
-  return pathname.startsWith("/c/") || pathname.startsWith("/carteira");
+function isPwaPath(_pathname: string): boolean {
+  // Allow SW registration on every route on published domains so admin/merchant
+  // pages can subscribe to test push. Hard-refused contexts (dev/preview/iframe)
+  // are handled by `isHardRefusedContext()` below.
+  return true;
 }
 
 function isPwaLaunchAuth(pathname: string, search: string): boolean {
@@ -77,13 +77,29 @@ function shouldRegisterForLocation(location: Location): boolean {
   return isPwaPath(location.pathname) || isPwaLaunchAuth(location.pathname, location.search);
 }
 
-function isHardRefusedContext(): boolean {
-  const isProd = import.meta.env.PROD;
-  const inIframe = window.self !== window.top;
-  const host = window.location.hostname;
-  const killSwitch = new URLSearchParams(window.location.search).get("sw") === "off";
-  return !isProd || inIframe || isPreviewHost(host) || killSwitch;
+export type SwRefusalReason =
+  | "unsupported"
+  | "not-production"
+  | "in-iframe"
+  | "preview-host"
+  | "kill-switch";
+
+export function canRegisterServiceWorker(): { allowed: true } | { allowed: false; reason: SwRefusalReason } {
+  if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
+    return { allowed: false, reason: "unsupported" };
+  }
+  if (!import.meta.env.PROD) return { allowed: false, reason: "not-production" };
+  if (window.self !== window.top) return { allowed: false, reason: "in-iframe" };
+  if (isPreviewHost(window.location.hostname)) return { allowed: false, reason: "preview-host" };
+  if (new URLSearchParams(window.location.search).get("sw") === "off")
+    return { allowed: false, reason: "kill-switch" };
+  return { allowed: true };
 }
+
+function isHardRefusedContext(): boolean {
+  return !canRegisterServiceWorker().allowed;
+}
+
 
 function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;

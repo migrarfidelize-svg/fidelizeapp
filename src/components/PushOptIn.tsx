@@ -173,7 +173,9 @@ export function PushOptIn({ token }: { token: string }) {
         }
       }
 
-      // Step 4: persist on server
+      // Step 4: persist on server. Do NOT unsubscribe the browser on failure —
+      // the subscription is valid; the server rejection is either transient
+      // (network) or a data mismatch we want to preserve so the user can retry.
       const json = sub.toJSON();
       try {
         await subscribe({
@@ -186,18 +188,17 @@ export function PushOptIn({ token }: { token: string }) {
           },
         });
       } catch (e) {
-        // Server rejected — roll back the browser subscription so state stays consistent.
-        try {
-          await sub.unsubscribe();
-        } catch {
-          /* ignore */
+        const msg = e instanceof Error ? e.message : String(e);
+        if (/cart[aã]o n[aã]o encontrado/i.test(msg)) {
+          throw new Error(
+            "CUSTOMER_NOT_FOUND::Não conseguimos identificar seu cadastro. Feche e abra novamente sua carteira para ativar as notificações.",
+          );
         }
         throw new Error(
-          `SERVER_ERROR::Não conseguimos salvar sua inscrição no servidor. Tente novamente em instantes. Detalhe: ${
-            e instanceof Error ? e.message : String(e)
-          }`,
+          `SERVER_ERROR::Não conseguimos salvar sua inscrição no servidor. Tente novamente em instantes. Detalhe: ${msg}`,
         );
       }
+
 
       setEndpoint(sub.endpoint);
       setSubscribed(true);

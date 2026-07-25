@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
+import { AdminPushDiagnostics } from "@/components/AdminPushDiagnostics";
 import { BellDot as HeroIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -139,6 +140,9 @@ function AdminNotifPage() {
           Visão global de inscrições e envio de broadcast para os clientes finais das empresas.
         </p>
       </header>
+
+      <AdminPushDiagnostics />
+
 
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
