@@ -292,15 +292,15 @@ function PublicMenuPage() {
       {/* ---------- HERO ---------- */}
       <header className="relative">
         <div
-          className="h-24 sm:h-40 w-full"
+          className="h-14 sm:h-24 w-full"
           style={{
             background: cover
               ? `linear-gradient(180deg, rgba(23,19,14,0.15), rgba(23,19,14,0.55)), url(${cover}) center/cover`
               : `linear-gradient(135deg, ${primary}, #17130E)`,
           }}
         />
-        <div className="max-w-3xl mx-auto px-4 sm:px-5 -mt-10 sm:-mt-12 relative">
-          <div className="rounded-2xl sm:rounded-3xl fx-shadow p-3.5 sm:p-5 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 sm:gap-4" style={{ background: "var(--mk-surface)", border: "1px solid var(--mk-line)" }}>
+        <div className="max-w-3xl mx-auto px-4 sm:px-5 -mt-8 sm:-mt-10 relative">
+          <div className="rounded-2xl sm:rounded-3xl fx-shadow p-3.5 sm:p-5 flex flex-col items-center text-center gap-2 sm:gap-3" style={{ background: "var(--mk-surface)", border: "1px solid var(--mk-line)" }}>
             {est.logo_url && !logoErr ? (
               <img
                 src={est.logo_url}
@@ -319,7 +319,7 @@ function PublicMenuPage() {
                 {est.name.slice(0, 1).toUpperCase()}
               </div>
             )}
-            <div className="min-w-0">
+            <div className="min-w-0 w-full">
               {est.logo_url && !logoErr ? (
                 <h1 className="sr-only">{est.name}</h1>
               ) : (
@@ -331,7 +331,7 @@ function PublicMenuPage() {
                   {menu.tagline || est.description}
                 </p>
               )}
-              <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5 text-[11px] sm:text-xs opacity-70">
+              <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 mt-1.5 text-[11px] sm:text-xs opacity-70">
                 {est.address && <span className="inline-flex min-w-0 items-center gap-1"><MapPin className="w-3.5 h-3.5 shrink-0" /><span className="truncate">{est.address}</span></span>}
                 {menu.hours && (menu.hours as any)?.summary && (
                   <span className="inline-flex items-center gap-1"><Clock className="w-3.5 h-3.5 shrink-0" />{(menu.hours as any).summary}</span>
