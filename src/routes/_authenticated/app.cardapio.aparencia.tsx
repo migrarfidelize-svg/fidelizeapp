@@ -1,9 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useBlocker } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Palette, Check, ImageIcon, Trash2, ExternalLink, Loader2 } from "lucide-react";
+import { Palette, Check, ImageIcon, Trash2, ExternalLink, Loader2, RotateCcw, Undo2 } from "lucide-react";
+
 
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { getMyMenuOverview, updateMenuTheme, listMenuItems } from "@/lib/menu.functions";
