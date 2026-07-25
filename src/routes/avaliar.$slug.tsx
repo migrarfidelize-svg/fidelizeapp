@@ -5,6 +5,7 @@ import { PublicRatingBlock } from "@/components/PublicRatingBlock";
 import { getPublicReviewForm, getPublicReviewsList } from "@/lib/public-reviews.functions";
 import { useChannelPageView } from "@/lib/tracking";
 import { formatDate } from "@/lib/format";
+import { resolveReviewTheme, reviewPatternStyle } from "@/lib/review-themes";
 
 const opts = (slug: string) => queryOptions({
   queryKey: ["public-review-form", slug],
@@ -63,11 +64,15 @@ export const Route = createFileRoute("/avaliar/$slug")({
   notFoundComponent: () => <div className="grid min-h-dvh place-items-center text-muted-foreground">Página não encontrada.</div>,
 });
 
-function Stars({ n }: { n: number }) {
+function Stars({ n, color = "#00ffff" }: { n: number; color?: string }) {
   return (
     <div className="flex gap-0.5">
       {[1, 2, 3, 4, 5].map((i) => (
-        <Star key={i} className={`h-3.5 w-3.5 ${i <= n ? "fill-cyan-400 text-cyan-400" : "text-white/15"}`} />
+        <Star
+          key={i}
+          className="h-3.5 w-3.5"
+          style={i <= n ? { fill: color, color } : { color: "currentColor", opacity: 0.25 }}
+        />
       ))}
     </div>
   );
@@ -143,31 +148,32 @@ function Page() {
   const { data: reviews, isLoading: reviewsLoading } = useQuery(listOpts(slug));
   const d = data!;
   const est = d.est;
-  const accent = est.primary_color || "#00ffff";
+  const theme = resolveReviewTheme((d as any).theme);
+  const c = theme.colors;
+  const accent = theme.accent || est.primary_color || c.accent;
   useChannelPageView(slug, "reviews");
+
+  const patternStyle = reviewPatternStyle(theme.pattern, accent);
 
   return (
     <div
-      className="min-h-dvh bg-[#050505] text-gray-200 antialiased"
+      className="min-h-dvh antialiased"
       style={{
+        color: c.muted,
+        backgroundColor: c.bg,
         backgroundImage: `
           radial-gradient(900px 380px at 50% -8%, ${accent}22, transparent 60%),
-          radial-gradient(600px 300px at 100% 100%, #ff00ff11, transparent 60%),
-          linear-gradient(#050505,#050505)
+          radial-gradient(600px 300px at 100% 100%, ${c.accent2}11, transparent 60%)
         `,
       }}
     >
-      {/* Subtle circuit grid */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 opacity-[0.08]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(0,255,255,.35) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,255,.35) 1px, transparent 1px)",
-          backgroundSize: "56px 56px",
-          maskImage: "radial-gradient(ellipse at 50% 0%, black 40%, transparent 80%)",
-        }}
-      />
+      {patternStyle ? (
+        <div
+          aria-hidden
+          className="pointer-events-none fixed inset-0"
+          style={{ opacity: c.dark ? 0.08 : 0.12, ...patternStyle }}
+        />
+      ) : null}
 
       <div className="relative mx-auto max-w-xl px-4 pb-20 pt-10">
         {/* Header */}
@@ -183,23 +189,31 @@ function Page() {
           </div>
 
           {est.logo_url ? (
-            <div className="mx-auto mt-5 grid h-20 w-20 place-items-center rounded-2xl border border-white/10 bg-black/40 p-1 shadow-[0_0_30px_rgba(0,255,255,0.15)]">
+            <div
+              className="mx-auto mt-5 grid h-20 w-20 place-items-center rounded-2xl border p-1"
+              style={{ borderColor: c.border, background: c.surface, boxShadow: `0 0 30px ${accent}26` }}
+            >
               <img src={est.logo_url} alt={est.name} className="h-full w-full rounded-xl object-cover" />
             </div>
           ) : null}
 
-          <h1 className="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">{est.name}</h1>
-          <p className="mt-1 text-sm text-gray-400">Deixe sua avaliação para nos ajudar a melhorar</p>
+          <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl" style={{ color: c.ink }}>
+            {theme.headline || est.name}
+          </h1>
+          <p className="mt-1 text-sm" style={{ color: c.muted }}>
+            {theme.subheadline || "Deixe sua avaliação para nos ajudar a melhorar"}
+          </p>
         </header>
 
         {/* Rating card */}
         <section
-          className="relative mt-8 overflow-hidden rounded-2xl border border-white/5 bg-[#0b0b0e]/90 p-6 shadow-2xl backdrop-blur sm:p-8"
+          className="relative mt-8 overflow-hidden rounded-2xl border p-6 shadow-2xl backdrop-blur sm:p-8"
+          style={{ borderColor: c.border, background: c.surface }}
         >
           <div
             aria-hidden
             className="absolute inset-x-0 top-0 h-[2px]"
-            style={{ background: `linear-gradient(90deg, ${accent}, #ff00ff)` }}
+            style={{ background: `linear-gradient(90deg, ${accent}, ${c.accent2})` }}
           />
           <div
             aria-hidden
@@ -210,7 +224,7 @@ function Page() {
             {d.form ? (
               <PublicRatingBlock slug={slug} source="direct_url" />
             ) : (
-              <div className="rounded-xl border border-white/5 bg-black/30 p-8 text-center text-gray-400">
+              <div className="rounded-xl border p-8 text-center" style={{ borderColor: c.border, color: c.muted }}>
                 Este estabelecimento ainda não ativou avaliações públicas.
               </div>
             )}
@@ -218,7 +232,7 @@ function Page() {
         </section>
 
         {/* Reviews list */}
-        {d.form && (
+        {d.form && theme.show_reviews && (
           <section className="mt-12">
             <ReviewsSectionHeader />
 
@@ -235,7 +249,8 @@ function Page() {
                 {reviews.map((r) => (
                   <article
                     key={r.id}
-                    className="group relative rounded-xl border border-white/5 bg-[#0b0b0e]/60 p-5 transition hover:border-white/10"
+                    className="group relative rounded-xl border p-5 transition"
+                    style={{ borderColor: c.border, background: c.surface }}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
@@ -246,26 +261,29 @@ function Page() {
                           {initials(r.author)}
                         </div>
                         <div>
-                          <div className="text-sm font-semibold text-white">{r.author}</div>
-                          <div className="mt-1"><Stars n={r.rating} /></div>
+                          <div className="text-sm font-semibold" style={{ color: c.ink }}>{r.author}</div>
+                          <div className="mt-1"><Stars n={r.rating} color={accent} /></div>
                         </div>
                       </div>
-                      <span className="font-mono text-[10px] uppercase tracking-widest text-white/40">
+                      <span className="font-mono text-[10px] uppercase tracking-widest" style={{ color: c.muted, opacity: 0.7 }}>
                         {formatDate(r.created_at)}
                       </span>
                     </div>
 
                     {r.comment && (
-                      <p className="mt-3 text-sm leading-relaxed text-gray-400">{r.comment}</p>
+                      <p className="mt-3 text-sm leading-relaxed" style={{ color: c.muted }}>{r.comment}</p>
                     )}
 
                     {r.merchant_reply && (
-                      <div className="mt-4 rounded-lg border-l-2 border-fuchsia-500/60 bg-fuchsia-500/[0.04] py-3 pl-4 pr-3">
-                        <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-fuchsia-400">
+                      <div
+                        className="mt-4 rounded-lg border-l-2 py-3 pl-4 pr-3"
+                        style={{ borderColor: c.accent2, background: `${c.accent2}0f` }}
+                      >
+                        <div className="font-mono text-[10px] font-bold uppercase tracking-widest" style={{ color: c.accent2 }}>
                           Resposta de {est.name}
                           {r.merchant_reply_at ? ` · ${formatDate(r.merchant_reply_at)}` : ""}
                         </div>
-                        <p className="mt-1 text-sm italic text-gray-400">{r.merchant_reply}</p>
+                        <p className="mt-1 text-sm italic" style={{ color: c.muted }}>{r.merchant_reply}</p>
                       </div>
                     )}
                   </article>
@@ -276,12 +294,14 @@ function Page() {
         )}
 
         {/* Footer */}
-        <div className="mt-14 flex items-center justify-center gap-2 opacity-40">
-          <span className="font-mono text-[10px] uppercase tracking-[0.25em]">Powered by</span>
-          <span className="font-mono text-xs font-black tracking-tighter" style={{ color: accent }}>
-            FIDELIZE
-          </span>
-        </div>
+        {theme.show_powered_by && (
+          <div className="mt-14 flex items-center justify-center gap-2 opacity-40" style={{ color: c.muted }}>
+            <span className="font-mono text-[10px] uppercase tracking-[0.25em]">Powered by</span>
+            <span className="font-mono text-xs font-black tracking-tighter" style={{ color: accent }}>
+              FIDELIZE
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

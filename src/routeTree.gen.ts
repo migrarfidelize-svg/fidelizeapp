@@ -113,6 +113,7 @@ import { Route as AuthenticatedCarteiraSlugPromocoesRouteImport } from './routes
 import { Route as AuthenticatedAppCardapioPratosRouteImport } from './routes/_authenticated/app.cardapio.pratos'
 import { Route as AuthenticatedAppCardapioCategoriasRouteImport } from './routes/_authenticated/app.cardapio.categorias'
 import { Route as AuthenticatedAppCardapioAparenciaRouteImport } from './routes/_authenticated/app.cardapio.aparencia'
+import { Route as AuthenticatedAppAvaliacoesTemaRouteImport } from './routes/_authenticated/app.avaliacoes.tema'
 import { Route as AuthenticatedAppAvaliacoesQrRouteImport } from './routes/_authenticated/app.avaliacoes.qr'
 import { Route as AuthenticatedAdminSuporteIdRouteImport } from './routes/_authenticated/admin.suporte.$id'
 import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authenticated/admin.empresa.$id'
@@ -696,6 +697,12 @@ const AuthenticatedAppCardapioAparenciaRoute =
     path: '/aparencia',
     getParentRoute: () => AuthenticatedAppCardapioRoute,
   } as any)
+const AuthenticatedAppAvaliacoesTemaRoute =
+  AuthenticatedAppAvaliacoesTemaRouteImport.update({
+    id: '/avaliacoes/tema',
+    path: '/avaliacoes/tema',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppAvaliacoesQrRoute =
   AuthenticatedAppAvaliacoesQrRouteImport.update({
     id: '/avaliacoes/qr',
@@ -822,6 +829,7 @@ export interface FileRoutesByFullPath {
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/app/avaliacoes/qr': typeof AuthenticatedAppAvaliacoesQrRoute
+  '/app/avaliacoes/tema': typeof AuthenticatedAppAvaliacoesTemaRoute
   '/app/cardapio/aparencia': typeof AuthenticatedAppCardapioAparenciaRoute
   '/app/cardapio/categorias': typeof AuthenticatedAppCardapioCategoriasRoute
   '/app/cardapio/pratos': typeof AuthenticatedAppCardapioPratosRoute
@@ -930,6 +938,7 @@ export interface FileRoutesByTo {
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/app/avaliacoes/qr': typeof AuthenticatedAppAvaliacoesQrRoute
+  '/app/avaliacoes/tema': typeof AuthenticatedAppAvaliacoesTemaRoute
   '/app/cardapio/aparencia': typeof AuthenticatedAppCardapioAparenciaRoute
   '/app/cardapio/categorias': typeof AuthenticatedAppCardapioCategoriasRoute
   '/app/cardapio/pratos': typeof AuthenticatedAppCardapioPratosRoute
@@ -1044,6 +1053,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/_authenticated/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/_authenticated/app/avaliacoes/qr': typeof AuthenticatedAppAvaliacoesQrRoute
+  '/_authenticated/app/avaliacoes/tema': typeof AuthenticatedAppAvaliacoesTemaRoute
   '/_authenticated/app/cardapio/aparencia': typeof AuthenticatedAppCardapioAparenciaRoute
   '/_authenticated/app/cardapio/categorias': typeof AuthenticatedAppCardapioCategoriasRoute
   '/_authenticated/app/cardapio/pratos': typeof AuthenticatedAppCardapioPratosRoute
@@ -1158,6 +1168,7 @@ export interface FileRouteTypes {
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
     | '/app/avaliacoes/qr'
+    | '/app/avaliacoes/tema'
     | '/app/cardapio/aparencia'
     | '/app/cardapio/categorias'
     | '/app/cardapio/pratos'
@@ -1266,6 +1277,7 @@ export interface FileRouteTypes {
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
     | '/app/avaliacoes/qr'
+    | '/app/avaliacoes/tema'
     | '/app/cardapio/aparencia'
     | '/app/cardapio/categorias'
     | '/app/cardapio/pratos'
@@ -1379,6 +1391,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/empresa/$id'
     | '/_authenticated/admin/suporte/$id'
     | '/_authenticated/app/avaliacoes/qr'
+    | '/_authenticated/app/avaliacoes/tema'
     | '/_authenticated/app/cardapio/aparencia'
     | '/_authenticated/app/cardapio/categorias'
     | '/_authenticated/app/cardapio/pratos'
@@ -2183,6 +2196,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppCardapioAparenciaRouteImport
       parentRoute: typeof AuthenticatedAppCardapioRoute
     }
+    '/_authenticated/app/avaliacoes/tema': {
+      id: '/_authenticated/app/avaliacoes/tema'
+      path: '/avaliacoes/tema'
+      fullPath: '/app/avaliacoes/tema'
+      preLoaderRoute: typeof AuthenticatedAppAvaliacoesTemaRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/app/avaliacoes/qr': {
       id: '/_authenticated/app/avaliacoes/qr'
       path: '/avaliacoes/qr'
@@ -2334,6 +2354,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppSuporteRoute: typeof AuthenticatedAppSuporteRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
   AuthenticatedAppAvaliacoesQrRoute: typeof AuthenticatedAppAvaliacoesQrRoute
+  AuthenticatedAppAvaliacoesTemaRoute: typeof AuthenticatedAppAvaliacoesTemaRoute
   AuthenticatedAppAvaliacoesIndexRoute: typeof AuthenticatedAppAvaliacoesIndexRoute
   AuthenticatedAppFidelizeIndexRoute: typeof AuthenticatedAppFidelizeIndexRoute
   AuthenticatedAppPlanosIndexRoute: typeof AuthenticatedAppPlanosIndexRoute
@@ -2360,6 +2381,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppSuporteRoute: AuthenticatedAppSuporteRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
   AuthenticatedAppAvaliacoesQrRoute: AuthenticatedAppAvaliacoesQrRoute,
+  AuthenticatedAppAvaliacoesTemaRoute: AuthenticatedAppAvaliacoesTemaRoute,
   AuthenticatedAppAvaliacoesIndexRoute: AuthenticatedAppAvaliacoesIndexRoute,
   AuthenticatedAppFidelizeIndexRoute: AuthenticatedAppFidelizeIndexRoute,
   AuthenticatedAppPlanosIndexRoute: AuthenticatedAppPlanosIndexRoute,

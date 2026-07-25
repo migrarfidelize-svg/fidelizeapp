@@ -18,6 +18,7 @@ import {
   LifeBuoy, BookOpen, Package, Receipt, HeartHandshake, Bell, Star, Menu,
   PanelLeftClose, PanelLeftOpen, Compass, Megaphone, UserCircle2, MessageSquare, BarChart3,
   Link2, UtensilsCrossed, FolderTree, LayoutList, Wallet, CreditCard,
+  Palette,
 } from "lucide-react";
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -127,6 +128,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Avaliações",
     items: [
       { to: "/app/avaliacoes", label: "Avaliações", icon: Star },
+      { to: "/app/avaliacoes/tema", label: "Tema e cores", icon: Palette },
     ],
   },
   {
