@@ -132,8 +132,10 @@ type Item = {
   price: number | null; promo_price: number | null; currency: string;
   image_url: string | null; video_url: string | null; video_poster_url: string | null;
   prep_minutes: number | null; badges: any; ingredients: string[]; allergens: string[];
+  variants?: { label: string; price: number | null }[] | null;
   category_id: string | null;
 };
+
 
 const BADGE_META: Record<string, { label: string; icon: any; tone: string }> = {
   vegetariano: { label: "Vegetariano", icon: Leaf, tone: "#2f7a3a" },
