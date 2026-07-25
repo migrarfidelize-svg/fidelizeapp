@@ -450,11 +450,23 @@ function MenuAppearancePage() {
             </CardContent>
           </Card>
 
-          <div className="sticky bottom-3 z-20 flex flex-wrap gap-2 rounded-2xl border border-border/60 bg-background/90 p-3 backdrop-blur">
-            <Button onClick={() => mut.mutate()} disabled={!estId || mut.isPending}>
+          <div className="sticky bottom-3 z-20 flex flex-wrap items-center gap-2 rounded-2xl border border-border/60 bg-background/90 p-3 backdrop-blur">
+            <Button onClick={() => mut.mutate()} disabled={!estId || mut.isPending || !dirty}>
               {mut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Salvar aparência
             </Button>
+            <Button variant="outline" onClick={restoreDefaults} disabled={!estId}>
+              <RotateCcw className="mr-2 h-4 w-4" /> Restaurar padrão
+            </Button>
+            {dirty && (
+              <Button variant="ghost" onClick={() => applyThemeToForm(savedTheme)}>
+                <Undo2 className="mr-2 h-4 w-4" /> Descartar alterações
+              </Button>
+            )}
+            {dirty && (
+              <span className="text-xs font-medium text-amber-500">Alterações não salvas</span>
+            )}
+
             {publicUrl && (
               <Button asChild variant="outline">
                 <a href={publicUrl} target="_blank" rel="noreferrer">
