@@ -3,12 +3,12 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   MapPin, Phone, Instagram, MessageCircle, Clock, ChevronLeft, ChevronRight,
-  X, Search, Flame, Leaf, Wheat, Beef, Fish, Milk, Egg, Nut, Play, Download,
+  X, Search, Flame, Leaf, Wheat, Beef, Fish, Milk, Egg, Nut, Play,
   ArrowLeft, Pause, Volume2, VolumeX, List, Heart, Share2,
 } from "lucide-react";
 
 import { getPublicMenuBySlug } from "@/lib/menu.functions";
-import { generateMenuPdf } from "@/lib/menu-pdf";
+
 import { trackChannelEvent, useChannelPageView } from "@/lib/tracking";
 import { LazyImg } from "@/components/LazyImg";
 import { buildMenuJsonLd } from "@/lib/menu-jsonld";
@@ -169,7 +169,6 @@ function PublicMenuPage() {
   const [catPicked, setCatPicked] = useState(false);
   const [open, setOpen] = useState<Item | null>(null);
   const [stories, setStories] = useState<{ list: Item[]; index: number } | null>(null);
-  const [pdfLoading, setPdfLoading] = useState(false);
   const [logoErr, setLogoErr] = useState(false);
   const catRefs = useRef<Record<string, HTMLElement | null>>({});
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
