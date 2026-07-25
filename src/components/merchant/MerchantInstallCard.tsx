@@ -94,7 +94,7 @@ export function MerchantInstallCard() {
             <div className="mt-3 flex flex-wrap gap-2">
               <Button size="sm" onClick={install}>
                 <Download className="mr-2 h-4 w-4" />
-                {isIos() && !deferred ? "Como instalar" : "Instalar agora"}
+                {deferred ? "Instalar agora" : "Como instalar"}
               </Button>
               <Button size="sm" variant="ghost" onClick={dismiss}>Agora não</Button>
             </div>
@@ -105,30 +105,52 @@ export function MerchantInstallCard() {
       <Dialog open={showIosHelp} onOpenChange={setShowIosHelp}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Instalar no iPhone / iPad</DialogTitle>
+            <DialogTitle>{isIos() ? "Instalar no iPhone / iPad" : "Instalar no Android"}</DialogTitle>
             <DialogDescription>
-              O Safari do iOS não abre um prompt automático. Faça em 3 passos:
+              {isIos()
+                ? "O Safari do iOS não abre um prompt automático. Faça em 3 passos:"
+                : "Se o aviso automático não apareceu, instale pelo menu do navegador:"}
             </DialogDescription>
           </DialogHeader>
-          <ol className="space-y-3 text-sm">
-            <li className="flex items-start gap-3">
-              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">1</span>
-              <span className="flex items-center gap-2">Toque em <Share className="inline h-4 w-4" /> <strong>Compartilhar</strong> na barra do Safari.</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">2</span>
-              <span className="flex items-center gap-2">Escolha <PlusSquare className="inline h-4 w-4" /> <strong>Adicionar à Tela de Início</strong>.</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">3</span>
-              <span>Confirme em <strong>Adicionar</strong> e abra pelo ícone Fidelize.</span>
-            </li>
-          </ol>
+          {isIos() ? (
+            <ol className="space-y-3 text-sm">
+              <li className="flex items-start gap-3">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">1</span>
+                <span className="flex items-center gap-2">Toque em <Share className="inline h-4 w-4" /> <strong>Compartilhar</strong> na barra do Safari.</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">2</span>
+                <span className="flex items-center gap-2">Escolha <PlusSquare className="inline h-4 w-4" /> <strong>Adicionar à Tela de Início</strong>.</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">3</span>
+                <span>Confirme em <strong>Adicionar</strong> e abra pelo ícone Fidelize.</span>
+              </li>
+            </ol>
+          ) : (
+            <ol className="space-y-3 text-sm">
+              <li className="flex items-start gap-3">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">1</span>
+                <span>Abra o menu <strong>⋮</strong> no canto do navegador.</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">2</span>
+                <span>Toque em <strong>Instalar aplicativo</strong> ou <strong>Adicionar à tela inicial</strong>.</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">3</span>
+                <span>Confirme e abra o Fidelize pelo ícone criado.</span>
+              </li>
+            </ol>
+          )}
           <p className="text-xs text-muted-foreground">
-            Use o Safari (não o Chrome no iPhone) — só ele instala apps web no iOS.
+            {isIos()
+              ? "Use o Safari (não o Chrome no iPhone) — só ele instala apps web no iOS."
+              : "Funciona no Chrome, Edge e Samsung Internet."}
           </p>
         </DialogContent>
       </Dialog>
+
     </>
   );
 }
