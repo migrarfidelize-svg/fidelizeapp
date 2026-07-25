@@ -478,12 +478,16 @@ function AppLayout() {
   const closeMobile = () => setMobileOpen(false);
 
   const GROUP_ICONS: Record<string, any> = {
-    operacao: LayoutDashboard,
-    marketing: Megaphone,
-    reputacao: Star,
+    "visao-geral": LayoutDashboard,
+    clientes: Users,
+    qrcodes: QrCode,
+    fidelidade: Stamp,
+    linktree: Link2,
+    avaliacoes: Star,
     cardapio: UtensilsCrossed,
     comunicacao: Bell,
-    conta: UserCircle2,
+    equipe: UsersRound,
+    financeiro: Wallet,
     ajuda: LifeBuoy,
   };
   const unreadByGroup: Record<string, number> = {
