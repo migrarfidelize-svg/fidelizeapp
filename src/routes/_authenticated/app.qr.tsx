@@ -175,14 +175,14 @@ const LAYOUT_BY_FORMAT: Record<FormatKey, PosterLayout> = {
 };
 
 const LAYOUT_LANDSCAPE: PosterLayout = {
-  header:      { x: 22, y: 22 },
-  title:       { x: 22, y: 42 },
-  subtitle:    { x: 22, y: 55 },
-  primaryQr:   { x: 74, y: 50 },
+  header:      { x: 26, y: 20 },
+  title:       { x: 26, y: 44 },
+  subtitle:    { x: 26, y: 58 },
+  ctaNear:     { x: 26, y: 72 },
+  nfc:         { x: 26, y: 85 },
+  primaryQr:   { x: 74, y: 40 },
   secondaryQr: { x: 74, y: 78 },
-  nfc:         { x: 22, y: 74 },
-  ctaNear:     { x: 22, y: 68 },
-  ctaFooter:   { x: 50, y: 94 },
+  ctaFooter:   { x: 50, y: 96 },
 };
 
 /** Preset badges the merchant can drop onto the poster. */
