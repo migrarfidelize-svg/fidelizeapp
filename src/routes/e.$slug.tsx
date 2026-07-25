@@ -294,6 +294,32 @@ export function DiscoveryProfilePage() {
         </ul>
       )}
 
+      {data.has_menu && (
+        <Link
+          to="/cardapio/$slug"
+          params={{ slug: est.slug }}
+          className="group relative flex items-center gap-3 overflow-hidden rounded-3xl border border-border/60 bg-card/50 p-4 transition-all hover:border-primary/40 hover:bg-card/70"
+        >
+          <div
+            className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full opacity-20 blur-2xl"
+            style={{ background: brand }}
+          />
+          <div
+            className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-border/60 bg-background"
+            style={{ color: brand }}
+          >
+            <UtensilsCrossed className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="font-display text-sm font-bold">Ver cardápio digital</div>
+            <p className="text-[11px] text-muted-foreground">
+              Pratos, fotos e preços de {est.name} — atualizado em tempo real.
+            </p>
+          </div>
+          <NextIcon className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+        </Link>
+      )}
+
       <div className="pt-4 text-center text-[10px] uppercase tracking-widest text-muted-foreground">
         Powered by Fidelize
       </div>
