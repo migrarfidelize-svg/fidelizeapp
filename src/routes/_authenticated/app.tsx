@@ -336,7 +336,7 @@ function AppLayout() {
   const renderNav = (onNavigate?: () => void, forceExpanded = false) => (
     <LayoutGroup id="sidebar-nav">
       <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto">
-        {NAV_GROUPS.map((g) => (
+        {filteredGroups.map((g) => (
           <div key={g.key} className="space-y-1">
             <AnimatePresence initial={false}>
               {(forceExpanded || !collapsed) && (
@@ -430,7 +430,7 @@ function AppLayout() {
             <LogoMark size={22} className="relative z-10 text-primary" />
           </Link>
 
-          {NAV_GROUPS.map((g) => {
+          {filteredGroups.map((g) => {
             const Icon = GROUP_ICONS[g.key] ?? LayoutDashboard;
             const isActive = g.items.some((it) =>
               it.exact ? pathname === it.to : pathname.startsWith(it.to),
