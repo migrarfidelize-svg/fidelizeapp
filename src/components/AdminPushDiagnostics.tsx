@@ -176,6 +176,10 @@ export function AdminPushDiagnostics() {
             permission_status: perm,
           },
         });
+        const st = await statusFn({ data: { endpoint: sub.endpoint } });
+        if (!st.subscribed) {
+          throw new Error("A permissão foi concedida, mas este dispositivo não ficou persistido no servidor.");
+        }
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         await logFn({ data: { event_type: "subscription_persist_failed", error_message: msg } });
@@ -195,11 +199,26 @@ export function AdminPushDiagnostics() {
   }
 
   async function sendTest() {
-    if (!endpoint) return;
     setTestBusy(true);
     setLastError(null);
     try {
-      const r = await testFn({ data: { endpoint } });
+      const reg = await ensurePwaRegistration();
+      const sub = await reg.pushManager.getSubscription();
+      if (!sub) throw new Error("Este aparelho ainda não tem assinatura do navegador. Ative as notificações primeiro.");
+      const json = sub.toJSON();
+      setEndpoint(sub.endpoint);
+      const r = await testFn({
+        data: {
+          endpoint: sub.endpoint,
+          p256dh: json.keys?.p256dh ?? "",
+          auth: json.keys?.auth ?? "",
+          user_agent: navigator.userAgent.slice(0, 300),
+          device_type: deviceType,
+          operating_system: os,
+          browser,
+          permission_status: Notification.permission,
+        },
+      });
       toast.success(`Notificação enviada (HTTP ${r.status}). Verifique seu dispositivo.`);
       await refreshAll();
     } catch (e) {
