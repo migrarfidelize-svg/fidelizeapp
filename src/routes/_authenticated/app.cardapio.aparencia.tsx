@@ -386,84 +386,139 @@ function LayoutWire({ id }: { id: MenuLayoutId }) {
   );
 }
 
+export type PreviewItem = {
+  name: string;
+  short_desc?: string | null;
+  price?: number | null;
+  promo_price?: number | null;
+  image_url?: string | null;
+  active?: boolean | null;
+};
+
+const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+/** Miniatura do prato: usa a foto real quando existe, senão um placeholder do tema. */
+function Thumb({
+  src, accent, className, emojiClass,
+}: { src?: string | null; accent: string; className: string; emojiClass?: string }) {
+  if (src) {
+    return <img src={src} alt="" loading="lazy" className={`${className} object-cover`} style={{ background: `${accent}1A` }} />;
+  }
+  return (
+    <div className={`${className} grid place-items-center ${emojiClass ?? "text-base"}`} style={{ background: `${accent}1A` }}>
+      🍽️
+    </div>
+  );
+}
+
 function MenuPreview({
-  preset, layout, pattern, bgImage, bgColor, accent,
-}: { preset: MenuPresetId; layout: MenuLayoutId; pattern: MenuPatternId; bgImage: string | null; bgColor: string | null; accent: string }) {
+  preset, layout, pattern, bgImage, bgColor, accent, name, logoUrl, categories, items, loading,
+}: {
+  preset: MenuPresetId; layout: MenuLayoutId; pattern: MenuPatternId;
+  bgImage: string | null; bgColor: string | null; accent: string;
+  name: string; logoUrl: string | null; categories: string[]; items: PreviewItem[]; loading?: boolean;
+}) {
   const p = applyBgColor(MENU_PRESETS.find((x) => x.id === preset)!, bgColor);
   const bg = menuBackgroundCss({ pattern, bg_image_url: bgImage }, p, accent);
-  const dishes = [
-    { n: "Burguer da casa", d: "Blend 180g, cheddar e picles", v: "R$ 39,90" },
-    { n: "Salada mediterrânea", d: "Grão de bico, pepino e hortelã", v: "R$ 28,00" },
-    { n: "Tiramisù", d: "Café espresso e mascarpone", v: "R$ 22,00" },
-    { n: "Limonada suíça", d: "Feita na hora", v: "R$ 12,00" },
+
+  const fallback: PreviewItem[] = [
+    { name: "Burguer da casa", short_desc: "Blend 180g, cheddar e picles", price: 39.9 },
+    { name: "Salada mediterrânea", short_desc: "Grão de bico, pepino e hortelã", price: 28 },
+    { name: "Tiramisù", short_desc: "Café espresso e mascarpone", price: 22 },
+    { name: "Limonada suíça", short_desc: "Feita na hora", price: 12 },
   ];
+  const real = (items ?? []).filter((i) => i.active !== false);
+  const usingReal = real.length > 0;
+  const dishes = (usingReal ? real : fallback).slice(0, 6);
+  const chips = ["Tudo", ...(categories?.length ? categories : ["Entradas", "Pratos"])].slice(0, 4);
+
+  const priceOf = (d: PreviewItem) => {
+    const v = d.promo_price ?? d.price;
+    return typeof v === "number" ? brl(v) : "—";
+  };
 
   return (
-    <div className="mx-auto w-full max-w-[320px] overflow-hidden rounded-[2rem] border-4 border-foreground/10 shadow-xl">
-      <div style={{ background: bg, color: p.ink }} className="h-[440px] overflow-y-auto">
-        <div className="h-20 w-full" style={{ background: `linear-gradient(135deg, ${accent}, ${p.bar})` }} />
-        <div className="-mt-8 px-3">
-          <div className="flex items-center gap-2 rounded-2xl p-3" style={{ background: p.surface, border: `1px solid ${p.line}` }}>
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-sm font-bold text-white" style={{ background: accent }}>R</span>
-            <div className="min-w-0">
-              <div className="truncate text-sm font-bold" style={{ fontFamily: p.fontHead }}>Seu Restaurante</div>
-              <div className="truncate text-[10px] opacity-60">Cozinha autoral • Aberto agora</div>
+    <div className="space-y-2">
+      <div className="mx-auto w-full max-w-[320px] overflow-hidden rounded-[2rem] border-4 border-foreground/10 shadow-xl">
+        <div style={{ background: bg, color: p.ink }} className="h-[440px] overflow-y-auto">
+          <div className="h-20 w-full" style={{ background: `linear-gradient(135deg, ${accent}, ${p.bar})` }} />
+          <div className="-mt-8 px-3">
+            <div className="flex items-center gap-2 rounded-2xl p-3" style={{ background: p.surface, border: `1px solid ${p.line}` }}>
+              {logoUrl ? (
+                <img src={logoUrl} alt="" className="h-10 w-10 shrink-0 rounded-xl object-cover" />
+              ) : (
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-sm font-bold text-white" style={{ background: accent }}>
+                  {name.slice(0, 1).toUpperCase()}
+                </span>
+              )}
+              <div className="min-w-0">
+                <div className="truncate text-sm font-bold" style={{ fontFamily: p.fontHead }}>{name}</div>
+                <div className="truncate text-[10px] opacity-60">Cardápio digital • Aberto agora</div>
+              </div>
             </div>
-          </div>
 
-          <div className="mt-3 flex gap-1.5">
-            {["Tudo", "Entradas", "Pratos"].map((c, i) => (
-              <span
-                key={c}
-                className="rounded-full px-2.5 py-1 text-[10px] font-semibold"
-                style={i === 0
-                  ? { background: p.bar, color: p.barInk }
-                  : { background: p.surface, color: p.ink, border: `1px solid ${p.line}` }}
-              >
-                {c}
-              </span>
-            ))}
-          </div>
+            <div className="mt-3 flex gap-1.5 overflow-hidden">
+              {chips.map((c, i) => (
+                <span
+                  key={c + i}
+                  className="shrink-0 truncate rounded-full px-2.5 py-1 text-[10px] font-semibold"
+                  style={i === 0
+                    ? { background: p.bar, color: p.barInk }
+                    : { background: p.surface, color: p.ink, border: `1px solid ${p.line}` }}
+                >
+                  {c}
+                </span>
+              ))}
+            </div>
 
-          <div className={`mt-3 pb-4 ${layout === "grid" ? "grid grid-cols-2 gap-2" : "space-y-2"}`}>
-            {dishes.map((d) => {
-              if (layout === "grid") {
-                return (
-                  <div key={d.n} className="overflow-hidden rounded-xl" style={{ background: p.surface, border: `1px solid ${p.line}` }}>
-                    <div className="h-16 w-full grid place-items-center text-lg" style={{ background: `${accent}1A` }}>🍽️</div>
-                    <div className="p-2">
-                      <div className="truncate text-[11px] font-bold" style={{ fontFamily: p.fontHead }}>{d.n}</div>
-                      <div className="mt-1 text-[11px] font-bold" style={{ color: accent }}>{d.v}</div>
+            <div className={`mt-3 pb-4 ${layout === "grid" ? "grid grid-cols-2 gap-2" : "space-y-2"}`}>
+              {dishes.map((d, idx) => {
+                if (layout === "grid") {
+                  return (
+                    <div key={idx} className="overflow-hidden rounded-xl" style={{ background: p.surface, border: `1px solid ${p.line}` }}>
+                      <Thumb src={d.image_url} accent={accent} className="h-16 w-full" emojiClass="text-lg" />
+                      <div className="p-2">
+                        <div className="truncate text-[11px] font-bold" style={{ fontFamily: p.fontHead }}>{d.name}</div>
+                        <div className="mt-1 text-[11px] font-bold" style={{ color: accent }}>{priceOf(d)}</div>
+                      </div>
                     </div>
-                  </div>
-                );
-              }
-              if (layout === "magazine") {
+                  );
+                }
+                if (layout === "magazine") {
+                  return (
+                    <div key={idx} className="flex items-center gap-2 rounded-xl px-2.5 py-2" style={{ background: p.surface, border: `1px solid ${p.line}` }}>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-[11px] font-bold" style={{ fontFamily: p.fontHead }}>{d.name}</div>
+                        <div className="truncate text-[10px] opacity-60">{d.short_desc ?? ""}</div>
+                      </div>
+                      <div className="text-[11px] font-bold" style={{ color: accent }}>{priceOf(d)}</div>
+                      <Thumb src={d.image_url} accent={accent} className="h-8 w-8 shrink-0 rounded-md" emojiClass="text-xs" />
+                    </div>
+                  );
+                }
                 return (
-                  <div key={d.n} className="flex items-center gap-2 rounded-xl px-2.5 py-2" style={{ background: p.surface, border: `1px solid ${p.line}` }}>
+                  <div key={idx} className="flex gap-2 rounded-xl p-2" style={{ background: p.surface, border: `1px solid ${p.line}` }}>
+                    <Thumb src={d.image_url} accent={accent} className="h-12 w-12 shrink-0 rounded-lg" />
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-[11px] font-bold" style={{ fontFamily: p.fontHead }}>{d.n}</div>
-                      <div className="truncate text-[10px] opacity-60">{d.d}</div>
+                      <div className="truncate text-[11px] font-bold" style={{ fontFamily: p.fontHead }}>{d.name}</div>
+                      <div className="truncate text-[10px] opacity-60">{d.short_desc ?? ""}</div>
+                      <div className="mt-0.5 text-[11px] font-bold" style={{ color: accent }}>{priceOf(d)}</div>
                     </div>
-                    <div className="text-[11px] font-bold" style={{ color: accent }}>{d.v}</div>
-                    <div className="h-8 w-8 shrink-0 rounded-md grid place-items-center text-xs" style={{ background: `${accent}1A` }}>🍽️</div>
                   </div>
                 );
-              }
-              return (
-                <div key={d.n} className="flex gap-2 rounded-xl p-2" style={{ background: p.surface, border: `1px solid ${p.line}` }}>
-                  <div className="h-12 w-12 shrink-0 rounded-lg grid place-items-center text-base" style={{ background: `${accent}1A` }}>🍽️</div>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-[11px] font-bold" style={{ fontFamily: p.fontHead }}>{d.n}</div>
-                    <div className="truncate text-[10px] opacity-60">{d.d}</div>
-                    <div className="mt-0.5 text-[11px] font-bold" style={{ color: accent }}>{d.v}</div>
-                  </div>
-                </div>
-              );
-            })}
+              })}
+            </div>
           </div>
         </div>
       </div>
+
+      <p className="text-center text-[11px] text-muted-foreground">
+        {loading
+          ? "Carregando seus pratos…"
+          : usingReal
+            ? "Prévia com seus pratos, fotos e categorias reais."
+            : "Sem pratos cadastrados ainda — mostrando exemplos."}
+      </p>
     </div>
   );
 }
