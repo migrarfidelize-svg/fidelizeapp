@@ -2029,6 +2029,7 @@ export type Database = {
           time_end: string | null
           time_start: string | null
           updated_at: string
+          variants: Json
           video_poster_url: string | null
           video_url: string | null
         }
@@ -2058,6 +2059,7 @@ export type Database = {
           time_end?: string | null
           time_start?: string | null
           updated_at?: string
+          variants?: Json
           video_poster_url?: string | null
           video_url?: string | null
         }
@@ -2087,6 +2089,7 @@ export type Database = {
           time_end?: string | null
           time_start?: string | null
           updated_at?: string
+          variants?: Json
           video_poster_url?: string | null
           video_url?: string | null
         }

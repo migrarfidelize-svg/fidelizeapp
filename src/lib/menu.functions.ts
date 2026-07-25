@@ -330,7 +330,12 @@ const itemUpsertSchema = z.object({
   badges: z.array(z.string()).optional(),
   ingredients: z.array(z.string()).optional(),
   allergens: z.array(z.string()).optional(),
+  variants: z.array(z.object({
+    label: z.string().min(1).max(40),
+    price: z.number().nonnegative().nullable().optional(),
+  })).max(10).optional(),
 });
+
 
 export const upsertMenuItem = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -355,7 +360,9 @@ export const upsertMenuItem = createServerFn({ method: "POST" })
       badges: (data.badges ?? []) as any,
       ingredients: data.ingredients ?? [],
       allergens: data.allergens ?? [],
+      variants: (data.variants ?? []).map((v) => ({ label: v.label.trim(), price: v.price ?? null })) as any,
     };
+
 
     if (data.id) {
       const { data: updated, error } = await supabase
