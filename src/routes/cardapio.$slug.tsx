@@ -607,12 +607,14 @@ function PublicMenuPage() {
           items={stories.list}
           startIndex={stories.index}
           primary={primary}
+          catName={(id) => categories.find((c) => c.id === id)?.name ?? ""}
           onClose={() => setStories(null)}
           onDetails={(i) => { setStories(null); setOpen(i); }}
           onItemView={(i) =>
             trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_id: i.id, ref_label: `stories:${i.name}` })
           }
         />
+
       )}
 
     </div>
