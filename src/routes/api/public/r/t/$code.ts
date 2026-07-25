@@ -36,15 +36,15 @@ export const Route = createFileRoute("/api/public/r/t/$code")({
         const est = (tag as any).establishments as { slug: string; qr_destination: string | null } | null;
         if (!est?.slug) return new Response("Estabelecimento indisponível.", { status: 404 });
 
-        const dest = (tag.destination ?? est.qr_destination ?? "reviews") as
-          | "reviews"
-          | "linktree"
-          | "landing";
-
-        let target: string;
-        if (dest === "linktree") target = `${origin}/links/${est.slug}`;
-        else if (dest === "landing") target = `${origin}/cartao/${est.slug}`;
-        else target = `${origin}/avaliar/${est.slug}`;
+        const { resolveQrTarget } = await import("@/lib/qr-target.server");
+        const resolved = await resolveQrTarget({
+          admin: supabaseAdmin,
+          origin,
+          slug: est.slug,
+          establishmentId: tag.establishment_id,
+          dest: tag.destination ?? est.qr_destination,
+        });
+        let target = resolved.url;
 
         const forwarded = forwardedQs.toString();
         if (forwarded) {
