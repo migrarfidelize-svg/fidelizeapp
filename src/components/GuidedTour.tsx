@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ComponentType, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { useOnboardingSlot } from "@/lib/onboarding-queue";
+
 import {
   X, ArrowRight, ArrowLeft, Sparkles,
   LayoutDashboard, Stamp, Users, Megaphone, QrCode, Crown, Compass,
