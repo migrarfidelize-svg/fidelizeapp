@@ -105,7 +105,11 @@ import { buildDefaultDesignName, QR_DEST_LABEL as DEST_LABEL } from "@/lib/qr-de
 
 
 export const Route = createFileRoute("/_authenticated/app/qr")({
-  head: () => ({ meta: [{ title: "QR de Avaliação — Fidelize" }] }),
+  head: () => ({ meta: [{ title: "QR Codes — Fidelize" }] }),
+  validateSearch: (search: Record<string, unknown>) => {
+    const d = String(search?.dest ?? "");
+    return { dest: (["reviews", "linktree", "landing", "menu"].includes(d) ? d : undefined) as QrDest | undefined };
+  },
   component: ReviewQrPage,
 });
 
