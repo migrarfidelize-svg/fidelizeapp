@@ -202,11 +202,44 @@ function PublicMenuPage() {
     setActiveCat(id === "all" ? "all" : id);
     const el = catRefs.current[id];
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    const label =
+      id === "all" ? "category:all" : `category:${categories.find((c) => c.id === id)?.name ?? id}`;
+    trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_id: id, ref_label: label });
   };
 
   const openItem = (i: Item) => {
     setOpen(i);
-    trackChannelEvent({ slug, channel: "menu" as any, event_type: "link_click", ref_id: i.id, ref_label: i.name });
+    trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_id: i.id, ref_label: `item:${i.name}` });
+  };
+
+  const openStories = (list: Item[], index: number) => {
+    setStories({ list, index });
+    const it = list[index];
+    trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_id: it?.id ?? null, ref_label: `stories_open:${it?.name ?? ""}` });
+  };
+
+  const onSearchChange = (value: string) => {
+    setQ(value);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    const term = value.trim();
+    if (!term) return;
+    searchTimer.current = setTimeout(() => {
+      trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_label: `search:${term.slice(0, 40)}` });
+    }, 900);
+  };
+
+  const downloadPdf = async () => {
+    if (pdfLoading) return;
+    setPdfLoading(true);
+    trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_label: "pdf_download" });
+    try {
+      await generateMenuPdf(data as any, slug);
+    } catch (e) {
+      console.error("[menu-pdf]", e);
+      alert("Não foi possível gerar o PDF agora. Tente novamente.");
+    } finally {
+      setPdfLoading(false);
+    }
   };
 
   const cover = est.cover_url || null;
