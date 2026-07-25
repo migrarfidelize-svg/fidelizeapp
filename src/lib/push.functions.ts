@@ -956,3 +956,212 @@ export const sendTestPushToMe = createServerFn({ method: "POST" })
     }
     return { ok: true, status: r.status };
   });
+
+// ============================================================
+// ADMIN / MERCHANT SELF-SUBSCRIBE (technical, no customer_id)
+// Used to run push diagnostics from the admin panel on any device.
+// ============================================================
+
+const adminSubInput = z.object({
+  endpoint: z.string().url(),
+  p256dh: z.string().min(10),
+  auth: z.string().min(4),
+  user_agent: z.string().max(400).optional(),
+  device_type: z.string().max(40).optional(),
+  operating_system: z.string().max(60).optional(),
+  browser: z.string().max(60).optional(),
+  permission_status: z.string().max(20).optional(),
+});
+
+/** Subscribe the currently authenticated user (admin/merchant) — no customer link. */
+export const subscribeAdminPush = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => adminSubInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Look up existing row on (user_id, endpoint) to preserve id/created_at.
+    const { data: existing } = await supabaseAdmin
+      .from("push_subscriptions")
+      .select("id")
+      .eq("user_id", context.userId)
+      .eq("endpoint", data.endpoint)
+      .is("customer_id", null)
+      .maybeSingle();
+    const payload: any = {
+      user_id: context.userId,
+      customer_id: null,
+      establishment_id: null,
+      endpoint: data.endpoint,
+      p256dh: data.p256dh,
+      auth_key: data.auth,
+      user_agent: data.user_agent ?? null,
+      device_type: data.device_type ?? null,
+      operating_system: data.operating_system ?? null,
+      browser: data.browser ?? null,
+      permission_status: data.permission_status ?? "granted",
+      preferences: { stamp: true, reward: true, campaign: true, birthday: true },
+      active: true,
+      last_error: null,
+      last_seen_at: new Date().toISOString(),
+    };
+    if (existing) {
+      const { error } = await supabaseAdmin
+        .from("push_subscriptions")
+        .update(payload)
+        .eq("id", existing.id);
+      if (error) throw error;
+      await supabaseAdmin.from("push_events").insert({
+        user_id: context.userId,
+        subscription_id: existing.id,
+        event_type: "subscription_persist_success",
+        status: "updated",
+        browser: data.browser ?? null,
+        operating_system: data.operating_system ?? null,
+      });
+      return { ok: true, id: existing.id, created: false };
+    }
+    const { data: inserted, error } = await supabaseAdmin
+      .from("push_subscriptions")
+      .insert(payload)
+      .select("id")
+      .single();
+    if (error) throw error;
+    await supabaseAdmin.from("push_events").insert({
+      user_id: context.userId,
+      subscription_id: inserted.id,
+      event_type: "subscription_persist_success",
+      status: "created",
+      browser: data.browser ?? null,
+      operating_system: data.operating_system ?? null,
+    });
+    return { ok: true, id: inserted.id, created: true };
+  });
+
+export const getAdminPushStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ endpoint: z.string().url() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row } = await supabaseAdmin
+      .from("push_subscriptions")
+      .select("id, active, browser, operating_system, device_type, permission_status, last_seen_at, created_at")
+      .eq("user_id", context.userId)
+      .eq("endpoint", data.endpoint)
+      .is("customer_id", null)
+      .maybeSingle();
+    return {
+      subscribed: !!(row && row.active),
+      row: row ?? null,
+    };
+  });
+
+export const sendAdminTestPush = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ endpoint: z.string().url() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: sub } = await supabaseAdmin
+      .from("push_subscriptions")
+      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id")
+      .eq("user_id", context.userId)
+      .eq("endpoint", data.endpoint)
+      .eq("active", true)
+      .is("customer_id", null)
+      .maybeSingle();
+    if (!sub) throw new Error("Este aparelho não está inscrito. Ative primeiro.");
+
+    await supabaseAdmin.from("push_events").insert({
+      user_id: context.userId,
+      subscription_id: sub.id,
+      event_type: "push_send_started",
+      status: "pending",
+    });
+    const { sendPushToSub } = await import("./push.server");
+    const r = await sendPushToSub(sub as any, {
+      title: "Notificações ativadas",
+      body: "Seu dispositivo está pronto para receber novidades.",
+      url: "/admin/notificacoes",
+      tag: "admin-test-push",
+    });
+    await supabaseAdmin.from("push_events").insert({
+      user_id: context.userId,
+      subscription_id: sub.id,
+      event_type: r.ok ? "push_send_success" : "push_send_failed",
+      status: r.ok ? "sent" : "failed",
+      error_code: r.status != null ? String(r.status) : null,
+      error_message: r.error ?? null,
+    });
+    if (!r.ok) {
+      // Only mark inactive on 404/410 — sendPushToSub already does that.
+      throw new Error(
+        `Falha no envio (HTTP ${r.status ?? "?"})${r.error ? `: ${r.error}` : ""}`,
+      );
+    }
+    return { ok: true, status: r.status };
+  });
+
+export const logAdminPushEvent = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        event_type: z.string().min(3).max(60),
+        status: z.string().max(30).optional(),
+        hostname: z.string().max(120).optional(),
+        browser: z.string().max(60).optional(),
+        operating_system: z.string().max(60).optional(),
+        error_code: z.string().max(30).optional(),
+        error_message: z.string().max(500).optional(),
+        metadata: z.record(z.any()).optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("push_events").insert({
+      user_id: context.userId,
+      event_type: data.event_type,
+      status: data.status ?? null,
+      hostname: data.hostname ?? null,
+      browser: data.browser ?? null,
+      operating_system: data.operating_system ?? null,
+      error_code: data.error_code ?? null,
+      error_message: data.error_message ?? null,
+      metadata: data.metadata ?? {},
+    });
+    return { ok: true };
+  });
+
+export const listMyPushEvents = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin
+      .from("push_events")
+      .select("id, event_type, status, browser, operating_system, error_code, error_message, created_at")
+      .eq("user_id", context.userId)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    return data ?? [];
+  });
+
+export const vapidHealthCheck = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async () => {
+    const pub = process.env.VAPID_PUBLIC_KEY;
+    const priv = process.env.VAPID_PRIVATE_KEY;
+    const subject = process.env.VAPID_SUBJECT;
+    const pubOk = !!pub && /^[A-Za-z0-9_-]{80,120}$/.test(pub);
+    const privOk = !!priv && /^[A-Za-z0-9_-]{40,60}$/.test(priv);
+    return {
+      public_key_present: !!pub,
+      public_key_format_ok: pubOk,
+      private_key_present: !!priv,
+      private_key_format_ok: privOk,
+      subject_present: !!subject,
+      subject,
+      // Never return the raw private key. Public key is safe.
+      public_key_preview: pub ? `${pub.slice(0, 12)}…${pub.slice(-6)}` : null,
+    };
+  });
+
