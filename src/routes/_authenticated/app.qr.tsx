@@ -210,6 +210,21 @@ const DEFAULT_BADGE_POS: Record<BadgeKey, { x: number; y: number }> = {
   parking:  { x: 78, y: 92 },
 };
 
+const LANDSCAPE_BADGE_POS: Record<BadgeKey, { x: number; y: number }> = {
+  stars5:   { x: 26, y: 31 },
+  wifi:     { x: 26, y: 14 },
+  pix:      { x: 26, y: 76 },
+  card:     { x: 26, y: 86 },
+  pet:      { x: 74, y: 18 },
+  delivery: { x: 74, y: 88 },
+  ac:       { x: 50, y: 90 },
+  parking:  { x: 50, y: 82 },
+};
+
+function defaultBadgePosition(key: BadgeKey, isLandscape: boolean) {
+  return isLandscape ? LANDSCAPE_BADGE_POS[key] : DEFAULT_BADGE_POS[key];
+}
+
 /** URL validation for QR destinations. */
 type UrlCheck = { level: "empty" | "ok" | "warn" | "error"; message: string };
 
