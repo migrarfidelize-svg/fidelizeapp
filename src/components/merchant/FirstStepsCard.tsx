@@ -176,37 +176,56 @@ export function FirstStepsCard({
 
   if (hidden || doneCount === steps.length) return null;
 
-  return (
-    <div className="dash-card dash-card-accent relative p-5 md:p-6">
-      <button
-        type="button"
-        onClick={() => { setHidden(true); persist({ hidden: true }); }}
-        aria-label="Ocultar primeiros passos"
-        className="absolute right-3 top-3 rounded-full p-1 text-muted-foreground hover:bg-muted"
-      >
-        <X className="h-4 w-4" />
-      </button>
+  const nextStep = steps.find((s) => !s.done);
 
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="card-icon card-icon-accent shrink-0" aria-hidden><Rocket /></span>
-          <div className="min-w-0">
-            <h3 className="sec-title truncate text-lg">Primeiros passos</h3>
-            <p className="text-sm text-muted-foreground">
-              {doneCount} de {steps.length} concluídos — coloque seu programa no ar.
-            </p>
+  return (
+    <div className="dash-card dash-card-accent relative p-3 md:p-4">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+        <span className="card-icon card-icon-accent shrink-0" aria-hidden><Rocket /></span>
+
+        <button
+          type="button"
+          onClick={() => { setOpen(!open); persist({ open: !open }); }}
+          aria-expanded={open}
+          className="min-w-0 text-left"
+        >
+          <div className="flex min-w-0 items-center gap-2">
+            <h3 className="sec-title truncate text-base">Primeiros passos</h3>
+            <span className="shrink-0 rounded-full border border-primary/40 px-2 py-0.5 text-[11px] font-medium text-primary">
+              {doneCount}/{steps.length}
+            </span>
           </div>
+          <p className="truncate text-xs text-muted-foreground">
+            {open ? "Toque para recolher" : nextStep ? `Próximo: ${nextStep.label}` : ""}
+          </p>
+          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+            <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${pct}%` }} />
+          </div>
+        </button>
+
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={() => { setOpen(!open); persist({ open: !open }); }}
+            aria-label={open ? "Recolher primeiros passos" : "Expandir primeiros passos"}
+            className="rounded-full p-1.5 text-muted-foreground hover:bg-muted"
+          >
+            <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
+          </button>
+          <button
+            type="button"
+            onClick={() => { setHidden(true); persist({ hidden: true }); }}
+            aria-label="Ocultar primeiros passos"
+            className="rounded-full p-1.5 text-muted-foreground hover:bg-muted"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
-      <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-muted">
-        <div
-          className="h-full rounded-full bg-primary transition-all duration-500"
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-
+      {open && (
       <ul className="mt-4 space-y-2">
+
         {steps.map((s) => (
           <li
             key={s.key}
