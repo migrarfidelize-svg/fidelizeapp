@@ -330,7 +330,12 @@ const itemUpsertSchema = z.object({
   badges: z.array(z.string()).optional(),
   ingredients: z.array(z.string()).optional(),
   allergens: z.array(z.string()).optional(),
+  variants: z.array(z.object({
+    label: z.string().min(1).max(40),
+    price: z.number().nonnegative().nullable().optional(),
+  })).max(10).optional(),
 });
+
 
 export const upsertMenuItem = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
