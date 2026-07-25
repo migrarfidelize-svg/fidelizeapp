@@ -89,31 +89,10 @@ export const Route = createFileRoute("/cardapio/$slug")({
       scripts: [
         {
           type: "application/ld+json",
-          children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Restaurant",
-            name,
-            description,
-            url,
-            ...(absImage ? { image: absImage } : {}),
-            ...(loaderData.establishment.phone
-              ? { telephone: loaderData.establishment.phone }
-              : {}),
-            ...(loaderData.establishment.address
-              ? {
-                  address: {
-                    "@type": "PostalAddress",
-                    streetAddress: loaderData.establishment.address,
-                  },
-                }
-              : {}),
-            hasMenu: {
-              "@type": "Menu",
-              name: loaderData.menu?.display_name || `Cardápio de ${name}`,
-            },
-          }),
+          children: JSON.stringify(buildMenuJsonLd({ loaderData, url, name, description, absImage })),
         },
       ],
+
     };
   },
   component: PublicMenuPage,
