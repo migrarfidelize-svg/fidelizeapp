@@ -364,18 +364,14 @@ export const broadcastPush = createServerFn({ method: "POST" })
     const targetIds = await resolveSegmentCustomerIds(data.establishment_id, data.segment ?? {});
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    let subsQuery = supabaseAdmin
-      .from("push_subscriptions")
-      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id, preferences")
-      .eq("establishment_id", data.establishment_id)
-      .eq("active", true);
-    // If no segment filter was applied, targetIds is the full base; we still filter to avoid
-    // sending to blocked customers. When empty base, skip.
-    if (targetIds.length > 0) subsQuery = subsQuery.in("customer_id", targetIds);
-    else if (data.segment && Object.keys(data.segment).length > 0) {
-      return { sent: 0, failed: 0, total: 0 };
-    }
-    const { data: subs } = await subsQuery;
+    const { resolveEstablishmentSubs, splitAudience } = await import("@/lib/push.audience.server");
+    const hasSegment = !!data.segment && Object.keys(data.segment).length > 0;
+    const allSubs = await resolveEstablishmentSubs(supabaseAdmin, data.establishment_id);
+    const split = splitAudience(allSubs, targetIds);
+    // Sem segmento explícito, os dispositivos da equipe também recebem o aviso.
+    const subs = hasSegment ? split.customers : [...split.customers, ...split.operators];
+    if (subs.length === 0) return { sent: 0, failed: 0, total: 0 };
+
 
     const { sendPushToSub } = await import("@/lib/push.server");
     const { notificationTargetKey, recordPushDelivery } = await import("@/lib/push-inbox.server");
