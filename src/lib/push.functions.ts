@@ -1182,6 +1182,17 @@ const adminSubInput = z.object({
   permission_status: z.string().max(20).optional(),
 });
 
+const adminTestPushInput = z.object({
+  endpoint: z.string().url(),
+  p256dh: z.string().min(10).optional(),
+  auth: z.string().min(4).optional(),
+  user_agent: z.string().max(400).optional(),
+  device_type: z.string().max(40).optional(),
+  operating_system: z.string().max(60).optional(),
+  browser: z.string().max(60).optional(),
+  permission_status: z.string().max(20).optional(),
+});
+
 /** Subscribe the currently authenticated user (admin/merchant) — no customer link. */
 export const subscribeAdminPush = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -1277,10 +1288,19 @@ export const getAdminPushStatus = createServerFn({ method: "POST" })
 
 export const sendAdminTestPush = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ endpoint: z.string().url() }).parse(d))
+  .inputValidator((d: unknown) => adminTestPushInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: sub } = await supabaseAdmin
+    const { data: membership } = await supabaseAdmin
+      .from("establishment_members")
+      .select("establishment_id")
+      .eq("user_id", context.userId)
+      .eq("active", true)
+      .limit(1)
+      .maybeSingle();
+    const establishmentId = membership?.establishment_id ?? null;
+
+    let { data: sub } = await supabaseAdmin
       .from("push_subscriptions")
       .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id")
       .eq("user_id", context.userId)
@@ -1288,6 +1308,66 @@ export const sendAdminTestPush = createServerFn({ method: "POST" })
       .eq("active", true)
       .is("customer_id", null)
       .maybeSingle();
+
+    // Same self-healing guarantee as the wallet test: if the browser still has
+    // a PushSubscription but the DB row was never saved (or belonged to a stale
+    // session), repair it and continue with the actual test send.
+    if (!sub && data.p256dh && data.auth) {
+      const payload = {
+        user_id: context.userId,
+        customer_id: null,
+        establishment_id: establishmentId,
+        endpoint: data.endpoint,
+        p256dh: data.p256dh,
+        auth_key: data.auth,
+        user_agent: data.user_agent ?? null,
+        device_type: data.device_type ?? null,
+        operating_system: data.operating_system ?? null,
+        browser: data.browser ?? null,
+        permission_status: data.permission_status ?? "granted",
+        preferences: { stamp: true, reward: true, campaign: true, birthday: true },
+        active: true,
+        last_error: null,
+        last_seen_at: new Date().toISOString(),
+      };
+      await supabaseAdmin
+        .from("push_subscriptions")
+        .update({ active: false, last_error: "repaired_by_admin_test" })
+        .eq("endpoint", data.endpoint)
+        .neq("user_id", context.userId);
+
+      const { data: existing } = await supabaseAdmin
+        .from("push_subscriptions")
+        .select("id")
+        .eq("user_id", context.userId)
+        .eq("endpoint", data.endpoint)
+        .is("customer_id", null)
+        .maybeSingle();
+      if (existing) {
+        const { error } = await supabaseAdmin
+          .from("push_subscriptions")
+          .update(payload)
+          .eq("id", existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabaseAdmin.from("push_subscriptions").insert(payload);
+        if (error) throw error;
+      }
+      await supabaseAdmin.from("push_events").insert({
+        user_id: context.userId,
+        event_type: "admin_subscription_repaired_before_test",
+        status: "active",
+      });
+      const repaired = await supabaseAdmin
+        .from("push_subscriptions")
+        .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id")
+        .eq("user_id", context.userId)
+        .eq("endpoint", data.endpoint)
+        .eq("active", true)
+        .is("customer_id", null)
+        .maybeSingle();
+      sub = repaired.data ?? null;
+    }
     if (!sub) throw new Error("Este aparelho não está inscrito. Ative primeiro.");
 
     await supabaseAdmin.from("push_events").insert({
