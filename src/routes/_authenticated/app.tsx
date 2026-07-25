@@ -737,13 +737,14 @@ function AppLayout() {
           </nav>
         </div>
 
-        {pathname === "/app" && (
+        {pathname === "/app" ? (
           <GuidedTour
             steps={MERCHANT_TOUR_STEPS}
             mobileSteps={MERCHANT_TOUR_STEPS_MOBILE}
             storageKey={`fidelize_tour_v1_${activeEst?.id ?? "user"}`}
           />
-
+        ) : (
+          <PageGuidePrompt scope={activeEst?.id ?? "user"} />
         )}
       </div>
     </TooltipProvider>
