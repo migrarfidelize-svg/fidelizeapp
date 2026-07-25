@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   UtensilsCrossed, LayoutList, FolderTree, Video, Eye,
-  Copy, ExternalLink, CheckCircle2, Circle, Sparkles, QrCode, Palette,
+  Copy, ExternalLink, CheckCircle2, Circle, Sparkles, QrCode, Palette, ArrowRight,
 } from "lucide-react";
 
 import { getMyEstablishments } from "@/lib/loyalty.functions";
