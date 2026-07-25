@@ -15,6 +15,7 @@ import { initSentryClient, captureClientError } from "../lib/sentry-client";
 import { registerPWA } from "../lib/pwa-register";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 
 const AUTH_SYNC_CHANNEL = "fidelize-auth-sync";
@@ -181,6 +182,27 @@ function RootComponent() {
     const unsub = router.subscribe("onResolved", apply);
     return () => unsub();
   }, [router]);
+
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+    const onMessage = (event: MessageEvent) => {
+      const data = event.data as {
+        type?: string;
+        payload?: { title?: string; body?: string; error?: string };
+      } | null;
+      if (!data || typeof data !== "object") return;
+      if (data.type === "fidelize:push-received") {
+        const title = data.payload?.title || "Notificação recebida";
+        const body = data.payload?.body;
+        toast.message(title, body ? { description: body } : undefined);
+      }
+      if (data.type === "fidelize:push-display-failed") {
+        toast.error("O navegador recebeu o push, mas bloqueou a exibição do alerta.");
+      }
+    };
+    navigator.serviceWorker.addEventListener("message", onMessage);
+    return () => navigator.serviceWorker.removeEventListener("message", onMessage);
+  }, []);
 
 
 

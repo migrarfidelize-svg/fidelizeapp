@@ -62,6 +62,7 @@ export function AdminPushDiagnostics() {
 
   const [busy, setBusy] = useState(false);
   const [testBusy, setTestBusy] = useState(false);
+  const [localTestBusy, setLocalTestBusy] = useState(false);
   const [endpoint, setEndpoint] = useState<string | null>(null);
   const [subscribed, setSubscribed] = useState<boolean>(false);
   const [permission, setPermission] = useState<NotificationPermission | "unknown">("unknown");
@@ -210,6 +211,36 @@ export function AdminPushDiagnostics() {
     }
   }
 
+  async function sendLocalDisplayTest() {
+    setLocalTestBusy(true);
+    setLastError(null);
+    try {
+      if (Notification.permission !== "granted") {
+        const perm = await Notification.requestPermission();
+        setPermission(perm);
+        if (perm !== "granted") throw new Error("Permissão não concedida.");
+      }
+      const reg = await ensurePwaRegistration();
+      await reg.showNotification("Teste local Fidelize", {
+        body: "Se este alerta aparecer, a exibição do navegador/Windows está liberada.",
+        icon: "/icon-192.png",
+        badge: "/icon-192.png",
+        tag: `local-display-${Date.now()}`,
+        renotify: true,
+        requireInteraction: true,
+        silent: false,
+        data: { url: "/admin/notificacoes" },
+      });
+      toast.success("Teste local disparado. Se não apareceu, o bloqueio está no navegador ou no sistema operacional.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setLastError(msg);
+      toast.error(msg);
+    } finally {
+      setLocalTestBusy(false);
+    }
+  }
+
   const checks: Check[] = [
     { label: "Ambiente permite Service Worker", value: gate.allowed, ok: gate.allowed, hint: !gate.allowed ? (gate as any).reason : undefined },
     { label: "'serviceWorker' em navigator", value: "serviceWorker" in navigator, ok: "serviceWorker" in navigator },
@@ -296,6 +327,10 @@ export function AdminPushDiagnostics() {
             <Button variant="outline" onClick={sendTest} disabled={!subscribed || testBusy}>
               {testBusy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
               Enviar notificação de teste
+            </Button>
+            <Button variant="outline" onClick={sendLocalDisplayTest} disabled={localTestBusy}>
+              {localTestBusy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bell className="mr-2 h-4 w-4" />}
+              Testar alerta local
             </Button>
             <Button variant="ghost" onClick={refreshAll}>
               <RefreshCw className="mr-2 h-4 w-4" /> Executar diagnóstico

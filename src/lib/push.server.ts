@@ -9,6 +9,9 @@ export type PushPayload = {
   tag?: string;
   icon?: string;
   badge?: string;
+  type?: string;
+  slug?: string;
+  requireInteraction?: boolean;
 };
 
 type SubRow = Pick<
@@ -34,12 +37,27 @@ export async function sendPushToSub(
   try {
     const webpush = (await import("web-push")).default;
     webpush.setVapidDetails(subject, publicKey, privateKey);
+    const notificationId = `${Date.now()}-${sub.id.slice(0, 8)}`;
+    const normalizedPayload = {
+      title: payload.title,
+      body: payload.body ?? "",
+      url: payload.url,
+      icon: payload.icon ?? "/icon-192.png",
+      badge: payload.badge ?? "/icon-192.png",
+      type: payload.type,
+      slug: payload.slug,
+      tag: payload.tag ? `${payload.tag}-${notificationId}` : `fidelize-${notificationId}`,
+      notificationId,
+      timestamp: Date.now(),
+      requireInteraction: payload.requireInteraction ?? true,
+      silent: false,
+    };
     const res = await webpush.sendNotification(
       {
         endpoint: sub.endpoint,
         keys: { p256dh: sub.p256dh, auth: sub.auth_key },
       },
-      JSON.stringify(payload),
+      JSON.stringify(normalizedPayload),
       { TTL: 60 * 60 * 24 },
     );
     return { ok: true, status: res.statusCode };
