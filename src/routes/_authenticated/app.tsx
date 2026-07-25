@@ -17,7 +17,7 @@ import {
   LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield,
   LifeBuoy, BookOpen, Package, Receipt, HeartHandshake, Bell, Star, Menu,
   PanelLeftClose, PanelLeftOpen, Compass, Megaphone, UserCircle2, MessageSquare, BarChart3,
-  Link2, UtensilsCrossed, FolderTree, LayoutList, Wallet,
+  Link2, UtensilsCrossed, FolderTree, LayoutList, Wallet, CreditCard,
 } from "lucide-react";
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -481,7 +481,7 @@ function AppLayout() {
     "visao-geral": LayoutDashboard,
     clientes: Users,
     qrcodes: QrCode,
-    fidelidade: Stamp,
+    fidelidade: CreditCard,
     linktree: Link2,
     avaliacoes: Star,
     cardapio: UtensilsCrossed,
