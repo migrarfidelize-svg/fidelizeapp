@@ -852,26 +852,43 @@ export const subscribePushForAllMyCards = createServerFn({ method: "POST" })
     if (list.length === 0) return { ok: true, count: 0 };
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    // Deactivate any prior row on the same endpoint that isn't in our set
-    // (avoid stale rows if the user changed establishments).
-    const rows = list.map((c) => ({
-      customer_id: c.id,
-      establishment_id: c.establishment_id,
-      user_id: context.userId,
-      endpoint: data.endpoint,
-      p256dh: data.p256dh,
-      auth_key: data.auth,
-      user_agent: data.user_agent ?? null,
-      preferences: { stamp: true, reward: true, campaign: true, birthday: true },
-      active: true,
-      last_error: null,
-    }));
-    const { error: upErr } = await supabaseAdmin
-      .from("push_subscriptions")
-      .upsert(rows, { onConflict: "customer_id,endpoint" });
-    if (upErr) throw upErr;
-    return { ok: true, count: rows.length };
+    // Update-then-insert per (customer_id, endpoint): the unique index is
+    // partial and cannot be used as an ON CONFLICT arbiter by PostgREST.
+    for (const c of list) {
+      const patch = {
+        customer_id: c.id,
+        establishment_id: c.establishment_id,
+        user_id: context.userId,
+        endpoint: data.endpoint,
+        p256dh: data.p256dh,
+        auth_key: data.auth,
+        user_agent: data.user_agent ?? null,
+        preferences: { stamp: true, reward: true, campaign: true, birthday: true },
+        active: true,
+        last_error: null,
+      };
+      const { data: existing } = await supabaseAdmin
+        .from("push_subscriptions")
+        .select("id")
+        .eq("customer_id", c.id)
+        .eq("endpoint", data.endpoint)
+        .maybeSingle();
+      if (existing) {
+        const { error: upErr } = await supabaseAdmin
+          .from("push_subscriptions")
+          .update(patch)
+          .eq("id", existing.id);
+        if (upErr) throw upErr;
+      } else {
+        const { error: insErr } = await supabaseAdmin
+          .from("push_subscriptions")
+          .insert(patch);
+        if (insErr) throw insErr;
+      }
+    }
+    return { ok: true, count: list.length };
   });
+
 
 /** Deactivates the current device's push subscription across all user's cards. */
 export const unsubscribePushForAllMyCards = createServerFn({ method: "POST" })
