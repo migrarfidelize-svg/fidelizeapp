@@ -105,6 +105,8 @@ import { Route as ApiPublicCronReengagementRouteImport } from './routes/api/publ
 import { Route as ApiPublicCronBirthdayRouteImport } from './routes/api/public/cron/birthday'
 import { Route as AuthenticatedCarteiraESlugRouteImport } from './routes/_authenticated/carteira.e.$slug'
 import { Route as AuthenticatedCarteiraSlugPromocoesRouteImport } from './routes/_authenticated/carteira.$slug.promocoes'
+import { Route as AuthenticatedAppCardapioPratosRouteImport } from './routes/_authenticated/app.cardapio.pratos'
+import { Route as AuthenticatedAppCardapioCategoriasRouteImport } from './routes/_authenticated/app.cardapio.categorias'
 import { Route as AuthenticatedAdminSuporteIdRouteImport } from './routes/_authenticated/admin.suporte.$id'
 import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authenticated/admin.empresa.$id'
 import { Route as ApiPublicWalletAppleTokenRouteImport } from './routes/api/public/wallet.apple.$token'
@@ -640,6 +642,18 @@ const AuthenticatedCarteiraSlugPromocoesRoute =
     path: '/promocoes',
     getParentRoute: () => AuthenticatedCarteiraSlugRoute,
   } as any)
+const AuthenticatedAppCardapioPratosRoute =
+  AuthenticatedAppCardapioPratosRouteImport.update({
+    id: '/pratos',
+    path: '/pratos',
+    getParentRoute: () => AuthenticatedAppCardapioRoute,
+  } as any)
+const AuthenticatedAppCardapioCategoriasRoute =
+  AuthenticatedAppCardapioCategoriasRouteImport.update({
+    id: '/categorias',
+    path: '/categorias',
+    getParentRoute: () => AuthenticatedAppCardapioRoute,
+  } as any)
 const AuthenticatedAdminSuporteIdRoute =
   AuthenticatedAdminSuporteIdRouteImport.update({
     id: '/suporte/$id',
@@ -750,6 +764,8 @@ export interface FileRoutesByFullPath {
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
+  '/app/cardapio/categorias': typeof AuthenticatedAppCardapioCategoriasRoute
+  '/app/cardapio/pratos': typeof AuthenticatedAppCardapioPratosRoute
   '/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
   '/carteira/e/$slug': typeof AuthenticatedCarteiraESlugRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
@@ -848,6 +864,8 @@ export interface FileRoutesByTo {
   '/suporte/$slug': typeof SuporteSlugIndexRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
+  '/app/cardapio/categorias': typeof AuthenticatedAppCardapioCategoriasRoute
+  '/app/cardapio/pratos': typeof AuthenticatedAppCardapioPratosRoute
   '/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
   '/carteira/e/$slug': typeof AuthenticatedCarteiraESlugRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
@@ -952,6 +970,8 @@ export interface FileRoutesById {
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
   '/_authenticated/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/_authenticated/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
+  '/_authenticated/app/cardapio/categorias': typeof AuthenticatedAppCardapioCategoriasRoute
+  '/_authenticated/app/cardapio/pratos': typeof AuthenticatedAppCardapioPratosRoute
   '/_authenticated/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
   '/_authenticated/carteira/e/$slug': typeof AuthenticatedCarteiraESlugRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
@@ -1056,6 +1076,8 @@ export interface FileRouteTypes {
     | '/suporte/$slug/'
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
+    | '/app/cardapio/categorias'
+    | '/app/cardapio/pratos'
     | '/carteira/$slug/promocoes'
     | '/carteira/e/$slug'
     | '/api/public/cron/birthday'
@@ -1154,6 +1176,8 @@ export interface FileRouteTypes {
     | '/suporte/$slug'
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
+    | '/app/cardapio/categorias'
+    | '/app/cardapio/pratos'
     | '/carteira/$slug/promocoes'
     | '/carteira/e/$slug'
     | '/api/public/cron/birthday'
@@ -1257,6 +1281,8 @@ export interface FileRouteTypes {
     | '/suporte/$slug/'
     | '/_authenticated/admin/empresa/$id'
     | '/_authenticated/admin/suporte/$id'
+    | '/_authenticated/app/cardapio/categorias'
+    | '/_authenticated/app/cardapio/pratos'
     | '/_authenticated/carteira/$slug/promocoes'
     | '/_authenticated/carteira/e/$slug'
     | '/api/public/cron/birthday'
@@ -1996,6 +2022,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCarteiraSlugPromocoesRouteImport
       parentRoute: typeof AuthenticatedCarteiraSlugRoute
     }
+    '/_authenticated/app/cardapio/pratos': {
+      id: '/_authenticated/app/cardapio/pratos'
+      path: '/pratos'
+      fullPath: '/app/cardapio/pratos'
+      preLoaderRoute: typeof AuthenticatedAppCardapioPratosRouteImport
+      parentRoute: typeof AuthenticatedAppCardapioRoute
+    }
+    '/_authenticated/app/cardapio/categorias': {
+      id: '/_authenticated/app/cardapio/categorias'
+      path: '/categorias'
+      fullPath: '/app/cardapio/categorias'
+      preLoaderRoute: typeof AuthenticatedAppCardapioCategoriasRouteImport
+      parentRoute: typeof AuthenticatedAppCardapioRoute
+    }
     '/_authenticated/admin/suporte/$id': {
       id: '/_authenticated/admin/suporte/$id'
       path: '/suporte/$id'
@@ -2088,11 +2128,16 @@ const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
 interface AuthenticatedAppCardapioRouteChildren {
+  AuthenticatedAppCardapioCategoriasRoute: typeof AuthenticatedAppCardapioCategoriasRoute
+  AuthenticatedAppCardapioPratosRoute: typeof AuthenticatedAppCardapioPratosRoute
   AuthenticatedAppCardapioIndexRoute: typeof AuthenticatedAppCardapioIndexRoute
 }
 
 const AuthenticatedAppCardapioRouteChildren: AuthenticatedAppCardapioRouteChildren =
   {
+    AuthenticatedAppCardapioCategoriasRoute:
+      AuthenticatedAppCardapioCategoriasRoute,
+    AuthenticatedAppCardapioPratosRoute: AuthenticatedAppCardapioPratosRoute,
     AuthenticatedAppCardapioIndexRoute: AuthenticatedAppCardapioIndexRoute,
   }
 
