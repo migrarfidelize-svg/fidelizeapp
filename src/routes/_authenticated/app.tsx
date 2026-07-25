@@ -17,7 +17,7 @@ import {
   LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield,
   LifeBuoy, BookOpen, Package, Receipt, HeartHandshake, Bell, Star, Menu,
   PanelLeftClose, PanelLeftOpen, Compass, Megaphone, UserCircle2, MessageSquare, BarChart3,
-  Link2, Ticket, UtensilsCrossed,
+  Link2, Ticket, UtensilsCrossed, FolderTree, LayoutList,
 } from "lucide-react";
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -89,6 +89,8 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Cardápio Virtual",
     items: [
       { to: "/app/cardapio", label: "Visão geral", icon: UtensilsCrossed, exact: true },
+      { to: "/app/cardapio/categorias", label: "Categorias", icon: FolderTree },
+      { to: "/app/cardapio/pratos", label: "Pratos", icon: LayoutList },
     ],
   },
 

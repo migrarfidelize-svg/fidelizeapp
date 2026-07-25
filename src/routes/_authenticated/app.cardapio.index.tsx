@@ -188,14 +188,14 @@ function CardapioOverview() {
           <CardTitle>Próximas etapas</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          <StepCard title="Categorias" description="Organize seu cardápio por seções com imagem de capa." icon={FolderTree} to="#" disabled />
-          <StepCard title="Pratos" description="Cadastre pratos com foto ou vídeo vertical estilo Stories." icon={LayoutList} to="#" disabled />
+          <StepCard title="Categorias" description="Organize seu cardápio por seções com imagem de capa." icon={FolderTree} to="/app/cardapio/categorias" />
+          <StepCard title="Pratos" description="Cadastre pratos com foto ou vídeo vertical estilo Stories." icon={LayoutList} to="/app/cardapio/pratos" />
           <StepCard title="QR Code do Cardápio" description="Gere QR próprio para mesa, balcão ou suporte de guardanapo." icon={QrCode} to="#" disabled />
         </CardContent>
       </Card>
 
       <p className="text-center text-xs text-muted-foreground">
-        Estamos em <b>Fase 1</b> desta função. Categorias, pratos, Stories, personalização e analytics chegam nas próximas atualizações — sem impacto nas suas outras funcionalidades.
+        Personalização visual, modo Stories e QR próprio chegam nas próximas atualizações.
       </p>
     </div>
   );
