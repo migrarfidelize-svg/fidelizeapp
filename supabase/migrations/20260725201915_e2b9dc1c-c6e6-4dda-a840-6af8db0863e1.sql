@@ -1,0 +1,2 @@
+ALTER TABLE public.rewards ADD COLUMN IF NOT EXISTS expiry_notified_at timestamptz;
+CREATE INDEX IF NOT EXISTS rewards_expiring_idx ON public.rewards (expires_at) WHERE redeemed_at IS NULL AND expiry_notified_at IS NULL;
