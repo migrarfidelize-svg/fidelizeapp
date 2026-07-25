@@ -1070,8 +1070,43 @@ function ReviewQrPage() {
               </button>
             </div>
 
+            {/* Logo do estabelecimento */}
+            {est && (
+              <div className="space-y-3">
+                <Label className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  <FileImage className="h-3.5 w-3.5" /> Logo do estabelecimento
+                </Label>
+                <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-background/40 p-3">
+                  <div
+                    className="flex h-14 w-14 flex-none items-center justify-center overflow-hidden rounded-lg border border-border/60"
+                    style={{ background: est.logo_url ? "#ffffff" : "hsl(var(--muted))" }}
+                  >
+                    {est.logo_url ? (
+                      <img src={est.logo_url} alt={est.name} className="h-full w-full object-contain" />
+                    ) : (
+                      <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                        {est.name.slice(0, 2)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    <p className="text-[11px] text-muted-foreground leading-tight">
+                      {est.logo_url ? "Aparece no topo do cartaz." : "Envie um logo para exibir no cartaz."}
+                    </p>
+                    <LogoUploadButton
+                      establishmentId={est.id}
+                      currentLogoUrl={est.logo_url}
+                      size="sm"
+                      variant="outline"
+                      invalidateKeys={[["poster-designs", est.id]]}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Templates */}
+
             <div className="space-y-3">
               <Label className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                 <Layers className="h-3.5 w-3.5" /> Modelo de cartaz
