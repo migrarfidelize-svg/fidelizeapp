@@ -140,6 +140,9 @@ function AdminNotifPage() {
         </p>
       </header>
 
+      <AdminPushDiagnostics />
+
+
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Kpi
