@@ -308,7 +308,7 @@ function PublicMenuPage() {
               {videoItems.slice(0, 12).map((v, idx) => (
                 <button
                   key={v.id}
-                  onClick={() => setStories({ list: videoItems, index: idx })}
+                  onClick={() => openStories(videoItems, idx)}
                   className="shrink-0 flex flex-col items-center gap-1"
                 >
                   <span
