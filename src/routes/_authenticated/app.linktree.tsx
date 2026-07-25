@@ -269,7 +269,7 @@ function LinkTreeEditor() {
 
   return (
     <div className="p-4 md:p-6 space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
+      <header className="sticky top-0 z-20 -mx-4 md:-mx-6 px-4 md:px-6 py-3 flex flex-wrap items-start justify-between gap-4 bg-background/85 backdrop-blur-md border-b">
         <div>
           <h1 className="font-display text-2xl md:text-3xl font-bold">Árvore de Links</h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -297,6 +297,7 @@ function LinkTreeEditor() {
           )}
         </div>
       </header>
+
 
       {/* URL pública sempre visível */}
       <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-3 text-sm">
