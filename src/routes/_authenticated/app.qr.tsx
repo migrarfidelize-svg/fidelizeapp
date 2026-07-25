@@ -1546,6 +1546,7 @@ function ReviewQrPage() {
                   editable={editLayout}
                   badges={badges}
                   moveBadge={moveBadge}
+                  landscape={landscape}
                 />
 
 
