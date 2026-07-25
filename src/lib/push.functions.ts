@@ -31,32 +31,48 @@ export const subscribeCustomerPush = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error || !customer) throw new Error("Cartão não encontrado.");
 
-    // Upsert by unique endpoint.
-    const { error: upErr } = await supabaseAdmin
+    // Update-then-insert: the unique index on (customer_id, endpoint) is
+    // partial (WHERE customer_id IS NOT NULL), so PostgREST's ON CONFLICT
+    // arbiter cannot infer it and .upsert() would raise
+    // "no unique or exclusion constraint matching the ON CONFLICT specification".
+    const patch = {
+      customer_id: customer.id,
+      establishment_id: customer.establishment_id,
+      user_id: customer.user_id ?? null,
+      endpoint: data.endpoint,
+      p256dh: data.p256dh,
+      auth_key: data.auth,
+      user_agent: data.user_agent ?? null,
+      preferences: data.preferences ?? {
+        stamp: true,
+        reward: true,
+        campaign: true,
+        birthday: true,
+      },
+      active: true,
+      last_error: null,
+    };
+    const { data: existing } = await supabaseAdmin
       .from("push_subscriptions")
-      .upsert(
-        {
-          customer_id: customer.id,
-          establishment_id: customer.establishment_id,
-          user_id: customer.user_id ?? null,
-          endpoint: data.endpoint,
-          p256dh: data.p256dh,
-          auth_key: data.auth,
-          user_agent: data.user_agent ?? null,
-          preferences: data.preferences ?? {
-            stamp: true,
-            reward: true,
-            campaign: true,
-            birthday: true,
-          },
-          active: true,
-          last_error: null,
-        },
-        { onConflict: "customer_id,endpoint" },
-      );
-    if (upErr) throw upErr;
+      .select("id")
+      .eq("customer_id", customer.id)
+      .eq("endpoint", data.endpoint)
+      .maybeSingle();
+    if (existing) {
+      const { error: upErr } = await supabaseAdmin
+        .from("push_subscriptions")
+        .update(patch)
+        .eq("id", existing.id);
+      if (upErr) throw upErr;
+    } else {
+      const { error: insErr } = await supabaseAdmin
+        .from("push_subscriptions")
+        .insert(patch);
+      if (insErr) throw insErr;
+    }
     return { ok: true };
   });
+
 
 export const unsubscribeCustomerPush = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
