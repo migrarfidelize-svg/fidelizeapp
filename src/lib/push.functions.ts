@@ -276,13 +276,30 @@ export const previewPushSegment = createServerFn({ method: "POST" })
     const { resolveEstablishmentSubs, splitAudience } = await import("@/lib/push.audience.server");
     const allSubs = await resolveEstablishmentSubs(supabaseAdmin, data.establishment_id);
     const split = splitAudience(allSubs, ids);
+    // Clientes únicos realmente alcançáveis (com dispositivo inscrito)
+    const reachableIds = Array.from(
+      new Set(split.customers.map((s) => s.resolved_customer_id!).filter(Boolean)),
+    );
+
+    let sample: Array<{ id: string; name: string | null; phone: string | null; tier: string | null }> = [];
+    if (reachableIds.length > 0) {
+      const { data: rows } = await supabaseAdmin
+        .from("customers")
+        .select("id, name, phone, tier")
+        .in("id", reachableIds.slice(0, 12));
+      sample = (rows ?? []) as any;
+    }
+
     return {
       customers: ids.length,
       subscribers: split.customers.length,
       operators: split.operators.length,
+      reachable_customers: reachableIds.length,
+      without_device: Math.max(0, ids.length - reachableIds.length),
+      sample,
     };
-
   });
+
 
 async function checkAndConsumeQuota(
   supabase: any,
