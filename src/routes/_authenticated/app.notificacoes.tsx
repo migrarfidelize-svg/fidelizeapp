@@ -201,6 +201,7 @@ function NotifPage() {
       });
     },
     onSuccess: (r) => {
+      setConfirmOpen(false);
       toast.success(`Enviado para ${r?.sent ?? 0} de ${r?.total ?? 0} inscritos.`);
       setTitle("");
       setBody("");
