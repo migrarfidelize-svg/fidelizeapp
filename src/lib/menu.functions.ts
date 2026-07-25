@@ -360,7 +360,9 @@ export const upsertMenuItem = createServerFn({ method: "POST" })
       badges: (data.badges ?? []) as any,
       ingredients: data.ingredients ?? [],
       allergens: data.allergens ?? [],
+      variants: (data.variants ?? []).map((v) => ({ label: v.label.trim(), price: v.price ?? null })) as any,
     };
+
 
     if (data.id) {
       const { data: updated, error } = await supabase
