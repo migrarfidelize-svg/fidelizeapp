@@ -439,7 +439,7 @@ function PublicMenuPage() {
             <a
               href={`https://wa.me/${(est.whatsapp || "").replace(/\D/g, "")}`}
               target="_blank" rel="noreferrer"
-              onClick={() => trackChannelEvent({ slug, channel: "menu" as any, event_type: "link_click", ref_label: "whatsapp" })}
+              onClick={() => trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_label: "cta:whatsapp" })}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold"
               style={{ background: "#25D366", color: "#fff" }}
             >
@@ -450,7 +450,7 @@ function PublicMenuPage() {
             <a
               href={est.instagram.startsWith("http") ? est.instagram : `https://instagram.com/${est.instagram.replace(/^@/, "")}`}
               target="_blank" rel="noreferrer"
-              onClick={() => trackChannelEvent({ slug, channel: "menu" as any, event_type: "link_click", ref_label: "instagram" })}
+              onClick={() => trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_label: "cta:instagram" })}
               className="grid place-items-center w-10 h-10 rounded-full text-white"
               style={{ background: "linear-gradient(135deg, #833AB4, #E1306C, #FCAF45)" }}
               aria-label="Instagram"
@@ -461,6 +461,7 @@ function PublicMenuPage() {
           {est.phone && (
             <a
               href={`tel:${est.phone}`}
+              onClick={() => trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_label: "cta:phone" })}
               className="grid place-items-center w-10 h-10 rounded-full text-white bg-white/10"
               aria-label="Telefone"
             >
