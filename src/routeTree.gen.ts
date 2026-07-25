@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VideosRouteImport } from './routes/videos'
 import { Route as TermosRouteImport } from './routes/termos'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as PreviewDockRouteImport } from './routes/preview-dock'
 import { Route as PrecosRouteImport } from './routes/precos'
@@ -122,6 +123,11 @@ const VideosRoute = VideosRouteImport.update({
 const TermosRoute = TermosRouteImport.update({
   id: '/termos',
   path: '/termos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
@@ -698,6 +704,7 @@ export interface FileRoutesByFullPath {
   '/precos': typeof PrecosRoute
   '/preview-dock': typeof PreviewDockRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
   '/videos': typeof VideosRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
@@ -803,6 +810,7 @@ export interface FileRoutesByTo {
   '/precos': typeof PrecosRoute
   '/preview-dock': typeof PreviewDockRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
   '/videos': typeof VideosRoute
   '/lgpd': typeof AuthenticatedLgpdRoute
@@ -906,6 +914,7 @@ export interface FileRoutesById {
   '/precos': typeof PrecosRoute
   '/preview-dock': typeof PreviewDockRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
   '/videos': typeof VideosRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
@@ -1013,6 +1022,7 @@ export interface FileRouteTypes {
     | '/precos'
     | '/preview-dock'
     | '/privacidade'
+    | '/sitemap.xml'
     | '/termos'
     | '/videos'
     | '/admin'
@@ -1118,6 +1128,7 @@ export interface FileRouteTypes {
     | '/precos'
     | '/preview-dock'
     | '/privacidade'
+    | '/sitemap.xml'
     | '/termos'
     | '/videos'
     | '/lgpd'
@@ -1220,6 +1231,7 @@ export interface FileRouteTypes {
     | '/precos'
     | '/preview-dock'
     | '/privacidade'
+    | '/sitemap.xml'
     | '/termos'
     | '/videos'
     | '/_authenticated/admin'
@@ -1327,6 +1339,7 @@ export interface RootRouteChildren {
   PrecosRoute: typeof PrecosRoute
   PreviewDockRoute: typeof PreviewDockRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermosRoute: typeof TermosRoute
   VideosRoute: typeof VideosRoute
   AvaliacoesSlugRoute: typeof AvaliacoesSlugRoute
@@ -1375,6 +1388,13 @@ declare module '@tanstack/react-router' {
       path: '/termos'
       fullPath: '/termos'
       preLoaderRoute: typeof TermosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacidade': {
@@ -2304,6 +2324,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrecosRoute: PrecosRoute,
   PreviewDockRoute: PreviewDockRoute,
   PrivacidadeRoute: PrivacidadeRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermosRoute: TermosRoute,
   VideosRoute: VideosRoute,
   AvaliacoesSlugRoute: AvaliacoesSlugRoute,

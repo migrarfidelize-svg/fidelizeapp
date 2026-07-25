@@ -56,7 +56,7 @@ export const Route = createFileRoute("/sitemap.xml")({
           const { data: cats } = await supabase
             .from("help_categories")
             .select("slug")
-            .eq("published", true);
+            .eq("active", true);
           for (const c of cats ?? []) {
             entries.push({
               path: `/ajuda/${(c as any).slug}`,
