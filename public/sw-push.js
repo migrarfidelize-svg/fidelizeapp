@@ -2,8 +2,8 @@
 /* eslint-disable no-restricted-globals */
 
 /**
- * Resolve a safe in-app URL for a push payload. Always keeps the user inside
- * /carteira/*. The `type` field (or `data.type`) chooses a canonical section,
+ * Resolve a safe in-app URL for a push payload. Keeps explicit URLs inside
+ * the app origin. The `type` field (or `data.type`) chooses a canonical section,
  * with optional `slug` / `cardId` params for card-scoped screens. A raw
  * `url` is only honored when it points to the same origin AND its path starts
  * with /carteira — anything else falls back to a section from `type` or to
@@ -41,12 +41,17 @@ function resolveTargetUrl(data) {
     return `/carteira/${encodeURIComponent(slug)}/promocoes`;
   }
 
-  // Explicit URL in payload — same-origin + /carteira prefix only.
+  // Explicit URL in payload — same-origin app areas only.
   const raw = typeof data.url === "string" ? data.url : "";
   if (raw) {
     try {
       const u = new URL(raw, origin);
-      if (u.origin === origin && u.pathname.startsWith("/carteira")) {
+      const safePath =
+        u.pathname.startsWith("/carteira") ||
+        u.pathname.startsWith("/app") ||
+        u.pathname.startsWith("/admin") ||
+        u.pathname.startsWith("/auth");
+      if (u.origin === origin && safePath) {
         return u.pathname + u.search + u.hash;
       }
     } catch (_e) {
@@ -55,6 +60,29 @@ function resolveTargetUrl(data) {
   }
 
   return bySection[type] || "/carteira";
+}
+
+function assetUrl(value, fallback) {
+  try {
+    return new URL(value || fallback, self.location.origin).href;
+  } catch (_e) {
+    return new URL(fallback, self.location.origin).href;
+  }
+}
+
+async function notifyOpenClients(message) {
+  try {
+    const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    clients.forEach((client) => {
+      try {
+        client.postMessage(message);
+      } catch (_e) {
+        /* noop */
+      }
+    });
+  } catch (_e) {
+    /* noop */
+  }
 }
 
 self.addEventListener("push", (event) => {
@@ -66,15 +94,37 @@ self.addEventListener("push", (event) => {
   }
   const title = data.title || "Fidelize";
   const targetUrl = resolveTargetUrl(data);
+  const notificationId = data.notificationId || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const options = {
     body: data.body || "",
-    icon: data.icon || "/icon-192.png",
-    badge: data.badge || "/icon-192.png",
-    tag: data.tag || undefined,
-    data: { url: targetUrl, type: data.type || null, slug: data.slug || null },
-    renotify: !!data.tag,
+    icon: assetUrl(data.icon, "/icon-192.png"),
+    badge: assetUrl(data.badge, "/icon-192.png"),
+    tag: data.tag || `fidelize-${notificationId}`,
+    data: { url: targetUrl, type: data.type || null, slug: data.slug || null, notificationId },
+    renotify: true,
+    requireInteraction: data.requireInteraction !== false,
+    silent: false,
+    timestamp: typeof data.timestamp === "number" ? data.timestamp : Date.now(),
+    vibrate: [120, 60, 120],
+    actions: [{ action: "open", title: "Abrir" }],
   };
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(
+    (async () => {
+      await notifyOpenClients({
+        type: "fidelize:push-received",
+        payload: { title, body: options.body, url: targetUrl, notificationId },
+      });
+      try {
+        await self.registration.showNotification(title, options);
+        await notifyOpenClients({ type: "fidelize:push-displayed", payload: { notificationId } });
+      } catch (error) {
+        await notifyOpenClients({
+          type: "fidelize:push-display-failed",
+          payload: { notificationId, error: error && error.message ? error.message : String(error) },
+        });
+      }
+    })(),
+  );
 });
 
 self.addEventListener("notificationclick", (event) => {

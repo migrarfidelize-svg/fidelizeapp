@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { VAPID_PUBLIC_KEY as FRONTEND_VAPID_PUBLIC_KEY } from "@/lib/vapid";
 
 const subInput = z.object({
   token: z.string().min(20).max(80), // customer access_token from voucher URL
@@ -1094,6 +1095,17 @@ export const sendAdminTestPush = createServerFn({ method: "POST" })
       error_code: r.status != null ? String(r.status) : null,
       error_message: r.error ?? null,
     });
+    await supabaseAdmin.from("push_logs").insert({
+      establishment_id: sub.establishment_id,
+      subscription_id: sub.id,
+      customer_id: sub.customer_id,
+      title: "Notificações ativadas",
+      body: "Seu dispositivo está pronto para receber novidades.",
+      url: "/admin/notificacoes",
+      status: r.ok ? "sent" : r.status === 410 || r.status === 404 ? "expired" : "failed",
+      status_code: r.status ?? null,
+      error: r.error ?? null,
+    });
     if (!r.ok) {
       // Only mark inactive on 404/410 — sendPushToSub already does that.
       throw new Error(
@@ -1159,12 +1171,14 @@ export const vapidHealthCheck = createServerFn({ method: "GET" })
     return {
       public_key_present: !!pub,
       public_key_format_ok: pubOk,
+      public_key_matches_frontend: !!pub && pub === FRONTEND_VAPID_PUBLIC_KEY,
       private_key_present: !!priv,
       private_key_format_ok: privOk,
       subject_present: !!subject,
       subject,
       // Never return the raw private key. Public key is safe.
       public_key_preview: pub ? `${pub.slice(0, 12)}…${pub.slice(-6)}` : null,
+      frontend_public_key_preview: `${FRONTEND_VAPID_PUBLIC_KEY.slice(0, 12)}…${FRONTEND_VAPID_PUBLIC_KEY.slice(-6)}`,
     };
   });
 
