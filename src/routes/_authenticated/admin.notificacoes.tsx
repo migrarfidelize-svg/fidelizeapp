@@ -258,7 +258,42 @@ function AdminNotifPage() {
             />
           </div>
 
+          <div className="space-y-2 rounded-md border border-dashed p-3">
+            <Label className="text-sm font-semibold">Público-alvo</Label>
+            <p className="text-xs text-muted-foreground">
+              Escolha quem recebe esta notificação dentro das empresas selecionadas.
+            </p>
+            <RadioGroup
+              value={audience}
+              onValueChange={(v) => setAudience(v as "customers" | "operators" | "both")}
+              className="grid gap-2 md:grid-cols-3"
+            >
+              <label className="flex cursor-pointer items-start gap-2 rounded-md border p-2 hover:bg-muted/50">
+                <RadioGroupItem value="customers" id="aud-c" className="mt-0.5" />
+                <div>
+                  <div className="text-sm font-medium">Clientes finais</div>
+                  <div className="text-xs text-muted-foreground">Titulares dos cartões fidelidade.</div>
+                </div>
+              </label>
+              <label className="flex cursor-pointer items-start gap-2 rounded-md border p-2 hover:bg-muted/50">
+                <RadioGroupItem value="operators" id="aud-o" className="mt-0.5" />
+                <div>
+                  <div className="text-sm font-medium">Empresas / operadores</div>
+                  <div className="text-xs text-muted-foreground">Donos e atendentes logados no painel.</div>
+                </div>
+              </label>
+              <label className="flex cursor-pointer items-start gap-2 rounded-md border p-2 hover:bg-muted/50">
+                <RadioGroupItem value="both" id="aud-b" className="mt-0.5" />
+                <div>
+                  <div className="text-sm font-medium">Ambos</div>
+                  <div className="text-xs text-muted-foreground">Clientes finais + operadores.</div>
+                </div>
+              </label>
+            </RadioGroup>
+          </div>
+
           <div className="space-y-2">
+
             <Label>Destino</Label>
             <Select value={target} onValueChange={(v) => setTarget(v as "all" | "select")}>
               <SelectTrigger className="w-full md:w-72">
