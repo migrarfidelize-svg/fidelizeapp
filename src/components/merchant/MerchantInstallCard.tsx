@@ -64,7 +64,7 @@ export function MerchantInstallCard() {
       const choice = await deferred.userChoice;
       if (choice.outcome === "accepted") dismiss();
       setDeferred(null);
-    } else if (isIos()) {
+    } else {
       setShowIosHelp(true);
     }
   }
