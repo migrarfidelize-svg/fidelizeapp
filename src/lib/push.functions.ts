@@ -378,9 +378,7 @@ export const broadcastPush = createServerFn({ method: "POST" })
     let sent = 0;
     let failed = 0;
     const notifiedTargets = new Set<string>();
-    for (const s of subs ?? []) {
-      const prefs = (s.preferences ?? {}) as Record<string, boolean>;
-      if (prefs.campaign === false) continue;
+    for (const s of subs) {
       const inAppTarget = notificationTargetKey(s);
       const r = await sendPushToSub(s, {
         title: data.title,
@@ -391,13 +389,14 @@ export const broadcastPush = createServerFn({ method: "POST" })
       });
       await recordPushDelivery(supabaseAdmin, s, { title: data.title, body: data.body, url: data.url, kind: "push" }, r, {
         persistInApp: !notifiedTargets.has(inAppTarget),
-        audience: s.customer_id ? "customer" : "operator",
+        audience: s.resolved_customer_id ? "customer" : "operator",
       });
       notifiedTargets.add(inAppTarget);
       if (r.ok) sent++;
       else failed++;
     }
-    return { sent, failed, total: subs?.length ?? 0 };
+    return { sent, failed, total: subs.length };
+
   });
 
 // ============================================================
