@@ -332,11 +332,10 @@ function PublicMenuPage() {
               </div>
             )}
             <div className="min-w-0 w-full">
-              {est.logo_url && !logoErr ? (
-                <h1 className="sr-only">{est.name}</h1>
-              ) : (
-                <h1 className="fx-serif text-xl sm:text-2xl font-bold truncate">{est.name}</h1>
-              )}
+              <h1 className="fx-serif text-xl sm:text-2xl font-bold leading-tight break-words">
+                {(menu as any).display_name || est.name}
+              </h1>
+
 
               {(menu.tagline || est.description) && (
                 <p className="text-[13px] sm:text-sm opacity-70 line-clamp-2">
