@@ -17,7 +17,7 @@ import {
   LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield,
   LifeBuoy, BookOpen, Package, Receipt, HeartHandshake, Bell, Star, Menu,
   PanelLeftClose, PanelLeftOpen, Compass, Megaphone, UserCircle2, MessageSquare, BarChart3,
-  Link2,
+  Link2, Ticket,
 } from "lucide-react";
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -111,7 +111,8 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Suporte",
     items: [
       { to: "/app/kb", label: "Central de Ajuda", icon: BookOpen },
-      { to: "/app/suporte", label: "Fale com a Fidelize", icon: LifeBuoy },
+      { to: "/suporte", label: "Fale com a Fidelize", icon: LifeBuoy },
+      { to: "/app/suporte", label: "Meus Chamados (clientes)", icon: Ticket },
     ],
   },
 ];
