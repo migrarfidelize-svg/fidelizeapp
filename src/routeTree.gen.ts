@@ -84,6 +84,7 @@ import { Route as AuthenticatedAdminEmailsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminEmailTemplatesRouteImport } from './routes/_authenticated/admin.email-templates'
 import { Route as AuthenticatedAdminEmailFilaRouteImport } from './routes/_authenticated/admin.email-fila'
 import { Route as AuthenticatedAdminConfigRouteImport } from './routes/_authenticated/admin.config'
+import { Route as AuthenticatedAdminCardapioJsonldRouteImport } from './routes/_authenticated/admin.cardapio-jsonld'
 import { Route as AuthenticatedAdminAvaliacoesRouteImport } from './routes/_authenticated/admin.avaliacoes'
 import { Route as AuthenticatedAdminAuditoriaRouteImport } from './routes/_authenticated/admin.auditoria'
 import { Route as AuthenticatedAdminAssinaturasRouteImport } from './routes/_authenticated/admin.assinaturas'
@@ -522,6 +523,12 @@ const AuthenticatedAdminConfigRoute =
     path: '/config',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminCardapioJsonldRoute =
+  AuthenticatedAdminCardapioJsonldRouteImport.update({
+    id: '/cardapio-jsonld',
+    path: '/cardapio-jsonld',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminAvaliacoesRoute =
   AuthenticatedAdminAvaliacoesRouteImport.update({
     id: '/avaliacoes',
@@ -737,6 +744,7 @@ export interface FileRoutesByFullPath {
   '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
   '/admin/avaliacoes': typeof AuthenticatedAdminAvaliacoesRoute
+  '/admin/cardapio-jsonld': typeof AuthenticatedAdminCardapioJsonldRoute
   '/admin/config': typeof AuthenticatedAdminConfigRoute
   '/admin/email-fila': typeof AuthenticatedAdminEmailFilaRoute
   '/admin/email-templates': typeof AuthenticatedAdminEmailTemplatesRoute
@@ -841,6 +849,7 @@ export interface FileRoutesByTo {
   '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
   '/admin/avaliacoes': typeof AuthenticatedAdminAvaliacoesRoute
+  '/admin/cardapio-jsonld': typeof AuthenticatedAdminCardapioJsonldRoute
   '/admin/config': typeof AuthenticatedAdminConfigRoute
   '/admin/email-fila': typeof AuthenticatedAdminEmailFilaRoute
   '/admin/email-templates': typeof AuthenticatedAdminEmailTemplatesRoute
@@ -949,6 +958,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/_authenticated/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
   '/_authenticated/admin/avaliacoes': typeof AuthenticatedAdminAvaliacoesRoute
+  '/_authenticated/admin/cardapio-jsonld': typeof AuthenticatedAdminCardapioJsonldRoute
   '/_authenticated/admin/config': typeof AuthenticatedAdminConfigRoute
   '/_authenticated/admin/email-fila': typeof AuthenticatedAdminEmailFilaRoute
   '/_authenticated/admin/email-templates': typeof AuthenticatedAdminEmailTemplatesRoute
@@ -1058,6 +1068,7 @@ export interface FileRouteTypes {
     | '/admin/assinaturas'
     | '/admin/auditoria'
     | '/admin/avaliacoes'
+    | '/admin/cardapio-jsonld'
     | '/admin/config'
     | '/admin/email-fila'
     | '/admin/email-templates'
@@ -1162,6 +1173,7 @@ export interface FileRouteTypes {
     | '/admin/assinaturas'
     | '/admin/auditoria'
     | '/admin/avaliacoes'
+    | '/admin/cardapio-jsonld'
     | '/admin/config'
     | '/admin/email-fila'
     | '/admin/email-templates'
@@ -1269,6 +1281,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/assinaturas'
     | '/_authenticated/admin/auditoria'
     | '/_authenticated/admin/avaliacoes'
+    | '/_authenticated/admin/cardapio-jsonld'
     | '/_authenticated/admin/config'
     | '/_authenticated/admin/email-fila'
     | '/_authenticated/admin/email-templates'
@@ -1914,6 +1927,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminConfigRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/cardapio-jsonld': {
+      id: '/_authenticated/admin/cardapio-jsonld'
+      path: '/cardapio-jsonld'
+      fullPath: '/admin/cardapio-jsonld'
+      preLoaderRoute: typeof AuthenticatedAdminCardapioJsonldRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/avaliacoes': {
       id: '/_authenticated/admin/avaliacoes'
       path: '/avaliacoes'
@@ -2140,6 +2160,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminAssinaturasRoute: typeof AuthenticatedAdminAssinaturasRoute
   AuthenticatedAdminAuditoriaRoute: typeof AuthenticatedAdminAuditoriaRoute
   AuthenticatedAdminAvaliacoesRoute: typeof AuthenticatedAdminAvaliacoesRoute
+  AuthenticatedAdminCardapioJsonldRoute: typeof AuthenticatedAdminCardapioJsonldRoute
   AuthenticatedAdminConfigRoute: typeof AuthenticatedAdminConfigRoute
   AuthenticatedAdminEmailFilaRoute: typeof AuthenticatedAdminEmailFilaRoute
   AuthenticatedAdminEmailTemplatesRoute: typeof AuthenticatedAdminEmailTemplatesRoute
@@ -2165,6 +2186,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminAssinaturasRoute: AuthenticatedAdminAssinaturasRoute,
   AuthenticatedAdminAuditoriaRoute: AuthenticatedAdminAuditoriaRoute,
   AuthenticatedAdminAvaliacoesRoute: AuthenticatedAdminAvaliacoesRoute,
+  AuthenticatedAdminCardapioJsonldRoute: AuthenticatedAdminCardapioJsonldRoute,
   AuthenticatedAdminConfigRoute: AuthenticatedAdminConfigRoute,
   AuthenticatedAdminEmailFilaRoute: AuthenticatedAdminEmailFilaRoute,
   AuthenticatedAdminEmailTemplatesRoute: AuthenticatedAdminEmailTemplatesRoute,
