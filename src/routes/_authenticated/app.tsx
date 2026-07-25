@@ -24,6 +24,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { GuidedTour, type TourStep } from "@/components/GuidedTour";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { usePermissions } from "@/hooks/usePermissions";
+import { ROUTE_PERMISSIONS } from "@/lib/permissions";
 
 const MERCHANT_TOUR_STEPS: TourStep[] = [
   { preview: "welcome", title: "Bem-vindo à Fidelize!", description: "Vamos dar um tour rápido pelas áreas essenciais da plataforma. Leva menos de 1 minuto." },
@@ -238,6 +240,18 @@ function AppLayout() {
 
   const activeEst = memberships?.[0]?.establishment as { id: string; name: string; slug: string; logo_url: string | null } | undefined;
 
+  const { can, isLoading: permsLoading } = usePermissions(activeEst?.id);
+  const filteredGroups = NAV_GROUPS.map((g) => ({
+    ...g,
+    items: g.items.filter((it) => {
+      const action = ROUTE_PERMISSIONS[it.to];
+      if (!action) return true;
+      if (permsLoading) return true;
+      return can(action);
+    }),
+  })).filter((g) => g.items.length > 0);
+  const FLAT_ALLOWED = filteredGroups.flatMap((g) => g.items);
+
   if (isLoading) return <div className="grid min-h-screen place-items-center text-muted-foreground">Carregando…</div>;
   if (!memberships?.length) {
     if (typeof window !== "undefined" && !pathname.startsWith("/onboarding")) {
@@ -247,7 +261,7 @@ function AppLayout() {
   }
 
   const isItemActive = (n: NavItem) => (n.exact ? pathname === n.to : pathname.startsWith(n.to));
-  const activeNav = FLAT_NAV.find((n) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))) ?? FLAT_NAV[0];
+  const activeNav = FLAT_ALLOWED.find((n) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))) ?? FLAT_NAV.find((n) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))) ?? FLAT_NAV[0];
 
   async function signOut() {
     await queryClient.cancelQueries();
@@ -322,7 +336,7 @@ function AppLayout() {
   const renderNav = (onNavigate?: () => void, forceExpanded = false) => (
     <LayoutGroup id="sidebar-nav">
       <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto">
-        {NAV_GROUPS.map((g) => (
+        {filteredGroups.map((g) => (
           <div key={g.key} className="space-y-1">
             <AnimatePresence initial={false}>
               {(forceExpanded || !collapsed) && (
@@ -416,7 +430,7 @@ function AppLayout() {
             <LogoMark size={22} className="relative z-10 text-primary" />
           </Link>
 
-          {NAV_GROUPS.map((g) => {
+          {filteredGroups.map((g) => {
             const Icon = GROUP_ICONS[g.key] ?? LayoutDashboard;
             const isActive = g.items.some((it) =>
               it.exact ? pathname === it.to : pathname.startsWith(it.to),
