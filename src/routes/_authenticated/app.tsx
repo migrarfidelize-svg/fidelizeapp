@@ -194,34 +194,48 @@ function AppLayout() {
     refetchOnWindowFocus: true,
   });
 
+  // Realtime do suporte: tópico único por montagem e listeners registrados
+  // ANTES de subscribe(). Reaproveitar o mesmo nome de canal fazia o
+  // supabase-js recusar os callbacks ("after subscribe()") e os avisos
+  // em tempo real nunca chegavam.
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
+  const queryClientRef = useRef(queryClient);
+  queryClientRef.current = queryClient;
+
   useEffect(() => {
-    let userId: string | null = null;
+    let cancelled = false;
     let channel: ReturnType<typeof supabase.channel> | null = null;
     (async () => {
       const { data: u } = await supabase.auth.getUser();
-      userId = u.user?.id ?? null;
-      if (!userId) return;
-      channel = supabase
-        .channel("support-customer-notify")
-        .on(
-          "postgres_changes",
-          { event: "UPDATE", schema: "public", table: "support_tickets", filter: `requester_user_id=eq.${userId}` },
-          (payload) => {
-            const n = payload.new as { has_unread_customer?: boolean; protocol?: string; subject?: string };
-            if (n.has_unread_customer) {
-              toast.message("Nova resposta do suporte", {
-                description: `${n.protocol ?? ""} — ${n.subject ?? ""}`.trim(),
-                action: { label: "Ver", onClick: () => navigate({ to: "/app/fidelize" }) },
-              });
-              queryClient.invalidateQueries({ queryKey: ["support-unread"] });
-              queryClient.invalidateQueries({ queryKey: ["my-support-tickets"] });
-            }
-          },
-        )
-        .subscribe();
+      const userId = u.user?.id ?? null;
+      if (!userId || cancelled) return;
+      const topic = `support-customer-notify:${userId}:${Math.random().toString(36).slice(2, 9)}`;
+      const ch = supabase.channel(topic);
+      ch.on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "support_tickets", filter: `requester_user_id=eq.${userId}` },
+        (payload) => {
+          const n = payload.new as { has_unread_customer?: boolean; protocol?: string; subject?: string };
+          if (!n.has_unread_customer) return;
+          toast.message("Nova resposta do suporte", {
+            description: `${n.protocol ?? ""} — ${n.subject ?? ""}`.trim(),
+            action: { label: "Ver", onClick: () => navigateRef.current({ to: "/app/fidelize" }) },
+          });
+          queryClientRef.current.invalidateQueries({ queryKey: ["support-unread"] });
+          queryClientRef.current.invalidateQueries({ queryKey: ["my-support-tickets"] });
+        },
+      );
+      if (cancelled) return;
+      ch.subscribe();
+      channel = ch;
     })();
-    return () => { if (channel) supabase.removeChannel(channel); };
-  }, [navigate, queryClient]);
+    return () => {
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, []);
+
 
   const activeEstEarly = memberships?.[0]?.establishment as { id: string } | undefined;
   const activeEstId = activeEstEarly?.id;
