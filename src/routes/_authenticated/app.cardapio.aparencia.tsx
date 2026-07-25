@@ -539,7 +539,7 @@ function Thumb({
 }
 
 function MenuPreview({
-  preset, layout, pattern, bgImage, bgColor, accentColor, textColor, accent, name, logoUrl, coverUrl, categories, items, loading,
+  preset, layout, pattern, bgImage, bgColor, accentColor, textColor, accent: brandAccent, name, logoUrl, coverUrl, categories, items, loading,
 }: {
   preset: MenuPresetId; layout: MenuLayoutId; pattern: MenuPatternId;
   bgImage: string | null; bgColor: string | null; accentColor?: string | null; textColor?: string | null; accent: string;
@@ -549,7 +549,9 @@ function MenuPreview({
   const p = applyCustomColors(MENU_PRESETS.find((x) => x.id === preset)!, {
     bg_color: bgColor, accent_color: accentColor ?? null, text_color: textColor ?? null,
   });
-  const bg = menuBackgroundCss({ pattern, bg_image_url: bgImage }, p, accentColor ?? accent);
+  const accent = accentColor || p.bar || brandAccent;
+  const bg = menuBackgroundCss({ pattern, bg_image_url: bgImage }, p, accent);
+
 
   const fallback: PreviewItem[] = [
     { name: "Burguer da casa", short_desc: "Blend 180g, cheddar e picles", price: 39.9 },
