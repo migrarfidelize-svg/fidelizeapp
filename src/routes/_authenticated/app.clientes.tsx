@@ -572,9 +572,10 @@ function ProStat({
       <span aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent opacity-70" />
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{label}</div>
+          <div className="text-[10px] uppercase tracking-[0.16em] leading-tight text-muted-foreground break-words">{label}</div>
           <div className={`metric-number mt-1 tabular-nums ${toneClass}`}>{value.toLocaleString("pt-BR")}</div>
-          {hint && <div className="text-[11px] text-muted-foreground mt-0.5 truncate">{hint}</div>}
+          {hint && <div className="text-[11px] leading-tight text-muted-foreground mt-0.5 break-words">{hint}</div>}
+
         </div>
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-primary/30 bg-primary/10 text-primary shadow-[0_0_18px_-6px_var(--primary)]">
           <Icon className="h-4 w-4" />
