@@ -556,12 +556,15 @@ function PublicMenuPage() {
         <StoriesViewer
           items={stories.list}
           startIndex={stories.index}
+          primary={primary}
           onClose={() => setStories(null)}
+          onDetails={(i) => { setStories(null); setOpen(i); }}
           onItemView={(i) =>
             trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_id: i.id, ref_label: `stories:${i.name}` })
           }
         />
       )}
+
     </div>
   );
 }
