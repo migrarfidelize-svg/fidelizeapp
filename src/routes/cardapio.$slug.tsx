@@ -153,7 +153,9 @@ function PublicMenuPage() {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<Item | null>(null);
   const [stories, setStories] = useState<{ list: Item[]; index: number } | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const catRefs = useRef<Record<string, HTMLElement | null>>({});
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   if (!data || !data.menu) {
     return (
