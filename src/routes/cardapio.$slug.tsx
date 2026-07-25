@@ -291,41 +291,45 @@ function PublicMenuPage() {
       {/* ---------- HERO ---------- */}
       <header className="relative">
         <div
-          className="h-56 sm:h-72 w-full"
+          className="h-24 sm:h-40 w-full"
           style={{
             background: cover
               ? `linear-gradient(180deg, rgba(23,19,14,0.15), rgba(23,19,14,0.55)), url(${cover}) center/cover`
               : `linear-gradient(135deg, ${primary}, #17130E)`,
           }}
         />
-        <div className="max-w-3xl mx-auto px-5 -mt-16 relative">
-          <div className="rounded-3xl fx-shadow p-5 sm:p-6 flex items-center gap-4" style={{ background: "var(--mk-surface)", border: "1px solid var(--mk-line)" }}>
+        <div className="max-w-3xl mx-auto px-4 sm:px-5 -mt-10 sm:-mt-12 relative">
+          <div className="rounded-2xl sm:rounded-3xl fx-shadow p-3.5 sm:p-5 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 sm:gap-4" style={{ background: "var(--mk-surface)", border: "1px solid var(--mk-line)" }}>
             {est.logo_url ? (
               <LazyImg
                 src={est.logo_url}
                 alt={est.name}
-                className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover ring-1 ring-black/5"
+                className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-2xl object-contain bg-white/60 ring-1 ring-black/5"
                 eager
               />
             ) : (
               <div
-                className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl grid place-items-center text-white text-3xl fx-serif font-bold"
+                className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-2xl grid place-items-center text-white text-2xl fx-serif font-bold"
                 style={{ background: primary }}
               >
                 {est.name.slice(0, 1).toUpperCase()}
               </div>
             )}
-            <div className="min-w-0 flex-1">
-              <h1 className="fx-serif text-2xl sm:text-3xl font-bold truncate">{est.name}</h1>
+            <div className="min-w-0">
+              {est.logo_url ? (
+                <h1 className="sr-only">{est.name}</h1>
+              ) : (
+                <h1 className="fx-serif text-xl sm:text-2xl font-bold truncate">{est.name}</h1>
+              )}
               {(menu.tagline || est.description) && (
-                <p className="text-sm opacity-70 line-clamp-2 mt-0.5">
+                <p className="text-[13px] sm:text-sm opacity-70 line-clamp-2">
                   {menu.tagline || est.description}
                 </p>
               )}
-              <div className="flex flex-wrap gap-3 mt-2 text-xs opacity-70">
-                {est.address && <span className="inline-flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{est.address}</span>}
+              <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5 text-[11px] sm:text-xs opacity-70">
+                {est.address && <span className="inline-flex min-w-0 items-center gap-1"><MapPin className="w-3.5 h-3.5 shrink-0" /><span className="truncate">{est.address}</span></span>}
                 {menu.hours && (menu.hours as any)?.summary && (
-                  <span className="inline-flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{(menu.hours as any).summary}</span>
+                  <span className="inline-flex items-center gap-1"><Clock className="w-3.5 h-3.5 shrink-0" />{(menu.hours as any).summary}</span>
                 )}
               </div>
             </div>
@@ -333,7 +337,8 @@ function PublicMenuPage() {
 
           {/* Stories strip */}
           {videoItems.length > 0 && (
-            <div className="mt-5 -mx-1 px-1 flex gap-3 overflow-x-auto fx-hide-scroll">
+            <div className="mt-3 -mx-1 px-1 flex gap-3 overflow-x-auto fx-hide-scroll">
+
               {videoItems.slice(0, 12).map((v, idx) => (
                 <button
                   key={v.id}
