@@ -318,7 +318,7 @@ function PublicMenuPage() {
           );
         })}
         {(byCat.get("__uncat") || []).length > 0 && (
-          <section ref={(el) => (catRefs.current["__uncat"] = el)}>
+          <section ref={(el) => { catRefs.current["__uncat"] = el; }}>
             <h2 className="fx-serif text-xl font-bold mb-3">Outros</h2>
             <div className="grid gap-4">
               {(byCat.get("__uncat") || []).map((i) => (
