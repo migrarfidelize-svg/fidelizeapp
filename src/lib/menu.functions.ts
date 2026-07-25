@@ -504,6 +504,7 @@ export const seedMenuFromTemplate = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { findTemplate } = await import("./menu-templates");
+    const { templateCategoryImage } = await import("./menu-template-media");
     const tpl = findTemplate(data.template_key);
     if (!tpl) throw new Error("Modelo não encontrado.");
 
