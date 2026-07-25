@@ -272,6 +272,18 @@ function RewardsHub() {
               </div>
             )}
 
+            {categories.length >= 2 && (
+              <div>
+                <div className="mb-1 px-1 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Categoria</div>
+                <div className="flex gap-1.5 overflow-x-auto pb-1">
+                  <CategoryChip active={categoryFilter === "all"} onClick={() => setCategoryFilter("all")} label="Todas" count={items.length} />
+                  {categories.map((c) => (
+                    <CategoryChip key={c.key} active={categoryFilter === c.key} onClick={() => setCategoryFilter(c.key)} label={c.label} count={c.count} />
+                  ))}
+                </div>
+              </div>
+            )}
+
             {filtered.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border/60 bg-card/30 p-6 text-center text-sm text-muted-foreground">
                 Nenhum cartão encontrado com esse filtro.
