@@ -753,8 +753,112 @@ function NotifPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Confirmação com prévia do público */}
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Send className="h-4 w-4" /> Confirmar envio
+            </DialogTitle>
+            <DialogDescription>Revise a mensagem e o público antes de disparar.</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Prévia da notificação */}
+            <div className="rounded-lg border bg-muted/30 p-3">
+              <div className="flex items-start gap-2">
+                <Bell className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-semibold truncate">{title.trim() || "—"}</div>
+                  {body.trim() && <div className="text-xs text-muted-foreground">{body.trim()}</div>}
+                  {url.trim() && (
+                    <div className="mt-1 text-[10px] text-muted-foreground truncate">Destino: {url.trim()}</div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Números */}
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-lg border p-2">
+                <div className="text-lg font-semibold">{previewCount?.subscribers ?? 0}</div>
+                <div className="text-[10px] text-muted-foreground">Clientes com dispositivo</div>
+              </div>
+              <div className="rounded-lg border p-2">
+                <div className="text-lg font-semibold">{previewCount?.operators ?? 0}</div>
+                <div className="text-[10px] text-muted-foreground">Dispositivos da equipe</div>
+              </div>
+              <div className="rounded-lg border border-primary/40 bg-primary/5 p-2">
+                <div className="text-lg font-semibold text-primary">
+                  {(previewCount?.subscribers ?? 0) + (previewCount?.operators ?? 0)}
+                </div>
+                <div className="text-[10px] text-muted-foreground">Total de destinatários</div>
+              </div>
+            </div>
+
+            {/* Filtros aplicados */}
+            <div className="space-y-1.5">
+              <div className="text-xs font-semibold flex items-center gap-1.5">
+                <Users className="h-3.5 w-3.5" /> Segmento
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {segmentChips.map((c) => (
+                  <Badge key={c} variant="secondary" className="text-[10px]">{c}</Badge>
+                ))}
+              </div>
+              {!!previewCount?.without_device && (
+                <p className="text-[11px] text-muted-foreground">
+                  {previewCount.without_device} cliente(s) do segmento ainda não ativaram notificações e não receberão.
+                </p>
+              )}
+            </div>
+
+            {/* Amostra */}
+            {!!previewCount?.sample?.length && (
+              <div className="space-y-1.5">
+                <div className="text-xs font-semibold">Alguns destinatários</div>
+                <div className="max-h-40 overflow-y-auto rounded border divide-y">
+                  {previewCount.sample.map((c) => (
+                    <div key={c.id} className="flex items-center gap-2 px-2 py-1.5 text-xs">
+                      <span className="flex-1 truncate font-medium">{c.name || "Cliente"}</span>
+                      {c.tier && <Badge variant="outline" className="text-[9px] uppercase">{c.tier}</Badge>}
+                      <span className="text-muted-foreground">{c.phone ?? ""}</span>
+                    </div>
+                  ))}
+                </div>
+                {(previewCount.reachable_customers ?? 0) > previewCount.sample.length && (
+                  <p className="text-[10px] text-muted-foreground">
+                    +{(previewCount.reachable_customers ?? 0) - previewCount.sample.length} outros clientes.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmOpen(false)} disabled={send.isPending}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => send.mutate()}
+              disabled={
+                send.isPending ||
+                !canSend ||
+                (previewCount?.subscribers ?? 0) + (previewCount?.operators ?? 0) === 0
+              }
+            >
+              {send.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              <span className="ml-2">
+                Confirmar envio ({(previewCount?.subscribers ?? 0) + (previewCount?.operators ?? 0)})
+              </span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
+
 }
 
 function normalizeSegment(s: Segment): Segment {
