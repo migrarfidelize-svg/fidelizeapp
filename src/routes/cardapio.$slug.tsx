@@ -406,17 +406,6 @@ function PublicMenuPage() {
                 style={{ borderColor: "var(--mk-line)", background: "var(--mk-surface)", color: "var(--mk-ink)" }}
               />
             </div>
-            <button
-              onClick={downloadPdf}
-              disabled={pdfLoading}
-              className="fx-pill shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2.5 rounded-full border disabled:opacity-60"
-              style={{ background: "var(--mk-bar)", color: "var(--mk-barink)", borderColor: "var(--mk-bar)" }}
-              aria-label="Baixar cardápio em PDF"
-              title="Baixar cardápio em PDF"
-            >
-              <Download className="w-4 h-4" />
-              <span className="hidden sm:inline">{pdfLoading ? "Gerando…" : "PDF"}</span>
-            </button>
           </div>
           <div className="flex gap-2 overflow-x-auto fx-hide-scroll pb-1">
             <button
