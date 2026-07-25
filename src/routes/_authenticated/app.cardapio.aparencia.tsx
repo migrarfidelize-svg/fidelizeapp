@@ -443,7 +443,14 @@ function MenuPreview({
     <div className="space-y-2">
       <div className="mx-auto w-full max-w-[320px] overflow-hidden rounded-[2rem] border-4 border-foreground/10 shadow-xl">
         <div style={{ background: bg, color: p.ink }} className="h-[440px] overflow-y-auto">
-          <div className="h-20 w-full" style={{ background: `linear-gradient(135deg, ${accent}, ${p.bar})` }} />
+          <div
+            className="h-20 w-full bg-cover bg-center"
+            style={
+              coverUrl
+                ? { backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.5)), url(${coverUrl})` }
+                : { background: `linear-gradient(135deg, ${accent}, ${p.bar})` }
+            }
+          />
           <div className="-mt-8 px-3">
             <div className="flex items-center gap-2 rounded-2xl p-3" style={{ background: p.surface, border: `1px solid ${p.line}` }}>
               {logoUrl ? (
