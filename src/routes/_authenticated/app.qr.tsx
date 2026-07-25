@@ -62,7 +62,7 @@ function rootDomain(host: string): string {
   return parts.length <= 2 ? host.toLowerCase() : parts.slice(-2).join(".");
 }
 
-type QrDest = "reviews" | "linktree" | "landing";
+type QrDest = "reviews" | "linktree" | "landing" | "menu";
 type CopyPreset = {
   title: string;
   subtitle: string;
@@ -84,6 +84,13 @@ const COPY_PRESETS: Record<QrDest, CopyPreset> = {
     ctaNearQR: "Aponte a câmera e ative seu cartão",
     ctaFooter: "Escaneie e comece a acumular",
     primaryLabel: "Meu Cartão Fidelidade",
+  },
+  menu: {
+    title: "Nosso cardápio digital",
+    subtitle: "Fotos, preços e novidades sempre atualizados. Aponte a câmera e peça sem esperar.",
+    ctaNearQR: "Aponte a câmera para ver o cardápio",
+    ctaFooter: "Escaneie para abrir o cardápio",
+    primaryLabel: "Ver cardápio",
   },
   linktree: {
     title: "Tudo sobre a gente",
@@ -409,6 +416,7 @@ function ReviewQrPage() {
       reviews: "Avaliação",
       landing: "Cartão Fidelidade",
       linktree: "Árvore de Links",
+      menu: "Cardápio digital",
     };
     function onChanged(e: Event) {
       const detail = (e as CustomEvent).detail as { from: QrDest; to: QrDest; establishmentId: string };

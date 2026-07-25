@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const DEST_ENUM = z.enum(["reviews", "linktree", "landing"]).nullable().optional();
+const DEST_ENUM = z.enum(["reviews", "linktree", "landing", "menu"]).nullable().optional();
 
 function genCode(len = 6): string {
   const alphabet = "abcdefghjkmnpqrstuvwxyz23456789"; // no confusing chars

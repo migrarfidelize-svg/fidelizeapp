@@ -68,18 +68,19 @@ export const Route = createFileRoute("/api/public/r/qr/$slug/$dest")({
           }
           target = u || `${origin}/e/${slug}`;
         } else {
-          // Dynamic destination: reviews (default), linktree, or landing.
-          const qd = (est?.qr_destination ?? "reviews") as
-            | "reviews"
-            | "linktree"
-            | "landing";
-          if (qd === "linktree") {
-            target = `${origin}/links/${slug}`;
-          } else if (qd === "landing") {
-            target = `${origin}/cartao/${slug}`;
-          } else {
-            target = `${origin}/avaliar/${slug}`;
-          }
+          // Dynamic destination: reviews (default), linktree, landing or menu.
+          // "menu" is plan-gated, so it is re-validated on every scan and
+          // falls back to the review page when unavailable.
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const { resolveQrTarget } = await import("@/lib/qr-target.server");
+          const resolved = await resolveQrTarget({
+            admin: supabaseAdmin,
+            origin,
+            slug,
+            establishmentId: est?.id ?? null,
+            dest: est?.qr_destination,
+          });
+          target = resolved.url;
         }
 
 

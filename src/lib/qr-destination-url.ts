@@ -3,9 +3,10 @@
  * correspondente. Mantém em um único lugar a fonte da verdade que a UI e
  * o redirect `/api/public/r/qr/:slug/:dest` precisam concordar.
  */
-export type QrDest = "reviews" | "linktree" | "landing";
+export type QrDest = "reviews" | "linktree" | "landing" | "menu";
 
-export function qrDestinationPath(dest: QrDest): "avaliar" | "links" | "cartao" {
+export function qrDestinationPath(dest: QrDest): "avaliar" | "links" | "cartao" | "cardapio" {
+  if (dest === "menu") return "cardapio";
   if (dest === "linktree") return "links";
   if (dest === "landing") return "cartao";
   return "avaliar";
