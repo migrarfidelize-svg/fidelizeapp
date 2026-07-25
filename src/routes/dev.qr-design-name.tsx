@@ -6,7 +6,7 @@ import { buildDefaultDesignName, type QrDest } from "@/lib/qr-design-name";
  * Harness público (dev/E2E) para validar a nomenclatura automática dos designs
  * salvos no editor de QR. Usa exatamente o helper de produção
  * `buildDefaultDesignName`, então cobre a mesma regra que roda em
- * `/app/avaliacoes/qr` — sem depender de autenticação.
+ * `/app/qr` — sem depender de autenticação.
  */
 export const Route = createFileRoute("/dev/qr-design-name")({
   head: () => ({ meta: [{ title: "Dev — QR design name" }] }),

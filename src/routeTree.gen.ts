@@ -57,6 +57,7 @@ import { Route as AuthenticatedCarteiraSlugRouteImport } from './routes/_authent
 import { Route as AuthenticatedAppSuporteRouteImport } from './routes/_authenticated/app.suporte'
 import { Route as AuthenticatedAppRetencaoRouteImport } from './routes/_authenticated/app.retencao'
 import { Route as AuthenticatedAppQrcodesRouteImport } from './routes/_authenticated/app.qrcodes'
+import { Route as AuthenticatedAppQrRouteImport } from './routes/_authenticated/app.qr'
 import { Route as AuthenticatedAppPromocoesRouteImport } from './routes/_authenticated/app.promocoes'
 import { Route as AuthenticatedAppPerfilRouteImport } from './routes/_authenticated/app.perfil'
 import { Route as AuthenticatedAppPagamentosRouteImport } from './routes/_authenticated/app.pagamentos'
@@ -102,7 +103,6 @@ import { Route as ApiPublicCronBirthdayRouteImport } from './routes/api/public/c
 import { Route as AuthenticatedSuporteTicketIdRouteImport } from './routes/_authenticated/suporte.ticket.$id'
 import { Route as AuthenticatedCarteiraESlugRouteImport } from './routes/_authenticated/carteira.e.$slug'
 import { Route as AuthenticatedCarteiraSlugPromocoesRouteImport } from './routes/_authenticated/carteira.$slug.promocoes'
-import { Route as AuthenticatedAppAvaliacoesQrRouteImport } from './routes/_authenticated/app.avaliacoes.qr'
 import { Route as AuthenticatedAdminSuporteIdRouteImport } from './routes/_authenticated/admin.suporte.$id'
 import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authenticated/admin.empresa.$id'
 import { Route as ApiPublicWalletAppleTokenRouteImport } from './routes/api/public/wallet.apple.$token'
@@ -356,6 +356,11 @@ const AuthenticatedAppRetencaoRoute =
 const AuthenticatedAppQrcodesRoute = AuthenticatedAppQrcodesRouteImport.update({
   id: '/qrcodes',
   path: '/qrcodes',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppQrRoute = AuthenticatedAppQrRouteImport.update({
+  id: '/qr',
+  path: '/qr',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
 const AuthenticatedAppPromocoesRoute =
@@ -621,12 +626,6 @@ const AuthenticatedCarteiraSlugPromocoesRoute =
     path: '/promocoes',
     getParentRoute: () => AuthenticatedCarteiraSlugRoute,
   } as any)
-const AuthenticatedAppAvaliacoesQrRoute =
-  AuthenticatedAppAvaliacoesQrRouteImport.update({
-    id: '/avaliacoes/qr',
-    path: '/avaliacoes/qr',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
 const AuthenticatedAdminSuporteIdRoute =
   AuthenticatedAdminSuporteIdRouteImport.update({
     id: '/suporte/$id',
@@ -708,6 +707,7 @@ export interface FileRoutesByFullPath {
   '/app/pagamentos': typeof AuthenticatedAppPagamentosRoute
   '/app/perfil': typeof AuthenticatedAppPerfilRoute
   '/app/promocoes': typeof AuthenticatedAppPromocoesRoute
+  '/app/qr': typeof AuthenticatedAppQrRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/retencao': typeof AuthenticatedAppRetencaoRoute
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
@@ -730,7 +730,6 @@ export interface FileRoutesByFullPath {
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
-  '/app/avaliacoes/qr': typeof AuthenticatedAppAvaliacoesQrRoute
   '/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
   '/carteira/e/$slug': typeof AuthenticatedCarteiraESlugRoute
   '/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
@@ -804,6 +803,7 @@ export interface FileRoutesByTo {
   '/app/pagamentos': typeof AuthenticatedAppPagamentosRoute
   '/app/perfil': typeof AuthenticatedAppPerfilRoute
   '/app/promocoes': typeof AuthenticatedAppPromocoesRoute
+  '/app/qr': typeof AuthenticatedAppQrRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/retencao': typeof AuthenticatedAppRetencaoRoute
   '/app/suporte': typeof AuthenticatedAppSuporteRoute
@@ -826,7 +826,6 @@ export interface FileRoutesByTo {
   '/suporte/$slug': typeof SuporteSlugIndexRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
-  '/app/avaliacoes/qr': typeof AuthenticatedAppAvaliacoesQrRoute
   '/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
   '/carteira/e/$slug': typeof AuthenticatedCarteiraESlugRoute
   '/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
@@ -905,6 +904,7 @@ export interface FileRoutesById {
   '/_authenticated/app/pagamentos': typeof AuthenticatedAppPagamentosRoute
   '/_authenticated/app/perfil': typeof AuthenticatedAppPerfilRoute
   '/_authenticated/app/promocoes': typeof AuthenticatedAppPromocoesRoute
+  '/_authenticated/app/qr': typeof AuthenticatedAppQrRoute
   '/_authenticated/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/_authenticated/app/retencao': typeof AuthenticatedAppRetencaoRoute
   '/_authenticated/app/suporte': typeof AuthenticatedAppSuporteRoute
@@ -927,7 +927,6 @@ export interface FileRoutesById {
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
   '/_authenticated/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/_authenticated/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
-  '/_authenticated/app/avaliacoes/qr': typeof AuthenticatedAppAvaliacoesQrRoute
   '/_authenticated/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
   '/_authenticated/carteira/e/$slug': typeof AuthenticatedCarteiraESlugRoute
   '/_authenticated/suporte/ticket/$id': typeof AuthenticatedSuporteTicketIdRoute
@@ -1006,6 +1005,7 @@ export interface FileRouteTypes {
     | '/app/pagamentos'
     | '/app/perfil'
     | '/app/promocoes'
+    | '/app/qr'
     | '/app/qrcodes'
     | '/app/retencao'
     | '/app/suporte'
@@ -1028,7 +1028,6 @@ export interface FileRouteTypes {
     | '/suporte/$slug/'
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
-    | '/app/avaliacoes/qr'
     | '/carteira/$slug/promocoes'
     | '/carteira/e/$slug'
     | '/suporte/ticket/$id'
@@ -1102,6 +1101,7 @@ export interface FileRouteTypes {
     | '/app/pagamentos'
     | '/app/perfil'
     | '/app/promocoes'
+    | '/app/qr'
     | '/app/qrcodes'
     | '/app/retencao'
     | '/app/suporte'
@@ -1124,7 +1124,6 @@ export interface FileRouteTypes {
     | '/suporte/$slug'
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
-    | '/app/avaliacoes/qr'
     | '/carteira/$slug/promocoes'
     | '/carteira/e/$slug'
     | '/suporte/ticket/$id'
@@ -1202,6 +1201,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/pagamentos'
     | '/_authenticated/app/perfil'
     | '/_authenticated/app/promocoes'
+    | '/_authenticated/app/qr'
     | '/_authenticated/app/qrcodes'
     | '/_authenticated/app/retencao'
     | '/_authenticated/app/suporte'
@@ -1224,7 +1224,6 @@ export interface FileRouteTypes {
     | '/suporte/$slug/'
     | '/_authenticated/admin/empresa/$id'
     | '/_authenticated/admin/suporte/$id'
-    | '/_authenticated/app/avaliacoes/qr'
     | '/_authenticated/carteira/$slug/promocoes'
     | '/_authenticated/carteira/e/$slug'
     | '/_authenticated/suporte/ticket/$id'
@@ -1624,6 +1623,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppQrcodesRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/qr': {
+      id: '/_authenticated/app/qr'
+      path: '/qr'
+      fullPath: '/app/qr'
+      preLoaderRoute: typeof AuthenticatedAppQrRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/app/promocoes': {
       id: '/_authenticated/app/promocoes'
       path: '/promocoes'
@@ -1939,13 +1945,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCarteiraSlugPromocoesRouteImport
       parentRoute: typeof AuthenticatedCarteiraSlugRoute
     }
-    '/_authenticated/app/avaliacoes/qr': {
-      id: '/_authenticated/app/avaliacoes/qr'
-      path: '/avaliacoes/qr'
-      fullPath: '/app/avaliacoes/qr'
-      preLoaderRoute: typeof AuthenticatedAppAvaliacoesQrRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
     '/_authenticated/admin/suporte/$id': {
       id: '/_authenticated/admin/suporte/$id'
       path: '/suporte/$id'
@@ -2043,11 +2042,11 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppPagamentosRoute: typeof AuthenticatedAppPagamentosRoute
   AuthenticatedAppPerfilRoute: typeof AuthenticatedAppPerfilRoute
   AuthenticatedAppPromocoesRoute: typeof AuthenticatedAppPromocoesRoute
+  AuthenticatedAppQrRoute: typeof AuthenticatedAppQrRoute
   AuthenticatedAppQrcodesRoute: typeof AuthenticatedAppQrcodesRoute
   AuthenticatedAppRetencaoRoute: typeof AuthenticatedAppRetencaoRoute
   AuthenticatedAppSuporteRoute: typeof AuthenticatedAppSuporteRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
-  AuthenticatedAppAvaliacoesQrRoute: typeof AuthenticatedAppAvaliacoesQrRoute
   AuthenticatedAppAvaliacoesIndexRoute: typeof AuthenticatedAppAvaliacoesIndexRoute
   AuthenticatedAppPlanosIndexRoute: typeof AuthenticatedAppPlanosIndexRoute
 }
@@ -2065,11 +2064,11 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppPagamentosRoute: AuthenticatedAppPagamentosRoute,
   AuthenticatedAppPerfilRoute: AuthenticatedAppPerfilRoute,
   AuthenticatedAppPromocoesRoute: AuthenticatedAppPromocoesRoute,
+  AuthenticatedAppQrRoute: AuthenticatedAppQrRoute,
   AuthenticatedAppQrcodesRoute: AuthenticatedAppQrcodesRoute,
   AuthenticatedAppRetencaoRoute: AuthenticatedAppRetencaoRoute,
   AuthenticatedAppSuporteRoute: AuthenticatedAppSuporteRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
-  AuthenticatedAppAvaliacoesQrRoute: AuthenticatedAppAvaliacoesQrRoute,
   AuthenticatedAppAvaliacoesIndexRoute: AuthenticatedAppAvaliacoesIndexRoute,
   AuthenticatedAppPlanosIndexRoute: AuthenticatedAppPlanosIndexRoute,
 }
