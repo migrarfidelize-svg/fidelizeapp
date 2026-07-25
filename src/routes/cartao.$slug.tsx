@@ -65,6 +65,15 @@ export const Route = createFileRoute("/cartao/$slug")({
   loader: async ({ params, context }) => {
     const d = await context.queryClient.ensureQueryData(opts(params.slug));
     if (!d) throw notFound();
+    const { applySeoCacheHeaders } = await import("@/lib/seo-cache.server");
+    applySeoCacheHeaders({
+      version: [
+        (d as any).establishment?.updated_at,
+        (d as any).establishment?.logo_url,
+        (d as any).establishment?.primary_color,
+        (d as any).campaigns?.[0]?.id,
+      ],
+    });
     return d;
   },
   head: ({ loaderData }) => ({

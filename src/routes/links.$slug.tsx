@@ -17,6 +17,15 @@ export const Route = createFileRoute("/links/$slug")({
   loader: async ({ params, context }) => {
     const d = await context.queryClient.ensureQueryData(opts(params.slug));
     if (!d) throw notFound();
+    const { applySeoCacheHeaders } = await import("@/lib/seo-cache.server");
+    applySeoCacheHeaders({
+      version: [
+        (d as any).page?.updated_at,
+        (d as any).establishment?.updated_at,
+        (d as any).establishment?.logo_url,
+        (d as any).links?.length,
+      ],
+    });
     return d;
   },
   head: ({ loaderData }) => ({
