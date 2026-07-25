@@ -86,6 +86,12 @@ const emptyForm: FormState = {
   accent_color: "#F97066",
 };
 
+const COLOR_PRESETS: { name: string; primary: string; accent: string }[] = [
+  { name: "Roxo Fidelize", primary: "#5B21B6", accent: "#F97066" },
+  { name: "Cyan Circuit", primary: "#00B8D4", accent: "#FF3DAA" },
+  { name: "Ouro Premium", primary: "#0F172A", accent: "#F4B740" },
+];
+
 function CampanhasPage() {
   const qc = useQueryClient();
   const getEsts = useServerFn(getMyEstablishments);
