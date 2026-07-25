@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getMyWallet, getMyHistory, getMyRewards, getPromotedEstablishmentIds } from "@/lib/my-wallet.functions";
 import { listAchievementsCatalog, listMyAchievements } from "@/lib/achievements.functions";
-import { ChevronRight, Sparkles, Gift, Stamp, RotateCcw, Bell, Flame, Trophy, Calendar } from "lucide-react";
+import { ChevronRight, Sparkles, Gift, Stamp, RotateCcw, Bell, Flame, Trophy, Calendar, Clock, Search, X } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import { saveWalletCache, readWalletCache } from "@/lib/offline-wallet-cache";
 import {
@@ -13,9 +13,7 @@ import {
 } from "@/components/wallet/WalletStates";
 import { WalletStack } from "@/components/wallet/WalletStack";
 import { WalletHomeSkeleton } from "@/components/wallet/WalletCardSkeleton";
-import { InstallAppCard } from "@/components/wallet/InstallAppCard";
-import { EnableNotificationsCard } from "@/components/wallet/EnableNotificationsCard";
-import { PWAInstallCard } from "@/components/pwa/PWAInstallCard";
+import { WalletOnboarding } from "@/components/wallet/WalletOnboarding";
 
 
 
