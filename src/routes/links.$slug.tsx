@@ -4,7 +4,7 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getPublicLinkTreeBySlug } from "@/lib/linktree.functions";
 import { trackChannelEvent, useChannelPageView } from "@/lib/tracking";
-import { ExternalLink, Instagram, MessageCircle, Globe, MapPin, Youtube, Facebook, Music2, Mail, Phone, Star, Wifi, KeyRound, Copy, Check, Eye, EyeOff, UserPlus } from "lucide-react";
+import { ExternalLink, Instagram, MessageCircle, Globe, MapPin, Youtube, Facebook, Music2, Mail, Phone, Star, Wifi, KeyRound, Copy, Check, Eye, EyeOff, UserPlus, UtensilsCrossed, CreditCard } from "lucide-react";
 
 
 const opts = (slug: string) =>
@@ -65,6 +65,8 @@ const KIND_ICONS: Record<string, any> = {
   phone: Phone,
   wifi: Wifi,
   pix: KeyRound,
+  cardapio: UtensilsCrossed,
+  cartao: CreditCard,
   custom: ExternalLink,
 };
 
@@ -461,7 +463,7 @@ function SaveContactButton({
   const urls = Array.from(
     new Set(
       links
-        .filter((l) => ["site", "instagram", "facebook", "tiktok", "youtube", "maps", "google", "custom"].includes(l.kind))
+        .filter((l) => ["site", "instagram", "facebook", "tiktok", "youtube", "maps", "google", "cardapio", "cartao", "custom"].includes(l.kind))
         .map((l) => normalizeUrl(l.kind, l.url)),
     ),
   );

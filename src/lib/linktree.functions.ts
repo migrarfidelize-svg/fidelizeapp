@@ -6,7 +6,7 @@ import type { Database } from "@/integrations/supabase/types";
 
 const LinkKind = z.enum([
   "whatsapp", "instagram", "facebook", "tiktok", "youtube",
-  "site", "google", "maps", "email", "phone", "wifi", "pix", "custom",
+  "site", "google", "maps", "email", "phone", "wifi", "pix", "cardapio", "cartao", "custom",
 ]);
 
 
