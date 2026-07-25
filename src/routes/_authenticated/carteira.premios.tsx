@@ -64,12 +64,33 @@ function RewardsHub() {
 
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "ready" | "close" | "inactive">("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
   const q = query.trim().toLowerCase();
+
+  // Categorias únicas presentes na carteira do usuário (fallback "Outros" para vazio).
+  const categories = useMemo(() => {
+    const map = new Map<string, { key: string; label: string; count: number }>();
+    for (const i of items) {
+      const seg = ((i.establishment as { segment: string | null }).segment ?? "").trim();
+      const key = seg ? seg.toLowerCase() : "__none__";
+      const label = seg || "Outros";
+      const prev = map.get(key);
+      if (prev) prev.count++;
+      else map.set(key, { key, label, count: 1 });
+    }
+    return Array.from(map.values()).sort((a, b) => b.count - a.count);
+  }, [items]);
+
   const filtered = useMemo(() => {
     return items.filter((i) => {
-      const est = i.establishment as { name: string; active: boolean };
+      const est = i.establishment as { name: string; active: boolean; segment: string | null };
       if (q && !est.name.toLowerCase().includes(q)) return false;
+      if (categoryFilter !== "all") {
+        const seg = (est.segment ?? "").trim().toLowerCase();
+        const key = seg || "__none__";
+        if (key !== categoryFilter) return false;
+      }
       const req = i.card ? (i.card.campaign as { stamps_required: number }).stamps_required || 1 : 1;
       const stamps = i.card?.stamps ?? 0;
       const pct = stamps / req;
@@ -86,7 +107,7 @@ function RewardsHub() {
           return true;
       }
     });
-  }, [items, q, statusFilter]);
+  }, [items, q, statusFilter, categoryFilter]);
 
   const counts = useMemo(() => {
     let readyCount = 0;
@@ -251,6 +272,18 @@ function RewardsHub() {
               </div>
             )}
 
+            {categories.length >= 2 && (
+              <div>
+                <div className="mb-1 px-1 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Categoria</div>
+                <div className="flex gap-1.5 overflow-x-auto pb-1">
+                  <CategoryChip active={categoryFilter === "all"} onClick={() => setCategoryFilter("all")} label="Todas" count={items.length} />
+                  {categories.map((c) => (
+                    <CategoryChip key={c.key} active={categoryFilter === c.key} onClick={() => setCategoryFilter(c.key)} label={c.label} count={c.count} />
+                  ))}
+                </div>
+              </div>
+            )}
+
             {filtered.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border/60 bg-card/30 p-6 text-center text-sm text-muted-foreground">
                 Nenhum cartão encontrado com esse filtro.
@@ -263,6 +296,23 @@ function RewardsHub() {
 
       </div>
     </WithOfflineFallback>
+  );
+}
+
+function CategoryChip({ active, onClick, label, count }: { active: boolean; onClick: () => void; label: string; count: number }) {
+  return (
+    <button
+      onClick={onClick}
+      className={
+        "flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-all " +
+        (active
+          ? "border-primary/50 bg-primary/10 text-primary shadow-[0_0_10px_color-mix(in_oklab,var(--primary)_25%,transparent)]"
+          : "border-border/60 bg-card/40 text-muted-foreground hover:text-foreground")
+      }
+    >
+      <span className="capitalize">{label}</span>
+      <span className={"grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-black " + (active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>{count}</span>
+    </button>
   );
 }
 
