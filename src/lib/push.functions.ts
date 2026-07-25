@@ -1031,7 +1031,7 @@ export const sendTestPushToMe = createServerFn({ method: "POST" })
       .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id")
       .eq("endpoint", data.endpoint)
       .eq("active", true)
-      .limit(1);
+      .limit(10);
     if (ids.length > 0) {
       query = query.or(`user_id.eq.${context.userId},customer_id.in.(${ids.join(",")})`);
     } else {
@@ -1218,6 +1218,13 @@ export const subscribeAdminPush = createServerFn({ method: "POST" })
       .eq("endpoint", data.endpoint)
       .is("customer_id", null)
       .maybeSingle();
+
+    await supabaseAdmin
+      .from("push_subscriptions")
+      .update({ active: false, last_error: "superseded_by_current_admin_user" })
+      .eq("endpoint", data.endpoint)
+      .neq("user_id", context.userId);
+
     const payload: any = {
       user_id: context.userId,
       customer_id: null,
