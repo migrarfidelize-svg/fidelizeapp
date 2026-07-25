@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Download, Share, PlusSquare, Smartphone, X } from "lucide-react";
 import { trackEngagement } from "@/lib/engagement";
+import { IosSetupGuide } from "@/components/pwa/IosSetupGuide";
 
 type BIPEvent = Event & {
   prompt: () => Promise<void>;
