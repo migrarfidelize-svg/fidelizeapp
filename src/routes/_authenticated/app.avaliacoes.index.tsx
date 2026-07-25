@@ -101,7 +101,7 @@ function CockpitHero({ est }: { est: { id: string; name: string; slug: string } 
         </div>
         <div className="flex flex-wrap gap-2">
           <Button asChild variant="outline" size="sm" className="border-primary/40 text-primary hover:bg-primary/10">
-            <Link to="/app/avaliacoes/qr">
+            <Link to="/app/qr">
               <Sparkles className="h-3.5 w-3.5" /> Configurar QR
             </Link>
           </Button>
@@ -421,7 +421,7 @@ function Feed({ estId }: { estId: string }) {
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-2">
               <Button asChild size="sm" className="shadow-[0_0_20px_hsl(var(--primary)/0.25)]">
-                <Link to="/app/avaliacoes/qr"><Sparkles className="h-3.5 w-3.5" /> Gerar QR Code</Link>
+                <Link to="/app/qr"><Sparkles className="h-3.5 w-3.5" /> Gerar QR Code</Link>
               </Button>
               <Button asChild size="sm" variant="outline">
                 <a href={`/avaliar/${estId}`} target="_blank" rel="noopener">Ver página pública</a>

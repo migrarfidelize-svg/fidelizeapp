@@ -95,7 +95,7 @@ const COPY_PRESETS: Record<QrDest, CopyPreset> = {
 import { buildDefaultDesignName, QR_DEST_LABEL as DEST_LABEL } from "@/lib/qr-design-name";
 
 
-export const Route = createFileRoute("/_authenticated/app/avaliacoes/qr")({
+export const Route = createFileRoute("/_authenticated/app/qr")({
   head: () => ({ meta: [{ title: "QR de Avaliação — Fidelize" }] }),
   component: ReviewQrPage,
 });
