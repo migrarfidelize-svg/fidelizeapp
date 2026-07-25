@@ -38,6 +38,8 @@ export function FirstStepsCard({
   const key = `${STORAGE_KEY}:${establishmentId}`;
   const [manualDone, setManualDone] = useState<string[]>([]);
   const [hidden, setHidden] = useState(false);
+  const [open, setOpen] = useState(false);
+
 
   const { allowed: menuAllowed } = useMyFeature(establishmentId, "digital_menu");
 
