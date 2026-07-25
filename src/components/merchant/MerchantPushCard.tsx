@@ -102,7 +102,10 @@ export function MerchantPushCard() {
 
   // Convite em popup: entra na fila única de convites (instalar → push → tour)
   // e só volta 24h depois se não ativar.
-  const wantsPrompt = subscribed === false && !dismissed && !skipped && supported;
+  // Só convidamos quando o app está instalado (aberto como app). No navegador,
+  // em URL direta, não pedimos permissão de notificação.
+  const installed = typeof window !== "undefined" && isStandalone();
+  const wantsPrompt = installed && subscribed === false && !dismissed && !skipped && supported && !needsInstall;
   const myTurn = useOnboardingSlot("push", wantsPrompt || showHelp);
   useEffect(() => {
     if (!wantsPrompt || !myTurn) return;
