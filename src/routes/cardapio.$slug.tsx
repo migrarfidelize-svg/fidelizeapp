@@ -708,6 +708,7 @@ function ItemCard({
           <h3 className="fx-serif font-bold text-sm sm:text-base leading-tight line-clamp-2">{item.name}</h3>
           {item.short_desc && <p className="text-xs opacity-70 line-clamp-2 mt-1">{item.short_desc}</p>}
           <Badges />
+          <VariantChips />
           <div className="mt-auto pt-2 flex items-baseline gap-2"><Price size="text-base" /></div>
         </div>
       </button>
@@ -725,6 +726,7 @@ function ItemCard({
           </div>
           {item.short_desc && <p className="text-xs sm:text-sm opacity-70 line-clamp-2 mt-1">{item.short_desc}</p>}
           <Badges />
+          <VariantChips />
         </div>
         <Thumb className="w-16 h-16 rounded-xl" />
       </button>
