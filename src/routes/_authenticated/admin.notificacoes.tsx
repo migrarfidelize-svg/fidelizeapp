@@ -78,6 +78,7 @@ function AdminNotifPage() {
   const [url, setUrl] = useState("");
   const [respectPrefs, setRespectPrefs] = useState(true);
   const [target, setTarget] = useState<"all" | "select">("all");
+  const [audience, setAudience] = useState<"customers" | "operators" | "both">("customers");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const ests = overview?.establishments ?? [];
@@ -101,6 +102,8 @@ function AdminNotifPage() {
           establishment_ids:
             target === "select" ? Array.from(selected) : undefined,
           respect_prefs: respectPrefs,
+          audience,
+
         },
       }),
     onSuccess: (r) => {
