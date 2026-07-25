@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Download, Share, PlusSquare, Smartphone, X } from "lucide-react";
+import { Download, Smartphone, X } from "lucide-react";
 import { trackEngagement } from "@/lib/engagement";
+import { IosSetupGuide } from "@/components/pwa/IosSetupGuide";
 
 type BIPEvent = Event & {
   prompt: () => Promise<void>;
@@ -103,25 +104,12 @@ export function InstallAppCard() {
           <DialogHeader>
             <DialogTitle>Instalar no iPhone / iPad</DialogTitle>
             <DialogDescription>
-              O Safari do iOS não abre um prompt automático. Faça em 3 passos:
+              O Safari do iOS não abre um prompt automático. Siga os passos e confira o checklist antes de concluir:
             </DialogDescription>
           </DialogHeader>
-          <ol className="space-y-3 text-sm">
-            <li className="flex items-start gap-3">
-              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-primary text-xs font-bold">1</span>
-              <span className="flex items-center gap-2">Toque em <Share className="h-4 w-4 inline" /> <strong>Compartilhar</strong> na barra inferior do Safari.</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-primary text-xs font-bold">2</span>
-              <span className="flex items-center gap-2">Escolha <PlusSquare className="h-4 w-4 inline" /> <strong>Adicionar à Tela de Início</strong>.</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-primary text-xs font-bold">3</span>
-              <span>Confirme em <strong>Adicionar</strong>. Pronto — abra pelo ícone "Carteira" na sua home.</span>
-            </li>
-          </ol>
+          <IosSetupGuide withNotifications />
           <p className="text-xs text-muted-foreground">
-            Dica: use o Safari (não o Chrome no iPhone) — só ele consegue instalar apps web no iOS.
+            Dica: no iPhone use o Safari — Chrome, Firefox e navegadores dentro de apps não instalam à tela de início.
           </p>
         </DialogContent>
       </Dialog>

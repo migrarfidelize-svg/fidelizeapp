@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Download, Share, PlusSquare, Smartphone, X } from "lucide-react";
+import { Download, Smartphone, X } from "lucide-react";
 import { trackEngagement } from "@/lib/engagement";
+import { IosSetupGuide } from "@/components/pwa/IosSetupGuide";
 
 type BIPEvent = Event & {
   prompt: () => Promise<void>;
@@ -115,25 +116,12 @@ export function MerchantInstallCard() {
             <DialogTitle>{isIos() ? "Instalar no iPhone / iPad" : "Instalar no Android"}</DialogTitle>
             <DialogDescription>
               {isIos()
-                ? "O Safari do iOS não abre um prompt automático. Faça em 3 passos:"
+                ? "O Safari do iOS não abre um prompt automático. Siga os passos e confira o checklist no final:"
                 : "Se o aviso automático não apareceu, instale pelo menu do navegador:"}
             </DialogDescription>
           </DialogHeader>
           {isIos() ? (
-            <ol className="space-y-3 text-sm">
-              <li className="flex items-start gap-3">
-                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">1</span>
-                <span className="flex items-center gap-2">Toque em <Share className="inline h-4 w-4" /> <strong>Compartilhar</strong> na barra do Safari.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">2</span>
-                <span className="flex items-center gap-2">Escolha <PlusSquare className="inline h-4 w-4" /> <strong>Adicionar à Tela de Início</strong>.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">3</span>
-                <span>Confirme em <strong>Adicionar</strong> e abra pelo ícone Fidelize.</span>
-              </li>
-            </ol>
+            <IosSetupGuide withNotifications />
           ) : (
             <ol className="space-y-3 text-sm">
               <li className="flex items-start gap-3">
@@ -152,7 +140,7 @@ export function MerchantInstallCard() {
           )}
           <p className="text-xs text-muted-foreground">
             {isIos()
-              ? "Use o Safari (não o Chrome no iPhone) — só ele instala apps web no iOS."
+              ? "No iPhone use o Safari: Chrome, Firefox e navegadores dentro de apps não instalam à tela de início."
               : "Funciona no Chrome, Edge e Samsung Internet."}
           </p>
         </DialogContent>
