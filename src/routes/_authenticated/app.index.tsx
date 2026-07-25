@@ -19,6 +19,11 @@ import { PageHero } from "@/components/PageHero";
 import { DashboardHeroVisual } from "@/components/DashboardHeroVisual";
 import { ErrorState, LoadingSkeleton } from "@/components/states";
 import { GreetingVoice } from "@/components/GreetingVoice";
+import { MerchantInstallCard } from "@/components/merchant/MerchantInstallCard";
+import { MerchantPushCard } from "@/components/merchant/MerchantPushCard";
+import { FirstStepsCard } from "@/components/merchant/FirstStepsCard";
+import { getEstablishmentCampaigns } from "@/lib/loyalty.functions";
+import { listTeam } from "@/lib/settings.functions";
 
 
 export const Route = createFileRoute("/_authenticated/app/")({
