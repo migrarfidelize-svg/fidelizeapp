@@ -628,7 +628,7 @@ export const updateMenuTheme = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({
     establishment_id: z.string().uuid(),
     theme: z.object({
-      preset: z.enum(["papel", "noir", "fresh"]),
+      preset: z.enum(["papel", "noir", "fresh", "terracota", "oceano", "citrico", "rose"]),
       layout: z.enum(["list", "grid", "magazine"]),
       pattern: z.enum(["none", "grain", "dots", "grid", "aurora"]),
       entry: z.enum(["dishes", "categories"]).optional(),
