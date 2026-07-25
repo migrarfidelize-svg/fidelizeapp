@@ -127,6 +127,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Avaliações",
     items: [
       { to: "/app/avaliacoes", label: "Avaliações", icon: Star },
+      { to: "/app/avaliacoes/tema", label: "Tema e cores", icon: Palette },
     ],
   },
   {
