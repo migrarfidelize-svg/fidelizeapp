@@ -4,7 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   MapPin, Phone, Instagram, MessageCircle, Clock, ChevronLeft, ChevronRight,
   X, Search, Flame, Leaf, Wheat, Beef, Fish, Milk, Egg, Nut, Play, Download,
+  ArrowLeft, Pause, Volume2, VolumeX, List, Heart, Share2,
 } from "lucide-react";
+
 import { getPublicMenuBySlug } from "@/lib/menu.functions";
 import { generateMenuPdf } from "@/lib/menu-pdf";
 import { trackChannelEvent, useChannelPageView } from "@/lib/tracking";
