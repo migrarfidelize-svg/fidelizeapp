@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Bell, BellRing, BellOff, CheckCircle2, Loader2, X, AlertTriangle, Share, PlusSquare, Settings, RefreshCw } from "lucide-react";
+import { Bell, BellRing, BellOff, Loader2, AlertTriangle, Share, Settings, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
