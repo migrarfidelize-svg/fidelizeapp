@@ -285,6 +285,7 @@ function LinkTreeEditor() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <ConfigureQrButton dest="linktree" />
           {published && (
             <>
               <Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success("Link copiado!"); }}>
