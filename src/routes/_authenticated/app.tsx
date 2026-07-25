@@ -70,7 +70,6 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Marketing",
     items: [
       { to: "/app/campanhas", label: "Campanhas", icon: Sparkles },
-      { to: "/app/qrcodes", label: "QR Codes", icon: QrCode },
       { to: "/app/retencao", label: "Retenção", icon: HeartHandshake },
     ],
   },
