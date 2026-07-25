@@ -141,6 +141,8 @@ export type MenuThemeConfig = {
   pattern: MenuPatternId;
   entry: MenuEntryId;
   bg_color: string | null;
+  accent_color: string | null;
+  text_color: string | null;
   bg_image_url: string | null;
 };
 
@@ -150,6 +152,8 @@ export const DEFAULT_MENU_THEME: MenuThemeConfig = {
   pattern: "grain",
   entry: "dishes",
   bg_color: null,
+  accent_color: null,
+  text_color: null,
   bg_image_url: null,
 };
 
@@ -170,6 +174,18 @@ export const MENU_BG_SWATCHES = [
   "#1E1B16", "#171F1A", "#221018", "#0B1F1C", "#161320", "#231A0F",
 ];
 
+/** Cores de destaque sugeridas (botões, preços, categoria ativa). */
+export const MENU_ACCENT_SWATCHES = [
+  "#17130E", "#C9A84C", "#2F6F4F", "#C4654A", "#5CBDB9", "#E8720C",
+  "#9E2A4B", "#2563EB", "#7C3AED", "#0E7490", "#B91C1C", "#047857",
+];
+
+/** Cores de texto sugeridas. */
+export const MENU_TEXT_SWATCHES = [
+  "#17130E", "#2A1810", "#14261C", "#0C2340", "#3F3F46",
+  "#FFFFFF", "#F5F3EE", "#EAF4FB", "#FFF3F5", "#D6D3D1",
+];
+
 function hexLuminance(hex: string): number {
   const h = hex.replace("#", "");
   const full = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
@@ -183,6 +199,11 @@ function hexLuminance(hex: string): number {
 
 export function isValidHex(v: string): boolean {
   return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v.trim());
+}
+
+/** Texto legível (claro/escuro) sobre uma cor sólida. */
+export function readableInk(hex: string): string {
+  return hexLuminance(hex) < 0.45 ? "#FFFFFF" : "#111111";
 }
 
 /** Aplica uma cor de fundo customizada sobre o preset, ajustando texto/superfícies para manter contraste. */
@@ -200,6 +221,31 @@ export function applyBgColor(preset: MenuPreset, bgColor: string | null): MenuPr
   };
 }
 
+/** Aplica cor de destaque (botões/preços/pills) escolhida pelo lojista. */
+export function applyAccentColor(preset: MenuPreset, accentColor: string | null): MenuPreset {
+  if (!accentColor || !isValidHex(accentColor)) return preset;
+  return { ...preset, bar: accentColor, barInk: readableInk(accentColor) };
+}
+
+/** Aplica cor de texto escolhida pelo lojista (títulos, descrições e bordas). */
+export function applyTextColor(preset: MenuPreset, textColor: string | null): MenuPreset {
+  if (!textColor || !isValidHex(textColor)) return preset;
+  const dark = hexLuminance(textColor) < 0.45;
+  return {
+    ...preset,
+    ink: textColor,
+    line: dark ? "rgba(23,19,14,0.16)" : "rgba(245,243,238,0.18)",
+  };
+}
+
+/** Combina preset + cores customizadas do lojista. */
+export function applyCustomColors(
+  preset: MenuPreset,
+  colors: { bg_color: string | null; accent_color: string | null; text_color: string | null },
+): MenuPreset {
+  return applyTextColor(applyAccentColor(applyBgColor(preset, colors.bg_color), colors.accent_color), colors.text_color);
+}
+
 export function resolveMenuTheme(raw: unknown): MenuThemeConfig & { preset_def: MenuPreset } {
   const t = (raw && typeof raw === "object" ? raw : {}) as Partial<MenuThemeConfig>;
   const preset = MENU_PRESETS.some((p) => p.id === t.preset) ? (t.preset as MenuPresetId) : DEFAULT_MENU_THEME.preset;
@@ -207,14 +253,18 @@ export function resolveMenuTheme(raw: unknown): MenuThemeConfig & { preset_def: 
   const pattern = MENU_PATTERNS.some((p) => p.id === t.pattern) ? (t.pattern as MenuPatternId) : DEFAULT_MENU_THEME.pattern;
   const entry = MENU_ENTRIES.some((e) => e.id === t.entry) ? (t.entry as MenuEntryId) : DEFAULT_MENU_THEME.entry;
   const bg_color = typeof t.bg_color === "string" && isValidHex(t.bg_color) ? t.bg_color : null;
+  const accent_color = typeof t.accent_color === "string" && isValidHex(t.accent_color) ? t.accent_color : null;
+  const text_color = typeof t.text_color === "string" && isValidHex(t.text_color) ? t.text_color : null;
   return {
     preset,
     layout,
     pattern,
     entry,
     bg_color,
+    accent_color,
+    text_color,
     bg_image_url: typeof t.bg_image_url === "string" && t.bg_image_url ? t.bg_image_url : null,
-    preset_def: applyBgColor(MENU_PRESETS.find((p) => p.id === preset)!, bg_color),
+    preset_def: applyCustomColors(MENU_PRESETS.find((p) => p.id === preset)!, { bg_color, accent_color, text_color }),
   };
 }
 

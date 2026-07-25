@@ -12,7 +12,9 @@ import {
   type MenuLayoutId, type MenuPatternId, type MenuPresetId, type MenuPreset,
   MENU_ENTRIES,
   MENU_BG_SWATCHES,
-  applyBgColor,
+  MENU_ACCENT_SWATCHES,
+  MENU_TEXT_SWATCHES,
+  applyCustomColors,
   isValidHex,
   type MenuEntryId,
 } from "@/lib/menu-themes";
@@ -61,6 +63,8 @@ function MenuAppearancePage() {
   const [pattern, setPattern] = useState<MenuPatternId>("grain");
   const [entry, setEntry] = useState<MenuEntryId>("dishes");
   const [bgColor, setBgColor] = useState<string | null>(null);
+  const [accentColor, setAccentColor] = useState<string | null>(null);
+  const [textColor, setTextColor] = useState<string | null>(null);
   const [bgImage, setBgImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -71,12 +75,14 @@ function MenuAppearancePage() {
     setPattern(t.pattern);
     setEntry(t.entry);
     setBgColor(t.bg_color);
+    setAccentColor(t.accent_color);
+    setTextColor(t.text_color);
     setBgImage(t.bg_image_url);
   }, [overview.data?.menu?.theme]);
 
   const mut = useMutation({
     mutationFn: () =>
-      saveTheme({ data: { establishment_id: estId!, theme: { preset, layout, pattern, entry, bg_color: bgColor, bg_image_url: bgImage } } }),
+      saveTheme({ data: { establishment_id: estId!, theme: { preset, layout, pattern, entry, bg_color: bgColor, accent_color: accentColor, text_color: textColor, bg_image_url: bgImage } } }),
     onSuccess: () => {
       toast.success("Aparência salva. A vitrine pública já está atualizada.");
       qc.invalidateQueries({ queryKey: ["menu-overview", estId] });
@@ -149,7 +155,7 @@ function MenuAppearancePage() {
             <CardContent className="space-y-4">
               <div className="flex flex-wrap gap-2">
                 {MENU_PATTERNS.map((pt) => {
-                  const p = applyBgColor(MENU_PRESETS.find((x) => x.id === preset)!, bgColor);
+                  const p = applyCustomColors(MENU_PRESETS.find((x) => x.id === preset)!, { bg_color: bgColor, accent_color: accentColor, text_color: textColor });
                   return (
                     <button
                       key={pt.id}
@@ -207,6 +213,88 @@ function MenuAppearancePage() {
                   ))}
                 </div>
               </div>
+
+              <div className="rounded-2xl border border-border/70 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold">Cor de destaque</div>
+                    <p className="text-xs text-muted-foreground">
+                      Usada em preços, botões e na categoria ativa. O texto sobre ela se ajusta sozinho.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      aria-label="Escolher cor de destaque"
+                      value={accentColor && isValidHex(accentColor) ? accentColor : MENU_PRESETS.find((x) => x.id === preset)!.bar}
+                      onChange={(e) => setAccentColor(e.target.value)}
+                      className="h-9 w-12 cursor-pointer rounded-lg border border-border/60 bg-transparent p-1"
+                    />
+                    {accentColor && (
+                      <Button variant="ghost" size="sm" onClick={() => setAccentColor(null)}>
+                        Usar cor do tema
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {MENU_ACCENT_SWATCHES.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setAccentColor(c)}
+                      title={c}
+                      className={`h-8 w-8 rounded-full border transition ${
+                        accentColor?.toLowerCase() === c.toLowerCase()
+                          ? "border-primary ring-2 ring-primary/40"
+                          : "border-border/60 hover:border-primary/50"
+                      }`}
+                      style={{ background: c }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-border/70 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold">Cor do texto</div>
+                    <p className="text-xs text-muted-foreground">
+                      Nomes dos pratos, descrições e títulos. Escolha uma cor com bom contraste no seu fundo.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      aria-label="Escolher cor do texto"
+                      value={textColor && isValidHex(textColor) ? textColor : MENU_PRESETS.find((x) => x.id === preset)!.ink}
+                      onChange={(e) => setTextColor(e.target.value)}
+                      className="h-9 w-12 cursor-pointer rounded-lg border border-border/60 bg-transparent p-1"
+                    />
+                    {textColor && (
+                      <Button variant="ghost" size="sm" onClick={() => setTextColor(null)}>
+                        Usar cor do tema
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {MENU_TEXT_SWATCHES.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setTextColor(c)}
+                      title={c}
+                      className={`h-8 w-8 rounded-full border transition ${
+                        textColor?.toLowerCase() === c.toLowerCase()
+                          ? "border-primary ring-2 ring-primary/40"
+                          : "border-border/60 hover:border-primary/50"
+                      }`}
+                      style={{ background: c }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+
 
               <div className="rounded-2xl border border-dashed border-border/70 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -313,7 +401,7 @@ function MenuAppearancePage() {
           <CardContent>
             <MenuPreview
               preset={preset} layout={layout} pattern={pattern}
-              bgImage={bgImage} bgColor={bgColor} accent={accent}
+              bgImage={bgImage} bgColor={bgColor} accentColor={accentColor} textColor={textColor} accent={accent}
               name={est?.name ?? "Seu Restaurante"}
               logoUrl={est?.logo_url ?? null}
               coverUrl={est?.cover_url ?? null}
@@ -413,15 +501,17 @@ function Thumb({
 }
 
 function MenuPreview({
-  preset, layout, pattern, bgImage, bgColor, accent, name, logoUrl, coverUrl, categories, items, loading,
+  preset, layout, pattern, bgImage, bgColor, accentColor, textColor, accent, name, logoUrl, coverUrl, categories, items, loading,
 }: {
   preset: MenuPresetId; layout: MenuLayoutId; pattern: MenuPatternId;
-  bgImage: string | null; bgColor: string | null; accent: string;
+  bgImage: string | null; bgColor: string | null; accentColor?: string | null; textColor?: string | null; accent: string;
   name: string; logoUrl: string | null; coverUrl?: string | null;
   categories: string[]; items: PreviewItem[]; loading?: boolean;
 }) {
-  const p = applyBgColor(MENU_PRESETS.find((x) => x.id === preset)!, bgColor);
-  const bg = menuBackgroundCss({ pattern, bg_image_url: bgImage }, p, accent);
+  const p = applyCustomColors(MENU_PRESETS.find((x) => x.id === preset)!, {
+    bg_color: bgColor, accent_color: accentColor ?? null, text_color: textColor ?? null,
+  });
+  const bg = menuBackgroundCss({ pattern, bg_image_url: bgImage }, p, accentColor ?? accent);
 
   const fallback: PreviewItem[] = [
     { name: "Burguer da casa", short_desc: "Blend 180g, cheddar e picles", price: 39.9 },
