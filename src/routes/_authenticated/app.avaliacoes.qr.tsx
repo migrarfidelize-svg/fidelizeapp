@@ -314,6 +314,11 @@ function ReviewQrPage() {
   const [designName, setDesignName] = useState("");
   const [layout, setLayout] = useState<PosterLayout>(DEFAULT_LAYOUT);
   const [editLayout, setEditLayout] = useState(false);
+  const [landscape, setLandscape] = useState(false);
+  // Track the previous format so we can migrate default layouts on change
+  // without wiping user customizations.
+  const prevFormatRef = useRef<FormatKey>("counter15x10");
+  const prevLandscapeRef = useRef(false);
   const [badges, setBadges] = useState<BadgeInstance[]>([{ key: "wifi", x: 50, y: 18 }]);
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [savedTarget, setSavedTarget] = useState<"ls" | "idb" | "fail">("ls");
