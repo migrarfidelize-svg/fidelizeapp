@@ -93,10 +93,11 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    key: "clientes",
-    label: "Clientes",
+    key: "pessoas",
+    label: "Pessoas",
     items: [
       { to: "/app/clientes", label: "Clientes", icon: Users },
+      { to: "/app/equipe", label: "Equipe", icon: UsersRound },
     ],
   },
   {
@@ -145,13 +146,6 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/app/notificacoes", label: "Notificações", icon: Bell },
       { to: "/app/promocoes", label: "Promoções", icon: Megaphone },
       { to: "/app/mensagens", label: "Mensagens", icon: MessageSquare },
-    ],
-  },
-  {
-    key: "equipe",
-    label: "Equipe",
-    items: [
-      { to: "/app/equipe", label: "Equipe", icon: UsersRound },
     ],
   },
   {
@@ -479,14 +473,13 @@ function AppLayout() {
 
   const GROUP_ICONS: Record<string, any> = {
     "visao-geral": LayoutDashboard,
-    clientes: Users,
+    pessoas: Users,
     qrcodes: QrCode,
     fidelidade: CreditCard,
     linktree: Link2,
     avaliacoes: Star,
     cardapio: UtensilsCrossed,
     comunicacao: Bell,
-    equipe: UsersRound,
     financeiro: Wallet,
     ajuda: LifeBuoy,
   };
