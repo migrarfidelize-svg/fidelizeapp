@@ -42,6 +42,14 @@ export type EstablishmentBreakdown = {
   achievements: number;
 };
 
+export type ChannelStats = {
+  linktree: { views: number; clicks: number; ctr: number; topLinks: { ref_id: string; label: string; clicks: number }[] };
+  reviews: { views: number };
+  loyalty: { views: number };
+  qr: { scansMain: number; scansSecond: number; total: number };
+  weekly: { week: string; linktreeViews: number; linktreeClicks: number; reviewsViews: number; loyaltyViews: number; qrScans: number }[];
+};
+
 export type RecapAnalytics = {
   weeks: { week: string; stamps: number; redemptions: number; achievements: number }[];
   cohorts: CohortRow[];
@@ -49,6 +57,7 @@ export type RecapAnalytics = {
   topCampaigns: { id: string; title: string; redemptions: number }[];
   topAchievements: { code: string; title: string; icon: string; count: number }[];
   totals: { stamps: number; redemptions: number; achievements: number; newCustomers: number };
+  channels: ChannelStats;
 };
 
 export const getRecapAnalytics = createServerFn({ method: "POST" })
