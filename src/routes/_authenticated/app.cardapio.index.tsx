@@ -92,6 +92,11 @@ function CardapioOverview() {
         subtitle="Monte um cardápio digital em Stories ou Lista, com vídeos verticais, QR Code próprio e analytics dedicado — 100% integrado ao seu ecossistema Fidelize."
       />
 
+      <div className="flex flex-wrap gap-2">
+        <ConfigureQrButton dest="menu" />
+      </div>
+
+
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <MetricCard icon={FolderTree} label="Categorias"     value={counts?.categories ?? 0} />
         <MetricCard icon={LayoutList} label="Pratos"         value={counts?.items ?? 0} />
