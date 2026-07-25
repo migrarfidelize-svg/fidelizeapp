@@ -750,6 +750,7 @@ export const adminBroadcastPush = createServerFn({ method: "POST" })
         url: z.string().url().optional(),
         establishment_ids: z.array(z.string().uuid()).optional(), // empty/undefined = all
         respect_prefs: z.boolean().optional(), // default true
+        audience: z.enum(["customers", "operators", "both"]).optional(), // default "customers"
       })
       .parse(d),
   )
@@ -757,20 +758,22 @@ export const adminBroadcastPush = createServerFn({ method: "POST" })
     await assertSuperAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+    const audience = data.audience ?? "customers";
     let q = supabaseAdmin
       .from("push_subscriptions")
       .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id, preferences")
       .eq("active", true)
       .not("establishment_id", "is", null);
     if (data.establishment_ids && data.establishment_ids.length > 0) {
-      // Targeted broadcast: include ALL devices of that establishment
-      // (customers AND merchant/staff devices).
       q = q.in("establishment_id", data.establishment_ids);
-    } else {
-      // Global broadcast: customers only.
+    }
+    if (audience === "customers") {
       q = q.not("customer_id", "is", null);
+    } else if (audience === "operators") {
+      q = q.is("customer_id", null);
     }
     const { data: subs } = await q;
+
 
     const { sendPushToSub } = await import("@/lib/push.server");
     const { notificationTargetKey, recordPushDelivery } = await import("@/lib/push-inbox.server");
