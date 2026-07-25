@@ -13,7 +13,14 @@ import { qrDestinationPath } from "@/lib/qr-destination-url";
 
 type Dest = "reviews" | "linktree" | "landing" | "menu";
 
-export function QrDestinationCard({ establishmentId }: { establishmentId: string }) {
+export function QrDestinationCard({
+  establishmentId,
+  initialDest,
+}: {
+  establishmentId: string;
+  /** Quando vem de um atalho "Configurar QR Code", já aplica esse destino. */
+  initialDest?: Dest;
+}) {
   const getFn = useServerFn(getQrDestinationStatus);
   const setFn = useServerFn(setQrDestination);
   const q = useQuery({
@@ -22,10 +29,19 @@ export function QrDestinationCard({ establishmentId }: { establishmentId: string
   });
   const [dest, setDest] = useState<Dest>("reviews");
   const [saving, setSaving] = useState(false);
+  const appliedRef = useRef(false);
 
   useEffect(() => {
     if (q.data?.destination) setDest(q.data.destination);
   }, [q.data?.destination]);
+
+  // Aplica o destino pedido pelo atalho apenas uma vez, quando difere do atual.
+  useEffect(() => {
+    if (!initialDest || appliedRef.current || !q.data) return;
+    appliedRef.current = true;
+    if (q.data.destination !== initialDest) void save(initialDest);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialDest, q.data]);
 
   const linktreeReady = !!q.data?.linktree_published;
   const reviewsReady = !!q.data?.review_form_active;
