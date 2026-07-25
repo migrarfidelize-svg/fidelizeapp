@@ -86,14 +86,16 @@ export const countUnread = createServerFn({ method: "GET" })
       .order("published_at", { ascending: false })
       .limit(60);
     const ids = (msgs ?? []).map((m) => m.id);
-    if (!ids.length) return 0;
-    const { data: reads } = await supabase
-      .from("merchant_message_reads")
-      .select("message_id")
-      .eq("user_id", userId)
-      .in("message_id", ids);
-    const readSet = new Set((reads ?? []).map((r) => r.message_id));
-    const manualUnread = ids.filter((i) => !readSet.has(i)).length;
+    let manualUnread = 0;
+    if (ids.length) {
+      const { data: reads } = await supabase
+        .from("merchant_message_reads")
+        .select("message_id")
+        .eq("user_id", userId)
+        .in("message_id", ids);
+      const readSet = new Set((reads ?? []).map((r) => r.message_id));
+      manualUnread = ids.filter((i) => !readSet.has(i)).length;
+    }
 
     const { count: appUnread } = await supabase
       .from("user_notifications")
