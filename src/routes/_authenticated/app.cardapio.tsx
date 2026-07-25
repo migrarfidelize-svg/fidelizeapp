@@ -15,10 +15,27 @@ function MenuGate() {
   const getEsts = useServerFn(getMyEstablishments);
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
   const est = memberships?.[0]?.establishment as { id: string; name: string; slug: string } | undefined;
-  const { allowed, isLoading } = useMyFeature(est?.id, "digital_menu");
+  const { allowed, viaPlan, isLoading } = useMyFeature(est?.id, "digital_menu");
 
   if (!est || isLoading) return <Outlet />;
-  if (allowed) return <Outlet />;
+  if (allowed) {
+    return (
+      <>
+        {!viaPlan && (
+          <div className="mx-4 mt-4 md:mx-8 rounded-lg border border-primary/30 bg-primary-soft/40 px-4 py-3 text-sm flex items-start gap-2">
+            <Lock className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+            <span>
+              Acesso liberado pela equipe Fidelize para montar seu cardápio. Para{" "}
+              <strong>publicar a vitrine pública</strong>, é necessário um plano com o recurso
+              Cardápio digital.{" "}
+              <Link to="/app/planos" className="underline font-medium">Ver planos</Link>
+            </span>
+          </div>
+        )}
+        <Outlet />
+      </>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-2xl p-4 md:p-8">

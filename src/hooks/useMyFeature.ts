@@ -14,6 +14,8 @@ export function useMyFeature(establishmentId: string | undefined, featureKey: st
   });
   return {
     allowed: q.data?.allowed ?? false,
+    viaPlan: (q.data as any)?.via_plan ?? false,
+    viaOverride: (q.data as any)?.via_override ?? false,
     isLoading: q.isLoading,
   };
 }

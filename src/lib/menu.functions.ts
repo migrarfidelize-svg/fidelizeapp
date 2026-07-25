@@ -110,6 +110,19 @@ export const setMenuStatus = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
+    // Publicar exige o recurso incluído no PLANO (liberações manuais do admin
+    // dão acesso à área do cardápio, mas não permitem publicar).
+    if (data.status === "published") {
+      const { data: allowed } = await supabase.rpc("has_plan_feature_strict", {
+        _est: data.establishment_id,
+        _feature: "digital_menu",
+      });
+      if (!allowed) {
+        throw new Error(
+          "Publicar o cardápio exige um plano com o recurso Cardápio digital. Faça upgrade para publicar sua vitrine."
+        );
+      }
+    }
     const { data: menu, error } = await supabase
       .from("restaurant_menus")
       .update({ status: data.status })

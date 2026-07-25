@@ -416,7 +416,16 @@ export const checkMyFeature = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const ok = await hasFeature(context.supabase, data.establishment_id, data.feature_key);
-    return { allowed: ok, feature_key: data.feature_key };
+    const { data: viaPlan } = await context.supabase.rpc("has_plan_feature_strict", {
+      _est: data.establishment_id,
+      _feature: data.feature_key,
+    });
+    return {
+      allowed: ok,
+      feature_key: data.feature_key,
+      via_plan: !!viaPlan,
+      via_override: ok && !viaPlan,
+    };
   });
 
 
