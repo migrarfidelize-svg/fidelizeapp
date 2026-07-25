@@ -8,9 +8,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, CheckCircle2, ExternalLink } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ExternalLink, Lock } from "lucide-react";
+import { qrDestinationPath } from "@/lib/qr-destination-url";
 
-type Dest = "reviews" | "linktree" | "landing";
+type Dest = "reviews" | "linktree" | "landing" | "menu";
 
 export function QrDestinationCard({ establishmentId }: { establishmentId: string }) {
   const getFn = useServerFn(getQrDestinationStatus);
@@ -28,6 +29,8 @@ export function QrDestinationCard({ establishmentId }: { establishmentId: string
 
   const linktreeReady = !!q.data?.linktree_published;
   const reviewsReady = !!q.data?.review_form_active;
+  const menuAllowed = !!q.data?.menu_allowed;
+  const menuReady = menuAllowed && !!q.data?.menu_published;
 
   async function save(next: Dest) {
     const prev = dest;
@@ -51,7 +54,8 @@ export function QrDestinationCard({ establishmentId }: { establishmentId: string
 
   const showWarning =
     (dest === "linktree" && !linktreeReady) ||
-    (dest === "reviews" && !reviewsReady);
+    (dest === "reviews" && !reviewsReady) ||
+    (dest === "menu" && !menuReady);
 
   return (
     <Card className="border-primary/20 bg-card/70">
@@ -71,6 +75,9 @@ export function QrDestinationCard({ establishmentId }: { establishmentId: string
               <SelectItem value="reviews">Avaliação de atendimento</SelectItem>
               <SelectItem value="linktree">Árvore de Links</SelectItem>
               <SelectItem value="landing">Cartão Fidelidade</SelectItem>
+              <SelectItem value="menu" disabled={!menuAllowed}>
+                Cardápio digital{!menuAllowed ? " (não incluso no plano)" : ""}
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -78,7 +85,22 @@ export function QrDestinationCard({ establishmentId }: { establishmentId: string
         {showWarning ? (
           <div className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/5 p-3 text-xs">
             <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
-            {dest === "linktree" ? (
+            {dest === "menu" ? (
+              <div className="flex-1">
+                <p className="font-medium">
+                  {menuAllowed
+                    ? "Seu cardápio ainda não está publicado — o QR cai na página de avaliação até publicar."
+                    : "O Cardápio digital não está incluído no seu plano atual."}
+                </p>
+                <Button asChild size="sm" variant="outline" className="mt-2">
+                  {menuAllowed ? (
+                    <Link to="/app/cardapio">Publicar cardápio</Link>
+                  ) : (
+                    <Link to="/app/planos"><Lock className="mr-1.5 h-3.5 w-3.5" />Ver planos</Link>
+                  )}
+                </Button>
+              </div>
+            ) : dest === "linktree" ? (
               <div className="flex-1">
                 <p className="font-medium">Você ainda não possui uma Árvore de Links publicada.</p>
                 <Button asChild size="sm" variant="outline" className="mt-2">
@@ -102,7 +124,7 @@ export function QrDestinationCard({ establishmentId }: { establishmentId: string
             </span>
             {q.data?.slug && (
               <a
-                href={`/${dest === "linktree" ? "links" : dest === "landing" ? "l" : "avaliar"}/${q.data.slug}`}
+                href={`/${qrDestinationPath(dest)}/${q.data.slug}`}
                 target="_blank"
                 rel="noreferrer"
                 className="ml-auto inline-flex items-center gap-1 text-primary hover:underline"

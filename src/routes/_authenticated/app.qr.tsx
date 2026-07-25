@@ -416,6 +416,7 @@ function ReviewQrPage() {
       reviews: "Avaliação",
       landing: "Cartão Fidelidade",
       linktree: "Árvore de Links",
+      menu: "Cardápio digital",
     };
     function onChanged(e: Event) {
       const detail = (e as CustomEvent).detail as { from: QrDest; to: QrDest; establishmentId: string };
