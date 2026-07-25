@@ -132,6 +132,7 @@ function AdminNotifPage() {
 
   const canSend =
     title.trim().length >= 2 &&
+    body.trim().length >= 2 &&
     !send.isPending &&
     (target === "all" || selected.size > 0);
 
@@ -248,7 +249,7 @@ function AdminNotifPage() {
             </div>
           </div>
           <div className="space-y-1">
-            <Label>Mensagem</Label>
+            <Label>Mensagem *</Label>
             <Textarea
               value={body}
               rows={3}
@@ -256,6 +257,9 @@ function AdminNotifPage() {
               onChange={(e) => setBody(e.target.value)}
               placeholder="Escreva algo curto e direto"
             />
+            <p className="text-xs text-muted-foreground">
+              Obrigatório: sem mensagem, o celular mostra o texto padrão do sistema ("From Fidelize") no lugar do seu texto.
+            </p>
           </div>
 
           <div className="space-y-2 rounded-md border border-dashed p-3">

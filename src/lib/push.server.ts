@@ -43,7 +43,8 @@ export async function sendPushToSub(
     const notificationId = `${Date.now()}-${sub.id.slice(0, 8)}`;
     const normalizedPayload = {
       title: payload.title,
-      body: payload.body ?? "",
+      // Corpo vazio faz o Chrome/Android exibirem o texto padrão "From <site>".
+      body: (payload.body ?? "").trim() || "Toque para abrir o Fidelize.",
       url: payload.url,
       icon: payload.icon ?? "/icon-192.png",
       badge: payload.badge ?? "/icon-192.png",
