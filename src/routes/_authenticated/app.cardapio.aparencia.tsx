@@ -10,6 +10,8 @@ import { getMyMenuOverview, updateMenuTheme } from "@/lib/menu.functions";
 import {
   MENU_PRESETS, MENU_LAYOUTS, MENU_PATTERNS, resolveMenuTheme, menuBackgroundCss,
   type MenuLayoutId, type MenuPatternId, type MenuPresetId, type MenuPreset,
+  MENU_ENTRIES,
+  type MenuEntryId,
 } from "@/lib/menu-themes";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHero } from "@/components/PageHero";
@@ -45,6 +47,7 @@ function MenuAppearancePage() {
   const [preset, setPreset] = useState<MenuPresetId>("papel");
   const [layout, setLayout] = useState<MenuLayoutId>("list");
   const [pattern, setPattern] = useState<MenuPatternId>("grain");
+  const [entry, setEntry] = useState<MenuEntryId>("dishes");
   const [bgImage, setBgImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -53,12 +56,13 @@ function MenuAppearancePage() {
     setPreset(t.preset);
     setLayout(t.layout);
     setPattern(t.pattern);
+    setEntry(t.entry);
     setBgImage(t.bg_image_url);
   }, [overview.data?.menu?.theme]);
 
   const mut = useMutation({
     mutationFn: () =>
-      saveTheme({ data: { establishment_id: estId!, theme: { preset, layout, pattern, bg_image_url: bgImage } } }),
+      saveTheme({ data: { establishment_id: estId!, theme: { preset, layout, pattern, entry, bg_image_url: bgImage } } }),
     onSuccess: () => {
       toast.success("Aparência salva. A vitrine pública já está atualizada.");
       qc.invalidateQueries({ queryKey: ["menu-overview", estId] });
@@ -205,6 +209,30 @@ function MenuAppearancePage() {
                   <LayoutWire id={l.id} />
                   <div className="mt-3 text-sm font-semibold">{l.name}</div>
                   <p className="mt-1 text-xs text-muted-foreground">{l.description}</p>
+                </button>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* TELA INICIAL */}
+          <Card>
+            <CardHeader><CardTitle>4. Ao entrar no cardápio</CardTitle></CardHeader>
+            <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {MENU_ENTRIES.map((e) => (
+                <button
+                  key={e.id}
+                  onClick={() => setEntry(e.id)}
+                  className={`relative rounded-2xl border p-4 text-left transition ${
+                    entry === e.id ? "border-primary ring-2 ring-primary/40" : "border-border/60 hover:border-primary/50"
+                  }`}
+                >
+                  {entry === e.id && (
+                    <span className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-primary text-primary-foreground">
+                      <Check className="h-3.5 w-3.5" />
+                    </span>
+                  )}
+                  <div className="text-sm font-semibold">{e.name}</div>
+                  <p className="mt-1 text-xs text-muted-foreground">{e.description}</p>
                 </button>
               ))}
             </CardContent>
