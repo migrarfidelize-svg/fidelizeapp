@@ -25,6 +25,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { GuidedTour, type TourStep } from "@/components/GuidedTour";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePermissions } from "@/hooks/usePermissions";
+import { AppShellSkeleton } from "@/components/AppShellSkeleton";
 import { ROUTE_PERMISSIONS } from "@/lib/permissions";
 
 const MERCHANT_TOUR_STEPS: TourStep[] = [
