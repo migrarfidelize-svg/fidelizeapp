@@ -255,3 +255,32 @@ export const saveReviewSettings = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// ============ MERCHANT: tema da página pública ============
+const reviewThemeSchema = z.object({
+  establishmentId: z.string().uuid(),
+  theme: z.object({
+    preset: z.enum(["circuit", "noir", "cream", "solar", "rose", "oceano"]),
+    pattern: z.enum(["none", "grid", "dots", "aurora"]),
+    accent: z.string().regex(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/).nullable(),
+    bg_color: z.string().regex(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/).nullable(),
+    headline: z.string().trim().max(90).nullable(),
+    subheadline: z.string().trim().max(160).nullable(),
+    show_reviews: z.boolean(),
+    show_powered_by: z.boolean(),
+  }),
+});
+
+export const saveReviewTheme = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: z.infer<typeof reviewThemeSchema>) => reviewThemeSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("review_settings")
+      .upsert(
+        { establishment_id: data.establishmentId, theme: data.theme },
+        { onConflict: "establishment_id" },
+      );
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
