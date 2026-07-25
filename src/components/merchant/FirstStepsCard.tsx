@@ -72,17 +72,23 @@ export function FirstStepsCard({
     try {
       const raw = localStorage.getItem(key);
       if (raw) {
-        const parsed = JSON.parse(raw) as { manual?: string[]; hidden?: boolean };
+        const parsed = JSON.parse(raw) as { manual?: string[]; hidden?: boolean; open?: boolean };
         setManualDone(parsed.manual ?? []);
         setHidden(!!parsed.hidden);
+        setOpen(!!parsed.open);
       }
     } catch { /* noop */ }
   }, [key]);
 
-  function persist(next: { manual?: string[]; hidden?: boolean }) {
-    const payload = { manual: next.manual ?? manualDone, hidden: next.hidden ?? hidden };
+  function persist(next: { manual?: string[]; hidden?: boolean; open?: boolean }) {
+    const payload = {
+      manual: next.manual ?? manualDone,
+      hidden: next.hidden ?? hidden,
+      open: next.open ?? open,
+    };
     try { localStorage.setItem(key, JSON.stringify(payload)); } catch { /* noop */ }
   }
+
 
   const est = estFull?.establishment as Record<string, any> | undefined;
   const profileDone = !!est
