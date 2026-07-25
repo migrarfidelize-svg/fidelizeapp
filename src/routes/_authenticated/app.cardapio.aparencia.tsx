@@ -12,7 +12,9 @@ import {
   type MenuLayoutId, type MenuPatternId, type MenuPresetId, type MenuPreset,
   MENU_ENTRIES,
   MENU_BG_SWATCHES,
-  applyBgColor,
+  MENU_ACCENT_SWATCHES,
+  MENU_TEXT_SWATCHES,
+  applyCustomColors,
   isValidHex,
   type MenuEntryId,
 } from "@/lib/menu-themes";
