@@ -88,6 +88,32 @@ export const MENU_PRESETS: MenuPreset[] = [
     fontHead: "'Outfit', ui-sans-serif, system-ui, sans-serif",
     headHref: "https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap",
   },
+  {
+    id: "citrico",
+    name: "Solar Cítrico",
+    description: "Creme ensolarado com laranja vibrante. Perfeito para açaí, sucos, sorveterias e lanches rápidos.",
+    bg: "#FFF8E8",
+    surface: "#FFFFFF",
+    ink: "#2B1B05",
+    line: "rgba(43,27,5,0.13)",
+    bar: "#E8720C",
+    barInk: "#FFF8E8",
+    fontHead: "'Outfit', ui-sans-serif, system-ui, sans-serif",
+    headHref: "https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap",
+  },
+  {
+    id: "rose",
+    name: "Rosé & Creme",
+    description: "Rosa suave com bordô. Combina com confeitarias, docerias, cafés e brunch.",
+    bg: "#FFF3F5",
+    surface: "#FFFFFF",
+    ink: "#2C0E18",
+    line: "rgba(44,14,24,0.12)",
+    bar: "#9E2A4B",
+    barInk: "#FFF3F5",
+    fontHead: "'Outfit', ui-sans-serif, system-ui, sans-serif",
+    headHref: "https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap",
+  },
 ];
 
 export const MENU_LAYOUTS: { id: MenuLayoutId; name: string; description: string }[] = [
