@@ -894,9 +894,9 @@ function ReviewQrPage() {
     <div className="mx-auto max-w-6xl space-y-6 p-4 md:p-8">
       <PageHero
         icon={Star}
-        eyebrow="Reputação · QR"
-        title="QR Code de avaliação"
-        subtitle="Cartaz pronto para balcão, mesa e recibos. Encaminha o cliente direto para a página de avaliação Fidelize."
+        eyebrow="Marketing · QR"
+        title="QR Code do estabelecimento"
+        subtitle="Um único cartaz, três destinos: Avaliação, Árvore de Links ou Cartão Fidelidade. Escolha abaixo para onde o cliente será direcionado ao escanear."
       />
 
       <QrDestinationCard establishmentId={est.id} />
