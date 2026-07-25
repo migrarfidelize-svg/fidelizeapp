@@ -89,6 +89,8 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Cardápio Virtual",
     items: [
       { to: "/app/cardapio", label: "Visão geral", icon: UtensilsCrossed, exact: true },
+      { to: "/app/cardapio/categorias", label: "Categorias", icon: FolderTree },
+      { to: "/app/cardapio/pratos", label: "Pratos", icon: LayoutList },
     ],
   },
 
