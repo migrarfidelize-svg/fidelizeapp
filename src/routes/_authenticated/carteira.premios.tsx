@@ -8,7 +8,7 @@ import {
   WithOfflineFallback,
 } from "@/components/wallet/WalletStates";
 import { WalletCardSkeletonList } from "@/components/wallet/WalletCardSkeleton";
-import { Gift, Sparkles, ChevronRight, CreditCard, Search, X } from "lucide-react";
+import { Gift, Sparkles, ChevronRight, CreditCard, Search, X, Clock } from "lucide-react";
 import { useMemo, useState } from "react";
 import { z } from "zod";
 
@@ -410,11 +410,26 @@ function RewardRow({ r, highlight }: { r: Reward; highlight?: boolean }) {
             }}
           />
         </div>
-        <div className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground">
-          {r.ready ? "Pronta para resgate" : `${r.stamps}/${r.required} carimbos`}
+        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
+          <span>{r.ready ? "Pronta para resgate" : `${r.stamps}/${r.required} carimbos`}</span>
+          {r.ready && r.expiresAt && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 font-bold text-amber-600 dark:text-amber-300">
+              <Clock className="h-2.5 w-2.5" />
+              {rewardExpiryLabel(r.expiresAt)}
+            </span>
+          )}
         </div>
       </div>
       <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
     </Link>
   );
+}
+
+/** Validade da recompensa liberada, em linguagem curta. */
+function rewardExpiryLabel(iso: string): string {
+  const diff = new Date(iso).getTime() - Date.now();
+  if (!Number.isFinite(diff) || diff <= 0) return "Expirada";
+  const days = Math.ceil(diff / 86_400_000);
+  if (days <= 1) return "Expira hoje";
+  return `Expira em ${days} dias`;
 }

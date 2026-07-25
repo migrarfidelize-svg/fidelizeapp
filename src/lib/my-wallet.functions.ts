@@ -293,6 +293,20 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
       }));
     }
 
+    // Cardápio digital: só oferecemos o atalho quando a vitrine está publicada
+    // e o recurso está liberado no plano do lojista.
+    let hasMenu = false;
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { isMenuDestinationValid } = await import("@/lib/qr-target.server");
+      hasMenu = await isMenuDestinationValid(
+        supabaseAdmin,
+        (row.establishment as unknown as { id: string }).id,
+      );
+    } catch {
+      hasMenu = false;
+    }
+
     return {
       customer: {
         id: row.id,
@@ -306,6 +320,7 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
       },
 
       establishment: row.establishment,
+      hasMenu,
       cards: cards ?? [],
       recentStamps,
       redeemedRewards,
@@ -324,7 +339,8 @@ export const getMyRewards = createServerFn({ method: "GET" })
     if (cErr) throw cErr;
     const ids = (customers ?? []).map((c) => c.id);
     if (!ids.length) return [] as Array<{
-      cardId: string; rewardId: string | null; stamps: number; required: number; reward: string;
+      cardId: string; rewardId: string | null; expiresAt: string | null; stamps: number;
+      required: number; reward: string;
       campaignName: string; icon: string; establishment: any; ready: boolean; pct: number;
     }>;
 
@@ -335,18 +351,24 @@ export const getMyRewards = createServerFn({ method: "GET" })
       .in("customer_id", ids);
     if (error) throw error;
 
-    // Pending rewards (unlocked, not redeemed) — used to obtain reward_id for temp redeem QR.
+    // Pending rewards (unlocked, not redeemed) — used to obtain reward_id for temp redeem QR
+    // e para avisar o cliente quando o prêmio está perto de expirar.
     const cardIds = (cards ?? []).map((c) => c.id);
-    const pendingByCard = new Map<string, string>();
+    const pendingByCard = new Map<string, { id: string; expiresAt: string | null }>();
     if (cardIds.length) {
       const { data: rewardsRows } = await context.supabase
         .from("rewards")
-        .select("id, card_id, redeemed_at, unlocked_at")
+        .select("id, card_id, redeemed_at, unlocked_at, expires_at")
         .in("card_id", cardIds)
         .is("redeemed_at", null)
         .order("unlocked_at", { ascending: false });
       for (const r of rewardsRows ?? []) {
-        if (!pendingByCard.has(r.card_id)) pendingByCard.set(r.card_id, r.id);
+        if (!pendingByCard.has(r.card_id)) {
+          pendingByCard.set(r.card_id, {
+            id: r.id,
+            expiresAt: (r as { expires_at: string | null }).expires_at ?? null,
+          });
+        }
       }
     }
 
@@ -356,9 +378,11 @@ export const getMyRewards = createServerFn({ method: "GET" })
       .map((c) => {
         const req = (c.campaign as { stamps_required: number }).stamps_required || 1;
         const pct = Math.min(100, Math.round((c.stamps / req) * 100));
+        const pending = pendingByCard.get(c.id) ?? null;
         return {
           cardId: c.id,
-          rewardId: pendingByCard.get(c.id) ?? null,
+          rewardId: pending?.id ?? null,
+          expiresAt: pending?.expiresAt ?? null,
           stamps: c.stamps,
           required: req,
           pct,
@@ -370,6 +394,7 @@ export const getMyRewards = createServerFn({ method: "GET" })
         };
       })
       .sort((a, b) => Number(b.ready) - Number(a.ready) || b.pct - a.pct);
+
   });
 
 /** Chronological history of stamps across all cards for the current user. */

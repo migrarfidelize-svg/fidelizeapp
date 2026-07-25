@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getMyWallet, getMyHistory, getMyRewards, getPromotedEstablishmentIds } from "@/lib/my-wallet.functions";
 import { listAchievementsCatalog, listMyAchievements } from "@/lib/achievements.functions";
-import { ChevronRight, Sparkles, Gift, Stamp, RotateCcw, Bell, Flame, Trophy, Calendar } from "lucide-react";
+import { ChevronRight, Sparkles, Gift, Stamp, RotateCcw, Bell, Flame, Trophy, Calendar, Clock, Search, X } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import { saveWalletCache, readWalletCache } from "@/lib/offline-wallet-cache";
 import {
@@ -13,9 +13,7 @@ import {
 } from "@/components/wallet/WalletStates";
 import { WalletStack } from "@/components/wallet/WalletStack";
 import { WalletHomeSkeleton } from "@/components/wallet/WalletCardSkeleton";
-import { InstallAppCard } from "@/components/wallet/InstallAppCard";
-import { EnableNotificationsCard } from "@/components/wallet/EnableNotificationsCard";
-import { PWAInstallCard } from "@/components/pwa/PWAInstallCard";
+import { WalletOnboarding } from "@/components/wallet/WalletOnboarding";
 
 
 
@@ -98,6 +96,23 @@ function WalletHome() {
     return bP - aP;
   });
 
+  // Busca local por estabelecimento — carteiras grandes viram lista navegável.
+  const [query, setQuery] = useState("");
+  const term = query.trim().toLowerCase();
+  const visibleFeatured = term
+    ? featured.filter((i) =>
+        (i.establishment as { name: string }).name.toLowerCase().includes(term),
+      )
+    : featured;
+
+  // Recompensa liberada mais próxima de expirar (avisa antes de perder).
+  const soonestExpiry = (rewards ?? [])
+    .filter((r) => r.ready && r.expiresAt)
+    .map((r) => new Date(r.expiresAt as string).getTime())
+    .filter((t) => Number.isFinite(t))
+    .sort((a, b) => a - b)[0] ?? null;
+
+
   return (
     <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["my-wallet"] })}>
       <div className="space-y-5">
@@ -108,9 +123,7 @@ function WalletHome() {
           </p>
         </div>
 
-        <PWAInstallCard compact />
-        <InstallAppCard />
-        <EnableNotificationsCard />
+        <WalletOnboarding />
 
 
 
@@ -134,10 +147,17 @@ function WalletHome() {
                     Você tem {readyRewards} {readyRewards === 1 ? "recompensa disponível" : "recompensas disponíveis"}
                   </div>
                   <div className="text-[11px] text-muted-foreground">Toque no botão <b>Meu QR</b> abaixo para retirar.</div>
+                  {soonestExpiry !== null && (
+                    <div className="mt-1 inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-amber-600 dark:text-amber-300">
+                      <Clock className="h-3 w-3" />
+                      {expiryLabel(soonestExpiry)}
+                    </div>
+                  )}
                 </div>
                 <ChevronRight className="h-4 w-4 text-primary transition-transform group-hover:translate-x-0.5" />
               </Link>
             )}
+
 
             {(streak.weeks >= 2 || streak.atRisk) && (
               <StreakCard weeks={streak.weeks} lastVisit={streak.lastVisit} atRisk={streak.atRisk} daysLeft={streak.daysLeft} />
@@ -159,8 +179,39 @@ function WalletHome() {
                   Ver todos →
                 </Link>
               </div>
-              <WalletStack items={featured.slice(0, 5)} />
+
+              {items.length >= 4 && (
+                <div className="relative mb-3">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Buscar estabelecimento…"
+                    aria-label="Buscar estabelecimento na minha carteira"
+                    className="h-11 w-full rounded-2xl border border-border/60 bg-card/40 pl-9 pr-9 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50"
+                  />
+                  {query && (
+                    <button
+                      type="button"
+                      onClick={() => setQuery("")}
+                      aria-label="Limpar busca"
+                      className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-xl text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {visibleFeatured.length === 0 ? (
+                <p className="rounded-2xl border border-dashed border-border/60 bg-card/30 p-6 text-center text-sm text-muted-foreground">
+                  Nenhum cartão encontrado para “{query}”.
+                </p>
+              ) : (
+                <WalletStack key={term} items={visibleFeatured.slice(0, 5)} />
+              )}
             </section>
+
 
             {feed.length > 0 && (
               <section>
@@ -538,4 +589,13 @@ export function WalletCard({ item }: { item: WalletItem }) {
       </div>
     </Link>
   );
+}
+
+/** Rótulo curto de validade da recompensa liberada ("expira hoje", "3 dias"). */
+function expiryLabel(ts: number): string {
+  const diff = ts - Date.now();
+  if (diff <= 0) return "Expirada";
+  const days = Math.ceil(diff / 86_400_000);
+  if (days <= 1) return "Expira hoje";
+  return `Expira em ${days} dias`;
 }
