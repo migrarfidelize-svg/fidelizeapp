@@ -113,6 +113,7 @@ import { Route as AuthenticatedCarteiraSlugPromocoesRouteImport } from './routes
 import { Route as AuthenticatedAppCardapioPratosRouteImport } from './routes/_authenticated/app.cardapio.pratos'
 import { Route as AuthenticatedAppCardapioCategoriasRouteImport } from './routes/_authenticated/app.cardapio.categorias'
 import { Route as AuthenticatedAppCardapioAparenciaRouteImport } from './routes/_authenticated/app.cardapio.aparencia'
+import { Route as AuthenticatedAppAvaliacoesQrRouteImport } from './routes/_authenticated/app.avaliacoes.qr'
 import { Route as AuthenticatedAdminSuporteIdRouteImport } from './routes/_authenticated/admin.suporte.$id'
 import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authenticated/admin.empresa.$id'
 import { Route as ApiPublicWalletAppleTokenRouteImport } from './routes/api/public/wallet.apple.$token'
@@ -695,6 +696,12 @@ const AuthenticatedAppCardapioAparenciaRoute =
     path: '/aparencia',
     getParentRoute: () => AuthenticatedAppCardapioRoute,
   } as any)
+const AuthenticatedAppAvaliacoesQrRoute =
+  AuthenticatedAppAvaliacoesQrRouteImport.update({
+    id: '/avaliacoes/qr',
+    path: '/avaliacoes/qr',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAdminSuporteIdRoute =
   AuthenticatedAdminSuporteIdRouteImport.update({
     id: '/suporte/$id',
@@ -814,6 +821,7 @@ export interface FileRoutesByFullPath {
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
+  '/app/avaliacoes/qr': typeof AuthenticatedAppAvaliacoesQrRoute
   '/app/cardapio/aparencia': typeof AuthenticatedAppCardapioAparenciaRoute
   '/app/cardapio/categorias': typeof AuthenticatedAppCardapioCategoriasRoute
   '/app/cardapio/pratos': typeof AuthenticatedAppCardapioPratosRoute
@@ -921,6 +929,7 @@ export interface FileRoutesByTo {
   '/suporte/$slug': typeof SuporteSlugIndexRoute
   '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
+  '/app/avaliacoes/qr': typeof AuthenticatedAppAvaliacoesQrRoute
   '/app/cardapio/aparencia': typeof AuthenticatedAppCardapioAparenciaRoute
   '/app/cardapio/categorias': typeof AuthenticatedAppCardapioCategoriasRoute
   '/app/cardapio/pratos': typeof AuthenticatedAppCardapioPratosRoute
@@ -1034,6 +1043,7 @@ export interface FileRoutesById {
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
   '/_authenticated/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
   '/_authenticated/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
+  '/_authenticated/app/avaliacoes/qr': typeof AuthenticatedAppAvaliacoesQrRoute
   '/_authenticated/app/cardapio/aparencia': typeof AuthenticatedAppCardapioAparenciaRoute
   '/_authenticated/app/cardapio/categorias': typeof AuthenticatedAppCardapioCategoriasRoute
   '/_authenticated/app/cardapio/pratos': typeof AuthenticatedAppCardapioPratosRoute
@@ -1147,6 +1157,7 @@ export interface FileRouteTypes {
     | '/suporte/$slug/'
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
+    | '/app/avaliacoes/qr'
     | '/app/cardapio/aparencia'
     | '/app/cardapio/categorias'
     | '/app/cardapio/pratos'
@@ -1254,6 +1265,7 @@ export interface FileRouteTypes {
     | '/suporte/$slug'
     | '/admin/empresa/$id'
     | '/admin/suporte/$id'
+    | '/app/avaliacoes/qr'
     | '/app/cardapio/aparencia'
     | '/app/cardapio/categorias'
     | '/app/cardapio/pratos'
@@ -1366,6 +1378,7 @@ export interface FileRouteTypes {
     | '/suporte/$slug/'
     | '/_authenticated/admin/empresa/$id'
     | '/_authenticated/admin/suporte/$id'
+    | '/_authenticated/app/avaliacoes/qr'
     | '/_authenticated/app/cardapio/aparencia'
     | '/_authenticated/app/cardapio/categorias'
     | '/_authenticated/app/cardapio/pratos'
@@ -2170,6 +2183,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppCardapioAparenciaRouteImport
       parentRoute: typeof AuthenticatedAppCardapioRoute
     }
+    '/_authenticated/app/avaliacoes/qr': {
+      id: '/_authenticated/app/avaliacoes/qr'
+      path: '/avaliacoes/qr'
+      fullPath: '/app/avaliacoes/qr'
+      preLoaderRoute: typeof AuthenticatedAppAvaliacoesQrRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/admin/suporte/$id': {
       id: '/_authenticated/admin/suporte/$id'
       path: '/suporte/$id'
@@ -2313,6 +2333,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppRetencaoRoute: typeof AuthenticatedAppRetencaoRoute
   AuthenticatedAppSuporteRoute: typeof AuthenticatedAppSuporteRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
+  AuthenticatedAppAvaliacoesQrRoute: typeof AuthenticatedAppAvaliacoesQrRoute
   AuthenticatedAppAvaliacoesIndexRoute: typeof AuthenticatedAppAvaliacoesIndexRoute
   AuthenticatedAppFidelizeIndexRoute: typeof AuthenticatedAppFidelizeIndexRoute
   AuthenticatedAppPlanosIndexRoute: typeof AuthenticatedAppPlanosIndexRoute
@@ -2338,6 +2359,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppRetencaoRoute: AuthenticatedAppRetencaoRoute,
   AuthenticatedAppSuporteRoute: AuthenticatedAppSuporteRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
+  AuthenticatedAppAvaliacoesQrRoute: AuthenticatedAppAvaliacoesQrRoute,
   AuthenticatedAppAvaliacoesIndexRoute: AuthenticatedAppAvaliacoesIndexRoute,
   AuthenticatedAppFidelizeIndexRoute: AuthenticatedAppFidelizeIndexRoute,
   AuthenticatedAppPlanosIndexRoute: AuthenticatedAppPlanosIndexRoute,
@@ -2473,13 +2495,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
