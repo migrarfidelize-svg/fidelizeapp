@@ -10,6 +10,7 @@ import { generateMenuPdf } from "@/lib/menu-pdf";
 import { trackChannelEvent, useChannelPageView } from "@/lib/tracking";
 import { LazyImg } from "@/components/LazyImg";
 import { buildMenuJsonLd } from "@/lib/menu-jsonld";
+import { resolveMenuTheme, menuBackgroundCss } from "@/lib/menu-themes";
 
 const opts = (slug: string) =>
   queryOptions({
@@ -254,11 +255,26 @@ function PublicMenuPage() {
 
   const cover = est.cover_url || null;
   const primary = est.primary_color || "#B8371D";
+  const theme = resolveMenuTheme((menu as any)?.theme);
+  const T = theme.preset_def;
+  const pageBg = menuBackgroundCss(theme, T, primary);
 
   return (
-    <div style={{ background: "#FBF7F0", color: "#17130E", fontFamily: "Figtree, system-ui, sans-serif" }} className="min-h-dvh">
+    <div
+      style={{
+        background: pageBg,
+        color: T.ink,
+        fontFamily: "Figtree, system-ui, sans-serif",
+        ["--mk-surface" as any]: T.surface,
+        ["--mk-ink" as any]: T.ink,
+        ["--mk-line" as any]: T.line,
+        ["--mk-bar" as any]: T.bar,
+        ["--mk-barink" as any]: T.barInk,
+      }}
+      className="min-h-dvh"
+    >
       <style>{`
-        .fx-serif { font-family: 'Outfit', ui-sans-serif, system-ui, sans-serif; letter-spacing: -0.01em; }
+        .fx-serif { font-family: ${T.fontHead}; letter-spacing: -0.01em; }
         .fx-shadow { box-shadow: 0 1px 2px rgba(23,19,14,.06), 0 8px 24px -12px rgba(23,19,14,.18); }
         .fx-pill { transition: transform .15s ease, background .15s ease, color .15s ease, border-color .15s ease; }
         .fx-pill:hover { transform: translateY(-1px); }
@@ -279,7 +295,7 @@ function PublicMenuPage() {
           }}
         />
         <div className="max-w-3xl mx-auto px-5 -mt-16 relative">
-          <div className="rounded-3xl bg-white fx-shadow p-5 sm:p-6 flex items-center gap-4">
+          <div className="rounded-3xl fx-shadow p-5 sm:p-6 flex items-center gap-4" style={{ background: "var(--mk-surface)", border: "1px solid var(--mk-line)" }}>
             {est.logo_url ? (
               <LazyImg
                 src={est.logo_url}
@@ -324,7 +340,7 @@ function PublicMenuPage() {
                     className="w-16 h-16 rounded-full p-[3px] block"
                     style={{ background: `conic-gradient(from 90deg, ${primary}, #d4a464, ${primary})` }}
                   >
-                    <span className="block w-full h-full rounded-full bg-white p-[2px]">
+                    <span className="block w-full h-full rounded-full p-[2px]" style={{ background: "var(--mk-surface)" }}>
                       <span
                         className="block w-full h-full rounded-full bg-cover bg-center relative"
                         style={{ backgroundImage: `url(${v.video_poster_url || v.image_url || ""})`, background: (v.video_poster_url || v.image_url) ? undefined : "#eee" }}
@@ -342,7 +358,7 @@ function PublicMenuPage() {
       </header>
 
       {/* ---------- STICKY NAV ---------- */}
-      <div className="sticky top-0 z-30 mt-6" style={{ background: "rgba(251,247,240,0.92)", backdropFilter: "blur(10px)", borderBottom: "1px solid rgba(23,19,14,0.08)" }}>
+      <div className="sticky top-0 z-30 mt-6" style={{ background: `${T.bg}EB`, backdropFilter: "blur(10px)", borderBottom: "1px solid var(--mk-line)" }}>
         <div className="max-w-3xl mx-auto px-5 py-3">
           <div className="flex items-center gap-2 mb-2">
             <div className="flex-1 relative">
@@ -352,14 +368,14 @@ function PublicMenuPage() {
                 onChange={(e) => onSearchChange(e.target.value)}
                 placeholder="Buscar no cardápio…"
                 className="w-full pl-9 pr-3 py-2.5 rounded-full border outline-none text-sm"
-                style={{ borderColor: "rgba(23,19,14,0.15)", background: "#fff" }}
+                style={{ borderColor: "var(--mk-line)", background: "var(--mk-surface)", color: "var(--mk-ink)" }}
               />
             </div>
             <button
               onClick={downloadPdf}
               disabled={pdfLoading}
               className="fx-pill shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2.5 rounded-full border disabled:opacity-60"
-              style={{ background: "#17130E", color: "#FBF7F0", borderColor: "#17130E" }}
+              style={{ background: "var(--mk-bar)", color: "var(--mk-barink)", borderColor: "var(--mk-bar)" }}
               aria-label="Baixar cardápio em PDF"
               title="Baixar cardápio em PDF"
             >
@@ -373,8 +389,8 @@ function PublicMenuPage() {
               className="fx-pill shrink-0 text-xs font-semibold px-4 py-2 rounded-full border"
               style={
                 activeCat === "all"
-                  ? { background: "#17130E", color: "#FBF7F0", borderColor: "#17130E" }
-                  : { background: "#fff", color: "#17130E", borderColor: "rgba(23,19,14,0.15)" }
+                  ? { background: "var(--mk-bar)", color: "var(--mk-barink)", borderColor: "var(--mk-bar)" }
+                  : { background: "var(--mk-surface)", color: "var(--mk-ink)", borderColor: "var(--mk-line)" }
               }
             >
               Tudo
@@ -386,8 +402,8 @@ function PublicMenuPage() {
                 className="fx-pill shrink-0 text-xs font-semibold px-4 py-2 rounded-full border"
                 style={
                   activeCat === c.id
-                    ? { background: "#17130E", color: "#FBF7F0", borderColor: "#17130E" }
-                    : { background: "#fff", color: "#17130E", borderColor: "rgba(23,19,14,0.15)" }
+                    ? { background: "var(--mk-bar)", color: "var(--mk-barink)", borderColor: "var(--mk-bar)" }
+                    : { background: "var(--mk-surface)", color: "var(--mk-ink)", borderColor: "var(--mk-line)" }
                 }
               >
                 {c.name}
@@ -414,9 +430,9 @@ function PublicMenuPage() {
                 )}
               </div>
               {c.description && <p className="text-sm opacity-60 -mt-2 mb-4">{c.description}</p>}
-              <div className="grid gap-4">
+              <div className={theme.layout === "grid" ? "grid gap-4 grid-cols-2" : "grid gap-4"}>
                 {list.map((i) => (
-                  <ItemCard key={i.id} item={i} primary={primary} onOpen={() => openItem(i)} />
+                  <ItemCard key={i.id} item={i} primary={primary} layout={theme.layout} onOpen={() => openItem(i)} />
                 ))}
               </div>
             </section>
@@ -425,9 +441,9 @@ function PublicMenuPage() {
         {(byCat.get("__uncat") || []).length > 0 && (
           <section ref={(el) => { catRefs.current["__uncat"] = el; }}>
             <h2 className="fx-serif text-xl font-bold mb-3">Outros</h2>
-            <div className="grid gap-4">
+            <div className={theme.layout === "grid" ? "grid gap-4 grid-cols-2" : "grid gap-4"}>
               {(byCat.get("__uncat") || []).map((i) => (
-                <ItemCard key={i.id} item={i} primary={primary} onOpen={() => openItem(i)} />
+                <ItemCard key={i.id} item={i} primary={primary} layout={theme.layout} onOpen={() => openItem(i)} />
               ))}
             </div>
           </section>
@@ -443,7 +459,7 @@ function PublicMenuPage() {
 
       {/* ---------- FLOATING CTA ---------- */}
       {(est.whatsapp || est.instagram || est.phone) && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex gap-2 rounded-full p-1.5 fx-shadow" style={{ background: "#17130E" }}>
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex gap-2 rounded-full p-1.5 fx-shadow" style={{ background: "var(--mk-bar)" }}>
           {est.whatsapp && (
             <a
               href={`https://wa.me/${(est.whatsapp || "").replace(/\D/g, "")}`}
@@ -499,57 +515,102 @@ function PublicMenuPage() {
 }
 
 // ------------ Item Card ------------
-function ItemCard({ item, primary, onOpen }: { item: Item; primary: string; onOpen: () => void }) {
+function ItemCard({
+  item, primary, onOpen, layout = "list",
+}: { item: Item; primary: string; onOpen: () => void; layout?: "list" | "grid" | "magazine" }) {
   const hasPromo = item.promo_price != null && item.price != null && item.promo_price < item.price;
   const badges = Array.isArray(item.badges) ? (item.badges as string[]) : [];
-  return (
-    <button onClick={onOpen} className="fx-card text-left w-full rounded-2xl overflow-hidden bg-white fx-shadow flex gap-3 sm:gap-4 p-3">
-      <div className="w-28 h-28 sm:w-32 sm:h-32 shrink-0 rounded-xl overflow-hidden bg-neutral-100 relative">
-        {item.image_url ? (
-          <LazyImg src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full grid place-items-center text-3xl" style={{ background: "#f3ede2" }}>🍽️</div>
-        )}
-        {item.video_url && (
-          <span className="absolute top-1.5 right-1.5 grid place-items-center w-6 h-6 rounded-full bg-black/60 text-white">
-            <Play className="w-3 h-3" />
+  const surface = { background: "var(--mk-surface)", border: "1px solid var(--mk-line)" } as const;
+
+  const Price = ({ size = "text-lg" }: { size?: string }) =>
+    hasPromo ? (
+      <>
+        <span className={`fx-serif font-bold ${size}`} style={{ color: primary }}>{fmt(item.promo_price, item.currency)}</span>
+        <span className="text-xs opacity-50 line-through">{fmt(item.price, item.currency)}</span>
+      </>
+    ) : item.price != null ? (
+      <span className={`fx-serif font-bold ${size}`}>{fmt(item.price, item.currency)}</span>
+    ) : null;
+
+  const Thumb = ({ className }: { className: string }) => (
+    <div className={`${className} shrink-0 overflow-hidden relative`} style={{ background: `${primary}12` }}>
+      {item.image_url ? (
+        <LazyImg src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+      ) : (
+        <div className="w-full h-full grid place-items-center text-2xl">🍽️</div>
+      )}
+      {item.video_url && (
+        <span className="absolute top-1.5 right-1.5 grid place-items-center w-6 h-6 rounded-full bg-black/60 text-white">
+          <Play className="w-3 h-3" />
+        </span>
+      )}
+    </div>
+  );
+
+  const Badges = () => (
+    <div className="flex flex-wrap gap-1 mt-1.5">
+      {badges.slice(0, 3).map((b) => {
+        const meta = BADGE_META[b];
+        if (!meta) return null;
+        const Ico = meta.icon;
+        return (
+          <span key={b} className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: `${meta.tone}22`, color: meta.tone }}>
+            <Ico className="w-2.5 h-2.5" /> {meta.label}
           </span>
-        )}
-      </div>
+        );
+      })}
+      {item.prep_minutes != null && (
+        <span className="inline-flex items-center gap-1 text-[10px] font-semibold opacity-60">
+          <Clock className="w-2.5 h-2.5" /> {item.prep_minutes} min
+        </span>
+      )}
+    </div>
+  );
+
+  if (layout === "grid") {
+    return (
+      <button onClick={onOpen} className="fx-card text-left w-full rounded-2xl overflow-hidden fx-shadow flex flex-col" style={surface}>
+        <Thumb className="w-full h-32 sm:h-40" />
+        <div className="p-3 flex-1 flex flex-col">
+          <h3 className="fx-serif font-bold text-sm sm:text-base leading-tight line-clamp-2">{item.name}</h3>
+          {item.short_desc && <p className="text-xs opacity-70 line-clamp-2 mt-1">{item.short_desc}</p>}
+          <Badges />
+          <div className="mt-auto pt-2 flex items-baseline gap-2"><Price size="text-base" /></div>
+        </div>
+      </button>
+    );
+  }
+
+  if (layout === "magazine") {
+    return (
+      <button onClick={onOpen} className="fx-card text-left w-full rounded-2xl overflow-hidden fx-shadow flex items-center gap-3 p-3" style={surface}>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-baseline gap-2">
+            <h3 className="fx-serif font-bold text-base sm:text-lg leading-tight truncate">{item.name}</h3>
+            <span className="flex-1 border-b border-dashed opacity-30" style={{ borderColor: "var(--mk-ink)" }} />
+            <span className="flex items-baseline gap-2 shrink-0"><Price size="text-base" /></span>
+          </div>
+          {item.short_desc && <p className="text-xs sm:text-sm opacity-70 line-clamp-2 mt-1">{item.short_desc}</p>}
+          <Badges />
+        </div>
+        <Thumb className="w-16 h-16 rounded-xl" />
+      </button>
+    );
+  }
+
+  return (
+    <button onClick={onOpen} className="fx-card text-left w-full rounded-2xl overflow-hidden fx-shadow flex gap-3 sm:gap-4 p-3" style={surface}>
+      <Thumb className="w-28 h-28 sm:w-32 sm:h-32 rounded-xl" />
       <div className="flex-1 min-w-0 py-1 flex flex-col">
         <h3 className="fx-serif font-bold text-base sm:text-lg leading-tight line-clamp-2">{item.name}</h3>
         {item.short_desc && <p className="text-xs sm:text-sm opacity-70 line-clamp-2 mt-1">{item.short_desc}</p>}
-        <div className="flex flex-wrap gap-1 mt-1.5">
-          {badges.slice(0, 3).map((b) => {
-            const meta = BADGE_META[b];
-            if (!meta) return null;
-            const Ico = meta.icon;
-            return (
-              <span key={b} className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: `${meta.tone}15`, color: meta.tone }}>
-                <Ico className="w-2.5 h-2.5" /> {meta.label}
-              </span>
-            );
-          })}
-          {item.prep_minutes != null && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold opacity-60">
-              <Clock className="w-2.5 h-2.5" /> {item.prep_minutes} min
-            </span>
-          )}
-        </div>
-        <div className="mt-auto pt-2 flex items-baseline gap-2">
-          {hasPromo ? (
-            <>
-              <span className="fx-serif font-bold text-lg" style={{ color: primary }}>{fmt(item.promo_price, item.currency)}</span>
-              <span className="text-xs opacity-50 line-through">{fmt(item.price, item.currency)}</span>
-            </>
-          ) : (
-            item.price != null && <span className="fx-serif font-bold text-lg">{fmt(item.price, item.currency)}</span>
-          )}
-        </div>
+        <Badges />
+        <div className="mt-auto pt-2 flex items-baseline gap-2"><Price /></div>
       </div>
     </button>
   );
 }
+
 
 // ------------ Item Modal ------------
 function ItemModal({ item, primary, onClose }: { item: Item; primary: string; onClose: () => void }) {
@@ -569,8 +630,8 @@ function ItemModal({ item, primary, onClose }: { item: Item; primary: string; on
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-black/60" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full sm:max-w-lg bg-white rounded-t-3xl sm:rounded-3xl overflow-hidden max-h-[92dvh] flex flex-col"
-        style={{ color: "#17130E" }}
+        className="relative w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden max-h-[92dvh] flex flex-col"
+        style={{ color: "var(--mk-ink)", background: "var(--mk-surface)" }}
       >
         <button onClick={onClose} className="absolute top-3 right-3 z-10 grid place-items-center w-9 h-9 rounded-full bg-black/40 text-white backdrop-blur">
           <X className="w-4 h-4" />

@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   UtensilsCrossed, LayoutList, FolderTree, Video, Eye,
-  Copy, ExternalLink, CheckCircle2, Circle, Sparkles, QrCode,
+  Copy, ExternalLink, CheckCircle2, Circle, Sparkles, QrCode, Palette,
 } from "lucide-react";
 
 import { getMyEstablishments } from "@/lib/loyalty.functions";
@@ -64,7 +64,7 @@ function CardapioOverview() {
 
   const checklist = useMemo(() => [
     { key: "info",   label: "Informações do restaurante",     done: !!(menu?.display_name || est?.name) },
-    { key: "brand",  label: "Identidade visual configurada",  done: !!(menu?.logo_url || menu?.cover_url) },
+    { key: "brand",  label: "Identidade visual configurada",  done: !!(menu?.logo_url || menu?.cover_url || (menu?.theme && Object.keys(menu.theme as object).length > 0)) },
     { key: "cat",    label: "Primeira categoria criada",      done: (counts?.categories ?? 0) > 0 },
     { key: "item",   label: "Primeiro prato criado",          done: (counts?.items ?? 0) > 0 },
     { key: "media",  label: "Imagem ou vídeo enviado",        done: (counts?.videos ?? 0) > 0 || (counts?.items ?? 0) > 0 },
@@ -187,15 +187,16 @@ function CardapioOverview() {
         <CardHeader>
           <CardTitle>Próximas etapas</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
           <StepCard title="Categorias" description="Organize seu cardápio por seções com imagem de capa." icon={FolderTree} to="/app/cardapio/categorias" />
           <StepCard title="Pratos" description="Cadastre pratos com foto ou vídeo vertical estilo Stories." icon={LayoutList} to="/app/cardapio/pratos" />
+          <StepCard title="Aparência da vitrine" description="Escolha tema de cores, fundo e layout dos pratos com prévia ao vivo." icon={Palette} to="/app/cardapio/aparencia" />
           <StepCard title="QR Code do Cardápio" description="Gere QR próprio para mesa, balcão ou suporte de guardanapo." icon={QrCode} to="/app/qr" />
         </CardContent>
       </Card>
 
       <p className="text-center text-xs text-muted-foreground">
-        Personalização visual, modo Stories e QR próprio chegam nas próximas atualizações.
+        Dica: em <b>Aparência da vitrine</b> você troca o tema, o fundo e o layout do cardápio em segundos.
       </p>
     </div>
   );
