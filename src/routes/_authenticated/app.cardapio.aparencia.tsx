@@ -11,6 +11,9 @@ import {
   MENU_PRESETS, MENU_LAYOUTS, MENU_PATTERNS, resolveMenuTheme, menuBackgroundCss,
   type MenuLayoutId, type MenuPatternId, type MenuPresetId, type MenuPreset,
   MENU_ENTRIES,
+  MENU_BG_SWATCHES,
+  applyBgColor,
+  isValidHex,
   type MenuEntryId,
 } from "@/lib/menu-themes";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,6 +51,7 @@ function MenuAppearancePage() {
   const [layout, setLayout] = useState<MenuLayoutId>("list");
   const [pattern, setPattern] = useState<MenuPatternId>("grain");
   const [entry, setEntry] = useState<MenuEntryId>("dishes");
+  const [bgColor, setBgColor] = useState<string | null>(null);
   const [bgImage, setBgImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -57,12 +61,13 @@ function MenuAppearancePage() {
     setLayout(t.layout);
     setPattern(t.pattern);
     setEntry(t.entry);
+    setBgColor(t.bg_color);
     setBgImage(t.bg_image_url);
   }, [overview.data?.menu?.theme]);
 
   const mut = useMutation({
     mutationFn: () =>
-      saveTheme({ data: { establishment_id: estId!, theme: { preset, layout, pattern, entry, bg_image_url: bgImage } } }),
+      saveTheme({ data: { establishment_id: estId!, theme: { preset, layout, pattern, entry, bg_color: bgColor, bg_image_url: bgImage } } }),
     onSuccess: () => {
       toast.success("Aparência salva. A vitrine pública já está atualizada.");
       qc.invalidateQueries({ queryKey: ["menu-overview", estId] });
@@ -135,7 +140,7 @@ function MenuAppearancePage() {
             <CardContent className="space-y-4">
               <div className="flex flex-wrap gap-2">
                 {MENU_PATTERNS.map((pt) => {
-                  const p = MENU_PRESETS.find((x) => x.id === preset)!;
+                  const p = applyBgColor(MENU_PRESETS.find((x) => x.id === preset)!, bgColor);
                   return (
                     <button
                       key={pt.id}
@@ -152,6 +157,46 @@ function MenuAppearancePage() {
                     </button>
                   );
                 })}
+              </div>
+
+              <div className="rounded-2xl border border-border/70 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold">Cor de fundo</div>
+                    <p className="text-xs text-muted-foreground">
+                      Sobrescreve a cor do tema. O texto e os cartões se ajustam sozinhos para manter contraste.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      aria-label="Escolher cor de fundo"
+                      value={bgColor && isValidHex(bgColor) ? bgColor : MENU_PRESETS.find((x) => x.id === preset)!.bg}
+                      onChange={(e) => setBgColor(e.target.value)}
+                      className="h-9 w-12 cursor-pointer rounded-lg border border-border/60 bg-transparent p-1"
+                    />
+                    {bgColor && (
+                      <Button variant="ghost" size="sm" onClick={() => setBgColor(null)}>
+                        Usar cor do tema
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {MENU_BG_SWATCHES.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setBgColor(c)}
+                      title={c}
+                      className={`h-8 w-8 rounded-full border transition ${
+                        bgColor?.toLowerCase() === c.toLowerCase()
+                          ? "border-primary ring-2 ring-primary/40"
+                          : "border-border/60 hover:border-primary/50"
+                      }`}
+                      style={{ background: c }}
+                    />
+                  ))}
+                </div>
               </div>
 
               <div className="rounded-2xl border border-dashed border-border/70 p-4">
@@ -257,7 +302,7 @@ function MenuAppearancePage() {
         <Card className="xl:sticky xl:top-4 h-fit">
           <CardHeader><CardTitle>Prévia ao vivo</CardTitle></CardHeader>
           <CardContent>
-            <MenuPreview preset={preset} layout={layout} pattern={pattern} bgImage={bgImage} accent={accent} />
+            <MenuPreview preset={preset} layout={layout} pattern={pattern} bgImage={bgImage} bgColor={bgColor} accent={accent} />
           </CardContent>
         </Card>
       </div>
@@ -325,9 +370,9 @@ function LayoutWire({ id }: { id: MenuLayoutId }) {
 }
 
 function MenuPreview({
-  preset, layout, pattern, bgImage, accent,
-}: { preset: MenuPresetId; layout: MenuLayoutId; pattern: MenuPatternId; bgImage: string | null; accent: string }) {
-  const p = MENU_PRESETS.find((x) => x.id === preset)!;
+  preset, layout, pattern, bgImage, bgColor, accent,
+}: { preset: MenuPresetId; layout: MenuLayoutId; pattern: MenuPatternId; bgImage: string | null; bgColor: string | null; accent: string }) {
+  const p = applyBgColor(MENU_PRESETS.find((x) => x.id === preset)!, bgColor);
   const bg = menuBackgroundCss({ pattern, bg_image_url: bgImage }, p, accent);
   const dishes = [
     { n: "Burguer da casa", d: "Blend 180g, cheddar e picles", v: "R$ 39,90" },
