@@ -413,11 +413,12 @@ function Thumb({
 }
 
 function MenuPreview({
-  preset, layout, pattern, bgImage, bgColor, accent, name, logoUrl, categories, items, loading,
+  preset, layout, pattern, bgImage, bgColor, accent, name, logoUrl, coverUrl, categories, items, loading,
 }: {
   preset: MenuPresetId; layout: MenuLayoutId; pattern: MenuPatternId;
   bgImage: string | null; bgColor: string | null; accent: string;
-  name: string; logoUrl: string | null; categories: string[]; items: PreviewItem[]; loading?: boolean;
+  name: string; logoUrl: string | null; coverUrl?: string | null;
+  categories: string[]; items: PreviewItem[]; loading?: boolean;
 }) {
   const p = applyBgColor(MENU_PRESETS.find((x) => x.id === preset)!, bgColor);
   const bg = menuBackgroundCss({ pattern, bg_image_url: bgImage }, p, accent);
