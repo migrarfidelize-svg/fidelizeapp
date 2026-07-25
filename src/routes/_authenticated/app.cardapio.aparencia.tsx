@@ -39,7 +39,7 @@ function MenuAppearancePage() {
 
   const ests = useQuery({ queryKey: ["my-establishments"], queryFn: () => fetchEsts() });
   const est = ests.data?.[0]?.establishment as
-    | { id: string; slug: string; name?: string | null; logo_url?: string | null; primary_color?: string | null }
+    | { id: string; slug: string; name?: string | null; logo_url?: string | null; cover_url?: string | null; primary_color?: string | null }
     | undefined;
   const estId = est?.id;
 
@@ -316,9 +316,10 @@ function MenuAppearancePage() {
               bgImage={bgImage} bgColor={bgColor} accent={accent}
               name={est?.name ?? "Seu Restaurante"}
               logoUrl={est?.logo_url ?? null}
+              coverUrl={est?.cover_url ?? null}
               categories={(menuData.data?.categories ?? []).map((c: any) => c.name)}
               items={(menuData.data?.items ?? []) as PreviewItem[]}
-              loading={menuData.isLoading}
+              loading={menuData.isLoading || ests.isLoading}
             />
           </CardContent>
         </Card>
@@ -412,11 +413,12 @@ function Thumb({
 }
 
 function MenuPreview({
-  preset, layout, pattern, bgImage, bgColor, accent, name, logoUrl, categories, items, loading,
+  preset, layout, pattern, bgImage, bgColor, accent, name, logoUrl, coverUrl, categories, items, loading,
 }: {
   preset: MenuPresetId; layout: MenuLayoutId; pattern: MenuPatternId;
   bgImage: string | null; bgColor: string | null; accent: string;
-  name: string; logoUrl: string | null; categories: string[]; items: PreviewItem[]; loading?: boolean;
+  name: string; logoUrl: string | null; coverUrl?: string | null;
+  categories: string[]; items: PreviewItem[]; loading?: boolean;
 }) {
   const p = applyBgColor(MENU_PRESETS.find((x) => x.id === preset)!, bgColor);
   const bg = menuBackgroundCss({ pattern, bg_image_url: bgImage }, p, accent);
@@ -441,7 +443,14 @@ function MenuPreview({
     <div className="space-y-2">
       <div className="mx-auto w-full max-w-[320px] overflow-hidden rounded-[2rem] border-4 border-foreground/10 shadow-xl">
         <div style={{ background: bg, color: p.ink }} className="h-[440px] overflow-y-auto">
-          <div className="h-20 w-full" style={{ background: `linear-gradient(135deg, ${accent}, ${p.bar})` }} />
+          <div
+            className="h-20 w-full bg-cover bg-center"
+            style={
+              coverUrl
+                ? { backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.5)), url(${coverUrl})` }
+                : { background: `linear-gradient(135deg, ${accent}, ${p.bar})` }
+            }
+          />
           <div className="-mt-8 px-3">
             <div className="flex items-center gap-2 rounded-2xl p-3" style={{ background: p.surface, border: `1px solid ${p.line}` }}>
               {logoUrl ? (

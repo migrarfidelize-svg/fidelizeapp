@@ -11,6 +11,7 @@ import {
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { getMyMenuOverview, setMenuStatus } from "@/lib/menu.functions";
 import { PageHero } from "@/components/PageHero";
+import { ConfigureQrButton } from "@/components/merchant/ConfigureQrButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -91,6 +92,11 @@ function CardapioOverview() {
         title="Cardápio Virtual"
         subtitle="Monte um cardápio digital em Stories ou Lista, com vídeos verticais, QR Code próprio e analytics dedicado — 100% integrado ao seu ecossistema Fidelize."
       />
+
+      <div className="flex flex-wrap gap-2">
+        <ConfigureQrButton dest="menu" />
+      </div>
+
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <MetricCard icon={FolderTree} label="Categorias"     value={counts?.categories ?? 0} />

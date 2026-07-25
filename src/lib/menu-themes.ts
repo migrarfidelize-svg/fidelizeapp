@@ -4,7 +4,7 @@
  */
 
 export type MenuLayoutId = "list" | "grid" | "magazine";
-export type MenuPresetId = "papel" | "noir" | "fresh" | "terracota" | "oceano";
+export type MenuPresetId = "papel" | "noir" | "fresh" | "terracota" | "oceano" | "citrico" | "rose";
 export type MenuPatternId = "none" | "grain" | "dots" | "grid" | "aurora";
 export type MenuEntryId = "dishes" | "categories";
 
@@ -88,6 +88,32 @@ export const MENU_PRESETS: MenuPreset[] = [
     fontHead: "'Outfit', ui-sans-serif, system-ui, sans-serif",
     headHref: "https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap",
   },
+  {
+    id: "citrico",
+    name: "Solar Cítrico",
+    description: "Creme ensolarado com laranja vibrante. Perfeito para açaí, sucos, sorveterias e lanches rápidos.",
+    bg: "#FFF8E8",
+    surface: "#FFFFFF",
+    ink: "#2B1B05",
+    line: "rgba(43,27,5,0.13)",
+    bar: "#E8720C",
+    barInk: "#FFF8E8",
+    fontHead: "'Outfit', ui-sans-serif, system-ui, sans-serif",
+    headHref: "https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap",
+  },
+  {
+    id: "rose",
+    name: "Rosé & Creme",
+    description: "Rosa suave com bordô. Combina com confeitarias, docerias, cafés e brunch.",
+    bg: "#FFF3F5",
+    surface: "#FFFFFF",
+    ink: "#2C0E18",
+    line: "rgba(44,14,24,0.12)",
+    bar: "#9E2A4B",
+    barInk: "#FFF3F5",
+    fontHead: "'Outfit', ui-sans-serif, system-ui, sans-serif",
+    headHref: "https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap",
+  },
 ];
 
 export const MENU_LAYOUTS: { id: MenuLayoutId; name: string; description: string }[] = [
@@ -132,11 +158,16 @@ export const MENU_BG_SWATCHES = [
   // Claros
   "#FFFFFF", "#FBF7F0", "#F5F3EE", "#FDF3EC", "#FFF4E8", "#FFF0F3",
   "#F6FAF6", "#EAF7F0", "#EAF2FB", "#F3F0FF", "#F2F5F7", "#FFFBEA",
+  "#FFF8E8", "#FFF3F5", "#F0FBFF", "#FFF6F0", "#F7F7F2", "#EEF6FF",
   // Médios
-  "#E8D9C5", "#D8E7DA", "#CBDCEB", "#E4D6E9",
+  "#E8D9C5", "#D8E7DA", "#CBDCEB", "#E4D6E9", "#F3D9A4", "#F2C6C2",
+  "#BFD8D2", "#D5C7B0", "#C7D2E8", "#E0CDBB",
+  // Vibrantes
+  "#E8720C", "#C4654A", "#9E2A4B", "#2F6F4F", "#2563EB", "#5CBDB9",
+  "#7C3AED", "#0E7490",
   // Escuros
   "#2A1810", "#14261C", "#0C2340", "#1B1B1F", "#0D0D0D", "#101A2B",
-  "#1E1B16", "#171F1A",
+  "#1E1B16", "#171F1A", "#221018", "#0B1F1C", "#161320", "#231A0F",
 ];
 
 function hexLuminance(hex: string): number {

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { ConfigureQrButton } from "@/components/merchant/ConfigureQrButton";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -285,6 +286,7 @@ function LinkTreeEditor() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <ConfigureQrButton dest="linktree" />
           {published && (
             <>
               <Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success("Link copiado!"); }}>

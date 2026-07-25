@@ -105,7 +105,11 @@ import { buildDefaultDesignName, QR_DEST_LABEL as DEST_LABEL } from "@/lib/qr-de
 
 
 export const Route = createFileRoute("/_authenticated/app/qr")({
-  head: () => ({ meta: [{ title: "QR de Avaliação — Fidelize" }] }),
+  head: () => ({ meta: [{ title: "QR Codes — Fidelize" }] }),
+  validateSearch: (search: Record<string, unknown>) => {
+    const d = String(search?.dest ?? "");
+    return { dest: (["reviews", "linktree", "landing", "menu"].includes(d) ? d : undefined) as QrDest | undefined };
+  },
   component: ReviewQrPage,
 });
 
@@ -302,6 +306,8 @@ function ReviewQrPage() {
     | undefined;
 
   const { allowed, isLoading: featLoading } = useMyFeature(est?.id, "public_reviews");
+
+  const search = Route.useSearch();
 
   // Persisted preferences
   const storageKey = est ? `review-qr:${est.id}` : "review-qr:draft";
@@ -1012,7 +1018,7 @@ function ReviewQrPage() {
         subtitle="Um único cartaz, três destinos: Avaliação, Árvore de Links ou Cartão Fidelidade. Escolha abaixo para onde o cliente será direcionado ao escanear."
       />
 
-      <QrDestinationCard establishmentId={est.id} />
+      <QrDestinationCard establishmentId={est.id} initialDest={search.dest} />
 
       <QrTagsManager establishmentId={est.id} />
 

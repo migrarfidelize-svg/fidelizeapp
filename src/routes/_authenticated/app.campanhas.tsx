@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
+import { ConfigureQrButton } from "@/components/merchant/ConfigureQrButton";
 import { Megaphone as HeroIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -207,6 +208,7 @@ function CampanhasPage() {
           <div className="text-xs uppercase tracking-widest text-muted-foreground">Programas</div>
           <h1 className="font-display text-3xl font-bold">Campanhas</h1>
           <p className="text-sm text-muted-foreground mt-1">Crie e gerencie os cartões fidelidade da sua empresa.</p>
+          <div className="mt-3"><ConfigureQrButton dest="landing" /></div>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
