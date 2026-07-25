@@ -109,13 +109,16 @@ function CategoriasPage() {
         subtitle="Organize seu cardápio em seções (Entradas, Pratos principais, Bebidas...). Cada uma pode ter imagem de capa e ser marcada como destaque."
       />
 
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
           {cats.length === 0 ? "Nenhuma categoria ainda." : `${cats.length} ${cats.length === 1 ? "categoria" : "categorias"}`}
         </p>
-        <Button onClick={openNew} disabled={!estId}>
-          <Plus className="mr-2 h-4 w-4" /> Nova categoria
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <MenuTemplatePicker establishmentId={estId} />
+          <Button onClick={openNew} disabled={!estId}>
+            <Plus className="mr-2 h-4 w-4" /> Nova categoria
+          </Button>
+        </div>
       </div>
 
       {list.isLoading ? (
