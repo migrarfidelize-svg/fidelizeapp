@@ -602,3 +602,30 @@ export const seedMenuFromTemplate = createServerFn({ method: "POST" })
     };
   });
 
+
+// ========================================================================
+// APARÊNCIA (tema / layout / fundo)
+// ========================================================================
+export const updateMenuTheme = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    establishment_id: z.string().uuid(),
+    theme: z.object({
+      preset: z.enum(["papel", "noir", "fresh"]),
+      layout: z.enum(["list", "grid", "magazine"]),
+      pattern: z.enum(["none", "grain", "dots", "grid", "aurora"]),
+      bg_image_url: z.string().url().max(500).nullable().optional(),
+    }),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const menuId = await ensureMenuId(supabase, data.establishment_id);
+    const { data: menu, error } = await supabase
+      .from("restaurant_menus")
+      .update({ theme: { ...data.theme, bg_image_url: data.theme.bg_image_url ?? null } })
+      .eq("id", menuId)
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+    return { menu };
+  });
