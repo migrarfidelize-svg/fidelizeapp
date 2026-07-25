@@ -20,35 +20,84 @@ export const Route = createFileRoute("/cardapio/$slug")({
     if (!d) throw notFound();
     return d;
   },
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          { title: `${loaderData.establishment.name} — Cardápio` },
-          {
-            name: "description",
-            content:
-              loaderData.menu?.tagline ||
-              loaderData.establishment.description ||
-              `Cardápio digital de ${loaderData.establishment.name}`,
-          },
-          { property: "og:title", content: `${loaderData.establishment.name} — Cardápio` },
-          {
-            property: "og:description",
-            content:
-              loaderData.menu?.tagline ||
-              `Confira o cardápio de ${loaderData.establishment.name}`,
-          },
-          { property: "og:type", content: "website" },
-          ...(loaderData.establishment.cover_url
-            ? [
-                { property: "og:image", content: loaderData.establishment.cover_url },
-                { name: "twitter:image", content: loaderData.establishment.cover_url },
-              ]
-            : []),
-          { name: "twitter:card", content: "summary_large_image" },
-        ]
-      : [{ title: "Cardápio não encontrado" }, { name: "robots", content: "noindex" }],
-  }),
+  head: ({ params, loaderData }) => {
+    const url = `https://fidelizeapp.lovable.app/cardapio/${params.slug}`;
+    if (!loaderData) {
+      return {
+        meta: [
+          { title: "Cardápio não encontrado — Fidelize" },
+          { name: "robots", content: "noindex" },
+        ],
+      };
+    }
+    const name = loaderData.establishment.name;
+    const title = `${name} — Cardápio Digital`;
+    const description =
+      loaderData.menu?.tagline ||
+      loaderData.establishment.description ||
+      `Confira o cardápio digital de ${name}: pratos, bebidas, fotos e preços atualizados em tempo real.`;
+    const image =
+      loaderData.establishment.cover_url ||
+      loaderData.establishment.logo_url ||
+      null;
+    const absImage = image
+      ? image.startsWith("http")
+        ? image
+        : `https://fidelizeapp.lovable.app${image}`
+      : null;
+
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "restaurant.menu" },
+        { property: "og:url", content: url },
+        { property: "og:site_name", content: "Fidelize" },
+        { property: "og:locale", content: "pt_BR" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        ...(absImage
+          ? [
+              { property: "og:image", content: absImage },
+              { property: "og:image:alt", content: `Cardápio de ${name}` },
+              { name: "twitter:image", content: absImage },
+            ]
+          : []),
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Restaurant",
+            name,
+            description,
+            url,
+            ...(absImage ? { image: absImage } : {}),
+            ...(loaderData.establishment.phone
+              ? { telephone: loaderData.establishment.phone }
+              : {}),
+            ...(loaderData.establishment.address
+              ? {
+                  address: {
+                    "@type": "PostalAddress",
+                    streetAddress: loaderData.establishment.address,
+                  },
+                }
+              : {}),
+            hasMenu: {
+              "@type": "Menu",
+              name: loaderData.menu?.title || `Cardápio de ${name}`,
+            },
+          }),
+        },
+      ],
+    };
+  },
   component: PublicMenuPage,
   notFoundComponent: () => (
     <div className="min-h-dvh grid place-items-center p-6 text-center" style={{ background: "#FBF7F0", color: "#17130E" }}>
