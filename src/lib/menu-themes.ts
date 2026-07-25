@@ -158,11 +158,16 @@ export const MENU_BG_SWATCHES = [
   // Claros
   "#FFFFFF", "#FBF7F0", "#F5F3EE", "#FDF3EC", "#FFF4E8", "#FFF0F3",
   "#F6FAF6", "#EAF7F0", "#EAF2FB", "#F3F0FF", "#F2F5F7", "#FFFBEA",
+  "#FFF8E8", "#FFF3F5", "#F0FBFF", "#FFF6F0", "#F7F7F2", "#EEF6FF",
   // Médios
-  "#E8D9C5", "#D8E7DA", "#CBDCEB", "#E4D6E9",
+  "#E8D9C5", "#D8E7DA", "#CBDCEB", "#E4D6E9", "#F3D9A4", "#F2C6C2",
+  "#BFD8D2", "#D5C7B0", "#C7D2E8", "#E0CDBB",
+  // Vibrantes
+  "#E8720C", "#C4654A", "#9E2A4B", "#2F6F4F", "#2563EB", "#5CBDB9",
+  "#7C3AED", "#0E7490",
   // Escuros
   "#2A1810", "#14261C", "#0C2340", "#1B1B1F", "#0D0D0D", "#101A2B",
-  "#1E1B16", "#171F1A",
+  "#1E1B16", "#171F1A", "#221018", "#0B1F1C", "#161320", "#231A0F",
 ];
 
 function hexLuminance(hex: string): number {
