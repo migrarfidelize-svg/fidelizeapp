@@ -591,7 +591,7 @@ function NotifPage() {
               </Button>
             ) : (
               <Button
-                onClick={() => send.mutate()}
+                onClick={() => setConfirmOpen(true)}
                 disabled={send.isPending || !canSend}
                 title={
                   blockedByPlan
@@ -607,10 +607,11 @@ function NotifPage() {
                     ? "Bloqueado pelo plano"
                     : limitReached
                       ? "Limite diário atingido"
-                      : `Enviar para ${(previewCount?.subscribers ?? 0) + (previewCount?.operators ?? 0)} inscritos`}
+                      : `Revisar e enviar (${(previewCount?.subscribers ?? 0) + (previewCount?.operators ?? 0)})`}
                 </span>
               </Button>
             )}
+
           </div>
 
           {previewCount && previewCount.subscribers === 0 && !previewCount.operators && !blockedByPlan && (
