@@ -96,6 +96,8 @@ function WalletEstablishment() {
 
   const d = data!;
   const est = d.establishment as {
+    id: string;
+    slug: string;
     name: string;
     logo_url: string | null;
     primary_color: string;
@@ -106,6 +108,15 @@ function WalletEstablishment() {
     description: string | null;
     active: boolean;
   };
+
+  // Promoções ativas desta loja — reaproveita o mesmo indicador da home.
+  const { data: promotedIds } = useQuery({
+    queryKey: ["promoted-establishment-ids"],
+    queryFn: () => getPromotedEstablishmentIds(),
+    staleTime: 60_000,
+  });
+  const hasPromotions = (promotedIds ?? []).includes(est.id);
+
 
   const activeCards = (d.cards ?? []).filter(
     (c) => (c.campaign as { active: boolean }).active,
