@@ -3,12 +3,12 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   MapPin, Phone, Instagram, MessageCircle, Clock, ChevronLeft, ChevronRight,
-  X, Search, Flame, Leaf, Wheat, Beef, Fish, Milk, Egg, Nut, Play, Download,
+  X, Search, Flame, Leaf, Wheat, Beef, Fish, Milk, Egg, Nut, Play,
   ArrowLeft, Pause, Volume2, VolumeX, List, Heart, Share2,
 } from "lucide-react";
 
 import { getPublicMenuBySlug } from "@/lib/menu.functions";
-import { generateMenuPdf } from "@/lib/menu-pdf";
+
 import { trackChannelEvent, useChannelPageView } from "@/lib/tracking";
 import { LazyImg } from "@/components/LazyImg";
 import { buildMenuJsonLd } from "@/lib/menu-jsonld";
@@ -169,7 +169,6 @@ function PublicMenuPage() {
   const [catPicked, setCatPicked] = useState(false);
   const [open, setOpen] = useState<Item | null>(null);
   const [stories, setStories] = useState<{ list: Item[]; index: number } | null>(null);
-  const [pdfLoading, setPdfLoading] = useState(false);
   const [logoErr, setLogoErr] = useState(false);
   const catRefs = useRef<Record<string, HTMLElement | null>>({});
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -264,19 +263,8 @@ function PublicMenuPage() {
     }, 900);
   };
 
-  const downloadPdf = async () => {
-    if (pdfLoading) return;
-    setPdfLoading(true);
-    trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_label: "pdf_download" });
-    try {
-      await generateMenuPdf(data as any, slug);
-    } catch (e) {
-      console.error("[menu-pdf]", e);
-      alert("Não foi possível gerar o PDF agora. Tente novamente.");
-    } finally {
-      setPdfLoading(false);
-    }
-  };
+
+
 
   const cover = est.cover_url || null;
   const theme = resolveMenuTheme((menu as any)?.theme);
@@ -406,17 +394,6 @@ function PublicMenuPage() {
                 style={{ borderColor: "var(--mk-line)", background: "var(--mk-surface)", color: "var(--mk-ink)" }}
               />
             </div>
-            <button
-              onClick={downloadPdf}
-              disabled={pdfLoading}
-              className="fx-pill shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2.5 rounded-full border disabled:opacity-60"
-              style={{ background: "var(--mk-bar)", color: "var(--mk-barink)", borderColor: "var(--mk-bar)" }}
-              aria-label="Baixar cardápio em PDF"
-              title="Baixar cardápio em PDF"
-            >
-              <Download className="w-4 h-4" />
-              <span className="hidden sm:inline">{pdfLoading ? "Gerando…" : "PDF"}</span>
-            </button>
           </div>
           <div className="flex gap-2 overflow-x-auto fx-hide-scroll pb-1">
             <button
