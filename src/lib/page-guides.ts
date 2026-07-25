@@ -187,11 +187,17 @@ export const PAGE_GUIDES: Record<string, PageGuide> = {
 };
 
 /** Casa o pathname atual com o guia mais específico disponível. */
-export function findPageGuide(pathname: string): { path: string; guide: PageGuide } | null {
+/** Módulo do painel (ex.: /app/cardapio/pratos -> /app/cardapio). */
+export function moduleOf(pathname: string): string {
+  const parts = pathname.replace(/\/+$/, "").split("/").filter(Boolean);
+  return `/${parts.slice(0, 2).join("/")}`;
+}
+
+export function findPageGuide(pathname: string): { path: string; module: string; guide: PageGuide } | null {
   const clean = pathname.replace(/\/+$/, "") || "/app";
-  if (PAGE_GUIDES[clean]) return { path: clean, guide: PAGE_GUIDES[clean] };
+  if (PAGE_GUIDES[clean]) return { path: clean, module: moduleOf(clean), guide: PAGE_GUIDES[clean] };
   const match = Object.keys(PAGE_GUIDES)
     .filter((p) => clean.startsWith(`${p}/`))
     .sort((a, b) => b.length - a.length)[0];
-  return match ? { path: match, guide: PAGE_GUIDES[match] } : null;
+  return match ? { path: match, module: moduleOf(clean), guide: PAGE_GUIDES[match] } : null;
 }
