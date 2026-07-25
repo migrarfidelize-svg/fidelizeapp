@@ -152,6 +152,18 @@ function PublicLinkTreePage() {
         <h1 className="mt-4 font-display text-2xl font-bold">{title}</h1>
         {description && <p className="mt-2 text-sm opacity-80">{description}</p>}
 
+        <div className="mt-3 flex items-center justify-center">
+          <SaveContactButton
+            slug={slug}
+            name={est.name}
+            logo={logo ?? null}
+            description={est.description ?? null}
+            links={links}
+            text={text}
+            primary={primary}
+          />
+        </div>
+
         {links.length === 0 ? (
           <p className="mt-10 opacity-60 text-sm">Nenhum link disponível ainda.</p>
         ) : (
