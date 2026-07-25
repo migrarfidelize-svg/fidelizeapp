@@ -14,6 +14,10 @@ function isIos() {
   if (typeof navigator === "undefined") return false;
   return /iPad|iPhone|iPod/.test(navigator.userAgent) && !("MSStream" in window);
 }
+function isMobile() {
+  if (typeof navigator === "undefined") return false;
+  return /Android|iPad|iPhone|iPod|Mobile/.test(navigator.userAgent);
+}
 function isStandalone() {
   if (typeof window === "undefined") return false;
   return (
