@@ -299,6 +299,23 @@ function RewardsHub() {
   );
 }
 
+function CategoryChip({ active, onClick, label, count }: { active: boolean; onClick: () => void; label: string; count: number }) {
+  return (
+    <button
+      onClick={onClick}
+      className={
+        "flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-all " +
+        (active
+          ? "border-primary/50 bg-primary/10 text-primary shadow-[0_0_10px_color-mix(in_oklab,var(--primary)_25%,transparent)]"
+          : "border-border/60 bg-card/40 text-muted-foreground hover:text-foreground")
+      }
+    >
+      <span className="capitalize">{label}</span>
+      <span className={"grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-black " + (active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>{count}</span>
+    </button>
+  );
+}
+
 function SubTab({
   active,
   onClick,
