@@ -340,12 +340,23 @@ function PublicMenuPage() {
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 opacity-50" />
               <input
                 value={q}
-                onChange={(e) => setQ(e.target.value)}
+                onChange={(e) => onSearchChange(e.target.value)}
                 placeholder="Buscar no cardápio…"
                 className="w-full pl-9 pr-3 py-2.5 rounded-full border outline-none text-sm"
                 style={{ borderColor: "rgba(23,19,14,0.15)", background: "#fff" }}
               />
             </div>
+            <button
+              onClick={downloadPdf}
+              disabled={pdfLoading}
+              className="fx-pill shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2.5 rounded-full border disabled:opacity-60"
+              style={{ background: "#17130E", color: "#FBF7F0", borderColor: "#17130E" }}
+              aria-label="Baixar cardápio em PDF"
+              title="Baixar cardápio em PDF"
+            >
+              <Download className="w-4 h-4" />
+              <span className="hidden sm:inline">{pdfLoading ? "Gerando…" : "PDF"}</span>
+            </button>
           </div>
           <div className="flex gap-2 overflow-x-auto fx-hide-scroll pb-1">
             <button
