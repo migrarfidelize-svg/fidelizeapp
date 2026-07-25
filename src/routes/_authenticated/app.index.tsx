@@ -104,7 +104,7 @@ function Dashboard() {
         hasCampaign={(campaigns?.length ?? 0) > 0}
         customersCount={data.customersCount}
         stampsCount={data.stampsCount}
-        teamCount={team?.length ?? 0}
+        teamCount={team?.members?.length ?? 0}
       />
 
 
