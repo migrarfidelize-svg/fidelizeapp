@@ -433,9 +433,12 @@ function AdminNotifPage() {
           )}
         </CardContent>
       </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
+
 
 function Kpi({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
   return (
