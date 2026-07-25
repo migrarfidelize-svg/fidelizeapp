@@ -282,6 +282,27 @@ function Carimbar() {
         subtitle={"Registre visitas por leitura de QR ou busca em segundos."}
       />
 
+      {(!online || pending.length > 0) && (
+        <div
+          role="status"
+          className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm"
+        >
+          <span className="font-medium">
+            {online ? "Sincronizando carimbos pendentes" : "Sem internet — modo balcão offline"}
+          </span>
+          <span className="min-w-0 flex-1 text-muted-foreground">
+            {pending.length > 0
+              ? `${pending.length} carimbo(s) na fila serão enviados automaticamente.`
+              : "Busca usando a lista salva no aparelho; carimbos entram na fila."}
+          </span>
+          {pending.length > 0 && online && (
+            <Button size="sm" variant="outline" onClick={() => void flushPending()}>
+              Enviar agora
+            </Button>
+          )}
+        </div>
+      )}
+
       <Tabs defaultValue="scan" className="w-full">
         <TabsList className="grid w-full grid-cols-2 max-w-md bg-[color:color-mix(in_oklab,var(--muted)_60%,transparent)] border border-border/60">
           <TabsTrigger
