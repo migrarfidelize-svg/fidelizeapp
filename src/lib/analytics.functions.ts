@@ -80,10 +80,18 @@ export const getRecapAnalytics = createServerFn({ method: "POST" })
     const allEsts = (memberships ?? [])
       .map((m) => m.establishment as unknown as { id: string; name: string; slug: string })
       .filter(Boolean);
+    const emptyChannels: ChannelStats = {
+      linktree: { views: 0, clicks: 0, ctr: 0, topLinks: [] },
+      reviews: { views: 0 },
+      loyalty: { views: 0 },
+      qr: { scansMain: 0, scansSecond: 0, total: 0 },
+      weekly: [],
+    };
     if (allEsts.length === 0) {
       return {
         weeks: [], cohorts: [], perEstablishment: [], topCampaigns: [], topAchievements: [],
         totals: { stamps: 0, redemptions: 0, achievements: 0, newCustomers: 0 },
+        channels: emptyChannels,
       };
     }
     const selectedEsts = data.establishment_id
