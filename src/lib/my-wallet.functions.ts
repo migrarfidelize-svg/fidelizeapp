@@ -25,7 +25,7 @@ export const getMyWallet = createServerFn({ method: "GET" })
         `id, name, code, access_token, last_visit_at, visits_count, tier, pinned_at,
          establishment:establishments!inner(
            id, slug, name, logo_url, primary_color, address, phone, whatsapp,
-           instagram, active
+           instagram, active, segment
          )`,
       )
       .eq("user_id", context.userId)
