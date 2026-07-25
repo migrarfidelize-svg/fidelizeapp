@@ -316,9 +316,10 @@ function MenuAppearancePage() {
               bgImage={bgImage} bgColor={bgColor} accent={accent}
               name={est?.name ?? "Seu Restaurante"}
               logoUrl={est?.logo_url ?? null}
+              coverUrl={est?.cover_url ?? null}
               categories={(menuData.data?.categories ?? []).map((c: any) => c.name)}
               items={(menuData.data?.items ?? []) as PreviewItem[]}
-              loading={menuData.isLoading}
+              loading={menuData.isLoading || ests.isLoading}
             />
           </CardContent>
         </Card>
