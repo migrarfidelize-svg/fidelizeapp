@@ -210,6 +210,21 @@ const DEFAULT_BADGE_POS: Record<BadgeKey, { x: number; y: number }> = {
   parking:  { x: 78, y: 92 },
 };
 
+const LANDSCAPE_BADGE_POS: Record<BadgeKey, { x: number; y: number }> = {
+  stars5:   { x: 26, y: 31 },
+  wifi:     { x: 26, y: 14 },
+  pix:      { x: 26, y: 76 },
+  card:     { x: 26, y: 86 },
+  pet:      { x: 74, y: 18 },
+  delivery: { x: 74, y: 88 },
+  ac:       { x: 50, y: 90 },
+  parking:  { x: 50, y: 82 },
+};
+
+function defaultBadgePosition(key: BadgeKey, isLandscape: boolean) {
+  return isLandscape ? LANDSCAPE_BADGE_POS[key] : DEFAULT_BADGE_POS[key];
+}
+
 /** URL validation for QR destinations. */
 type UrlCheck = { level: "empty" | "ok" | "warn" | "error"; message: string };
 
@@ -620,7 +635,7 @@ function ReviewQrPage() {
     setBadges((prev) => {
       const exists = prev.find((b) => b.key === key);
       if (exists) return prev.filter((b) => b.key !== key);
-      const def = DEFAULT_BADGE_POS[key];
+      const def = defaultBadgePosition(key, landscape);
       return [...prev, { key, x: def.x, y: def.y }];
     });
   }
@@ -745,13 +760,21 @@ function ReviewQrPage() {
         return out;
       });
     }
-    // Clampa badges também.
+    // Migra badges que ainda estavam no default anterior; em especial a
+    // estrela 5★, que no horizontal precisa ficar acima do título para não
+    // encavalar com texto/QR. Se o usuário moveu manualmente, apenas clampa.
     setBadges((prev) =>
-      prev.map((b) => ({
-        ...b,
-        x: Math.max(4, Math.min(96, b.x)),
-        y: Math.max(4, Math.min(96, b.y)),
-      }))
+      prev.map((b) => {
+        const prevBadgeDefault = defaultBadgePosition(b.key, prevL);
+        const badgePristine = Math.abs(b.x - prevBadgeDefault.x) < 0.01 && Math.abs(b.y - prevBadgeDefault.y) < 0.01;
+        const nextBadgeDefault = defaultBadgePosition(b.key, landscape);
+        const next = badgePristine ? nextBadgeDefault : b;
+        return {
+          ...b,
+          x: Math.max(4, Math.min(96, next.x)),
+          y: Math.max(4, Math.min(96, next.y)),
+        };
+      })
     );
     prevFormatRef.current = format;
     prevLandscapeRef.current = landscape;
