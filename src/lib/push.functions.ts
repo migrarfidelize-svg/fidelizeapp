@@ -1119,6 +1119,229 @@ export const sendAdminTestPush = createServerFn({ method: "POST" })
     return { ok: true, status: r.status };
   });
 
+/**
+ * Preview seguro para o teste isolado: valida a empresa (por ID ou nome exato,
+ * case-insensitive), confere que o admin autenticado é membro dela e devolve a
+ * subscription ativa mais recente do LOJISTA (customer_id IS NULL) sem qualquer
+ * envio. Nunca inclui subscriptions de clientes finais.
+ */
+export const previewEstablishmentTestPush = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        establishmentId: z.string().uuid().optional(),
+        establishmentName: z.string().min(1).max(120).optional(),
+      })
+      .refine((v) => v.establishmentId || v.establishmentName, {
+        message: "Informe establishmentId ou establishmentName.",
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // 1. Localizar a empresa
+    let est: { id: string; name: string } | null = null;
+    if (data.establishmentId) {
+      const { data: row } = await supabaseAdmin
+        .from("establishments")
+        .select("id, name")
+        .eq("id", data.establishmentId)
+        .maybeSingle();
+      est = row ?? null;
+    } else {
+      const { data: rows } = await supabaseAdmin
+        .from("establishments")
+        .select("id, name")
+        .ilike("name", data.establishmentName!);
+      if (!rows || rows.length === 0) throw new Error("Empresa não encontrada.");
+      if (rows.length > 1)
+        throw new Error(
+          `Existem ${rows.length} empresas com o nome "${data.establishmentName}". Use o ID.`,
+        );
+      est = rows[0];
+    }
+    if (!est) throw new Error("Empresa não encontrada.");
+
+    // 2. Autorização: super_admin OU membro da empresa (owner/manager/staff)
+    const { data: superAdmin } = await context.supabase.rpc("is_super_admin", {
+      _user: context.userId,
+    });
+    if (!superAdmin) {
+      const { data: hasAccess } = await context.supabase.rpc("has_establishment_access", {
+        _user: context.userId,
+        _est: est.id,
+      });
+      if (!hasAccess) throw new Error("Você não tem acesso a esta empresa.");
+    }
+
+    // 3. Selecionar subscription ativa do lojista
+    const { data: subs } = await supabaseAdmin
+      .from("push_subscriptions")
+      .select(
+        "id, user_id, browser, operating_system, device_type, permission_status, created_at, endpoint",
+      )
+      .eq("establishment_id", est.id)
+      .eq("active", true)
+      .eq("permission_status", "granted")
+      .not("user_id", "is", null)
+      .is("customer_id", null)
+      .not("endpoint", "is", null)
+      .order("created_at", { ascending: false });
+
+    const list = subs ?? [];
+    return {
+      establishment: est,
+      totalMatching: list.length,
+      selected: list[0]
+        ? {
+            id: list[0].id,
+            user_id: list[0].user_id,
+            browser: list[0].browser,
+            operating_system: list[0].operating_system,
+            device_type: list[0].device_type,
+            created_at: list[0].created_at,
+            endpoint_prefix: (list[0].endpoint ?? "").slice(0, 40) + "…",
+          }
+        : null,
+      others: list.slice(1).map((s) => ({
+        id: s.id,
+        browser: s.browser,
+        operating_system: s.operating_system,
+        created_at: s.created_at,
+      })),
+    };
+  });
+
+/**
+ * Teste isolado — envia UMA notificação para UMA subscription de lojista
+ * pertencente à empresa informada. Validações redundantes garantem que o
+ * frontend não possa direcionar para outra organização.
+ */
+export const sendEstablishmentTestPush = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        establishmentId: z.string().uuid(),
+        subscriptionId: z.string().uuid(),
+        title: z.string().min(1).max(120).optional(),
+        body: z.string().min(1).max(500).optional(),
+        url: z.string().min(1).max(300).optional(),
+        clientNotificationId: z.string().min(1).max(80).optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // 1. Confirmar empresa
+    const { data: est } = await supabaseAdmin
+      .from("establishments")
+      .select("id, name")
+      .eq("id", data.establishmentId)
+      .maybeSingle();
+    if (!est) throw new Error("Empresa inválida.");
+
+    // 2. Autorização
+    const { data: superAdmin } = await context.supabase.rpc("is_super_admin", {
+      _user: context.userId,
+    });
+    if (!superAdmin) {
+      const { data: hasAccess } = await context.supabase.rpc("has_establishment_access", {
+        _user: context.userId,
+        _est: est.id,
+      });
+      if (!hasAccess) throw new Error("Você não tem acesso a esta empresa.");
+    }
+
+    // 3. Confirmar que a subscription pertence à MESMA empresa e é de lojista
+    const { data: sub } = await supabaseAdmin
+      .from("push_subscriptions")
+      .select("id, endpoint, p256dh, auth_key, establishment_id, customer_id, user_id, active, permission_status")
+      .eq("id", data.subscriptionId)
+      .maybeSingle();
+    if (!sub) throw new Error("Subscription não encontrada.");
+    if (sub.establishment_id !== est.id)
+      throw new Error("A subscription não pertence a esta empresa.");
+    if (sub.customer_id !== null) throw new Error("Recusado: subscription é de cliente final.");
+    if (!sub.active) throw new Error("Subscription inativa.");
+    if (sub.permission_status !== "granted")
+      throw new Error("Permissão do dispositivo não é 'granted'.");
+
+    // 4. Idempotência — evita duplo clique
+    const notificationId = data.clientNotificationId
+      ? data.clientNotificationId.slice(0, 80)
+      : `nextstage-test-${Date.now()}`;
+    const { data: existing } = await supabaseAdmin
+      .from("push_logs")
+      .select("id, status, status_code, created_at")
+      .eq("subscription_id", sub.id)
+      .eq("title", data.title ?? `Teste de notificação — ${est.name}`)
+      .gte("created_at", new Date(Date.now() - 5000).toISOString())
+      .maybeSingle();
+    if (existing) {
+      return {
+        deduplicated: true,
+        notification_id: notificationId,
+        establishment: { id: est.id, name: est.name },
+        subscription_id: sub.id,
+        status: existing.status,
+        status_code: existing.status_code,
+      };
+    }
+
+    // 5. Enviar (usa retry/backoff + desativação em 404/410 já existentes)
+    const title = data.title ?? `Teste de notificação — ${est.name}`;
+    const body = data.body ?? `Esta é uma notificação de teste. O sistema de notificações da ${est.name} está funcionando.`;
+    const url = data.url ?? "/admin/notificacoes";
+
+    const { sendPushToSub } = await import("./push.server");
+    const r = await sendPushToSub(sub as never, {
+      title,
+      body,
+      url,
+      tag: `est-test-${est.id.slice(0, 8)}`,
+      type: "admin_test",
+      requireInteraction: false,
+    });
+
+    // 6. Registrar em push_logs — status semântico correto
+    const status = r.ok
+      ? "provider_accepted"
+      : r.status === 404 || r.status === 410
+        ? "subscription_expired"
+        : "failed";
+    await supabaseAdmin.from("push_logs").insert({
+      establishment_id: est.id,
+      subscription_id: sub.id,
+      customer_id: null,
+      title,
+      body,
+      url,
+      status,
+      status_code: r.status ?? null,
+      error: r.error ?? null,
+    });
+
+    return {
+      deduplicated: false,
+      notification_id: notificationId,
+      establishment: { id: est.id, name: est.name },
+      subscription_id: sub.id,
+      user_id: sub.user_id,
+      status,
+      status_code: r.status ?? null,
+      provider_response: r.ok ? "accepted" : r.error ?? null,
+      recipients_selected: 1,
+      recipients_sent: r.ok ? 1 : 0,
+      customers_affected: 0,
+      other_establishments_affected: 0,
+      note: "Provider aceitou o envio. A exibição visual ainda depende do navegador e do sistema operacional.",
+    };
+
+
 export const logAdminPushEvent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
