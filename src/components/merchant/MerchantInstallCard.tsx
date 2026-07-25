@@ -43,7 +43,9 @@ export function MerchantInstallCard() {
       setVisible(true);
     };
     window.addEventListener("beforeinstallprompt", onPrompt);
-    if (isIos()) setVisible(true);
+    // Em celular sempre oferecemos o caminho de instalação: o Chrome só dispara
+    // beforeinstallprompt em algumas condições e o iOS nunca dispara.
+    if (isMobile()) setVisible(true);
     return () => window.removeEventListener("beforeinstallprompt", onPrompt);
   }, []);
 
