@@ -31,7 +31,7 @@ type QrTag = {
   code: string;
   label: string;
   location: string | null;
-  destination: "reviews" | "linktree" | "landing" | null;
+  destination: "reviews" | "linktree" | "landing" | "menu" | null;
   active: boolean;
   scans_count: number;
   created_at: string;
@@ -43,6 +43,7 @@ const DEST_LABEL: Record<string, string> = {
   reviews: "Avaliação",
   linktree: "Árvore de Links",
   landing: "Cartão Fidelidade",
+  menu: "Cardápio digital",
 };
 
 export function QrTagsManager({ establishmentId }: Props) {
