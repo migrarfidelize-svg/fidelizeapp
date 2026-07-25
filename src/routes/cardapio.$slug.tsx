@@ -1104,7 +1104,8 @@ function StoriesViewer({
                   <button
                     key={it.id}
                     onClick={() => { setI(idx); setShowList(false); setPaused(false); }}
-                    className={`w-full flex items-center gap-3 rounded-xl p-2 text-left ${idx === i ? "bg-white/10" : ""}`}
+                    className="w-full flex items-center gap-3 rounded-xl p-2 text-left"
+                    style={idx === i ? { background: `${primary}33`, boxShadow: `inset 0 0 0 1px ${primary}` } : undefined}
                   >
                     <span className="w-11 h-11 rounded-lg overflow-hidden bg-white/10 shrink-0">
                       {(it.image_url || it.video_poster_url) && (
