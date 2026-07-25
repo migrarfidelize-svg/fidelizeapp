@@ -503,13 +503,16 @@ function AppLayout() {
             <LogoMark size={22} className="relative z-10 text-primary" />
           </Link>
 
-          {filteredGroups.map((g) => {
+          {filteredGroups.map((g, gi) => {
             const Icon = GROUP_ICONS[g.key] ?? LayoutDashboard;
             const isActive = g.items.some((it) =>
               it.exact ? pathname === it.to : pathname.startsWith(it.to),
             );
             const isOpen = pinnedGroup === g.key;
             const badge = unreadByGroup[g.key] ?? 0;
+            // Grupos na metade de baixo abrem o flyout ancorado embaixo,
+            // para os últimos itens não ficarem fora da tela.
+            const anchorBottom = gi >= Math.ceil(filteredGroups.length / 2);
             return (
               <div
                 key={g.key}
