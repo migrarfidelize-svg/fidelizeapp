@@ -42,6 +42,14 @@ export type EstablishmentBreakdown = {
   achievements: number;
 };
 
+export type ChannelStats = {
+  linktree: { views: number; clicks: number; ctr: number; topLinks: { ref_id: string; label: string; clicks: number }[] };
+  reviews: { views: number };
+  loyalty: { views: number };
+  qr: { scansMain: number; scansSecond: number; total: number };
+  weekly: { week: string; linktreeViews: number; linktreeClicks: number; reviewsViews: number; loyaltyViews: number; qrScans: number }[];
+};
+
 export type RecapAnalytics = {
   weeks: { week: string; stamps: number; redemptions: number; achievements: number }[];
   cohorts: CohortRow[];
@@ -49,6 +57,7 @@ export type RecapAnalytics = {
   topCampaigns: { id: string; title: string; redemptions: number }[];
   topAchievements: { code: string; title: string; icon: string; count: number }[];
   totals: { stamps: number; redemptions: number; achievements: number; newCustomers: number };
+  channels: ChannelStats;
 };
 
 export const getRecapAnalytics = createServerFn({ method: "POST" })
@@ -71,10 +80,18 @@ export const getRecapAnalytics = createServerFn({ method: "POST" })
     const allEsts = (memberships ?? [])
       .map((m) => m.establishment as unknown as { id: string; name: string; slug: string })
       .filter(Boolean);
+    const emptyChannels: ChannelStats = {
+      linktree: { views: 0, clicks: 0, ctr: 0, topLinks: [] },
+      reviews: { views: 0 },
+      loyalty: { views: 0 },
+      qr: { scansMain: 0, scansSecond: 0, total: 0 },
+      weekly: [],
+    };
     if (allEsts.length === 0) {
       return {
         weeks: [], cohorts: [], perEstablishment: [], topCampaigns: [], topAchievements: [],
         totals: { stamps: 0, redemptions: 0, achievements: 0, newCustomers: 0 },
+        channels: emptyChannels,
       };
     }
     const selectedEsts = data.establishment_id
@@ -266,5 +283,61 @@ export const getRecapAnalytics = createServerFn({ method: "POST" })
       newCustomers: Array.from(cohortCustomers.values()).reduce((a, arr) => a + arr.length, 0),
     };
 
-    return { weeks, cohorts, perEstablishment, topCampaigns, topAchievements, totals };
+    // ---------- Canais (channel_events) ----------
+    const { data: channelRows } = await supabase
+      .from("channel_events")
+      .select("channel, event_type, ref_id, ref_label, occurred_at")
+      .in("establishment_id", estIds)
+      .gte("occurred_at", startIso)
+      .limit(20000);
+    const evts = channelRows ?? [];
+
+    const weeklyMap = new Map<string, { linktreeViews: number; linktreeClicks: number; reviewsViews: number; loyaltyViews: number; qrScans: number }>();
+    weekKeys.forEach((k) => weeklyMap.set(k, { linktreeViews: 0, linktreeClicks: 0, reviewsViews: 0, loyaltyViews: 0, qrScans: 0 }));
+
+    const linkClickCount = new Map<string, { label: string; clicks: number }>();
+    const ch = { linktreeViews: 0, linktreeClicks: 0, reviewsViews: 0, loyaltyViews: 0, qrMain: 0, qrSecond: 0 };
+
+    for (const e of evts) {
+      const wk = bucketWeek(e.occurred_at);
+      const bucket = wk ? weeklyMap.get(wk)! : null;
+      if (e.channel === "linktree" && e.event_type === "page_view") {
+        ch.linktreeViews++; if (bucket) bucket.linktreeViews++;
+      } else if (e.channel === "linktree" && e.event_type === "link_click") {
+        ch.linktreeClicks++; if (bucket) bucket.linktreeClicks++;
+        if (e.ref_id) {
+          const cur = linkClickCount.get(e.ref_id) ?? { label: e.ref_label ?? "Link", clicks: 0 };
+          cur.clicks++;
+          if (e.ref_label) cur.label = e.ref_label;
+          linkClickCount.set(e.ref_id, cur);
+        }
+      } else if (e.channel === "reviews" && e.event_type === "page_view") {
+        ch.reviewsViews++; if (bucket) bucket.reviewsViews++;
+      } else if (e.channel === "loyalty" && e.event_type === "page_view") {
+        ch.loyaltyViews++; if (bucket) bucket.loyaltyViews++;
+      } else if (e.channel === "qr" && e.event_type === "qr_scan") {
+        if (e.ref_id === "second") ch.qrSecond++; else ch.qrMain++;
+        if (bucket) bucket.qrScans++;
+      }
+    }
+
+    const topLinks = Array.from(linkClickCount.entries())
+      .map(([ref_id, v]) => ({ ref_id, label: v.label, clicks: v.clicks }))
+      .sort((a, b) => b.clicks - a.clicks)
+      .slice(0, 5);
+
+    const channels: ChannelStats = {
+      linktree: {
+        views: ch.linktreeViews,
+        clicks: ch.linktreeClicks,
+        ctr: ch.linktreeViews > 0 ? Math.round((ch.linktreeClicks / ch.linktreeViews) * 100) : 0,
+        topLinks,
+      },
+      reviews: { views: ch.reviewsViews },
+      loyalty: { views: ch.loyaltyViews },
+      qr: { scansMain: ch.qrMain, scansSecond: ch.qrSecond, total: ch.qrMain + ch.qrSecond },
+      weekly: weekKeys.map((wk) => ({ week: wk, ...weeklyMap.get(wk)! })),
+    };
+
+    return { weeks, cohorts, perEstablishment, topCampaigns, topAchievements, totals, channels };
   });

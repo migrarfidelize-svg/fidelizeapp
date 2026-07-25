@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { StampCard } from "@/components/StampCard";
 import { PublicRatingBlock } from "@/components/PublicRatingBlock";
+import { useChannelPageView } from "@/lib/tracking";
 import { toast } from "sonner";
 import { Sparkles, MapPin, Phone, LogIn, Megaphone, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -94,6 +95,7 @@ function PublicPage() {
   const applyRef = useServerFn(applyReferralByToken);
   const [f, setF] = useState({ name: "", phone: "", email: "", opt: true });
   const [loading, setLoading] = useState(false);
+  useChannelPageView(slug, "loyalty");
 
   const est = data!.establishment;
   const campaign = data!.campaigns[0];

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getPublicLinkTreeBySlug } from "@/lib/linktree.functions";
+import { trackChannelEvent, useChannelPageView } from "@/lib/tracking";
 import { ExternalLink, Instagram, MessageCircle, Globe, MapPin, Youtube, Facebook, Music2, Mail, Phone, Star, Wifi, KeyRound, Copy, Check, Eye, EyeOff } from "lucide-react";
 
 
@@ -99,6 +100,7 @@ function PublicLinkTreePage() {
   const est = data!.establishment;
   const page = data!.page;
   const links = data!.links ?? [];
+  useChannelPageView(slug, "linktree");
 
   const theme = (page?.theme as Record<string, string> | null) ?? {};
   const primary = theme.primary || est.primary_color || "#0ea5e9";
@@ -178,6 +180,7 @@ function PublicLinkTreePage() {
                     href={normalizeUrl(l.kind, l.url)}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => trackChannelEvent({ slug, channel: "linktree", event_type: "link_click", ref_id: l.id, ref_label: l.label })}
                     className={`flex items-center justify-center gap-3 px-5 py-4 text-sm font-semibold transition-transform active:scale-[0.97] hover:scale-[1.02] ${cfg.className}`}
                     style={cfg.style}
                   >
