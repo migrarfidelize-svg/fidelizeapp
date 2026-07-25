@@ -24,6 +24,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { GuidedTour, type TourStep } from "@/components/GuidedTour";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { usePermissions } from "@/hooks/usePermissions";
+import { ROUTE_PERMISSIONS } from "@/lib/permissions";
 
 const MERCHANT_TOUR_STEPS: TourStep[] = [
   { preview: "welcome", title: "Bem-vindo à Fidelize!", description: "Vamos dar um tour rápido pelas áreas essenciais da plataforma. Leva menos de 1 minuto." },
