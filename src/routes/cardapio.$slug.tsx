@@ -8,11 +8,17 @@ import {
 import { getPublicMenuBySlug } from "@/lib/menu.functions";
 import { generateMenuPdf } from "@/lib/menu-pdf";
 import { trackChannelEvent, useChannelPageView } from "@/lib/tracking";
+import { LazyImg } from "@/components/LazyImg";
 
 const opts = (slug: string) =>
   queryOptions({
     queryKey: ["public-menu", slug],
     queryFn: () => getPublicMenuBySlug({ data: { slug } }),
+    // Vitrine pública: dados mudam raramente durante a sessão do cliente
+    staleTime: 5 * 60 * 1000,      // 5 min sem refetch
+    gcTime: 30 * 60 * 1000,        // mantém em memória por 30 min
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
 export const Route = createFileRoute("/cardapio/$slug")({
@@ -68,7 +74,18 @@ export const Route = createFileRoute("/cardapio/$slug")({
             ]
           : []),
       ],
-      links: [{ rel: "canonical", href: url }],
+      links: [
+        { rel: "canonical", href: url },
+        { rel: "preconnect", href: "https://fonts.googleapis.com" },
+        { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+        {
+          rel: "stylesheet",
+          href: "https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap",
+        },
+        ...(absImage
+          ? [{ rel: "preload", as: "image", href: absImage, fetchpriority: "high" } as any]
+          : []),
+      ],
       scripts: [
         {
           type: "application/ld+json",
@@ -248,7 +265,6 @@ function PublicMenuPage() {
   return (
     <div style={{ background: "#FBF7F0", color: "#17130E", fontFamily: "Figtree, system-ui, sans-serif" }} className="min-h-dvh">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Figtree:wght@400;500;600;700&display=swap');
         .fx-serif { font-family: 'Outfit', ui-sans-serif, system-ui, sans-serif; letter-spacing: -0.01em; }
         .fx-shadow { box-shadow: 0 1px 2px rgba(23,19,14,.06), 0 8px 24px -12px rgba(23,19,14,.18); }
         .fx-pill { transition: transform .15s ease, background .15s ease, color .15s ease, border-color .15s ease; }
@@ -272,11 +288,11 @@ function PublicMenuPage() {
         <div className="max-w-3xl mx-auto px-5 -mt-16 relative">
           <div className="rounded-3xl bg-white fx-shadow p-5 sm:p-6 flex items-center gap-4">
             {est.logo_url ? (
-              <img
+              <LazyImg
                 src={est.logo_url}
                 alt={est.name}
                 className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover ring-1 ring-black/5"
-                loading="eager"
+                eager
               />
             ) : (
               <div
@@ -497,7 +513,7 @@ function ItemCard({ item, primary, onOpen }: { item: Item; primary: string; onOp
     <button onClick={onOpen} className="fx-card text-left w-full rounded-2xl overflow-hidden bg-white fx-shadow flex gap-3 sm:gap-4 p-3">
       <div className="w-28 h-28 sm:w-32 sm:h-32 shrink-0 rounded-xl overflow-hidden bg-neutral-100 relative">
         {item.image_url ? (
-          <img src={item.image_url} alt={item.name} loading="lazy" className="w-full h-full object-cover" />
+          <LazyImg src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full grid place-items-center text-3xl" style={{ background: "#f3ede2" }}>🍽️</div>
         )}
@@ -572,10 +588,11 @@ function ItemModal({ item, primary, onClose }: { item: Item; primary: string; on
             poster={item.video_poster_url || item.image_url || undefined}
             controls
             playsInline
+            preload="metadata"
             className="w-full aspect-[4/3] object-cover bg-black"
           />
         ) : item.image_url ? (
-          <img src={item.image_url} alt={item.name} className="w-full aspect-[4/3] object-cover" />
+          <LazyImg src={item.image_url} alt={item.name} className="w-full aspect-[4/3] object-cover" eager />
         ) : (
           <div className="w-full aspect-[4/3] grid place-items-center text-6xl" style={{ background: "#f3ede2" }}>🍽️</div>
         )}
@@ -687,10 +704,11 @@ function StoriesViewer({
             src={current.video_url}
             poster={current.video_poster_url || current.image_url || undefined}
             autoPlay muted playsInline loop
+            preload="auto"
             className="w-full h-full object-cover"
           />
         ) : (
-          <img src={current.image_url || ""} alt={current.name} className="w-full h-full object-cover" />
+          <LazyImg src={current.image_url || ""} alt={current.name} className="w-full h-full object-cover" eager />
         )}
         <div className="absolute bottom-0 inset-x-0 p-5 pb-8 text-white" style={{ background: "linear-gradient(180deg, transparent, rgba(0,0,0,0.75))" }}>
           <h3 style={{ fontFamily: "Outfit" }} className="text-2xl font-bold">{current.name}</h3>
