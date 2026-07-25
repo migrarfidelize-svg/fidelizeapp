@@ -13,6 +13,7 @@ import {
   listMenuCategories, upsertMenuCategory, deleteMenuCategory, moveMenuCategory,
 } from "@/lib/menu.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { MenuTemplatePicker } from "@/components/MenuTemplatePicker";
 import { PageHero } from "@/components/PageHero";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
