@@ -247,11 +247,14 @@ export function PushStatusCard() {
           label="Assinatura de push"
           value={
             subState === "active"
-              ? `Ativa em ${cardCount} ${cardCount === 1 ? "cartão" : "cartões"}`
+              ? cardCount > 0
+                ? `Ativa em ${cardCount} ${cardCount === 1 ? "cartão" : "cartões"}`
+                : "Ativa neste aparelho"
               : subBadge.label
           }
           tone={subBadge.tone as "ok" | "warn" | "bad"}
         />
+
         {endpoint && (
           <StatusRow
             icon={<Wifi className="h-4 w-4" />}

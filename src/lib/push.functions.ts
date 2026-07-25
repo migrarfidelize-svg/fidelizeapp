@@ -843,48 +843,75 @@ export const subscribePushForAllMyCards = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => walletSubInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { data: customers, error } = await context.supabase
+    // Use admin client so a stale/lagged RLS view of `customers` doesn't
+    // silently return 0 rows and make the button appear to succeed with
+    // "ativa em 0 cartões". Filtering by user_id keeps it scoped to the caller.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: customers, error } = await supabaseAdmin
       .from("customers")
       .select("id, establishment_id")
       .eq("user_id", context.userId);
     if (error) throw error;
     const list = customers ?? [];
-    if (list.length === 0) return { ok: true, count: 0 };
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    // Update-then-insert per (customer_id, endpoint): the unique index is
-    // partial and cannot be used as an ON CONFLICT arbiter by PostgREST.
-    for (const c of list) {
-      const patch = {
-        customer_id: c.id,
-        establishment_id: c.establishment_id,
-        user_id: context.userId,
-        endpoint: data.endpoint,
-        p256dh: data.p256dh,
-        auth_key: data.auth,
-        user_agent: data.user_agent ?? null,
-        preferences: { stamp: true, reward: true, campaign: true, birthday: true },
-        active: true,
-        last_error: null,
-      };
-      const { data: existing } = await supabaseAdmin
-        .from("push_subscriptions")
-        .select("id")
-        .eq("customer_id", c.id)
-        .eq("endpoint", data.endpoint)
-        .maybeSingle();
+    const basePatch = {
+      user_id: context.userId,
+      endpoint: data.endpoint,
+      p256dh: data.p256dh,
+      auth_key: data.auth,
+      user_agent: data.user_agent ?? null,
+      preferences: { stamp: true, reward: true, campaign: true, birthday: true },
+      active: true,
+      last_error: null,
+    };
+
+    type PushRow = {
+      user_id: string;
+      endpoint: string;
+      p256dh: string;
+      auth_key: string;
+      user_agent: string | null;
+      preferences: Record<string, boolean>;
+      active: boolean;
+      last_error: string | null;
+      customer_id: string | null;
+      establishment_id: string | null;
+    };
+
+    async function upsertRow(row: PushRow, matcher: Record<string, string | null>) {
+      let q = supabaseAdmin.from("push_subscriptions").select("id").eq("endpoint", data.endpoint);
+      for (const [k, v] of Object.entries(matcher)) {
+        q = v === null ? q.is(k, null) : q.eq(k, v);
+      }
+      const { data: existing } = await q.maybeSingle();
       if (existing) {
         const { error: upErr } = await supabaseAdmin
           .from("push_subscriptions")
-          .update(patch)
+          .update(row)
           .eq("id", existing.id);
         if (upErr) throw upErr;
       } else {
-        const { error: insErr } = await supabaseAdmin
-          .from("push_subscriptions")
-          .insert(patch);
+        const { error: insErr } = await supabaseAdmin.from("push_subscriptions").insert(row);
         if (insErr) throw insErr;
       }
+    }
+
+
+    // Always register a device-level row (customer_id NULL) so the endpoint is
+    // never lost even when the user has no customer cards yet, or when we hit
+    // a RLS edge case on `customers`.
+    await upsertRow({ ...basePatch, customer_id: null, establishment_id: null }, {
+      user_id: context.userId,
+      customer_id: null,
+    });
+
+    // Additionally register a per-card row for every loyalty card the user owns,
+    // so establishment-scoped broadcasts hit this device.
+    for (const c of list) {
+      await upsertRow(
+        { ...basePatch, customer_id: c.id, establishment_id: c.establishment_id },
+        { customer_id: c.id },
+      );
     }
     return { ok: true, count: list.length };
   });
@@ -895,41 +922,41 @@ export const unsubscribePushForAllMyCards = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ endpoint: z.string().url() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: customers } = await context.supabase
-      .from("customers")
-      .select("id")
-      .eq("user_id", context.userId);
-    const ids = (customers ?? []).map((c) => c.id);
-    if (ids.length === 0) return { ok: true };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin
       .from("push_subscriptions")
       .update({ active: false })
-      .in("customer_id", ids)
-      .eq("endpoint", data.endpoint);
+      .eq("endpoint", data.endpoint)
+      .eq("user_id", context.userId);
     return { ok: true };
   });
 
-/** Whether the current device endpoint is active on any of the user's cards. */
+/** Whether the current device endpoint is active for the signed-in user. */
 export const getMyWalletPushStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ endpoint: z.string().url() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: customers } = await context.supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: customers } = await supabaseAdmin
       .from("customers")
       .select("id")
       .eq("user_id", context.userId);
     const ids = (customers ?? []).map((c) => c.id);
-    if (ids.length === 0) return { subscribed: false, cardCount: 0 };
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows } = await supabaseAdmin
       .from("push_subscriptions")
-      .select("id, active")
-      .in("customer_id", ids)
+      .select("id, customer_id, active")
       .eq("endpoint", data.endpoint)
-      .eq("active", true);
-    return { subscribed: (rows?.length ?? 0) > 0, cardCount: ids.length };
+      .eq("active", true)
+      .eq("user_id", context.userId);
+    const list = rows ?? [];
+    const cardRows = list.filter((r) => r.customer_id !== null);
+    return {
+      subscribed: list.length > 0,
+      cardCount: cardRows.length,
+      totalCards: ids.length,
+    };
   });
+
 
 /**
  * Sends a real Web Push to the current device's endpoint for the authenticated
