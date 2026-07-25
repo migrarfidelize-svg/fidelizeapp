@@ -214,7 +214,7 @@ function Onboarding() {
       const fresh = await getEsts();
       qc.setQueryData(["memberships"], fresh);
       toast.success("Empresa criada!");
-      navigate({ to: "/app/qrcodes" });
+      navigate({ to: "/app" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro");
     } finally {
