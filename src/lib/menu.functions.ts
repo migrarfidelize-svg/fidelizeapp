@@ -1,6 +1,48 @@
 import { createServerFn } from "@tanstack/react-start";
+import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
+
+function publicClient() {
+  const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
+  return createClient<Database>(process.env.SUPABASE_URL!, key, {
+    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+    global: {
+      fetch: (input, init) => {
+        const h = new Headers(init?.headers);
+        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
+        h.set("apikey", key);
+        return fetch(input, { ...init, headers: h });
+      },
+    },
+  });
+}
+
+export const getPublicMenuBySlug = createServerFn({ method: "GET" })
+  .inputValidator((d: { slug: string }) => z.object({ slug: z.string().min(1).max(80) }).parse(d))
+  .handler(async ({ data }) => {
+    const s = publicClient();
+    const { data: est } = await s
+      .from("establishments")
+      .select("id, name, slug, logo_url, cover_url, description, primary_color, accent_color, phone, whatsapp, instagram, address")
+      .eq("slug", data.slug)
+      .eq("active", true)
+      .maybeSingle();
+    if (!est) return null;
+    const { data: menu } = await s
+      .from("restaurant_menus")
+      .select("*")
+      .eq("establishment_id", est.id)
+      .eq("status", "published")
+      .maybeSingle();
+    if (!menu) return { establishment: est, menu: null, categories: [], items: [] };
+    const [{ data: cats }, { data: items }] = await Promise.all([
+      s.from("menu_categories").select("*").eq("menu_id", menu.id).eq("active", true).order("position", { ascending: true }),
+      s.from("menu_items").select("*").eq("menu_id", menu.id).eq("active", true).order("position", { ascending: true }),
+    ]);
+    return { establishment: est, menu, categories: cats ?? [], items: items ?? [] };
+  });
 
 /**
  * Módulo Cardápio Virtual — server functions.
