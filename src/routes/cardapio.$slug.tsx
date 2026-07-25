@@ -346,7 +346,7 @@ function PublicMenuPage() {
                   className="shrink-0 flex flex-col items-center gap-1"
                 >
                   <span
-                    className="w-16 h-16 rounded-full p-[3px] block"
+                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-full p-[3px] block"
                     style={{ background: `conic-gradient(from 90deg, ${primary}, #d4a464, ${primary})` }}
                   >
                     <span className="block w-full h-full rounded-full p-[2px]" style={{ background: "var(--mk-surface)" }}>
@@ -367,8 +367,8 @@ function PublicMenuPage() {
       </header>
 
       {/* ---------- STICKY NAV ---------- */}
-      <div className="sticky top-0 z-30 mt-6" style={{ background: `${T.bg}EB`, backdropFilter: "blur(10px)", borderBottom: "1px solid var(--mk-line)" }}>
-        <div className="max-w-3xl mx-auto px-5 py-3">
+      <div className="sticky top-0 z-30 mt-3" style={{ background: `${T.bg}EB`, backdropFilter: "blur(10px)", borderBottom: "1px solid var(--mk-line)" }}>
+        <div className="max-w-3xl mx-auto px-4 sm:px-5 py-2.5">
           <div className="flex items-center gap-2 mb-2">
             <div className="flex-1 relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 opacity-50" />
@@ -423,7 +423,7 @@ function PublicMenuPage() {
       </div>
 
       {/* ---------- FEED ---------- */}
-      <main className="max-w-3xl mx-auto px-5 pb-32 pt-6 space-y-10">
+      <main className="max-w-3xl mx-auto px-4 sm:px-5 pb-32 pt-5 space-y-8 sm:space-y-10">
         {showCatPicker ? (
           <div className="grid grid-cols-2 gap-4">
             {categories.map((c) => {
