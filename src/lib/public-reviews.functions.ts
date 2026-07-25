@@ -208,6 +208,16 @@ export const submitPublicReview = createServerFn({ method: "POST" })
       meta: { rating: data.rating, source: data.source ?? "linktree" },
     });
 
+    // Avisa a equipe do estabelecimento no aparelho (push + inbox).
+    try {
+      const { notifyNewReview } = await import("@/lib/merchant-notify.server");
+      await notifyNewReview(est.id, {
+        rating: data.rating,
+        comment: cleanComment,
+        customer_name: isAnon ? null : sanitizeText(data.customer_name),
+      });
+    } catch { /* nunca bloqueia o envio da avaliação */ }
+
     // Low-rating alert (≤ 2 stars) — surfaces at top of inbox and enables merchant notifications
     if (data.rating <= 2) {
       await supabaseAdmin.from("review_events").insert({
