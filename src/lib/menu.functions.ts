@@ -556,6 +556,9 @@ export const seedMenuFromTemplate = createServerFn({ method: "POST" })
     const { findTemplate } = await import("./menu-templates");
     const { findCatalogTemplate } = await import("./catalog-templates");
     const { templateCategoryImage } = await import("./menu-template-media");
+    const { catalogCategoryImage } = await import("./catalog-template-media");
+    const categoryImage = (k: string, name: string) =>
+      isCatalog ? catalogCategoryImage(k, name) : templateCategoryImage(k, name);
     const tpl: any = isCatalog ? findCatalogTemplate(data.template_key) : findTemplate(data.template_key);
     if (!tpl) throw new Error("Modelo não encontrado.");
 
@@ -587,7 +590,7 @@ export const seedMenuFromTemplate = createServerFn({ method: "POST" })
 
     for (const cat of tpl.categories) {
       const key = cat.name.trim().toLowerCase();
-      const catImage = templateCategoryImage(tpl.key, cat.name);
+      const catImage = categoryImage(tpl.key, cat.name);
       let categoryId: string;
       const found = existingByName.get(key);
       if (found) {
