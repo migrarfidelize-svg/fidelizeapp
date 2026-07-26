@@ -501,10 +501,30 @@ function PublicCatalogPage() {
                   </a>
                 )}
               </div>
+
+              {open.stock_status !== "out_of_stock" && (open.price != null || open.promo_price != null) && (
+                <button
+                  onClick={() => { cart.add(open.id); setOpen(null); }}
+                  className="flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-bold"
+                  style={{ background: primary, color: readableInk(primary) }}
+                >
+                  <ShoppingBag className="h-4 w-4" /> Adicionar ao carrinho
+                </button>
+              )}
             </div>
           </div>
         </div>
       )}
+
+      <CatalogCart
+        slug={slug}
+        items={items as any}
+        cart={cart}
+        primary={primary}
+        ink={readableInk(primary)}
+        whatsapp={est?.whatsapp ?? null}
+      />
     </div>
   );
 }
+
