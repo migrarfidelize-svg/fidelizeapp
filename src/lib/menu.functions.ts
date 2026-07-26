@@ -695,7 +695,7 @@ export const updateMenuTheme = createServerFn({ method: "POST" })
     kind: kindEnum.optional(),
     theme: z.object({
       preset: z.enum(["papel", "noir", "fresh", "terracota", "oceano", "citrico", "rose"]),
-      layout: z.enum(["list", "grid", "magazine"]),
+      layout: z.enum(["list", "grid", "magazine", "lookbook"]),
       pattern: z.enum(["none", "grain", "dots", "grid", "aurora"]),
       entry: z.enum(["dishes", "categories"]).optional(),
       bg_color: z.string().regex(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/).nullable().optional(),
