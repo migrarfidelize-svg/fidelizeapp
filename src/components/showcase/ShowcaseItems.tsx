@@ -652,6 +652,53 @@ function ItemDialog({
             </p>
           </div>
 
+          {isCatalog && (
+            <div className="space-y-2 md:col-span-2">
+              <Label>Galeria de fotos (até 8)</Label>
+              <div className="flex flex-wrap gap-2">
+                {gallery.map((url, i) => (
+                  <div key={url + i} className="relative h-20 w-20 overflow-hidden rounded-lg border">
+                    <img src={url} alt={`Foto ${i + 1}`} className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setGallery((g) => g.filter((_, idx) => idx !== i))}
+                      className="absolute right-0.5 top-0.5 grid h-5 w-5 place-items-center rounded-full bg-black/70 text-[10px] text-white"
+                      aria-label="Remover foto"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                {gallery.length < 8 && (
+                  <button
+                    type="button"
+                    onClick={() => galRef.current?.click()}
+                    disabled={uploading === "gal"}
+                    className="grid h-20 w-20 place-items-center rounded-lg border border-dashed text-xs text-muted-foreground"
+                  >
+                    {uploading === "gal" ? "..." : "+ Foto"}
+                  </button>
+                )}
+              </div>
+              <input
+                ref={galRef}
+                type="file"
+                accept="image/*"
+                multiple
+                hidden
+                onChange={(e) => {
+                  const files = Array.from(e.target.files ?? []);
+                  if (files.length) uploadGallery(files);
+                  e.currentTarget.value = "";
+                }}
+              />
+              <p className="text-[11px] text-muted-foreground">
+                As fotos extras viram miniaturas com zoom na página do produto no catálogo.
+              </p>
+            </div>
+          )}
+
+
           {!isCatalog && (
             <div className="space-y-2 md:col-span-2">
               <Label className="flex items-center gap-2"><Sparkles className="h-3.5 w-3.5" /> Badges</Label>
