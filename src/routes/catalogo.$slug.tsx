@@ -314,12 +314,16 @@ function PublicCatalogPage() {
         ) : (
           <div className={`grid gap-3 ${gridCols}`}>
             {filtered.map((p) => (
-              <button
+              <div
                 key={p.id}
+                role="button"
+                tabIndex={0}
                 onClick={() => openProduct(p)}
-                className="fx-card overflow-hidden rounded-2xl text-left"
+                onKeyDown={(e) => { if (e.key === "Enter") openProduct(p); }}
+                className="fx-card cursor-pointer overflow-hidden rounded-2xl text-left"
                 style={{ background: "var(--mk-surface)", border: "1px solid var(--mk-line)" }}
               >
+
                 <div className="aspect-square w-full overflow-hidden" style={{ background: T.line }}>
                   {p.image_url ? (
                     <LazyImg src={p.image_url} alt={p.name} className="h-full w-full object-cover" />
