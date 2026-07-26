@@ -646,7 +646,7 @@ function MenuPreview({
               )}
               <div className="min-w-0">
                 <div className="truncate text-sm font-bold" style={{ fontFamily: p.fontHead }}>{name}</div>
-                <div className="truncate text-[10px] opacity-60">Cardápio digital • Aberto agora</div>
+                <div className="truncate text-[10px] opacity-60">{isCatalog ? "Catálogo digital • Peça pelo WhatsApp" : "Cardápio digital • Aberto agora"}</div>
               </div>
             </div>
 
