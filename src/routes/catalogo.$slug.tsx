@@ -192,7 +192,8 @@ function PublicCatalogPage() {
   }
 
   const cover = est?.cover_url || null;
-  const gridCols = theme.layout === "list" ? "grid-cols-1" : "grid-cols-2 lg:grid-cols-3";
+  const gridCols =
+    theme.layout === "list" ? "grid-cols-1" : "grid-cols-2 md:grid-cols-3 xl:grid-cols-4";
 
   const openProduct = (p: Product) => {
     setOpen(p);
