@@ -120,6 +120,8 @@ export const MENU_LAYOUTS: { id: MenuLayoutId; name: string; description: string
   { id: "list", name: "Lista com foto", description: "Foto à esquerda, nome, descrição e preço. Leitura rápida no celular." },
   { id: "grid", name: "Vitrine em grade", description: "Cartões grandes em 2 colunas, foto em destaque. Ótimo para fotos boas." },
   { id: "magazine", name: "Editorial", description: "Texto em primeiro plano com miniatura discreta. Elegante e enxuto." },
+  { id: "lookbook", name: "Lookbook", description: "Imagens grandes em mosaico (alturas variadas) e preço discreto no hover. Ideal para moda e artesanato." },
+
 ];
 
 export const MENU_PATTERNS: { id: MenuPatternId; name: string }[] = [
