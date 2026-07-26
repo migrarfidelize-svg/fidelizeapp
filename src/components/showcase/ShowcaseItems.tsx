@@ -611,24 +611,27 @@ function ItemDialog({
             </p>
           </div>
 
-          <div className="space-y-2 md:col-span-2">
-            <Label className="flex items-center gap-2"><Sparkles className="h-3.5 w-3.5" /> Badges</Label>
-            <div className="flex flex-wrap gap-2">
-              {BADGE_PRESETS.map(b => {
-                const on = badges.includes(b);
-                return (
-                  <button
-                    key={b}
-                    type="button"
-                    onClick={() => toggleBadge(b)}
-                    className={`rounded-full border px-3 py-1 text-xs transition ${on ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/40"}`}
-                  >
-                    {b}
-                  </button>
-                );
-              })}
+          {!isCatalog && (
+            <div className="space-y-2 md:col-span-2">
+              <Label className="flex items-center gap-2"><Sparkles className="h-3.5 w-3.5" /> Badges</Label>
+              <div className="flex flex-wrap gap-2">
+                {BADGE_PRESETS.map(b => {
+                  const on = badges.includes(b);
+                  return (
+                    <button
+                      key={b}
+                      type="button"
+                      onClick={() => toggleBadge(b)}
+                      className={`rounded-full border px-3 py-1 text-xs transition ${on ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/40"}`}
+                    >
+                      {b}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
+
 
           {!isCatalog && (
             <>
