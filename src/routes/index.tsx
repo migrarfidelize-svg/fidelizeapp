@@ -9,7 +9,7 @@ import { DiscoverMenuShowcase } from "@/components/DiscoverMenuShowcase";
 import { EcosystemBento } from "@/components/landing/EcosystemBento";
 
 import { RoiCalculator } from "@/components/landing/RoiCalculator";
-import { TrustStrip } from "@/components/landing/TrustStrip";
+
 import { ScrollProgress } from "@/components/landing/ScrollProgress";
 
 import { Button } from "@/components/ui/button";
