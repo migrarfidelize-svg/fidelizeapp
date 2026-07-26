@@ -3,7 +3,7 @@
  * Salvos em restaurant_menus.theme (jsonb) — { preset, layout, pattern, bg_image_url }.
  */
 
-export type MenuLayoutId = "list" | "grid" | "magazine";
+export type MenuLayoutId = "list" | "grid" | "magazine" | "lookbook";
 export type MenuPresetId = "papel" | "noir" | "fresh" | "terracota" | "oceano" | "citrico" | "rose";
 export type MenuPatternId = "none" | "grain" | "dots" | "grid" | "aurora";
 export type MenuEntryId = "dishes" | "categories";
