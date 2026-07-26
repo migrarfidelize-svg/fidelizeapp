@@ -546,120 +546,73 @@ function PublicCatalogPage() {
         </div>
       </div>
 
-      {/* GRADE DE PRODUTOS */}
+      {/* PRODUTOS */}
       <main className="mx-auto max-w-6xl px-4 py-5 sm:px-6">
-        <div className="mb-3 text-xs opacity-60">
-          {filtered.length} {filtered.length === 1 ? "produto" : "produtos"}
-        </div>
         {filtered.length === 0 ? (
           <p className="py-16 text-center text-sm opacity-70">Nenhum produto encontrado.</p>
-        ) : (
-          <div className={`grid gap-3 sm:gap-4 ${gridCols}`}>
-            {filtered.map((p) => {
-              const out = p.stock_status === "out_of_stock";
-              const off = discountOf(p);
-              return (
-                <div
-                  key={p.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => openProduct(p)}
-                  onKeyDown={(e) => { if (e.key === "Enter") openProduct(p); }}
-                  className="fx-card group flex cursor-pointer flex-col overflow-hidden rounded-xl text-left"
-                  style={{ background: "var(--mk-surface)", border: "1px solid var(--mk-line)" }}
-                >
-                  <div className="relative aspect-[4/5] w-full overflow-hidden" style={{ background: T.line }}>
-                    {p.image_url ? (
-                      <LazyImg src={p.image_url} alt={p.name} className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="grid h-full place-items-center opacity-40">
-                        <ShoppingBag className="h-8 w-8" />
-                      </div>
-                    )}
-                    {off > 0 && !out && (
-                      <span
-                        className="absolute left-2 top-2 rounded-md px-1.5 py-0.5 text-[10px] font-extrabold"
-                        style={{ background: primary, color: readableInk(primary) }}
-                      >
-                        -{off}%
-                      </span>
-                    )}
-                    {out && (
-                      <div className="absolute inset-0 grid place-items-center bg-black/45">
-                        <span className="rounded-md bg-white/90 px-2 py-1 text-[11px] font-extrabold text-black">Esgotado</span>
-                      </div>
-                    )}
-                    {!out && p.stock_status && p.stock_status !== "in_stock" && (
-                      <span
-                        className="absolute bottom-2 left-2 rounded-md px-1.5 py-0.5 text-[10px] font-semibold"
-                        style={{ background: `${stockTone(p.stock_status)}e6`, color: "#fff" }}
-                      >
-                        {stockLabel(p.stock_status)}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex flex-1 flex-col gap-1 p-3">
-                    {p.brand && <div className="text-[10px] uppercase tracking-wider opacity-55">{p.brand}</div>}
-                    <div className="line-clamp-2 text-sm font-semibold leading-snug">{p.name}</div>
-                    {p.short_desc && <p className="line-clamp-1 text-xs opacity-60">{p.short_desc}</p>}
-
-                    <div className="mt-auto pt-2">
-                      {off > 0 && (
-                        <div className="text-[11px] line-through opacity-45">{fmt(p.price, p.currency)}</div>
-                      )}
-                      <div className="text-base font-extrabold leading-tight" style={{ color: primary }}>
-                        {p.promo_price != null || p.price != null
-                          ? fmt(p.promo_price ?? p.price, p.currency)
-                          : "Sob consulta"}
-                      </div>
-                      {(p.promo_price ?? p.price ?? 0) >= 30 && (
-                        <div className="text-[10px] opacity-55">
-                          ou 3x de {fmt((p.promo_price ?? p.price!) / 3, p.currency)}
-                        </div>
-                      )}
+        ) : showRows ? (
+          <div className="space-y-8">
+            {rows.map(({ cat, list }) => (
+              <section key={cat.id}>
+                <div className="mb-3 flex items-end gap-3">
+                  {cat.image_url && (
+                    <div
+                      className="h-14 w-14 shrink-0 overflow-hidden rounded-xl sm:h-16 sm:w-16"
+                      style={{ background: T.line, border: "1px solid var(--mk-line)" }}
+                    >
+                      <LazyImg src={cat.image_url} alt={cat.name} className="h-full w-full object-cover" />
                     </div>
-
-                    {!out && (p.price != null || p.promo_price != null) && (
-                      <div className="pt-2" onClick={(e) => e.stopPropagation()}>
-                        {cart.qtyOf(p.id) === 0 ? (
-                          <button
-                            onClick={() => cart.add(p.id)}
-                            className="w-full rounded-lg px-3 py-2 text-xs font-bold"
-                            style={{ background: primary, color: readableInk(primary) }}
-                          >
-                            Adicionar
-                          </button>
-                        ) : (
-                          <div className="flex items-center justify-between rounded-lg px-1 py-1" style={{ border: `1px solid ${primary}` }}>
-                            <button
-                              onClick={() => cart.setQty(p.id, cart.qtyOf(p.id) - 1)}
-                              aria-label="Diminuir"
-                              className="grid h-6 w-6 place-items-center rounded-md text-sm font-bold"
-                              style={{ color: primary }}
-                            >
-                              −
-                            </button>
-                            <span className="text-xs font-bold">{cart.qtyOf(p.id)}</span>
-                            <button
-                              onClick={() => cart.add(p.id)}
-                              aria-label="Aumentar"
-                              className="grid h-6 w-6 place-items-center rounded-md text-sm font-bold"
-                              style={{ background: primary, color: readableInk(primary) }}
-                            >
-                              +
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <h2 className="fx-serif truncate text-lg font-bold sm:text-xl">{cat.name}</h2>
+                    <p className="truncate text-xs opacity-60">
+                      {cat.description || `${list.length} ${list.length === 1 ? "produto" : "produtos"}`}
+                    </p>
                   </div>
+                  <button
+                    onClick={() => setActiveCat(cat.id)}
+                    className="shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
+                    style={{ color: primary, border: `1px solid ${primary}33` }}
+                  >
+                    Ver tudo →
+                  </button>
                 </div>
-              );
-            })}
+                <div className="fx-hide-scroll -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0 sm:gap-4">
+                  {list.slice(0, 12).map((p) => renderCard(p, "row"))}
+                  {list.length > 12 && (
+                    <button
+                      onClick={() => setActiveCat(cat.id)}
+                      className="w-[46vw] shrink-0 snap-start rounded-xl text-sm font-semibold sm:w-[210px]"
+                      style={{ border: "1px dashed var(--mk-line)", color: primary }}
+                    >
+                      Ver todos os {list.length} →
+                    </button>
+                  )}
+                </div>
+              </section>
+            ))}
+
+            {looseItems.length > 0 && (
+              <section>
+                <h2 className="fx-serif mb-3 text-lg font-bold sm:text-xl">Outros produtos</h2>
+                <div className={`grid gap-3 sm:gap-4 ${gridCols}`}>
+                  {looseItems.map((p) => renderCard(p))}
+                </div>
+              </section>
+            )}
           </div>
+        ) : (
+          <>
+            <div className="mb-3 text-xs opacity-60">
+              {filtered.length} {filtered.length === 1 ? "produto" : "produtos"}
+            </div>
+            <div className={`grid gap-3 sm:gap-4 ${gridCols}`}>
+              {filtered.map((p) => renderCard(p))}
+            </div>
+          </>
         )}
       </main>
+
 
       <footer className="pb-28 text-center text-[11px] opacity-60">
         Catálogo digital por <Link to="/" className="underline">Fidelize</Link>
