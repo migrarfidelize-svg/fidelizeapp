@@ -399,6 +399,8 @@ export const upsertMenuItem = createServerFn({ method: "POST" })
       track_stock: data.track_stock ?? false,
       stock_qty: data.track_stock ? data.stock_qty ?? 0 : null,
       external_url: data.external_url ?? null,
+      gallery: (data.gallery ?? []) as any,
+
     };
 
 
