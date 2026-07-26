@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
-import { HeroStampCard3D } from "@/components/HeroStampCard3D";
+import { HeroAppPreview } from "@/components/landing/HeroAppPreview";
 import { SegmentsCarousel } from "@/components/SegmentsCarousel";
 import { DiscoverMenuShowcase } from "@/components/DiscoverMenuShowcase";
 import { LivePanelShowcase } from "@/components/landing/LivePanelShowcase";
