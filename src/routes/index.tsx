@@ -87,12 +87,10 @@ function Landing() {
         <Hero />
         <DiscoverMenuShowcase />
         <RetentionEngine />
-        <EcosystemBento />
         <Segments />
         <HowItWorks />
         <Benefits />
         <RoiCalculator />
-        <Comparison />
         <Examples />
         <Pricing />
         <TrustStrip />
@@ -112,7 +110,7 @@ function SiteHeader() {
         <Link to="/" className="shrink-0"><Logo /></Link>
         <nav className="hidden gap-7 md:flex text-sm text-muted-foreground">
           <a href="#como-funciona" className="hover:text-foreground transition-colors">Como funciona</a>
-          <a href="#ecossistema" className="hover:text-foreground transition-colors">Recursos</a>
+          <a href="#retencao" className="hover:text-foreground transition-colors">Recursos</a>
           <a href="#roi" className="hover:text-foreground transition-colors">Retorno</a>
           <a href="#precos" className="hover:text-foreground transition-colors">Preços</a>
           <a href="#faq" className="hover:text-foreground transition-colors">Dúvidas</a>
