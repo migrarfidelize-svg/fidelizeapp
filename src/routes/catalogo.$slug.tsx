@@ -8,6 +8,8 @@ import { trackChannelEvent, useChannelPageView } from "@/lib/tracking";
 import { LazyImg } from "@/components/LazyImg";
 import { resolveMenuTheme, menuBackgroundCss, readableInk } from "@/lib/menu-themes";
 import { stockLabel, STOCK_STATUS } from "@/lib/showcase";
+import { useCart } from "@/lib/cart";
+import { CatalogCart } from "@/components/showcase/CatalogCart";
 
 const opts = (slug: string) =>
   queryOptions({
@@ -129,6 +131,8 @@ function PublicCatalogPage() {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<Product | null>(null);
   const [logoErr, setLogoErr] = useState(false);
+  const cart = useCart(slug);
+
 
   const theme = resolveMenuTheme((data as any)?.menu?.theme);
   const T = theme.preset_def;
@@ -314,12 +318,16 @@ function PublicCatalogPage() {
         ) : (
           <div className={`grid gap-3 ${gridCols}`}>
             {filtered.map((p) => (
-              <button
+              <div
                 key={p.id}
+                role="button"
+                tabIndex={0}
                 onClick={() => openProduct(p)}
-                className="fx-card overflow-hidden rounded-2xl text-left"
+                onKeyDown={(e) => { if (e.key === "Enter") openProduct(p); }}
+                className="fx-card cursor-pointer overflow-hidden rounded-2xl text-left"
                 style={{ background: "var(--mk-surface)", border: "1px solid var(--mk-line)" }}
               >
+
                 <div className="aspect-square w-full overflow-hidden" style={{ background: T.line }}>
                   {p.image_url ? (
                     <LazyImg src={p.image_url} alt={p.name} className="h-full w-full object-cover" />
@@ -353,14 +361,49 @@ function PublicCatalogPage() {
                       {stockLabel(p.stock_status)}
                     </span>
                   )}
+
+                  {p.stock_status !== "out_of_stock" && (p.price != null || p.promo_price != null) && (
+                    <div className="pt-1.5" onClick={(e) => e.stopPropagation()}>
+                      {cart.qtyOf(p.id) === 0 ? (
+                        <button
+                          onClick={() => cart.add(p.id)}
+                          className="w-full rounded-full px-3 py-1.5 text-xs font-bold"
+                          style={{ background: primary, color: readableInk(primary) }}
+                        >
+                          Adicionar
+                        </button>
+                      ) : (
+                        <div className="flex items-center justify-between rounded-full px-1 py-1" style={{ border: `1px solid ${primary}` }}>
+                          <button
+                            onClick={() => cart.setQty(p.id, cart.qtyOf(p.id) - 1)}
+                            aria-label="Diminuir"
+                            className="grid h-6 w-6 place-items-center rounded-full text-sm font-bold"
+                            style={{ color: primary }}
+                          >
+                            −
+                          </button>
+                          <span className="text-xs font-bold">{cart.qtyOf(p.id)}</span>
+                          <button
+                            onClick={() => cart.add(p.id)}
+                            aria-label="Aumentar"
+                            className="grid h-6 w-6 place-items-center rounded-full text-sm font-bold"
+                            style={{ background: primary, color: readableInk(primary) }}
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-              </button>
+              </div>
+
             ))}
           </div>
         )}
       </main>
 
-      <footer className="pb-10 text-center text-[11px] opacity-60">
+      <footer className="pb-28 text-center text-[11px] opacity-60">
         Catálogo digital por <Link to="/" className="underline">Fidelize</Link>
       </footer>
 
@@ -458,10 +501,30 @@ function PublicCatalogPage() {
                   </a>
                 )}
               </div>
+
+              {open.stock_status !== "out_of_stock" && (open.price != null || open.promo_price != null) && (
+                <button
+                  onClick={() => { cart.add(open.id); setOpen(null); }}
+                  className="flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-bold"
+                  style={{ background: primary, color: readableInk(primary) }}
+                >
+                  <ShoppingBag className="h-4 w-4" /> Adicionar ao carrinho
+                </button>
+              )}
             </div>
           </div>
         </div>
       )}
+
+      <CatalogCart
+        slug={slug}
+        items={items as any}
+        cart={cart}
+        primary={primary}
+        ink={readableInk(primary)}
+        whatsapp={est?.whatsapp ?? null}
+      />
     </div>
   );
 }
+
