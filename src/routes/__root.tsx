@@ -110,11 +110,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
-// Tema respeita preferência do usuário em todas as rotas (padrão dark).
+// Tema respeita preferência do usuário em todas as rotas.
+// Sem preferência salva: landing ("/") abre em claro, demais rotas em escuro.
 function forcedThemeForPath(_p: string): "dark" | null {
   return null;
 }
-const THEME_INIT_SCRIPT = `(function(){try{var s=null;try{s=localStorage.getItem('theme');}catch(_){}var t=(s==='light'||s==='dark')?s:'dark';var r=document.documentElement;r.classList.toggle('dark',t==='dark');r.style.colorScheme=t;}catch(e){}})();`;
+const THEME_INIT_SCRIPT = `(function(){try{var s=null;try{s=localStorage.getItem('theme');}catch(_){}var d=location.pathname==='/'?'light':'dark';var t=(s==='light'||s==='dark')?s:d;var r=document.documentElement;r.classList.toggle('dark',t==='dark');r.style.colorScheme=t;}catch(e){}})();`;
 
 
 
@@ -167,11 +168,12 @@ function RootComponent() {
   useEffect(() => {
     const apply = () => {
       const forced = forcedThemeForPath(window.location.pathname);
-      let t: "light" | "dark" = "dark";
+      const fallback: "light" | "dark" = window.location.pathname === "/" ? "light" : "dark";
+      let t: "light" | "dark" = fallback;
       if (forced) t = forced;
       else {
         const s = (() => { try { return localStorage.getItem("theme"); } catch { return null; } })();
-        t = s === "light" || s === "dark" ? s : "dark";
+        t = s === "light" || s === "dark" ? s : fallback;
       }
       const r = document.documentElement;
       r.classList.toggle("dark", t === "dark");
