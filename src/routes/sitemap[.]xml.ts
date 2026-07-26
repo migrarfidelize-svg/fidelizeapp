@@ -27,29 +27,33 @@ export const Route = createFileRoute("/sitemap.xml")({
       GET: async () => {
         const entries: SitemapEntry[] = [...STATIC_ENTRIES];
 
-        // Cardápios publicados — indexação controlada por status = 'published'
-        try {
-          const { data: menus } = await supabase
-            .from("restaurant_menus")
-            .select("updated_at, establishment:establishments!inner(slug, status)")
-            .eq("status", "published");
+        // Vitrines publicadas (cardápio e catálogo) — status = 'published'
+        for (const kind of ["menu", "catalog"] as const) {
+          try {
+            const { data: menus } = await supabase
+              .from("restaurant_menus")
+              .select("updated_at, establishment:establishments!inner(slug, status)")
+              .eq("kind", kind)
+              .eq("status", "published");
 
-          for (const m of menus ?? []) {
-            const est: any = (m as any).establishment;
-            if (!est?.slug) continue;
-            if (est.status && est.status !== "active") continue;
-            entries.push({
-              path: `/cardapio/${est.slug}`,
-              lastmod: (m as any).updated_at
-                ? new Date((m as any).updated_at).toISOString().slice(0, 10)
-                : undefined,
-              changefreq: "daily",
-              priority: "0.8",
-            });
+            for (const m of menus ?? []) {
+              const est: any = (m as any).establishment;
+              if (!est?.slug) continue;
+              if (est.status && est.status !== "active") continue;
+              entries.push({
+                path: `/${kind === "catalog" ? "catalogo" : "cardapio"}/${est.slug}`,
+                lastmod: (m as any).updated_at
+                  ? new Date((m as any).updated_at).toISOString().slice(0, 10)
+                  : undefined,
+                changefreq: "daily",
+                priority: "0.8",
+              });
+            }
+          } catch {
+            // fail-soft: sitemap ainda retorna as rotas estáticas
           }
-        } catch {
-          // fail-soft: sitemap ainda retorna as rotas estáticas
         }
+
 
         // Categorias públicas da central de ajuda
         try {

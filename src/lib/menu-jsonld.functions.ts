@@ -23,6 +23,7 @@ export const adminListMenusForJsonLd = createServerFn({ method: "GET" })
     const { data: menus, error } = await supabaseAdmin
       .from("restaurant_menus")
       .select("id, establishment_id, status, display_name, updated_at")
+      .eq("kind", "menu")
       .order("updated_at", { ascending: false })
       .limit(500);
     if (error) throw new Error(error.message);
@@ -87,6 +88,7 @@ export const adminGetMenuJsonLd = createServerFn({ method: "POST" })
       .from("restaurant_menus")
       .select("*")
       .eq("establishment_id", est.id)
+      .eq("kind", "menu")
       .maybeSingle();
 
     let categories: any[] = [];

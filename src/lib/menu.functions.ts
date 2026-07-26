@@ -19,9 +19,13 @@ function publicClient() {
   });
 }
 
+const kindEnum = z.enum(["menu", "catalog"]);
+
 export const getPublicMenuBySlug = createServerFn({ method: "GET" })
-  .inputValidator((d: { slug: string }) => z.object({ slug: z.string().min(1).max(80) }).parse(d))
+  .inputValidator((d: { slug: string; kind?: "menu" | "catalog" }) =>
+    z.object({ slug: z.string().min(1).max(80), kind: kindEnum.optional() }).parse(d))
   .handler(async ({ data }) => {
+    const kind = data.kind ?? "menu";
     const s = publicClient();
     const { data: est } = await s
       .from("establishments")
@@ -34,6 +38,7 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
       .from("restaurant_menus")
       .select("*")
       .eq("establishment_id", est.id)
+      .eq("kind", kind)
       .eq("status", "published")
       .maybeSingle();
     if (!menu) return { establishment: est, menu: null, categories: [], items: [] };
@@ -44,12 +49,16 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
     return { establishment: est, menu, categories: cats ?? [], items: items ?? [] };
   });
 
+
 /**
  * Módulo Cardápio Virtual — server functions.
  * Escopadas ao usuário autenticado; RLS impede acesso cruzado entre estabelecimentos.
  */
 
-const estIdSchema = z.object({ establishment_id: z.string().uuid() });
+const estIdSchema = z.object({
+  establishment_id: z.string().uuid(),
+  kind: kindEnum.optional(),
+});
 
 // ------- Visão geral -------
 export const getMyMenuOverview = createServerFn({ method: "POST" })
@@ -58,17 +67,19 @@ export const getMyMenuOverview = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const estId = data.establishment_id;
+    const kind = data.kind ?? "menu";
 
     let { data: menu } = await supabase
       .from("restaurant_menus")
       .select("*")
       .eq("establishment_id", estId)
+      .eq("kind", kind)
       .maybeSingle();
 
     if (!menu) {
       const { data: created, error } = await supabase
         .from("restaurant_menus")
-        .insert({ establishment_id: estId, status: "draft", default_view: "list" })
+        .insert({ establishment_id: estId, status: "draft", default_view: "list", kind })
         .select("*")
         .single();
       if (error) throw new Error(error.message);
@@ -85,10 +96,11 @@ export const getMyMenuOverview = createServerFn({ method: "POST" })
       .from("channel_events")
       .select("kind, created_at")
       .eq("establishment_id", estId)
-      .eq("channel", "menu")
+      .eq("channel", kind)
       .gte("created_at", new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString())
       .order("created_at", { ascending: false })
       .limit(200);
+
 
     return {
       menu,
@@ -107,19 +119,22 @@ export const setMenuStatus = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({
     establishment_id: z.string().uuid(),
     status: z.enum(["draft", "published", "paused"]),
+    kind: kindEnum.optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
+    const kind = data.kind ?? "menu";
+    const label = kind === "catalog" ? "Catálogo digital" : "Cardápio digital";
     // Publicar exige o recurso incluído no PLANO (liberações manuais do admin
-    // dão acesso à área do cardápio, mas não permitem publicar).
+    // dão acesso à área da vitrine, mas não permitem publicar).
     if (data.status === "published") {
       const { data: allowed } = await supabase.rpc("has_plan_feature_strict", {
         _est: data.establishment_id,
-        _feature: "digital_menu",
+        _feature: kind === "catalog" ? "digital_catalog" : "digital_menu",
       });
       if (!allowed) {
         throw new Error(
-          "Publicar o cardápio exige um plano com o recurso Cardápio digital. Faça upgrade para publicar sua vitrine."
+          `Publicar exige um plano com o recurso ${label}. Faça upgrade para publicar sua vitrine.`
         );
       }
     }
@@ -127,6 +142,7 @@ export const setMenuStatus = createServerFn({ method: "POST" })
       .from("restaurant_menus")
       .update({ status: data.status })
       .eq("establishment_id", data.establishment_id)
+      .eq("kind", kind)
       .select("*")
       .single();
     if (error) throw new Error(error.message);
@@ -137,28 +153,30 @@ export const setMenuStatus = createServerFn({ method: "POST" })
 // CATEGORIAS
 // ========================================================================
 
-async function ensureMenuId(supabase: any, estId: string): Promise<string> {
+async function ensureMenuId(supabase: any, estId: string, kind: "menu" | "catalog" = "menu"): Promise<string> {
   const { data: menu } = await supabase
     .from("restaurant_menus")
     .select("id")
     .eq("establishment_id", estId)
+    .eq("kind", kind)
     .maybeSingle();
   if (menu) return menu.id;
   const { data: created, error } = await supabase
     .from("restaurant_menus")
-    .insert({ establishment_id: estId, status: "draft", default_view: "list" })
+    .insert({ establishment_id: estId, status: "draft", default_view: "list", kind })
     .select("id")
     .single();
   if (error) throw new Error(error.message);
   return created.id;
 }
 
+
 export const listMenuCategories = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => estIdSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
-    const menuId = await ensureMenuId(supabase, data.establishment_id);
+    const menuId = await ensureMenuId(supabase, data.establishment_id, (data as any).kind ?? "menu");
     const { data: rows, error } = await supabase
       .from("menu_categories")
       .select("*")
@@ -171,6 +189,7 @@ export const listMenuCategories = createServerFn({ method: "POST" })
 
 const categoryUpsertSchema = z.object({
   establishment_id: z.string().uuid(),
+  kind: kindEnum.optional(),
   id: z.string().uuid().optional(),
   name: z.string().min(1).max(80),
   description: z.string().max(400).nullable().optional(),
@@ -184,7 +203,7 @@ export const upsertMenuCategory = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => categoryUpsertSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
-    const menuId = await ensureMenuId(supabase, data.establishment_id);
+    const menuId = await ensureMenuId(supabase, data.establishment_id, (data as any).kind ?? "menu");
 
     if (data.id) {
       const { data: updated, error } = await supabase
@@ -235,6 +254,7 @@ export const deleteMenuCategory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
     establishment_id: z.string().uuid(),
+    kind: kindEnum.optional(),
     id: z.string().uuid(),
   }).parse(d))
   .handler(async ({ data, context }) => {
@@ -253,12 +273,13 @@ export const moveMenuCategory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
     establishment_id: z.string().uuid(),
+    kind: kindEnum.optional(),
     id: z.string().uuid(),
     direction: z.enum(["up", "down"]),
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
-    const menuId = await ensureMenuId(supabase, data.establishment_id);
+    const menuId = await ensureMenuId(supabase, data.establishment_id, (data as any).kind ?? "menu");
     const { data: rows } = await supabase
       .from("menu_categories")
       .select("id, position")
@@ -284,11 +305,12 @@ export const listMenuItems = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
     establishment_id: z.string().uuid(),
+    kind: kindEnum.optional(),
     category_id: z.string().uuid().nullable().optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
-    const menuId = await ensureMenuId(supabase, data.establishment_id);
+    const menuId = await ensureMenuId(supabase, data.establishment_id, (data as any).kind ?? "menu");
 
     let q = supabase
       .from("menu_items")
@@ -314,6 +336,7 @@ export const listMenuItems = createServerFn({ method: "POST" })
 
 const itemUpsertSchema = z.object({
   establishment_id: z.string().uuid(),
+  kind: kindEnum.optional(),
   id: z.string().uuid().optional(),
   category_id: z.string().uuid().nullable().optional(),
   name: z.string().min(1).max(120),
@@ -334,6 +357,11 @@ const itemUpsertSchema = z.object({
     label: z.string().min(1).max(40),
     price: z.number().nonnegative().nullable().optional(),
   })).max(10).optional(),
+  // Campos exclusivos do Catálogo Digital
+  sku: z.string().max(60).nullable().optional(),
+  brand: z.string().max(80).nullable().optional(),
+  stock_status: z.enum(["in_stock", "made_to_order", "out_of_stock"]).optional(),
+  external_url: z.string().url().max(500).nullable().optional(),
 });
 
 
@@ -342,7 +370,7 @@ export const upsertMenuItem = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => itemUpsertSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
-    const menuId = await ensureMenuId(supabase, data.establishment_id);
+    const menuId = await ensureMenuId(supabase, data.establishment_id, (data as any).kind ?? "menu");
 
     const payload = {
       category_id: data.category_id ?? null,
@@ -361,6 +389,10 @@ export const upsertMenuItem = createServerFn({ method: "POST" })
       ingredients: data.ingredients ?? [],
       allergens: data.allergens ?? [],
       variants: (data.variants ?? []).map((v) => ({ label: v.label.trim(), price: v.price ?? null })) as any,
+      sku: data.sku ?? null,
+      brand: data.brand ?? null,
+      stock_status: data.stock_status ?? "in_stock",
+      external_url: data.external_url ?? null,
     };
 
 
@@ -403,6 +435,7 @@ export const deleteMenuItem = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
     establishment_id: z.string().uuid(),
+    kind: kindEnum.optional(),
     id: z.string().uuid(),
   }).parse(d))
   .handler(async ({ data, context }) => {
@@ -438,6 +471,7 @@ export const duplicateMenuItem = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
     establishment_id: z.string().uuid(),
+    kind: kindEnum.optional(),
     id: z.string().uuid(),
   }).parse(d))
   .handler(async ({ data, context }) => {
@@ -471,13 +505,14 @@ export const moveMenuItem = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
     establishment_id: z.string().uuid(),
+    kind: kindEnum.optional(),
     id: z.string().uuid(),
     direction: z.enum(["up", "down"]),
     category_id: z.string().uuid().nullable().optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
-    const menuId = await ensureMenuId(supabase, data.establishment_id);
+    const menuId = await ensureMenuId(supabase, data.establishment_id, (data as any).kind ?? "menu");
     let q = supabase
       .from("menu_items")
       .select("id, position")
@@ -506,6 +541,7 @@ export const seedMenuFromTemplate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
     establishment_id: z.string().uuid(),
+    kind: kindEnum.optional(),
     template_key: z.string().min(1).max(40),
     mode: z.enum(["append", "reset"]).optional(),
   }).parse(d))
@@ -516,7 +552,7 @@ export const seedMenuFromTemplate = createServerFn({ method: "POST" })
     if (!tpl) throw new Error("Modelo não encontrado.");
 
     const { supabase } = context;
-    const menuId = await ensureMenuId(supabase, data.establishment_id);
+    const menuId = await ensureMenuId(supabase, data.establishment_id, (data as any).kind ?? "menu");
 
     if (data.mode === "reset") {
       await supabase.from("menu_items").delete().eq("menu_id", menuId);
@@ -634,6 +670,7 @@ export const updateMenuTheme = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
     establishment_id: z.string().uuid(),
+    kind: kindEnum.optional(),
     theme: z.object({
       preset: z.enum(["papel", "noir", "fresh", "terracota", "oceano", "citrico", "rose"]),
       layout: z.enum(["list", "grid", "magazine"]),
@@ -647,7 +684,7 @@ export const updateMenuTheme = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
-    const menuId = await ensureMenuId(supabase, data.establishment_id);
+    const menuId = await ensureMenuId(supabase, data.establishment_id, (data as any).kind ?? "menu");
     const { data: menu, error } = await supabase
       .from("restaurant_menus")
       .update({ theme: { ...data.theme, entry: data.theme.entry ?? "dishes", bg_color: data.theme.bg_color ?? null, accent_color: data.theme.accent_color ?? null, text_color: data.theme.text_color ?? null, bg_image_url: data.theme.bg_image_url ?? null } })
