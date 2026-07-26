@@ -345,9 +345,12 @@ function DiscoverScreen() {
 }
 
 function MenuStoryScreen({ progress }: { progress: number }) {
-  const idx = useMemo(() => Math.min(DISHES.length - 1, Math.floor(progress * DISHES.length)), [progress]);
-  const dish = DISHES[idx];
-  const local = progress * DISHES.length - idx;
+  const idx = useMemo(() => {
+    const raw = Math.floor((Number.isFinite(progress) ? progress : 0) * DISHES.length);
+    return Math.max(0, Math.min(DISHES.length - 1, raw));
+  }, [progress]);
+  const dish = DISHES[idx] ?? DISHES[0];
+  const local = Math.max(0, Math.min(1, progress * DISHES.length - idx));
   return (
     <div className="relative h-full overflow-hidden">
       <div
