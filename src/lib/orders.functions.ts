@@ -69,7 +69,7 @@ export const createCatalogOrder = createServerFn({ method: "POST" })
     const ids = [...new Set(data.items.map((i) => i.item_id))];
     const { data: dbItems } = await s
       .from("menu_items")
-      .select("id, name, sku, price, promo_price, currency")
+      .select("id, name, sku, price, promo_price, currency, variants")
       .eq("menu_id", menu.id)
       .eq("active", true)
       .in("id", ids);
@@ -79,7 +79,10 @@ export const createCatalogOrder = createServerFn({ method: "POST" })
       .filter((l) => byId.has(l.item_id))
       .map((l) => {
         const it = byId.get(l.item_id)!;
-        const unit = Number(it.promo_price ?? it.price ?? 0);
+        const vs = Array.isArray((it as any).variants) ? ((it as any).variants as any[]) : [];
+        const vp = l.variant_label ? vs.find((v) => v?.label === l.variant_label)?.price : null;
+        const unit = vp != null ? Number(vp) : Number(it.promo_price ?? it.price ?? 0);
+
         return {
           item_id: it.id,
           name: it.name,
