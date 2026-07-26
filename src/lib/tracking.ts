@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-type ChannelName = "linktree" | "reviews" | "loyalty" | "qr" | "menu";
+type ChannelName = "linktree" | "reviews" | "loyalty" | "qr" | "menu" | "catalog";
 type EventType = "page_view" | "link_click" | "qr_scan";
 
 type Payload = {
