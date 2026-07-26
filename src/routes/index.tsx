@@ -7,6 +7,12 @@ import { StampCard } from "@/components/StampCard";
 import { HeroStampCard3D } from "@/components/HeroStampCard3D";
 import { SegmentsCarousel } from "@/components/SegmentsCarousel";
 import { DiscoverMenuShowcase } from "@/components/DiscoverMenuShowcase";
+import { LivePanelShowcase } from "@/components/landing/LivePanelShowcase";
+import { RetentionEngine } from "@/components/landing/RetentionEngine";
+import { EcosystemBento } from "@/components/landing/EcosystemBento";
+import { RoiCalculator } from "@/components/landing/RoiCalculator";
+import { TrustStrip } from "@/components/landing/TrustStrip";
+import { ScrollProgress } from "@/components/landing/ScrollProgress";
 
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -77,16 +83,22 @@ export const Route = createFileRoute("/")({
 function Landing() {
   return (
     <div className="landing-scope min-h-dvh bg-background text-foreground">
+      <ScrollProgress />
       <SiteHeader />
       <main>
         <Hero />
+        <LivePanelShowcase />
         <DiscoverMenuShowcase />
+        <RetentionEngine />
+        <EcosystemBento />
         <Segments />
         <HowItWorks />
         <Benefits />
+        <RoiCalculator />
         <Comparison />
         <Examples />
         <Pricing />
+        <TrustStrip />
         <FAQ />
         <CTA />
       </main>
@@ -103,7 +115,8 @@ function SiteHeader() {
         <Link to="/" className="shrink-0"><Logo /></Link>
         <nav className="hidden gap-7 md:flex text-sm text-muted-foreground">
           <a href="#como-funciona" className="hover:text-foreground transition-colors">Como funciona</a>
-          <a href="#segmentos" className="hover:text-foreground transition-colors">Para quem é</a>
+          <a href="#ecossistema" className="hover:text-foreground transition-colors">Recursos</a>
+          <a href="#roi" className="hover:text-foreground transition-colors">Retorno</a>
           <a href="#precos" className="hover:text-foreground transition-colors">Preços</a>
           <a href="#faq" className="hover:text-foreground transition-colors">Dúvidas</a>
         </nav>
