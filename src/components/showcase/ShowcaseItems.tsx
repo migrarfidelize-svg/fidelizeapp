@@ -51,6 +51,8 @@ type Item = {
   sku?: string | null;
   brand?: string | null;
   stock_status?: string | null;
+  track_stock?: boolean | null;
+  stock_qty?: number | null;
   external_url?: string | null;
   position: number;
 };
