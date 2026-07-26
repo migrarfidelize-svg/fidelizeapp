@@ -361,6 +361,8 @@ const itemUpsertSchema = z.object({
   sku: z.string().max(60).nullable().optional(),
   brand: z.string().max(80).nullable().optional(),
   stock_status: z.enum(["in_stock", "made_to_order", "out_of_stock"]).optional(),
+  track_stock: z.boolean().optional(),
+  stock_qty: z.number().int().min(0).max(999999).nullable().optional(),
   external_url: z.string().url().max(500).nullable().optional(),
 });
 
