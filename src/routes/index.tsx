@@ -1048,7 +1048,10 @@ function Examples() {
                 <p className="mt-1 line-clamp-2 text-xs text-white/55">{it.desc}</p>
 
                 <div className="mt-4 border-t border-white/5 pt-3">
-                  <div className="metric-number text-2xl leading-none">{it.kpi}</div>
+                  <div className="metric-number text-2xl leading-none">
+                    {it.kpi}
+                    <sup className="ml-0.5 text-[10px] font-normal text-white/40">*</sup>
+                  </div>
                   <span className="text-[10px] font-semibold uppercase tracking-widest text-white/45">{it.kpiLabel}</span>
                 </div>
 
@@ -1064,6 +1067,12 @@ function Examples() {
             );
           })}
         </div>
+
+        <p className="mx-auto mt-6 max-w-2xl text-center text-[11px] leading-relaxed text-white/40">
+          * Média dos clientes Fidelize com a campanha ativa por pelo menos 90 dias. Resultados variam conforme segmento,
+          ticket médio e frequência de uso.
+        </p>
+
 
         {/* CTA */}
         <div className="mx-auto mt-10 flex flex-col items-center gap-2 text-center">
