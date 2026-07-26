@@ -87,7 +87,7 @@ function Landing() {
         <DiscoverMenuShowcase />
         <RetentionEngine />
         <Segments />
-        <HowItWorks />
+        
         <Benefits />
         <RoiCalculator />
         <Examples />
@@ -108,7 +108,7 @@ function SiteHeader() {
       <div className="nav-dock mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 rounded-full border border-cyan-400/60 bg-background/60 pl-5 pr-2 backdrop-blur-xl">
         <Link to="/" className="shrink-0"><Logo /></Link>
         <nav className="hidden gap-7 md:flex text-sm text-muted-foreground">
-          <a href="#como-funciona" className="hover:text-foreground transition-colors">Como funciona</a>
+          
           <a href="#retencao" className="hover:text-foreground transition-colors">Recursos</a>
           <a href="#roi" className="hover:text-foreground transition-colors">Retorno</a>
           <a href="#precos" className="hover:text-foreground transition-colors">Preços</a>
@@ -229,7 +229,7 @@ function Hero() {
               variant="outline"
               className="bg-transparent text-white border-white/20 hover:bg-white/10 hover:text-white"
             >
-              <a href="#como-funciona">Ver como funciona</a>
+              <a href="#retencao">Ver como funciona</a>
             </Button>
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-white/60">
