@@ -55,11 +55,14 @@ export function CatalogCart({
       cart.lines
         .map((l) => {
           const p = items.find((i) => i.id === l.id);
-          return p ? { ...p, qty: l.qty, unit: unitOf(p), lineTotal: unitOf(p) * l.qty } : null;
+          const variantPrice = (p as any)?.variants?.find?.((v: any) => v?.label === l.variant)?.price;
+          const unit = variantPrice != null ? Number(variantPrice) : p ? unitOf(p) : 0;
+          return p ? { ...p, qty: l.qty, variant: l.variant ?? null, unit, lineTotal: unit * l.qty } : null;
         })
-        .filter(Boolean) as (Product & { qty: number; unit: number; lineTotal: number })[],
+        .filter(Boolean) as (Product & { qty: number; variant: string | null; unit: number; lineTotal: number })[],
     [cart.lines, items],
   );
+
 
   const total = detailed.reduce((a, l) => a + l.lineTotal, 0);
   const currency = detailed[0]?.currency ?? "BRL";
