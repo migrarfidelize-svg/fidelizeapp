@@ -298,7 +298,15 @@ function PublicCatalogPage() {
 
           {!out && (p.price != null || p.promo_price != null) && (
             <div className="pt-2" onClick={(e) => e.stopPropagation()}>
-              {cart.qtyOf(p.id) === 0 ? (
+              {Array.isArray(p.variants) && p.variants.length > 0 ? (
+                <button
+                  onClick={() => openProduct(p)}
+                  className="w-full rounded-lg px-3 py-2 text-xs font-bold"
+                  style={{ border: `1px solid ${primary}`, color: primary }}
+                >
+                  Escolher variação
+                </button>
+              ) : cart.qtyOf(p.id) === 0 ? (
                 <button
                   onClick={() => cart.add(p.id)}
                   className="w-full rounded-lg px-3 py-2 text-xs font-bold"
@@ -328,6 +336,7 @@ function PublicCatalogPage() {
                 </div>
               )}
             </div>
+
           )}
         </div>
       </div>
