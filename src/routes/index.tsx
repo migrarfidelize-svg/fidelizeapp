@@ -1171,20 +1171,8 @@ type Plan = {
   icon: LucideIcon;
 };
 
-const COMPARE_ROWS: { label: string; values: (string | boolean)[] }[] = [
-  { label: "Clientes cadastrados", values: ["100", "1.000", "10.000", "Ilimitado"] },
-  { label: "Campanhas ativas", values: ["1", "2", "5", "Ilimitadas"] },
-  { label: "Funcionários", values: ["1", "3", "10", "Ilimitados"] },
-  { label: "Cartão fidelidade digital", values: [true, true, true, true] },
-  { label: "QR Code e página pública", values: [true, true, true, true] },
-  { label: "Relatórios", values: ["Básicos", "Básicos", "Avançados", "Avançados"] },
-  { label: "Exportação de dados", values: [false, true, true, true] },
-  { label: "Segmentação de clientes", values: [false, false, true, true] },
-  { label: "Cardápio virtual", values: [false, false, true, true] },
-  { label: "Sem marca Fidelize", values: [false, false, true, true] },
-  { label: "Multi-unidade", values: [false, false, false, true] },
-  { label: "Suporte", values: ["Comunidade", "E-mail", "Prioritário", "24/7 + gerente"] },
-];
+
+
 
 function Pricing() {
   const plans: Plan[] = [
