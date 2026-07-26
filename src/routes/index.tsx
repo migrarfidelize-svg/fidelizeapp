@@ -89,7 +89,7 @@ function Landing() {
         <RetentionEngine />
         <Segments />
         <EcosystemBento />
-        <Benefits />
+        
         <RoiCalculator />
         <Examples />
         <Pricing />
