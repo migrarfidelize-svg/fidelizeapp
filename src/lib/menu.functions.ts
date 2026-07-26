@@ -590,7 +590,7 @@ export const seedMenuFromTemplate = createServerFn({ method: "POST" })
 
     for (const cat of tpl.categories) {
       const key = cat.name.trim().toLowerCase();
-      const catImage = templateCategoryImage(tpl.key, cat.name);
+      const catImage = categoryImage(tpl.key, cat.name);
       let categoryId: string;
       const found = existingByName.get(key);
       if (found) {
