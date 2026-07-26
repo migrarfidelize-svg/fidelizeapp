@@ -135,7 +135,7 @@ function SiteHeader() {
           ) : (
             <>
               <Button asChild variant="ghost" size="sm" className="rounded-full hidden sm:inline-flex"><Link to="/auth">Entrar</Link></Button>
-              <Button asChild size="sm" className="rounded-full"><Link to="/auth" search={{ mode: "signup" }}>Testar grátis</Link></Button>
+              <Button asChild size="sm" className="rounded-full"><Link to="/auth" search={{ mode: "signup" }}>Começar grátis</Link></Button>
             </>
           )}
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
@@ -182,7 +182,7 @@ function SiteHeader() {
                 ) : (
                   <>
                     <Button asChild className="rounded-full" onClick={() => setMenuOpen(false)}>
-                      <Link to="/auth" search={{ mode: "signup" }}>Testar grátis</Link>
+                      <Link to="/auth" search={{ mode: "signup" }}>Começar grátis</Link>
                     </Button>
                     <Button asChild variant="outline" className="rounded-full" onClick={() => setMenuOpen(false)}>
                       <Link to="/auth">Entrar</Link>
@@ -1143,7 +1143,7 @@ function Examples() {
         <div className="mx-auto mt-10 flex flex-col items-center gap-2 text-center">
           <Button asChild size="lg" className="rounded-full px-8 font-bold" style={{ background: "#00ffff", color: "#001010" }}>
             <Link to="/auth">
-              Ativar campanhas grátis <ArrowRight className="ml-1 h-4 w-4" />
+              Começar grátis <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </Button>
           <p className="text-[11px] uppercase tracking-widest text-white/40">
@@ -1189,8 +1189,8 @@ const COMPARE_ROWS: { label: string; values: (string | boolean)[] }[] = [
 function Pricing() {
   const plans: Plan[] = [
     { name: "Gratuito", short: "Grátis", price: "R$ 0", numeric: 0, desc: "Para começar a testar", tagline: "Ideal pra validar a ideia sem risco.", features: ["Até 100 clientes", "1 campanha ativa", "1 funcionário", "Relatórios básicos"], cta: "Começar grátis", icon: Sprout },
-    { name: "Inicial", short: "Inicial", price: "R$ 49", numeric: 49, desc: "Para o dia a dia", tagline: "Perfeito pra pequenos negócios que já vendem todo dia.", features: ["Até 1.000 clientes", "2 campanhas ativas", "3 funcionários", "Exportação de dados", "Suporte por e-mail"], cta: "Começar agora", icon: Zap },
-    { name: "Profissional", short: "Pro", price: "R$ 129", numeric: 129, desc: "Para negócios em crescimento", tagline: "O favorito de quem quer escalar retenção com automações.", features: ["Até 10.000 clientes", "5 campanhas ativas", "10 funcionários", "Segmentação e relatórios avançados", "Sem marca Fidelize"], cta: "Começar agora", badge: "Mais popular", icon: Sparkles },
+    { name: "Inicial", short: "Inicial", price: "R$ 49", numeric: 49, desc: "Para o dia a dia", tagline: "Perfeito pra pequenos negócios que já vendem todo dia.", features: ["Até 1.000 clientes", "2 campanhas ativas", "3 funcionários", "Exportação de dados", "Suporte por e-mail"], cta: "Assinar agora", icon: Zap },
+    { name: "Profissional", short: "Pro", price: "R$ 129", numeric: 129, desc: "Para negócios em crescimento", tagline: "O favorito de quem quer escalar retenção com automações.", features: ["Até 10.000 clientes", "5 campanhas ativas", "10 funcionários", "Segmentação e relatórios avançados", "Sem marca Fidelize"], cta: "Assinar agora", badge: "Mais popular", icon: Sparkles },
     { name: "Empresarial", short: "Corp", price: "R$ 349", numeric: 349, desc: "Para redes e franquias", tagline: "Multi-unidade, SLA e time de suporte dedicado.", features: ["Clientes ilimitados", "Multi-unidade", "Suporte prioritário 24/7", "Limites personalizados", "Gerente de contas"], cta: "Falar com vendas", icon: Building2 },
   ];
 
@@ -1427,7 +1427,7 @@ function CTA() {
           <div className="flex flex-col gap-3">
             <Button asChild size="lg" className="h-14 rounded-none bg-[#00ffff] text-background hover:bg-white font-bold uppercase tracking-widest text-sm justify-between shadow-[0_0_30px_rgba(0,255,255,0.25)]">
               <Link to="/auth" search={{ mode: "signup" }}>
-                Começar de graça
+                Começar grátis
                 <ArrowRight className="h-5 w-5" />
               </Link>
             </Button>
