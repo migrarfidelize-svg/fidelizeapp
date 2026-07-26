@@ -436,6 +436,251 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
       },
     ],
   },
+
+  // ==========================================================
+  // MODELOS DE SERVIÇOS (studios, salões, prestadores)
+  // Dica: o tempo de duração vai na descrição e o preço é o
+  // valor "a partir de". Depois é só editar tudo.
+  // ==========================================================
+
+  {
+    key: "studio_beleza",
+    label: "Studio de Beleza",
+    emoji: "💇‍♀️",
+    tagline: "Cabelo, unhas, maquiagem, sobrancelhas e combos.",
+    categories: [
+      {
+        name: "Cabelo",
+        description: "Corte, coloração e tratamentos.",
+        featured: true,
+        items: [
+          { name: "Corte feminino + escova", short_desc: "Lavagem, corte e finalização. ⏱ 1h", price: 90, sku: "CAB-001" },
+          { name: "Escova modelada", short_desc: "Lisa, ondulada ou cacheada. ⏱ 45 min", price: 55, sku: "CAB-002" },
+          { name: "Coloração raiz", short_desc: "Cobertura de brancos com tinta profissional. ⏱ 1h30", price: 160, sku: "CAB-003" },
+          { name: "Mechas / luzes", short_desc: "Orçamento conforme comprimento. ⏱ 3h", price: 350, sku: "CAB-004" },
+          { name: "Progressiva sem formol", short_desc: "Redução de volume e brilho. ⏱ 2h30", price: 280, promo_price: 240, sku: "CAB-005" },
+          { name: "Hidratação profunda", short_desc: "Máscara + ampola reconstrutora. ⏱ 40 min", price: 70, sku: "CAB-006" },
+        ],
+      },
+      {
+        name: "Unhas",
+        description: "Manicure, pedicure e alongamentos.",
+        items: [
+          { name: "Manicure simples", short_desc: "Cutícula, lixa e esmaltação. ⏱ 40 min", price: 40, sku: "UNH-001" },
+          { name: "Pedicure completa", short_desc: "Esfoliação, cutícula e esmaltação. ⏱ 50 min", price: 50, sku: "UNH-002" },
+          { name: "Combo mão + pé", short_desc: "Manicure e pedicure no mesmo horário. ⏱ 1h20", price: 80, promo_price: 70, sku: "UNH-003" },
+          { name: "Esmaltação em gel", short_desc: "Durabilidade de até 3 semanas. ⏱ 1h", price: 75, sku: "UNH-004" },
+          { name: "Alongamento em fibra de vidro", short_desc: "Aplicação completa. ⏱ 2h30", price: 180, sku: "UNH-005" },
+          { name: "Manutenção de alongamento", short_desc: "A cada 21 dias. ⏱ 1h30", price: 110, sku: "UNH-006" },
+        ],
+      },
+      {
+        name: "Maquiagem",
+        items: [
+          { name: "Maquiagem social", short_desc: "Para festas e eventos. ⏱ 1h", price: 140, sku: "MAQ-001" },
+          { name: "Maquiagem noiva + prova", short_desc: "Inclui teste prévio e retoque. ⏱ 2h", price: 450, sku: "MAQ-002" },
+          { name: "Maquiagem express", short_desc: "Pele, cílios e boca. ⏱ 30 min", price: 80, sku: "MAQ-003" },
+          { name: "Aula de automaquiagem", short_desc: "Individual, com seus produtos. ⏱ 1h30", price: 200, sku: "MAQ-004" },
+        ],
+      },
+      {
+        name: "Sobrancelhas e cílios",
+        items: [
+          { name: "Design de sobrancelhas", short_desc: "Com pinça e linha. ⏱ 30 min", price: 45, sku: "SOB-001" },
+          { name: "Design com henna", short_desc: "Preenchimento e correção. ⏱ 45 min", price: 65, sku: "SOB-002" },
+          { name: "Brow lamination", short_desc: "Alinhamento e nutrição dos fios. ⏱ 1h", price: 150, sku: "SOB-003" },
+          { name: "Extensão de cílios fio a fio", short_desc: "Efeito natural. ⏱ 2h", price: 190, sku: "CIL-001" },
+          { name: "Lash lifting", short_desc: "Curvatura + nutrição. ⏱ 1h10", price: 130, sku: "CIL-002" },
+        ],
+      },
+      {
+        name: "Combos e pacotes",
+        description: "Pacotes com desconto — ideal para fidelizar.",
+        items: [
+          { name: "Dia da noiva", short_desc: "Cabelo, maquiagem, unhas e espumante. ⏱ 4h", price: 890, sku: "PAC-001" },
+          { name: "Combo beleza completa", short_desc: "Corte + escova + design + manicure. ⏱ 2h30", price: 210, promo_price: 179, sku: "PAC-002" },
+          { name: "Pacote mensal de unhas", short_desc: "4 manutenções no mês. Validade 30 dias.", price: 380, sku: "PAC-003" },
+          { name: "Vale-presente", short_desc: "Crédito para qualquer serviço do studio.", price: 100, sku: "PAC-004" },
+        ],
+      },
+    ],
+  },
+
+  {
+    key: "barbearia",
+    label: "Barbearia",
+    emoji: "💈",
+    tagline: "Cortes, barba, pigmentação e planos mensais.",
+    categories: [
+      {
+        name: "Cortes",
+        featured: true,
+        items: [
+          { name: "Corte masculino", short_desc: "Máquina e tesoura, com finalização. ⏱ 40 min", price: 55, sku: "COR-001" },
+          { name: "Corte + barba", short_desc: "Combo mais pedido. ⏱ 1h10", price: 85, promo_price: 75, sku: "COR-002" },
+          { name: "Corte infantil", short_desc: "Até 10 anos. ⏱ 30 min", price: 45, sku: "COR-003" },
+          { name: "Degradê navalhado", short_desc: "Acabamento na navalha. ⏱ 50 min", price: 65, sku: "COR-004" },
+        ],
+      },
+      {
+        name: "Barba e rosto",
+        items: [
+          { name: "Barba tradicional", short_desc: "Toalha quente, navalha e balm. ⏱ 40 min", price: 45, sku: "BAR-001" },
+          { name: "Barboterapia", short_desc: "Vapor, esfoliação e massagem facial. ⏱ 50 min", price: 70, sku: "BAR-002" },
+          { name: "Limpeza de pele masculina", short_desc: "Remoção de cravos e hidratação. ⏱ 1h", price: 120, sku: "BAR-003" },
+        ],
+      },
+      {
+        name: "Química e coloração",
+        items: [
+          { name: "Pigmentação de barba", short_desc: "Preenche falhas. ⏱ 40 min", price: 60, sku: "QUI-001" },
+          { name: "Platinado", short_desc: "Descoloração + matização. ⏱ 2h30", price: 250, sku: "QUI-002" },
+          { name: "Relaxamento capilar", short_desc: "Reduz volume. ⏱ 1h", price: 110, sku: "QUI-003" },
+        ],
+      },
+      {
+        name: "Planos e produtos",
+        items: [
+          { name: "Plano mensal ilimitado", short_desc: "Cortes ilimitados no mês + 1 barba/semana.", price: 189, sku: "PLA-001" },
+          { name: "Clube do cavalheiro", short_desc: "4 cortes + 2 barbas por mês.", price: 149, sku: "PLA-002" },
+          { name: "Pomada modeladora", short_desc: "Fixação forte, efeito matte. 120g", price: 49.9, brand: "Casa", sku: "PRO-001" },
+          { name: "Óleo para barba", short_desc: "Hidrata e perfuma. 30ml", price: 39.9, brand: "Casa", sku: "PRO-002" },
+        ],
+      },
+    ],
+  },
+
+  {
+    key: "estetica",
+    label: "Estética & Bem-estar",
+    emoji: "✨",
+    tagline: "Facial, corporal, depilação e massagens.",
+    categories: [
+      {
+        name: "Estética facial",
+        featured: true,
+        items: [
+          { name: "Limpeza de pele profunda", short_desc: "Extração, alta frequência e máscara. ⏱ 1h20", price: 180, sku: "FAC-001" },
+          { name: "Peeling de diamante", short_desc: "Renovação celular. ⏱ 1h", price: 160, sku: "FAC-002" },
+          { name: "Microagulhamento", short_desc: "Estímulo de colágeno. ⏱ 1h", price: 350, sku: "FAC-003" },
+          { name: "Skinbooster / hidratação", short_desc: "Viço imediato. ⏱ 45 min", price: 220, sku: "FAC-004" },
+        ],
+      },
+      {
+        name: "Estética corporal",
+        items: [
+          { name: "Drenagem linfática", short_desc: "Sessão completa. ⏱ 1h", price: 130, sku: "COR-001" },
+          { name: "Massagem modeladora", short_desc: "Redução de medidas. ⏱ 1h", price: 150, sku: "COR-002" },
+          { name: "Pacote 10 sessões", short_desc: "Drenagem ou modeladora. Validade 60 dias.", price: 1100, promo_price: 990, sku: "COR-003" },
+          { name: "Radiofrequência corporal", short_desc: "Firmeza e colágeno. ⏱ 50 min", price: 190, sku: "COR-004" },
+        ],
+      },
+      {
+        name: "Depilação",
+        items: [
+          { name: "Axilas — cera", short_desc: "⏱ 15 min", price: 35, sku: "DEP-001" },
+          { name: "Meia perna — cera", short_desc: "⏱ 30 min", price: 55, sku: "DEP-002" },
+          { name: "Virilha completa", short_desc: "⏱ 30 min", price: 70, sku: "DEP-003" },
+          { name: "Depilação a laser — sessão", short_desc: "Consulte áreas e pacotes. ⏱ 40 min", price: 120, sku: "DEP-004" },
+        ],
+      },
+      {
+        name: "Massagens e relax",
+        items: [
+          { name: "Massagem relaxante", short_desc: "Corpo todo com óleos essenciais. ⏱ 1h", price: 140, sku: "MAS-001" },
+          { name: "Pedras quentes", short_desc: "Alívio de tensão profunda. ⏱ 1h15", price: 180, sku: "MAS-002" },
+          { name: "Day spa casal", short_desc: "Massagem + escalda-pés + chá. ⏱ 2h", price: 390, sku: "MAS-003" },
+        ],
+      },
+    ],
+  },
+
+  {
+    key: "servicos_casa",
+    label: "Serviços para Casa",
+    emoji: "🛠️",
+    tagline: "Elétrica, hidráulica, pintura, montagem e limpeza.",
+    categories: [
+      {
+        name: "Elétrica",
+        featured: true,
+        items: [
+          { name: "Visita técnica + diagnóstico", short_desc: "Abatido do serviço aprovado. ⏱ 1h", price: 90, sku: "ELE-001" },
+          { name: "Instalação de tomada/interruptor", short_desc: "Por ponto. ⏱ 40 min", price: 80, sku: "ELE-002" },
+          { name: "Instalação de chuveiro", short_desc: "Inclui verificação do disjuntor. ⏱ 1h", price: 150, sku: "ELE-003" },
+          { name: "Troca de quadro de disjuntores", short_desc: "Orçamento após visita.", price: 450, sku: "ELE-004" },
+        ],
+      },
+      {
+        name: "Hidráulica",
+        items: [
+          { name: "Reparo de vazamento", short_desc: "Diagnóstico e conserto simples. ⏱ 1h30", price: 180, sku: "HID-001" },
+          { name: "Desentupimento de pia", short_desc: "⏱ 1h", price: 160, sku: "HID-002" },
+          { name: "Instalação de torneira/válvula", short_desc: "Por peça. ⏱ 40 min", price: 90, sku: "HID-003" },
+        ],
+      },
+      {
+        name: "Pintura e reformas",
+        items: [
+          { name: "Pintura de parede — m²", short_desc: "Mão de obra, 2 demãos. Material à parte.", price: 28, sku: "PIN-001" },
+          { name: "Textura / grafiato — m²", price: 45, sku: "PIN-002" },
+          { name: "Pequenos reparos (diária)", short_desc: "8h de serviço com ferramentas.", price: 380, sku: "REP-001" },
+        ],
+      },
+      {
+        name: "Montagem e limpeza",
+        items: [
+          { name: "Montagem de móveis (hora)", short_desc: "Guarda-roupa, cama, estante. ⏱ 1h", price: 110, sku: "MON-001" },
+          { name: "Instalação de suporte de TV", short_desc: "Inclui nivelamento. ⏱ 1h", price: 140, sku: "MON-002" },
+          { name: "Limpeza pesada (diária)", short_desc: "Pós-obra ou mudança. ⏱ 8h", price: 320, sku: "LIM-001" },
+          { name: "Higienização de sofá — 3 lugares", short_desc: "Secagem em até 6h. ⏱ 1h30", price: 220, sku: "LIM-002" },
+        ],
+      },
+    ],
+  },
+
+  {
+    key: "fotografia",
+    label: "Fotografia & Eventos",
+    emoji: "📸",
+    tagline: "Ensaios, eventos, vídeo e pacotes corporativos.",
+    categories: [
+      {
+        name: "Ensaios",
+        featured: true,
+        items: [
+          { name: "Ensaio individual", short_desc: "1h de sessão + 20 fotos tratadas.", price: 590, sku: "ENS-001" },
+          { name: "Ensaio gestante", short_desc: "Estúdio ou externa + 30 fotos.", price: 890, sku: "ENS-002" },
+          { name: "Ensaio família", short_desc: "Até 5 pessoas + 30 fotos.", price: 790, sku: "ENS-003" },
+          { name: "Book profissional / LinkedIn", short_desc: "10 fotos com retoque. ⏱ 45 min", price: 450, promo_price: 390, sku: "ENS-004" },
+        ],
+      },
+      {
+        name: "Eventos",
+        items: [
+          { name: "Aniversário — 4h", short_desc: "Cobertura + galeria online.", price: 1290, sku: "EVE-001" },
+          { name: "Casamento — pacote completo", short_desc: "Making of à festa, 2 fotógrafos.", price: 4900, sku: "EVE-002" },
+          { name: "Evento corporativo (hora)", short_desc: "Mínimo 3h.", price: 350, sku: "EVE-003" },
+        ],
+      },
+      {
+        name: "Vídeo",
+        items: [
+          { name: "Reels para redes sociais", short_desc: "3 vídeos verticais editados.", price: 690, sku: "VID-001" },
+          { name: "Vídeo institucional", short_desc: "Roteiro, captação e edição até 2 min.", price: 2400, sku: "VID-002" },
+          { name: "Cobertura com drone", short_desc: "Adicional por evento.", price: 600, sku: "VID-003" },
+        ],
+      },
+      {
+        name: "Produtos e extras",
+        items: [
+          { name: "Fotos de produto (10 itens)", short_desc: "Fundo branco, prontas para e-commerce.", price: 690, sku: "PRD-001" },
+          { name: "Álbum impresso 20x30", short_desc: "30 páginas, capa dura.", price: 750, sku: "EXT-001" },
+          { name: "Foto extra tratada", price: 35, sku: "EXT-002" },
+        ],
+      },
+    ],
+  },
 ];
 
 export function findCatalogTemplate(key: string) {
