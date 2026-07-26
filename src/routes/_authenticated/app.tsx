@@ -149,6 +149,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/app/catalogo/colecoes", label: "Coleções", icon: FolderTree },
       { to: "/app/catalogo/produtos", label: "Produtos", icon: LayoutList },
       { to: "/app/catalogo/aparencia", label: "Aparência", icon: Palette },
+      { to: "/app/pedidos", label: "Pedidos", icon: Receipt },
     ],
   },
 
