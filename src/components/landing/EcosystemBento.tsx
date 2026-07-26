@@ -72,7 +72,13 @@ export function EcosystemBento() {
           </p>
         </div>
 
-        <div className={`mt-10 grid gap-4 md:grid-cols-3 ${inView ? "animate-fade-in" : "opacity-0"}`}>
+        <div
+          ref={trackRef}
+          onPointerDown={() => setPaused(true)}
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          className={`mt-10 -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 ${inView ? "animate-fade-in" : "opacity-0"}`}
+        >
           {/* Campanhas — larga */}
           <article className={`${base} md:col-span-2`}>
             <Header icon={Megaphone} title="Campanhas" sub="Promoções com meta, prazo e público segmentado." />
