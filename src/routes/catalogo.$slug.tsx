@@ -217,17 +217,15 @@ function PublicCatalogPage() {
     sort === "rel" &&
     categories.length > 1;
 
-  const rows = useMemo(() => {
-    if (!showRows) return [];
-    return categories
-      .map((c) => ({ cat: c, list: filtered.filter((i) => i.category_id === c.id) }))
-      .filter((r) => r.list.length > 0);
-  }, [showRows, categories, filtered]);
+  const rows = !showRows
+    ? []
+    : categories
+        .map((c) => ({ cat: c, list: filtered.filter((i) => i.category_id === c.id) }))
+        .filter((r) => r.list.length > 0);
 
-  const looseItems = useMemo(
-    () => (showRows ? filtered.filter((i) => !categories.some((c) => c.id === i.category_id)) : []),
-    [showRows, filtered, categories],
-  );
+  const looseItems = showRows
+    ? filtered.filter((i) => !categories.some((c) => c.id === i.category_id))
+    : [];
 
   const renderCard = (p: Product, variant: "grid" | "row" = "grid") => {
     const out = p.stock_status === "out_of_stock";
