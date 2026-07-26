@@ -472,6 +472,8 @@ function ItemDialog({
       prep_minutes: parseInt2(prep),
       image_url: imageUrl,
       video_url: videoUrl,
+      gallery,
+
       badges,
       ingredients: ingredientsText.split(",").map(s => s.trim()).filter(Boolean),
       allergens: allergensText.split(",").map(s => s.trim()).filter(Boolean),
