@@ -39,7 +39,7 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
       .select("*")
       .eq("establishment_id", est.id)
       .eq("kind", kind)
-      .in("status", ["published","draft"])
+      .eq("status", "published")
       .maybeSingle();
     if (!menu) return { establishment: est, menu: null, categories: [], items: [] };
     const [{ data: cats }, { data: items }] = await Promise.all([
