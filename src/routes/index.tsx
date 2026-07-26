@@ -217,7 +217,7 @@ function Hero() {
           <p className="mt-5 max-w-xl text-lg text-white/70">
             Crie seu cartão fidelidade digital, compartilhe por QR Code e faça seus clientes voltarem mais vezes. Sem aplicativo, sem cartão de papel.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button
               asChild
               size="lg"
@@ -237,7 +237,7 @@ function Hero() {
               <a href="#como-funciona">Ver como funciona</a>
             </Button>
           </div>
-          <div className="mt-6 flex items-center gap-6 text-xs text-white/60">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-white/60">
             <span className="flex items-center gap-1.5">
               <Check className="h-4 w-4" style={{ color: CYAN }} /> Sem cartão de crédito
             </span>
@@ -246,9 +246,7 @@ function Hero() {
             </span>
           </div>
         </div>
-        <div className="relative flex justify-center">
-          <HeroAppPreview />
-        </div>
+
       </div>
     </section>
   );
