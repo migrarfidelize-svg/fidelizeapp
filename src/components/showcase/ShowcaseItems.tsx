@@ -451,6 +451,8 @@ function ItemDialog({
       sku: sku.trim() || null,
       brand: brand.trim() || null,
       stock_status: stockStatus as any,
+      track_stock: isCatalog ? trackStock : false,
+      stock_qty: isCatalog && trackStock ? Math.max(0, parseInt2(stockQty) ?? 0) : null,
       external_url: externalUrl.trim() || null,
     });
 
