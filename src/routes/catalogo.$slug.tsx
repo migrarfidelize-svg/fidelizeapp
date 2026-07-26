@@ -393,9 +393,9 @@ function PublicCatalogPage() {
             <div className="truncate text-[13px] font-semibold text-white">{p.name}</div>
             {price != null && (
               <div className="mt-0.5 text-[12px] font-medium text-white/85">
-                {fmtPrice(Number(price), p.currency)}
+                {fmt(Number(price), p.currency)}
                 {p.promo_price != null && p.price != null && (
-                  <span className="ml-2 text-white/55 line-through">{fmtPrice(Number(p.price), p.currency)}</span>
+                  <span className="ml-2 text-white/55 line-through">{fmt(Number(p.price), p.currency)}</span>
                 )}
               </div>
             )}
