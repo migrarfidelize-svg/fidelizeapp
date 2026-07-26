@@ -43,6 +43,8 @@ type Item = {
   promo_price: number | null;
   image_url: string | null;
   video_url: string | null;
+  gallery?: string[] | null;
+
   active: boolean;
   badges: any;
   ingredients: string[];
