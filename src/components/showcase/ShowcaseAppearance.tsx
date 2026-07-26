@@ -690,13 +690,13 @@ function MenuPreview({
                         <div className="truncate text-[10px] opacity-60">{d.short_desc ?? ""}</div>
                       </div>
                       <div className="text-[11px] font-bold" style={{ color: accent }}>{priceOf(d)}</div>
-                      <Thumb src={d.image_url} accent={accent} className="h-8 w-8 shrink-0 rounded-md" emojiClass="text-xs" />
+                      <Thumb src={d.image_url} accent={accent} emoji={emoji} className="h-8 w-8 shrink-0 rounded-md" emojiClass="text-xs" />
                     </div>
                   );
                 }
                 return (
                   <div key={idx} className="flex gap-2 rounded-xl p-2" style={{ background: p.surface, border: `1px solid ${p.line}` }}>
-                    <Thumb src={d.image_url} accent={accent} className="h-12 w-12 shrink-0 rounded-lg" />
+                    <Thumb src={d.image_url} accent={accent} emoji={emoji} className="h-12 w-12 shrink-0 rounded-lg" />
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-[11px] font-bold" style={{ fontFamily: p.fontHead }}>{d.name}</div>
                       <div className="truncate text-[10px] opacity-60">{d.short_desc ?? ""}</div>
@@ -712,10 +712,10 @@ function MenuPreview({
 
       <p className="text-center text-[11px] text-muted-foreground">
         {loading
-          ? "Carregando seus pratos…"
+          ? `Carregando seus ${L.itemsLower}…`
           : usingReal
-            ? "Prévia com seus pratos, fotos e categorias reais."
-            : "Sem pratos cadastrados ainda — mostrando exemplos."}
+            ? `Prévia com seus ${L.itemsLower}, fotos e ${L.categories.toLowerCase()} reais.`
+            : `Sem ${L.itemsLower} cadastrados ainda — mostrando exemplos.`}
       </p>
     </div>
   );
