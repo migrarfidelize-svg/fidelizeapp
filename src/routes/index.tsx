@@ -158,7 +158,16 @@ function SiteHeader() {
                   <a
                     key={href}
                     href={href}
-                    onClick={() => setMenuOpen(false)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setMenuOpen(false);
+                      const id = href.slice(1);
+                      // aguarda o Sheet fechar (Radix restaura o scroll ao fechar)
+                      setTimeout(() => {
+                        document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        history.replaceState(null, "", href);
+                      }, 360);
+                    }}
                     className="rounded-xl border border-transparent px-4 py-3 text-base font-semibold text-foreground/90 transition-colors hover:border-cyan-400/40 hover:bg-primary/10 hover:text-foreground"
                   >
                     {label}
