@@ -103,6 +103,8 @@ type Product = {
   promo_price: number | null;
   currency: string;
   image_url: string | null;
+  gallery?: string[] | null;
+
   category_id: string | null;
   sku?: string | null;
   brand?: string | null;
