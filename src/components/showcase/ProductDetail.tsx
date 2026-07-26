@@ -121,16 +121,16 @@ export function ProductDetail({
           <div className="relative">
             <div
               ref={scroller}
-              className="flex snap-x snap-mandatory overflow-x-auto sm:block"
+              className="flex snap-x snap-mandatory overflow-x-auto"
               style={{ scrollbarWidth: "none" }}
+              onScroll={(e) => {
+                const el = e.currentTarget;
+                if (el.clientWidth) setIdx(Math.round(el.scrollLeft / el.clientWidth));
+              }}
             >
               {photos.length > 0 ? (
                 photos.map((src, i) => (
-                  <div
-                    key={src + i}
-                    className={`relative aspect-square w-full shrink-0 snap-center overflow-hidden sm:${i === idx ? "block" : "hidden"}`}
-                    style={{ display: i === idx ? undefined : undefined }}
-                  >
+                  <div key={src + i} className="relative aspect-square w-full shrink-0 snap-center overflow-hidden">
                     <img
                       src={src}
                       alt={`${product.name} — foto ${i + 1}`}
@@ -145,6 +145,7 @@ export function ProductDetail({
                 </div>
               )}
             </div>
+
 
             {photos.length > 1 && (
               <span className="absolute bottom-3 right-3 rounded-full bg-black/60 px-2 py-1 text-[11px] font-semibold text-white">
