@@ -359,6 +359,7 @@ function ItemDialog({
   const [active, setActive] = useState(true);
   const [sku, setSku] = useState("");
   const [brand, setBrand] = useState("");
+  const [stockStatus, setStockStatus] = useState("in_stock");
   const [trackStock, setTrackStock] = useState(false);
   const [stockQty, setStockQty] = useState<string>("");
 
