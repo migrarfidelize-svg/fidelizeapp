@@ -1115,6 +1115,7 @@ function Pricing() {
   ];
 
   const [activeIdx, setActiveIdx] = useState(2);
+  const [compare, setCompare] = useState(false);
   const [prevIdx, setPrevIdx] = useState(2);
   const [shockKey, setShockKey] = useState(0);
   const active = plans[activeIdx];
