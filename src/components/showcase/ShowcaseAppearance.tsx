@@ -477,9 +477,10 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
           <CardHeader><CardTitle>Prévia ao vivo</CardTitle></CardHeader>
           <CardContent>
             <MenuPreview
+              kind={kind}
               preset={preset} layout={layout} pattern={pattern}
               bgImage={bgImage} bgColor={bgColor} accentColor={accentColor} textColor={textColor} accent={accent}
-              name={est?.name ?? "Seu Restaurante"}
+              name={est?.name ?? (isCatalog ? "Sua Loja" : "Seu Restaurante")}
               logoUrl={est?.logo_url ?? null}
               coverUrl={est?.cover_url ?? null}
               categories={(menuData.data?.categories ?? []).map((c: any) => c.name)}
