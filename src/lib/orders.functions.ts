@@ -59,7 +59,7 @@ export const createCatalogOrder = createServerFn({ method: "POST" })
 
     const { data: menu } = await s
       .from("restaurant_menus")
-      .select("id, currency")
+      .select("id")
       .eq("establishment_id", est.id)
       .eq("kind", "catalog")
       .eq("status", "published")
