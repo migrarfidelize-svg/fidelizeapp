@@ -10,6 +10,8 @@ import { resolveMenuTheme, menuBackgroundCss, readableInk } from "@/lib/menu-the
 import { stockLabel, STOCK_STATUS } from "@/lib/showcase";
 import { useCart } from "@/lib/cart";
 import { CatalogCart } from "@/components/showcase/CatalogCart";
+import { ProductDetail } from "@/components/showcase/ProductDetail";
+
 
 const opts = (slug: string) =>
   queryOptions({
