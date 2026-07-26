@@ -669,10 +669,15 @@ function MenuPreview({
                 if (layout === "grid") {
                   return (
                     <div key={idx} className="overflow-hidden rounded-xl" style={{ background: p.surface, border: `1px solid ${p.line}` }}>
-                      <Thumb src={d.image_url} accent={accent} className="h-16 w-full" emojiClass="text-lg" />
+                      <Thumb src={d.image_url} accent={accent} emoji={emoji} className="h-16 w-full" emojiClass="text-lg" />
                       <div className="p-2">
                         <div className="truncate text-[11px] font-bold" style={{ fontFamily: p.fontHead }}>{d.name}</div>
                         <div className="mt-1 text-[11px] font-bold" style={{ color: accent }}>{priceOf(d)}</div>
+                        {isCatalog && (
+                          <div className="mt-1.5 rounded-full py-1 text-center text-[9px] font-bold" style={{ background: accent, color: p.barInk }}>
+                            Adicionar
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
