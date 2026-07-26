@@ -94,7 +94,7 @@ function Landing() {
         <RoiCalculator />
         <Examples />
         <Pricing />
-        <TrustStrip />
+        
         <FAQ />
         <CTA />
       </main>
