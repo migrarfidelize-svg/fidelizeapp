@@ -7,7 +7,7 @@ import { StampCard } from "@/components/StampCard";
 import { SegmentsCarousel } from "@/components/SegmentsCarousel";
 import { DiscoverMenuShowcase } from "@/components/DiscoverMenuShowcase";
 import { EcosystemBento } from "@/components/landing/EcosystemBento";
-import { RetentionEngine } from "@/components/landing/RetentionEngine";
+
 import { RoiCalculator } from "@/components/landing/RoiCalculator";
 import { TrustStrip } from "@/components/landing/TrustStrip";
 import { ScrollProgress } from "@/components/landing/ScrollProgress";
@@ -87,7 +87,7 @@ function Landing() {
       <main>
         <Hero />
         <DiscoverMenuShowcase />
-        <RetentionEngine />
+        
         <Segments />
         <EcosystemBento />
         
@@ -104,7 +104,7 @@ function Landing() {
 }
 
 const NAV_LINKS: Array<[string, string]> = [
-  ["#retencao", "Recursos"],
+  ["#ecossistema", "Recursos"],
   ["#ecossistema", "Ecossistema"],
   ["#roi", "Retorno"],
   ["#precos", "Preços"],
@@ -294,7 +294,7 @@ function Hero() {
               variant="outline"
               className="bg-transparent text-white border-white/20 hover:bg-white/10 hover:text-white"
             >
-              <a href="#retencao">Ver como funciona</a>
+              <a href="#ecossistema">Ver como funciona</a>
             </Button>
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-white/60">
