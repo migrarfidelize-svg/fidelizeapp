@@ -1106,6 +1106,21 @@ type Plan = {
   icon: LucideIcon;
 };
 
+const COMPARE_ROWS: { label: string; values: (string | boolean)[] }[] = [
+  { label: "Clientes cadastrados", values: ["100", "1.000", "10.000", "Ilimitado"] },
+  { label: "Campanhas ativas", values: ["1", "2", "5", "Ilimitadas"] },
+  { label: "Funcionários", values: ["1", "3", "10", "Ilimitados"] },
+  { label: "Cartão fidelidade digital", values: [true, true, true, true] },
+  { label: "QR Code e página pública", values: [true, true, true, true] },
+  { label: "Relatórios", values: ["Básicos", "Básicos", "Avançados", "Avançados"] },
+  { label: "Exportação de dados", values: [false, true, true, true] },
+  { label: "Segmentação de clientes", values: [false, false, true, true] },
+  { label: "Cardápio virtual", values: [false, false, true, true] },
+  { label: "Sem marca Fidelize", values: [false, false, true, true] },
+  { label: "Multi-unidade", values: [false, false, false, true] },
+  { label: "Suporte", values: ["Comunidade", "E-mail", "Prioritário", "24/7 + gerente"] },
+];
+
 function Pricing() {
   const plans: Plan[] = [
     { name: "Gratuito", short: "Grátis", price: "R$ 0", numeric: 0, desc: "Para começar a testar", tagline: "Ideal pra validar a ideia sem risco.", features: ["Até 100 clientes", "1 campanha ativa", "1 funcionário", "Relatórios básicos"], cta: "Começar grátis", icon: Sprout },
@@ -1115,6 +1130,7 @@ function Pricing() {
   ];
 
   const [activeIdx, setActiveIdx] = useState(2);
+  const [compare, setCompare] = useState(false);
   const [prevIdx, setPrevIdx] = useState(2);
   const [shockKey, setShockKey] = useState(0);
   const active = plans[activeIdx];
@@ -1236,10 +1252,70 @@ function Pricing() {
           </div>
         </div>
 
+        {/* Comparison toggle */}
+        <div className="mt-8 flex justify-center">
+          <button
+            type="button"
+            onClick={() => setCompare((c) => !c)}
+            aria-expanded={compare}
+            className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-primary transition hover:bg-primary/10"
+          >
+            {compare ? "Ocultar tabela comparativa" : "Ver tabela comparativa"}
+            <ArrowRight className={`h-3.5 w-3.5 transition-transform ${compare ? "-rotate-90" : "rotate-90"}`} />
+          </button>
+        </div>
+
+        {compare && (
+          <div className="mt-6 overflow-x-auto rounded-2xl border border-white/10 bg-card/40 backdrop-blur-xl">
+            <table className="w-full min-w-[640px] text-sm">
+              <thead>
+                <tr className="border-b border-white/10">
+                  <th className="p-4 text-left font-semibold text-muted-foreground">Recurso</th>
+                  {plans.map((p, i) => (
+                    <th key={p.name} className={`p-4 text-center font-display ${i === activeIdx ? "text-primary" : ""}`}>
+                      <div className="font-bold">{p.name}</div>
+                      <div className="text-xs font-normal text-muted-foreground">{p.price}/mês</div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARE_ROWS.map((row) => (
+                  <tr key={row.label} className="border-b border-white/5 last:border-0">
+                    <td className="p-4 text-left text-muted-foreground">{row.label}</td>
+                    {row.values.map((v, i) => (
+                      <td key={i} className="p-4 text-center">
+                        {v === true ? (
+                          <Check className="mx-auto h-4 w-4 text-primary" />
+                        ) : v === false ? (
+                          <span className="text-muted-foreground/40">—</span>
+                        ) : (
+                          <span className="font-medium">{v}</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+                <tr>
+                  <td className="p-4" />
+                  {plans.map((p) => (
+                    <td key={p.name} className="p-4 text-center">
+                      <Button asChild size="sm" variant={p.badge ? "default" : "outline"}>
+                        <Link to="/auth" search={{ mode: "signup" }}>{p.cta}</Link>
+                      </Button>
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
+
         {/* trust line */}
         <p className="mt-8 text-center text-xs uppercase tracking-[0.3em] text-muted-foreground">
           14 dias grátis · sem cartão · cancele quando quiser
         </p>
+
       </div>
     </section>
   );
@@ -1453,7 +1529,12 @@ function FaqAIPanel() {
   const ask = useServerFn(askFaqAI);
   const [messages, setMessages] = useState<ChatMsg[]>([
     { role: "assistant", content: "Oi! Sou a Fidê 💛 Pergunta o que quiser sobre a Fidelize, tô aqui pra ajudar!" },
+    { role: "user", content: "Meu cliente precisa baixar algum app?" },
+    { role: "assistant", content: "Não! Ele só escaneia o QR Code do seu balcão e o cartão abre no navegador. Dá pra salvar na tela de início como se fosse um app 😉" },
+    { role: "user", content: "E se ele perder o celular, perde os carimbos?" },
+    { role: "assistant", content: "Nada disso — os carimbos ficam salvos na conta dele. Entrou de novo com o mesmo telefone/e-mail, tá tudo lá." },
   ]);
+
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [firstAnswer, setFirstAnswer] = useState(true);
