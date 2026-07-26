@@ -200,8 +200,8 @@ function Hero() {
       
 
       
-      <div className="relative z-10 mx-auto grid max-w-6xl gap-12 px-4 py-16 md:grid-cols-2 md:items-center md:py-20">
-        <div className="text-white">
+      <div className="relative z-10 mx-auto max-w-4xl px-4 py-20 text-center md:py-28">
+        <div className="mx-auto flex max-w-3xl flex-col items-center text-white">
           <span
             className="landing-hero-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
             style={{ background: `${CYAN}14`, border: `1px solid ${CYAN}55`, color: CYAN }}
