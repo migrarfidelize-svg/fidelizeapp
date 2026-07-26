@@ -131,6 +131,10 @@ function PublicCatalogPage() {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<Product | null>(null);
   const [logoErr, setLogoErr] = useState(false);
+  const [sort, setSort] = useState<"rel" | "asc" | "desc" | "az">("rel");
+  const [onlyPromo, setOnlyPromo] = useState(false);
+  const [onlyStock, setOnlyStock] = useState(false);
+  const [brand, setBrand] = useState<string | "all">("all");
   const cart = useCart(slug);
 
 
