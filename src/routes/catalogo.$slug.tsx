@@ -129,6 +129,8 @@ function PublicCatalogPage() {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<Product | null>(null);
   const [logoErr, setLogoErr] = useState(false);
+  const cart = useCart(slug);
+
 
   const theme = resolveMenuTheme((data as any)?.menu?.theme);
   const T = theme.preset_def;
