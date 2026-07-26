@@ -2015,6 +2015,7 @@ export type Database = {
           currency: string
           establishment_id: string
           external_url: string | null
+          gallery: Json
           id: string
           image_url: string | null
           ingredients: string[]
@@ -2051,6 +2052,7 @@ export type Database = {
           currency?: string
           establishment_id: string
           external_url?: string | null
+          gallery?: Json
           id?: string
           image_url?: string | null
           ingredients?: string[]
@@ -2087,6 +2089,7 @@ export type Database = {
           currency?: string
           establishment_id?: string
           external_url?: string | null
+          gallery?: Json
           id?: string
           image_url?: string | null
           ingredients?: string[]

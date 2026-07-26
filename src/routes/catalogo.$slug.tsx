@@ -10,6 +10,8 @@ import { resolveMenuTheme, menuBackgroundCss, readableInk } from "@/lib/menu-the
 import { stockLabel, STOCK_STATUS } from "@/lib/showcase";
 import { useCart } from "@/lib/cart";
 import { CatalogCart } from "@/components/showcase/CatalogCart";
+import { ProductDetail } from "@/components/showcase/ProductDetail";
+
 
 const opts = (slug: string) =>
   queryOptions({
@@ -101,6 +103,8 @@ type Product = {
   promo_price: number | null;
   currency: string;
   image_url: string | null;
+  gallery?: string[] | null;
+
   category_id: string | null;
   sku?: string | null;
   brand?: string | null;
@@ -294,7 +298,15 @@ function PublicCatalogPage() {
 
           {!out && (p.price != null || p.promo_price != null) && (
             <div className="pt-2" onClick={(e) => e.stopPropagation()}>
-              {cart.qtyOf(p.id) === 0 ? (
+              {Array.isArray(p.variants) && p.variants.length > 0 ? (
+                <button
+                  onClick={() => openProduct(p)}
+                  className="w-full rounded-lg px-3 py-2 text-xs font-bold"
+                  style={{ border: `1px solid ${primary}`, color: primary }}
+                >
+                  Escolher variação
+                </button>
+              ) : cart.qtyOf(p.id) === 0 ? (
                 <button
                   onClick={() => cart.add(p.id)}
                   className="w-full rounded-lg px-3 py-2 text-xs font-bold"
@@ -324,6 +336,7 @@ function PublicCatalogPage() {
                 </div>
               )}
             </div>
+
           )}
         </div>
       </div>
@@ -620,112 +633,21 @@ function PublicCatalogPage() {
 
       {/* DETALHE DO PRODUTO */}
       {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-6"
-          onClick={() => setOpen(null)}
-        >
-          <div
-            className="max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-t-3xl sm:rounded-3xl"
-            style={{ background: "var(--mk-surface)", color: T.ink }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="relative">
-              {open.image_url ? (
-                <img src={open.image_url} alt={open.name} className="aspect-square w-full object-cover" />
-              ) : (
-                <div className="grid aspect-video w-full place-items-center opacity-40" style={{ background: T.line }}>
-                  <ShoppingBag className="h-10 w-10" />
-                </div>
-              )}
-              <button
-                onClick={() => setOpen(null)}
-                aria-label="Fechar"
-                className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-black/60 text-white"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="space-y-3 p-5">
-              {open.brand && <div className="text-[11px] uppercase tracking-wider opacity-60">{open.brand}</div>}
-              <h2 className="fx-serif text-xl font-extrabold">{open.name}</h2>
-              <div className="flex items-baseline gap-2">
-                {open.promo_price != null && open.price != null && open.promo_price < open.price ? (
-                  <>
-                    <span className="text-sm line-through opacity-50">{fmt(open.price, open.currency)}</span>
-                    <span className="text-2xl font-extrabold" style={{ color: primary }}>{fmt(open.promo_price, open.currency)}</span>
-                  </>
-                ) : (
-                  <span className="text-2xl font-extrabold" style={{ color: primary }}>
-                    {open.price != null ? fmt(open.price, open.currency) : "Sob consulta"}
-                  </span>
-                )}
-              </div>
-              {open.stock_status && (
-                <span
-                  className="inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold"
-                  style={{ background: `${stockTone(open.stock_status)}1a`, color: stockTone(open.stock_status) }}
-                >
-                  {stockLabel(open.stock_status)}
-                </span>
-              )}
-              {open.short_desc && <p className="text-sm opacity-80">{open.short_desc}</p>}
-              {open.long_desc && <p className="whitespace-pre-line text-sm opacity-70">{open.long_desc}</p>}
-
-              {Array.isArray(open.variants) && open.variants.length > 0 && (
-                <div className="space-y-1">
-                  <div className="text-[11px] uppercase tracking-wider opacity-60">Variações</div>
-                  <div className="flex flex-wrap gap-2">
-                    {open.variants.map((v, i) => (
-                      <span key={i} className="rounded-full px-2.5 py-1 text-xs" style={{ border: "1px solid var(--mk-line)" }}>
-                        {v.label}{v.price != null ? ` · ${fmt(v.price, open.currency)}` : ""}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {open.sku && <div className="text-xs opacity-60">Código: {open.sku}</div>}
-
-              <div className="flex flex-wrap gap-2 pt-2">
-                {open.external_url && (
-                  <a
-                    href={open.external_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={() => trackChannelEvent({ slug, channel: "catalog", event_type: "link_click", ref_id: open.id, ref_label: `buy:${open.name}` })}
-                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold"
-                    style={{ background: primary, color: readableInk(primary) }}
-                  >
-                    <ExternalLink className="h-4 w-4" /> Comprar
-                  </a>
-                )}
-                {est?.whatsapp && (
-                  <a
-                    href={`https://wa.me/${String(est.whatsapp).replace(/\D/g, "")}?text=${encodeURIComponent(`Olá! Tenho interesse no produto "${open.name}".`)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={() => trackChannelEvent({ slug, channel: "catalog", event_type: "link_click", ref_id: open.id, ref_label: `whatsapp:${open.name}` })}
-                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold"
-                    style={{ border: `1px solid ${primary}`, color: primary }}
-                  >
-                    <MessageCircle className="h-4 w-4" /> Falar no WhatsApp
-                  </a>
-                )}
-              </div>
-
-              {open.stock_status !== "out_of_stock" && (open.price != null || open.promo_price != null) && (
-                <button
-                  onClick={() => { cart.add(open.id); setOpen(null); }}
-                  className="flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-bold"
-                  style={{ background: primary, color: readableInk(primary) }}
-                >
-                  <ShoppingBag className="h-4 w-4" /> Adicionar ao carrinho
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
+        <ProductDetail
+          product={open as any}
+          all={items as any}
+          primary={primary}
+          line={T.line}
+          whatsapp={est?.whatsapp ?? null}
+          cart={cart}
+          onClose={() => setOpen(null)}
+          onSelect={(p) => openProduct(p as any)}
+          onTrack={(label) =>
+            trackChannelEvent({ slug, channel: "catalog", event_type: "link_click", ref_id: open.id, ref_label: label })
+          }
+        />
       )}
+
 
       <CatalogCart
         slug={slug}

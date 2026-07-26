@@ -364,7 +364,9 @@ const itemUpsertSchema = z.object({
   track_stock: z.boolean().optional(),
   stock_qty: z.number().int().min(0).max(999999).nullable().optional(),
   external_url: z.string().url().max(500).nullable().optional(),
+  gallery: z.array(z.string().url().max(500)).max(8).optional(),
 });
+
 
 
 export const upsertMenuItem = createServerFn({ method: "POST" })
@@ -397,6 +399,8 @@ export const upsertMenuItem = createServerFn({ method: "POST" })
       track_stock: data.track_stock ?? false,
       stock_qty: data.track_stock ? data.stock_qty ?? 0 : null,
       external_url: data.external_url ?? null,
+      gallery: (data.gallery ?? []) as any,
+
     };
 
 

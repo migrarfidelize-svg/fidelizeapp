@@ -55,11 +55,14 @@ export function CatalogCart({
       cart.lines
         .map((l) => {
           const p = items.find((i) => i.id === l.id);
-          return p ? { ...p, qty: l.qty, unit: unitOf(p), lineTotal: unitOf(p) * l.qty } : null;
+          const variantPrice = (p as any)?.variants?.find?.((v: any) => v?.label === l.variant)?.price;
+          const unit = variantPrice != null ? Number(variantPrice) : p ? unitOf(p) : 0;
+          return p ? { ...p, qty: l.qty, variant: l.variant ?? null, unit, lineTotal: unit * l.qty } : null;
         })
-        .filter(Boolean) as (Product & { qty: number; unit: number; lineTotal: number })[],
+        .filter(Boolean) as (Product & { qty: number; variant: string | null; unit: number; lineTotal: number })[],
     [cart.lines, items],
   );
+
 
   const total = detailed.reduce((a, l) => a + l.lineTotal, 0);
   const currency = detailed[0]?.currency ?? "BRL";
@@ -85,13 +88,17 @@ export function CatalogCart({
           fulfillment,
           address: address.trim() || null,
           note: note.trim() || null,
-          items: cart.lines.map((l) => ({ item_id: l.id, qty: l.qty })),
+          items: cart.lines.map((l) => ({ item_id: l.id, qty: l.qty, variant_label: l.variant ?? null })),
         },
       });
 
       const linesTxt = res.lines
-        .map((l: any) => `• ${l.qty}x ${l.name} — ${fmt(Number(l.line_total), res.currency)}`)
+        .map(
+          (l: any) =>
+            `• ${l.qty}x ${l.name}${l.variant_label ? ` (${l.variant_label})` : ""} — ${fmt(Number(l.line_total), res.currency)}`,
+        )
         .join("\n");
+
       const msg = [
         `*Pedido #${res.order_number}* — ${res.establishment.name}`,
         "",
@@ -167,7 +174,7 @@ export function CatalogCart({
 
             <div className="space-y-3 p-5">
               {detailed.map((l) => (
-                <div key={l.id} className="flex items-center gap-3">
+                <div key={`${l.id}::${l.variant ?? ""}`} className="flex items-center gap-3">
                   {l.image_url ? (
                     <img src={l.image_url} alt={l.name} className="h-14 w-14 rounded-xl object-cover" />
                   ) : (
@@ -177,19 +184,21 @@ export function CatalogCart({
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-semibold">{l.name}</div>
+                    {l.variant && <div className="truncate text-[11px] opacity-70">Variação: {l.variant}</div>}
                     <div className="text-xs opacity-70">{fmt(l.unit, l.currency)}</div>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <button onClick={() => cart.setQty(l.id, l.qty - 1)} aria-label="Diminuir" className="grid h-7 w-7 place-items-center rounded-full" style={{ border: "1px solid var(--mk-line)" }}>
+                    <button onClick={() => cart.setQty(l.id, l.qty - 1, l.variant)} aria-label="Diminuir" className="grid h-7 w-7 place-items-center rounded-full" style={{ border: "1px solid var(--mk-line)" }}>
                       {l.qty === 1 ? <Trash2 className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
                     </button>
                     <span className="w-5 text-center text-sm font-bold">{l.qty}</span>
-                    <button onClick={() => cart.setQty(l.id, l.qty + 1)} aria-label="Aumentar" className="grid h-7 w-7 place-items-center rounded-full" style={{ background: primary, color: ink }}>
+                    <button onClick={() => cart.setQty(l.id, l.qty + 1, l.variant)} aria-label="Aumentar" className="grid h-7 w-7 place-items-center rounded-full" style={{ background: primary, color: ink }}>
                       <Plus className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 </div>
               ))}
+
 
               <div className="flex items-center justify-between pt-2 text-base font-extrabold" style={{ borderTop: "1px solid var(--mk-line)" }}>
                 <span className="pt-2">Total</span>

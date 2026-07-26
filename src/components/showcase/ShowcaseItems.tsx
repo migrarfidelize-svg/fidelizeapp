@@ -43,6 +43,8 @@ type Item = {
   promo_price: number | null;
   image_url: string | null;
   video_url: string | null;
+  gallery?: string[] | null;
+
   active: boolean;
   badges: any;
   ingredients: string[];
@@ -352,6 +354,7 @@ function ItemDialog({
   const [prep, setPrep] = useState<string>("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [gallery, setGallery] = useState<string[]>([]);
   const [badges, setBadges] = useState<string[]>([]);
   const [ingredientsText, setIngredientsText] = useState("");
   const [allergensText, setAllergensText] = useState("");
@@ -367,9 +370,11 @@ function ItemDialog({
   const L = showcase(showKind);
   const isCatalog = showKind === "catalog";
 
-  const [uploading, setUploading] = useState<"img" | "vid" | null>(null);
+  const [uploading, setUploading] = useState<"img" | "vid" | "gal" | null>(null);
   const imgRef = useRef<HTMLInputElement>(null);
   const vidRef = useRef<HTMLInputElement>(null);
+  const galRef = useRef<HTMLInputElement>(null);
+
 
   useMemo(() => {
     if (open) {
@@ -382,6 +387,8 @@ function ItemDialog({
       setPrep("");
       setImageUrl(initial?.image_url ?? null);
       setVideoUrl(initial?.video_url ?? null);
+      setGallery(Array.isArray((initial as any)?.gallery) ? ((initial as any).gallery as string[]) : []);
+
       setBadges(Array.isArray(initial?.badges) ? (initial!.badges as string[]) : []);
       setIngredientsText((initial?.ingredients ?? []).join(", "));
       setAllergensText((initial?.allergens ?? []).join(", "));
@@ -424,7 +431,33 @@ function ItemDialog({
     }
   };
 
+  const uploadGallery = async (files: File[]) => {
+    if (!estId) return;
+    setUploading("gal");
+    try {
+      const room = Math.max(0, 8 - gallery.length);
+      const urls: string[] = [];
+      for (const file of files.slice(0, room)) {
+        const ext = file.name.split(".").pop() || "jpg";
+        const path = `est_${estId}/items/gal_${crypto.randomUUID()}.${ext}`;
+        const { error } = await supabase.storage.from("menu-images").upload(path, file, {
+          cacheControl: "3600", upsert: false, contentType: file.type,
+        });
+        if (error) throw error;
+        urls.push(supabase.storage.from("menu-images").getPublicUrl(path).data.publicUrl);
+      }
+      setGallery((g) => [...g, ...urls].slice(0, 8));
+      toast.success(urls.length === 1 ? "Foto adicionada" : `${urls.length} fotos adicionadas`);
+    } catch (e: any) {
+      toast.error(e.message || "Falha no upload");
+    } finally {
+      setUploading(null);
+    }
+  };
+
   const toggleBadge = (b: string) => setBadges(prev => prev.includes(b) ? prev.filter(x => x !== b) : [...prev, b]);
+
+
 
   const submit = () => {
     if (!name.trim()) { toast.error("Nome é obrigatório"); return; }
@@ -441,6 +474,8 @@ function ItemDialog({
       prep_minutes: parseInt2(prep),
       image_url: imageUrl,
       video_url: videoUrl,
+      gallery,
+
       badges,
       ingredients: ingredientsText.split(",").map(s => s.trim()).filter(Boolean),
       allergens: allergensText.split(",").map(s => s.trim()).filter(Boolean),
@@ -651,6 +686,53 @@ function ItemDialog({
                 : "Vídeos verticais 9:16 ficam melhores no modo Stories. Máx. recomendado: 30s / 20MB."}
             </p>
           </div>
+
+          {isCatalog && (
+            <div className="space-y-2 md:col-span-2">
+              <Label>Galeria de fotos (até 8)</Label>
+              <div className="flex flex-wrap gap-2">
+                {gallery.map((url, i) => (
+                  <div key={url + i} className="relative h-20 w-20 overflow-hidden rounded-lg border">
+                    <img src={url} alt={`Foto ${i + 1}`} className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setGallery((g) => g.filter((_, idx) => idx !== i))}
+                      className="absolute right-0.5 top-0.5 grid h-5 w-5 place-items-center rounded-full bg-black/70 text-[10px] text-white"
+                      aria-label="Remover foto"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                {gallery.length < 8 && (
+                  <button
+                    type="button"
+                    onClick={() => galRef.current?.click()}
+                    disabled={uploading === "gal"}
+                    className="grid h-20 w-20 place-items-center rounded-lg border border-dashed text-xs text-muted-foreground"
+                  >
+                    {uploading === "gal" ? "..." : "+ Foto"}
+                  </button>
+                )}
+              </div>
+              <input
+                ref={galRef}
+                type="file"
+                accept="image/*"
+                multiple
+                hidden
+                onChange={(e) => {
+                  const files = Array.from(e.target.files ?? []);
+                  if (files.length) uploadGallery(files);
+                  e.currentTarget.value = "";
+                }}
+              />
+              <p className="text-[11px] text-muted-foreground">
+                As fotos extras viram miniaturas com zoom na página do produto no catálogo.
+              </p>
+            </div>
+          )}
+
 
           {!isCatalog && (
             <div className="space-y-2 md:col-span-2">
