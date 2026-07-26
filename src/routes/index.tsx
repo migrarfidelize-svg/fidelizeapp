@@ -1453,7 +1453,12 @@ function FaqAIPanel() {
   const ask = useServerFn(askFaqAI);
   const [messages, setMessages] = useState<ChatMsg[]>([
     { role: "assistant", content: "Oi! Sou a Fidê 💛 Pergunta o que quiser sobre a Fidelize, tô aqui pra ajudar!" },
+    { role: "user", content: "Meu cliente precisa baixar algum app?" },
+    { role: "assistant", content: "Não! Ele só escaneia o QR Code do seu balcão e o cartão abre no navegador. Dá pra salvar na tela de início como se fosse um app 😉" },
+    { role: "user", content: "E se ele perder o celular, perde os carimbos?" },
+    { role: "assistant", content: "Nada disso — os carimbos ficam salvos na conta dele. Entrou de novo com o mesmo telefone/e-mail, tá tudo lá." },
   ]);
+
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [firstAnswer, setFirstAnswer] = useState(true);
