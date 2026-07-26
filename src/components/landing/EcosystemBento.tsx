@@ -124,11 +124,11 @@ export function EcosystemBento() {
           {/* Analytics — larga */}
           <article className={`${base} md:col-span-2`}>
             <Header icon={BarChart3} title="Analytics de canais" sub="Saiba se o cliente veio do QR, do link ou do cardápio." />
-            <div className="mt-4 flex h-24 items-end gap-1.5">
+            <div className="mt-4 flex h-24 items-end gap-1.5 overflow-hidden rounded-lg">
               {[32, 48, 40, 66, 58, 82, 74, 96].map((h, i) => (
                 <span
                   key={i}
-                  className="flex-1 rounded-t-md bg-gradient-to-t from-primary/25 to-primary transition-all duration-700"
+                  className="w-full flex-1 rounded-t-md bg-gradient-to-t from-primary/25 to-primary transition-all duration-700"
                   style={{ height: inView ? `${h}%` : "4%", transitionDelay: `${i * 70}ms` }}
                 />
               ))}
