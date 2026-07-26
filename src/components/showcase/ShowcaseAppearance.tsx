@@ -477,9 +477,10 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
           <CardHeader><CardTitle>Prévia ao vivo</CardTitle></CardHeader>
           <CardContent>
             <MenuPreview
+              kind={kind}
               preset={preset} layout={layout} pattern={pattern}
               bgImage={bgImage} bgColor={bgColor} accentColor={accentColor} textColor={textColor} accent={accent}
-              name={est?.name ?? "Seu Restaurante"}
+              name={est?.name ?? (isCatalog ? "Sua Loja" : "Seu Restaurante")}
               logoUrl={est?.logo_url ?? null}
               coverUrl={est?.cover_url ?? null}
               categories={(menuData.data?.categories ?? []).map((c: any) => c.name)}
@@ -565,26 +566,30 @@ const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", curren
 
 /** Miniatura do prato: usa a foto real quando existe, senão um placeholder do tema. */
 function Thumb({
-  src, accent, className, emojiClass,
-}: { src?: string | null; accent: string; className: string; emojiClass?: string }) {
+  src, accent, className, emojiClass, emoji,
+}: { src?: string | null; accent: string; className: string; emojiClass?: string; emoji?: string }) {
   if (src) {
     return <img src={src} alt="" loading="lazy" className={`${className} object-cover`} style={{ background: `${accent}1A` }} />;
   }
   return (
     <div className={`${className} grid place-items-center ${emojiClass ?? "text-base"}`} style={{ background: `${accent}1A` }}>
-      🍽️
+      {emoji ?? "🍽️"}
     </div>
   );
 }
 
 function MenuPreview({
-  preset, layout, pattern, bgImage, bgColor, accentColor, textColor, accent: brandAccent, name, logoUrl, coverUrl, categories, items, loading,
+  kind = "menu", preset, layout, pattern, bgImage, bgColor, accentColor, textColor, accent: brandAccent, name, logoUrl, coverUrl, categories, items, loading,
 }: {
+  kind?: ShowcaseKind;
   preset: MenuPresetId; layout: MenuLayoutId; pattern: MenuPatternId;
   bgImage: string | null; bgColor: string | null; accentColor?: string | null; textColor?: string | null; accent: string;
   name: string; logoUrl: string | null; coverUrl?: string | null;
   categories: string[]; items: PreviewItem[]; loading?: boolean;
 }) {
+  const isCatalog = kind === "catalog";
+  const L = showcase(kind);
+  const emoji = isCatalog ? "🛍️" : "🍽️";
   const p = applyCustomColors(MENU_PRESETS.find((x) => x.id === preset)!, {
     bg_color: bgColor, accent_color: accentColor ?? null, text_color: textColor ?? null,
   });
@@ -592,16 +597,26 @@ function MenuPreview({
   const bg = menuBackgroundCss({ pattern, bg_image_url: bgImage }, p, accent);
 
 
-  const fallback: PreviewItem[] = [
-    { name: "Burguer da casa", short_desc: "Blend 180g, cheddar e picles", price: 39.9 },
-    { name: "Salada mediterrânea", short_desc: "Grão de bico, pepino e hortelã", price: 28 },
-    { name: "Tiramisù", short_desc: "Café espresso e mascarpone", price: 22 },
-    { name: "Limonada suíça", short_desc: "Feita na hora", price: 12 },
-  ];
+  const fallback: PreviewItem[] = isCatalog
+    ? [
+        { name: "Fone Bluetooth XZ", short_desc: "Cancelamento de ruído • 30h", price: 249.9 },
+        { name: "Camiseta premium", short_desc: "Algodão pima • P ao GG", price: 89.9 },
+        { name: "Garrafa térmica 1L", short_desc: "Inox • gelado por 24h", price: 119 },
+        { name: "Kit skincare", short_desc: "Limpeza + hidratação", price: 159.9 },
+      ]
+    : [
+        { name: "Burguer da casa", short_desc: "Blend 180g, cheddar e picles", price: 39.9 },
+        { name: "Salada mediterrânea", short_desc: "Grão de bico, pepino e hortelã", price: 28 },
+        { name: "Tiramisù", short_desc: "Café espresso e mascarpone", price: 22 },
+        { name: "Limonada suíça", short_desc: "Feita na hora", price: 12 },
+      ];
   const real = (items ?? []).filter((i) => i.active !== false);
   const usingReal = real.length > 0;
   const dishes = (usingReal ? real : fallback).slice(0, 6);
-  const chips = ["Tudo", ...(categories?.length ? categories : ["Entradas", "Pratos"])].slice(0, 4);
+  const chips = [
+    "Tudo",
+    ...(categories?.length ? categories : isCatalog ? ["Novidades", "Mais vendidos"] : ["Entradas", "Pratos"]),
+  ].slice(0, 4);
 
   const priceOf = (d: PreviewItem) => {
     const v = d.promo_price ?? d.price;
@@ -631,7 +646,7 @@ function MenuPreview({
               )}
               <div className="min-w-0">
                 <div className="truncate text-sm font-bold" style={{ fontFamily: p.fontHead }}>{name}</div>
-                <div className="truncate text-[10px] opacity-60">Cardápio digital • Aberto agora</div>
+                <div className="truncate text-[10px] opacity-60">{isCatalog ? "Catálogo digital • Peça pelo WhatsApp" : "Cardápio digital • Aberto agora"}</div>
               </div>
             </div>
 
@@ -654,10 +669,15 @@ function MenuPreview({
                 if (layout === "grid") {
                   return (
                     <div key={idx} className="overflow-hidden rounded-xl" style={{ background: p.surface, border: `1px solid ${p.line}` }}>
-                      <Thumb src={d.image_url} accent={accent} className="h-16 w-full" emojiClass="text-lg" />
+                      <Thumb src={d.image_url} accent={accent} emoji={emoji} className="h-16 w-full" emojiClass="text-lg" />
                       <div className="p-2">
                         <div className="truncate text-[11px] font-bold" style={{ fontFamily: p.fontHead }}>{d.name}</div>
                         <div className="mt-1 text-[11px] font-bold" style={{ color: accent }}>{priceOf(d)}</div>
+                        {isCatalog && (
+                          <div className="mt-1.5 rounded-full py-1 text-center text-[9px] font-bold" style={{ background: accent, color: p.barInk }}>
+                            Adicionar
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -670,13 +690,13 @@ function MenuPreview({
                         <div className="truncate text-[10px] opacity-60">{d.short_desc ?? ""}</div>
                       </div>
                       <div className="text-[11px] font-bold" style={{ color: accent }}>{priceOf(d)}</div>
-                      <Thumb src={d.image_url} accent={accent} className="h-8 w-8 shrink-0 rounded-md" emojiClass="text-xs" />
+                      <Thumb src={d.image_url} accent={accent} emoji={emoji} className="h-8 w-8 shrink-0 rounded-md" emojiClass="text-xs" />
                     </div>
                   );
                 }
                 return (
                   <div key={idx} className="flex gap-2 rounded-xl p-2" style={{ background: p.surface, border: `1px solid ${p.line}` }}>
-                    <Thumb src={d.image_url} accent={accent} className="h-12 w-12 shrink-0 rounded-lg" />
+                    <Thumb src={d.image_url} accent={accent} emoji={emoji} className="h-12 w-12 shrink-0 rounded-lg" />
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-[11px] font-bold" style={{ fontFamily: p.fontHead }}>{d.name}</div>
                       <div className="truncate text-[10px] opacity-60">{d.short_desc ?? ""}</div>
@@ -692,10 +712,10 @@ function MenuPreview({
 
       <p className="text-center text-[11px] text-muted-foreground">
         {loading
-          ? "Carregando seus pratos…"
+          ? `Carregando seus ${L.itemsLower}…`
           : usingReal
-            ? "Prévia com seus pratos, fotos e categorias reais."
-            : "Sem pratos cadastrados ainda — mostrando exemplos."}
+            ? `Prévia com seus ${L.itemsLower}, fotos e ${L.categories.toLowerCase()} reais.`
+            : `Sem ${L.itemsLower} cadastrados ainda — mostrando exemplos.`}
       </p>
     </div>
   );
