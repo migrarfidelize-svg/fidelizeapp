@@ -395,6 +395,8 @@ function ItemDialog({
       setSku(initial?.sku ?? "");
       setBrand(initial?.brand ?? "");
       setStockStatus(initial?.stock_status ?? "in_stock");
+      setTrackStock(!!initial?.track_stock);
+      setStockQty(initial?.stock_qty != null ? String(initial.stock_qty) : "");
       setExternalUrl(initial?.external_url ?? "");
 
     }
