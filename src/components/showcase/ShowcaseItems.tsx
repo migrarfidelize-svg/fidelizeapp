@@ -530,7 +530,7 @@ function ItemDialog({
               </div>
               <div className="space-y-2">
                 <Label>Disponibilidade</Label>
-                <Select value={stockStatus} onValueChange={setStockStatus}>
+                <Select value={trackStock ? (Math.max(0, parseInt(stockQty || "0", 10) || 0) > 0 ? "in_stock" : "out_of_stock") : stockStatus} onValueChange={setStockStatus} disabled={trackStock}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {STOCK_STATUS.map((s) => (
@@ -538,7 +538,39 @@ function ItemDialog({
                     ))}
                   </SelectContent>
                 </Select>
+                {trackStock && (
+                  <p className="text-[11px] text-muted-foreground">Definida automaticamente pelo estoque.</p>
+                )}
               </div>
+
+              <div className="space-y-2 rounded-xl border border-border/60 p-3 md:col-span-2">
+                <label className="flex items-center gap-2 text-sm font-medium">
+                  <Switch checked={trackStock} onCheckedChange={setTrackStock} />
+                  Controlar estoque deste produto
+                </label>
+                {trackStock ? (
+                  <div className="flex flex-wrap items-end gap-3 pt-1">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Quantidade em estoque</Label>
+                      <Input
+                        className="w-32"
+                        value={stockQty}
+                        onChange={(e) => setStockQty(e.target.value.replace(/\D/g, ""))}
+                        inputMode="numeric"
+                        placeholder="0"
+                      />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Quando chegar a <strong>0</strong>, o produto fica marcado como <strong>Esgotado</strong> e não pode ser adicionado ao carrinho do catálogo.
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-muted-foreground">
+                    Ative para informar a quantidade disponível e esgotar o produto automaticamente.
+                  </p>
+                )}
+              </div>
+
               <div className="space-y-2">
                 <Label>Link de compra / WhatsApp</Label>
                 <Input
