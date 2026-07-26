@@ -1068,6 +1068,12 @@ function Examples() {
           })}
         </div>
 
+        <p className="mx-auto mt-6 max-w-2xl text-center text-[11px] leading-relaxed text-white/40">
+          * Média dos clientes Fidelize com a campanha ativa por pelo menos 90 dias. Resultados variam conforme segmento,
+          ticket médio e frequência de uso.
+        </p>
+
+
         {/* CTA */}
         <div className="mx-auto mt-10 flex flex-col items-center gap-2 text-center">
           <Button asChild size="lg" className="rounded-full px-8 font-bold" style={{ background: "#00ffff", color: "#001010" }}>
