@@ -8,6 +8,8 @@ import { trackChannelEvent, useChannelPageView } from "@/lib/tracking";
 import { LazyImg } from "@/components/LazyImg";
 import { resolveMenuTheme, menuBackgroundCss, readableInk } from "@/lib/menu-themes";
 import { stockLabel, STOCK_STATUS } from "@/lib/showcase";
+import { useCart } from "@/lib/cart";
+import { CatalogCart } from "@/components/showcase/CatalogCart";
 
 const opts = (slug: string) =>
   queryOptions({
