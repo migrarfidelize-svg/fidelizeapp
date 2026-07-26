@@ -125,7 +125,10 @@ export function DiscoverMenuShowcase() {
             <Flame className="h-3.5 w-3.5" /> Novo · Descobrir + Cardápio
           </div>
           <h2 className="mt-4 font-display text-3xl font-bold leading-tight md:text-4xl">
-            Da câmera do cliente até o carimbo — <span className="text-primary">em 4 toques</span>
+            <span className="block text-balance">Da câmera do cliente até o</span>
+            <span className="block text-balance">
+              carimbo — <span className="text-primary">em 4 toques</span>
+            </span>
           </h2>
           <p className="mt-3 max-w-xl text-muted-foreground">
             Acompanhe a jornada real: o QR vira vitrine, a vitrine vira cardápio em stories e o pedido vira
