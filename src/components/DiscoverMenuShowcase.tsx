@@ -194,7 +194,7 @@ export function DiscoverMenuShowcase() {
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <a href="#precos">Ver planos com cardápio</a>
+              <a href="#precos">Ver planos</a>
             </Button>
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
