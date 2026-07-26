@@ -647,7 +647,7 @@ export const seedMenuFromTemplate = createServerFn({ method: "POST" })
             prep_minutes: isCatalog ? null : it.prep_minutes ?? null,
             sku: isCatalog ? it.sku ?? null : null,
             brand: isCatalog ? it.brand ?? null : null,
-            stock_status: isCatalog ? "in_stock" : null,
+            stock_status: isCatalog ? "in_stock" : undefined,
             active: true,
             image_url: catImage,
             position: maxItemPos,
