@@ -64,7 +64,7 @@ export function RetentionEngine() {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="pointer-events-none absolute inset-x-0 top-1/3 h-64 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.12),transparent_70%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-1/3 h-64 bg-[radial-gradient(ellipse_at_center,color-mix(in_oklch,var(--primary)_12%,transparent),transparent_70%)]" />
       <div className="container relative mx-auto px-4">
         <div className="mx-auto max-w-2xl text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
@@ -101,7 +101,7 @@ export function RetentionEngine() {
                     <span
                       className={`flex h-10 w-10 items-center justify-center rounded-full border transition-all duration-500 ${
                         done
-                          ? "border-primary/60 bg-primary/15 text-primary shadow-[0_0_22px_-6px_hsl(var(--primary)/0.9)]"
+                          ? "border-primary/60 bg-primary/15 text-primary shadow-[0_0_22px_-6px_color-mix(in_oklch,var(--primary)_90%,transparent)]"
                           : "border-border bg-card text-muted-foreground"
                       } ${i === active ? "scale-110" : ""}`}
                     >
@@ -148,7 +148,7 @@ export function RetentionEngine() {
                   </div>
 
                   {step.push ? (
-                    <div key={`${step.day}-push`} className="animate-scale-in mx-3 mt-4 rounded-2xl border border-primary/30 bg-background/95 p-3 shadow-[0_0_30px_-10px_hsl(var(--primary)/0.8)]">
+                    <div key={`${step.day}-push`} className="animate-scale-in mx-3 mt-4 rounded-2xl border border-primary/30 bg-background/95 p-3 shadow-[0_0_30px_-10px_color-mix(in_oklch,var(--primary)_80%,transparent)]">
                       <div className="flex items-center gap-2">
                         <span className="card-icon flex h-6 w-6 items-center justify-center rounded-md bg-primary/15 text-primary">
                           <Bell className="h-3.5 w-3.5" />

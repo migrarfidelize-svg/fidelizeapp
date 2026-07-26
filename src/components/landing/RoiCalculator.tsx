@@ -20,7 +20,7 @@ export function RoiCalculator() {
 
   return (
     <section ref={ref} id="roi" className="relative overflow-hidden py-16 md:py-20">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_70%_20%,hsl(var(--accent)/0.1),transparent_60%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_70%_20%,color-mix(in_oklch,var(--accent)_10%,transparent),transparent_60%)]" />
       <div className="container relative mx-auto px-4">
         <div className="mx-auto max-w-2xl text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">

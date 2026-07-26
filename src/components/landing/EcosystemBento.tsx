@@ -4,7 +4,7 @@ import { useInView } from "./use-in-view";
 export function EcosystemBento() {
   const { ref, inView } = useInView<HTMLElement>(0.15);
 
-  const base = "group relative overflow-hidden rounded-2xl border border-border/60 bg-card/50 p-5 backdrop-blur-xl transition-all duration-300 hover:border-primary/40 hover:shadow-[0_0_40px_-14px_hsl(var(--primary)/0.7)]";
+  const base = "group relative overflow-hidden rounded-2xl border border-border/60 bg-card/50 p-5 backdrop-blur-xl transition-all duration-300 hover:border-primary/40 hover:shadow-[0_0_40px_-14px_color-mix(in_oklch,var(--primary)_70%,transparent)]";
 
   return (
     <section ref={ref} id="ecossistema" className="border-y bg-background py-16 md:py-20">

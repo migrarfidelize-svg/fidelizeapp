@@ -142,7 +142,7 @@ export function LivePanelShowcase() {
               onClick={() => setIndex(i)}
               className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-all ${
                 i === index
-                  ? "border-primary/50 bg-primary/15 text-primary shadow-[0_0_20px_-6px_hsl(var(--primary)/0.7)]"
+                  ? "border-primary/50 bg-primary/15 text-primary shadow-[0_0_20px_-6px_color-mix(in_oklch,var(--primary)_70%,transparent)]"
                   : "border-border bg-card/40 text-muted-foreground hover:text-foreground"
               }`}
             >
