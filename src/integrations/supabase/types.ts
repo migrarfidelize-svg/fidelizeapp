@@ -2361,6 +2361,138 @@ export type Database = {
           },
         ]
       }
+      order_items: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string | null
+          line_total: number
+          name: string
+          order_id: string
+          qty: number
+          sku: string | null
+          unit_price: number
+          variant_label: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id?: string | null
+          line_total?: number
+          name: string
+          order_id: string
+          qty?: number
+          sku?: string | null
+          unit_price?: number
+          variant_label?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string | null
+          line_total?: number
+          name?: string
+          order_id?: string
+          qty?: number
+          sku?: string | null
+          unit_price?: number
+          variant_label?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          address: string | null
+          created_at: string
+          currency: string
+          customer_name: string
+          customer_phone: string | null
+          establishment_id: string
+          fulfillment: Database["public"]["Enums"]["order_fulfillment"]
+          id: string
+          items_total: number
+          kind: Database["public"]["Enums"]["showcase_kind"]
+          menu_id: string | null
+          note: string | null
+          order_number: number
+          payment_method: string | null
+          source: string
+          status: Database["public"]["Enums"]["order_status"]
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          currency?: string
+          customer_name: string
+          customer_phone?: string | null
+          establishment_id: string
+          fulfillment?: Database["public"]["Enums"]["order_fulfillment"]
+          id?: string
+          items_total?: number
+          kind?: Database["public"]["Enums"]["showcase_kind"]
+          menu_id?: string | null
+          note?: string | null
+          order_number?: number
+          payment_method?: string | null
+          source?: string
+          status?: Database["public"]["Enums"]["order_status"]
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          currency?: string
+          customer_name?: string
+          customer_phone?: string | null
+          establishment_id?: string
+          fulfillment?: Database["public"]["Enums"]["order_fulfillment"]
+          id?: string
+          items_total?: number
+          kind?: Database["public"]["Enums"]["showcase_kind"]
+          menu_id?: string | null
+          note?: string | null
+          order_number?: number
+          payment_method?: string | null
+          source?: string
+          status?: Database["public"]["Enums"]["order_status"]
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "restaurant_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_logs: {
         Row: {
           action: string | null
@@ -4929,6 +5061,14 @@ export type Database = {
       menu_default_view: "stories" | "list"
       menu_media_kind: "image" | "video"
       menu_status: "draft" | "published" | "paused"
+      order_fulfillment: "pickup" | "delivery"
+      order_status:
+        | "new"
+        | "confirmed"
+        | "preparing"
+        | "ready"
+        | "completed"
+        | "cancelled"
       plan_tier: "free" | "starter" | "pro" | "enterprise"
       platform_role: "super_admin"
       public_review_action:
@@ -5112,6 +5252,15 @@ export const Constants = {
       menu_default_view: ["stories", "list"],
       menu_media_kind: ["image", "video"],
       menu_status: ["draft", "published", "paused"],
+      order_fulfillment: ["pickup", "delivery"],
+      order_status: [
+        "new",
+        "confirmed",
+        "preparing",
+        "ready",
+        "completed",
+        "cancelled",
+      ],
       plan_tier: ["free", "starter", "pro", "enterprise"],
       platform_role: ["super_admin"],
       public_review_action: [
