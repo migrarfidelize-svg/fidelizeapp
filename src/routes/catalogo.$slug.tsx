@@ -131,6 +131,10 @@ function PublicCatalogPage() {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<Product | null>(null);
   const [logoErr, setLogoErr] = useState(false);
+  const [sort, setSort] = useState<"rel" | "asc" | "desc" | "az">("rel");
+  const [onlyPromo, setOnlyPromo] = useState(false);
+  const [onlyStock, setOnlyStock] = useState(false);
+  const [brand, setBrand] = useState<string | "all">("all");
   const cart = useCart(slug);
 
 
@@ -143,10 +147,23 @@ function PublicCatalogPage() {
   const items = (data?.items ?? []) as Product[];
   const categories = (data?.categories ?? []) as { id: string; name: string }[];
 
+  const brands = useMemo(
+    () => Array.from(new Set(items.map((i) => (i.brand ?? "").trim()).filter(Boolean))).sort(),
+    [items],
+  );
+
+  const priceOf = (i: Product) => i.promo_price ?? i.price ?? Number.POSITIVE_INFINITY;
+  const isPromo = (i: Product) => i.promo_price != null && i.price != null && i.promo_price < i.price;
+  const discountOf = (i: Product) =>
+    isPromo(i) ? Math.round((1 - (i.promo_price as number) / (i.price as number)) * 100) : 0;
+
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
-    return items.filter((i) => {
+    const list = items.filter((i) => {
       if (activeCat !== "all" && i.category_id !== activeCat) return false;
+      if (brand !== "all" && (i.brand ?? "").trim() !== brand) return false;
+      if (onlyPromo && !isPromo(i)) return false;
+      if (onlyStock && i.stock_status === "out_of_stock") return false;
       if (!term) return true;
       return (
         i.name.toLowerCase().includes(term) ||
@@ -155,7 +172,11 @@ function PublicCatalogPage() {
         (i.sku ?? "").toLowerCase().includes(term)
       );
     });
-  }, [items, activeCat, q]);
+    if (sort === "asc") return [...list].sort((a, b) => priceOf(a) - priceOf(b));
+    if (sort === "desc") return [...list].sort((a, b) => priceOf(b) - priceOf(a));
+    if (sort === "az") return [...list].sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+    return list;
+  }, [items, activeCat, q, sort, onlyPromo, onlyStock, brand]);
 
   if (!data || !data.menu) {
     return (
@@ -171,7 +192,11 @@ function PublicCatalogPage() {
   }
 
   const cover = est?.cover_url || null;
-  const gridCols = theme.layout === "list" ? "grid-cols-1" : "grid-cols-2 lg:grid-cols-3";
+  // Catálogo é vitrine: mesmo no tema "lista" mantemos grade (só mais densa).
+  const gridCols =
+    theme.layout === "list"
+      ? "grid-cols-2 md:grid-cols-4 xl:grid-cols-5"
+      : "grid-cols-2 md:grid-cols-3 xl:grid-cols-4";
 
   const openProduct = (p: Product) => {
     setOpen(p);
@@ -192,52 +217,97 @@ function PublicCatalogPage() {
       <style>{`
         .fx-serif { font-family: ${T.fontHead}; letter-spacing: -0.01em; }
         .fx-shadow { box-shadow: 0 1px 2px rgba(23,19,14,.06), 0 8px 24px -12px rgba(23,19,14,.18); }
-        .fx-card { transition: transform .2s ease, box-shadow .2s ease; }
-        .fx-card:hover { transform: translateY(-2px); box-shadow: 0 20px 40px -20px rgba(23,19,14,.25); }
+        .fx-card { transition: border-color .2s ease, box-shadow .2s ease; }
+        .fx-card:hover { box-shadow: 0 18px 36px -24px rgba(23,19,14,.45); }
+        .fx-card img { transition: transform .45s cubic-bezier(.2,.7,.3,1); }
+        .fx-card:hover img { transform: scale(1.06); }
         .fx-hide-scroll::-webkit-scrollbar { display:none }
         .fx-hide-scroll { scrollbar-width: none }
+        .fx-blur { backdrop-filter: saturate(140%) blur(10px); }
       `}</style>
 
-      {/* HERO */}
-      <header className="relative">
-        <div
-          className="h-14 sm:h-24 w-full"
-          style={{
-            background: cover
-              ? `linear-gradient(180deg, rgba(23,19,14,0.15), rgba(23,19,14,0.55)), url(${cover}) center/cover`
-              : `linear-gradient(135deg, ${primary}, #17130E)`,
-          }}
-        />
-        <div className="max-w-4xl mx-auto px-4 sm:px-5 -mt-8 sm:-mt-10 relative">
-          <div
-            className="rounded-2xl sm:rounded-3xl fx-shadow p-4 sm:p-5 flex flex-col items-center text-center gap-2"
-            style={{ background: "var(--mk-surface)", border: "1px solid var(--mk-line)" }}
-          >
+      {/* TOPBAR DA LOJA */}
+      <header
+        className="fx-blur sticky top-0 z-30"
+        style={{ background: `color-mix(in oklab, ${T.surface} 88%, transparent)`, borderBottom: "1px solid var(--mk-line)" }}
+      >
+        <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-2.5 sm:px-6">
+          <div className="flex min-w-0 items-center gap-2.5">
             {est?.logo_url && !logoErr ? (
               <img
                 src={est.logo_url}
                 alt={est.name}
-                width={80}
-                height={80}
+                width={40}
+                height={40}
                 onError={() => setLogoErr(true)}
-                className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl object-cover"
+                className="h-9 w-9 shrink-0 rounded-lg object-cover sm:h-10 sm:w-10"
                 style={{ border: "1px solid var(--mk-line)" }}
               />
             ) : (
               <div
-                className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl grid place-items-center"
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-lg sm:h-10 sm:w-10"
                 style={{ background: primary, color: readableInk(primary) }}
               >
-                <ShoppingBag className="h-7 w-7" />
+                <ShoppingBag className="h-4 w-4" />
               </div>
             )}
-            <h1 className="fx-serif text-xl sm:text-3xl font-extrabold">{est?.name}</h1>
-            {((data.menu as any)?.tagline || est?.description) && (
-              <p className="text-sm opacity-75 max-w-xl">
-                {(data.menu as any)?.tagline || est?.description}
-              </p>
+            <div className="min-w-0">
+              <div className="truncate text-sm font-extrabold leading-tight sm:text-base">{est?.name}</div>
+              <div className="truncate text-[11px] opacity-60">Catálogo digital · {items.length} produtos</div>
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-1.5">
+            {est?.instagram && (
+              <a
+                href={`https://instagram.com/${String(est.instagram).replace(/^@/, "")}`}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Instagram"
+                className="grid h-9 w-9 place-items-center rounded-full"
+                style={{ border: "1px solid var(--mk-line)" }}
+              >
+                <Instagram className="h-4 w-4" />
+              </a>
             )}
-            <div className="mt-1 flex flex-wrap items-center justify-center gap-3 text-xs opacity-80">
+            {est?.whatsapp && (
+              <a
+                href={`https://wa.me/${String(est.whatsapp).replace(/\D/g, "")}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-bold"
+                style={{ background: primary, color: readableInk(primary) }}
+                onClick={() => trackChannelEvent({ slug, channel: "catalog", event_type: "link_click", ref_label: "whatsapp" })}
+              >
+                <MessageCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">Falar com a loja</span>
+              </a>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* VITRINE / HERO DE COLEÇÃO */}
+      <section className="mx-auto max-w-6xl px-4 pt-4 sm:px-6 sm:pt-6">
+        <div
+          className="relative overflow-hidden rounded-2xl sm:rounded-3xl"
+          style={{
+            background: cover
+              ? `linear-gradient(90deg, rgba(23,19,14,.78), rgba(23,19,14,.25)), url(${cover}) center/cover`
+              : `linear-gradient(120deg, ${primary}, color-mix(in oklab, ${primary} 35%, #17130E))`,
+            color: "#fff",
+          }}
+        >
+          <div className="max-w-xl px-5 py-7 sm:px-8 sm:py-12">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider">
+              <ShoppingBag className="h-3 w-3" /> Loja online
+            </span>
+            <h1 className="fx-serif mt-3 text-2xl font-extrabold leading-tight sm:text-4xl">
+              {(data.menu as any)?.tagline || `Produtos de ${est?.name}`}
+            </h1>
+            {est?.description && (
+              <p className="mt-2 line-clamp-2 text-sm opacity-85 sm:text-base">{est.description}</p>
+            )}
+            <div className="mt-4 flex flex-wrap items-center gap-3 text-[11px] opacity-85 sm:text-xs">
               {est?.address && (
                 <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {est.address}</span>
               )}
@@ -246,47 +316,61 @@ function PublicCatalogPage() {
                   <Phone className="h-3.5 w-3.5" /> {est.phone}
                 </a>
               )}
-              {est?.whatsapp && (
-                <a
-                  href={`https://wa.me/${String(est.whatsapp).replace(/\D/g, "")}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 hover:underline"
-                  onClick={() => trackChannelEvent({ slug, channel: "catalog", event_type: "link_click", ref_label: "whatsapp" })}
-                >
-                  <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
-                </a>
-              )}
-              {est?.instagram && (
-                <a
-                  href={`https://instagram.com/${String(est.instagram).replace(/^@/, "")}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 hover:underline"
-                >
-                  <Instagram className="h-3.5 w-3.5" /> Instagram
-                </a>
-              )}
+              <span className="inline-flex items-center gap-1">
+                <MessageCircle className="h-3.5 w-3.5" /> Pedido pelo WhatsApp
+              </span>
             </div>
           </div>
         </div>
-      </header>
+      </section>
 
-      {/* BUSCA + COLEÇÕES */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-5 mt-5">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-50" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Buscar produto, marca ou código..."
-            className="w-full rounded-full py-2.5 pl-9 pr-4 text-sm outline-none"
-            style={{ background: "var(--mk-surface)", border: "1px solid var(--mk-line)", color: T.ink }}
-          />
-        </div>
+      {/* BUSCA · FILTROS · ORDENAÇÃO */}
+      <div
+        className="fx-blur sticky top-[57px] z-20 mt-4"
+        style={{ background: `color-mix(in oklab, ${T.surface} 85%, transparent)`, borderBottom: "1px solid var(--mk-line)" }}
+      >
+        <div className="mx-auto max-w-6xl px-4 py-3 sm:px-6">
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
+            <div className="relative min-w-0 flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-50" />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Buscar produto, marca ou código..."
+                className="w-full rounded-xl py-2.5 pl-9 pr-4 text-sm outline-none"
+                style={{ background: "var(--mk-surface)", border: "1px solid var(--mk-line)", color: T.ink }}
+              />
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              {brands.length > 1 && (
+                <select
+                  value={brand}
+                  onChange={(e) => setBrand(e.target.value as any)}
+                  className="rounded-xl px-3 py-2.5 text-sm outline-none"
+                  style={{ background: "var(--mk-surface)", border: "1px solid var(--mk-line)", color: T.ink }}
+                >
+                  <option value="all">Todas as marcas</option>
+                  {brands.map((b) => (
+                    <option key={b} value={b}>{b}</option>
+                  ))}
+                </select>
+              )}
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as any)}
+                aria-label="Ordenar"
+                className="rounded-xl px-3 py-2.5 text-sm outline-none"
+                style={{ background: "var(--mk-surface)", border: "1px solid var(--mk-line)", color: T.ink }}
+              >
+                <option value="rel">Relevância</option>
+                <option value="asc">Menor preço</option>
+                <option value="desc">Maior preço</option>
+                <option value="az">Nome (A-Z)</option>
+              </select>
+            </div>
+          </div>
 
-        {categories.length > 0 && (
-          <div className="fx-hide-scroll mt-3 flex gap-2 overflow-x-auto pb-1">
+          <div className="fx-hide-scroll mt-2.5 flex items-center gap-2 overflow-x-auto pb-0.5">
             {[{ id: "all", name: "Tudo" }, ...categories].map((c) => {
               const on = activeCat === c.id;
               return (
@@ -296,109 +380,155 @@ function PublicCatalogPage() {
                     setActiveCat(c.id as any);
                     trackChannelEvent({ slug, channel: "catalog", event_type: "link_click", ref_id: c.id, ref_label: `category:${c.name}` });
                   }}
-                  className="shrink-0 rounded-full px-3.5 py-1.5 text-sm font-medium"
+                  className="shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium"
                   style={
                     on
                       ? { background: primary, color: readableInk(primary), border: "1px solid transparent" }
-                      : { background: "var(--mk-surface)", border: "1px solid var(--mk-line)", color: T.ink }
+                      : { background: "transparent", border: "1px solid var(--mk-line)", color: T.ink }
                   }
                 >
                   {c.name}
                 </button>
               );
             })}
+            <span className="mx-1 h-5 w-px shrink-0" style={{ background: "var(--mk-line)" }} />
+            <button
+              onClick={() => setOnlyPromo((v) => !v)}
+              className="shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium"
+              style={
+                onlyPromo
+                  ? { background: primary, color: readableInk(primary), border: "1px solid transparent" }
+                  : { background: "transparent", border: "1px solid var(--mk-line)", color: T.ink }
+              }
+            >
+              Promoções
+            </button>
+            <button
+              onClick={() => setOnlyStock((v) => !v)}
+              className="shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium"
+              style={
+                onlyStock
+                  ? { background: primary, color: readableInk(primary), border: "1px solid transparent" }
+                  : { background: "transparent", border: "1px solid var(--mk-line)", color: T.ink }
+              }
+            >
+              Disponíveis
+            </button>
           </div>
-        )}
+        </div>
       </div>
 
       {/* GRADE DE PRODUTOS */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-5 py-5">
+      <main className="mx-auto max-w-6xl px-4 py-5 sm:px-6">
+        <div className="mb-3 text-xs opacity-60">
+          {filtered.length} {filtered.length === 1 ? "produto" : "produtos"}
+        </div>
         {filtered.length === 0 ? (
           <p className="py-16 text-center text-sm opacity-70">Nenhum produto encontrado.</p>
         ) : (
-          <div className={`grid gap-3 ${gridCols}`}>
-            {filtered.map((p) => (
-              <div
-                key={p.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => openProduct(p)}
-                onKeyDown={(e) => { if (e.key === "Enter") openProduct(p); }}
-                className="fx-card cursor-pointer overflow-hidden rounded-2xl text-left"
-                style={{ background: "var(--mk-surface)", border: "1px solid var(--mk-line)" }}
-              >
-
-                <div className="aspect-square w-full overflow-hidden" style={{ background: T.line }}>
-                  {p.image_url ? (
-                    <LazyImg src={p.image_url} alt={p.name} className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="grid h-full place-items-center opacity-40">
-                      <ShoppingBag className="h-8 w-8" />
-                    </div>
-                  )}
-                </div>
-                <div className="space-y-1 p-3">
-                  {p.brand && <div className="text-[10px] uppercase tracking-wider opacity-60">{p.brand}</div>}
-                  <div className="fx-serif line-clamp-2 text-sm font-bold">{p.name}</div>
-                  {p.short_desc && <p className="line-clamp-2 text-xs opacity-70">{p.short_desc}</p>}
-                  <div className="flex items-baseline gap-2 pt-1">
-                    {p.promo_price != null && p.price != null && p.promo_price < p.price ? (
-                      <>
-                        <span className="text-xs line-through opacity-50">{fmt(p.price, p.currency)}</span>
-                        <span className="text-sm font-extrabold" style={{ color: primary }}>{fmt(p.promo_price, p.currency)}</span>
-                      </>
+          <div className={`grid gap-3 sm:gap-4 ${gridCols}`}>
+            {filtered.map((p) => {
+              const out = p.stock_status === "out_of_stock";
+              const off = discountOf(p);
+              return (
+                <div
+                  key={p.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openProduct(p)}
+                  onKeyDown={(e) => { if (e.key === "Enter") openProduct(p); }}
+                  className="fx-card group flex cursor-pointer flex-col overflow-hidden rounded-xl text-left"
+                  style={{ background: "var(--mk-surface)", border: "1px solid var(--mk-line)" }}
+                >
+                  <div className="relative aspect-[4/5] w-full overflow-hidden" style={{ background: T.line }}>
+                    {p.image_url ? (
+                      <LazyImg src={p.image_url} alt={p.name} className="h-full w-full object-cover" />
                     ) : (
-                      <span className="text-sm font-extrabold" style={{ color: primary }}>
-                        {p.price != null ? fmt(p.price, p.currency) : "Sob consulta"}
+                      <div className="grid h-full place-items-center opacity-40">
+                        <ShoppingBag className="h-8 w-8" />
+                      </div>
+                    )}
+                    {off > 0 && !out && (
+                      <span
+                        className="absolute left-2 top-2 rounded-md px-1.5 py-0.5 text-[10px] font-extrabold"
+                        style={{ background: primary, color: readableInk(primary) }}
+                      >
+                        -{off}%
+                      </span>
+                    )}
+                    {out && (
+                      <div className="absolute inset-0 grid place-items-center bg-black/45">
+                        <span className="rounded-md bg-white/90 px-2 py-1 text-[11px] font-extrabold text-black">Esgotado</span>
+                      </div>
+                    )}
+                    {!out && p.stock_status && p.stock_status !== "in_stock" && (
+                      <span
+                        className="absolute bottom-2 left-2 rounded-md px-1.5 py-0.5 text-[10px] font-semibold"
+                        style={{ background: `${stockTone(p.stock_status)}e6`, color: "#fff" }}
+                      >
+                        {stockLabel(p.stock_status)}
                       </span>
                     )}
                   </div>
-                  {p.stock_status && p.stock_status !== "in_stock" && (
-                    <span
-                      className="inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                      style={{ background: `${stockTone(p.stock_status)}1a`, color: stockTone(p.stock_status) }}
-                    >
-                      {stockLabel(p.stock_status)}
-                    </span>
-                  )}
 
-                  {p.stock_status !== "out_of_stock" && (p.price != null || p.promo_price != null) && (
-                    <div className="pt-1.5" onClick={(e) => e.stopPropagation()}>
-                      {cart.qtyOf(p.id) === 0 ? (
-                        <button
-                          onClick={() => cart.add(p.id)}
-                          className="w-full rounded-full px-3 py-1.5 text-xs font-bold"
-                          style={{ background: primary, color: readableInk(primary) }}
-                        >
-                          Adicionar
-                        </button>
-                      ) : (
-                        <div className="flex items-center justify-between rounded-full px-1 py-1" style={{ border: `1px solid ${primary}` }}>
-                          <button
-                            onClick={() => cart.setQty(p.id, cart.qtyOf(p.id) - 1)}
-                            aria-label="Diminuir"
-                            className="grid h-6 w-6 place-items-center rounded-full text-sm font-bold"
-                            style={{ color: primary }}
-                          >
-                            −
-                          </button>
-                          <span className="text-xs font-bold">{cart.qtyOf(p.id)}</span>
-                          <button
-                            onClick={() => cart.add(p.id)}
-                            aria-label="Aumentar"
-                            className="grid h-6 w-6 place-items-center rounded-full text-sm font-bold"
-                            style={{ background: primary, color: readableInk(primary) }}
-                          >
-                            +
-                          </button>
+                  <div className="flex flex-1 flex-col gap-1 p-3">
+                    {p.brand && <div className="text-[10px] uppercase tracking-wider opacity-55">{p.brand}</div>}
+                    <div className="line-clamp-2 text-sm font-semibold leading-snug">{p.name}</div>
+                    {p.short_desc && <p className="line-clamp-1 text-xs opacity-60">{p.short_desc}</p>}
+
+                    <div className="mt-auto pt-2">
+                      {off > 0 && (
+                        <div className="text-[11px] line-through opacity-45">{fmt(p.price, p.currency)}</div>
+                      )}
+                      <div className="text-base font-extrabold leading-tight" style={{ color: primary }}>
+                        {p.promo_price != null || p.price != null
+                          ? fmt(p.promo_price ?? p.price, p.currency)
+                          : "Sob consulta"}
+                      </div>
+                      {(p.promo_price ?? p.price ?? 0) >= 30 && (
+                        <div className="text-[10px] opacity-55">
+                          ou 3x de {fmt((p.promo_price ?? p.price!) / 3, p.currency)}
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
-              </div>
 
-            ))}
+                    {!out && (p.price != null || p.promo_price != null) && (
+                      <div className="pt-2" onClick={(e) => e.stopPropagation()}>
+                        {cart.qtyOf(p.id) === 0 ? (
+                          <button
+                            onClick={() => cart.add(p.id)}
+                            className="w-full rounded-lg px-3 py-2 text-xs font-bold"
+                            style={{ background: primary, color: readableInk(primary) }}
+                          >
+                            Adicionar
+                          </button>
+                        ) : (
+                          <div className="flex items-center justify-between rounded-lg px-1 py-1" style={{ border: `1px solid ${primary}` }}>
+                            <button
+                              onClick={() => cart.setQty(p.id, cart.qtyOf(p.id) - 1)}
+                              aria-label="Diminuir"
+                              className="grid h-6 w-6 place-items-center rounded-md text-sm font-bold"
+                              style={{ color: primary }}
+                            >
+                              −
+                            </button>
+                            <span className="text-xs font-bold">{cart.qtyOf(p.id)}</span>
+                            <button
+                              onClick={() => cart.add(p.id)}
+                              aria-label="Aumentar"
+                              className="grid h-6 w-6 place-items-center rounded-md text-sm font-bold"
+                              style={{ background: primary, color: readableInk(primary) }}
+                            >
+                              +
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </main>
