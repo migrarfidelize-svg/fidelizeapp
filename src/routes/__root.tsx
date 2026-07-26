@@ -168,11 +168,12 @@ function RootComponent() {
   useEffect(() => {
     const apply = () => {
       const forced = forcedThemeForPath(window.location.pathname);
-      let t: "light" | "dark" = "dark";
+      const fallback: "light" | "dark" = window.location.pathname === "/" ? "light" : "dark";
+      let t: "light" | "dark" = fallback;
       if (forced) t = forced;
       else {
         const s = (() => { try { return localStorage.getItem("theme"); } catch { return null; } })();
-        t = s === "light" || s === "dark" ? s : "dark";
+        t = s === "light" || s === "dark" ? s : fallback;
       }
       const r = document.documentElement;
       r.classList.toggle("dark", t === "dark");
