@@ -1236,10 +1236,70 @@ function Pricing() {
           </div>
         </div>
 
+        {/* Comparison toggle */}
+        <div className="mt-8 flex justify-center">
+          <button
+            type="button"
+            onClick={() => setCompare((c) => !c)}
+            aria-expanded={compare}
+            className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-primary transition hover:bg-primary/10"
+          >
+            {compare ? "Ocultar tabela comparativa" : "Ver tabela comparativa"}
+            <ArrowRight className={`h-3.5 w-3.5 transition-transform ${compare ? "-rotate-90" : "rotate-90"}`} />
+          </button>
+        </div>
+
+        {compare && (
+          <div className="mt-6 overflow-x-auto rounded-2xl border border-white/10 bg-card/40 backdrop-blur-xl">
+            <table className="w-full min-w-[640px] text-sm">
+              <thead>
+                <tr className="border-b border-white/10">
+                  <th className="p-4 text-left font-semibold text-muted-foreground">Recurso</th>
+                  {plans.map((p, i) => (
+                    <th key={p.name} className={`p-4 text-center font-display ${i === activeIdx ? "text-primary" : ""}`}>
+                      <div className="font-bold">{p.name}</div>
+                      <div className="text-xs font-normal text-muted-foreground">{p.price}/mês</div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARE_ROWS.map((row) => (
+                  <tr key={row.label} className="border-b border-white/5 last:border-0">
+                    <td className="p-4 text-left text-muted-foreground">{row.label}</td>
+                    {row.values.map((v, i) => (
+                      <td key={i} className="p-4 text-center">
+                        {v === true ? (
+                          <Check className="mx-auto h-4 w-4 text-primary" />
+                        ) : v === false ? (
+                          <span className="text-muted-foreground/40">—</span>
+                        ) : (
+                          <span className="font-medium">{v}</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+                <tr>
+                  <td className="p-4" />
+                  {plans.map((p) => (
+                    <td key={p.name} className="p-4 text-center">
+                      <Button asChild size="sm" variant={p.badge ? "default" : "outline"}>
+                        <Link to="/auth" search={{ mode: "signup" }}>{p.cta}</Link>
+                      </Button>
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
+
         {/* trust line */}
         <p className="mt-8 text-center text-xs uppercase tracking-[0.3em] text-muted-foreground">
           14 dias grátis · sem cartão · cancele quando quiser
         </p>
+
       </div>
     </section>
   );
