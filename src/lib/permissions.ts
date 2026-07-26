@@ -121,6 +121,7 @@ export const ROUTE_PERMISSIONS: Record<string, PermissionAction> = {
   "/app/linktree":     "linktree.manage",
   "/app/cardapio":     "menu.manage",
   "/app/catalogo":     "menu.manage",
+  "/app/pedidos":      "menu.manage",
 
   "/app/notificacoes": "push.send",
   "/app/promocoes":    "promotions.manage",
