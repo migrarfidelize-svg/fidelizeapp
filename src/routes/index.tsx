@@ -1048,7 +1048,10 @@ function Examples() {
                 <p className="mt-1 line-clamp-2 text-xs text-white/55">{it.desc}</p>
 
                 <div className="mt-4 border-t border-white/5 pt-3">
-                  <div className="metric-number text-2xl leading-none">{it.kpi}</div>
+                  <div className="metric-number text-2xl leading-none">
+                    {it.kpi}
+                    <sup className="ml-0.5 text-[10px] font-normal text-white/40">*</sup>
+                  </div>
                   <span className="text-[10px] font-semibold uppercase tracking-widest text-white/45">{it.kpiLabel}</span>
                 </div>
 
