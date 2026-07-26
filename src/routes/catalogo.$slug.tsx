@@ -403,7 +403,7 @@ function PublicCatalogPage() {
         )}
       </main>
 
-      <footer className="pb-10 text-center text-[11px] opacity-60">
+      <footer className="pb-28 text-center text-[11px] opacity-60">
         Catálogo digital por <Link to="/" className="underline">Fidelize</Link>
       </footer>
 
