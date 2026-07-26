@@ -44,6 +44,27 @@ import otiArmacoes from "@/assets/catalog-templates/otica-armacoes.jpg.asset.jso
 import otiSol from "@/assets/catalog-templates/otica-oculos-sol.jpg.asset.json";
 import otiLentes from "@/assets/catalog-templates/otica-lentes.jpg.asset.json";
 import otiServicos from "@/assets/catalog-templates/otica-servicos.jpg.asset.json";
+import stbCabelo from "@/assets/catalog-templates/studio-beleza-cabelo.jpg.asset.json";
+import stbUnhas from "@/assets/catalog-templates/studio-beleza-unhas.jpg.asset.json";
+import stbMaquiagem from "@/assets/catalog-templates/studio-beleza-maquiagem.jpg.asset.json";
+import stbSobrancelhas from "@/assets/catalog-templates/studio-beleza-sobrancelhas.jpg.asset.json";
+import stbCombos from "@/assets/catalog-templates/studio-beleza-combos.jpg.asset.json";
+import barCortes from "@/assets/catalog-templates/barbearia-cortes.jpg.asset.json";
+import barBarba from "@/assets/catalog-templates/barbearia-barba.jpg.asset.json";
+import barQuimica from "@/assets/catalog-templates/barbearia-quimica.jpg.asset.json";
+import barPlanos from "@/assets/catalog-templates/barbearia-planos.jpg.asset.json";
+import estFacial from "@/assets/catalog-templates/estetica-facial.jpg.asset.json";
+import estCorporal from "@/assets/catalog-templates/estetica-corporal.jpg.asset.json";
+import estDepilacao from "@/assets/catalog-templates/estetica-depilacao.jpg.asset.json";
+import estMassagem from "@/assets/catalog-templates/estetica-massagem.jpg.asset.json";
+import casEletrica from "@/assets/catalog-templates/casa-eletrica.jpg.asset.json";
+import casHidraulica from "@/assets/catalog-templates/casa-hidraulica.jpg.asset.json";
+import casPintura from "@/assets/catalog-templates/casa-pintura.jpg.asset.json";
+import casMontagem from "@/assets/catalog-templates/casa-montagem.jpg.asset.json";
+import fotEnsaios from "@/assets/catalog-templates/foto-ensaios.jpg.asset.json";
+import fotEventos from "@/assets/catalog-templates/foto-eventos.jpg.asset.json";
+import fotVideo from "@/assets/catalog-templates/foto-video.jpg.asset.json";
+import fotProdutos from "@/assets/catalog-templates/foto-produtos.jpg.asset.json";
 
 export const CATALOG_TEMPLATE_MEDIA: Record<string, Record<string, string>> = {
   moda: {
