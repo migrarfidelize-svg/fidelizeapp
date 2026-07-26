@@ -1,10 +1,58 @@
+import { useCallback, useEffect, useRef, useState } from "react";
 import { BarChart3, Bell, LinkIcon, Megaphone, QrCode, ShieldCheck, Smartphone, Star, Users } from "lucide-react";
 import { useInView } from "./use-in-view";
 
+const TOTAL = 9;
+
 export function EcosystemBento() {
   const { ref, inView } = useInView<HTMLElement>(0.15);
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
 
-  const base = "group relative overflow-hidden rounded-2xl border border-border/60 bg-card/50 p-5 backdrop-blur-xl transition-all duration-300 hover:border-primary/40 hover:shadow-[0_0_40px_-14px_color-mix(in_oklch,var(--primary)_70%,transparent)]";
+  const goTo = useCallback((i: number) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const card = track.children[i] as HTMLElement | undefined;
+    if (card) track.scrollTo({ left: card.offsetLeft - track.offsetLeft, behavior: "smooth" });
+  }, []);
+
+  // Sincroniza o indicador com o scroll manual
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const i = Math.round(track.scrollLeft / (track.clientWidth * 0.85));
+        setActive(Math.max(0, Math.min(TOTAL - 1, i)));
+      });
+    };
+    track.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      track.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  // Auto-avanço apenas no mobile, pausado ao interagir e respeitando reduced-motion
+  useEffect(() => {
+    if (!inView || paused) return;
+    if (typeof window === "undefined") return;
+    if (window.matchMedia("(min-width: 768px)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = window.setInterval(() => {
+      setActive((prev) => {
+        const next = (prev + 1) % TOTAL;
+        goTo(next);
+        return next;
+      });
+    }, 5000);
+    return () => window.clearInterval(id);
+  }, [inView, paused, goTo]);
+
+  const base = "group relative shrink-0 basis-[85%] snap-start overflow-hidden rounded-2xl border border-border/60 bg-card/50 p-5 backdrop-blur-xl transition-all duration-300 hover:border-primary/40 hover:shadow-[0_0_40px_-14px_color-mix(in_oklch,var(--primary)_70%,transparent)] md:basis-auto";
 
   return (
     <section ref={ref} id="ecossistema" className="border-y bg-background py-16 md:py-20">
