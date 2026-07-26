@@ -138,8 +138,20 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/app/cardapio", label: "Visão geral", icon: UtensilsCrossed, exact: true },
       { to: "/app/cardapio/categorias", label: "Categorias", icon: FolderTree },
       { to: "/app/cardapio/pratos", label: "Pratos", icon: LayoutList },
+      { to: "/app/cardapio/aparencia", label: "Aparência", icon: Palette },
     ],
   },
+  {
+    key: "catalogo",
+    label: "Catálogo",
+    items: [
+      { to: "/app/catalogo", label: "Visão geral", icon: ShoppingBag, exact: true },
+      { to: "/app/catalogo/colecoes", label: "Coleções", icon: FolderTree },
+      { to: "/app/catalogo/produtos", label: "Produtos", icon: LayoutList },
+      { to: "/app/catalogo/aparencia", label: "Aparência", icon: Palette },
+    ],
+  },
+
   {
     key: "comunicacao",
     label: "Comunicação",
