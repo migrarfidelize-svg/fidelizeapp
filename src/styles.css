@@ -2479,3 +2479,7 @@ img { content-visibility: auto; }
 #lovable-badge {
     display: none !important;
 }
+
+.landing-scope section[id] {
+  scroll-margin-top: 6rem;
+}

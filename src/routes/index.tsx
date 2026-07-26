@@ -13,8 +13,9 @@ import { TrustStrip } from "@/components/landing/TrustStrip";
 import { ScrollProgress } from "@/components/landing/ScrollProgress";
 
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { ArrowRight, QrCode, Smartphone, ShieldCheck, BarChart3, Sparkles, Coffee, Scissors, Pizza, ShoppingBag, Wrench, IceCream, Store, PawPrint, Check, Cake, Clock, UserPlus, Crown, Gift, MessageCircle, Bell, Mail, Sprout, Zap, Building2, Send, Bot, HelpCircle, type LucideIcon } from "lucide-react";
+import { ArrowRight, Menu, QrCode, Smartphone, ShieldCheck, BarChart3, Sparkles, Coffee, Scissors, Pizza, ShoppingBag, Wrench, IceCream, Store, PawPrint, Check, Cake, Clock, UserPlus, Crown, Gift, MessageCircle, Bell, Mail, Sprout, Zap, Building2, Send, Bot, HelpCircle, type LucideIcon } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { askFaqAI } from "@/lib/faq-ai.functions";
 
@@ -102,18 +103,25 @@ function Landing() {
   );
 }
 
+const NAV_LINKS: Array<[string, string]> = [
+  ["#retencao", "Recursos"],
+  ["#ecossistema", "Ecossistema"],
+  ["#roi", "Retorno"],
+  ["#precos", "Preços"],
+  ["#faq", "Dúvidas"],
+];
+
 function SiteHeader() {
   const { data: session } = useQuery({ queryKey: ["session"], queryFn: async () => (await supabase.auth.getSession()).data.session });
+  const [menuOpen, setMenuOpen] = useState(false);
   return (
     <header className="sticky top-4 z-40 px-4">
-      <div className="nav-dock mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 rounded-full border border-cyan-400/60 bg-background/60 pl-5 pr-2 backdrop-blur-xl">
+      <div className="nav-dock mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 rounded-full border border-cyan-400/60 bg-background/60 pl-5 pr-2 backdrop-blur-xl">
         <Link to="/" className="shrink-0"><Logo /></Link>
         <nav className="hidden gap-7 md:flex text-sm text-muted-foreground">
-          
-          <a href="#retencao" className="hover:text-foreground transition-colors">Recursos</a>
-          <a href="#roi" className="hover:text-foreground transition-colors">Retorno</a>
-          <a href="#precos" className="hover:text-foreground transition-colors">Preços</a>
-          <a href="#faq" className="hover:text-foreground transition-colors">Dúvidas</a>
+          {NAV_LINKS.map(([href, label]) => (
+            <a key={href} href={href} className="hover:text-foreground transition-colors">{label}</a>
+          ))}
         </nav>
         <div className="flex items-center gap-2">
           {session ? (
@@ -130,11 +138,67 @@ function SiteHeader() {
               <Button asChild size="sm" className="rounded-full"><Link to="/auth" search={{ mode: "signup" }}>Testar grátis</Link></Button>
             </>
           )}
+          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Abrir menu"
+                className="rounded-full shrink-0 md:hidden"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[86vw] max-w-xs border-l border-cyan-400/30 bg-background/95 backdrop-blur-xl">
+              <SheetHeader className="text-left">
+                <SheetTitle><Logo /></SheetTitle>
+              </SheetHeader>
+              <nav className="mt-6 flex flex-col gap-1">
+                {NAV_LINKS.map(([href, label]) => (
+                  <a
+                    key={href}
+                    href={href}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setMenuOpen(false);
+                      const id = href.slice(1);
+                      // aguarda o Sheet fechar (Radix restaura o scroll ao fechar)
+                      setTimeout(() => {
+                        document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        history.replaceState(null, "", href);
+                      }, 360);
+                    }}
+                    className="rounded-xl border border-transparent px-4 py-3 text-base font-semibold text-foreground/90 transition-colors hover:border-cyan-400/40 hover:bg-primary/10 hover:text-foreground"
+                  >
+                    {label}
+                  </a>
+                ))}
+              </nav>
+              <div className="mt-6 flex flex-col gap-2 border-t border-border/60 pt-6">
+                {session ? (
+                  <Button asChild className="rounded-full" onClick={() => setMenuOpen(false)}>
+                    <Link to="/app">Meu painel <ArrowRight className="ml-1 h-4 w-4" /></Link>
+                  </Button>
+                ) : (
+                  <>
+                    <Button asChild className="rounded-full" onClick={() => setMenuOpen(false)}>
+                      <Link to="/auth" search={{ mode: "signup" }}>Testar grátis</Link>
+                    </Button>
+                    <Button asChild variant="outline" className="rounded-full" onClick={() => setMenuOpen(false)}>
+                      <Link to="/auth">Entrar</Link>
+                    </Button>
+                  </>
+                )}
+                <p className="pt-2 text-center text-xs text-muted-foreground">14 dias grátis · sem cartão</p>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>
   );
 }
+
 
 
 function Hero() {
