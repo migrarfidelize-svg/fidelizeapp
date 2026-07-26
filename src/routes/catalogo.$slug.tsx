@@ -345,6 +345,77 @@ function PublicCatalogPage() {
     );
   };
 
+  // Layout "Lookbook": mosaico de imagens grandes, preço discreto no hover.
+  const LOOKBOOK_RATIOS = ["aspect-[3/4]", "aspect-[4/5]", "aspect-[1/1]", "aspect-[2/3]"];
+  const renderLookbookCard = (p: Product, idx: number) => {
+    const out = p.stock_status === "out_of_stock";
+    const off = discountOf(p);
+    const price = p.promo_price ?? p.price;
+    return (
+      <div
+        key={p.id}
+        role="button"
+        tabIndex={0}
+        onClick={() => openProduct(p)}
+        onKeyDown={(e) => { if (e.key === "Enter") openProduct(p); }}
+        className="group relative mb-3 block w-full cursor-pointer break-inside-avoid overflow-hidden rounded-2xl sm:mb-4"
+        style={{ background: T.line }}
+      >
+        <div className={`relative w-full overflow-hidden ${LOOKBOOK_RATIOS[idx % LOOKBOOK_RATIOS.length]}`}>
+          {p.image_url ? (
+            <LazyImg
+              src={p.image_url}
+              alt={p.name}
+              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+            />
+          ) : (
+            <div className="grid h-full place-items-center opacity-40">
+              <ShoppingBag className="h-8 w-8" />
+            </div>
+          )}
+
+          {off > 0 && !out && (
+            <span
+              className="absolute left-3 top-3 rounded-full px-2 py-0.5 text-[10px] font-extrabold"
+              style={{ background: primary, color: readableInk(primary) }}
+            >
+              -{off}%
+            </span>
+          )}
+          {out && (
+            <div className="absolute inset-0 grid place-items-center bg-black/45">
+              <span className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold text-black">Esgotado</span>
+            </div>
+          )}
+
+          {/* Legenda discreta: sempre sutil no mobile, revelada no hover no desktop */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent p-3 opacity-100 transition-all duration-300 sm:translate-y-2 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100">
+            <div className="truncate text-[13px] font-semibold text-white">{p.name}</div>
+            {price != null && (
+              <div className="mt-0.5 text-[12px] font-medium text-white/85">
+                {fmtPrice(Number(price), p.currency)}
+                {p.promo_price != null && p.price != null && (
+                  <span className="ml-2 text-white/55 line-through">{fmtPrice(Number(p.price), p.currency)}</span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderCollection = (list: Product[]) =>
+    isLookbook ? (
+      <div className="columns-2 gap-3 md:columns-3 xl:columns-4 sm:gap-4">
+        {list.map((p, i) => renderLookbookCard(p, i))}
+      </div>
+    ) : (
+      <div className={`grid gap-3 sm:gap-4 ${gridCols}`}>{list.map((p) => renderCard(p))}</div>
+    );
+
+
+
 
   return (
     <div
