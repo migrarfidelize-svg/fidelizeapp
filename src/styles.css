@@ -2483,3 +2483,34 @@ img { content-visibility: auto; }
 .landing-scope section[id] {
   scroll-margin-top: 6rem;
 }
+
+/* ============================================================
+   LANDING — Bloco "Templates prontos": destaque laranja → verde
+   (o hue-rotate global do tema claro deixava os cards em destaque
+   alaranjados; aqui fixamos a paleta verde)
+   ============================================================ */
+html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"] {
+  filter: none !important;
+  border-color: rgba(22, 163, 74, 0.4) !important;
+  background-image: linear-gradient(to bottom right, rgba(22, 163, 74, 0.08), rgba(255, 255, 255, 0.02)) !important;
+  box-shadow: 0 20px 60px -25px rgba(22, 163, 74, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"]:hover {
+  border-color: rgba(22, 163, 74, 0.65) !important;
+}
+html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"] span[class*="bg-cyan-"] {
+  background-color: rgba(22, 163, 74, 0.14) !important;
+  color: #15803d !important;
+}
+html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"] .metric-number {
+  color: #15803d !important;
+  -webkit-text-fill-color: #15803d !important;
+}
+html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"] [style*="color: #00ffff"],
+html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"] [style*="color:#00ffff"] {
+  color: #15803d !important;
+}
+html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"] div[class*="border-cyan-"] {
+  border-color: rgba(22, 163, 74, 0.35) !important;
+  background-color: rgba(22, 163, 74, 0.12) !important;
+}
