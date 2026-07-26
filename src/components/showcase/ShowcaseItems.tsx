@@ -429,7 +429,33 @@ function ItemDialog({
     }
   };
 
+  const uploadGallery = async (files: File[]) => {
+    if (!estId) return;
+    setUploading("gal");
+    try {
+      const room = Math.max(0, 8 - gallery.length);
+      const urls: string[] = [];
+      for (const file of files.slice(0, room)) {
+        const ext = file.name.split(".").pop() || "jpg";
+        const path = `est_${estId}/items/gal_${crypto.randomUUID()}.${ext}`;
+        const { error } = await supabase.storage.from("menu-images").upload(path, file, {
+          cacheControl: "3600", upsert: false, contentType: file.type,
+        });
+        if (error) throw error;
+        urls.push(supabase.storage.from("menu-images").getPublicUrl(path).data.publicUrl);
+      }
+      setGallery((g) => [...g, ...urls].slice(0, 8));
+      toast.success(urls.length === 1 ? "Foto adicionada" : `${urls.length} fotos adicionadas`);
+    } catch (e: any) {
+      toast.error(e.message || "Falha no upload");
+    } finally {
+      setUploading(null);
+    }
+  };
+
   const toggleBadge = (b: string) => setBadges(prev => prev.includes(b) ? prev.filter(x => x !== b) : [...prev, b]);
+
+
 
   const submit = () => {
     if (!name.trim()) { toast.error("Nome é obrigatório"); return; }
