@@ -147,10 +147,23 @@ function PublicCatalogPage() {
   const items = (data?.items ?? []) as Product[];
   const categories = (data?.categories ?? []) as { id: string; name: string }[];
 
+  const brands = useMemo(
+    () => Array.from(new Set(items.map((i) => (i.brand ?? "").trim()).filter(Boolean))).sort(),
+    [items],
+  );
+
+  const priceOf = (i: Product) => i.promo_price ?? i.price ?? Number.POSITIVE_INFINITY;
+  const isPromo = (i: Product) => i.promo_price != null && i.price != null && i.promo_price < i.price;
+  const discountOf = (i: Product) =>
+    isPromo(i) ? Math.round((1 - (i.promo_price as number) / (i.price as number)) * 100) : 0;
+
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
-    return items.filter((i) => {
+    const list = items.filter((i) => {
       if (activeCat !== "all" && i.category_id !== activeCat) return false;
+      if (brand !== "all" && (i.brand ?? "").trim() !== brand) return false;
+      if (onlyPromo && !isPromo(i)) return false;
+      if (onlyStock && i.stock_status === "out_of_stock") return false;
       if (!term) return true;
       return (
         i.name.toLowerCase().includes(term) ||
@@ -159,7 +172,11 @@ function PublicCatalogPage() {
         (i.sku ?? "").toLowerCase().includes(term)
       );
     });
-  }, [items, activeCat, q]);
+    if (sort === "asc") return [...list].sort((a, b) => priceOf(a) - priceOf(b));
+    if (sort === "desc") return [...list].sort((a, b) => priceOf(b) - priceOf(a));
+    if (sort === "az") return [...list].sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+    return list;
+  }, [items, activeCat, q, sort, onlyPromo, onlyStock, brand]);
 
   if (!data || !data.menu) {
     return (
