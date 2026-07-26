@@ -88,7 +88,7 @@ export function CatalogCart({
           fulfillment,
           address: address.trim() || null,
           note: note.trim() || null,
-          items: cart.lines.map((l) => ({ item_id: l.id, qty: l.qty })),
+          items: cart.lines.map((l) => ({ item_id: l.id, qty: l.qty, variant_label: l.variant ?? null })),
         },
       });
 
