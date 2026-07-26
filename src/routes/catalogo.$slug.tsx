@@ -353,8 +353,43 @@ function PublicCatalogPage() {
                       {stockLabel(p.stock_status)}
                     </span>
                   )}
+
+                  {p.stock_status !== "out_of_stock" && (p.price != null || p.promo_price != null) && (
+                    <div className="pt-1.5" onClick={(e) => e.stopPropagation()}>
+                      {cart.qtyOf(p.id) === 0 ? (
+                        <button
+                          onClick={() => cart.add(p.id)}
+                          className="w-full rounded-full px-3 py-1.5 text-xs font-bold"
+                          style={{ background: primary, color: readableInk(primary) }}
+                        >
+                          Adicionar
+                        </button>
+                      ) : (
+                        <div className="flex items-center justify-between rounded-full px-1 py-1" style={{ border: `1px solid ${primary}` }}>
+                          <button
+                            onClick={() => cart.setQty(p.id, cart.qtyOf(p.id) - 1)}
+                            aria-label="Diminuir"
+                            className="grid h-6 w-6 place-items-center rounded-full text-sm font-bold"
+                            style={{ color: primary }}
+                          >
+                            −
+                          </button>
+                          <span className="text-xs font-bold">{cart.qtyOf(p.id)}</span>
+                          <button
+                            onClick={() => cart.add(p.id)}
+                            aria-label="Aumentar"
+                            className="grid h-6 w-6 place-items-center rounded-full text-sm font-bold"
+                            style={{ background: primary, color: readableInk(primary) }}
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-              </button>
+              </div>
+
             ))}
           </div>
         )}
