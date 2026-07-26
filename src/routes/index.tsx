@@ -247,7 +247,7 @@ function Hero() {
           </div>
         </div>
         <div className="relative flex justify-center">
-          <HeroStampCard3D />
+          <HeroAppPreview />
         </div>
       </div>
     </section>
