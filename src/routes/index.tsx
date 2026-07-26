@@ -83,16 +83,22 @@ export const Route = createFileRoute("/")({
 function Landing() {
   return (
     <div className="landing-scope min-h-dvh bg-background text-foreground">
+      <ScrollProgress />
       <SiteHeader />
       <main>
         <Hero />
+        <LivePanelShowcase />
         <DiscoverMenuShowcase />
+        <RetentionEngine />
+        <EcosystemBento />
         <Segments />
         <HowItWorks />
         <Benefits />
+        <RoiCalculator />
         <Comparison />
         <Examples />
         <Pricing />
+        <TrustStrip />
         <FAQ />
         <CTA />
       </main>
