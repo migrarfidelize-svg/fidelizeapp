@@ -93,8 +93,12 @@ export function CatalogCart({
       });
 
       const linesTxt = res.lines
-        .map((l: any) => `• ${l.qty}x ${l.name} — ${fmt(Number(l.line_total), res.currency)}`)
+        .map(
+          (l: any) =>
+            `• ${l.qty}x ${l.name}${l.variant_label ? ` (${l.variant_label})` : ""} — ${fmt(Number(l.line_total), res.currency)}`,
+        )
         .join("\n");
+
       const msg = [
         `*Pedido #${res.order_number}* — ${res.establishment.name}`,
         "",
