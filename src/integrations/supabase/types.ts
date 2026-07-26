@@ -2029,9 +2029,11 @@ export type Database = {
           promo_price: number | null
           short_desc: string | null
           sku: string | null
+          stock_qty: number | null
           stock_status: string
           time_end: string | null
           time_start: string | null
+          track_stock: boolean
           updated_at: string
           variants: Json
           video_poster_url: string | null
@@ -2063,9 +2065,11 @@ export type Database = {
           promo_price?: number | null
           short_desc?: string | null
           sku?: string | null
+          stock_qty?: number | null
           stock_status?: string
           time_end?: string | null
           time_start?: string | null
+          track_stock?: boolean
           updated_at?: string
           variants?: Json
           video_poster_url?: string | null
@@ -2097,9 +2101,11 @@ export type Database = {
           promo_price?: number | null
           short_desc?: string | null
           sku?: string | null
+          stock_qty?: number | null
           stock_status?: string
           time_end?: string | null
           time_start?: string | null
+          track_stock?: boolean
           updated_at?: string
           variants?: Json
           video_poster_url?: string | null

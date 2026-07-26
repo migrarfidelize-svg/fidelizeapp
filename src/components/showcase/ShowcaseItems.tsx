@@ -51,6 +51,8 @@ type Item = {
   sku?: string | null;
   brand?: string | null;
   stock_status?: string | null;
+  track_stock?: boolean | null;
+  stock_qty?: number | null;
   external_url?: string | null;
   position: number;
 };
@@ -358,6 +360,9 @@ function ItemDialog({
   const [sku, setSku] = useState("");
   const [brand, setBrand] = useState("");
   const [stockStatus, setStockStatus] = useState("in_stock");
+  const [trackStock, setTrackStock] = useState(false);
+  const [stockQty, setStockQty] = useState<string>("");
+
   const [externalUrl, setExternalUrl] = useState("");
   const L = showcase(showKind);
   const isCatalog = showKind === "catalog";
@@ -390,6 +395,8 @@ function ItemDialog({
       setSku(initial?.sku ?? "");
       setBrand(initial?.brand ?? "");
       setStockStatus(initial?.stock_status ?? "in_stock");
+      setTrackStock(!!initial?.track_stock);
+      setStockQty(initial?.stock_qty != null ? String(initial.stock_qty) : "");
       setExternalUrl(initial?.external_url ?? "");
 
     }
@@ -444,6 +451,8 @@ function ItemDialog({
       sku: sku.trim() || null,
       brand: brand.trim() || null,
       stock_status: stockStatus as any,
+      track_stock: isCatalog ? trackStock : false,
+      stock_qty: isCatalog && trackStock ? Math.max(0, parseInt2(stockQty) ?? 0) : null,
       external_url: externalUrl.trim() || null,
     });
 
@@ -521,7 +530,7 @@ function ItemDialog({
               </div>
               <div className="space-y-2">
                 <Label>Disponibilidade</Label>
-                <Select value={stockStatus} onValueChange={setStockStatus}>
+                <Select value={trackStock ? (Math.max(0, parseInt(stockQty || "0", 10) || 0) > 0 ? "in_stock" : "out_of_stock") : stockStatus} onValueChange={setStockStatus} disabled={trackStock}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {STOCK_STATUS.map((s) => (
@@ -529,7 +538,39 @@ function ItemDialog({
                     ))}
                   </SelectContent>
                 </Select>
+                {trackStock && (
+                  <p className="text-[11px] text-muted-foreground">Definida automaticamente pelo estoque.</p>
+                )}
               </div>
+
+              <div className="space-y-2 rounded-xl border border-border/60 p-3 md:col-span-2">
+                <label className="flex items-center gap-2 text-sm font-medium">
+                  <Switch checked={trackStock} onCheckedChange={setTrackStock} />
+                  Controlar estoque deste produto
+                </label>
+                {trackStock ? (
+                  <div className="flex flex-wrap items-end gap-3 pt-1">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Quantidade em estoque</Label>
+                      <Input
+                        className="w-32"
+                        value={stockQty}
+                        onChange={(e) => setStockQty(e.target.value.replace(/\D/g, ""))}
+                        inputMode="numeric"
+                        placeholder="0"
+                      />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Quando chegar a <strong>0</strong>, o produto fica marcado como <strong>Esgotado</strong> e não pode ser adicionado ao carrinho do catálogo.
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-muted-foreground">
+                    Ative para informar a quantidade disponível e esgotar o produto automaticamente.
+                  </p>
+                )}
+              </div>
+
               <div className="space-y-2">
                 <Label>Link de compra / WhatsApp</Label>
                 <Input
