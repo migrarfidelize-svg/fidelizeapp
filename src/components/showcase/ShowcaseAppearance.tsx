@@ -618,6 +618,7 @@ function MenuPreview({
     ...(categories?.length ? categories : isCatalog ? ["Novidades", "Mais vendidos"] : ["Entradas", "Pratos"]),
   ].slice(0, 4);
 
+  const priceOf = (d: PreviewItem) => {
     const v = d.promo_price ?? d.price;
     return typeof v === "number" ? brl(v) : "—";
   };
