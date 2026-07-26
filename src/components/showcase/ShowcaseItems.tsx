@@ -385,6 +385,8 @@ function ItemDialog({
       setPrep("");
       setImageUrl(initial?.image_url ?? null);
       setVideoUrl(initial?.video_url ?? null);
+      setGallery(Array.isArray((initial as any)?.gallery) ? ((initial as any).gallery as string[]) : []);
+
       setBadges(Array.isArray(initial?.badges) ? (initial!.badges as string[]) : []);
       setIngredientsText((initial?.ingredients ?? []).join(", "));
       setAllergensText((initial?.allergens ?? []).join(", "));
