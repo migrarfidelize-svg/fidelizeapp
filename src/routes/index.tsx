@@ -6,6 +6,7 @@ import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
 import { HeroStampCard3D } from "@/components/HeroStampCard3D";
 import { SegmentsCarousel } from "@/components/SegmentsCarousel";
+import { DiscoverMenuShowcase } from "@/components/DiscoverMenuShowcase";
 
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
