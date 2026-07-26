@@ -29,6 +29,7 @@ import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as ESlugRouteImport } from './routes/e.$slug'
 import { Route as DevQrDesignNameRouteImport } from './routes/dev.qr-design-name'
+import { Route as CatalogoSlugRouteImport } from './routes/catalogo.$slug'
 import { Route as CartaoSlugRouteImport } from './routes/cartao.$slug'
 import { Route as CardapioSlugRouteImport } from './routes/cardapio.$slug'
 import { Route as CTokenRouteImport } from './routes/c.$token'
@@ -225,6 +226,11 @@ const ESlugRoute = ESlugRouteImport.update({
 const DevQrDesignNameRoute = DevQrDesignNameRouteImport.update({
   id: '/dev/qr-design-name',
   path: '/dev/qr-design-name',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CatalogoSlugRoute = CatalogoSlugRouteImport.update({
+  id: '/catalogo/$slug',
+  path: '/catalogo/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartaoSlugRoute = CartaoSlugRouteImport.update({
@@ -808,6 +814,7 @@ export interface FileRoutesByFullPath {
   '/c/$token': typeof CTokenRoute
   '/cardapio/$slug': typeof CardapioSlugRoute
   '/cartao/$slug': typeof CartaoSlugRoute
+  '/catalogo/$slug': typeof CatalogoSlugRoute
   '/dev/qr-design-name': typeof DevQrDesignNameRoute
   '/e/$slug': typeof ESlugRoute
   '/invite/$token': typeof InviteTokenRoute
@@ -924,6 +931,7 @@ export interface FileRoutesByTo {
   '/c/$token': typeof CTokenRoute
   '/cardapio/$slug': typeof CardapioSlugRoute
   '/cartao/$slug': typeof CartaoSlugRoute
+  '/catalogo/$slug': typeof CatalogoSlugRoute
   '/dev/qr-design-name': typeof DevQrDesignNameRoute
   '/e/$slug': typeof ESlugRoute
   '/invite/$token': typeof InviteTokenRoute
@@ -1043,6 +1051,7 @@ export interface FileRoutesById {
   '/c/$token': typeof CTokenRoute
   '/cardapio/$slug': typeof CardapioSlugRoute
   '/cartao/$slug': typeof CartaoSlugRoute
+  '/catalogo/$slug': typeof CatalogoSlugRoute
   '/dev/qr-design-name': typeof DevQrDesignNameRoute
   '/e/$slug': typeof ESlugRoute
   '/invite/$token': typeof InviteTokenRoute
@@ -1164,6 +1173,7 @@ export interface FileRouteTypes {
     | '/c/$token'
     | '/cardapio/$slug'
     | '/cartao/$slug'
+    | '/catalogo/$slug'
     | '/dev/qr-design-name'
     | '/e/$slug'
     | '/invite/$token'
@@ -1280,6 +1290,7 @@ export interface FileRouteTypes {
     | '/c/$token'
     | '/cardapio/$slug'
     | '/cartao/$slug'
+    | '/catalogo/$slug'
     | '/dev/qr-design-name'
     | '/e/$slug'
     | '/invite/$token'
@@ -1398,6 +1409,7 @@ export interface FileRouteTypes {
     | '/c/$token'
     | '/cardapio/$slug'
     | '/cartao/$slug'
+    | '/catalogo/$slug'
     | '/dev/qr-design-name'
     | '/e/$slug'
     | '/invite/$token'
@@ -1513,6 +1525,7 @@ export interface RootRouteChildren {
   CTokenRoute: typeof CTokenRoute
   CardapioSlugRoute: typeof CardapioSlugRoute
   CartaoSlugRoute: typeof CartaoSlugRoute
+  CatalogoSlugRoute: typeof CatalogoSlugRoute
   DevQrDesignNameRoute: typeof DevQrDesignNameRoute
   ESlugRoute: typeof ESlugRoute
   InviteTokenRoute: typeof InviteTokenRoute
@@ -1682,6 +1695,13 @@ declare module '@tanstack/react-router' {
       path: '/dev/qr-design-name'
       fullPath: '/dev/qr-design-name'
       preLoaderRoute: typeof DevQrDesignNameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/catalogo/$slug': {
+      id: '/catalogo/$slug'
+      path: '/catalogo/$slug'
+      fullPath: '/catalogo/$slug'
+      preLoaderRoute: typeof CatalogoSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cartao/$slug': {
@@ -2628,6 +2648,7 @@ const rootRouteChildren: RootRouteChildren = {
   CTokenRoute: CTokenRoute,
   CardapioSlugRoute: CardapioSlugRoute,
   CartaoSlugRoute: CartaoSlugRoute,
+  CatalogoSlugRoute: CatalogoSlugRoute,
   DevQrDesignNameRoute: DevQrDesignNameRoute,
   ESlugRoute: ESlugRoute,
   InviteTokenRoute: InviteTokenRoute,
