@@ -294,7 +294,7 @@ function Hero() {
               variant="outline"
               className="bg-transparent text-white border-white/20 hover:bg-white/10 hover:text-white"
             >
-              <a href="#retencao">Ver como funciona</a>
+              <a href="#ecossistema">Ver como funciona</a>
             </Button>
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-white/60">
