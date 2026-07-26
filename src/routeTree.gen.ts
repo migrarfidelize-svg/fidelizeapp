@@ -29,6 +29,7 @@ import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as ESlugRouteImport } from './routes/e.$slug'
 import { Route as DevQrDesignNameRouteImport } from './routes/dev.qr-design-name'
+import { Route as CatalogoSlugRouteImport } from './routes/catalogo.$slug'
 import { Route as CartaoSlugRouteImport } from './routes/cartao.$slug'
 import { Route as CardapioSlugRouteImport } from './routes/cardapio.$slug'
 import { Route as CTokenRouteImport } from './routes/c.$token'
@@ -69,6 +70,7 @@ import { Route as AuthenticatedAppLinktreeRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppKbRouteImport } from './routes/_authenticated/app.kb'
 import { Route as AuthenticatedAppEquipeRouteImport } from './routes/_authenticated/app.equipe'
 import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated/app.clientes'
+import { Route as AuthenticatedAppCatalogoRouteImport } from './routes/_authenticated/app.catalogo'
 import { Route as AuthenticatedAppCarimbarRouteImport } from './routes/_authenticated/app.carimbar'
 import { Route as AuthenticatedAppCardapioRouteImport } from './routes/_authenticated/app.cardapio'
 import { Route as AuthenticatedAppCampanhasRouteImport } from './routes/_authenticated/app.campanhas'
@@ -94,6 +96,7 @@ import { Route as AuthenticatedAdminAlertasRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminAjudaRouteImport } from './routes/_authenticated/admin.ajuda'
 import { Route as AuthenticatedAppPlanosIndexRouteImport } from './routes/_authenticated/app.planos.index'
 import { Route as AuthenticatedAppFidelizeIndexRouteImport } from './routes/_authenticated/app.fidelize.index'
+import { Route as AuthenticatedAppCatalogoIndexRouteImport } from './routes/_authenticated/app.catalogo.index'
 import { Route as AuthenticatedAppCardapioIndexRouteImport } from './routes/_authenticated/app.cardapio.index'
 import { Route as AuthenticatedAppAvaliacoesIndexRouteImport } from './routes/_authenticated/app.avaliacoes.index'
 import { Route as AuthenticatedAdminSuporteIndexRouteImport } from './routes/_authenticated/admin.suporte.index'
@@ -111,6 +114,9 @@ import { Route as ApiPublicCronReengagementRouteImport } from './routes/api/publ
 import { Route as ApiPublicCronBirthdayRouteImport } from './routes/api/public/cron/birthday'
 import { Route as AuthenticatedCarteiraESlugRouteImport } from './routes/_authenticated/carteira.e.$slug'
 import { Route as AuthenticatedCarteiraSlugPromocoesRouteImport } from './routes/_authenticated/carteira.$slug.promocoes'
+import { Route as AuthenticatedAppCatalogoProdutosRouteImport } from './routes/_authenticated/app.catalogo.produtos'
+import { Route as AuthenticatedAppCatalogoColecoesRouteImport } from './routes/_authenticated/app.catalogo.colecoes'
+import { Route as AuthenticatedAppCatalogoAparenciaRouteImport } from './routes/_authenticated/app.catalogo.aparencia'
 import { Route as AuthenticatedAppCardapioPratosRouteImport } from './routes/_authenticated/app.cardapio.pratos'
 import { Route as AuthenticatedAppCardapioCategoriasRouteImport } from './routes/_authenticated/app.cardapio.categorias'
 import { Route as AuthenticatedAppCardapioAparenciaRouteImport } from './routes/_authenticated/app.cardapio.aparencia'
@@ -220,6 +226,11 @@ const ESlugRoute = ESlugRouteImport.update({
 const DevQrDesignNameRoute = DevQrDesignNameRouteImport.update({
   id: '/dev/qr-design-name',
   path: '/dev/qr-design-name',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CatalogoSlugRoute = CatalogoSlugRouteImport.update({
+  id: '/catalogo/$slug',
+  path: '/catalogo/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartaoSlugRoute = CartaoSlugRouteImport.update({
@@ -438,6 +449,12 @@ const AuthenticatedAppClientesRoute =
     path: '/clientes',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppCatalogoRoute =
+  AuthenticatedAppCatalogoRouteImport.update({
+    id: '/catalogo',
+    path: '/catalogo',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppCarimbarRoute =
   AuthenticatedAppCarimbarRouteImport.update({
     id: '/carimbar',
@@ -587,6 +604,12 @@ const AuthenticatedAppFidelizeIndexRoute =
     path: '/fidelize/',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppCatalogoIndexRoute =
+  AuthenticatedAppCatalogoIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAppCatalogoRoute,
+  } as any)
 const AuthenticatedAppCardapioIndexRoute =
   AuthenticatedAppCardapioIndexRouteImport.update({
     id: '/',
@@ -685,6 +708,24 @@ const AuthenticatedCarteiraSlugPromocoesRoute =
     path: '/promocoes',
     getParentRoute: () => AuthenticatedCarteiraSlugRoute,
   } as any)
+const AuthenticatedAppCatalogoProdutosRoute =
+  AuthenticatedAppCatalogoProdutosRouteImport.update({
+    id: '/produtos',
+    path: '/produtos',
+    getParentRoute: () => AuthenticatedAppCatalogoRoute,
+  } as any)
+const AuthenticatedAppCatalogoColecoesRoute =
+  AuthenticatedAppCatalogoColecoesRouteImport.update({
+    id: '/colecoes',
+    path: '/colecoes',
+    getParentRoute: () => AuthenticatedAppCatalogoRoute,
+  } as any)
+const AuthenticatedAppCatalogoAparenciaRoute =
+  AuthenticatedAppCatalogoAparenciaRouteImport.update({
+    id: '/aparencia',
+    path: '/aparencia',
+    getParentRoute: () => AuthenticatedAppCatalogoRoute,
+  } as any)
 const AuthenticatedAppCardapioPratosRoute =
   AuthenticatedAppCardapioPratosRouteImport.update({
     id: '/pratos',
@@ -773,6 +814,7 @@ export interface FileRoutesByFullPath {
   '/c/$token': typeof CTokenRoute
   '/cardapio/$slug': typeof CardapioSlugRoute
   '/cartao/$slug': typeof CartaoSlugRoute
+  '/catalogo/$slug': typeof CatalogoSlugRoute
   '/dev/qr-design-name': typeof DevQrDesignNameRoute
   '/e/$slug': typeof ESlugRoute
   '/invite/$token': typeof InviteTokenRoute
@@ -804,6 +846,7 @@ export interface FileRoutesByFullPath {
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/cardapio': typeof AuthenticatedAppCardapioRouteWithChildren
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
+  '/app/catalogo': typeof AuthenticatedAppCatalogoRouteWithChildren
   '/app/clientes': typeof AuthenticatedAppClientesRoute
   '/app/equipe': typeof AuthenticatedAppEquipeRoute
   '/app/kb': typeof AuthenticatedAppKbRoute
@@ -840,6 +883,9 @@ export interface FileRoutesByFullPath {
   '/app/cardapio/aparencia': typeof AuthenticatedAppCardapioAparenciaRoute
   '/app/cardapio/categorias': typeof AuthenticatedAppCardapioCategoriasRoute
   '/app/cardapio/pratos': typeof AuthenticatedAppCardapioPratosRoute
+  '/app/catalogo/aparencia': typeof AuthenticatedAppCatalogoAparenciaRoute
+  '/app/catalogo/colecoes': typeof AuthenticatedAppCatalogoColecoesRoute
+  '/app/catalogo/produtos': typeof AuthenticatedAppCatalogoProdutosRoute
   '/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
   '/carteira/e/$slug': typeof AuthenticatedCarteiraESlugRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
@@ -857,6 +903,7 @@ export interface FileRoutesByFullPath {
   '/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
   '/app/avaliacoes/': typeof AuthenticatedAppAvaliacoesIndexRoute
   '/app/cardapio/': typeof AuthenticatedAppCardapioIndexRoute
+  '/app/catalogo/': typeof AuthenticatedAppCatalogoIndexRoute
   '/app/fidelize/': typeof AuthenticatedAppFidelizeIndexRoute
   '/app/planos/': typeof AuthenticatedAppPlanosIndexRoute
   '/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
@@ -884,6 +931,7 @@ export interface FileRoutesByTo {
   '/c/$token': typeof CTokenRoute
   '/cardapio/$slug': typeof CardapioSlugRoute
   '/cartao/$slug': typeof CartaoSlugRoute
+  '/catalogo/$slug': typeof CatalogoSlugRoute
   '/dev/qr-design-name': typeof DevQrDesignNameRoute
   '/e/$slug': typeof ESlugRoute
   '/invite/$token': typeof InviteTokenRoute
@@ -950,6 +998,9 @@ export interface FileRoutesByTo {
   '/app/cardapio/aparencia': typeof AuthenticatedAppCardapioAparenciaRoute
   '/app/cardapio/categorias': typeof AuthenticatedAppCardapioCategoriasRoute
   '/app/cardapio/pratos': typeof AuthenticatedAppCardapioPratosRoute
+  '/app/catalogo/aparencia': typeof AuthenticatedAppCatalogoAparenciaRoute
+  '/app/catalogo/colecoes': typeof AuthenticatedAppCatalogoColecoesRoute
+  '/app/catalogo/produtos': typeof AuthenticatedAppCatalogoProdutosRoute
   '/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
   '/carteira/e/$slug': typeof AuthenticatedCarteiraESlugRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
@@ -967,6 +1018,7 @@ export interface FileRoutesByTo {
   '/admin/suporte': typeof AuthenticatedAdminSuporteIndexRoute
   '/app/avaliacoes': typeof AuthenticatedAppAvaliacoesIndexRoute
   '/app/cardapio': typeof AuthenticatedAppCardapioIndexRoute
+  '/app/catalogo': typeof AuthenticatedAppCatalogoIndexRoute
   '/app/fidelize': typeof AuthenticatedAppFidelizeIndexRoute
   '/app/planos': typeof AuthenticatedAppPlanosIndexRoute
   '/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
@@ -999,6 +1051,7 @@ export interface FileRoutesById {
   '/c/$token': typeof CTokenRoute
   '/cardapio/$slug': typeof CardapioSlugRoute
   '/cartao/$slug': typeof CartaoSlugRoute
+  '/catalogo/$slug': typeof CatalogoSlugRoute
   '/dev/qr-design-name': typeof DevQrDesignNameRoute
   '/e/$slug': typeof ESlugRoute
   '/invite/$token': typeof InviteTokenRoute
@@ -1030,6 +1083,7 @@ export interface FileRoutesById {
   '/_authenticated/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/_authenticated/app/cardapio': typeof AuthenticatedAppCardapioRouteWithChildren
   '/_authenticated/app/carimbar': typeof AuthenticatedAppCarimbarRoute
+  '/_authenticated/app/catalogo': typeof AuthenticatedAppCatalogoRouteWithChildren
   '/_authenticated/app/clientes': typeof AuthenticatedAppClientesRoute
   '/_authenticated/app/equipe': typeof AuthenticatedAppEquipeRoute
   '/_authenticated/app/kb': typeof AuthenticatedAppKbRoute
@@ -1066,6 +1120,9 @@ export interface FileRoutesById {
   '/_authenticated/app/cardapio/aparencia': typeof AuthenticatedAppCardapioAparenciaRoute
   '/_authenticated/app/cardapio/categorias': typeof AuthenticatedAppCardapioCategoriasRoute
   '/_authenticated/app/cardapio/pratos': typeof AuthenticatedAppCardapioPratosRoute
+  '/_authenticated/app/catalogo/aparencia': typeof AuthenticatedAppCatalogoAparenciaRoute
+  '/_authenticated/app/catalogo/colecoes': typeof AuthenticatedAppCatalogoColecoesRoute
+  '/_authenticated/app/catalogo/produtos': typeof AuthenticatedAppCatalogoProdutosRoute
   '/_authenticated/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
   '/_authenticated/carteira/e/$slug': typeof AuthenticatedCarteiraESlugRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
@@ -1083,6 +1140,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
   '/_authenticated/app/avaliacoes/': typeof AuthenticatedAppAvaliacoesIndexRoute
   '/_authenticated/app/cardapio/': typeof AuthenticatedAppCardapioIndexRoute
+  '/_authenticated/app/catalogo/': typeof AuthenticatedAppCatalogoIndexRoute
   '/_authenticated/app/fidelize/': typeof AuthenticatedAppFidelizeIndexRoute
   '/_authenticated/app/planos/': typeof AuthenticatedAppPlanosIndexRoute
   '/_authenticated/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
@@ -1115,6 +1173,7 @@ export interface FileRouteTypes {
     | '/c/$token'
     | '/cardapio/$slug'
     | '/cartao/$slug'
+    | '/catalogo/$slug'
     | '/dev/qr-design-name'
     | '/e/$slug'
     | '/invite/$token'
@@ -1146,6 +1205,7 @@ export interface FileRouteTypes {
     | '/app/campanhas'
     | '/app/cardapio'
     | '/app/carimbar'
+    | '/app/catalogo'
     | '/app/clientes'
     | '/app/equipe'
     | '/app/kb'
@@ -1182,6 +1242,9 @@ export interface FileRouteTypes {
     | '/app/cardapio/aparencia'
     | '/app/cardapio/categorias'
     | '/app/cardapio/pratos'
+    | '/app/catalogo/aparencia'
+    | '/app/catalogo/colecoes'
+    | '/app/catalogo/produtos'
     | '/carteira/$slug/promocoes'
     | '/carteira/e/$slug'
     | '/api/public/cron/birthday'
@@ -1199,6 +1262,7 @@ export interface FileRouteTypes {
     | '/admin/suporte/'
     | '/app/avaliacoes/'
     | '/app/cardapio/'
+    | '/app/catalogo/'
     | '/app/fidelize/'
     | '/app/planos/'
     | '/app/fidelize/ticket/$id'
@@ -1226,6 +1290,7 @@ export interface FileRouteTypes {
     | '/c/$token'
     | '/cardapio/$slug'
     | '/cartao/$slug'
+    | '/catalogo/$slug'
     | '/dev/qr-design-name'
     | '/e/$slug'
     | '/invite/$token'
@@ -1292,6 +1357,9 @@ export interface FileRouteTypes {
     | '/app/cardapio/aparencia'
     | '/app/cardapio/categorias'
     | '/app/cardapio/pratos'
+    | '/app/catalogo/aparencia'
+    | '/app/catalogo/colecoes'
+    | '/app/catalogo/produtos'
     | '/carteira/$slug/promocoes'
     | '/carteira/e/$slug'
     | '/api/public/cron/birthday'
@@ -1309,6 +1377,7 @@ export interface FileRouteTypes {
     | '/admin/suporte'
     | '/app/avaliacoes'
     | '/app/cardapio'
+    | '/app/catalogo'
     | '/app/fidelize'
     | '/app/planos'
     | '/app/fidelize/ticket/$id'
@@ -1340,6 +1409,7 @@ export interface FileRouteTypes {
     | '/c/$token'
     | '/cardapio/$slug'
     | '/cartao/$slug'
+    | '/catalogo/$slug'
     | '/dev/qr-design-name'
     | '/e/$slug'
     | '/invite/$token'
@@ -1371,6 +1441,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/campanhas'
     | '/_authenticated/app/cardapio'
     | '/_authenticated/app/carimbar'
+    | '/_authenticated/app/catalogo'
     | '/_authenticated/app/clientes'
     | '/_authenticated/app/equipe'
     | '/_authenticated/app/kb'
@@ -1407,6 +1478,9 @@ export interface FileRouteTypes {
     | '/_authenticated/app/cardapio/aparencia'
     | '/_authenticated/app/cardapio/categorias'
     | '/_authenticated/app/cardapio/pratos'
+    | '/_authenticated/app/catalogo/aparencia'
+    | '/_authenticated/app/catalogo/colecoes'
+    | '/_authenticated/app/catalogo/produtos'
     | '/_authenticated/carteira/$slug/promocoes'
     | '/_authenticated/carteira/e/$slug'
     | '/api/public/cron/birthday'
@@ -1424,6 +1498,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/suporte/'
     | '/_authenticated/app/avaliacoes/'
     | '/_authenticated/app/cardapio/'
+    | '/_authenticated/app/catalogo/'
     | '/_authenticated/app/fidelize/'
     | '/_authenticated/app/planos/'
     | '/_authenticated/app/fidelize/ticket/$id'
@@ -1450,6 +1525,7 @@ export interface RootRouteChildren {
   CTokenRoute: typeof CTokenRoute
   CardapioSlugRoute: typeof CardapioSlugRoute
   CartaoSlugRoute: typeof CartaoSlugRoute
+  CatalogoSlugRoute: typeof CatalogoSlugRoute
   DevQrDesignNameRoute: typeof DevQrDesignNameRoute
   ESlugRoute: typeof ESlugRoute
   InviteTokenRoute: typeof InviteTokenRoute
@@ -1619,6 +1695,13 @@ declare module '@tanstack/react-router' {
       path: '/dev/qr-design-name'
       fullPath: '/dev/qr-design-name'
       preLoaderRoute: typeof DevQrDesignNameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/catalogo/$slug': {
+      id: '/catalogo/$slug'
+      path: '/catalogo/$slug'
+      fullPath: '/catalogo/$slug'
+      preLoaderRoute: typeof CatalogoSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cartao/$slug': {
@@ -1901,6 +1984,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppClientesRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/catalogo': {
+      id: '/_authenticated/app/catalogo'
+      path: '/catalogo'
+      fullPath: '/app/catalogo'
+      preLoaderRoute: typeof AuthenticatedAppCatalogoRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/app/carimbar': {
       id: '/_authenticated/app/carimbar'
       path: '/carimbar'
@@ -2076,6 +2166,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppFidelizeIndexRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/catalogo/': {
+      id: '/_authenticated/app/catalogo/'
+      path: '/'
+      fullPath: '/app/catalogo/'
+      preLoaderRoute: typeof AuthenticatedAppCatalogoIndexRouteImport
+      parentRoute: typeof AuthenticatedAppCatalogoRoute
+    }
     '/_authenticated/app/cardapio/': {
       id: '/_authenticated/app/cardapio/'
       path: '/'
@@ -2194,6 +2291,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/carteira/$slug/promocoes'
       preLoaderRoute: typeof AuthenticatedCarteiraSlugPromocoesRouteImport
       parentRoute: typeof AuthenticatedCarteiraSlugRoute
+    }
+    '/_authenticated/app/catalogo/produtos': {
+      id: '/_authenticated/app/catalogo/produtos'
+      path: '/produtos'
+      fullPath: '/app/catalogo/produtos'
+      preLoaderRoute: typeof AuthenticatedAppCatalogoProdutosRouteImport
+      parentRoute: typeof AuthenticatedAppCatalogoRoute
+    }
+    '/_authenticated/app/catalogo/colecoes': {
+      id: '/_authenticated/app/catalogo/colecoes'
+      path: '/colecoes'
+      fullPath: '/app/catalogo/colecoes'
+      preLoaderRoute: typeof AuthenticatedAppCatalogoColecoesRouteImport
+      parentRoute: typeof AuthenticatedAppCatalogoRoute
+    }
+    '/_authenticated/app/catalogo/aparencia': {
+      id: '/_authenticated/app/catalogo/aparencia'
+      path: '/aparencia'
+      fullPath: '/app/catalogo/aparencia'
+      preLoaderRoute: typeof AuthenticatedAppCatalogoAparenciaRouteImport
+      parentRoute: typeof AuthenticatedAppCatalogoRoute
     }
     '/_authenticated/app/cardapio/pratos': {
       id: '/_authenticated/app/cardapio/pratos'
@@ -2354,11 +2472,35 @@ const AuthenticatedAppCardapioRouteWithChildren =
     AuthenticatedAppCardapioRouteChildren,
   )
 
+interface AuthenticatedAppCatalogoRouteChildren {
+  AuthenticatedAppCatalogoAparenciaRoute: typeof AuthenticatedAppCatalogoAparenciaRoute
+  AuthenticatedAppCatalogoColecoesRoute: typeof AuthenticatedAppCatalogoColecoesRoute
+  AuthenticatedAppCatalogoProdutosRoute: typeof AuthenticatedAppCatalogoProdutosRoute
+  AuthenticatedAppCatalogoIndexRoute: typeof AuthenticatedAppCatalogoIndexRoute
+}
+
+const AuthenticatedAppCatalogoRouteChildren: AuthenticatedAppCatalogoRouteChildren =
+  {
+    AuthenticatedAppCatalogoAparenciaRoute:
+      AuthenticatedAppCatalogoAparenciaRoute,
+    AuthenticatedAppCatalogoColecoesRoute:
+      AuthenticatedAppCatalogoColecoesRoute,
+    AuthenticatedAppCatalogoProdutosRoute:
+      AuthenticatedAppCatalogoProdutosRoute,
+    AuthenticatedAppCatalogoIndexRoute: AuthenticatedAppCatalogoIndexRoute,
+  }
+
+const AuthenticatedAppCatalogoRouteWithChildren =
+  AuthenticatedAppCatalogoRoute._addFileChildren(
+    AuthenticatedAppCatalogoRouteChildren,
+  )
+
 interface AuthenticatedAppRouteChildren {
   AuthenticatedAppAnalyticsRoute: typeof AuthenticatedAppAnalyticsRoute
   AuthenticatedAppCampanhasRoute: typeof AuthenticatedAppCampanhasRoute
   AuthenticatedAppCardapioRoute: typeof AuthenticatedAppCardapioRouteWithChildren
   AuthenticatedAppCarimbarRoute: typeof AuthenticatedAppCarimbarRoute
+  AuthenticatedAppCatalogoRoute: typeof AuthenticatedAppCatalogoRouteWithChildren
   AuthenticatedAppClientesRoute: typeof AuthenticatedAppClientesRoute
   AuthenticatedAppEquipeRoute: typeof AuthenticatedAppEquipeRoute
   AuthenticatedAppKbRoute: typeof AuthenticatedAppKbRoute
@@ -2386,6 +2528,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppCampanhasRoute: AuthenticatedAppCampanhasRoute,
   AuthenticatedAppCardapioRoute: AuthenticatedAppCardapioRouteWithChildren,
   AuthenticatedAppCarimbarRoute: AuthenticatedAppCarimbarRoute,
+  AuthenticatedAppCatalogoRoute: AuthenticatedAppCatalogoRouteWithChildren,
   AuthenticatedAppClientesRoute: AuthenticatedAppClientesRoute,
   AuthenticatedAppEquipeRoute: AuthenticatedAppEquipeRoute,
   AuthenticatedAppKbRoute: AuthenticatedAppKbRoute,
@@ -2505,6 +2648,7 @@ const rootRouteChildren: RootRouteChildren = {
   CTokenRoute: CTokenRoute,
   CardapioSlugRoute: CardapioSlugRoute,
   CartaoSlugRoute: CartaoSlugRoute,
+  CatalogoSlugRoute: CatalogoSlugRoute,
   DevQrDesignNameRoute: DevQrDesignNameRoute,
   ESlugRoute: ESlugRoute,
   InviteTokenRoute: InviteTokenRoute,

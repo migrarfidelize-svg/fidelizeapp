@@ -136,23 +136,32 @@ export const setQrDestination = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
     establishment_id: z.string().uuid(),
-    destination: z.enum(["reviews", "linktree", "landing", "menu"]),
+    destination: z.enum(["reviews", "linktree", "landing", "menu", "catalog"]),
   }).parse(d))
   .handler(async ({ data, context }) => {
     // Cardápio digital é um recurso do plano: só pode virar destino do QR
     // quando estiver habilitado e com uma vitrine publicada.
-    if (data.destination === "menu") {
-      const allowed = await hasFeature(context.supabase, data.establishment_id, "digital_menu");
+    if (data.destination === "menu" || data.destination === "catalog") {
+      const isCatalog = data.destination === "catalog";
+      const label = isCatalog ? "Catálogo digital" : "Cardápio digital";
+      const allowed = await hasFeature(
+        context.supabase,
+        data.establishment_id,
+        isCatalog ? "digital_catalog" : "digital_menu",
+      );
       if (!allowed) {
-        throw new Error("O Cardápio digital não está incluído no seu plano atual.");
+        throw new Error(`O ${label} não está incluído no seu plano atual.`);
       }
       const { data: menu } = await context.supabase
         .from("restaurant_menus")
         .select("status")
         .eq("establishment_id", data.establishment_id)
+        .eq("kind", isCatalog ? "catalog" : "menu")
         .maybeSingle();
       if (menu?.status !== "published") {
-        throw new Error("Publique seu cardápio antes de apontar o QR para ele.");
+        throw new Error(
+          `Publique seu ${isCatalog ? "catálogo" : "cardápio"} antes de apontar o QR para ele.`,
+        );
       }
     }
     const { error } = await context.supabase
@@ -182,8 +191,16 @@ export const getQrDestinationStatus = createServerFn({ method: "GET" })
       .from("restaurant_menus")
       .select("status")
       .eq("establishment_id", data.establishment_id)
+      .eq("kind", "menu")
+      .maybeSingle();
+    const { data: catalog } = await context.supabase
+      .from("restaurant_menus")
+      .select("status")
+      .eq("establishment_id", data.establishment_id)
+      .eq("kind", "catalog")
       .maybeSingle();
     const menuAllowed = await hasFeature(context.supabase, data.establishment_id, "digital_menu");
+    const catalogAllowed = await hasFeature(context.supabase, data.establishment_id, "digital_catalog");
     const { data: form } = await context.supabase
       .from("review_forms")
       .select("id")
@@ -191,11 +208,14 @@ export const getQrDestinationStatus = createServerFn({ method: "GET" })
       .eq("active", true)
       .maybeSingle();
     return {
-      destination: (est?.qr_destination ?? "reviews") as "reviews" | "linktree" | "landing" | "menu",
+      destination: (est?.qr_destination ?? "reviews") as
+        | "reviews" | "linktree" | "landing" | "menu" | "catalog",
       linktree_published: !!page?.published,
       review_form_active: !!form,
       menu_allowed: menuAllowed,
       menu_published: menu?.status === "published",
+      catalog_allowed: catalogAllowed,
+      catalog_published: catalog?.status === "published",
       slug: est?.slug ?? null,
     };
   });

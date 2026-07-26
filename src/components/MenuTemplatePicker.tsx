@@ -16,9 +16,9 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 
-type Props = { establishmentId: string | undefined };
+type Props = { establishmentId: string | undefined; kind?: "menu" | "catalog" };
 
-export function MenuTemplatePicker({ establishmentId }: Props) {
+export function MenuTemplatePicker({ establishmentId, kind = "menu" }: Props) {
   const qc = useQueryClient();
   const seed = useServerFn(seedMenuFromTemplate);
 
@@ -27,7 +27,7 @@ export function MenuTemplatePicker({ establishmentId }: Props) {
   const [mode, setMode] = useState<"append" | "reset">("append");
 
   const mut = useMutation({
-    mutationFn: () => seed({ data: { establishment_id: establishmentId!, template_key: selected!, mode } }),
+    mutationFn: () => seed({ data: { establishment_id: establishmentId!, template_key: selected!, mode, kind } }),
     onSuccess: (r: any) => {
       toast.success(
         `Modelo aplicado: ${r.categories_created} categoria(s) e ${r.items_created} prato(s) criados${
@@ -37,14 +37,18 @@ export function MenuTemplatePicker({ establishmentId }: Props) {
       setOpen(false);
       setSelected(null);
       setMode("append");
-      qc.invalidateQueries({ queryKey: ["menu-categories", establishmentId] });
-      qc.invalidateQueries({ queryKey: ["menu-items", establishmentId] });
-      qc.invalidateQueries({ queryKey: ["menu-overview", establishmentId] });
+      qc.invalidateQueries({ queryKey: ["menu-categories", establishmentId, kind] });
+      qc.invalidateQueries({ queryKey: ["menu-items", establishmentId, kind] });
+      qc.invalidateQueries({ queryKey: ["menu-overview", establishmentId, kind] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
   const current = MENU_TEMPLATES.find((t) => t.key === selected) ?? null;
+
+  // Os modelos prontos são específicos de restaurantes; o Catálogo Digital
+  // começa em branco (o lojista cria suas próprias coleções).
+  if (kind === "catalog") return null;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

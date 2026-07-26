@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangle, CheckCircle2, ExternalLink, Lock } from "lucide-react";
 import { qrDestinationPath } from "@/lib/qr-destination-url";
 
-type Dest = "reviews" | "linktree" | "landing" | "menu";
+type Dest = "reviews" | "linktree" | "landing" | "menu" | "catalog";
 
 export function QrDestinationCard({
   establishmentId,
@@ -47,6 +47,10 @@ export function QrDestinationCard({
   const reviewsReady = !!q.data?.review_form_active;
   const menuAllowed = !!q.data?.menu_allowed;
   const menuReady = menuAllowed && !!q.data?.menu_published;
+  const catalogAllowed = !!q.data?.catalog_allowed;
+  const catalogReady = catalogAllowed && !!q.data?.catalog_published;
+  const isShowcase = dest === "menu" || dest === "catalog";
+  const isCatalog = dest === "catalog";
 
   async function save(next: Dest) {
     const prev = dest;
@@ -71,7 +75,8 @@ export function QrDestinationCard({
   const showWarning =
     (dest === "linktree" && !linktreeReady) ||
     (dest === "reviews" && !reviewsReady) ||
-    (dest === "menu" && !menuReady);
+    (dest === "menu" && !menuReady) ||
+    (dest === "catalog" && !catalogReady);
 
   return (
     <Card className="border-primary/20 bg-card/70">
@@ -94,6 +99,9 @@ export function QrDestinationCard({
               <SelectItem value="menu" disabled={!menuAllowed}>
                 Cardápio digital{!menuAllowed ? " (não incluso no plano)" : ""}
               </SelectItem>
+              <SelectItem value="catalog" disabled={!catalogAllowed}>
+                Catálogo digital{!catalogAllowed ? " (não incluso no plano)" : ""}
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -101,16 +109,18 @@ export function QrDestinationCard({
         {showWarning ? (
           <div className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/5 p-3 text-xs">
             <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
-            {dest === "menu" ? (
+            {isShowcase ? (
               <div className="flex-1">
                 <p className="font-medium">
-                  {menuAllowed
-                    ? "Seu cardápio ainda não está publicado — o QR cai na página de avaliação até publicar."
-                    : "O Cardápio digital não está incluído no seu plano atual."}
+                  {(isCatalog ? catalogAllowed : menuAllowed)
+                    ? `Seu ${isCatalog ? "catálogo" : "cardápio"} ainda não está publicado — o QR cai na página de avaliação até publicar.`
+                    : `O ${isCatalog ? "Catálogo" : "Cardápio"} digital não está incluído no seu plano atual.`}
                 </p>
                 <Button asChild size="sm" variant="outline" className="mt-2">
-                  {menuAllowed ? (
-                    <Link to="/app/cardapio">Publicar cardápio</Link>
+                  {(isCatalog ? catalogAllowed : menuAllowed) ? (
+                    <Link to={isCatalog ? "/app/catalogo" : "/app/cardapio"}>
+                      Publicar {isCatalog ? "catálogo" : "cardápio"}
+                    </Link>
                   ) : (
                     <Link to="/app/planos"><Lock className="mr-1.5 h-3.5 w-3.5" />Ver planos</Link>
                   )}

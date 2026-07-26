@@ -17,7 +17,7 @@ import {
   LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield,
   LifeBuoy, BookOpen, Package, Receipt, HeartHandshake, Bell, Star, Menu,
   PanelLeftClose, PanelLeftOpen, Compass, Megaphone, UserCircle2, MessageSquare, BarChart3,
-  Link2, UtensilsCrossed, FolderTree, LayoutList, Wallet, CreditCard,
+  Link2, UtensilsCrossed, ShoppingBag, FolderTree, LayoutList, Wallet, CreditCard,
   Palette,
 } from "lucide-react";
 
@@ -138,8 +138,20 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/app/cardapio", label: "Visão geral", icon: UtensilsCrossed, exact: true },
       { to: "/app/cardapio/categorias", label: "Categorias", icon: FolderTree },
       { to: "/app/cardapio/pratos", label: "Pratos", icon: LayoutList },
+      { to: "/app/cardapio/aparencia", label: "Aparência", icon: Palette },
     ],
   },
+  {
+    key: "catalogo",
+    label: "Catálogo",
+    items: [
+      { to: "/app/catalogo", label: "Visão geral", icon: ShoppingBag, exact: true },
+      { to: "/app/catalogo/colecoes", label: "Coleções", icon: FolderTree },
+      { to: "/app/catalogo/produtos", label: "Produtos", icon: LayoutList },
+      { to: "/app/catalogo/aparencia", label: "Aparência", icon: Palette },
+    ],
+  },
+
   {
     key: "comunicacao",
     label: "Comunicação",
@@ -475,6 +487,7 @@ function AppLayout() {
     linktree: Link2,
     avaliacoes: Star,
     cardapio: UtensilsCrossed,
+    catalogo: ShoppingBag,
     comunicacao: Bell,
     ajuda: LifeBuoy,
   };

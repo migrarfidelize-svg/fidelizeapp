@@ -2009,10 +2009,12 @@ export type Database = {
           allergens: string[]
           available_days: number[]
           badges: Json
+          brand: string | null
           category_id: string | null
           created_at: string
           currency: string
           establishment_id: string
+          external_url: string | null
           id: string
           image_url: string | null
           ingredients: string[]
@@ -2026,6 +2028,8 @@ export type Database = {
           price: number | null
           promo_price: number | null
           short_desc: string | null
+          sku: string | null
+          stock_status: string
           time_end: string | null
           time_start: string | null
           updated_at: string
@@ -2039,10 +2043,12 @@ export type Database = {
           allergens?: string[]
           available_days?: number[]
           badges?: Json
+          brand?: string | null
           category_id?: string | null
           created_at?: string
           currency?: string
           establishment_id: string
+          external_url?: string | null
           id?: string
           image_url?: string | null
           ingredients?: string[]
@@ -2056,6 +2062,8 @@ export type Database = {
           price?: number | null
           promo_price?: number | null
           short_desc?: string | null
+          sku?: string | null
+          stock_status?: string
           time_end?: string | null
           time_start?: string | null
           updated_at?: string
@@ -2069,10 +2077,12 @@ export type Database = {
           allergens?: string[]
           available_days?: number[]
           badges?: Json
+          brand?: string | null
           category_id?: string | null
           created_at?: string
           currency?: string
           establishment_id?: string
+          external_url?: string | null
           id?: string
           image_url?: string | null
           ingredients?: string[]
@@ -2086,6 +2096,8 @@ export type Database = {
           price?: number | null
           promo_price?: number | null
           short_desc?: string | null
+          sku?: string | null
+          stock_status?: string
           time_end?: string | null
           time_start?: string | null
           updated_at?: string
@@ -3289,6 +3301,7 @@ export type Database = {
           establishment_id: string
           hours: Json
           id: string
+          kind: Database["public"]["Enums"]["showcase_kind"]
           logo_url: string | null
           order_defaults: Json
           published_at: string | null
@@ -3307,6 +3320,7 @@ export type Database = {
           establishment_id: string
           hours?: Json
           id?: string
+          kind?: Database["public"]["Enums"]["showcase_kind"]
           logo_url?: string | null
           order_defaults?: Json
           published_at?: string | null
@@ -3325,6 +3339,7 @@ export type Database = {
           establishment_id?: string
           hours?: Json
           id?: string
+          kind?: Database["public"]["Enums"]["showcase_kind"]
           logo_url?: string | null
           order_defaults?: Json
           published_at?: string | null
@@ -3337,7 +3352,7 @@ export type Database = {
           {
             foreignKeyName: "restaurant_menus_establishment_id_fkey"
             columns: ["establishment_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "establishments"
             referencedColumns: ["id"]
           },
@@ -4937,6 +4952,7 @@ export type Database = {
         | "contacting"
         | "resolved"
         | "archived"
+      showcase_kind: "menu" | "catalog"
       support_author_type: "customer" | "admin" | "system"
       support_category:
         | "duvidas"
@@ -5122,6 +5138,7 @@ export const Constants = {
         "resolved",
         "archived",
       ],
+      showcase_kind: ["menu", "catalog"],
       support_author_type: ["customer", "admin", "system"],
       support_category: [
         "duvidas",
