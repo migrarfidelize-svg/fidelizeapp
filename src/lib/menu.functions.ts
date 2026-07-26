@@ -546,13 +546,19 @@ export const seedMenuFromTemplate = createServerFn({ method: "POST" })
     mode: z.enum(["append", "reset"]).optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
+    const kind = (data as any).kind ?? "menu";
+    const isCatalog = kind === "catalog";
+
     const { findTemplate } = await import("./menu-templates");
+    const { findCatalogTemplate } = await import("./catalog-templates");
     const { templateCategoryImage } = await import("./menu-template-media");
-    const tpl = findTemplate(data.template_key);
+    const tpl: any = isCatalog ? findCatalogTemplate(data.template_key) : findTemplate(data.template_key);
     if (!tpl) throw new Error("Modelo não encontrado.");
 
     const { supabase } = context;
-    const menuId = await ensureMenuId(supabase, data.establishment_id, (data as any).kind ?? "menu");
+    const menuId = await ensureMenuId(supabase, data.establishment_id, kind);
+
+
 
     if (data.mode === "reset") {
       await supabase.from("menu_items").delete().eq("menu_id", menuId);
