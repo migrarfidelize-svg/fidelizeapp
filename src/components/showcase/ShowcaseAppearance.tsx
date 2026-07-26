@@ -664,9 +664,32 @@ function MenuPreview({
               ))}
             </div>
 
-            <div className={`mt-3 pb-4 ${layout === "grid" ? "grid grid-cols-2 gap-2" : "space-y-2"}`}>
+            <div
+              className={`mt-3 pb-4 ${
+                layout === "grid"
+                  ? "grid grid-cols-2 gap-2"
+                  : layout === "lookbook"
+                    ? "columns-2 gap-2"
+                    : "space-y-2"
+              }`}
+            >
               {dishes.map((d, idx) => {
+                if (layout === "lookbook") {
+                  const ratios = ["h-24", "h-20", "h-28", "h-16"];
+                  return (
+                    <div key={idx} className="mb-2 break-inside-avoid overflow-hidden rounded-xl" style={{ background: p.line }}>
+                      <div className="relative">
+                        <Thumb src={d.image_url} accent={accent} emoji={emoji} className={`w-full ${ratios[idx % ratios.length]}`} emojiClass="text-lg" />
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5">
+                          <div className="truncate text-[10px] font-semibold text-white" style={{ fontFamily: p.fontHead }}>{d.name}</div>
+                          <div className="text-[10px] text-white/80">{priceOf(d)}</div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
                 if (layout === "grid") {
+
                   return (
                     <div key={idx} className="overflow-hidden rounded-xl" style={{ background: p.surface, border: `1px solid ${p.line}` }}>
                       <Thumb src={d.image_url} accent={accent} emoji={emoji} className="h-16 w-full" emojiClass="text-lg" />

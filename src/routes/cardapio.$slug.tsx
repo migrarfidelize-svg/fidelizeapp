@@ -606,7 +606,7 @@ function PublicMenuPage() {
 // ------------ Item Card ------------
 function ItemCard({
   item, primary, onOpen, layout = "list",
-}: { item: Item; primary: string; onOpen: () => void; layout?: "list" | "grid" | "magazine" }) {
+}: { item: Item; primary: string; onOpen: () => void; layout?: "list" | "grid" | "magazine" | "lookbook" }) {
   const hasPromo = item.promo_price != null && item.price != null && item.promo_price < item.price;
   const badges = Array.isArray(item.badges) ? (item.badges as string[]) : [];
   const variants = (Array.isArray(item.variants) ? item.variants : []).filter((v) => v?.label);
