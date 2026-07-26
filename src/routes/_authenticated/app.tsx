@@ -17,7 +17,7 @@ import {
   LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, UsersRound, Shield,
   LifeBuoy, BookOpen, Package, Receipt, HeartHandshake, Bell, Star, Menu,
   PanelLeftClose, PanelLeftOpen, Compass, Megaphone, UserCircle2, MessageSquare, BarChart3,
-  Link2, UtensilsCrossed, FolderTree, LayoutList, Wallet, CreditCard,
+  Link2, UtensilsCrossed, ShoppingBag, FolderTree, LayoutList, Wallet, CreditCard,
   Palette,
 } from "lucide-react";
 
@@ -487,6 +487,7 @@ function AppLayout() {
     linktree: Link2,
     avaliacoes: Star,
     cardapio: UtensilsCrossed,
+    catalogo: ShoppingBag,
     comunicacao: Bell,
     ajuda: LifeBuoy,
   };
