@@ -201,11 +201,13 @@ function PublicCatalogPage() {
   }
 
   const cover = est?.cover_url || null;
+  const isLookbook = theme.layout === "lookbook";
   // Catálogo é vitrine: mesmo no tema "lista" mantemos grade (só mais densa).
   const gridCols =
     theme.layout === "list"
       ? "grid-cols-2 md:grid-cols-4 xl:grid-cols-5"
       : "grid-cols-2 md:grid-cols-3 xl:grid-cols-4";
+
 
   const openProduct = (p: Product) => {
     setOpen(p);
