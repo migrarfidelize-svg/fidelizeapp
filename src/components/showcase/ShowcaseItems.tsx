@@ -352,6 +352,7 @@ function ItemDialog({
   const [prep, setPrep] = useState<string>("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [gallery, setGallery] = useState<string[]>([]);
   const [badges, setBadges] = useState<string[]>([]);
   const [ingredientsText, setIngredientsText] = useState("");
   const [allergensText, setAllergensText] = useState("");
@@ -367,9 +368,11 @@ function ItemDialog({
   const L = showcase(showKind);
   const isCatalog = showKind === "catalog";
 
-  const [uploading, setUploading] = useState<"img" | "vid" | null>(null);
+  const [uploading, setUploading] = useState<"img" | "vid" | "gal" | null>(null);
   const imgRef = useRef<HTMLInputElement>(null);
   const vidRef = useRef<HTMLInputElement>(null);
+  const galRef = useRef<HTMLInputElement>(null);
+
 
   useMemo(() => {
     if (open) {
