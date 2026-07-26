@@ -86,7 +86,7 @@ export function HeroAppPreview() {
 
       {/* floating real-time toast */}
       <div
-        className="absolute -left-6 top-[30%] hidden w-[190px] rounded-xl border p-2.5 shadow-xl backdrop-blur lg:block"
+        className="absolute -left-8 top-[6%] hidden w-[180px] rounded-xl border p-2.5 shadow-xl backdrop-blur lg:block"
         style={{ borderColor: `${CYAN}44`, background: "rgba(2,6,23,0.82)" }}
       >
         <div className="flex items-center gap-2">
