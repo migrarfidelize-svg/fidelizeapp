@@ -167,7 +167,7 @@ export function CatalogCart({
 
             <div className="space-y-3 p-5">
               {detailed.map((l) => (
-                <div key={l.id} className="flex items-center gap-3">
+                <div key={`${l.id}::${l.variant ?? ""}`} className="flex items-center gap-3">
                   {l.image_url ? (
                     <img src={l.image_url} alt={l.name} className="h-14 w-14 rounded-xl object-cover" />
                   ) : (
@@ -177,19 +177,21 @@ export function CatalogCart({
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-semibold">{l.name}</div>
+                    {l.variant && <div className="truncate text-[11px] opacity-70">Variação: {l.variant}</div>}
                     <div className="text-xs opacity-70">{fmt(l.unit, l.currency)}</div>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <button onClick={() => cart.setQty(l.id, l.qty - 1)} aria-label="Diminuir" className="grid h-7 w-7 place-items-center rounded-full" style={{ border: "1px solid var(--mk-line)" }}>
+                    <button onClick={() => cart.setQty(l.id, l.qty - 1, l.variant)} aria-label="Diminuir" className="grid h-7 w-7 place-items-center rounded-full" style={{ border: "1px solid var(--mk-line)" }}>
                       {l.qty === 1 ? <Trash2 className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
                     </button>
                     <span className="w-5 text-center text-sm font-bold">{l.qty}</span>
-                    <button onClick={() => cart.setQty(l.id, l.qty + 1)} aria-label="Aumentar" className="grid h-7 w-7 place-items-center rounded-full" style={{ background: primary, color: ink }}>
+                    <button onClick={() => cart.setQty(l.id, l.qty + 1, l.variant)} aria-label="Aumentar" className="grid h-7 w-7 place-items-center rounded-full" style={{ background: primary, color: ink }}>
                       <Plus className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 </div>
               ))}
+
 
               <div className="flex items-center justify-between pt-2 text-base font-extrabold" style={{ borderTop: "1px solid var(--mk-line)" }}>
                 <span className="pt-2">Total</span>
