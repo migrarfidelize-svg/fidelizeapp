@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 const ITEMS = [
-  { icon: Coffee, label: "Cafeterias", tag: "+38% retorno" },
+  { icon: Coffee, label: "Cafeterias", tag: "Cliente recorrente" },
   { icon: Scissors, label: "Barbearias", tag: "Fila cheia" },
   { icon: Sparkles, label: "Salões", tag: "Clientes VIP" },
   { icon: Pizza, label: "Pizzarias", tag: "Delivery fiel" },
