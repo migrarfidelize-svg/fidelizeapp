@@ -6,6 +6,7 @@ import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
 import { SegmentsCarousel } from "@/components/SegmentsCarousel";
 import { DiscoverMenuShowcase } from "@/components/DiscoverMenuShowcase";
+import { EcosystemBento } from "@/components/landing/EcosystemBento";
 import { RetentionEngine } from "@/components/landing/RetentionEngine";
 import { RoiCalculator } from "@/components/landing/RoiCalculator";
 import { TrustStrip } from "@/components/landing/TrustStrip";
@@ -87,7 +88,7 @@ function Landing() {
         <DiscoverMenuShowcase />
         <RetentionEngine />
         <Segments />
-        
+        <EcosystemBento />
         <Benefits />
         <RoiCalculator />
         <Examples />
