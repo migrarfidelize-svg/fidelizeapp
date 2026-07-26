@@ -112,12 +112,12 @@ export function HeroAppPreview() {
           <TrendingUp className="h-3 w-3" style={{ color: CYAN }} /> Retorno
         </div>
         <div className="mt-1 text-2xl font-bold text-white">+38%</div>
-        <div className="mt-2 flex h-6 items-end gap-1">
-          {[35, 52, 44, 68, 80, 96].map((h, k) => (
+        <div className="mt-2 flex h-8 items-end gap-1">
+          {[9, 13, 11, 17, 20, 24].map((h, k) => (
             <span
               key={k}
-              className="flex-1 rounded-sm"
-              style={{ height: `${h}%`, background: `${CYAN}${k === 5 ? "" : "55"}` }}
+              className="flex-1 rounded-[2px]"
+              style={{ height: `${h}px`, background: k === 5 ? CYAN : `${CYAN}55` }}
             />
           ))}
         </div>
