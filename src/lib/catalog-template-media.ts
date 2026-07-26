@@ -127,6 +127,37 @@ export const CATALOG_TEMPLATE_MEDIA: Record<string, Record<string, string>> = {
     lentes: otiLentes.url,
     "serviços": otiServicos.url,
   },
+  studio_beleza: {
+    cabelo: stbCabelo.url,
+    unhas: stbUnhas.url,
+    maquiagem: stbMaquiagem.url,
+    "sobrancelhas e cílios": stbSobrancelhas.url,
+    "combos e pacotes": stbCombos.url,
+  },
+  barbearia: {
+    cortes: barCortes.url,
+    "barba e rosto": barBarba.url,
+    "química e coloração": barQuimica.url,
+    "planos e produtos": barPlanos.url,
+  },
+  estetica: {
+    "estética facial": estFacial.url,
+    "estética corporal": estCorporal.url,
+    "depilação": estDepilacao.url,
+    "massagens e relax": estMassagem.url,
+  },
+  servicos_casa: {
+    "elétrica": casEletrica.url,
+    "hidráulica": casHidraulica.url,
+    "pintura e reformas": casPintura.url,
+    "montagem e limpeza": casMontagem.url,
+  },
+  fotografia: {
+    ensaios: fotEnsaios.url,
+    eventos: fotEventos.url,
+    "vídeo": fotVideo.url,
+    "produtos e extras": fotProdutos.url,
+  },
 };
 
 /** Imagem de modelo para uma coleção de um template de catálogo (ou null). */
