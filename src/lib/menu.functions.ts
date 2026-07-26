@@ -624,13 +624,13 @@ export const seedMenuFromTemplate = createServerFn({ method: "POST" })
         if ((i.position ?? 0) > maxItemPos) maxItemPos = i.position ?? 0;
       }
 
-      const toInsert = cat.items
-        .filter((it) => {
+      const toInsert = (cat.items as any[])
+        .filter((it: any) => {
           const dup = existingItemNames.has(it.name.trim().toLowerCase());
           if (dup) itemsSkipped += 1;
           return !dup;
         })
-        .map((it) => {
+        .map((it: any) => {
           maxItemPos += 1;
           return {
             establishment_id: data.establishment_id,
@@ -639,16 +639,21 @@ export const seedMenuFromTemplate = createServerFn({ method: "POST" })
             name: it.name,
             short_desc: it.short_desc ?? null,
             price: it.price ?? null,
+            promo_price: it.promo_price ?? null,
             currency: "BRL",
-            badges: (it.badges ?? []) as any,
+            badges: (isCatalog ? [] : it.badges ?? []) as any,
             ingredients: [],
             allergens: [],
-            prep_minutes: it.prep_minutes ?? null,
+            prep_minutes: isCatalog ? null : it.prep_minutes ?? null,
+            sku: isCatalog ? it.sku ?? null : null,
+            brand: isCatalog ? it.brand ?? null : null,
+            stock_status: isCatalog ? "in_stock" : null,
             active: true,
             image_url: catImage,
             position: maxItemPos,
           };
         });
+
 
       if (toInsert.length > 0) {
         const { error: insErr, data: inserted } = await supabase
