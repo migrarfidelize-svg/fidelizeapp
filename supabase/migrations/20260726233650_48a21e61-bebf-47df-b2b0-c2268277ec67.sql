@@ -1,0 +1,1 @@
+update public.restaurant_menus m set status='draft' where m.kind='catalog' and m.establishment_id in (select id from public.establishments where slug='admin');
