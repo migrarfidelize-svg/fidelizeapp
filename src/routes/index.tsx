@@ -79,6 +79,7 @@ function Landing() {
       <SiteHeader />
       <main>
         <Hero />
+        <DiscoverMenuShowcase />
         <Segments />
         <HowItWorks />
         <Benefits />
