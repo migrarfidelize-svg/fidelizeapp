@@ -203,16 +203,16 @@ function Hero() {
             className="landing-hero-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
             style={{ background: `${CYAN}14`, border: `1px solid ${CYAN}55`, color: CYAN }}
           >
-            <Sparkles className="h-3 w-3" /> 1 plataforma · 9 ferramentas de retenção
+            <Sparkles className="h-3 w-3" /> Cartão fidelidade digital para o seu negócio
           </span>
           <h1 className="mt-5 font-display text-5xl font-extrabold leading-[1.15] tracking-tight md:text-6xl md:leading-[1.1] pb-1">
-            Tudo que seu negócio<br />
-            precisa para o<br />
-            <span style={{ color: CYAN, textShadow: `0 0 40px ${CYAN}55` }}>cliente voltar</span>.
+            Transforme<br />
+            visitantes em<br />
+            <span style={{ color: CYAN, textShadow: `0 0 40px ${CYAN}55` }}>clientes fiéis</span>.
           </h1>
 
           <p className="mt-5 max-w-xl text-lg text-white/70">
-            Fidelidade digital, cardápio, avaliações, QR Code, push e CRM — num só painel. Sem app, sem cartão de papel.
+            Crie seu cartão fidelidade digital, compartilhe por QR Code e faça seus clientes voltarem mais vezes. Sem aplicativo, sem cartão de papel.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button
@@ -222,10 +222,9 @@ function Hero() {
               style={{ background: CYAN, color: OBSIDIAN, boxShadow: `0 0 30px ${CYAN}55` }}
             >
               <Link to="/auth" search={{ mode: "signup" }}>
-                Começar grátis <ArrowRight className="ml-1 h-4 w-4" />
+                Criar meu cartão grátis <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
-
             <Button
               asChild
               size="lg"
