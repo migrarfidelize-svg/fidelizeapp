@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Sparkles, Loader2, CheckCircle2 } from "lucide-react";
 
 import { MENU_TEMPLATES } from "@/lib/menu-templates";
+import { CATALOG_TEMPLATES } from "@/lib/catalog-templates";
 import { templateCategoryImage, templateCoverImage } from "@/lib/menu-template-media";
 import { seedMenuFromTemplate } from "@/lib/menu.functions";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,7 @@ export function MenuTemplatePicker({ establishmentId, kind = "menu" }: Props) {
     mutationFn: () => seed({ data: { establishment_id: establishmentId!, template_key: selected!, mode, kind } }),
     onSuccess: (r: any) => {
       toast.success(
-        `Modelo aplicado: ${r.categories_created} categoria(s) e ${r.items_created} prato(s) criados${
+        `Modelo aplicado: ${r.categories_created} ${kind === "catalog" ? "coleção(ões)" : "categoria(s)"} e ${r.items_created} ${kind === "catalog" ? "produto(s)" : "prato(s)"} criados${
           r.items_skipped_duplicated ? ` (${r.items_skipped_duplicated} duplicados ignorados)` : ""
         }.`
       );
@@ -44,11 +45,12 @@ export function MenuTemplatePicker({ establishmentId, kind = "menu" }: Props) {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const current = MENU_TEMPLATES.find((t) => t.key === selected) ?? null;
-
-  // Os modelos prontos são específicos de restaurantes; o Catálogo Digital
-  // começa em branco (o lojista cria suas próprias coleções).
-  if (kind === "catalog") return null;
+  const isCatalog = kind === "catalog";
+  const TEMPLATES: any[] = isCatalog ? CATALOG_TEMPLATES : MENU_TEMPLATES;
+  const current = TEMPLATES.find((t) => t.key === selected) ?? null;
+  const L = isCatalog
+    ? { unit: "produto", units: "produtos", groups: "coleções", title: "Comece com um modelo de catálogo", target: "catálogo" }
+    : { unit: "prato", units: "pratos", groups: "categorias", title: "Comece com um modelo de cardápio", target: "cardápio" };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -60,17 +62,19 @@ export function MenuTemplatePicker({ establishmentId, kind = "menu" }: Props) {
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" /> Comece com um modelo de cardápio
+            <Sparkles className="h-5 w-5 text-primary" /> {L.title}
           </DialogTitle>
           <DialogDescription>
-            Escolha um segmento e nós criamos categorias e pratos prontos (com nome, descrição, preço sugerido e etiquetas dietéticas). Você pode editar tudo depois.
+            {isCatalog
+              ? "Escolha um segmento e nós criamos as coleções e produtos prontos (nome, descrição, preço sugerido e código). Você pode editar tudo depois."
+              : "Escolha um segmento e nós criamos categorias e pratos prontos (com nome, descrição, preço sugerido e etiquetas dietéticas). Você pode editar tudo depois."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-          {MENU_TEMPLATES.map((t) => {
+          {TEMPLATES.map((t: any) => {
             const active = selected === t.key;
-            const itemCount = t.categories.reduce((acc, c) => acc + c.items.length, 0);
+            const itemCount = t.categories.reduce((acc: number, c: any) => acc + c.items.length, 0);
             return (
               <button
                 key={t.key}
@@ -82,7 +86,7 @@ export function MenuTemplatePicker({ establishmentId, kind = "menu" }: Props) {
                     : "border-border hover:border-primary/40 hover:bg-muted/40"
                 }`}
               >
-                {templateCoverImage(t.key) && (
+                {!isCatalog && templateCoverImage(t.key) && (
                   <img
                     src={templateCoverImage(t.key)!}
                     alt={`Modelo de cardápio ${t.label}`}
@@ -94,7 +98,7 @@ export function MenuTemplatePicker({ establishmentId, kind = "menu" }: Props) {
                   <div className="text-2xl">{t.emoji}</div>
                   <div className="mt-1 font-semibold leading-tight">{t.label}</div>
                   <div className="mt-1 text-[11px] text-muted-foreground">
-                    {t.categories.length} categorias · {itemCount} pratos
+                    {t.categories.length} {L.groups} · {itemCount} {L.units}
                   </div>
                 </div>
                 {active && (
@@ -110,10 +114,10 @@ export function MenuTemplatePicker({ establishmentId, kind = "menu" }: Props) {
           <Card className="mt-2 max-h-64 overflow-auto p-3">
             <p className="mb-2 text-sm text-muted-foreground">{current.tagline}</p>
             <div className="space-y-2">
-              {current.categories.map((c) => (
+              {current.categories.map((c: any) => (
                 <div key={c.name} className="rounded-md border bg-muted/30 p-2">
                   <div className="flex items-center gap-2">
-                    {templateCategoryImage(current.key, c.name) && (
+                    {!isCatalog && templateCategoryImage(current.key, c.name) && (
                       <img
                         src={templateCategoryImage(current.key, c.name)!}
                         alt={c.name}
@@ -123,10 +127,10 @@ export function MenuTemplatePicker({ establishmentId, kind = "menu" }: Props) {
                     )}
                     <span className="text-sm font-semibold">{c.name}</span>
                     {c.featured && <Badge className="h-4 px-1.5 text-[10px]">Destaque</Badge>}
-                    <span className="ml-auto text-[11px] text-muted-foreground">{c.items.length} pratos</span>
+                    <span className="ml-auto text-[11px] text-muted-foreground">{c.items.length} {L.units}</span>
                   </div>
                   <div className="mt-1 flex flex-wrap gap-1">
-                    {c.items.slice(0, 6).map((i) => (
+                    {c.items.slice(0, 6).map((i: any) => (
                       <span key={i.name} className="rounded bg-background px-1.5 py-0.5 text-[11px]">
                         {i.name}
                       </span>
@@ -148,15 +152,15 @@ export function MenuTemplatePicker({ establishmentId, kind = "menu" }: Props) {
               <label className={`flex cursor-pointer items-start gap-2 rounded-md border p-2 ${mode === "append" ? "border-primary bg-primary/5" : ""}`}>
                 <RadioGroupItem value="append" className="mt-0.5" />
                 <div>
-                  <div className="text-sm font-medium">Adicionar ao cardápio atual</div>
+                  <div className="text-sm font-medium">Adicionar ao {L.target} atual</div>
                   <div className="text-[11px] text-muted-foreground">Mantém tudo que já existe. Duplicados são ignorados.</div>
                 </div>
               </label>
               <label className={`flex cursor-pointer items-start gap-2 rounded-md border p-2 ${mode === "reset" ? "border-destructive bg-destructive/5" : ""}`}>
                 <RadioGroupItem value="reset" className="mt-0.5" />
                 <div>
-                  <div className="text-sm font-medium">Substituir cardápio</div>
-                  <div className="text-[11px] text-muted-foreground">Remove todas as categorias e pratos existentes antes de aplicar.</div>
+                  <div className="text-sm font-medium">Substituir {L.target}</div>
+                  <div className="text-[11px] text-muted-foreground">Remove todas as {L.groups} e {L.units} existentes antes de aplicar.</div>
                 </div>
               </label>
             </RadioGroup>
