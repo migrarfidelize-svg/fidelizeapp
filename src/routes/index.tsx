@@ -88,7 +88,7 @@ function Landing() {
         <DiscoverMenuShowcase />
         <RetentionEngine />
         <Segments />
-        
+        <EcosystemBento />
         <Benefits />
         <RoiCalculator />
         <Examples />
