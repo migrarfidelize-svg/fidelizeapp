@@ -220,7 +220,30 @@ export function EcosystemBento() {
             </p>
           </article>
         </div>
+
+        {/* Indicadores — só mobile */}
+        <div className="mt-5 flex items-center justify-center gap-3 md:hidden">
+          <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+            {String(active + 1).padStart(2, "0")} / {String(TOTAL).padStart(2, "0")}
+          </span>
+          <div className="flex items-center gap-1.5">
+            {Array.from({ length: TOTAL }).map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Ir para a ferramenta ${i + 1}`}
+                onClick={() => {
+                  setPaused(true);
+                  setActive(i);
+                  goTo(i);
+                }}
+                className={`h-1.5 rounded-full transition-all duration-300 ${i === active ? "w-5 bg-primary" : "w-1.5 bg-muted-foreground/30"}`}
+              />
+            ))}
+          </div>
+        </div>
       </div>
+
     </section>
   );
 }
