@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
-import { HeroAppPreview } from "@/components/landing/HeroAppPreview";
 import { SegmentsCarousel } from "@/components/SegmentsCarousel";
 import { DiscoverMenuShowcase } from "@/components/DiscoverMenuShowcase";
 import { LivePanelShowcase } from "@/components/landing/LivePanelShowcase";
@@ -200,8 +199,8 @@ function Hero() {
       
 
       
-      <div className="relative z-10 mx-auto grid max-w-6xl gap-12 px-4 py-16 md:grid-cols-2 md:items-center md:py-20">
-        <div className="text-white">
+      <div className="relative z-10 mx-auto max-w-4xl px-4 py-20 text-center md:py-28">
+        <div className="mx-auto flex max-w-3xl flex-col items-center text-white">
           <span
             className="landing-hero-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
             style={{ background: `${CYAN}14`, border: `1px solid ${CYAN}55`, color: CYAN }}
@@ -217,7 +216,7 @@ function Hero() {
           <p className="mt-5 max-w-xl text-lg text-white/70">
             Crie seu cartão fidelidade digital, compartilhe por QR Code e faça seus clientes voltarem mais vezes. Sem aplicativo, sem cartão de papel.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button
               asChild
               size="lg"
@@ -237,7 +236,7 @@ function Hero() {
               <a href="#como-funciona">Ver como funciona</a>
             </Button>
           </div>
-          <div className="mt-6 flex items-center gap-6 text-xs text-white/60">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-white/60">
             <span className="flex items-center gap-1.5">
               <Check className="h-4 w-4" style={{ color: CYAN }} /> Sem cartão de crédito
             </span>
@@ -246,9 +245,7 @@ function Hero() {
             </span>
           </div>
         </div>
-        <div className="relative flex justify-center">
-          <HeroAppPreview />
-        </div>
+
       </div>
     </section>
   );
