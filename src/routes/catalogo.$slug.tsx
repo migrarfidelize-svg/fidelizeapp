@@ -681,9 +681,7 @@ function PublicCatalogPage() {
             {looseItems.length > 0 && (
               <section>
                 <h2 className="fx-serif mb-3 text-lg font-bold sm:text-xl">Outros produtos</h2>
-                <div className={`grid gap-3 sm:gap-4 ${gridCols}`}>
-                  {looseItems.map((p) => renderCard(p))}
-                </div>
+                {renderCollection(looseItems)}
               </section>
             )}
           </div>
@@ -692,11 +690,10 @@ function PublicCatalogPage() {
             <div className="mb-3 text-xs opacity-60">
               {filtered.length} {filtered.length === 1 ? "produto" : "produtos"}
             </div>
-            <div className={`grid gap-3 sm:gap-4 ${gridCols}`}>
-              {filtered.map((p) => renderCard(p))}
-            </div>
+            {renderCollection(filtered)}
           </>
         )}
+
       </main>
 
 
