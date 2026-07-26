@@ -48,7 +48,7 @@ export function EcosystemBento() {
         goTo(next);
         return next;
       });
-    }, 5000);
+    }, 2000);
     return () => window.clearInterval(id);
   }, [inView, paused, goTo]);
 
