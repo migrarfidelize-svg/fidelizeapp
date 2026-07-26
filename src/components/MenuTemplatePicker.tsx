@@ -7,6 +7,7 @@ import { Sparkles, Loader2, CheckCircle2 } from "lucide-react";
 import { MENU_TEMPLATES } from "@/lib/menu-templates";
 import { CATALOG_TEMPLATES } from "@/lib/catalog-templates";
 import { templateCategoryImage, templateCoverImage } from "@/lib/menu-template-media";
+import { catalogCategoryImage, catalogCoverImage } from "@/lib/catalog-template-media";
 import { seedMenuFromTemplate } from "@/lib/menu.functions";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,6 +47,9 @@ export function MenuTemplatePicker({ establishmentId, kind = "menu" }: Props) {
   });
 
   const isCatalog = kind === "catalog";
+  const coverImage = (k: string) => (isCatalog ? catalogCoverImage(k) : templateCoverImage(k));
+  const categoryImage = (k: string, name: string) =>
+    isCatalog ? catalogCategoryImage(k, name) : templateCategoryImage(k, name);
   const TEMPLATES: any[] = isCatalog ? CATALOG_TEMPLATES : MENU_TEMPLATES;
   const current = TEMPLATES.find((t) => t.key === selected) ?? null;
   const L = isCatalog
@@ -86,10 +90,10 @@ export function MenuTemplatePicker({ establishmentId, kind = "menu" }: Props) {
                     : "border-border hover:border-primary/40 hover:bg-muted/40"
                 }`}
               >
-                {!isCatalog && templateCoverImage(t.key) && (
+                {coverImage(t.key) && (
                   <img
-                    src={templateCoverImage(t.key)!}
-                    alt={`Modelo de cardápio ${t.label}`}
+                    src={coverImage(t.key)!}
+                    alt={`Modelo de ${isCatalog ? "catálogo" : "cardápio"} ${t.label}`}
                     loading="lazy"
                     className="h-20 w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
@@ -117,9 +121,9 @@ export function MenuTemplatePicker({ establishmentId, kind = "menu" }: Props) {
               {current.categories.map((c: any) => (
                 <div key={c.name} className="rounded-md border bg-muted/30 p-2">
                   <div className="flex items-center gap-2">
-                    {!isCatalog && templateCategoryImage(current.key, c.name) && (
+                    {categoryImage(current.key, c.name) && (
                       <img
-                        src={templateCategoryImage(current.key, c.name)!}
+                        src={categoryImage(current.key, c.name)!}
                         alt={c.name}
                         loading="lazy"
                         className="h-8 w-8 shrink-0 rounded object-cover"
