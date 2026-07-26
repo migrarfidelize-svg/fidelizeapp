@@ -13,6 +13,7 @@ import { Route as VideosRouteImport } from './routes/videos'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as PreviewHeroRouteImport } from './routes/preview-hero'
 import { Route as PreviewDockRouteImport } from './routes/preview-dock'
 import { Route as PrecosRouteImport } from './routes/precos'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -140,6 +141,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
   id: '/privacidade',
   path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PreviewHeroRoute = PreviewHeroRouteImport.update({
+  id: '/preview-hero',
+  path: '/preview-hero',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PreviewDockRoute = PreviewDockRouteImport.update({
@@ -751,6 +757,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/precos': typeof PrecosRoute
   '/preview-dock': typeof PreviewDockRoute
+  '/preview-hero': typeof PreviewHeroRoute
   '/privacidade': typeof PrivacidadeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
@@ -864,6 +871,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/precos': typeof PrecosRoute
   '/preview-dock': typeof PreviewDockRoute
+  '/preview-hero': typeof PreviewHeroRoute
   '/privacidade': typeof PrivacidadeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
@@ -975,6 +983,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/precos': typeof PrecosRoute
   '/preview-dock': typeof PreviewDockRoute
+  '/preview-hero': typeof PreviewHeroRoute
   '/privacidade': typeof PrivacidadeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
@@ -1090,6 +1099,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/precos'
     | '/preview-dock'
+    | '/preview-hero'
     | '/privacidade'
     | '/sitemap.xml'
     | '/termos'
@@ -1203,6 +1213,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/precos'
     | '/preview-dock'
+    | '/preview-hero'
     | '/privacidade'
     | '/sitemap.xml'
     | '/termos'
@@ -1313,6 +1324,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/precos'
     | '/preview-dock'
+    | '/preview-hero'
     | '/privacidade'
     | '/sitemap.xml'
     | '/termos'
@@ -1428,6 +1440,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PrecosRoute: typeof PrecosRoute
   PreviewDockRoute: typeof PreviewDockRoute
+  PreviewHeroRoute: typeof PreviewHeroRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermosRoute: typeof TermosRoute
@@ -1494,6 +1507,13 @@ declare module '@tanstack/react-router' {
       path: '/privacidade'
       fullPath: '/privacidade'
       preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/preview-hero': {
+      id: '/preview-hero'
+      path: '/preview-hero'
+      fullPath: '/preview-hero'
+      preLoaderRoute: typeof PreviewHeroRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/preview-dock': {
@@ -2475,6 +2495,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PrecosRoute: PrecosRoute,
   PreviewDockRoute: PreviewDockRoute,
+  PreviewHeroRoute: PreviewHeroRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermosRoute: TermosRoute,
@@ -2517,13 +2538,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
