@@ -1318,7 +1318,10 @@ function ReviewQrPage() {
             </div>
 
             {/* Saved designs */}
+            {step === 4 && (
+            <>
             <div className="space-y-2 rounded-xl border border-primary/20 bg-primary/5 p-3">
+
               <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-primary">
                 <Palette className="h-3.5 w-3.5" /> Meus designs salvos
               </div>
