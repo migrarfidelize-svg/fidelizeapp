@@ -85,7 +85,11 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
     bg_color: string | null; accent_color: string | null; text_color: string | null; bg_image_url: string | null;
   }) => {
     setPreset(t.preset);
-    setLayout(isCatalog && t.layout === "magazine" ? "grid" : t.layout);
+    setLayout(
+      isCatalog
+        ? (t.layout === "magazine" ? "grid" : t.layout)
+        : (CATALOG_ONLY_LAYOUTS.includes(t.layout) ? "grid" : t.layout),
+    );
     setPattern(t.pattern);
     setEntry(t.entry);
     setBgColor(t.bg_color);
