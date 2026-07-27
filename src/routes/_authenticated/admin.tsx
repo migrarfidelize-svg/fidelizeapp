@@ -14,7 +14,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock, Wallet2,
   UsersRound, Settings, Mail, FileText, ListChecks, LifeBuoy, Package,
-  DollarSign, Wallet, Megaphone, Cog, BookOpen, Menu, Star, Plug, Rocket, FileJson, KeyRound,
+  DollarSign, Wallet, Megaphone, Cog, BookOpen, Menu, Star, Plug, Rocket, FileJson, KeyRound, ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -276,7 +276,7 @@ function AdminLayout() {
                       <Logo />
                       <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-primary-soft text-primary">Admin</span>
                     </div>
-                    {renderNav(closeMobile)}
+                    {renderNav(closeMobile, true)}
                     <div className="p-3 border-t space-y-2">
                       <div className="flex items-center justify-between px-1">
                         <span className="text-xs text-muted-foreground">Tema</span>
