@@ -159,15 +159,16 @@ type LayoutPos = { x: number; y: number }; // percent 0-100 (element center)
 type PosterLayout = Record<LayoutKey, LayoutPos>;
 
 const DEFAULT_LAYOUT: PosterLayout = {
-  header:      { x: 50, y: 13 },
-  title:       { x: 50, y: 26 },
-  subtitle:    { x: 50, y: 34 },
-  primaryQr:   { x: 50, y: 58 },
-  secondaryQr: { x: 72, y: 58 },
-  nfc:         { x: 50, y: 74 },
-  ctaNear:     { x: 50, y: 86 },
-  ctaFooter:   { x: 50, y: 93 },
+  header:      { x: 50, y: 16 },
+  title:       { x: 50, y: 34 },
+  subtitle:    { x: 50, y: 42 },
+  primaryQr:   { x: 50, y: 61 },
+  secondaryQr: { x: 74, y: 61 },
+  nfc:         { x: 50, y: 76 },
+  ctaNear:     { x: 50, y: 84 },
+  ctaFooter:   { x: 50, y: 92 },
 };
+
 
 /** Layouts ajustados por formato — canvas quadrado (feed) e paisagem precisam
  * de espaçamento vertical mais denso para não sobrepor a estrela ao QR. */
