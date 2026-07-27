@@ -127,6 +127,7 @@ function PerfilPage() {
 
   async function savePassword() {
     if (newPass.length < 6) { toast.error("A senha deve ter no mínimo 6 caracteres."); return; }
+    if (newPass.length > 15) { toast.error("A senha deve ter no máximo 15 caracteres."); return; }
     if (newPass !== confirmPass) { toast.error("As senhas não conferem."); return; }
     setSavingPass(true);
     try {
@@ -217,7 +218,7 @@ function PerfilPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><KeyRound className="h-4 w-4" />Senha</CardTitle>
-          <CardDescription>Escolha uma senha forte com pelo menos 6 caracteres.</CardDescription>
+          <CardDescription>Simples e fácil de lembrar: de 6 a 15 caracteres, pode ser só números.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
