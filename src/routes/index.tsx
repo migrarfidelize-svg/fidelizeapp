@@ -1340,7 +1340,8 @@ function Pricing() {
           </div>
         </div>
 
-
+        {/* Comparison table */}
+        <PlansComparison />
 
 
         {/* trust line */}
@@ -1353,9 +1354,110 @@ function Pricing() {
   );
 }
 
+const COMPARE_PLANS = [
+  { name: "Essencial", price: "R$ 29,90", badge: null as string | null },
+  { name: "Profissional", price: "R$ 59,90", badge: "Mais vendido" },
+  { name: "Premium", price: "R$ 119,90", badge: null as string | null },
+];
+
+const COMPARE_ROWS: { label: string; values: (boolean | string)[] }[] = [
+  { label: "Cartão Fidelidade Digital", values: [true, true, true] },
+  { label: "Avaliação de Atendimento", values: [true, true, true] },
+  { label: "Árvore de Links", values: [true, true, true] },
+  { label: "Cardápio Virtual", values: [false, true, true] },
+  { label: "Notificações Push", values: [true, true, true] },
+  { label: "Tag Display", values: [true, true, true] },
+  { label: "QR Codes Inteligentes", values: [true, true, true] },
+  { label: "Clientes cadastrados", values: ["Até 300", "Até 1.000", "Ilimitados"] },
+  { label: "Funcionários", values: ["1", "5", "Ilimitados"] },
+  { label: "Remover marca Fidelize", values: [false, false, true] },
+];
+
+function CompareCell({ value }: { value: boolean | string }) {
+  if (typeof value === "string") return <span className="text-sm font-semibold">{value}</span>;
+  return value ? (
+    <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-primary/30 bg-primary/10">
+      <Check className="h-3.5 w-3.5 text-primary" />
+    </span>
+  ) : (
+    <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-border bg-muted/40">
+      <X className="h-3.5 w-3.5 text-muted-foreground" />
+    </span>
+  );
+}
+
+function PlansComparison() {
+  return (
+    <div className="mt-14">
+      <h3 className="text-center font-display text-2xl font-bold">O que cada plano oferece</h3>
+      <p className="mt-2 text-center text-sm text-muted-foreground">Compare os recursos lado a lado.</p>
+
+      {/* Desktop / tablet */}
+      <div className="mt-8 hidden overflow-hidden rounded-2xl border border-primary/15 bg-card/60 backdrop-blur md:block">
+        <table className="w-full border-collapse text-left">
+          <thead>
+            <tr className="border-b border-primary/15">
+              <th className="p-4 text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">Recursos</th>
+              {COMPARE_PLANS.map((p) => (
+                <th key={p.name} className="p-4 text-center align-bottom">
+                  {p.badge && (
+                    <span className="mb-1 inline-block rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-primary">
+                      ⭐ {p.badge}
+                    </span>
+                  )}
+                  <div className="font-display text-lg font-bold">{p.name}</div>
+                  <div className="text-xs text-muted-foreground">{p.price}/mês</div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {COMPARE_ROWS.map((row, i) => (
+              <tr key={row.label} className={i % 2 ? "bg-muted/20" : undefined}>
+                <td className="p-4 text-sm">{row.label}</td>
+                {row.values.map((v, j) => (
+                  <td key={j} className="p-4 text-center">
+                    <CompareCell value={v} />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile */}
+      <div className="mt-8 space-y-4 md:hidden">
+        {COMPARE_PLANS.map((p, idx) => (
+          <div key={p.name} className="rounded-2xl border border-primary/15 bg-card/60 p-5">
+            <div className="flex items-baseline justify-between">
+              <div>
+                <div className="font-display text-lg font-bold">{p.name}</div>
+                {p.badge && <span className="text-[10px] font-bold uppercase tracking-widest text-primary">⭐ {p.badge}</span>}
+              </div>
+              <div className="text-sm font-semibold">{p.price}/mês</div>
+            </div>
+            <ul className="mt-4 space-y-2">
+              {COMPARE_ROWS.map((row) => (
+                <li key={row.label} className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">{row.label}</span>
+                  <CompareCell value={row.values[idx]} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      <p className="mt-4 text-center text-xs text-muted-foreground">Preços sugeridos. Consulte condições no checkout.</p>
+    </div>
+  );
+}
+
 function FAQ() {
   return <FaqChatSection />;
 }
+
 
 function CTA() {
   return (
