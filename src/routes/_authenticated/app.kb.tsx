@@ -70,6 +70,18 @@ function KbManager() {
       setCatName(""); setCatOpen(false); qc.invalidateQueries({ queryKey: ["kb-admin"] });
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
+  async function importArticles() {
+    setImporting(true);
+    try {
+      const r = await importFn({ data: { establishment_id: est!.id } });
+      if (r.imported === 0) toast.info("Sua base já está com todos os artigos da Central Fidelize.");
+      else toast.success(`${r.imported} artigos importados`);
+      qc.invalidateQueries({ queryKey: ["kb-admin"] });
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
+    finally { setImporting(false); }
+  }
+
+  const total = data?.articles.length ?? 0;
 
   return (
     <div>
@@ -77,20 +89,26 @@ function KbManager() {
         icon={HeroIcon}
         eyebrow={"Ajuda · Base de conhecimento"}
         title={"Base de conhecimento"}
-        subtitle={"74 artigos organizados por categoria com busca instantânea."}
+        subtitle={total > 0
+          ? `${total} artigo${total > 1 ? "s" : ""} em ${data?.categories.length ?? 0} categoria${(data?.categories.length ?? 0) === 1 ? "" : "s"}, com busca instantânea na página pública.`
+          : "Sua base começa vazia. Crie artigos próprios ou importe os artigos oficiais da Central Fidelize."}
       />
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="text-2xl font-bold">Base de conhecimento</h1>
           <p className="text-sm text-muted-foreground">Público em <a href={`/suporte/${est.slug}`} target="_blank" className="text-primary hover:underline">/suporte/{est.slug}</a></p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={importArticles} disabled={importing}>
+            <DownloadCloud className="h-4 w-4 mr-2" />{importing ? "Importando…" : "Importar artigos Fidelize"}
+          </Button>
           <Button variant="outline" onClick={() => setCatOpen(true)}><FolderPlus className="h-4 w-4 mr-2" />Categoria</Button>
           <Button onClick={() => setEditing({ title: "", slug: "", excerpt: "", body_html: "<p></p>", category_id: null, published: false, tags: [] })}>
             <Plus className="h-4 w-4 mr-2" />Novo artigo
           </Button>
         </div>
       </div>
+
 
       <div className="rounded-2xl border bg-card overflow-hidden">
         <table className="w-full">
