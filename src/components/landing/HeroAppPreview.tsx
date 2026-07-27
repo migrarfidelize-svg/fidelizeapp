@@ -285,11 +285,29 @@ function MenuScreen() {
           ))}
         </div>
         <div className="absolute inset-x-0 bottom-0 p-3">
-          <div className="text-sm font-bold text-white">{d.name}</div>
-          <div className="text-[10px] text-white/70">{d.desc}</div>
+          <div
+            className="text-sm font-bold"
+            style={{ color: "#ffffff", textShadow: "0 1px 6px rgba(0,0,0,.75)" }}
+          >
+            {d.name}
+          </div>
+          <div
+            className="text-[10px]"
+            style={{ color: "rgba(255,255,255,.78)", textShadow: "0 1px 5px rgba(0,0,0,.7)" }}
+          >
+            {d.desc}
+          </div>
           <div className="mt-2 flex items-center gap-2">
-            <span className="rounded-lg bg-white px-2 py-1 text-[10px] font-bold text-black">{d.price}</span>
-            <span className="flex items-center gap-1 rounded-lg border border-white/25 px-2 py-1 text-[10px] font-semibold text-white">
+            <span
+              className="rounded-lg px-2 py-1 text-[10px] font-bold"
+              style={{ background: "#ffffff", color: "#0b0b0d" }}
+            >
+              {d.price}
+            </span>
+            <span
+              className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-semibold"
+              style={{ border: "1px solid rgba(255,255,255,.28)", color: "#ffffff" }}
+            >
               Detalhes <ChevronRight className="h-3 w-3" />
             </span>
           </div>
