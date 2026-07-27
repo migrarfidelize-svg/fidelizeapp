@@ -297,7 +297,75 @@ function contrastRatio(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
+const QR_STEPS: { id: number; label: string; title: string; hint: string; icon: LucideIcon }[] = [
+  { id: 1, label: "Destino", title: "Para onde o QR leva", hint: "Escolha o destino do scan, o link público e um 2º QR opcional.", icon: QrCodeIcon },
+  { id: 2, label: "Formato", title: "Formato e modelo do cartaz", hint: "Tamanho da peça, logo do estabelecimento e estilo visual.", icon: Layers },
+  { id: 3, label: "Conteúdo", title: "Textos e cores", hint: "Título, chamadas, escala tipográfica e paleta da peça.", icon: Palette },
+  { id: 4, label: "Extras", title: "Designs e emblemas", hint: "Salve variações para a equipe e adicione selos ao cartaz.", icon: Sparkles },
+  { id: 5, label: "Baixar", title: "Exportar e imprimir", hint: "PNG, PDF, SVG, link do QR e displays físicos de balcão.", icon: FileImage },
+];
+
+function QrStepper({ step, onSelect }: { step: number; onSelect: (s: number) => void }) {
+  const pct = ((step - 1) / (QR_STEPS.length - 1)) * 100;
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-card/70 p-4 backdrop-blur-xl">
+      <div className="pointer-events-none absolute -left-16 -top-16 h-40 w-40 rounded-full bg-primary/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-20 -right-10 h-40 w-40 rounded-full bg-accent/15 blur-3xl" />
+
+      <div className="relative">
+        <div className="mb-3 h-1 w-full overflow-hidden rounded-full bg-border/60">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-[width] duration-500 ease-out"
+            style={{ width: `${Math.max(pct, 6)}%` }}
+          />
+        </div>
+
+        <div className="flex snap-x gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {QR_STEPS.map((s) => {
+            const Icon = s.icon;
+            const active = s.id === step;
+            const done = s.id < step;
+            return (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => onSelect(s.id)}
+                aria-current={active ? "step" : undefined}
+                className={`group relative flex min-w-[7.5rem] flex-1 snap-start items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-all duration-300 ${
+                  active
+                    ? "border-primary bg-primary/10 shadow-[0_0_30px_-10px_hsl(var(--primary)/0.9)]"
+                    : done
+                      ? "border-primary/30 bg-primary/5 hover:border-primary/60"
+                      : "border-border/60 bg-background/40 hover:border-primary/40"
+                }`}
+              >
+                <span
+                  className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[12px] font-black transition ${
+                    active ? "bg-primary text-primary-foreground" : done ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {done ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Etapa {s.id}
+                  </span>
+                  <span className={`block truncate text-[13px] font-bold ${active ? "text-primary" : "text-foreground"}`}>
+                    {s.label}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ReviewQrPage() {
+  const [step, setStep] = useState(1);
+
 
   const getEsts = useServerFn(getMyEstablishments);
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
@@ -1018,20 +1086,34 @@ function ReviewQrPage() {
         subtitle="Um único cartaz, três destinos: Avaliação, Árvore de Links ou Cartão Fidelidade. Escolha abaixo para onde o cliente será direcionado ao escanear."
       />
 
-      <QrDestinationCard establishmentId={est.id} initialDest={search.dest} />
+      <QrStepper step={step} onSelect={setStep} />
 
-      <QrTagsManager establishmentId={est.id} />
-
-
-
-
+      {step === 1 && (
+        <>
+          <QrDestinationCard establishmentId={est.id} initialDest={search.dest} />
+          <QrTagsManager establishmentId={est.id} />
+        </>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
         {/* CONTROLS — glass panel */}
         <Card className="border-primary/15 bg-card/70 backdrop-blur-xl">
           <CardContent className="space-y-6 p-5">
+            <div className="flex items-start gap-3 rounded-xl border border-primary/25 bg-primary/5 p-3">
+              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
+                {(() => { const I = QR_STEPS[step - 1].icon; return <I className="h-4 w-4" />; })()}
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-bold">{QR_STEPS[step - 1].title}</div>
+                <div className="text-[11px] text-muted-foreground">{QR_STEPS[step - 1].hint}</div>
+              </div>
+            </div>
+
             {/* Destination — Main QR */}
+            {step === 1 && (
+            <>
             <div className="space-y-3">
+
               <Label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">QR principal</Label>
 
               {/* Fidelize-only destination */}
@@ -1140,14 +1222,20 @@ function ReviewQrPage() {
                 }}
               />
             </label>
+            </>
+            )}
+
+
 
 
 
 
 
             {/* Format */}
-
+            {step === 2 && (
+            <>
             <div className="space-y-3">
+
               <Label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Formato do cartaz</Label>
               <div className="grid grid-cols-4 gap-2">
                 {(Object.keys(FORMATS) as FormatKey[]).map((k) => {
@@ -1258,9 +1346,14 @@ function ReviewQrPage() {
                 })}
               </div>
             </div>
+            </>
+            )}
 
-            {/* Text fields */}
+
+            {step === 3 && (
+            <>
             <div className="space-y-3">
+
 
               <div className="space-y-1.5">
                 <Label className="text-xs">Título</Label>
@@ -1316,9 +1409,15 @@ function ReviewQrPage() {
                 <Input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} className="h-10 p-1" />
               </div>
             </div>
+            </>
+            )}
+
 
             {/* Saved designs */}
+            {step === 4 && (
+            <>
             <div className="space-y-2 rounded-xl border border-primary/20 bg-primary/5 p-3">
+
               <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-primary">
                 <Palette className="h-3.5 w-3.5" /> Meus designs salvos
               </div>
@@ -1449,6 +1548,9 @@ function ReviewQrPage() {
                 </button>
               )}
             </div>
+            </>
+            )}
+
 
             {/* Scans do QR e Enviar para gráfica parceira — ocultos ao lojista por enquanto.
                 Tracking e diálogo de impressão continuam disponíveis no código. */}
@@ -1460,6 +1562,8 @@ function ReviewQrPage() {
                 Contraste WCAG segue sendo calculado silenciosamente. */}
 
             {/* Actions */}
+            {step === 5 && (
+            <>
             <div className="grid grid-cols-2 gap-2 pt-1">
               <Button onClick={exportPng} disabled={exporting || !targetUrl}>
                 <FileImage className="mr-2 h-4 w-4" /> Baixar PNG
@@ -1478,8 +1582,35 @@ function ReviewQrPage() {
 
             {/* ===== STORE PREVIEW: Adquirir display físico ===== */}
             <div id="loja-displays" className="scroll-mt-4"><DisplayStorePreview /></div>
+            </>
+            )}
+
+            {/* Navegação entre etapas */}
+            <div className="flex items-center justify-between gap-2 border-t border-border/60 pt-4">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={step === 1}
+                onClick={() => setStep((s) => Math.max(1, s - 1))}
+              >
+                ← Voltar
+              </Button>
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Etapa {step} de {QR_STEPS.length}
+              </span>
+              <Button
+                type="button"
+                size="sm"
+                disabled={step === QR_STEPS.length}
+                onClick={() => setStep((s) => Math.min(QR_STEPS.length, s + 1))}
+              >
+                Avançar →
+              </Button>
+            </div>
           </CardContent>
         </Card>
+
 
         {/* PREVIEW */}
         <div className="min-w-0">
