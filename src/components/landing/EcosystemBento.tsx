@@ -1,4 +1,4 @@
-import { BarChart3, Bell, LinkIcon, Megaphone, QrCode, ShieldCheck, Smartphone, Star, Users } from "lucide-react";
+import { BarChart3, Bell, LinkIcon, Megaphone, QrCode, ShieldCheck, ShoppingBag, Smartphone, Star, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useInView } from "./use-in-view";
 
@@ -71,6 +71,22 @@ const FEATURES: Feature[] = [
             </div>
           ))}
         </div>
+      </div>
+    ),
+  },
+  {
+    icon: ShoppingBag,
+    title: "Catálogo digital",
+    sub: "Produtos em vitrine, carrinho e pedido no WhatsApp.",
+    tag: "Vendas",
+    visual: (
+      <div className="grid grid-cols-3 gap-2">
+        {["R$ 89", "R$ 149", "R$ 59"].map((p) => (
+          <div key={p} className="rounded-lg border border-border/60 bg-background/50 p-1.5">
+            <span className="block h-8 rounded-md bg-gradient-to-br from-primary/25 to-accent/20" />
+            <span className="mt-1 block text-center font-mono text-[10px] tabular-nums text-primary">{p}</span>
+          </div>
+        ))}
       </div>
     ),
   },
