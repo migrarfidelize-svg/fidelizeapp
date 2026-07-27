@@ -623,10 +623,47 @@ function MenuPreview({
     return typeof v === "number" ? brl(v) : "—";
   };
 
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || paused) return;
+    let raf = 0;
+    let dir = 1;
+    let last = performance.now();
+    const tick = (now: number) => {
+      const dt = Math.min(now - last, 48);
+      last = now;
+      const max = el.scrollHeight - el.clientHeight;
+      if (max > 8) {
+        el.scrollTop += dir * (dt * 0.022);
+        if (el.scrollTop >= max - 1) dir = -1;
+        if (el.scrollTop <= 0) dir = 1;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [paused, layout, preset, pattern, items]);
+
   return (
-    <div className="space-y-2">
-      <div className="mx-auto w-full max-w-[320px] overflow-hidden rounded-[2rem] border-4 border-foreground/10 shadow-xl">
-        <div style={{ background: bg, color: p.ink }} className="h-[440px] overflow-y-auto">
+    <div className="space-y-3">
+      <div
+        className="showcase-device relative mx-auto w-full max-w-[320px]"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -inset-6 rounded-[3rem] opacity-60 blur-2xl"
+          style={{ background: `radial-gradient(60% 50% at 50% 0%, ${accent}55, transparent 70%)` }}
+        />
+        <div className="relative overflow-hidden rounded-[2.5rem] border-[6px] border-foreground/15 bg-foreground/5 shadow-2xl ring-1 ring-white/10">
+          <span className="absolute left-1/2 top-2 z-20 h-5 w-24 -translate-x-1/2 rounded-full bg-foreground/70" />
+          <span className="absolute inset-x-0 bottom-1.5 z-20 mx-auto h-1 w-24 rounded-full bg-foreground/30" />
+        <div ref={scrollRef} style={{ background: bg, color: p.ink }} className="h-[470px] overflow-y-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+
           <div
             className="h-20 w-full bg-cover bg-center"
             style={
