@@ -70,7 +70,7 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
     bg_color: string | null; accent_color: string | null; text_color: string | null; bg_image_url: string | null;
   }) => {
     setPreset(t.preset);
-    setLayout(t.layout);
+    setLayout(isCatalog && t.layout === "magazine" ? "grid" : t.layout);
     setPattern(t.pattern);
     setEntry(t.entry);
     setBgColor(t.bg_color);
@@ -398,7 +398,7 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
           <Card>
             <CardHeader><CardTitle>3. Layout dos {L.itemsLower}</CardTitle></CardHeader>
             <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              {MENU_LAYOUTS.map((l) => (
+              {MENU_LAYOUTS.filter((l) => !(isCatalog && l.id === "magazine")).map((l) => (
                 <button
                   key={l.id}
                   onClick={() => setLayout(l.id)}
