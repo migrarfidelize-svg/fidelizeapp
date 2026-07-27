@@ -1018,20 +1018,34 @@ function ReviewQrPage() {
         subtitle="Um único cartaz, três destinos: Avaliação, Árvore de Links ou Cartão Fidelidade. Escolha abaixo para onde o cliente será direcionado ao escanear."
       />
 
-      <QrDestinationCard establishmentId={est.id} initialDest={search.dest} />
+      <QrStepper step={step} onSelect={setStep} />
 
-      <QrTagsManager establishmentId={est.id} />
-
-
-
-
+      {step === 1 && (
+        <>
+          <QrDestinationCard establishmentId={est.id} initialDest={search.dest} />
+          <QrTagsManager establishmentId={est.id} />
+        </>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
         {/* CONTROLS — glass panel */}
         <Card className="border-primary/15 bg-card/70 backdrop-blur-xl">
           <CardContent className="space-y-6 p-5">
+            <div className="flex items-start gap-3 rounded-xl border border-primary/25 bg-primary/5 p-3">
+              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
+                {(() => { const I = QR_STEPS[step - 1].icon; return <I className="h-4 w-4" />; })()}
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-bold">{QR_STEPS[step - 1].title}</div>
+                <div className="text-[11px] text-muted-foreground">{QR_STEPS[step - 1].hint}</div>
+              </div>
+            </div>
+
             {/* Destination — Main QR */}
+            {step === 1 && (
+            <>
             <div className="space-y-3">
+
               <Label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">QR principal</Label>
 
               {/* Fidelize-only destination */}
