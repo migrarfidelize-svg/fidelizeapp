@@ -2396,14 +2396,15 @@ function PortraitBody(p: PosterProps) {
       </DraggableItem>
 
       {/* Title */}
-      <DraggableItem itemKey="title" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
-        <h2 className="text-center font-black leading-tight" style={{ color: p.textColor, fontSize: `${20 * (effectiveScale / 100)}px` }}>{p.title}</h2>
+      <DraggableItem itemKey="title" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[84%]">
+        <h2 className="text-center font-black leading-tight [text-wrap:balance]" style={{ color: p.textColor, fontSize: `${19 * (effectiveScale / 100)}px` }}>{p.title}</h2>
       </DraggableItem>
 
       {/* Subtitle */}
-      <DraggableItem itemKey="subtitle" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[80%]">
-        <p className="text-center opacity-70" style={{ color: p.textColor, fontSize: `${11 * (effectiveScale / 100)}px` }}>{p.subtitle}</p>
+      <DraggableItem itemKey="subtitle" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[76%]">
+        <p className="text-center opacity-70 [text-wrap:balance]" style={{ color: p.textColor, fontSize: `${11 * (effectiveScale / 100)}px` }}>{p.subtitle}</p>
       </DraggableItem>
+
 
       {/* Primary QR */}
       <DraggableItem itemKey="primaryQr" layout={p.layout} setLayout={p.setLayout} editable={p.editable}>
