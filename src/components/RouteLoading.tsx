@@ -21,7 +21,7 @@ export function RouteLoading({
       aria-busy="true"
       className={cn(
         "flex w-full flex-col items-center justify-center gap-3 bg-background [background-image:none]",
-        fullscreen ? "min-h-[70dvh]" : "py-16",
+        fullscreen ? "fixed inset-0 z-[9999] min-h-dvh" : "min-h-dvh py-16",
         className,
       )}
     >
