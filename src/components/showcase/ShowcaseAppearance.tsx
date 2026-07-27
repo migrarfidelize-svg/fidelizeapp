@@ -446,7 +446,33 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
           </Card>
           )}
 
+          <div className="flex items-center justify-between gap-2">
+            <Button variant="ghost" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+            </Button>
+            <div className="flex items-center gap-1.5">
+              {steps.map((s, i) => (
+                <button
+                  key={s.id}
+                  aria-label={s.title}
+                  onClick={() => setStep(i)}
+                  className={`h-1.5 rounded-full transition-all ${i === step ? "w-6 bg-primary" : "w-2 bg-border hover:bg-primary/50"}`}
+                />
+              ))}
+            </div>
+            {step < steps.length - 1 ? (
+              <Button onClick={() => setStep((s) => Math.min(steps.length - 1, s + 1))}>
+                Continuar <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            ) : (
+              <Button variant="outline" onClick={() => setStep(0)}>
+                <RotateCcw className="mr-2 h-4 w-4" /> Revisar
+              </Button>
+            )}
+          </div>
+
           <div className="sticky bottom-3 z-20 flex flex-wrap items-center gap-2 rounded-2xl border border-border/60 bg-background/90 p-3 backdrop-blur">
+
             <Button onClick={() => mut.mutate()} disabled={!estId || mut.isPending || !dirty}>
               {mut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Salvar aparência
