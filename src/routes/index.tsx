@@ -1399,7 +1399,7 @@ function CTA() {
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="h-14 rounded-none border-primary/30 text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary font-semibold uppercase tracking-widest text-sm transition-colors">
-              <Link to="/precos">Ver planos</Link>
+              <a href="#precos">Ver planos</a>
             </Button>
           </div>
 
