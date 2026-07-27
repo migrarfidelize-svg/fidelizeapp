@@ -127,23 +127,21 @@ function AdminLayout() {
 
   const navItemClass = (active: boolean) =>
     [
-      "flex items-center gap-3 rounded-xl px-3 h-10 text-sm font-medium transition-colors",
+      "flex items-center gap-3 rounded-xl px-3 h-[var(--nav-item-h,2.5rem)] text-[length:var(--nav-fs,0.875rem)] font-medium transition-colors",
       active
         ? "bg-primary-soft text-primary"
         : "text-muted-foreground hover:bg-muted hover:text-foreground",
     ].join(" ");
 
   const renderNav = (onNavigate?: () => void) => (
-    <nav className="flex-1 space-y-4 overflow-y-auto px-2.5 py-3">
-      <div className="space-y-1">
-        <Link to={OVERVIEW.to} onClick={onNavigate} className={navItemClass(isItemActive(OVERVIEW))}>
-          <OVERVIEW.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.8} />
-          <span className="truncate">{OVERVIEW.label}</span>
-        </Link>
-      </div>
+    <nav className="nav-dense flex flex-1 flex-col gap-[var(--nav-gap)] overflow-y-auto px-2.5 py-[var(--nav-py)]">
+      <Link to={OVERVIEW.to} onClick={onNavigate} className={navItemClass(isItemActive(OVERVIEW))}>
+        <OVERVIEW.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.8} />
+        <span className="truncate">{OVERVIEW.label}</span>
+      </Link>
       {NAV_GROUPS.map((g) => (
-        <div key={g.key} className="space-y-1">
-          <div className="px-3 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+        <div key={g.key} className="flex flex-col gap-[var(--nav-gap)] pt-[var(--nav-gap)]">
+          <div className="px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
             {g.label}
           </div>
           {g.items.map((n) => (
@@ -156,6 +154,7 @@ function AdminLayout() {
       ))}
     </nav>
   );
+
 
   return (
     <TooltipProvider>

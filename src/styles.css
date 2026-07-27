@@ -2686,3 +2686,21 @@ html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"]
 @media (prefers-reduced-motion: reduce) {
   .kinetic-track { animation-duration: 200s; }
 }
+
+/* ---- Densidade adaptativa da sidebar (mantém o menu inteiro visível sem scroll) ---- */
+.nav-dense {
+  --nav-item-h: 2.5rem;
+  --nav-gap: 0.375rem;
+  --nav-py: 0.75rem;
+  --nav-icon: 2rem;
+  --nav-fs: 0.875rem;
+}
+@media (max-height: 900px) {
+  .nav-dense { --nav-item-h: 2.25rem; --nav-gap: 0.25rem; --nav-py: 0.5rem; --nav-icon: 1.75rem; --nav-fs: 0.8125rem; }
+}
+@media (max-height: 820px) {
+  .nav-dense { --nav-item-h: 2.125rem; --nav-gap: 0.1875rem; --nav-py: 0.375rem; --nav-icon: 1.625rem; --nav-fs: 0.8125rem; }
+}
+@media (max-height: 720px) {
+  .nav-dense { --nav-item-h: 2rem; --nav-gap: 0.125rem; --nav-py: 0.25rem; --nav-icon: 1.5rem; --nav-fs: 0.78rem; }
+}

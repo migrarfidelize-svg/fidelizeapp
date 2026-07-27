@@ -218,8 +218,10 @@ function AppLayout() {
   // mantém a categoria da rota atual expandida
   useEffect(() => {
     const g = NAV_GROUPS.find((grp) => grp.items.some((n) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))));
-    if (g) setOpenGroups((prev) => (prev.includes(g.key) ? prev : [...prev, g.key]));
+    // apenas uma categoria aberta por vez: mantém o menu inteiro visível sem scroll
+    setOpenGroups(g ? [g.key] : []);
   }, [pathname]);
+
   // fecha o menu mobile ao trocar de rota
   useEffect(() => { setMobileOpen(false); }, [pathname]);
 
@@ -376,7 +378,7 @@ function AppLayout() {
         data-tour={`nav-${n.to}`}
         onClick={onNavigate}
         className={[
-          "group relative flex items-center gap-3 rounded-xl h-10 text-sm font-medium transition-colors",
+          "group relative flex items-center gap-3 rounded-xl h-[var(--nav-item-h,2.5rem)] text-[length:var(--nav-fs,0.875rem)] font-medium transition-colors",
           showLabel ? "px-3" : "px-0 justify-center",
           active ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
         ].join(" ")}
@@ -388,7 +390,7 @@ function AppLayout() {
             className="nav-item-active-aurora"
           />
         )}
-        <span className="relative z-10 grid place-items-center h-8 w-8 shrink-0">
+        <span className="relative z-10 grid place-items-center h-[var(--nav-icon,2rem)] w-[var(--nav-icon,2rem)] shrink-0">
           <n.icon
             className={`h-[18px] w-[18px] ${active ? "nav-icon-active" : "nav-icon-idle"}`}
             strokeWidth={active ? 2.4 : 1.8}
@@ -433,7 +435,7 @@ function AppLayout() {
     const showLabel = forceExpanded || !collapsed;
     return (
       <LayoutGroup id="sidebar-nav">
-        <nav className="flex-1 px-2.5 py-3 space-y-1.5 overflow-y-auto overflow-x-visible">
+        <nav className="nav-dense flex flex-1 flex-col gap-[var(--nav-gap)] px-2.5 py-[var(--nav-py)] overflow-y-auto overflow-x-visible">
           {filteredGroups.map((g) => {
             const GroupIcon = g.icon;
             const groupActive = g.items.some(isItemActive);
@@ -462,17 +464,18 @@ function AppLayout() {
               >
                 <button
                   type="button"
-                  onClick={() => setOpenGroups((prev) => (prev.includes(g.key) ? prev.filter((k) => k !== g.key) : [...prev, g.key]))}
+                  onClick={() => setOpenGroups((prev) => (prev.includes(g.key) ? [] : [g.key]))}
                   aria-expanded={expanded}
                   className={[
-                    "relative w-full flex items-center gap-3 rounded-xl h-10 text-sm font-semibold transition-colors",
+                    "relative w-full flex items-center gap-3 rounded-xl h-[var(--nav-item-h,2.5rem)] text-[length:var(--nav-fs,0.875rem)] font-semibold transition-colors",
                     showLabel ? "px-3" : "px-0 justify-center",
                     groupActive ? "text-foreground bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
                   ].join(" ")}
                 >
-                  <span className="grid place-items-center h-8 w-8 shrink-0">
+                  <span className="grid place-items-center h-[var(--nav-icon,2rem)] w-[var(--nav-icon,2rem)] shrink-0">
                     <GroupIcon className={`h-[18px] w-[18px] ${groupActive ? "text-primary" : ""}`} strokeWidth={groupActive ? 2.3 : 1.8} />
                   </span>
+
                   {showLabel && (
                     <>
                       <span className="flex-1 text-left whitespace-nowrap">{g.label}</span>
@@ -492,7 +495,7 @@ function AppLayout() {
                       transition={{ duration: 0.18 }}
                       className="overflow-hidden"
                     >
-                      <div className={`space-y-1 py-1 ${showLabel ? "ml-4 border-l border-border/60 pl-2" : ""}`}>
+                      <div className={`flex flex-col gap-[var(--nav-gap)] py-[var(--nav-gap)] ${showLabel ? "ml-4 border-l border-border/60 pl-2" : ""}`}>
                         {g.items.map((n) => renderNavItem(n, onNavigate, forceExpanded))}
                       </div>
                     </motion.div>
