@@ -214,6 +214,8 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
               ))}
             </CardContent>
           </Card>
+          )}
+
 
           {/* FUNDO */}
           {step === 2 && (
