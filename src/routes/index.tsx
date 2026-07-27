@@ -86,7 +86,7 @@ function Landing() {
       <SiteHeader />
       <main>
         <Hero />
-        <DiscoverMenuShowcase />
+
         
         <Segments />
         <EcosystemBento />
