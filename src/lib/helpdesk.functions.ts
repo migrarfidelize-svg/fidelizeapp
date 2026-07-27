@@ -538,3 +538,92 @@ export const deleteQuickReply = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+
+// ---------- Importar artigos da Central de Ajuda Fidelize ----------
+function mdToHtml(md: string): string {
+  const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const inline = (s: string) =>
+    esc(s)
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/`(.+?)`/g, "<code>$1</code>");
+  const out: string[] = [];
+  let list: string[] | null = null;
+  const flush = () => {
+    if (list) { out.push(`<ul>${list.map((i) => `<li>${i}</li>`).join("")}</ul>`); list = null; }
+  };
+  for (const raw of md.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line) { flush(); continue; }
+    const h = /^(#{2,4})\s+(.*)$/.exec(line);
+    if (h) { flush(); const lvl = Math.min(h[1].length, 4); out.push(`<h${lvl}>${inline(h[2])}</h${lvl}>`); continue; }
+    const li = /^(?:[-*]|\d+\.)\s+(.*)$/.exec(line);
+    if (li) { (list ??= []).push(inline(li[1])); continue; }
+    flush();
+    out.push(`<p>${inline(line)}</p>`);
+  }
+  flush();
+  return out.join("");
+}
+
+export const importFidelizeArticles = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ establishment_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: member } = await context.supabase
+      .from("establishment_members")
+      .select("role")
+      .eq("establishment_id", data.establishment_id)
+      .eq("user_id", context.userId)
+      .eq("active", true)
+      .maybeSingle();
+    if (!member || !["owner", "manager"].includes(member.role)) throw new Error("Sem permissão");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [{ data: srcCats }, { data: srcArts }, { data: curCats }, { data: curArts }] = await Promise.all([
+      supabaseAdmin.from("help_categories").select("id, slug, name, description, icon, sort_order").eq("active", true).order("sort_order"),
+      supabaseAdmin.from("help_articles").select("id, category_id, slug, title, excerpt, content, keywords, sort_order").eq("published", true).order("sort_order"),
+      supabaseAdmin.from("kb_categories").select("id, slug").eq("establishment_id", data.establishment_id),
+      supabaseAdmin.from("kb_articles").select("slug").eq("establishment_id", data.establishment_id),
+    ]);
+
+    const catBySlug = new Map((curCats ?? []).map((c) => [c.slug, c.id]));
+    const missing = (srcCats ?? []).filter((c) => !catBySlug.has(c.slug));
+    if (missing.length) {
+      const { data: inserted, error } = await supabaseAdmin
+        .from("kb_categories")
+        .insert(missing.map((c) => ({
+          establishment_id: data.establishment_id,
+          name: c.name, slug: c.slug, description: c.description ?? null,
+          icon: c.icon ?? null, sort_order: c.sort_order ?? 0,
+        })))
+        .select("id, slug");
+      if (error) throw new Error(error.message);
+      (inserted ?? []).forEach((c) => catBySlug.set(c.slug, c.id));
+    }
+    const srcCatSlug = new Map((srcCats ?? []).map((c) => [c.id, c.slug]));
+
+    const existing = new Set((curArts ?? []).map((a) => a.slug));
+    const rows = (srcArts ?? [])
+      .filter((a) => !existing.has(a.slug))
+      .map((a) => {
+        const body_html = mdToHtml(a.content ?? "");
+        return {
+          establishment_id: data.establishment_id,
+          category_id: catBySlug.get(srcCatSlug.get(a.category_id) ?? "") ?? null,
+          title: a.title,
+          slug: a.slug,
+          excerpt: a.excerpt ?? null,
+          body_html,
+          body_text: body_html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(),
+          tags: a.keywords ? String(a.keywords).split(",").map((t) => t.trim()).filter(Boolean).slice(0, 10) : [],
+          published: true,
+          author_id: context.userId,
+        };
+      });
+
+    if (rows.length) {
+      const { error } = await supabaseAdmin.from("kb_articles").insert(rows);
+      if (error) throw new Error(error.message);
+    }
+    return { imported: rows.length, categories: missing.length };
+  });
