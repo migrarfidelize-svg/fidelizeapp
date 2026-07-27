@@ -57,73 +57,76 @@
 
 /* ============================================================
    TEMA CLARO — "Cyan Circuit Light"
-   Fundo porcelain frio, cyan profundo como cor-mãe, magenta como acento.
-   Mantém a identidade sem clichês de IA (sem roxo/índigo).
+   Fundo porcelain frio, ROXO como cor-mãe e violeta/índigo como acento.
+   Saturação reduzida (~25%) para um visual premium, sem neon e sem rosa.
    ============================================================ */
 :root {
   --radius: 1rem;
 
-  --background: oklch(0.985 0.006 220);
-  --foreground: oklch(0.14 0.04 235);
+  --background: oklch(0.985 0.006 285);
+  --foreground: oklch(0.16 0.03 285);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.14 0.04 235);
+  --card-foreground: oklch(0.16 0.03 285);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.14 0.04 235);
+  --popover-foreground: oklch(0.16 0.03 285);
 
-  --primary: oklch(0.52 0.24 295);
-  --primary-foreground: oklch(0.99 0.005 295);
-  --primary-soft: oklch(0.9 0.08 295);
+  /* Roxo oficial — hue 288 (violeta puro, longe de magenta ≥ 320) */
+  --primary: oklch(0.50 0.165 288);
+  --primary-foreground: oklch(0.99 0.004 288);
+  --primary-soft: oklch(0.92 0.045 288);
 
-  --secondary: oklch(0.93 0.014 220);
-  --secondary-foreground: oklch(0.18 0.04 235);
+  --secondary: oklch(0.94 0.012 285);
+  --secondary-foreground: oklch(0.20 0.03 285);
 
-  --muted: oklch(0.955 0.01 220);
-  --muted-foreground: oklch(0.36 0.04 232);
+  --muted: oklch(0.96 0.008 285);
+  --muted-foreground: oklch(0.40 0.025 285);
 
-  --accent: oklch(0.56 0.22 335);
-  --accent-foreground: oklch(0.99 0.005 330);
-  --accent-soft: oklch(0.92 0.07 335);
+  /* Acento: violeta/índigo (antes era magenta 335) */
+  --accent: oklch(0.54 0.145 275);
+  --accent-foreground: oklch(0.99 0.004 275);
+  --accent-soft: oklch(0.93 0.045 275);
 
-  --destructive: oklch(0.55 0.24 22);
-  --destructive-foreground: oklch(0.99 0.005 20);
-  --success: oklch(0.55 0.17 165);
-  --success-foreground: oklch(0.99 0.005 165);
+  --destructive: oklch(0.55 0.175 25);
+  --destructive-foreground: oklch(0.99 0.004 25);
+  --success: oklch(0.55 0.125 165);
+  --success-foreground: oklch(0.99 0.004 165);
 
-  --border: oklch(0.18 0.04 235 / 18%);
-  --input: oklch(0.18 0.04 235 / 22%);
-  --ring: oklch(0.52 0.24 295);
+  --border: oklch(0.20 0.03 285 / 16%);
+  --input: oklch(0.20 0.03 285 / 20%);
+  --ring: oklch(0.50 0.165 288);
 
-  --chart-1: oklch(0.52 0.24 295);
-  --chart-2: oklch(0.56 0.22 335);
-  --chart-3: oklch(0.55 0.17 165);
-  --chart-4: oklch(0.65 0.17 85);
-  --chart-5: oklch(0.5 0.2 265);
+  --chart-1: oklch(0.50 0.155 288);
+  --chart-2: oklch(0.55 0.135 272);
+  --chart-3: oklch(0.55 0.12 165);
+  --chart-4: oklch(0.66 0.12 85);
+  --chart-5: oklch(0.52 0.13 255);
 
-  --sidebar: oklch(0.97 0.008 220);
-  --sidebar-foreground: oklch(0.18 0.04 235);
-  --sidebar-primary: oklch(0.52 0.24 295);
-  --sidebar-primary-foreground: oklch(0.99 0.005 295);
-  --sidebar-accent: oklch(0.93 0.014 220);
-  --sidebar-accent-foreground: oklch(0.18 0.04 235);
-  --sidebar-border: oklch(0.18 0.04 235 / 18%);
-  --sidebar-ring: oklch(0.52 0.24 295);
+  --sidebar: oklch(0.975 0.007 285);
+  --sidebar-foreground: oklch(0.20 0.03 285);
+  --sidebar-primary: oklch(0.50 0.165 288);
+  --sidebar-primary-foreground: oklch(0.99 0.004 288);
+  --sidebar-accent: oklch(0.94 0.012 285);
+  --sidebar-accent-foreground: oklch(0.20 0.03 285);
+  --sidebar-border: oklch(0.20 0.03 285 / 16%);
+  --sidebar-ring: oklch(0.50 0.165 288);
 
-  --grid-line: color-mix(in oklab, var(--primary) 16%, transparent);
-  --glass-bg: color-mix(in oklab, var(--card) 78%, transparent);
-  --glass-border: color-mix(in oklab, var(--primary) 32%, transparent);
-  --glow-primary: color-mix(in oklab, var(--primary) 48%, transparent);
-  --glow-accent: color-mix(in oklab, var(--accent) 42%, transparent);
-  --hairline: color-mix(in oklab, var(--primary) 30%, transparent);
+  --grid-line: color-mix(in oklab, var(--primary) 11%, transparent);
+  --glass-bg: color-mix(in oklab, var(--card) 80%, transparent);
+  --glass-border: color-mix(in oklab, var(--primary) 22%, transparent);
+  --glow-primary: color-mix(in oklab, var(--primary) 30%, transparent);
+  --glow-accent: color-mix(in oklab, var(--accent) 26%, transparent);
+  --hairline: color-mix(in oklab, var(--primary) 20%, transparent);
 
   --gradient-hero:
-    radial-gradient(1200px 600px at 15% -10%, color-mix(in oklab, var(--primary) 18%, transparent), transparent 60%),
-    radial-gradient(900px 500px at 100% 0%, color-mix(in oklab, var(--accent) 14%, transparent), transparent 60%),
-    radial-gradient(700px 500px at 50% 120%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 60%);
+    radial-gradient(1200px 600px at 15% -10%, color-mix(in oklab, var(--primary) 12%, transparent), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, color-mix(in oklab, var(--accent) 9%, transparent), transparent 60%),
+    radial-gradient(700px 500px at 50% 120%, color-mix(in oklab, var(--primary) 7%, transparent), transparent 60%);
   --gradient-line: linear-gradient(135deg,
-    color-mix(in oklab, var(--primary) 70%, transparent),
-    color-mix(in oklab, var(--accent) 55%, transparent));
+    color-mix(in oklab, var(--primary) 60%, transparent),
+    color-mix(in oklab, var(--accent) 45%, transparent));
 }
+
 
 /* ============================================================
    TEMA ESCURO — Dark Premium "Cyan Circuit" (#00ffff)
