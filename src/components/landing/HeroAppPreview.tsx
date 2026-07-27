@@ -5,9 +5,11 @@ import {
   ChevronRight,
   Gift,
   QrCode,
+  ShoppingBag,
+  ShoppingCart,
   Star,
   Stamp,
-  TrendingUp,
+  
   UtensilsCrossed,
   Wallet,
 } from "lucide-react";
@@ -15,12 +17,13 @@ import {
 const CYAN = "#00ffff";
 const MAGENTA = "#d946ef";
 
-type ScreenKey = "carteira" | "carimbar" | "cardapio";
+type ScreenKey = "carteira" | "carimbar" | "cardapio" | "catalogo";
 
 const SCREENS: { key: ScreenKey; label: string; icon: typeof Wallet }[] = [
-  { key: "carteira", label: "Carteira do cliente", icon: Wallet },
-  { key: "carimbar", label: "Painel do lojista", icon: Stamp },
-  { key: "cardapio", label: "Cardápio digital", icon: UtensilsCrossed },
+  { key: "carteira", label: "Carteira", icon: Wallet },
+  { key: "carimbar", label: "Lojista", icon: Stamp },
+  { key: "cardapio", label: "Cardápio", icon: UtensilsCrossed },
+  { key: "catalogo", label: "Catálogo", icon: ShoppingBag },
 ];
 
 const DURATION = 5200;
@@ -80,51 +83,15 @@ export function HeroAppPreview() {
             {active === "carteira" && <WalletScreen />}
             {active === "carimbar" && <MerchantScreen />}
             {active === "cardapio" && <MenuScreen />}
+            {active === "catalogo" && <CatalogScreen />}
+
           </div>
         </div>
       </div>
 
-      {/* floating real-time toast */}
-      <div
-        className="absolute -left-8 top-[6%] hidden w-[180px] rounded-xl border p-2.5 shadow-xl backdrop-blur lg:block"
-        style={{ borderColor: `${CYAN}44`, background: "rgba(2,6,23,0.82)" }}
-      >
-        <div className="flex items-center gap-2">
-          <span
-            className="grid h-7 w-7 shrink-0 place-items-center rounded-lg"
-            style={{ background: `${CYAN}1f`, color: CYAN }}
-          >
-            <BadgeCheck className="h-4 w-4" />
-          </span>
-          <div className="min-w-0">
-            <p className="truncate text-[11px] font-semibold text-white">Carimbo confirmado</p>
-            <p className="truncate text-[10px] text-white/55">Ana · agora mesmo</p>
-          </div>
-        </div>
-      </div>
-
-      {/* floating metric */}
-      <div
-        className="absolute -right-3 bottom-[16%] hidden w-[170px] rounded-xl border p-3 shadow-xl backdrop-blur md:block"
-        style={{ borderColor: "rgba(255,255,255,0.14)", background: "rgba(2,6,23,0.82)" }}
-      >
-        <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-white/50">
-          <TrendingUp className="h-3 w-3" style={{ color: CYAN }} /> Retorno
-        </div>
-        <div className="mt-1 text-2xl font-bold text-white">+38%</div>
-        <div className="mt-2 flex h-8 items-end gap-1">
-          {[9, 13, 11, 17, 20, 24].map((h, k) => (
-            <span
-              key={k}
-              className="flex-1 rounded-[2px]"
-              style={{ height: `${h}px`, background: k === 5 ? CYAN : `${CYAN}55` }}
-            />
-          ))}
-        </div>
-      </div>
 
       {/* tabs / progress */}
-      <div className="mx-auto mt-5 flex max-w-[300px] items-center justify-center gap-2">
+      <div className="mx-auto mt-5 flex max-w-[340px] items-center justify-center gap-1.5">
         {SCREENS.map((s, k) => {
           const Icon = s.icon;
           const on = k === i;
@@ -136,7 +103,7 @@ export function HeroAppPreview() {
                 setI(k);
                 setT(0);
               }}
-              className="group relative flex-1 overflow-hidden rounded-lg border px-2 py-1.5 text-left transition-colors"
+              className="group relative flex-1 overflow-hidden rounded-lg border px-1.5 py-1.5 text-left transition-colors"
               style={{
                 borderColor: on ? `${CYAN}66` : "rgba(255,255,255,0.12)",
                 background: on ? `${CYAN}12` : "rgba(255,255,255,0.04)",
@@ -335,5 +302,52 @@ function Metric({ label, value }: { label: string; value: string }) {
       <p className="text-[9px] uppercase tracking-wider text-white/45">{label}</p>
       <p className="text-lg font-bold text-white">{value}</p>
     </div>
+  );
+}
+
+function CatalogScreen() {
+  const products = [
+    { name: "Fone Bluetooth", price: "R$ 189", hue: 210 },
+    { name: "Kit Skincare", price: "R$ 129", hue: 340 },
+    { name: "Tênis Runner", price: "R$ 299", hue: 150 },
+    { name: "Relógio Smart", price: "R$ 459", hue: 45 },
+  ];
+  const [n, setN] = useState(1);
+  useEffect(() => {
+    const id = setTimeout(() => setN(2), 1200);
+    return () => clearTimeout(id);
+  }, []);
+  return (
+    <ScreenShell sub="Cliente" title="Catálogo digital">
+      <div className="grid grid-cols-2 gap-2">
+        {products.map((p) => (
+          <div
+            key={p.name}
+            className="overflow-hidden rounded-xl border"
+            style={{ borderColor: "rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)" }}
+          >
+            <div
+              className="h-14 w-full"
+              style={{ background: `radial-gradient(110% 80% at 50% 20%, oklch(0.5 0.13 ${p.hue}), oklch(0.18 0.03 ${p.hue}) 75%)` }}
+            />
+            <div className="p-1.5">
+              <p className="truncate text-[10px] font-semibold text-white">{p.name}</p>
+              <div className="mt-1 flex items-center justify-between">
+                <span className="text-[10px] font-bold" style={{ color: CYAN }}>{p.price}</span>
+                <span
+                  className="grid h-5 w-5 place-items-center rounded-md"
+                  style={{ background: `${CYAN}1f`, color: CYAN }}
+                >
+                  <ShoppingCart className="h-3 w-3" />
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3">
+        <Row icon={ShoppingCart} title={`Carrinho · ${n} itens`} sub="Enviar pedido pelo WhatsApp" tone={MAGENTA} />
+      </div>
+    </ScreenShell>
   );
 }

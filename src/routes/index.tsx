@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
 import { SegmentsCarousel } from "@/components/SegmentsCarousel";
-import { DiscoverMenuShowcase } from "@/components/DiscoverMenuShowcase";
+import { HeroAppPreview } from "@/components/landing/HeroAppPreview";
 import { EcosystemBento } from "@/components/landing/EcosystemBento";
 
 import { RoiCalculator } from "@/components/landing/RoiCalculator";
@@ -86,7 +86,7 @@ function Landing() {
       <SiteHeader />
       <main>
         <Hero />
-        <DiscoverMenuShowcase />
+
         
         <Segments />
         <EcosystemBento />
@@ -259,55 +259,61 @@ function Hero() {
       
 
       
-      <div className="relative z-10 mx-auto max-w-4xl px-4 py-20 text-center md:py-28">
-        <div className="mx-auto flex max-w-3xl flex-col items-center text-white">
-          <span
-            className="landing-hero-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
-            style={{ background: `${CYAN}14`, border: `1px solid ${CYAN}55`, color: CYAN }}
-          >
-            <Sparkles className="h-3 w-3" /> 1 plataforma · 9 ferramentas de retenção
-          </span>
-          <h1 className="mt-5 font-display text-5xl font-extrabold leading-[1.15] tracking-tight md:text-6xl md:leading-[1.1] pb-1">
-            Tudo que seu negócio<br />
-            precisa para o<br />
-            <span style={{ color: CYAN, textShadow: `0 0 40px ${CYAN}55` }}>cliente voltar</span>.
-          </h1>
-
-          <p className="mt-5 max-w-xl text-lg text-white/70">
-            Fidelidade digital, cardápio, avaliações, QR Code, push e CRM — num só painel. Sem app, sem cartão de papel.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Button
-              asChild
-              size="lg"
-              className="font-bold hover:brightness-110 transition-all"
-              style={{ background: CYAN, color: OBSIDIAN, boxShadow: `0 0 30px ${CYAN}55` }}
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-16 md:py-24">
+        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(300px,420px)] lg:gap-14">
+          <div className="min-w-0 flex flex-col items-start text-left text-white">
+            <span
+              className="landing-hero-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
+              style={{ background: `${CYAN}14`, border: `1px solid ${CYAN}55`, color: CYAN }}
             >
-              <Link to="/auth" search={{ mode: "signup" }}>
-                Começar grátis <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
+              <Sparkles className="h-3 w-3" /> 1 plataforma · 9 ferramentas de retenção
+            </span>
+            <h1 className="mt-5 font-display text-4xl font-extrabold leading-[1.12] tracking-tight sm:text-5xl md:text-6xl pb-1">
+              Tudo que seu negócio<br />
+              precisa para o<br />
+              <span style={{ color: CYAN, textShadow: `0 0 40px ${CYAN}55` }}>cliente voltar</span>.
+            </h1>
 
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="bg-transparent text-white border-white/20 hover:bg-white/10 hover:text-white"
-            >
-              <a href="#ecossistema">Ver como funciona</a>
-            </Button>
+            <p className="mt-5 max-w-xl text-base text-white/70 md:text-lg">
+              Fidelidade digital, cardápio, catálogo, avaliações, QR Code, push e CRM — num só painel. Sem app, sem cartão de papel.
+            </p>
+            <div className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+              <Button
+                asChild
+                size="lg"
+                className="w-full sm:w-auto font-bold hover:brightness-110 transition-all"
+                style={{ background: CYAN, color: OBSIDIAN, boxShadow: `0 0 30px ${CYAN}55` }}
+              >
+                <Link to="/auth" search={{ mode: "signup" }}>
+                  Começar grátis <ArrowRight className="ml-1 h-4 w-4" />
+                </Link>
+              </Button>
+
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="w-full sm:w-auto bg-transparent text-white border-white/20 hover:bg-white/10 hover:text-white"
+              >
+                <a href="#ecossistema">Ver como funciona</a>
+              </Button>
+            </div>
+            <div className="mt-6 flex flex-wrap items-center gap-6 text-xs text-white/60">
+              <span className="flex items-center gap-1.5">
+                <Check className="h-4 w-4" style={{ color: CYAN }} /> Sem cartão de crédito
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Check className="h-4 w-4" style={{ color: CYAN }} /> Configure em 5 minutos
+              </span>
+            </div>
           </div>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-white/60">
-            <span className="flex items-center gap-1.5">
-              <Check className="h-4 w-4" style={{ color: CYAN }} /> Sem cartão de crédito
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Check className="h-4 w-4" style={{ color: CYAN }} /> Configure em 5 minutos
-            </span>
+
+          <div className="flex justify-center lg:justify-end">
+            <HeroAppPreview />
           </div>
         </div>
-
       </div>
+
     </section>
   );
 }
