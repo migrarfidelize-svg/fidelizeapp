@@ -1340,7 +1340,8 @@ function Pricing() {
           </div>
         </div>
 
-
+        {/* Comparison table */}
+        <PlansComparison />
 
 
         {/* trust line */}
