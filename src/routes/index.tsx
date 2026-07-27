@@ -322,9 +322,9 @@ function Segments() {
   return (
     <section
       id="segmentos"
-      className="relative overflow-hidden border-y border-border bg-white py-16 dark:border-white/10 md:py-20"
-      style={undefined}
+      className="relative overflow-hidden border-y border-border bg-white py-16 dark:border-white/10 dark:bg-[#050810] md:py-20"
     >
+
       <div
         className="pointer-events-none absolute inset-0 hidden dark:block"
         style={{ background: "radial-gradient(70% 60% at 50% 0%, rgba(255,255,255,0.07), transparent 70%)" }}
