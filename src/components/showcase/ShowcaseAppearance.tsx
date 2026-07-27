@@ -396,8 +396,10 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
           </Card>
 
           {/* LAYOUT */}
+          {step === 3 && (
           <Card>
-            <CardHeader><CardTitle>3. Layout dos {L.itemsLower}</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Layout dos {L.itemsLower}</CardTitle></CardHeader>
+
             <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               {MENU_LAYOUTS.filter((l) => !(isCatalog && l.id === "magazine")).map((l) => (
                 <button
