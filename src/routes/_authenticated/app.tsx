@@ -118,6 +118,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: "/app/carimbar", label: "Carimbar", icon: Stamp },
       { to: "/app/campanhas", label: "Campanhas de fidelidade", icon: Sparkles },
+      { to: "/app/wallet", label: "Carteira digital", icon: Wallet },
     ],
   },
   {
