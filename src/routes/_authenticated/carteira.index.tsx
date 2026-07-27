@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -42,7 +43,7 @@ export const Route = createFileRoute("/_authenticated/carteira/")({
   },
   head: () => ({ meta: [{ title: "Início — Carteira Fidelize" }, { name: "robots", content: "noindex" }] }),
   component: WalletHome,
-  pendingComponent: () => <WalletHomeSkeleton />,
+  pendingComponent: () => <RouteLoading label="Carregando sua carteira…" fullscreen={false} />,
   errorComponent: ({ error, reset }) => {
     return <WalletErrorState error={error} onRetry={reset} />;
   },
