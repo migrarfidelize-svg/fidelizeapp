@@ -462,17 +462,18 @@ function AppLayout() {
               >
                 <button
                   type="button"
-                  onClick={() => setOpenGroups((prev) => (prev.includes(g.key) ? prev.filter((k) => k !== g.key) : [...prev, g.key]))}
+                  onClick={() => setOpenGroups((prev) => (prev.includes(g.key) ? [] : [g.key]))}
                   aria-expanded={expanded}
                   className={[
-                    "relative w-full flex items-center gap-3 rounded-xl h-10 text-sm font-semibold transition-colors",
+                    "relative w-full flex items-center gap-3 rounded-xl h-[var(--nav-item-h,2.5rem)] text-[length:var(--nav-fs,0.875rem)] font-semibold transition-colors",
                     showLabel ? "px-3" : "px-0 justify-center",
                     groupActive ? "text-foreground bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
                   ].join(" ")}
                 >
-                  <span className="grid place-items-center h-8 w-8 shrink-0">
+                  <span className="grid place-items-center h-[var(--nav-icon,2rem)] w-[var(--nav-icon,2rem)] shrink-0">
                     <GroupIcon className={`h-[18px] w-[18px] ${groupActive ? "text-primary" : ""}`} strokeWidth={groupActive ? 2.3 : 1.8} />
                   </span>
+
                   {showLabel && (
                     <>
                       <span className="flex-1 text-left whitespace-nowrap">{g.label}</span>
