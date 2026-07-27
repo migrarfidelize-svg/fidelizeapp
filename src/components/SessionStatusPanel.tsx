@@ -85,7 +85,7 @@ export function SessionStatusPanel() {
     preview: "bg-amber-500/20 text-amber-300 border-amber-500/40",
     published: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
     local: "bg-sky-500/20 text-sky-300 border-sky-500/40",
-    custom: "bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/40",
+    custom: "bg-violet-500/20 text-violet-300 border-violet-500/40",
   };
 
   const syncSession = async () => {

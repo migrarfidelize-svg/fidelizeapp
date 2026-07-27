@@ -488,9 +488,9 @@ function AchievementsAndRecapRow() {
 
       <Link
         to="/carteira/retrospectiva"
-        className="group relative flex items-center gap-3 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-fuchsia-500/10 via-card/40 to-card/40 p-3 transition-all hover:border-fuchsia-500/50"
+        className="group relative flex items-center gap-3 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-violet-500/10 via-card/40 to-card/40 p-3 transition-all hover:border-violet-500/50"
       >
-        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-fuchsia-500/25 to-purple-500/15 text-fuchsia-500 dark:text-fuchsia-300">
+        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-violet-500/25 to-purple-500/15 text-violet-500 dark:text-violet-300">
           <Calendar className="h-5 w-5" />
         </div>
         <div className="min-w-0 flex-1">

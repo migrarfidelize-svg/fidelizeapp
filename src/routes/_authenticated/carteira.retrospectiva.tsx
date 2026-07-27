@@ -69,10 +69,10 @@ function RecapPage() {
       </div>
 
       {/* Hero cinematográfico */}
-      <div className="relative overflow-hidden rounded-3xl border border-primary/40 bg-gradient-to-br from-primary/25 via-fuchsia-500/10 to-amber-500/15 p-6 text-center shadow-xl">
+      <div className="relative overflow-hidden rounded-3xl border border-primary/40 bg-gradient-to-br from-primary/25 via-violet-500/10 to-amber-500/15 p-6 text-center shadow-xl">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -left-10 -top-10 h-40 w-40 rounded-full bg-primary/30 blur-3xl" />
-          <div className="absolute -bottom-10 -right-10 h-40 w-40 rounded-full bg-fuchsia-500/25 blur-3xl" />
+          <div className="absolute -bottom-10 -right-10 h-40 w-40 rounded-full bg-violet-500/25 blur-3xl" />
         </div>
         <div className="relative">
           <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-primary/50 bg-background/60 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary backdrop-blur">
@@ -114,7 +114,7 @@ function RecapPage() {
               icon={<Gift className="h-5 w-5" />}
               label="Prêmios resgatados"
               value={totalRewards}
-              accent="from-fuchsia-500/20 to-purple-500/10"
+              accent="from-violet-500/20 to-purple-500/10"
             />
             <RecapTile
               icon={<MapPin className="h-5 w-5" />}

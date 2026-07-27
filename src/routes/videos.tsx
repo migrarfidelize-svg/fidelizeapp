@@ -249,7 +249,7 @@ function ScenePreview2() {
         animate={{ y: [-12, 0, 0, -4], opacity: [0, 1, 1, 0] }}
         transition={{ duration: DURATION, repeat: Infinity, times: [0, 0.1, 0.85, 1] }}
       >
-        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-fuchsia-300">
+        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-violet-300">
           Como foi seu atendimento?
         </div>
         <div className="mt-1 text-xl font-bold text-white">Barbearia Conceito</div>
@@ -304,7 +304,7 @@ function ScenePreview2() {
               <div className="font-mono text-[9px] uppercase tracking-widest text-white/40">
                 NPS
               </div>
-              <div className="mt-0.5 font-mono text-lg font-bold text-fuchsia-300 tabular-nums">
+              <div className="mt-0.5 font-mono text-lg font-bold text-violet-300 tabular-nums">
                 +{nps}
               </div>
             </div>
@@ -362,7 +362,7 @@ function ScenePreview3() {
 
           {/* Profile */}
           <div className="mt-3 text-center">
-            <div className="mx-auto grid h-14 w-14 place-items-center rounded-full border border-cyan-300/40 bg-gradient-to-br from-cyan-300/20 to-fuchsia-400/20">
+            <div className="mx-auto grid h-14 w-14 place-items-center rounded-full border border-cyan-300/40 bg-gradient-to-br from-cyan-300/20 to-violet-400/20">
               <Sparkles className="h-5 w-5 text-cyan-300" />
             </div>
             <div className="mt-2 text-sm font-bold text-white">@caferitual</div>
@@ -558,7 +558,7 @@ function ScenePreview4() {
           opacity: [0, 1, 1, 0],
         }}
         transition={{ duration: DURATION, repeat: Infinity, times: [0, 0.45, 0.75, 1] }}
-        className="absolute bottom-14 right-2 z-20 w-24 rounded-xl border border-white/15 bg-gradient-to-br from-fuchsia-500/30 via-black/60 to-cyan-500/30 p-2.5 shadow-[0_20px_40px_-15px_rgba(255,47,214,0.6)] backdrop-blur"
+        className="absolute bottom-14 right-2 z-20 w-24 rounded-xl border border-white/15 bg-gradient-to-br from-violet-500/30 via-black/60 to-cyan-500/30 p-2.5 shadow-[0_20px_40px_-15px_rgba(124,58,237,0.6)] backdrop-blur"
       >
         <div className="flex items-center justify-between">
           <Nfc className="h-3.5 w-3.5 text-white" />

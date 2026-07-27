@@ -26,9 +26,9 @@ const RARITY_STYLES: Record<BadgeProps["rarity"], { ring: string; bg: string; te
     label: "Rara",
   },
   epic: {
-    ring: "ring-fuchsia-400/70",
-    bg: "bg-gradient-to-br from-fuchsia-500/25 to-purple-500/15",
-    text: "text-fuchsia-500 dark:text-fuchsia-300",
+    ring: "ring-violet-400/70",
+    bg: "bg-gradient-to-br from-violet-500/25 to-purple-500/15",
+    text: "text-violet-500 dark:text-violet-300",
     label: "Épica",
   },
   legendary: {
