@@ -100,7 +100,7 @@ function IntegrationsPage() {
         title="Centro de Integrações"
         subtitle="Configure, teste e monitore todas as integrações (IA, Pagamentos e Webhooks) em um único painel. Credenciais editáveis e armazenadas apenas no backend."
         icon={Plug}
-        gradient="from-indigo-600 via-violet-600 to-fuchsia-600"
+        gradient="from-indigo-600 via-violet-600 to-violet-600"
         accent="#a855f7"
         stats={[
           { label: "IA ativas", value: aiConfigured },

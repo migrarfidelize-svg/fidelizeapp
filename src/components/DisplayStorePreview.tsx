@@ -34,7 +34,7 @@ const MODELS: DisplayModel[] = [
     price: 89.9,
     oldPrice: 119.9,
     features: ["Chip NFC embutido", "Acrílico premium 5mm", "Impressão dupla face"],
-    gradient: "from-fuchsia-500/25 via-primary/10 to-transparent",
+    gradient: "from-violet-500/25 via-primary/10 to-transparent",
     accent: "border-primary/50",
     icon: "◈",
   },
@@ -67,7 +67,7 @@ export function DisplayStorePreview() {
     <div className="relative overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/10 via-background to-background p-4 shadow-inner">
       {/* subtle animated glow */}
       <div className="pointer-events-none absolute -top-16 right-0 h-40 w-40 rounded-full bg-primary/20 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-16 left-0 h-40 w-40 rounded-full bg-fuchsia-500/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-16 left-0 h-40 w-40 rounded-full bg-violet-500/10 blur-3xl" />
 
       <div className="relative space-y-3">
         {/* Header */}
@@ -160,7 +160,7 @@ export function DisplayStorePreview() {
         {/* CTA */}
         <Button
           onClick={() => openStore(selected)}
-          className="group w-full bg-gradient-to-r from-primary via-primary to-fuchsia-500 text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:shadow-xl hover:shadow-primary/40"
+          className="group w-full bg-gradient-to-r from-primary via-primary to-violet-500 text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:shadow-xl hover:shadow-primary/40"
         >
           <ShoppingBag className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
           Comprar {MODELS.find((m) => m.id === selected)?.name}

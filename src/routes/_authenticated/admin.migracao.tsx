@@ -65,7 +65,7 @@ const DOWNLOADS = [
     file: "MIGRACAO-INDEPENDENTE.md",
     size: "~10 KB",
     badge: "Documentação",
-    tone: "from-fuchsia-500/20 to-pink-500/10",
+    tone: "from-violet-500/20 to-violet-500/10",
   },
   {
     icon: Database,
@@ -222,7 +222,7 @@ function MigracaoPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 space-y-8">
       {/* HERO */}
-      <div className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-primary/10 via-fuchsia-500/5 to-cyan-500/10 p-8">
+      <div className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-primary/10 via-violet-500/5 to-cyan-500/10 p-8">
         <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/20 blur-3xl" />
         <div className="relative flex items-start gap-4">
           <div className="rounded-2xl bg-primary/15 p-4 text-primary">
@@ -274,11 +274,11 @@ function MigracaoPage() {
 
       {/* EXPORT AUTH USERS */}
       <section>
-        <Card className="relative overflow-hidden border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-500/10 via-purple-500/5 to-cyan-500/10">
-          <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-fuchsia-500/20 blur-3xl" />
+        <Card className="relative overflow-hidden border-violet-500/30 bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-cyan-500/10">
+          <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-violet-500/20 blur-3xl" />
           <CardHeader className="relative">
             <div className="flex items-start gap-3">
-              <div className="rounded-xl bg-fuchsia-500/15 p-3 text-fuchsia-500">
+              <div className="rounded-xl bg-violet-500/15 p-3 text-violet-500">
                 <Users className="h-5 w-5" />
               </div>
               <div className="flex-1">
@@ -298,7 +298,7 @@ function MigracaoPage() {
             <Button
               onClick={handleExportUsers}
               disabled={exportingUsers}
-              className="w-full md:w-auto bg-fuchsia-500 hover:bg-fuchsia-600 text-white"
+              className="w-full md:w-auto bg-violet-500 hover:bg-violet-600 text-white"
             >
               {exportingUsers ? (
                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gerando JSON...</>
@@ -510,7 +510,7 @@ function MigracaoPage() {
       </section>
 
       {/* CTA final */}
-      <Card className="bg-gradient-to-br from-primary/10 to-fuchsia-500/5 border-primary/30">
+      <Card className="bg-gradient-to-br from-primary/10 to-violet-500/5 border-primary/30">
         <CardContent className="p-6 flex flex-col md:flex-row items-center gap-4 justify-between">
           <div>
             <h3 className="font-display text-lg font-bold">Precisa de links úteis?</h3>

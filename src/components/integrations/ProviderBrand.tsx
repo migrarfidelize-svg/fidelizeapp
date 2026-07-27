@@ -32,7 +32,7 @@ const BRANDS: Record<string, BrandDef> = {
     ),
   },
   gemini: {
-    gradient: "from-sky-400 via-indigo-500 to-fuchsia-500",
+    gradient: "from-sky-400 via-indigo-500 to-violet-500",
     ring: "#6366f1",
     glyph: glyph(
       <path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5L12 2z" fill="white" />,
@@ -56,7 +56,7 @@ const BRANDS: Record<string, BrandDef> = {
     ),
   },
   openrouter: {
-    gradient: "from-violet-500 via-purple-600 to-pink-600",
+    gradient: "from-violet-500 via-purple-600 to-violet-700",
     ring: "#a855f7",
     glyph: glyph(
       <>
