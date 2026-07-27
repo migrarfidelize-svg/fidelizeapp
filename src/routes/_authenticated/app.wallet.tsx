@@ -274,45 +274,42 @@ function WalletPage() {
 
             {/* Prévia */}
             <div className="lg:sticky lg:top-24 lg:self-start">
-              <div className="rounded-3xl border p-4">
+              <div className="rounded-3xl border bg-card/60 p-4 backdrop-blur">
                 <p className="mb-3 text-xs font-medium text-muted-foreground">Prévia do cartão</p>
-                <div className="rounded-2xl p-4 shadow-lg" style={{ background: bg, color: fg }}>
-                  <div className="flex items-center gap-3">
-                    {logoUrl
-                      ? <img src={logoUrl} alt="Logo do estabelecimento" className="h-10 w-10 rounded-lg object-cover" loading="lazy" />
-                      : <div className="h-10 w-10 rounded-lg bg-white/20" />}
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-semibold">{est?.name ?? "Seu negócio"}</div>
-                      <div className="truncate text-[11px]" style={{ color: label }}>
-                        {frontText || "Cartão fidelidade"}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                    {fields.stamps && (
-                      <div><div className="text-[10px] uppercase" style={{ color: label }}>Carimbos</div><div className="font-semibold">7 / 10</div></div>
-                    )}
-                    {fields.tier && (
-                      <div><div className="text-[10px] uppercase" style={{ color: label }}>Nível</div><div className="font-semibold">Ouro</div></div>
-                    )}
-                    {fields.points && (
-                      <div><div className="text-[10px] uppercase" style={{ color: label }}>Visitas</div><div className="font-semibold">23</div></div>
-                    )}
-                    {fields.code && (
-                      <div><div className="text-[10px] uppercase" style={{ color: label }}>Código</div><div className="font-semibold">FD-8241</div></div>
-                    )}
-                  </div>
-                  {customMessage && <p className="mt-4 text-xs opacity-90">{customMessage}</p>}
-                  {showQr && (
-                    <div className="mt-4 flex justify-center">
-                      <div className="h-24 w-24 rounded-lg bg-white p-1">
-                        <div className="h-full w-full rounded bg-[repeating-linear-gradient(45deg,#000_0_4px,#fff_4px_8px)]" />
-                      </div>
-                    </div>
-                  )}
+                <WalletCardPreview
+                  skin={skin}
+                  bg={bg}
+                  fg={fg}
+                  label={label}
+                  establishmentName={est?.name ?? "Seu negócio"}
+                  logoUrl={logoUrl || undefined}
+                  frontText={frontText}
+                  customMessage={customMessage}
+                  backText={backText}
+                  showQr={showQr}
+                  fields={fields}
+                />
+
+                <p className="mb-2 mt-5 text-xs font-medium text-muted-foreground">Estilo do cartão</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {CARD_SKINS.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setSkin(s.id)}
+                      aria-pressed={skin === s.id}
+                      className={`rounded-xl border p-2 text-left transition-colors ${
+                        skin === s.id ? "border-primary bg-primary/5" : "hover:border-primary/40"
+                      }`}
+                    >
+                      <span className="block text-xs font-semibold">{s.name}</span>
+                      <span className="mt-0.5 block text-[10px] leading-snug text-muted-foreground">{s.hint}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
+
           </div>
         </>
       )}
