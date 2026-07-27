@@ -9,7 +9,7 @@ import {
   ShoppingCart,
   Star,
   Stamp,
-  TrendingUp,
+  
   UtensilsCrossed,
   Wallet,
 } from "lucide-react";
