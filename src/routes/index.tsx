@@ -266,7 +266,7 @@ function Hero() {
               className="landing-hero-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
               style={{ background: `${CYAN}14`, border: `1px solid ${CYAN}55`, color: CYAN }}
             >
-              <Sparkles className="h-3 w-3" /> 1 plataforma · 9 ferramentas de retenção
+              <Sparkles className="h-3 w-3" /> 1 plataforma · 10 ferramentas de retenção
             </span>
             <h1 className="mt-5 font-display text-4xl font-extrabold leading-[1.12] tracking-tight sm:text-5xl md:text-6xl pb-1">
               Tudo que seu negócio<br />

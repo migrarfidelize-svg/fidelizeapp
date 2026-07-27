@@ -35,7 +35,7 @@ const VARIANTS: Variant[] = [
     id: "A",
     name: "Plataforma completa",
     note: "Posiciona a Fidelize como suíte, não só cartão. Bom para justificar preço.",
-    badge: "1 plataforma · 9 ferramentas de retenção",
+    badge: "1 plataforma · 10 ferramentas de retenção",
     title: (
       <>
         Tudo que seu negócio
