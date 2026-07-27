@@ -146,13 +146,54 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
         icon={Palette}
         eyebrow={L.eyebrow}
         title="Aparência da vitrine"
-        subtitle={`Escolha o tema de cores, a textura de fundo (ou sua própria imagem) e o layout dos ${L.itemsLower}. A prévia ao lado mostra exatamente como o cliente vai ver.`}
+        subtitle={`Monte sua vitrine em ${steps.length} passos. Cada ajuste aparece na hora no celular ao lado — do jeitinho que o cliente vai ver.`}
       />
+
+      {/* STEPPER */}
+      <div className="overflow-hidden rounded-3xl border border-border/60 bg-card/60 p-3 backdrop-blur">
+        <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {steps.map((s, i) => {
+            const active = i === step;
+            const done = i < step;
+            const Icon = s.icon;
+            return (
+              <button
+                key={s.id}
+                onClick={() => setStep(i)}
+                className={`group flex min-w-[9.5rem] flex-1 items-center gap-2.5 rounded-2xl border px-3 py-2.5 text-left transition-all ${
+                  active
+                    ? "border-primary bg-primary/10 shadow-[0_0_0_3px_hsl(var(--primary)/0.12)]"
+                    : "border-border/60 hover:border-primary/50 hover:bg-muted/50"
+                }`}
+              >
+                <span
+                  className={`grid h-8 w-8 flex-none place-items-center rounded-xl text-xs font-bold transition ${
+                    active ? "bg-primary text-primary-foreground" : done ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {done ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Passo {i + 1}</span>
+                  <span className="block truncate text-sm font-semibold">{s.title}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="mt-2 h-1 overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-primary transition-all duration-500"
+            style={{ width: `${((step + 1) / steps.length) * 100}%` }}
+          />
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.5fr_1fr]">
         <div className="space-y-4">
           {/* LOGO */}
-          {est && (
+          {step === 0 && est && (
+
             <Card>
               <CardHeader><CardTitle>Logo {isCatalog ? "do catálogo" : "do cardápio"}</CardTitle></CardHeader>
               <CardContent>
