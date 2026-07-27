@@ -161,7 +161,7 @@ type PosterLayout = Record<LayoutKey, LayoutPos>;
 const DEFAULT_LAYOUT: PosterLayout = {
   header:      { x: 50, y: 14 },
   title:       { x: 50, y: 37 },
-  subtitle:    { x: 50, y: 45 },
+  subtitle:    { x: 50, y: 43 },
   primaryQr:   { x: 50, y: 65 },
   secondaryQr: { x: 74, y: 65 },
   nfc:         { x: 50, y: 80 },
@@ -419,7 +419,7 @@ function ReviewQrPage() {
   // without wiping user customizations.
   const prevFormatRef = useRef<FormatKey>("counter15x10");
   const prevLandscapeRef = useRef(false);
-  const [badges, setBadges] = useState<BadgeInstance[]>([{ key: "wifi", x: 50, y: 18 }]);
+  const [badges, setBadges] = useState<BadgeInstance[]>([{ key: "wifi", ...DEFAULT_BADGE_POS.wifi }]);
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [savedTarget, setSavedTarget] = useState<"ls" | "idb" | "fail">("ls");
   const [savedTick, setSavedTick] = useState(0);
