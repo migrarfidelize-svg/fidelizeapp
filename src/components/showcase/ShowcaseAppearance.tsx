@@ -189,8 +189,10 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
           )}
 
           {/* TEMAS */}
+          {step === 1 && (
           <Card>
-            <CardHeader><CardTitle>1. Tema de cores</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Tema de cores</CardTitle></CardHeader>
+
             <CardContent className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {MENU_PRESETS.map((p) => (
                 <button
