@@ -15,12 +15,13 @@ import {
 const CYAN = "#00ffff";
 const MAGENTA = "#d946ef";
 
-type ScreenKey = "carteira" | "carimbar" | "cardapio";
+type ScreenKey = "carteira" | "carimbar" | "cardapio" | "catalogo";
 
 const SCREENS: { key: ScreenKey; label: string; icon: typeof Wallet }[] = [
-  { key: "carteira", label: "Carteira do cliente", icon: Wallet },
-  { key: "carimbar", label: "Painel do lojista", icon: Stamp },
-  { key: "cardapio", label: "Cardápio digital", icon: UtensilsCrossed },
+  { key: "carteira", label: "Carteira", icon: Wallet },
+  { key: "carimbar", label: "Lojista", icon: Stamp },
+  { key: "cardapio", label: "Cardápio", icon: UtensilsCrossed },
+  { key: "catalogo", label: "Catálogo", icon: ShoppingBag },
 ];
 
 const DURATION = 5200;
