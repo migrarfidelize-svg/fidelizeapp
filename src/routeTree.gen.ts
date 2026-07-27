@@ -57,6 +57,7 @@ import { Route as AuthenticatedCarteiraHistoricoRouteImport } from './routes/_au
 import { Route as AuthenticatedCarteiraDescobrirRouteImport } from './routes/_authenticated/carteira.descobrir'
 import { Route as AuthenticatedCarteiraConquistasRouteImport } from './routes/_authenticated/carteira.conquistas'
 import { Route as AuthenticatedCarteiraSlugRouteImport } from './routes/_authenticated/carteira.$slug'
+import { Route as AuthenticatedAppWalletRouteImport } from './routes/_authenticated/app.wallet'
 import { Route as AuthenticatedAppRetencaoRouteImport } from './routes/_authenticated/app.retencao'
 import { Route as AuthenticatedAppQrcodesRouteImport } from './routes/_authenticated/app.qrcodes'
 import { Route as AuthenticatedAppQrRouteImport } from './routes/_authenticated/app.qr'
@@ -106,6 +107,7 @@ import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api/p
 import { Route as ApiPublicWebhooksAsaasRouteImport } from './routes/api/public/webhooks/asaas'
 import { Route as ApiPublicTEventRouteImport } from './routes/api/public/t/event'
 import { Route as ApiPublicMercadopagoPublicKeyRouteImport } from './routes/api/public/mercadopago/public-key'
+import { Route as ApiPublicHooksWalletSyncRouteImport } from './routes/api/public/hooks/wallet-sync'
 import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/api/public/hooks/process-email-queue'
 import { Route as ApiPublicHooksNotifyExpiringRewardsRouteImport } from './routes/api/public/hooks/notify-expiring-rewards'
 import { Route as ApiPublicHooksMercadopagoRetryRouteImport } from './routes/api/public/hooks/mercadopago-retry'
@@ -124,10 +126,14 @@ import { Route as AuthenticatedAppAvaliacoesTemaRouteImport } from './routes/_au
 import { Route as AuthenticatedAppAvaliacoesQrRouteImport } from './routes/_authenticated/app.avaliacoes.qr'
 import { Route as AuthenticatedAdminSuporteIdRouteImport } from './routes/_authenticated/admin.suporte.$id'
 import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authenticated/admin.empresa.$id'
+import { Route as ApiPublicWalletV1LogRouteImport } from './routes/api/public/wallet/v1/log'
 import { Route as ApiPublicWalletAppleTokenRouteImport } from './routes/api/public/wallet.apple.$token'
 import { Route as ApiPublicRTCodeRouteImport } from './routes/api/public/r/t/$code'
 import { Route as AuthenticatedAppFidelizeTicketIdRouteImport } from './routes/_authenticated/app.fidelize.ticket.$id'
 import { Route as ApiPublicRQrSlugDestRouteImport } from './routes/api/public/r/qr/$slug/$dest'
+import { Route as ApiPublicWalletV1PassesPassTypeIdSerialRouteImport } from './routes/api/public/wallet/v1/passes.$passTypeId.$serial'
+import { Route as ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteImport } from './routes/api/public/wallet/v1/devices.$deviceId.registrations.$passTypeId'
+import { Route as ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRouteImport } from './routes/api/public/wallet/v1/devices.$deviceId.registrations.$passTypeId.$serial'
 
 const VideosRoute = VideosRouteImport.update({
   id: '/videos',
@@ -377,6 +383,11 @@ const AuthenticatedCarteiraSlugRoute =
     path: '/$slug',
     getParentRoute: () => AuthenticatedCarteiraRoute,
   } as any)
+const AuthenticatedAppWalletRoute = AuthenticatedAppWalletRouteImport.update({
+  id: '/wallet',
+  path: '/wallet',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAppRetencaoRoute =
   AuthenticatedAppRetencaoRouteImport.update({
     id: '/retencao',
@@ -661,6 +672,12 @@ const ApiPublicMercadopagoPublicKeyRoute =
     path: '/api/public/mercadopago/public-key',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksWalletSyncRoute =
+  ApiPublicHooksWalletSyncRouteImport.update({
+    id: '/api/public/hooks/wallet-sync',
+    path: '/api/public/hooks/wallet-sync',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksProcessEmailQueueRoute =
   ApiPublicHooksProcessEmailQueueRouteImport.update({
     id: '/api/public/hooks/process-email-queue',
@@ -768,6 +785,11 @@ const AuthenticatedAdminEmpresaIdRoute =
     path: '/empresa/$id',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const ApiPublicWalletV1LogRoute = ApiPublicWalletV1LogRouteImport.update({
+  id: '/api/public/wallet/v1/log',
+  path: '/api/public/wallet/v1/log',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWalletAppleTokenRoute =
   ApiPublicWalletAppleTokenRouteImport.update({
     id: '/api/public/wallet/apple/$token',
@@ -790,6 +812,27 @@ const ApiPublicRQrSlugDestRoute = ApiPublicRQrSlugDestRouteImport.update({
   path: '/api/public/r/qr/$slug/$dest',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWalletV1PassesPassTypeIdSerialRoute =
+  ApiPublicWalletV1PassesPassTypeIdSerialRouteImport.update({
+    id: '/api/public/wallet/v1/passes/$passTypeId/$serial',
+    path: '/api/public/wallet/v1/passes/$passTypeId/$serial',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRoute =
+  ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteImport.update({
+    id: '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId',
+    path: '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRoute =
+  ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRouteImport.update(
+    {
+      id: '/$serial',
+      path: '/$serial',
+      getParentRoute: () =>
+        ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRoute,
+    } as any,
+  )
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -860,6 +903,7 @@ export interface FileRoutesByFullPath {
   '/app/qr': typeof AuthenticatedAppQrRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/retencao': typeof AuthenticatedAppRetencaoRoute
+  '/app/wallet': typeof AuthenticatedAppWalletRoute
   '/carteira/$slug': typeof AuthenticatedCarteiraSlugRouteWithChildren
   '/carteira/conquistas': typeof AuthenticatedCarteiraConquistasRoute
   '/carteira/descobrir': typeof AuthenticatedCarteiraDescobrirRoute
@@ -894,6 +938,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/notify-expiring-rewards': typeof ApiPublicHooksNotifyExpiringRewardsRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
+  '/api/public/hooks/wallet-sync': typeof ApiPublicHooksWalletSyncRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
   '/api/public/t/event': typeof ApiPublicTEventRoute
   '/api/public/webhooks/asaas': typeof ApiPublicWebhooksAsaasRoute
@@ -909,7 +954,11 @@ export interface FileRoutesByFullPath {
   '/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
   '/api/public/r/t/$code': typeof ApiPublicRTCodeRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
+  '/api/public/wallet/v1/log': typeof ApiPublicWalletV1LogRoute
   '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
+  '/api/public/wallet/v1/passes/$passTypeId/$serial': typeof ApiPublicWalletV1PassesPassTypeIdSerialRoute
+  '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId': typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren
+  '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId/$serial': typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -975,6 +1024,7 @@ export interface FileRoutesByTo {
   '/app/qr': typeof AuthenticatedAppQrRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/retencao': typeof AuthenticatedAppRetencaoRoute
+  '/app/wallet': typeof AuthenticatedAppWalletRoute
   '/carteira/$slug': typeof AuthenticatedCarteiraSlugRouteWithChildren
   '/carteira/conquistas': typeof AuthenticatedCarteiraConquistasRoute
   '/carteira/descobrir': typeof AuthenticatedCarteiraDescobrirRoute
@@ -1009,6 +1059,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/notify-expiring-rewards': typeof ApiPublicHooksNotifyExpiringRewardsRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
+  '/api/public/hooks/wallet-sync': typeof ApiPublicHooksWalletSyncRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
   '/api/public/t/event': typeof ApiPublicTEventRoute
   '/api/public/webhooks/asaas': typeof ApiPublicWebhooksAsaasRoute
@@ -1024,7 +1075,11 @@ export interface FileRoutesByTo {
   '/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
   '/api/public/r/t/$code': typeof ApiPublicRTCodeRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
+  '/api/public/wallet/v1/log': typeof ApiPublicWalletV1LogRoute
   '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
+  '/api/public/wallet/v1/passes/$passTypeId/$serial': typeof ApiPublicWalletV1PassesPassTypeIdSerialRoute
+  '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId': typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren
+  '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId/$serial': typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -1097,6 +1152,7 @@ export interface FileRoutesById {
   '/_authenticated/app/qr': typeof AuthenticatedAppQrRoute
   '/_authenticated/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/_authenticated/app/retencao': typeof AuthenticatedAppRetencaoRoute
+  '/_authenticated/app/wallet': typeof AuthenticatedAppWalletRoute
   '/_authenticated/carteira/$slug': typeof AuthenticatedCarteiraSlugRouteWithChildren
   '/_authenticated/carteira/conquistas': typeof AuthenticatedCarteiraConquistasRoute
   '/_authenticated/carteira/descobrir': typeof AuthenticatedCarteiraDescobrirRoute
@@ -1131,6 +1187,7 @@ export interface FileRoutesById {
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/notify-expiring-rewards': typeof ApiPublicHooksNotifyExpiringRewardsRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
+  '/api/public/hooks/wallet-sync': typeof ApiPublicHooksWalletSyncRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
   '/api/public/t/event': typeof ApiPublicTEventRoute
   '/api/public/webhooks/asaas': typeof ApiPublicWebhooksAsaasRoute
@@ -1146,7 +1203,11 @@ export interface FileRoutesById {
   '/_authenticated/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
   '/api/public/r/t/$code': typeof ApiPublicRTCodeRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
+  '/api/public/wallet/v1/log': typeof ApiPublicWalletV1LogRoute
   '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
+  '/api/public/wallet/v1/passes/$passTypeId/$serial': typeof ApiPublicWalletV1PassesPassTypeIdSerialRoute
+  '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId': typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren
+  '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId/$serial': typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -1219,6 +1280,7 @@ export interface FileRouteTypes {
     | '/app/qr'
     | '/app/qrcodes'
     | '/app/retencao'
+    | '/app/wallet'
     | '/carteira/$slug'
     | '/carteira/conquistas'
     | '/carteira/descobrir'
@@ -1253,6 +1315,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/notify-expiring-rewards'
     | '/api/public/hooks/process-email-queue'
+    | '/api/public/hooks/wallet-sync'
     | '/api/public/mercadopago/public-key'
     | '/api/public/t/event'
     | '/api/public/webhooks/asaas'
@@ -1268,7 +1331,11 @@ export interface FileRouteTypes {
     | '/app/fidelize/ticket/$id'
     | '/api/public/r/t/$code'
     | '/api/public/wallet/apple/$token'
+    | '/api/public/wallet/v1/log'
     | '/api/public/r/qr/$slug/$dest'
+    | '/api/public/wallet/v1/passes/$passTypeId/$serial'
+    | '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId'
+    | '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId/$serial'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -1334,6 +1401,7 @@ export interface FileRouteTypes {
     | '/app/qr'
     | '/app/qrcodes'
     | '/app/retencao'
+    | '/app/wallet'
     | '/carteira/$slug'
     | '/carteira/conquistas'
     | '/carteira/descobrir'
@@ -1368,6 +1436,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/notify-expiring-rewards'
     | '/api/public/hooks/process-email-queue'
+    | '/api/public/hooks/wallet-sync'
     | '/api/public/mercadopago/public-key'
     | '/api/public/t/event'
     | '/api/public/webhooks/asaas'
@@ -1383,7 +1452,11 @@ export interface FileRouteTypes {
     | '/app/fidelize/ticket/$id'
     | '/api/public/r/t/$code'
     | '/api/public/wallet/apple/$token'
+    | '/api/public/wallet/v1/log'
     | '/api/public/r/qr/$slug/$dest'
+    | '/api/public/wallet/v1/passes/$passTypeId/$serial'
+    | '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId'
+    | '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId/$serial'
   id:
     | '__root__'
     | '/'
@@ -1455,6 +1528,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/qr'
     | '/_authenticated/app/qrcodes'
     | '/_authenticated/app/retencao'
+    | '/_authenticated/app/wallet'
     | '/_authenticated/carteira/$slug'
     | '/_authenticated/carteira/conquistas'
     | '/_authenticated/carteira/descobrir'
@@ -1489,6 +1563,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/notify-expiring-rewards'
     | '/api/public/hooks/process-email-queue'
+    | '/api/public/hooks/wallet-sync'
     | '/api/public/mercadopago/public-key'
     | '/api/public/t/event'
     | '/api/public/webhooks/asaas'
@@ -1504,7 +1579,11 @@ export interface FileRouteTypes {
     | '/_authenticated/app/fidelize/ticket/$id'
     | '/api/public/r/t/$code'
     | '/api/public/wallet/apple/$token'
+    | '/api/public/wallet/v1/log'
     | '/api/public/r/qr/$slug/$dest'
+    | '/api/public/wallet/v1/passes/$passTypeId/$serial'
+    | '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId'
+    | '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId/$serial'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1545,6 +1624,7 @@ export interface RootRouteChildren {
   ApiPublicHooksMercadopagoRetryRoute: typeof ApiPublicHooksMercadopagoRetryRoute
   ApiPublicHooksNotifyExpiringRewardsRoute: typeof ApiPublicHooksNotifyExpiringRewardsRoute
   ApiPublicHooksProcessEmailQueueRoute: typeof ApiPublicHooksProcessEmailQueueRoute
+  ApiPublicHooksWalletSyncRoute: typeof ApiPublicHooksWalletSyncRoute
   ApiPublicMercadopagoPublicKeyRoute: typeof ApiPublicMercadopagoPublicKeyRoute
   ApiPublicTEventRoute: typeof ApiPublicTEventRoute
   ApiPublicWebhooksAsaasRoute: typeof ApiPublicWebhooksAsaasRoute
@@ -1552,7 +1632,10 @@ export interface RootRouteChildren {
   SuporteSlugKbArticleRoute: typeof SuporteSlugKbArticleRoute
   ApiPublicRTCodeRoute: typeof ApiPublicRTCodeRoute
   ApiPublicWalletAppleTokenRoute: typeof ApiPublicWalletAppleTokenRoute
+  ApiPublicWalletV1LogRoute: typeof ApiPublicWalletV1LogRoute
   ApiPublicRQrSlugDestRoute: typeof ApiPublicRQrSlugDestRoute
+  ApiPublicWalletV1PassesPassTypeIdSerialRoute: typeof ApiPublicWalletV1PassesPassTypeIdSerialRoute
+  ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRoute: typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -1892,6 +1975,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/carteira/$slug'
       preLoaderRoute: typeof AuthenticatedCarteiraSlugRouteImport
       parentRoute: typeof AuthenticatedCarteiraRoute
+    }
+    '/_authenticated/app/wallet': {
+      id: '/_authenticated/app/wallet'
+      path: '/wallet'
+      fullPath: '/app/wallet'
+      preLoaderRoute: typeof AuthenticatedAppWalletRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/app/retencao': {
       id: '/_authenticated/app/retencao'
@@ -2236,6 +2326,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicMercadopagoPublicKeyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/wallet-sync': {
+      id: '/api/public/hooks/wallet-sync'
+      path: '/api/public/hooks/wallet-sync'
+      fullPath: '/api/public/hooks/wallet-sync'
+      preLoaderRoute: typeof ApiPublicHooksWalletSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/process-email-queue': {
       id: '/api/public/hooks/process-email-queue'
       path: '/api/public/hooks/process-email-queue'
@@ -2362,6 +2459,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminEmpresaIdRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/api/public/wallet/v1/log': {
+      id: '/api/public/wallet/v1/log'
+      path: '/api/public/wallet/v1/log'
+      fullPath: '/api/public/wallet/v1/log'
+      preLoaderRoute: typeof ApiPublicWalletV1LogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/wallet/apple/$token': {
       id: '/api/public/wallet/apple/$token'
       path: '/api/public/wallet/apple/$token'
@@ -2389,6 +2493,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/r/qr/$slug/$dest'
       preLoaderRoute: typeof ApiPublicRQrSlugDestRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/public/wallet/v1/passes/$passTypeId/$serial': {
+      id: '/api/public/wallet/v1/passes/$passTypeId/$serial'
+      path: '/api/public/wallet/v1/passes/$passTypeId/$serial'
+      fullPath: '/api/public/wallet/v1/passes/$passTypeId/$serial'
+      preLoaderRoute: typeof ApiPublicWalletV1PassesPassTypeIdSerialRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId': {
+      id: '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId'
+      path: '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId'
+      fullPath: '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId'
+      preLoaderRoute: typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId/$serial': {
+      id: '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId/$serial'
+      path: '/$serial'
+      fullPath: '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId/$serial'
+      preLoaderRoute: typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRouteImport
+      parentRoute: typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRoute
     }
   }
 }
@@ -2514,6 +2639,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppQrRoute: typeof AuthenticatedAppQrRoute
   AuthenticatedAppQrcodesRoute: typeof AuthenticatedAppQrcodesRoute
   AuthenticatedAppRetencaoRoute: typeof AuthenticatedAppRetencaoRoute
+  AuthenticatedAppWalletRoute: typeof AuthenticatedAppWalletRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
   AuthenticatedAppAvaliacoesQrRoute: typeof AuthenticatedAppAvaliacoesQrRoute
   AuthenticatedAppAvaliacoesTemaRoute: typeof AuthenticatedAppAvaliacoesTemaRoute
@@ -2542,6 +2668,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppQrRoute: AuthenticatedAppQrRoute,
   AuthenticatedAppQrcodesRoute: AuthenticatedAppQrcodesRoute,
   AuthenticatedAppRetencaoRoute: AuthenticatedAppRetencaoRoute,
+  AuthenticatedAppWalletRoute: AuthenticatedAppWalletRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
   AuthenticatedAppAvaliacoesQrRoute: AuthenticatedAppAvaliacoesQrRoute,
   AuthenticatedAppAvaliacoesTemaRoute: AuthenticatedAppAvaliacoesTemaRoute,
@@ -2630,6 +2757,21 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
+interface ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteChildren {
+  ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRoute: typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRoute
+}
+
+const ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteChildren: ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteChildren =
+  {
+    ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRoute:
+      ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRoute,
+  }
+
+const ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren =
+  ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRoute._addFileChildren(
+    ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -2670,6 +2812,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksNotifyExpiringRewardsRoute:
     ApiPublicHooksNotifyExpiringRewardsRoute,
   ApiPublicHooksProcessEmailQueueRoute: ApiPublicHooksProcessEmailQueueRoute,
+  ApiPublicHooksWalletSyncRoute: ApiPublicHooksWalletSyncRoute,
   ApiPublicMercadopagoPublicKeyRoute: ApiPublicMercadopagoPublicKeyRoute,
   ApiPublicTEventRoute: ApiPublicTEventRoute,
   ApiPublicWebhooksAsaasRoute: ApiPublicWebhooksAsaasRoute,
@@ -2677,7 +2820,12 @@ const rootRouteChildren: RootRouteChildren = {
   SuporteSlugKbArticleRoute: SuporteSlugKbArticleRoute,
   ApiPublicRTCodeRoute: ApiPublicRTCodeRoute,
   ApiPublicWalletAppleTokenRoute: ApiPublicWalletAppleTokenRoute,
+  ApiPublicWalletV1LogRoute: ApiPublicWalletV1LogRoute,
   ApiPublicRQrSlugDestRoute: ApiPublicRQrSlugDestRoute,
+  ApiPublicWalletV1PassesPassTypeIdSerialRoute:
+    ApiPublicWalletV1PassesPassTypeIdSerialRoute,
+  ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRoute:
+    ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

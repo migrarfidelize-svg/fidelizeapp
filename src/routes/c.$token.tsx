@@ -8,6 +8,7 @@ import { InstallAppButton } from "@/components/InstallAppButton";
 import { OfflineBanner, OfflineBadge, RequiresOnlineAlert } from "@/components/OfflineIndicator";
 import { InvalidQrState } from "@/components/wallet/WalletStates";
 import { PushOptIn } from "@/components/PushOptIn";
+import { WalletButtons } from "@/components/WalletButtons";
 import { ReferralBlock } from "@/components/ReferralBlock";
 import { RatingPrompt } from "@/components/RatingPrompt";
 import { formatDate } from "@/lib/format";
@@ -134,6 +135,7 @@ function CustomerCard() {
               message="A instalação como app precisa carregar recursos da internet. Volte assim que estiver online."
               onRetry={() => qc.invalidateQueries({ queryKey: ["card", token] })}
             />
+            <WalletButtons token={token} />
             <PushOptIn token={token} />
             <RatingPrompt token={token} />
             <ReferralBlock

@@ -2,43 +2,77 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 /**
- * Native Apple/Google Wallet capability probes.
- * The full pkpass signing lives in `/api/public/wallet/apple/:token`.
- * These functions are lightweight probes used by `WalletButtons`.
+ * Funções públicas usadas pelo cliente final na tela do cartão.
+ * Toda a lógica sensível (credenciais, assinatura) vive em módulos *.server.ts
+ * importados dinamicamente dentro do handler.
  */
 
-export const getWalletCapabilities = createServerFn({ method: "GET" })
-  .inputValidator((d: unknown) => z.object({ token: z.string().min(10) }).parse(d))
-  .handler(async () => {
-    // Both are only truly available when the merchant configured signing certs.
-    // For now we report both as unconfigured — the UI gracefully falls back.
-    return { apple: false, google: false };
-  });
+const tokenSchema = z.object({ token: z.string().min(10).max(120) });
+const tokenOriginSchema = tokenSchema.extend({ origin: z.string().min(1).max(200) });
 
-export const getPassJson = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) =>
-    z.object({ token: z.string().min(10), origin: z.string().url().or(z.string().min(1)) }).parse(d),
-  )
+function safeOrigin(input: string): string {
+  try {
+    const u = new URL(input);
+    return `${u.protocol}//${u.host}`;
+  } catch {
+    return process.env.PUBLISHED_APP_URL || process.env.PUBLIC_APP_URL || "https://fidelizeapp.lovable.app";
+  }
+}
+
+/** Diz quais carteiras estão realmente disponíveis para este cartão. */
+export const getWalletCapabilities = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) => tokenSchema.parse(d))
   .handler(async ({ data }) => {
-    // Returns a minimal pass.json shape that the client can offer as a download.
+    const { loadPassModelByToken } = await import("@/lib/wallet-pass.server");
+    const { readAppleCreds } = await import("@/lib/pkpass.server");
+    const { readGoogleCreds } = await import("@/lib/google-wallet.server");
+
+    const model = await loadPassModelByToken(data.token);
+    if (!model) return { apple: false, google: false, found: false };
+
     return {
-      formatVersion: 1,
-      passTypeIdentifier: "pass.app.fidelize.card",
-      teamIdentifier: "FIDELIZE",
-      serialNumber: data.token,
-      description: "Cartão Fidelidade",
-      organizationName: "Fidelize",
-      logoText: "Fidelize",
-      foregroundColor: "rgb(255,255,255)",
-      backgroundColor: "rgb(20,24,36)",
-      barcodes: [{ format: "PKBarcodeFormatQR", message: `${data.origin}/c/${data.token}`, messageEncoding: "iso-8859-1" }],
+      found: true,
+      apple: !!readAppleCreds() && model.settings.apple_enabled,
+      google: !!readGoogleCreds() && model.settings.google_enabled,
     };
   });
 
+/** Cria/atualiza o objeto no Google e devolve o link "Salvar no Google Wallet". */
 export const getGoogleWalletLink = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) =>
-    z.object({ token: z.string().min(10), origin: z.string().url().or(z.string().min(1)) }).parse(d),
-  )
-  .handler(async () => {
-    return { configured: false as const, saveUrl: null as string | null };
+  .inputValidator((d: unknown) => tokenOriginSchema.parse(d))
+  .handler(async ({ data }) => {
+    const { loadPassModelByToken, ensurePassRecord } = await import("@/lib/wallet-pass.server");
+    const { readGoogleCreds, upsertGooglePass, buildSaveUrl } = await import("@/lib/google-wallet.server");
+
+    const creds = readGoogleCreds();
+    if (!creds) return { configured: false as const, saveUrl: null as string | null };
+
+    const model = await loadPassModelByToken(data.token);
+    if (!model) throw new Error("Cartão não encontrado.");
+    if (!model.settings.google_enabled) return { configured: false as const, saveUrl: null };
+
+    const origin = safeOrigin(data.origin);
+    const { objectId, classId } = await upsertGooglePass(model, origin);
+    await ensurePassRecord({ model, platform: "google", googleObjectId: objectId, googleClassId: classId });
+
+    return { configured: true as const, saveUrl: buildSaveUrl(creds, objectId, origin) };
+  });
+
+/** pass.json não assinado — usado apenas como fallback de download/depuração. */
+export const getPassJson = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => tokenOriginSchema.parse(d))
+  .handler(async ({ data }) => {
+    const { loadPassModelByToken } = await import("@/lib/wallet-pass.server");
+    const { buildApplePassJson } = await import("@/lib/apple-pass.server");
+    const model = await loadPassModelByToken(data.token);
+    if (!model) throw new Error("Cartão não encontrado.");
+    const pass = buildApplePassJson({
+      model,
+      origin: safeOrigin(data.origin),
+      passTypeId: process.env.APPLE_PASS_TYPE_ID || "pass.app.fidelize.card",
+      teamId: process.env.APPLE_TEAM_ID || "FIDELIZE",
+      serialNumber: `PREVIEW-${model.customer.id}`,
+      authenticationToken: "preview",
+    });
+    return { json: JSON.stringify(pass, null, 2) };
   });

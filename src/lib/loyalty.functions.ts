@@ -248,6 +248,12 @@ export const addStamp = createServerFn({ method: "POST" })
       await maybeNotifyStampGoalReached(card.establishment_id);
     } catch { /* noop */ }
 
+    // Atualiza automaticamente o cartão salvo no Google/Apple Wallet.
+    try {
+      const { syncCustomerWalletSafe } = await import("@/lib/wallet-sync.server");
+      await syncCustomerWalletSafe(card.customer_id);
+    } catch { /* noop */ }
+
 
     return { completed, stamps: completed ? 0 : newStamps, required: campaign.stamps_required, cycle: completed ? card.cycle + 1 : card.cycle };
 
@@ -268,6 +274,10 @@ export const undoLastStamp = createServerFn({ method: "POST" })
     const { error: cErr } = await supabase.from("loyalty_cards").update({ stamps: Math.max(0, card!.stamps - 1) }).eq("id", data.card_id);
     if (cErr) throw new Error(cErr.message);
     await auditLog(card!.establishment_id, userId, "stamp_undone", "loyalty_card", data.card_id, {});
+    try {
+      const { syncCustomerWalletSafe } = await import("@/lib/wallet-sync.server");
+      await syncCustomerWalletSafe(card!.customer_id);
+    } catch { /* noop */ }
     return { ok: true };
   });
 
@@ -281,6 +291,14 @@ export const redeemReward = createServerFn({ method: "POST" })
     if (reward.redeemed_at) throw new Error("Já resgatada");
     await supabase.from("rewards").update({ redeemed_at: new Date().toISOString(), redeemed_by: userId }).eq("id", data.reward_id);
     await auditLog(reward.establishment_id, userId, "reward_redeemed", "reward", data.reward_id, {});
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: c } = await supabaseAdmin.from("loyalty_cards").select("customer_id").eq("id", reward.card_id).maybeSingle();
+      if (c?.customer_id) {
+        const { syncCustomerWalletSafe } = await import("@/lib/wallet-sync.server");
+        await syncCustomerWalletSafe(c.customer_id);
+      }
+    } catch { /* noop */ }
     return { ok: true };
   });
 
