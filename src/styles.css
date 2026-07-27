@@ -71,60 +71,62 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.16 0.03 285);
 
-  /* Roxo oficial — hue 288 (violeta puro, longe de magenta ≥ 320) */
-  --primary: oklch(0.50 0.145 288);
+  /* Roxo oficial — hue 288 (violeta puro, longe de magenta ≥ 320).
+     Chroma reduzido ~24% (0.145 → 0.110) para um roxo profundo e elegante. */
+  --primary: oklch(0.47 0.110 288);
   --primary-foreground: oklch(0.99 0.004 288);
-  --primary-soft: oklch(0.92 0.045 288);
+  --primary-soft: oklch(0.93 0.032 288);
 
-  --secondary: oklch(0.94 0.012 285);
-  --secondary-foreground: oklch(0.20 0.03 285);
+  --secondary: oklch(0.94 0.010 285);
+  --secondary-foreground: oklch(0.20 0.026 285);
 
-  --muted: oklch(0.96 0.008 285);
-  --muted-foreground: oklch(0.40 0.025 285);
+  --muted: oklch(0.96 0.007 285);
+  --muted-foreground: oklch(0.40 0.020 285);
 
-  /* Acento: violeta/índigo (antes era magenta 335) */
-  --accent: oklch(0.54 0.125 275);
+  /* Acento: violeta/índigo (mesmo matiz, chroma −24%) */
+  --accent: oklch(0.52 0.095 275);
   --accent-foreground: oklch(0.99 0.004 275);
-  --accent-soft: oklch(0.93 0.045 275);
+  --accent-soft: oklch(0.94 0.032 275);
 
-  --destructive: oklch(0.55 0.175 25);
+  --destructive: oklch(0.55 0.150 25);
   --destructive-foreground: oklch(0.99 0.004 25);
-  --success: oklch(0.55 0.125 165);
+  --success: oklch(0.55 0.100 165);
   --success-foreground: oklch(0.99 0.004 165);
 
-  --border: oklch(0.20 0.03 285 / 16%);
-  --input: oklch(0.20 0.03 285 / 20%);
-  --ring: oklch(0.50 0.145 288);
+  --border: oklch(0.20 0.026 285 / 16%);
+  --input: oklch(0.20 0.026 285 / 20%);
+  --ring: oklch(0.47 0.110 288);
 
-  --chart-1: oklch(0.50 0.155 288);
-  --chart-2: oklch(0.55 0.135 272);
-  --chart-3: oklch(0.55 0.12 165);
-  --chart-4: oklch(0.66 0.12 85);
-  --chart-5: oklch(0.52 0.13 255);
+  --chart-1: oklch(0.48 0.118 288);
+  --chart-2: oklch(0.54 0.104 272);
+  --chart-3: oklch(0.55 0.095 165);
+  --chart-4: oklch(0.66 0.095 85);
+  --chart-5: oklch(0.52 0.100 255);
 
-  --sidebar: oklch(0.975 0.007 285);
-  --sidebar-foreground: oklch(0.20 0.03 285);
-  --sidebar-primary: oklch(0.50 0.145 288);
+  --sidebar: oklch(0.975 0.006 285);
+  --sidebar-foreground: oklch(0.20 0.026 285);
+  --sidebar-primary: oklch(0.47 0.110 288);
   --sidebar-primary-foreground: oklch(0.99 0.004 288);
-  --sidebar-accent: oklch(0.94 0.012 285);
-  --sidebar-accent-foreground: oklch(0.20 0.03 285);
-  --sidebar-border: oklch(0.20 0.03 285 / 16%);
-  --sidebar-ring: oklch(0.50 0.145 288);
+  --sidebar-accent: oklch(0.94 0.010 285);
+  --sidebar-accent-foreground: oklch(0.20 0.026 285);
+  --sidebar-border: oklch(0.20 0.026 285 / 16%);
+  --sidebar-ring: oklch(0.47 0.110 288);
 
-  --grid-line: color-mix(in oklab, var(--primary) 11%, transparent);
-  --glass-bg: color-mix(in oklab, var(--card) 80%, transparent);
-  --glass-border: color-mix(in oklab, var(--primary) 18%, transparent);
-  --glow-primary: color-mix(in oklab, var(--primary) 15%, transparent);
-  --glow-accent: color-mix(in oklab, var(--accent) 13%, transparent);
-  --hairline: color-mix(in oklab, var(--primary) 20%, transparent);
+  --grid-line: color-mix(in oklab, var(--primary) 8%, transparent);
+  --glass-bg: color-mix(in oklab, var(--card) 82%, transparent);
+  --glass-border: color-mix(in oklab, var(--primary) 20%, transparent);
+  --glow-primary: color-mix(in oklab, var(--primary) 8%, transparent);
+  --glow-accent: color-mix(in oklab, var(--accent) 7%, transparent);
+  --hairline: color-mix(in oklab, var(--primary) 22%, transparent);
+
 
   --gradient-hero:
-    radial-gradient(1200px 600px at 15% -10%, color-mix(in oklab, var(--primary) 12%, transparent), transparent 60%),
-    radial-gradient(900px 500px at 100% 0%, color-mix(in oklab, var(--accent) 9%, transparent), transparent 60%),
-    radial-gradient(700px 500px at 50% 120%, color-mix(in oklab, var(--primary) 7%, transparent), transparent 60%);
+    radial-gradient(1200px 600px at 15% -10%, color-mix(in oklab, var(--primary) 7%, transparent), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, color-mix(in oklab, var(--accent) 5%, transparent), transparent 60%),
+    radial-gradient(700px 500px at 50% 120%, color-mix(in oklab, var(--primary) 4%, transparent), transparent 60%);
   --gradient-line: linear-gradient(135deg,
-    color-mix(in oklab, var(--primary) 60%, transparent),
-    color-mix(in oklab, var(--accent) 45%, transparent));
+    color-mix(in oklab, var(--primary) 45%, transparent),
+    color-mix(in oklab, var(--accent) 32%, transparent));
 }
 
 
@@ -144,57 +146,58 @@
   --popover: oklch(0.19 0.028 232);
   --popover-foreground: oklch(0.97 0.02 195);
 
-  --primary: oklch(0.91 0.15 195);
+  --primary: oklch(0.88 0.115 195);
   --primary-foreground: oklch(0.12 0.03 230);
-  --primary-soft: oklch(0.32 0.09 200);
+  --primary-soft: oklch(0.32 0.070 200);
 
-  --secondary: oklch(0.22 0.03 232);
-  --secondary-foreground: oklch(0.97 0.02 195);
+  --secondary: oklch(0.22 0.026 232);
+  --secondary-foreground: oklch(0.97 0.018 195);
 
-  --muted: oklch(0.22 0.025 232);
-  --muted-foreground: oklch(0.75 0.03 210);
+  --muted: oklch(0.22 0.022 232);
+  --muted-foreground: oklch(0.75 0.026 210);
 
-  --accent: oklch(0.76 0.125 295);
+  --accent: oklch(0.73 0.095 295);
   --accent-foreground: oklch(0.12 0.03 230);
-  --accent-soft: oklch(0.3 0.075 295);
+  --accent-soft: oklch(0.3 0.058 295);
 
-  --destructive: oklch(0.7 0.22 20);
+  --destructive: oklch(0.7 0.185 20);
   --destructive-foreground: oklch(0.14 0.03 230);
-  --success: oklch(0.82 0.16 165);
+  --success: oklch(0.82 0.125 165);
   --success-foreground: oklch(0.14 0.03 230);
 
   --border: oklch(1 0 0 / 8%);
   --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.91 0.15 195);
+  --ring: oklch(0.88 0.115 195);
 
-  --chart-1: oklch(0.91 0.15 195);
-  --chart-2: oklch(0.76 0.15 295);
-  --chart-3: oklch(0.82 0.16 165);
-  --chart-4: oklch(0.85 0.14 90);
-  --chart-5: oklch(0.7 0.18 260);
+  --chart-1: oklch(0.88 0.115 195);
+  --chart-2: oklch(0.74 0.115 295);
+  --chart-3: oklch(0.82 0.125 165);
+  --chart-4: oklch(0.85 0.110 90);
+  --chart-5: oklch(0.7 0.140 260);
 
-  --sidebar: oklch(0.16 0.024 232);
-  --sidebar-foreground: oklch(0.97 0.02 195);
-  --sidebar-primary: oklch(0.91 0.15 195);
+  --sidebar: oklch(0.16 0.022 232);
+  --sidebar-foreground: oklch(0.97 0.018 195);
+  --sidebar-primary: oklch(0.88 0.115 195);
   --sidebar-primary-foreground: oklch(0.12 0.03 230);
-  --sidebar-accent: oklch(0.22 0.03 232);
-  --sidebar-accent-foreground: oklch(0.97 0.02 195);
+  --sidebar-accent: oklch(0.22 0.026 232);
+  --sidebar-accent-foreground: oklch(0.97 0.018 195);
   --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.91 0.15 195);
+  --sidebar-ring: oklch(0.88 0.115 195);
 
-  --grid-line: color-mix(in oklab, var(--primary) 9%, transparent);
-  --glass-bg: color-mix(in oklab, var(--card) 68%, transparent);
+  --grid-line: color-mix(in oklab, var(--primary) 6%, transparent);
+  --glass-bg: color-mix(in oklab, var(--card) 72%, transparent);
   --glass-border: color-mix(in oklab, var(--primary) 22%, transparent);
-  --glow-primary: color-mix(in oklab, var(--primary) 26%, transparent);
-  --glow-accent: color-mix(in oklab, var(--accent) 22%, transparent);
+  --glow-primary: color-mix(in oklab, var(--primary) 13%, transparent);
+  --glow-accent: color-mix(in oklab, var(--accent) 11%, transparent);
   --hairline: color-mix(in oklab, var(--primary) 24%, transparent);
+
   --gradient-hero:
-    radial-gradient(1200px 600px at 15% -10%, color-mix(in oklab, var(--primary) 26%, transparent), transparent 60%),
-    radial-gradient(900px 500px at 100% 0%, color-mix(in oklab, var(--accent) 22%, transparent), transparent 60%),
-    radial-gradient(700px 500px at 50% 120%, color-mix(in oklab, var(--primary) 16%, transparent), transparent 60%);
+    radial-gradient(1200px 600px at 15% -10%, color-mix(in oklab, var(--primary) 14%, transparent), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, color-mix(in oklab, var(--accent) 11%, transparent), transparent 60%),
+    radial-gradient(700px 500px at 50% 120%, color-mix(in oklab, var(--primary) 8%, transparent), transparent 60%);
   --gradient-line: linear-gradient(135deg,
-    color-mix(in oklab, var(--primary) 85%, transparent),
-    color-mix(in oklab, var(--accent) 70%, transparent));
+    color-mix(in oklab, var(--primary) 62%, transparent),
+    color-mix(in oklab, var(--accent) 48%, transparent));
 }
 
 
@@ -2774,10 +2777,10 @@ html:not(.dark) .fz-ring-3 {
 }
 html:not(.dark) .fz-ring { filter: drop-shadow(0 0 5px rgba(124, 58, 237, 0.22)); }
 
-/* Sombras coloridas mais discretas no tema claro */
+/* Sombras coloridas mais discretas no tema claro (~50% menos que antes) */
 html:not(.dark) {
-  --glow-primary: color-mix(in oklab, var(--primary) 26%, transparent);
-  --glow-accent: color-mix(in oklab, var(--accent) 22%, transparent);
+  --glow-primary: color-mix(in oklab, var(--primary) 12%, transparent);
+  --glow-accent: color-mix(in oklab, var(--accent) 10%, transparent);
 }
 
 /* ============================================================
@@ -2856,4 +2859,75 @@ html:not(.dark) {
 /* Tabelas — separadores na mesma família de cor */
 [data-slot="table"] tr {
   border-color: color-mix(in oklab, var(--primary) 8%, var(--border));
+}
+
+/* ============================================================
+   REFINAMENTO PREMIUM v2 — roxo profundo, glow contido, hairline 1.5px
+   Toda definição visual deriva de --primary. Sem neon.
+   ============================================================ */
+:root {
+  --edge-soft: color-mix(in oklab, var(--primary) 16%, var(--border));
+  --edge-strong: color-mix(in oklab, var(--primary) 30%, var(--border));
+  --edge-w: 1.5px;
+}
+.dark {
+  --edge-soft: color-mix(in oklab, var(--primary) 13%, var(--border));
+  --edge-strong: color-mix(in oklab, var(--primary) 24%, var(--border));
+}
+
+/* Superfícies com glow ganham hairline mais definida (1.5px) */
+[data-slot="card"],
+[data-slot="dialog-content"],
+[data-slot="alert-dialog-content"],
+[data-slot="sheet-content"],
+[data-slot="popover-content"],
+[data-slot="dropdown-menu-content"],
+[data-slot="select-content"],
+[data-slot="command"],
+[data-slot="hover-card-content"],
+[data-slot="alert"],
+[data-sonner-toast],
+[data-slot="table-container"],
+.glass,
+.glass-card {
+  border-width: var(--edge-w);
+  border-style: solid;
+  border-color: var(--edge-soft);
+}
+
+/* Calendário */
+[data-slot="calendar"] {
+  border: var(--edge-w) solid var(--edge-soft);
+}
+[data-slot="calendar"] [data-selected-single="true"],
+[data-slot="calendar"] [aria-selected="true"] {
+  border: 1px solid var(--edge-strong);
+}
+[data-slot="calendar"] [data-today="true"] {
+  border: 1px solid color-mix(in oklab, var(--primary) 35%, transparent);
+}
+
+/* Navbar / cabeçalhos fixos */
+header[data-slot="site-header"],
+[data-slot="navbar"] {
+  border-bottom: 1px solid var(--edge-soft);
+}
+
+/* Badges e abas ativas seguem a mesma família */
+[data-slot="badge"] {
+  border-color: var(--edge-soft);
+}
+[data-slot="tabs-trigger"][data-state="active"] {
+  border: 1px solid var(--edge-strong);
+}
+
+/* Estados: hover/focus/ativo com anel roxo discreto (sem neon) */
+[data-slot="dropdown-menu-item"]:hover,
+[data-slot="select-item"][data-highlighted],
+[data-slot="command-item"][data-selected="true"] {
+  box-shadow: inset 0 0 0 1px var(--edge-soft);
+}
+:where(a, button, [role="button"]):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 9%, transparent);
 }
