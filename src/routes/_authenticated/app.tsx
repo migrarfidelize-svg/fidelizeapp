@@ -82,7 +82,7 @@ export const Route = createFileRoute("/_authenticated/app")({
 });
 
 type NavItem = { to: string; label: string; icon: any; exact?: boolean };
-type NavGroup = { key: string; label: string; items: NavItem[] };
+type NavGroup = { key: string; label: string; icon: any; items: NavItem[] };
 
 const NAV_GROUPS: NavGroup[] = [
   {
