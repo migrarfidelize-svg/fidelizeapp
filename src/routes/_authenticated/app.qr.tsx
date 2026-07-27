@@ -108,7 +108,7 @@ export const Route = createFileRoute("/_authenticated/app/qr")({
   head: () => ({ meta: [{ title: "QR Codes — Fidelize" }] }),
   validateSearch: (search: Record<string, unknown>) => {
     const d = String(search?.dest ?? "");
-    return { dest: (["reviews", "linktree", "landing", "menu"].includes(d) ? d : undefined) as QrDest | undefined };
+    return { dest: (["reviews", "linktree", "landing", "menu", "catalog"].includes(d) ? d : undefined) as QrDest | undefined };
   },
   component: ReviewQrPage,
 });
