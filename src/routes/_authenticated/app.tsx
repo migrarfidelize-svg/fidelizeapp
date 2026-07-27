@@ -388,7 +388,7 @@ function AppLayout() {
             className="nav-item-active-aurora"
           />
         )}
-        <span className="relative z-10 grid place-items-center h-8 w-8 shrink-0">
+        <span className="relative z-10 grid place-items-center h-[var(--nav-icon,2rem)] w-[var(--nav-icon,2rem)] shrink-0">
           <n.icon
             className={`h-[18px] w-[18px] ${active ? "nav-icon-active" : "nav-icon-idle"}`}
             strokeWidth={active ? 2.4 : 1.8}
