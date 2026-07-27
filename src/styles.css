@@ -630,7 +630,7 @@
 }
 .fz-ring-1 {
   inset: 8%;
-  background: conic-gradient(from 0deg, transparent 0 55%, #00ffff 65%, #ff2bd6 78%, transparent 90% 100%);
+  background: conic-gradient(from 0deg, transparent 0 55%, #00ffff 65%, #a855f7 78%, transparent 90% 100%);
   animation: fz-ring-spin 9s linear infinite;
 }
 .fz-ring-2 {
@@ -641,7 +641,7 @@
 }
 .fz-ring-3 {
   inset: -2%;
-  background: conic-gradient(from 90deg, transparent 0 70%, #ff2bd6 80%, transparent 92%);
+  background: conic-gradient(from 90deg, transparent 0 70%, #a855f7 80%, transparent 92%);
   animation: fz-ring-spin 22s linear infinite;
   opacity: 0.55;
 }

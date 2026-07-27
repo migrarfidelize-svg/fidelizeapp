@@ -26,7 +26,7 @@ export const REVIEW_PRESETS: ReviewPreset[] = [
     name: "Circuit",
     description: "Escuro com cyan neon",
     bg: "#050505", surface: "#0b0b0e", border: "#ffffff14",
-    ink: "#ffffff", muted: "#9ca3af", accent: "#00ffff", accent2: "#ff00ff", dark: true,
+    ink: "#ffffff", muted: "#9ca3af", accent: "#00ffff", accent2: "#7c3aed", dark: true,
   },
   {
     id: "noir",

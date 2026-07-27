@@ -130,7 +130,7 @@ export function PublicRatingBlock({ slug, source = "linktree", compact = false }
           {isHigh && (
             <div
               className="mt-2 rounded-xl border p-4 text-left"
-              style={{ borderColor: `${btnColor}33`, background: `linear-gradient(135deg, ${btnColor}12, #ff00ff10)` }}
+              style={{ borderColor: `${btnColor}33`, background: `linear-gradient(135deg, ${btnColor}12, #7c3aed10)` }}
             >
               <div className="mb-2 flex items-center gap-2">
                 <Sparkles className="h-4 w-4" style={{ color: btnColor }} />
@@ -178,7 +178,7 @@ export function PublicRatingBlock({ slug, source = "linktree", compact = false }
       <div
         aria-hidden
         className="pointer-events-none absolute -inset-1 opacity-25 blur-2xl"
-        style={{ background: `linear-gradient(90deg, ${btnColor}, #ff00ff)` }}
+        style={{ background: `linear-gradient(90deg, ${btnColor}, #7c3aed)` }}
       />
       <CardContent className={`relative ${compact ? "p-5" : "p-7"}`}>
         {/* Header chips */}
@@ -265,7 +265,7 @@ export function PublicRatingBlock({ slug, source = "linktree", compact = false }
             <div
               className="rounded-full border border-white/10 bg-gradient-to-r px-5 py-2"
               style={{
-                backgroundImage: `linear-gradient(90deg, ${btnColor}1a, #ff00ff1a)`,
+                backgroundImage: `linear-gradient(90deg, ${btnColor}1a, #7c3aed1a)`,
               }}
             >
               <span

@@ -558,7 +558,7 @@ function ScenePreview4() {
           opacity: [0, 1, 1, 0],
         }}
         transition={{ duration: DURATION, repeat: Infinity, times: [0, 0.45, 0.75, 1] }}
-        className="absolute bottom-14 right-2 z-20 w-24 rounded-xl border border-white/15 bg-gradient-to-br from-violet-500/30 via-black/60 to-cyan-500/30 p-2.5 shadow-[0_20px_40px_-15px_rgba(255,47,214,0.6)] backdrop-blur"
+        className="absolute bottom-14 right-2 z-20 w-24 rounded-xl border border-white/15 bg-gradient-to-br from-violet-500/30 via-black/60 to-cyan-500/30 p-2.5 shadow-[0_20px_40px_-15px_rgba(124,58,237,0.6)] backdrop-blur"
       >
         <div className="flex items-center justify-between">
           <Nfc className="h-3.5 w-3.5 text-white" />

@@ -249,9 +249,9 @@ function Hero() {
             <circle className="pcb-node pcb-n5" cx="900" cy="420" r="3.5" />
             <circle className="pcb-node pcb-n6" cx="680" cy="380" r="3.5" />
             <circle className="pcb-node pcb-n7" cx="340" cy="300" r="3.5" />
-            <circle className="pcb-node pcb-n1" cx="460" cy="680" r="3" fill="#d946ef" />
-            <circle className="pcb-node pcb-n3" cx="1180" cy="600" r="3" fill="#d946ef" />
-            <circle className="pcb-node pcb-n5" cx="800" cy="340" r="3" fill="#d946ef" />
+            <circle className="pcb-node pcb-n1" cx="460" cy="680" r="3" fill="#8b5cf6" />
+            <circle className="pcb-node pcb-n3" cx="1180" cy="600" r="3" fill="#8b5cf6" />
+            <circle className="pcb-node pcb-n5" cx="800" cy="340" r="3" fill="#8b5cf6" />
           </g>
         </svg>
         <span className="hero-vignette" />
@@ -356,7 +356,7 @@ function HowItWorks() {
       n: "02",
       title: "Compartilhe o QR",
       desc: "Coloque o QR Code no seu balcão ou envie o link. O cliente escaneia e já sai com o cartão no celular.",
-      color: "#ff2bd6",
+      color: "#a855f7",
     },
     {
       n: "03",
@@ -446,10 +446,10 @@ function HowItWorks() {
               <defs>
                 <linearGradient id="hiwLinkA" x1="0" x2="1" y1="0" y2="0">
                   <stop offset="0%" stopColor="#00ffff" />
-                  <stop offset="100%" stopColor="#ff2bd6" />
+                  <stop offset="100%" stopColor="#a855f7" />
                 </linearGradient>
                 <linearGradient id="hiwLinkB" x1="0" x2="1" y1="0" y2="0">
-                  <stop offset="0%" stopColor="#ff2bd6" />
+                  <stop offset="0%" stopColor="#a855f7" />
                   <stop offset="100%" stopColor="#a855f7" />
                 </linearGradient>
                 <filter id="hiwGlow" x="-50%" y="-50%" width="200%" height="200%">
@@ -471,9 +471,9 @@ function HowItWorks() {
                 style={{ opacity: 0 }}
               />
               <g className="hiw-root" style={{ opacity: 0, transform: "scale(0.6)", transformOrigin: "500px 110px" }}>
-                <path d="M 500 110 C 508 108, 514 100, 520 92" stroke="#ff2bd6" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
-                <path d="M 500 110 C 508 112, 514 120, 520 128" stroke="#ff2bd6" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
-                <path d="M 500 110 L 522 110" stroke="#ff2bd6" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
+                <path d="M 500 110 C 508 108, 514 100, 520 92" stroke="#a855f7" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
+                <path d="M 500 110 C 508 112, 514 120, 520 128" stroke="#a855f7" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
+                <path d="M 500 110 L 522 110" stroke="#a855f7" strokeWidth="1.5" fill="none" strokeLinecap="round" filter="url(#hiwGlow)" opacity="0.85" />
               </g>
               <path
                 className="hiw-link-main"
@@ -557,7 +557,7 @@ function Benefits() {
     { icon: Smartphone, title: "Sem app para baixar", desc: "Acesso direto pelo navegador. Zero atrito.", color: "#00ffff" },
     { icon: QrCode, title: "QR Code exclusivo", desc: "Cada empresa, campanha e cliente com ID seguro.", color: "#22d3ee" },
     { icon: ShieldCheck, title: "Anti-fraude", desc: "Só sua equipe carimba. Tudo registrado.", color: "#a855f7" },
-    { icon: BarChart3, title: "Painel completo", desc: "Clientes, visitas, retorno e alertas num só lugar.", color: "#ff2bd6" },
+    { icon: BarChart3, title: "Painel completo", desc: "Clientes, visitas, retorno e alertas num só lugar.", color: "#a855f7" },
     { icon: Sparkles, title: "Página personalizada", desc: "Sua marca, suas cores, sua vitrine digital.", color: "#f472b6" },
     { icon: Store, title: "Multi-unidade", desc: "Uma empresa, várias lojas. Relatórios consolidados.", color: "#60a5fa" },
   ];
@@ -610,7 +610,7 @@ function Benefits() {
               <linearGradient id="fzLink" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0" stopColor="#00ffff" />
                 <stop offset="0.5" stopColor="#a855f7" />
-                <stop offset="1" stopColor="#ff2bd6" />
+                <stop offset="1" stopColor="#a855f7" />
               </linearGradient>
               <filter id="fzLinkGlow" x="-20%" y="-20%" width="140%" height="140%">
                 <feGaussianBlur stdDeviation="4" result="b" />
@@ -663,7 +663,7 @@ function Benefits() {
                 <linearGradient id="fzLink" x1="0" y1="0" x2="1" y2="1">
                   <stop offset="0" stopColor="#00ffff" />
                   <stop offset="0.5" stopColor="#a855f7" />
-                  <stop offset="1" stopColor="#ff2bd6" />
+                  <stop offset="1" stopColor="#a855f7" />
                 </linearGradient>
                 <filter id="fzLinkGlow" x="-20%" y="-20%" width="140%" height="140%">
                   <feGaussianBlur stdDeviation="4" result="b" />
@@ -1077,9 +1077,9 @@ function PaperHalf({ side }: { side: "left" | "right" }) {
 function Examples() {
   const items: Array<{ icon: typeof Cake; title: string; desc: string; kpi: string; kpiLabel: string; channel: string; channelIcon: typeof MessageCircle; tone: string }> = [
     { icon: Cake, title: "Aniversariante do mês", desc: "Mimo automático 3 dias antes.", kpi: "+38%", kpiLabel: "retorno", channel: "WhatsApp", channelIcon: MessageCircle, tone: "#00ffff" },
-    { icon: UserPlus, title: "Indique e ganhe", desc: "QR próprio do cliente. Todo mundo ganha.", kpi: "4.1x", kpiLabel: "CAC menor", channel: "QR + Wpp", channelIcon: QrCode, tone: "#ff00ff" },
+    { icon: UserPlus, title: "Indique e ganhe", desc: "QR próprio do cliente. Todo mundo ganha.", kpi: "4.1x", kpiLabel: "CAC menor", channel: "QR + Wpp", channelIcon: QrCode, tone: "#7c3aed" },
     { icon: Clock, title: "Reengajar inativos", desc: "15 dias sem visita? Dispara empurrão.", kpi: "2.4x", kpiLabel: "LTV", channel: "WhatsApp", channelIcon: MessageCircle, tone: "#00ffff" },
-    { icon: Sparkles, title: "1º carimbo grátis", desc: "Ativação imediata do cliente novo.", kpi: "73%", kpiLabel: "ativação", channel: "E-mail", channelIcon: Mail, tone: "#ff00ff" },
+    { icon: Sparkles, title: "1º carimbo grátis", desc: "Ativação imediata do cliente novo.", kpi: "73%", kpiLabel: "ativação", channel: "E-mail", channelIcon: Mail, tone: "#7c3aed" },
     { icon: Crown, title: "Níveis VIP", desc: "Bronze, Prata, Ouro com benefícios.", kpi: "+62%", kpiLabel: "frequência", channel: "Push", channelIcon: Bell, tone: "#00ffff" },
   ];
 

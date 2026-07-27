@@ -107,7 +107,7 @@ export function DisplayStorePreview() {
                 <div className="relative flex items-center gap-3">
                   {/* Icon tile */}
                   <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border ${m.accent} bg-background/80 text-2xl font-light`}>
-                    <span style={{ background: "linear-gradient(135deg, hsl(var(--primary)), #d946ef)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    <span style={{ background: "linear-gradient(135deg, hsl(var(--primary)), #8b5cf6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                       {m.icon}
                     </span>
                   </div>
