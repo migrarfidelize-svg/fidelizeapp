@@ -368,7 +368,7 @@ function AppLayout() {
 
   const renderNavItem = (n: NavItem, onNavigate?: () => void, forceExpanded = false) => {
     const active = isItemActive(n);
-    const badge = n.to === "/app/suporte" && unreadSupport > 0 ? unreadSupport : 0;
+    const badge = n.to === "/app/fidelize" && unreadSupport > 0 ? unreadSupport : 0;
     const showLabel = forceExpanded || !collapsed;
     const inner = (
       <Link
