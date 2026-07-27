@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
 import { SegmentsCarousel } from "@/components/SegmentsCarousel";
-import { DiscoverMenuShowcase } from "@/components/DiscoverMenuShowcase";
+import { HeroAppPreview } from "@/components/landing/HeroAppPreview";
 import { EcosystemBento } from "@/components/landing/EcosystemBento";
 
 import { RoiCalculator } from "@/components/landing/RoiCalculator";
