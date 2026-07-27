@@ -88,19 +88,8 @@ function AdminLayout() {
   const { data, isLoading, refetch } = useQuery({ queryKey: ["admin-status"], queryFn: () => getStatus() });
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [pinnedGroup, setPinnedGroup] = useState<string | null>(null);
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => { setMobileOpen(false); }, [pathname]);
 
-  const openGroup = (key: string) => {
-    if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null; }
-    setPinnedGroup(key);
-  };
-  const scheduleCloseGroup = () => {
-    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-    closeTimerRef.current = setTimeout(() => setPinnedGroup(null), 180);
-  };
-  useEffect(() => () => { if (closeTimerRef.current) clearTimeout(closeTimerRef.current); }, []);
-  useEffect(() => { setPinnedGroup(null); }, [pathname]);
 
   if (isLoading) return <div className="grid min-h-dvh place-items-center text-muted-foreground">Verificando permissões…</div>;
 
