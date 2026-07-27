@@ -2514,3 +2514,54 @@ html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"]
   border-color: rgba(22, 163, 74, 0.35) !important;
   background-color: rgba(22, 163, 74, 0.12) !important;
 }
+
+/* ===== Brand marquee (âncora de marcas) ===== */
+.brand-marquee {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+}
+.brand-marquee-track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  gap: clamp(3rem, 7vw, 6.5rem);
+  animation: brand-marquee-scroll 42s linear infinite;
+  will-change: transform;
+}
+.brand-marquee-item {
+  display: grid;
+  place-items: center;
+  min-width: 7rem;
+  color: #fff;
+  opacity: 0.62;
+  filter: drop-shadow(0 0 22px rgba(255, 255, 255, 0.16));
+  transform: scale(0.96);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease,
+    filter 0.5s ease;
+}
+.brand-marquee:hover .brand-marquee-item {
+  opacity: 0.4;
+}
+.brand-marquee .brand-marquee-item:hover {
+  opacity: 1;
+  transform: scale(1.06);
+  filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.4));
+}
+@keyframes brand-marquee-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .brand-marquee-track {
+    animation-duration: 140s;
+  }
+}
