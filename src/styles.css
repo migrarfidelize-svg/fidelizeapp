@@ -2535,14 +2535,19 @@ html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"]
   display: grid;
   place-items: center;
   min-width: 7rem;
-  color: #fff;
-  opacity: 0.62;
-  filter: drop-shadow(0 0 22px rgba(255, 255, 255, 0.16));
+  color: #0a0a0a;
+  opacity: 0.72;
+  filter: none;
   transform: scale(0.96);
   transition:
     opacity 0.5s ease,
     transform 0.5s ease,
     filter 0.5s ease;
+}
+.dark .brand-marquee-item {
+  color: #fff;
+  opacity: 0.62;
+  filter: drop-shadow(0 0 22px rgba(255, 255, 255, 0.16));
 }
 .brand-marquee:hover .brand-marquee-item {
   opacity: 0.4;
@@ -2550,8 +2555,11 @@ html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"]
 .brand-marquee .brand-marquee-item:hover {
   opacity: 1;
   transform: scale(1.06);
+}
+.dark .brand-marquee .brand-marquee-item:hover {
   filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.4));
 }
+
 @keyframes brand-marquee-scroll {
   from {
     transform: translate3d(0, 0, 0);
