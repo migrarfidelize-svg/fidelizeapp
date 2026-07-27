@@ -87,6 +87,7 @@ type NavGroup = { key: string; label: string; icon: any; items: NavItem[] };
 const NAV_GROUPS: NavGroup[] = [
   {
     key: "principal",
+    icon: LayoutDashboard,
     label: "Principal",
     items: [
       { to: "/app", label: "Painel", icon: LayoutDashboard, exact: true },
@@ -99,6 +100,7 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     key: "cardapio",
+    icon: UtensilsCrossed,
     label: "Cardápio digital",
     items: [
       { to: "/app/cardapio", label: "Visão geral", icon: UtensilsCrossed, exact: true },
@@ -109,6 +111,7 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     key: "catalogo",
+    icon: ShoppingBag,
     label: "Catálogo digital",
     items: [
       { to: "/app/catalogo", label: "Visão geral", icon: ShoppingBag, exact: true },
@@ -120,6 +123,7 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     key: "relacionamento",
+    icon: HeartHandshake,
     label: "Relacionamento",
     items: [
       { to: "/app/avaliacoes", label: "Avaliações", icon: Star },
@@ -133,6 +137,7 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     key: "conta",
+    icon: UserCircle2,
     label: "Conta",
     items: [
       { to: "/app/equipe", label: "Equipe", icon: UsersRound },
