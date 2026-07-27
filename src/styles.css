@@ -2860,3 +2860,74 @@ html:not(.dark) {
 [data-slot="table"] tr {
   border-color: color-mix(in oklab, var(--primary) 8%, var(--border));
 }
+
+/* ============================================================
+   REFINAMENTO PREMIUM v2 — roxo profundo, glow contido, hairline 1.5px
+   Toda definição visual deriva de --primary. Sem neon.
+   ============================================================ */
+:root {
+  --edge-soft: color-mix(in oklab, var(--primary) 16%, var(--border));
+  --edge-strong: color-mix(in oklab, var(--primary) 30%, var(--border));
+  --edge-w: 1.5px;
+}
+.dark {
+  --edge-soft: color-mix(in oklab, var(--primary) 13%, var(--border));
+  --edge-strong: color-mix(in oklab, var(--primary) 24%, var(--border));
+}
+
+/* Superfícies com glow ganham hairline mais definida (1.5px) */
+[data-slot="card"],
+[data-slot="dialog-content"],
+[data-slot="alert-dialog-content"],
+[data-slot="sheet-content"],
+[data-slot="popover-content"],
+[data-slot="dropdown-menu-content"],
+[data-slot="select-content"],
+[data-slot="command"],
+[data-slot="hover-card-content"],
+[data-slot="alert"],
+[data-sonner-toast],
+[data-slot="table-container"],
+.glass,
+.glass-card {
+  border-width: var(--edge-w);
+  border-style: solid;
+  border-color: var(--edge-soft);
+}
+
+/* Calendário */
+[data-slot="calendar"] {
+  border: var(--edge-w) solid var(--edge-soft);
+}
+[data-slot="calendar"] [data-selected-single="true"],
+[data-slot="calendar"] [aria-selected="true"] {
+  border: 1px solid var(--edge-strong);
+}
+[data-slot="calendar"] [data-today="true"] {
+  border: 1px solid color-mix(in oklab, var(--primary) 35%, transparent);
+}
+
+/* Navbar / cabeçalhos fixos */
+header[data-slot="site-header"],
+[data-slot="navbar"] {
+  border-bottom: 1px solid var(--edge-soft);
+}
+
+/* Badges e abas ativas seguem a mesma família */
+[data-slot="badge"] {
+  border-color: var(--edge-soft);
+}
+[data-slot="tabs-trigger"][data-state="active"] {
+  border: 1px solid var(--edge-strong);
+}
+
+/* Estados: hover/focus/ativo com anel roxo discreto (sem neon) */
+[data-slot="dropdown-menu-item"]:hover,
+[data-slot="select-item"][data-highlighted],
+[data-slot="command-item"][data-selected="true"] {
+  box-shadow: inset 0 0 0 1px var(--edge-soft);
+}
+:where(a, button, [role="button"]):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 9%, transparent);
+}
