@@ -37,12 +37,15 @@ function KbManager() {
   const saveFn = useServerFn(saveArticle);
   const delFn = useServerFn(deleteArticle);
   const saveCat = useServerFn(saveCategory);
+  const importFn = useServerFn(importFidelizeArticles);
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
   const est = memberships?.[0]?.establishment as { id: string; slug: string; name: string } | undefined;
   const { data } = useQuery({ queryKey: ["kb-admin", est?.id], queryFn: () => listFn({ data: { establishment_id: est!.id } }), enabled: !!est });
   const [editing, setEditing] = useState<ArticleDraft | null>(null);
   const [catOpen, setCatOpen] = useState(false);
   const [catName, setCatName] = useState("");
+  const [importing, setImporting] = useState(false);
+
 
   if (!est) return <LoadingSkeleton variant="card-grid" rows={6} className="py-4" />;
 
