@@ -1319,6 +1319,9 @@ function ReviewQrPage() {
                 <Input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} className="h-10 p-1" />
               </div>
             </div>
+            </>
+            )}
+
 
             {/* Saved designs */}
             {step === 4 && (
