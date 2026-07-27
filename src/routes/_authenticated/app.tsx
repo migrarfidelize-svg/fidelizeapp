@@ -379,31 +379,90 @@ function AppLayout() {
     return <div key={n.to}>{inner}</div>;
   };
 
-  const renderNav = (onNavigate?: () => void, forceExpanded = false) => (
-    <LayoutGroup id="sidebar-nav">
-      <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto">
-        {filteredGroups.map((g) => (
-          <div key={g.key} className="space-y-1">
-            <AnimatePresence initial={false}>
-              {(forceExpanded || !collapsed) && (
-                <motion.div
-                  key="grouplabel"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70"
+  const renderNav = (onNavigate?: () => void, forceExpanded = false) => {
+    const showLabel = forceExpanded || !collapsed;
+    return (
+      <LayoutGroup id="sidebar-nav">
+        <nav className="flex-1 px-2.5 py-3 space-y-1.5 overflow-y-auto overflow-x-visible">
+          {filteredGroups.map((g) => {
+            const GroupIcon = g.icon;
+            const groupActive = g.items.some(isItemActive);
+            const expanded = openGroups.includes(g.key);
+            const flyout = !forceExpanded && hoverGroup === g.key;
+            return (
+              <div
+                key={g.key}
+                className="relative"
+                onMouseEnter={() => { if (!forceExpanded) setHoverGroup(g.key); }}
+                onMouseLeave={() => { if (!forceExpanded) setHoverGroup((c) => (c === g.key ? null : c)); }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenGroups((prev) => (prev.includes(g.key) ? prev.filter((k) => k !== g.key) : [...prev, g.key]))}
+                  aria-expanded={expanded}
+                  className={[
+                    "relative w-full flex items-center gap-3 rounded-xl h-10 text-sm font-semibold transition-colors",
+                    showLabel ? "px-3" : "px-0 justify-center",
+                    groupActive ? "text-foreground bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                  ].join(" ")}
                 >
-                  {g.label}
-                </motion.div>
-              )}
-            </AnimatePresence>
-            {g.items.map((n) => renderNavItem(n, onNavigate, forceExpanded))}
-          </div>
-        ))}
-      </nav>
-    </LayoutGroup>
-  );
+                  <span className="grid place-items-center h-8 w-8 shrink-0">
+                    <GroupIcon className={`h-[18px] w-[18px] ${groupActive ? "text-primary" : ""}`} strokeWidth={groupActive ? 2.3 : 1.8} />
+                  </span>
+                  {showLabel && (
+                    <>
+                      <span className="flex-1 text-left whitespace-nowrap">{g.label}</span>
+                      <ChevronRight className={`h-4 w-4 shrink-0 transition-transform duration-200 ${expanded ? "rotate-90" : ""}`} />
+                    </>
+                  )}
+                </button>
+
+                {/* Submenu inline (ao clicar) */}
+                <AnimatePresence initial={false}>
+                  {expanded && (
+                    <motion.div
+                      key="inline"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.18 }}
+                      className="overflow-hidden"
+                    >
+                      <div className={`space-y-1 py-1 ${showLabel ? "ml-4 border-l border-border/60 pl-2" : ""}`}>
+                        {g.items.map((n) => renderNavItem(n, onNavigate, forceExpanded))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Submenu lateral (ao passar o mouse) */}
+                <AnimatePresence>
+                  {flyout && !expanded && (
+                    <motion.div
+                      key="flyout"
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -8 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute left-full top-0 z-50 ml-2 w-60 rounded-2xl border border-border/60 bg-popover/95 p-2 shadow-xl backdrop-blur-xl"
+                    >
+                      <div className="px-2 pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+                        {g.label}
+                      </div>
+                      <div className="space-y-0.5">
+                        {g.items.map((n) => renderNavItem(n, () => { setHoverGroup(null); onNavigate?.(); }, true))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
+        </nav>
+      </LayoutGroup>
+    );
+  };
+
 
   const renderFooter = (onNavigate?: () => void, forceExpanded = false) => {
     const showLabel = forceExpanded || !collapsed;
