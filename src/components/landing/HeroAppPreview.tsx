@@ -12,6 +12,10 @@ import {
   UtensilsCrossed,
   Wallet,
 } from "lucide-react";
+import burgerImg from "@/assets/menu-templates/burgers-especiais.jpg.asset.json";
+import pizzaImg from "@/assets/menu-templates/pizzas-salgadas.jpg.asset.json";
+import acaiImg from "@/assets/menu-templates/acai-especial.jpg.asset.json";
+
 
 /** Tokens do mockup — trocam automaticamente entre claro/escuro (ver .hero-phone em styles.css). */
 const ACCENT = "var(--hp-accent)";
@@ -240,9 +244,9 @@ function MerchantScreen() {
 function MenuScreen() {
   const dishes = useMemo(
     () => [
-      { name: "Burger Trufado", price: "R$ 38,90", hue: 18 },
-      { name: "Pizza Nduja", price: "R$ 64,00", hue: 8 },
-      { name: "Açaí 500g", price: "R$ 24,50", hue: 285 },
+      { name: "Burger Trufado", desc: "Blend 180g, cheddar e trufa", price: "R$ 38,90", img: burgerImg.url },
+      { name: "Pizza Nduja", desc: "Mussarela de búfala e nduja", price: "R$ 64,00", img: pizzaImg.url },
+      { name: "Açaí 500g", desc: "Banana, granola e leite ninho", price: "R$ 24,50", img: acaiImg.url },
     ],
     [],
   );
@@ -255,13 +259,22 @@ function MenuScreen() {
   return (
     <ScreenShell sub="Cliente" title="Cardápio em stories">
       {/* o story é sempre uma foto escura — mantém texto branco em ambos os temas */}
-      <div
-        className="relative h-[190px] overflow-hidden rounded-2xl border transition-[background] duration-700"
-        style={{
-          borderColor: LINE,
-          background: `radial-gradient(120% 80% at 50% 15%, oklch(0.45 0.16 ${d.hue}), oklch(0.16 0.03 ${d.hue}) 72%)`,
-        }}
-      >
+      <div className="relative h-[190px] overflow-hidden rounded-2xl border" style={{ borderColor: LINE, background: "#0b0b0d" }}>
+        {dishes.map((item, x) => (
+          <img
+            key={item.name}
+            src={item.img}
+            alt={item.name}
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover transition-opacity duration-700"
+            style={{ opacity: x === k ? 1 : 0 }}
+          />
+        ))}
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{ background: "linear-gradient(to top, rgba(0,0,0,.82) 0%, rgba(0,0,0,.28) 45%, rgba(0,0,0,.35) 100%)" }}
+        />
         <div className="absolute inset-x-2 top-2 flex gap-1">
           {dishes.map((_, x) => (
             <span
@@ -273,6 +286,7 @@ function MenuScreen() {
         </div>
         <div className="absolute inset-x-0 bottom-0 p-3">
           <div className="text-sm font-bold text-white">{d.name}</div>
+          <div className="text-[10px] text-white/70">{d.desc}</div>
           <div className="mt-2 flex items-center gap-2">
             <span className="rounded-lg bg-white px-2 py-1 text-[10px] font-bold text-black">{d.price}</span>
             <span className="flex items-center gap-1 rounded-lg border border-white/25 px-2 py-1 text-[10px] font-semibold text-white">
@@ -281,6 +295,7 @@ function MenuScreen() {
           </div>
         </div>
       </div>
+
       <div className="mt-3">
         <Row icon={Stamp} title="Ganhe carimbo no pedido" sub="Cardápio conectado à fidelidade" tone={ACCENT} />
       </div>
