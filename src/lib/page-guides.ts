@@ -175,15 +175,6 @@ export const PAGE_GUIDES: Record<string, PageGuide> = {
       { title: "Acompanhe", description: "Você recebe notificação quando respondermos." },
     ],
   },
-  "/app/suporte": {
-    title: "Chamados dos clientes",
-    subtitle: "Atendimento aos seus clientes",
-    steps: [
-      { title: "Fila de chamados", description: "Veja o que os seus clientes abriram e priorize por urgência." },
-      { title: "Responda", description: "Use respostas rápidas para agilizar os casos repetidos." },
-      { title: "Feche o ciclo", description: "Marque como resolvido — o cliente é avisado automaticamente." },
-    ],
-  },
 };
 
 /** Casa o pathname atual com o guia mais específico disponível. */

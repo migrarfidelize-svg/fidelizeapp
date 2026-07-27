@@ -57,7 +57,6 @@ import { Route as AuthenticatedCarteiraHistoricoRouteImport } from './routes/_au
 import { Route as AuthenticatedCarteiraDescobrirRouteImport } from './routes/_authenticated/carteira.descobrir'
 import { Route as AuthenticatedCarteiraConquistasRouteImport } from './routes/_authenticated/carteira.conquistas'
 import { Route as AuthenticatedCarteiraSlugRouteImport } from './routes/_authenticated/carteira.$slug'
-import { Route as AuthenticatedAppSuporteRouteImport } from './routes/_authenticated/app.suporte'
 import { Route as AuthenticatedAppRetencaoRouteImport } from './routes/_authenticated/app.retencao'
 import { Route as AuthenticatedAppQrcodesRouteImport } from './routes/_authenticated/app.qrcodes'
 import { Route as AuthenticatedAppQrRouteImport } from './routes/_authenticated/app.qr'
@@ -378,11 +377,6 @@ const AuthenticatedCarteiraSlugRoute =
     path: '/$slug',
     getParentRoute: () => AuthenticatedCarteiraRoute,
   } as any)
-const AuthenticatedAppSuporteRoute = AuthenticatedAppSuporteRouteImport.update({
-  id: '/suporte',
-  path: '/suporte',
-  getParentRoute: () => AuthenticatedAppRoute,
-} as any)
 const AuthenticatedAppRetencaoRoute =
   AuthenticatedAppRetencaoRouteImport.update({
     id: '/retencao',
@@ -866,7 +860,6 @@ export interface FileRoutesByFullPath {
   '/app/qr': typeof AuthenticatedAppQrRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/retencao': typeof AuthenticatedAppRetencaoRoute
-  '/app/suporte': typeof AuthenticatedAppSuporteRoute
   '/carteira/$slug': typeof AuthenticatedCarteiraSlugRouteWithChildren
   '/carteira/conquistas': typeof AuthenticatedCarteiraConquistasRoute
   '/carteira/descobrir': typeof AuthenticatedCarteiraDescobrirRoute
@@ -982,7 +975,6 @@ export interface FileRoutesByTo {
   '/app/qr': typeof AuthenticatedAppQrRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/retencao': typeof AuthenticatedAppRetencaoRoute
-  '/app/suporte': typeof AuthenticatedAppSuporteRoute
   '/carteira/$slug': typeof AuthenticatedCarteiraSlugRouteWithChildren
   '/carteira/conquistas': typeof AuthenticatedCarteiraConquistasRoute
   '/carteira/descobrir': typeof AuthenticatedCarteiraDescobrirRoute
@@ -1105,7 +1097,6 @@ export interface FileRoutesById {
   '/_authenticated/app/qr': typeof AuthenticatedAppQrRoute
   '/_authenticated/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/_authenticated/app/retencao': typeof AuthenticatedAppRetencaoRoute
-  '/_authenticated/app/suporte': typeof AuthenticatedAppSuporteRoute
   '/_authenticated/carteira/$slug': typeof AuthenticatedCarteiraSlugRouteWithChildren
   '/_authenticated/carteira/conquistas': typeof AuthenticatedCarteiraConquistasRoute
   '/_authenticated/carteira/descobrir': typeof AuthenticatedCarteiraDescobrirRoute
@@ -1228,7 +1219,6 @@ export interface FileRouteTypes {
     | '/app/qr'
     | '/app/qrcodes'
     | '/app/retencao'
-    | '/app/suporte'
     | '/carteira/$slug'
     | '/carteira/conquistas'
     | '/carteira/descobrir'
@@ -1344,7 +1334,6 @@ export interface FileRouteTypes {
     | '/app/qr'
     | '/app/qrcodes'
     | '/app/retencao'
-    | '/app/suporte'
     | '/carteira/$slug'
     | '/carteira/conquistas'
     | '/carteira/descobrir'
@@ -1466,7 +1455,6 @@ export interface FileRouteTypes {
     | '/_authenticated/app/qr'
     | '/_authenticated/app/qrcodes'
     | '/_authenticated/app/retencao'
-    | '/_authenticated/app/suporte'
     | '/_authenticated/carteira/$slug'
     | '/_authenticated/carteira/conquistas'
     | '/_authenticated/carteira/descobrir'
@@ -1904,13 +1892,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/carteira/$slug'
       preLoaderRoute: typeof AuthenticatedCarteiraSlugRouteImport
       parentRoute: typeof AuthenticatedCarteiraRoute
-    }
-    '/_authenticated/app/suporte': {
-      id: '/_authenticated/app/suporte'
-      path: '/suporte'
-      fullPath: '/app/suporte'
-      preLoaderRoute: typeof AuthenticatedAppSuporteRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/app/retencao': {
       id: '/_authenticated/app/retencao'
@@ -2533,7 +2514,6 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppQrRoute: typeof AuthenticatedAppQrRoute
   AuthenticatedAppQrcodesRoute: typeof AuthenticatedAppQrcodesRoute
   AuthenticatedAppRetencaoRoute: typeof AuthenticatedAppRetencaoRoute
-  AuthenticatedAppSuporteRoute: typeof AuthenticatedAppSuporteRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
   AuthenticatedAppAvaliacoesQrRoute: typeof AuthenticatedAppAvaliacoesQrRoute
   AuthenticatedAppAvaliacoesTemaRoute: typeof AuthenticatedAppAvaliacoesTemaRoute
@@ -2562,7 +2542,6 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppQrRoute: AuthenticatedAppQrRoute,
   AuthenticatedAppQrcodesRoute: AuthenticatedAppQrcodesRoute,
   AuthenticatedAppRetencaoRoute: AuthenticatedAppRetencaoRoute,
-  AuthenticatedAppSuporteRoute: AuthenticatedAppSuporteRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
   AuthenticatedAppAvaliacoesQrRoute: AuthenticatedAppAvaliacoesQrRoute,
   AuthenticatedAppAvaliacoesTemaRoute: AuthenticatedAppAvaliacoesTemaRoute,

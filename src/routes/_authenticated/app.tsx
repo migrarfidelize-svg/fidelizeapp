@@ -86,22 +86,54 @@ type NavGroup = { key: string; label: string; icon: any; items: NavItem[] };
 
 const NAV_GROUPS: NavGroup[] = [
   {
-    key: "principal",
+    key: "visao",
     icon: LayoutDashboard,
-    label: "Principal",
+    label: "Visão geral",
     items: [
       { to: "/app", label: "Painel", icon: LayoutDashboard, exact: true },
-      { to: "/app/carimbar", label: "Carimbar", icon: Stamp },
-      { to: "/app/clientes", label: "Clientes", icon: Users },
-      { to: "/app/campanhas", label: "Campanhas", icon: Sparkles },
-      { to: "/app/qr", label: "QR Codes", icon: QrCode },
       { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
+    ],
+  },
+  {
+    key: "clientes",
+    icon: Users,
+    label: "Clientes",
+    items: [{ to: "/app/clientes", label: "Clientes", icon: Users }],
+  },
+  {
+    key: "qrcodes",
+    icon: QrCode,
+    label: "QR Codes",
+    items: [{ to: "/app/qr", label: "QR Codes", icon: QrCode }],
+  },
+  {
+    key: "fidelidade",
+    icon: Stamp,
+    label: "Cartão fidelidade",
+    items: [
+      { to: "/app/carimbar", label: "Carimbar", icon: Stamp },
+      { to: "/app/campanhas", label: "Campanhas de fidelidade", icon: Sparkles },
+    ],
+  },
+  {
+    key: "linktree",
+    icon: Link2,
+    label: "Árvore de links",
+    items: [{ to: "/app/linktree", label: "Árvore de links", icon: Link2 }],
+  },
+  {
+    key: "avaliacoes",
+    icon: Star,
+    label: "Avaliações",
+    items: [
+      { to: "/app/avaliacoes", label: "Visão geral", icon: Star, exact: true },
+      { to: "/app/avaliacoes/tema", label: "Tema da página", icon: Palette },
     ],
   },
   {
     key: "cardapio",
     icon: UtensilsCrossed,
-    label: "Cardápio digital",
+    label: "Cardápio",
     items: [
       { to: "/app/cardapio", label: "Visão geral", icon: UtensilsCrossed, exact: true },
       { to: "/app/cardapio/categorias", label: "Categorias", icon: FolderTree },
@@ -122,32 +154,42 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    key: "relacionamento",
-    icon: HeartHandshake,
-    label: "Relacionamento",
+    key: "comunicacao",
+    icon: Megaphone,
+    label: "Comunicação",
     items: [
-      { to: "/app/avaliacoes", label: "Avaliações", icon: Star },
-      { to: "/app/avaliacoes/tema", label: "Tema das avaliações", icon: Palette },
-      { to: "/app/linktree", label: "Árvore de links", icon: Link2 },
-      { to: "/app/notificacoes", label: "Notificações", icon: Bell },
       { to: "/app/retencao", label: "Retenção", icon: HeartHandshake },
+      { to: "/app/notificacoes", label: "Notificações", icon: Bell },
       { to: "/app/promocoes", label: "Promoções", icon: Megaphone },
       { to: "/app/mensagens", label: "Mensagens", icon: MessageSquare },
     ],
   },
   {
-    key: "conta",
-    icon: UserCircle2,
-    label: "Conta",
+    key: "equipe",
+    icon: UsersRound,
+    label: "Equipe",
+    items: [{ to: "/app/equipe", label: "Equipe", icon: UsersRound }],
+  },
+  {
+    key: "financeiro",
+    icon: Wallet,
+    label: "Financeiro",
     items: [
-      { to: "/app/equipe", label: "Equipe", icon: UsersRound },
       { to: "/app/planos", label: "Planos", icon: Package },
-      { to: "/app/pagamentos", label: "Pagamentos", icon: Receipt },
+      { to: "/app/pagamentos", label: "Pagamentos", icon: CreditCard },
+    ],
+  },
+  {
+    key: "suporte",
+    icon: LifeBuoy,
+    label: "Suporte",
+    items: [
       { to: "/app/kb", label: "Central de Ajuda", icon: BookOpen },
       { to: "/app/fidelize", label: "Fale com a Fidelize", icon: LifeBuoy },
     ],
   },
 ];
+
 
 
 const FLAT_NAV = NAV_GROUPS.flatMap((g) => g.items);
@@ -326,7 +368,7 @@ function AppLayout() {
 
   const renderNavItem = (n: NavItem, onNavigate?: () => void, forceExpanded = false) => {
     const active = isItemActive(n);
-    const badge = n.to === "/app/suporte" && unreadSupport > 0 ? unreadSupport : 0;
+    const badge = n.to === "/app/fidelize" && unreadSupport > 0 ? unreadSupport : 0;
     const showLabel = forceExpanded || !collapsed;
     const inner = (
       <Link
@@ -397,6 +439,15 @@ function AppLayout() {
             const groupActive = g.items.some(isItemActive);
             const expanded = openGroups.includes(g.key);
             const flyout = !forceExpanded && hoverGroup === g.key;
+            // Categoria com um único destino vira link direto (sem submenu).
+            if (g.items.length === 1) {
+              return (
+                <div key={g.key}>
+                  {renderNavItem({ ...g.items[0], label: g.label }, onNavigate, forceExpanded)}
+                </div>
+              );
+            }
+
             return (
               <div
                 key={g.key}
