@@ -474,9 +474,16 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
         </div>
 
         {/* PRÉVIA */}
-        <Card className="xl:sticky xl:top-4 h-fit">
-          <CardHeader><CardTitle>Prévia ao vivo</CardTitle></CardHeader>
-          <CardContent>
+        <div className="xl:sticky xl:top-4 h-fit">
+          <div className="overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-b from-muted/40 to-background p-4 shadow-sm">
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <Sparkles className="h-4 w-4 text-primary" /> Prévia ao vivo
+              </div>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" /> Ao vivo
+              </span>
+            </div>
             <MenuPreview
               kind={kind}
               preset={preset} layout={layout} pattern={pattern}
@@ -488,8 +495,9 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
               items={(menuData.data?.items ?? []) as PreviewItem[]}
               loading={menuData.isLoading || ests.isLoading}
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+
       </div>
     </div>
   );
