@@ -1460,6 +1460,8 @@ function ReviewQrPage() {
                 Contraste WCAG segue sendo calculado silenciosamente. */}
 
             {/* Actions */}
+            {step === 5 && (
+            <>
             <div className="grid grid-cols-2 gap-2 pt-1">
               <Button onClick={exportPng} disabled={exporting || !targetUrl}>
                 <FileImage className="mr-2 h-4 w-4" /> Baixar PNG
@@ -1478,8 +1480,35 @@ function ReviewQrPage() {
 
             {/* ===== STORE PREVIEW: Adquirir display físico ===== */}
             <div id="loja-displays" className="scroll-mt-4"><DisplayStorePreview /></div>
+            </>
+            )}
+
+            {/* Navegação entre etapas */}
+            <div className="flex items-center justify-between gap-2 border-t border-border/60 pt-4">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={step === 1}
+                onClick={() => setStep((s) => Math.max(1, s - 1))}
+              >
+                ← Voltar
+              </Button>
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Etapa {step} de {QR_STEPS.length}
+              </span>
+              <Button
+                type="button"
+                size="sm"
+                disabled={step === QR_STEPS.length}
+                onClick={() => setStep((s) => Math.min(QR_STEPS.length, s + 1))}
+              >
+                Avançar →
+              </Button>
+            </div>
           </CardContent>
         </Card>
+
 
         {/* PREVIEW */}
         <div className="min-w-0">
