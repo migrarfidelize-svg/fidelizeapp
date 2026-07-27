@@ -83,6 +83,8 @@ export function HeroAppPreview() {
             {active === "carteira" && <WalletScreen />}
             {active === "carimbar" && <MerchantScreen />}
             {active === "cardapio" && <MenuScreen />}
+            {active === "catalogo" && <CatalogScreen />}
+
           </div>
         </div>
       </div>
