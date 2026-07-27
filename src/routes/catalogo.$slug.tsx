@@ -886,7 +886,13 @@ function PublicCatalogPage() {
                   </button>
                 </div>
                 <div className="fx-hide-scroll -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0 sm:gap-4">
-                  {list.slice(0, 12).map((p) => renderCard(p, "row"))}
+                  {list.slice(0, 12).map((p) =>
+                    theme.layout === "premium"
+                      ? renderPremiumCard(p, "row")
+                      : theme.layout === "boutique"
+                        ? renderBoutiqueCard(p, "row")
+                        : renderCard(p, "row"),
+                  )}
                   {list.length > 12 && (
                     <button
                       onClick={() => setActiveCat(cat.id)}
