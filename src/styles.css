@@ -3045,3 +3045,82 @@ header[data-slot="site-header"],
   45% { opacity: 0.35; }
   60% { transform: translateX(420%) skewX(-12deg); opacity: 0; }
 }
+
+/* ============================================================
+   OTIMIZAÇÃO MOBILE — corrige queda de frames e delay das animações
+   em telas pequenas / dispositivos touch. Mantém a identidade
+   visual, mas remove os efeitos que forçam repaint por frame
+   (backdrop-filter, blur gigante, animação de filter/box-shadow,
+   background-attachment: fixed).
+   ============================================================ */
+@media (max-width: 767px) {
+  /* 1. background fixo obriga o navegador a repintar o fundo inteiro
+     a cada pixel de scroll — principal causa do travamento. */
+  body {
+    background-attachment: scroll, scroll, scroll;
+  }
+
+  /* 2. glassmorphism: backdrop-filter é o efeito mais caro em GPU mobile. */
+  *,
+  *::before,
+  *::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* 3. blurs decorativos gigantes: reduz o raio (custo cresce com o raio²). */
+  .blur-3xl { filter: blur(28px) !important; }
+  .blur-2xl { filter: blur(20px) !important; }
+  .blur-xl  { filter: blur(14px) !important; }
+
+  /* 4. animações que animam filter / box-shadow / background forçam
+     repaint em cada frame. Desligadas no mobile. */
+  .aurora-bg::before,
+  .card-icon,
+  .card-icon::after,
+  .nav-icon-active,
+  .group:hover .nav-icon-idle,
+  .hiw-complete .hiw-node[data-idx="2"],
+  .goals-scan,
+  .goals-fill-shimmer,
+  .wallet-card-breathe,
+  .wallet-stamp-pulse,
+  .wallet-streak-flame,
+  .showcase-float,
+  .scan-corner,
+  .scan-beam,
+  .scan-reticle,
+  .scan-hud,
+  .segment-sweep,
+  .segment-ring,
+  .pcb-node,
+  .pcb-signal,
+  .hero-bokeh,
+  .hero-grid,
+  .hero-beam,
+  .hero-scan,
+  .fz-core,
+  .dock-logo-breathe {
+    animation: none !important;
+  }
+
+  /* 5. marquees continuam (são só transform), mas em camada própria
+     de GPU para não repintar o conteúdo a cada frame. */
+  .brand-marquee-track,
+  .kinetic-track,
+  .camp-track {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  /* 6. sombras enormes multiplicam o custo de composição. */
+  .auth-card-body {
+    box-shadow: 0 20px 40px -20px rgba(0,0,0,0.55), 0 0 0 1px rgba(167,139,250,0.06);
+  }
+
+  /* 7. transições longas viram delay percebido no toque. */
+  a, button, [role="button"], [role="tab"] {
+    transition-duration: 140ms;
+  }
+}
