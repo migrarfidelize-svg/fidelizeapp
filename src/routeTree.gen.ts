@@ -124,10 +124,14 @@ import { Route as AuthenticatedAppAvaliacoesTemaRouteImport } from './routes/_au
 import { Route as AuthenticatedAppAvaliacoesQrRouteImport } from './routes/_authenticated/app.avaliacoes.qr'
 import { Route as AuthenticatedAdminSuporteIdRouteImport } from './routes/_authenticated/admin.suporte.$id'
 import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authenticated/admin.empresa.$id'
+import { Route as ApiPublicWalletV1LogRouteImport } from './routes/api/public/wallet/v1/log'
 import { Route as ApiPublicWalletAppleTokenRouteImport } from './routes/api/public/wallet.apple.$token'
 import { Route as ApiPublicRTCodeRouteImport } from './routes/api/public/r/t/$code'
 import { Route as AuthenticatedAppFidelizeTicketIdRouteImport } from './routes/_authenticated/app.fidelize.ticket.$id'
 import { Route as ApiPublicRQrSlugDestRouteImport } from './routes/api/public/r/qr/$slug/$dest'
+import { Route as ApiPublicWalletV1PassesPassTypeIdSerialRouteImport } from './routes/api/public/wallet/v1/passes.$passTypeId.$serial'
+import { Route as ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteImport } from './routes/api/public/wallet/v1/devices.$deviceId.registrations.$passTypeId'
+import { Route as ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRouteImport } from './routes/api/public/wallet/v1/devices.$deviceId.registrations.$passTypeId.$serial'
 
 const VideosRoute = VideosRouteImport.update({
   id: '/videos',
@@ -768,6 +772,11 @@ const AuthenticatedAdminEmpresaIdRoute =
     path: '/empresa/$id',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const ApiPublicWalletV1LogRoute = ApiPublicWalletV1LogRouteImport.update({
+  id: '/api/public/wallet/v1/log',
+  path: '/api/public/wallet/v1/log',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWalletAppleTokenRoute =
   ApiPublicWalletAppleTokenRouteImport.update({
     id: '/api/public/wallet/apple/$token',
@@ -790,6 +799,27 @@ const ApiPublicRQrSlugDestRoute = ApiPublicRQrSlugDestRouteImport.update({
   path: '/api/public/r/qr/$slug/$dest',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWalletV1PassesPassTypeIdSerialRoute =
+  ApiPublicWalletV1PassesPassTypeIdSerialRouteImport.update({
+    id: '/api/public/wallet/v1/passes/$passTypeId/$serial',
+    path: '/api/public/wallet/v1/passes/$passTypeId/$serial',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRoute =
+  ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteImport.update({
+    id: '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId',
+    path: '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRoute =
+  ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRouteImport.update(
+    {
+      id: '/$serial',
+      path: '/$serial',
+      getParentRoute: () =>
+        ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRoute,
+    } as any,
+  )
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -909,7 +939,11 @@ export interface FileRoutesByFullPath {
   '/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
   '/api/public/r/t/$code': typeof ApiPublicRTCodeRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
+  '/api/public/wallet/v1/log': typeof ApiPublicWalletV1LogRoute
   '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
+  '/api/public/wallet/v1/passes/$passTypeId/$serial': typeof ApiPublicWalletV1PassesPassTypeIdSerialRoute
+  '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId': typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren
+  '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId/$serial': typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -1024,7 +1058,11 @@ export interface FileRoutesByTo {
   '/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
   '/api/public/r/t/$code': typeof ApiPublicRTCodeRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
+  '/api/public/wallet/v1/log': typeof ApiPublicWalletV1LogRoute
   '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
+  '/api/public/wallet/v1/passes/$passTypeId/$serial': typeof ApiPublicWalletV1PassesPassTypeIdSerialRoute
+  '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId': typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren
+  '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId/$serial': typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -1146,7 +1184,11 @@ export interface FileRoutesById {
   '/_authenticated/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
   '/api/public/r/t/$code': typeof ApiPublicRTCodeRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
+  '/api/public/wallet/v1/log': typeof ApiPublicWalletV1LogRoute
   '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
+  '/api/public/wallet/v1/passes/$passTypeId/$serial': typeof ApiPublicWalletV1PassesPassTypeIdSerialRoute
+  '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId': typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren
+  '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId/$serial': typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -1268,7 +1310,11 @@ export interface FileRouteTypes {
     | '/app/fidelize/ticket/$id'
     | '/api/public/r/t/$code'
     | '/api/public/wallet/apple/$token'
+    | '/api/public/wallet/v1/log'
     | '/api/public/r/qr/$slug/$dest'
+    | '/api/public/wallet/v1/passes/$passTypeId/$serial'
+    | '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId'
+    | '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId/$serial'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -1383,7 +1429,11 @@ export interface FileRouteTypes {
     | '/app/fidelize/ticket/$id'
     | '/api/public/r/t/$code'
     | '/api/public/wallet/apple/$token'
+    | '/api/public/wallet/v1/log'
     | '/api/public/r/qr/$slug/$dest'
+    | '/api/public/wallet/v1/passes/$passTypeId/$serial'
+    | '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId'
+    | '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId/$serial'
   id:
     | '__root__'
     | '/'
@@ -1504,7 +1554,11 @@ export interface FileRouteTypes {
     | '/_authenticated/app/fidelize/ticket/$id'
     | '/api/public/r/t/$code'
     | '/api/public/wallet/apple/$token'
+    | '/api/public/wallet/v1/log'
     | '/api/public/r/qr/$slug/$dest'
+    | '/api/public/wallet/v1/passes/$passTypeId/$serial'
+    | '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId'
+    | '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId/$serial'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1552,7 +1606,10 @@ export interface RootRouteChildren {
   SuporteSlugKbArticleRoute: typeof SuporteSlugKbArticleRoute
   ApiPublicRTCodeRoute: typeof ApiPublicRTCodeRoute
   ApiPublicWalletAppleTokenRoute: typeof ApiPublicWalletAppleTokenRoute
+  ApiPublicWalletV1LogRoute: typeof ApiPublicWalletV1LogRoute
   ApiPublicRQrSlugDestRoute: typeof ApiPublicRQrSlugDestRoute
+  ApiPublicWalletV1PassesPassTypeIdSerialRoute: typeof ApiPublicWalletV1PassesPassTypeIdSerialRoute
+  ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRoute: typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -2362,6 +2419,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminEmpresaIdRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/api/public/wallet/v1/log': {
+      id: '/api/public/wallet/v1/log'
+      path: '/api/public/wallet/v1/log'
+      fullPath: '/api/public/wallet/v1/log'
+      preLoaderRoute: typeof ApiPublicWalletV1LogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/wallet/apple/$token': {
       id: '/api/public/wallet/apple/$token'
       path: '/api/public/wallet/apple/$token'
@@ -2389,6 +2453,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/r/qr/$slug/$dest'
       preLoaderRoute: typeof ApiPublicRQrSlugDestRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/public/wallet/v1/passes/$passTypeId/$serial': {
+      id: '/api/public/wallet/v1/passes/$passTypeId/$serial'
+      path: '/api/public/wallet/v1/passes/$passTypeId/$serial'
+      fullPath: '/api/public/wallet/v1/passes/$passTypeId/$serial'
+      preLoaderRoute: typeof ApiPublicWalletV1PassesPassTypeIdSerialRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId': {
+      id: '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId'
+      path: '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId'
+      fullPath: '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId'
+      preLoaderRoute: typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId/$serial': {
+      id: '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId/$serial'
+      path: '/$serial'
+      fullPath: '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId/$serial'
+      preLoaderRoute: typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRouteImport
+      parentRoute: typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRoute
     }
   }
 }
@@ -2630,6 +2715,21 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
+interface ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteChildren {
+  ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRoute: typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRoute
+}
+
+const ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteChildren: ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteChildren =
+  {
+    ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRoute:
+      ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRoute,
+  }
+
+const ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren =
+  ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRoute._addFileChildren(
+    ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -2677,7 +2777,12 @@ const rootRouteChildren: RootRouteChildren = {
   SuporteSlugKbArticleRoute: SuporteSlugKbArticleRoute,
   ApiPublicRTCodeRoute: ApiPublicRTCodeRoute,
   ApiPublicWalletAppleTokenRoute: ApiPublicWalletAppleTokenRoute,
+  ApiPublicWalletV1LogRoute: ApiPublicWalletV1LogRoute,
   ApiPublicRQrSlugDestRoute: ApiPublicRQrSlugDestRoute,
+  ApiPublicWalletV1PassesPassTypeIdSerialRoute:
+    ApiPublicWalletV1PassesPassTypeIdSerialRoute,
+  ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRoute:
+    ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
