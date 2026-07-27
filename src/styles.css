@@ -2976,3 +2976,58 @@ header[data-slot="site-header"],
 .dark :where(a, button, [role="button"]):focus-visible {
   box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 22%, transparent);
 }
+
+/* ============================================================
+   TEMA ESCURO v2 — iluminação mínima, destaque nas bordas
+   Mantém movimento/transições; corta o brilho difuso roxo.
+   ============================================================ */
+.dark {
+  --glow-primary: color-mix(in oklab, var(--primary) 4%, transparent);
+  --glow-accent: color-mix(in oklab, var(--accent) 3%, transparent);
+  --glass-border: color-mix(in oklab, var(--primary) 26%, transparent);
+  --hairline: color-mix(in oklab, var(--primary) 28%, transparent);
+  --edge-soft: color-mix(in oklab, var(--primary) 24%, transparent);
+  --edge-strong: color-mix(in oklab, var(--primary) 42%, transparent);
+  --grid-line: color-mix(in oklab, var(--primary) 3%, transparent);
+
+  --gradient-hero:
+    radial-gradient(1200px 600px at 15% -10%, color-mix(in oklab, var(--primary) 3.5%, transparent), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, color-mix(in oklab, var(--accent) 2.5%, transparent), transparent 60%);
+}
+
+/* Superfícies: sombra neutra (preta) + hairline roxa como destaque */
+.dark .surface-glow,
+.dark .glass-panel,
+.dark .glass,
+.dark .glass-card,
+.dark [data-slot="card"],
+.dark [data-slot="dialog-content"],
+.dark [data-slot="sheet-content"],
+.dark [data-slot="popover-content"],
+.dark [data-slot="dropdown-menu-content"] {
+  box-shadow:
+    inset 0 0 0 var(--edge-w, 1.5px) var(--edge-soft),
+    0 14px 40px -30px oklch(0 0 0 / 0.7);
+}
+
+/* Realce por borda nos estados ativos, sem halo */
+.dark .dock-item,
+.dark [data-slot="tabs-trigger"][data-state="active"] {
+  --dock-item-active-glow: 0 0 0 1px var(--edge-strong);
+}
+.dark .nav-item-active-aurora {
+  box-shadow: inset 0 0 0 1px var(--edge-strong);
+  filter: none;
+}
+.dark :where(a, button, [role="button"]):focus-visible {
+  box-shadow: 0 0 0 2px var(--edge-strong);
+}
+
+/* Corta halos difusos de ícones/textos no escuro (mantém animações) */
+.dark .nav-icon-active,
+.dark .card-icon,
+.dark .metric-number,
+.dark .hairline-glow {
+  filter: none;
+  text-shadow: none;
+}

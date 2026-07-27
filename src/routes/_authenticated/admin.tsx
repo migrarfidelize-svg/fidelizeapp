@@ -14,7 +14,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock, Wallet2,
   UsersRound, Settings, Mail, FileText, ListChecks, LifeBuoy, Package,
-  DollarSign, Wallet, Megaphone, Cog, BookOpen, Menu, Star, Plug, Rocket, FileJson, KeyRound,
+  DollarSign, Wallet, Megaphone, Cog, BookOpen, Menu, Star, Plug, Rocket, FileJson, KeyRound, ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -88,7 +88,17 @@ function AdminLayout() {
   const { data, isLoading, refetch } = useQuery({ queryKey: ["admin-status"], queryFn: () => getStatus() });
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [openGroups, setOpenGroups] = useState<string[]>([]);
+  const [hoverGroup, setHoverGroup] = useState<string | null>(null);
+  const [hoverPos, setHoverPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   useEffect(() => { setMobileOpen(false); }, [pathname]);
+  // mantém apenas a categoria da rota atual expandida
+  useEffect(() => {
+    const g = NAV_GROUPS.find((grp) =>
+      grp.items.some((n) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))),
+    );
+    setOpenGroups(g ? [g.key] : []);
+  }, [pathname]);
 
 
   if (isLoading) return <div className="grid min-h-dvh place-items-center text-muted-foreground">Verificando permissões…</div>;
@@ -133,27 +143,90 @@ function AdminLayout() {
         : "text-muted-foreground hover:bg-muted hover:text-foreground",
     ].join(" ");
 
-  const renderNav = (onNavigate?: () => void) => (
-    <nav className="nav-dense flex flex-1 flex-col gap-[var(--nav-gap)] overflow-y-auto px-2.5 py-[var(--nav-py)]">
-      <Link to={OVERVIEW.to} onClick={onNavigate} className={navItemClass(isItemActive(OVERVIEW))}>
-        <OVERVIEW.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.8} />
-        <span className="truncate">{OVERVIEW.label}</span>
-      </Link>
-      {NAV_GROUPS.map((g) => (
-        <div key={g.key} className="flex flex-col gap-[var(--nav-gap)] pt-[var(--nav-gap)]">
-          <div className="px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
-            {g.label}
+  const renderNavItem = (n: NavItem, onNavigate?: () => void) => (
+    <Link key={n.to} to={n.to} onClick={onNavigate} className={navItemClass(isItemActive(n))}>
+      <n.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.8} />
+      <span className="truncate">{n.label}</span>
+    </Link>
+  );
+
+  const renderNav = (onNavigate?: () => void, forceExpanded = false) => (
+    <nav className="nav-dense flex flex-1 flex-col gap-[var(--nav-gap)] overflow-y-auto overflow-x-visible px-2.5 py-[var(--nav-py)]">
+      {renderNavItem(OVERVIEW, onNavigate)}
+      {NAV_GROUPS.map((g) => {
+        const GroupIcon = g.icon;
+        const groupActive = g.items.some(isItemActive);
+        const expanded = openGroups.includes(g.key);
+        const flyout = !forceExpanded && hoverGroup === g.key;
+        return (
+          <div
+            key={g.key}
+            className="relative"
+            onMouseEnter={(e) => {
+              if (forceExpanded) return;
+              const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+              setHoverPos({ top: Math.min(r.top, window.innerHeight - 340), left: r.right + 8 });
+              setHoverGroup(g.key);
+            }}
+            onMouseLeave={() => { if (!forceExpanded) setHoverGroup((c) => (c === g.key ? null : c)); }}
+          >
+            <button
+              type="button"
+              onClick={() => setOpenGroups((prev) => (prev.includes(g.key) ? [] : [g.key]))}
+              aria-expanded={expanded}
+              className={[
+                "relative w-full flex items-center gap-3 rounded-xl px-3 h-[var(--nav-item-h,2.5rem)] text-[length:var(--nav-fs,0.875rem)] font-semibold transition-colors",
+                groupActive ? "text-foreground bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+              ].join(" ")}
+            >
+              <GroupIcon className={`h-[18px] w-[18px] shrink-0 ${groupActive ? "text-primary" : ""}`} strokeWidth={groupActive ? 2.3 : 1.8} />
+              <span className="flex-1 text-left truncate">{g.label}</span>
+              <ChevronRight className={`h-4 w-4 shrink-0 transition-transform duration-200 ${expanded ? "rotate-90" : ""}`} />
+            </button>
+
+            <AnimatePresence initial={false}>
+              {expanded && (
+                <motion.div
+                  key="inline"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.18 }}
+                  className="overflow-hidden"
+                >
+                  <div className="ml-4 flex flex-col gap-[var(--nav-gap)] border-l border-border/60 py-[var(--nav-gap)] pl-2">
+                    {g.items.map((n) => renderNavItem(n, onNavigate))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+              {flyout && !expanded && (
+                <motion.div
+                  key="flyout"
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -8 }}
+                  transition={{ duration: 0.15 }}
+                  style={{ position: "fixed", top: hoverPos.top, left: hoverPos.left }}
+                  className="z-50 w-60 max-h-[70vh] overflow-y-auto rounded-2xl border border-border/60 bg-popover/95 p-2 shadow-xl backdrop-blur-xl"
+                >
+                  <div className="px-2 pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+                    {g.label}
+                  </div>
+                  <div className="space-y-0.5">
+                    {g.items.map((n) => renderNavItem(n, () => { setHoverGroup(null); onNavigate?.(); }))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-          {g.items.map((n) => (
-            <Link key={n.to} to={n.to} onClick={onNavigate} className={navItemClass(isItemActive(n))}>
-              <n.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.8} />
-              <span className="truncate">{n.label}</span>
-            </Link>
-          ))}
-        </div>
-      ))}
+        );
+      })}
     </nav>
   );
+
 
 
   return (
@@ -203,7 +276,7 @@ function AdminLayout() {
                       <Logo />
                       <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-primary-soft text-primary">Admin</span>
                     </div>
-                    {renderNav(closeMobile)}
+                    {renderNav(closeMobile, true)}
                     <div className="p-3 border-t space-y-2">
                       <div className="flex items-center justify-between px-1">
                         <span className="text-xs text-muted-foreground">Tema</span>
