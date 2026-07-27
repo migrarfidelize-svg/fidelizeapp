@@ -66,7 +66,7 @@ export const getPassJson = createServerFn({ method: "POST" })
     const { buildApplePassJson } = await import("@/lib/apple-pass.server");
     const model = await loadPassModelByToken(data.token);
     if (!model) throw new Error("Cartão não encontrado.");
-    return buildApplePassJson({
+    const pass = buildApplePassJson({
       model,
       origin: safeOrigin(data.origin),
       passTypeId: process.env.APPLE_PASS_TYPE_ID || "pass.app.fidelize.card",
@@ -74,4 +74,5 @@ export const getPassJson = createServerFn({ method: "POST" })
       serialNumber: `PREVIEW-${model.customer.id}`,
       authenticationToken: "preview",
     });
+    return JSON.parse(JSON.stringify(pass)) as Record<string, string | number | boolean | null | object>;
   });
