@@ -72,7 +72,7 @@
   --popover-foreground: oklch(0.16 0.03 285);
 
   /* Roxo oficial — hue 288 (violeta puro, longe de magenta ≥ 320) */
-  --primary: oklch(0.50 0.165 288);
+  --primary: oklch(0.50 0.145 288);
   --primary-foreground: oklch(0.99 0.004 288);
   --primary-soft: oklch(0.92 0.045 288);
 
@@ -83,7 +83,7 @@
   --muted-foreground: oklch(0.40 0.025 285);
 
   /* Acento: violeta/índigo (antes era magenta 335) */
-  --accent: oklch(0.54 0.145 275);
+  --accent: oklch(0.54 0.125 275);
   --accent-foreground: oklch(0.99 0.004 275);
   --accent-soft: oklch(0.93 0.045 275);
 
@@ -94,7 +94,7 @@
 
   --border: oklch(0.20 0.03 285 / 16%);
   --input: oklch(0.20 0.03 285 / 20%);
-  --ring: oklch(0.50 0.165 288);
+  --ring: oklch(0.50 0.145 288);
 
   --chart-1: oklch(0.50 0.155 288);
   --chart-2: oklch(0.55 0.135 272);
@@ -104,18 +104,18 @@
 
   --sidebar: oklch(0.975 0.007 285);
   --sidebar-foreground: oklch(0.20 0.03 285);
-  --sidebar-primary: oklch(0.50 0.165 288);
+  --sidebar-primary: oklch(0.50 0.145 288);
   --sidebar-primary-foreground: oklch(0.99 0.004 288);
   --sidebar-accent: oklch(0.94 0.012 285);
   --sidebar-accent-foreground: oklch(0.20 0.03 285);
   --sidebar-border: oklch(0.20 0.03 285 / 16%);
-  --sidebar-ring: oklch(0.50 0.165 288);
+  --sidebar-ring: oklch(0.50 0.145 288);
 
   --grid-line: color-mix(in oklab, var(--primary) 11%, transparent);
   --glass-bg: color-mix(in oklab, var(--card) 80%, transparent);
-  --glass-border: color-mix(in oklab, var(--primary) 22%, transparent);
-  --glow-primary: color-mix(in oklab, var(--primary) 30%, transparent);
-  --glow-accent: color-mix(in oklab, var(--accent) 26%, transparent);
+  --glass-border: color-mix(in oklab, var(--primary) 18%, transparent);
+  --glow-primary: color-mix(in oklab, var(--primary) 15%, transparent);
+  --glow-accent: color-mix(in oklab, var(--accent) 13%, transparent);
   --hairline: color-mix(in oklab, var(--primary) 20%, transparent);
 
   --gradient-hero:
@@ -154,7 +154,7 @@
   --muted: oklch(0.22 0.025 232);
   --muted-foreground: oklch(0.75 0.03 210);
 
-  --accent: oklch(0.76 0.15 295);
+  --accent: oklch(0.76 0.125 295);
   --accent-foreground: oklch(0.12 0.03 230);
   --accent-soft: oklch(0.3 0.075 295);
 
@@ -184,9 +184,9 @@
 
   --grid-line: color-mix(in oklab, var(--primary) 9%, transparent);
   --glass-bg: color-mix(in oklab, var(--card) 68%, transparent);
-  --glass-border: color-mix(in oklab, var(--primary) 32%, transparent);
-  --glow-primary: color-mix(in oklab, var(--primary) 55%, transparent);
-  --glow-accent: color-mix(in oklab, var(--accent) 45%, transparent);
+  --glass-border: color-mix(in oklab, var(--primary) 22%, transparent);
+  --glow-primary: color-mix(in oklab, var(--primary) 26%, transparent);
+  --glow-accent: color-mix(in oklab, var(--accent) 22%, transparent);
   --hairline: color-mix(in oklab, var(--primary) 24%, transparent);
   --gradient-hero:
     radial-gradient(1200px 600px at 15% -10%, color-mix(in oklab, var(--primary) 26%, transparent), transparent 60%),
@@ -234,15 +234,15 @@
     background-origin: border-box;
     background-clip: padding-box, border-box;
     box-shadow:
-      0 1px 0 color-mix(in oklab, var(--foreground) 4%, transparent) inset,
-      0 30px 60px -40px color-mix(in oklab, var(--primary) 30%, transparent);
+      0 1px 0 color-mix(in oklab, var(--foreground) 6%, transparent) inset,
+      0 30px 60px -40px color-mix(in oklab, var(--primary) 15%, transparent);
     transition: box-shadow .3s ease, transform .3s ease;
   }
   :where(.bg-card):not(button):not([data-no-fx]):hover {
     box-shadow:
       0 1px 0 color-mix(in oklab, var(--foreground) 6%, transparent) inset,
-      0 40px 80px -40px color-mix(in oklab, var(--primary) 45%, transparent),
-      0 0 0 1px color-mix(in oklab, var(--primary) 20%, transparent);
+      0 40px 80px -40px color-mix(in oklab, var(--primary) 22%, transparent),
+      0 0 0 1px color-mix(in oklab, var(--primary) 10%, transparent);
   }
 
   /* Inputs futuristas — hairline luminosa no foco */
@@ -250,7 +250,7 @@
     transition: box-shadow .2s ease, border-color .2s ease, background-color .2s ease;
   }
   :where(input, textarea, select):focus {
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 22%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 11%, transparent);
   }
 }
 
@@ -262,7 +262,7 @@
   background-image: linear-gradient(135deg, var(--color-accent), color-mix(in oklab, var(--color-accent) 65%, var(--color-primary)));
 }
 @utility surface-glow {
-  box-shadow: 0 20px 60px -30px color-mix(in oklab, var(--color-primary) 45%, transparent);
+  box-shadow: 0 20px 60px -30px color-mix(in oklab, var(--color-primary) 22%, transparent);
 }
 
 /* Painel de vidro reutilizável — para heros, modais e KPIs */
@@ -274,7 +274,7 @@
   border: 1px solid var(--glass-border);
   box-shadow:
     0 1px 0 color-mix(in oklab, var(--foreground) 6%, transparent) inset,
-    0 40px 90px -40px color-mix(in oklab, var(--primary) 45%, transparent);
+    0 40px 90px -40px color-mix(in oklab, var(--primary) 22%, transparent);
 }
 
 /* Hairline gradiente ao redor de qualquer bloco (sem tocar no fundo) */
@@ -350,8 +350,8 @@
 
 .logo-mark-aurora {
   box-shadow:
-    0 0 0 1px color-mix(in oklab, var(--primary) 35%, transparent),
-    0 10px 30px -12px color-mix(in oklab, var(--primary) 55%, transparent);
+    0 0 0 1px color-mix(in oklab, var(--primary) 18%, transparent),
+    0 10px 30px -12px color-mix(in oklab, var(--primary) 28%, transparent);
 }
 .logo-mark-aurora::after {
   content: "";
@@ -387,7 +387,7 @@
   color: var(--foreground);
   border: 1px solid var(--glass-border);
   box-shadow:
-    0 4px 14px -4px color-mix(in oklab, var(--primary) 45%, transparent),
+    0 4px 14px -4px color-mix(in oklab, var(--primary) 22%, transparent),
     0 0 0 4px var(--background);
   transition: transform .25s ease, box-shadow .25s ease, color .25s ease;
 }
@@ -411,7 +411,7 @@
   transform: scale(1.1);
   color: var(--primary);
   box-shadow:
-    0 6px 22px -4px color-mix(in oklab, var(--primary) 65%, transparent),
+    0 6px 22px -4px color-mix(in oklab, var(--primary) 32%, transparent),
     0 0 0 4px var(--background);
 }
 
@@ -425,8 +425,8 @@
       color-mix(in oklab, var(--primary) 70%, var(--accent))
     );
   box-shadow:
-    0 8px 24px -10px color-mix(in oklab, var(--primary) 65%, transparent),
-    inset 0 1px 0 color-mix(in oklab, #ffffff 25%, transparent);
+    0 8px 24px -10px color-mix(in oklab, var(--primary) 32%, transparent),
+    inset 0 1px 0 color-mix(in oklab, #ffffff 12%, transparent);
 }
 .nav-item-active-aurora::after {
   content: "";
@@ -458,7 +458,7 @@
 
 @keyframes icon-breath {
   0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 transparent); }
-  50%      { transform: scale(1.12); filter: drop-shadow(0 0 6px color-mix(in oklab, #ffffff 70%, transparent)); }
+  50%      { transform: scale(1.12); filter: drop-shadow(0 0 6px color-mix(in oklab, #ffffff 35%, transparent)); }
 }
 @keyframes icon-float {
   0%, 100% { transform: translateY(0); }
@@ -496,8 +496,8 @@
     color-mix(in oklab, var(--card) 92%, transparent);
   border: 1px solid color-mix(in oklab, var(--primary) 40%, transparent);
   box-shadow:
-    inset 0 1px 0 color-mix(in oklab, #ffffff 12%, transparent),
-    0 10px 30px -14px color-mix(in oklab, var(--primary) 60%, transparent);
+    inset 0 1px 0 color-mix(in oklab, #ffffff 6%, transparent),
+    0 10px 30px -14px color-mix(in oklab, var(--primary) 30%, transparent);
   overflow: visible;
   animation: card-icon-pulse 3.2s ease-in-out infinite;
 }
@@ -508,8 +508,8 @@
     color-mix(in oklab, var(--card) 92%, transparent);
   border-color: color-mix(in oklab, var(--accent) 40%, transparent);
   box-shadow:
-    inset 0 1px 0 color-mix(in oklab, #ffffff 12%, transparent),
-    0 10px 30px -14px color-mix(in oklab, var(--accent) 60%, transparent);
+    inset 0 1px 0 color-mix(in oklab, #ffffff 6%, transparent),
+    0 10px 30px -14px color-mix(in oklab, var(--accent) 30%, transparent);
 }
 .card-icon::before {
   content: "";
@@ -554,15 +554,15 @@
   z-index: 1;
   width: 1.4rem;
   height: 1.4rem;
-  filter: drop-shadow(0 0 6px color-mix(in oklab, currentColor 55%, transparent));
+  filter: drop-shadow(0 0 6px color-mix(in oklab, currentColor 28%, transparent));
   animation: card-icon-bob 3.6s ease-in-out infinite;
 }
 @keyframes card-icon-pulse {
-  0%, 100% { box-shadow: inset 0 1px 0 color-mix(in oklab, #ffffff 12%, transparent),
-                         0 10px 30px -14px color-mix(in oklab, var(--primary) 55%, transparent); }
-  50%      { box-shadow: inset 0 1px 0 color-mix(in oklab, #ffffff 18%, transparent),
-                         0 14px 40px -12px color-mix(in oklab, var(--primary) 85%, transparent),
-                         0 0 0 3px color-mix(in oklab, var(--primary) 18%, transparent); }
+  0%, 100% { box-shadow: inset 0 1px 0 color-mix(in oklab, #ffffff 6%, transparent),
+                         0 10px 30px -14px color-mix(in oklab, var(--primary) 28%, transparent); }
+  50%      { box-shadow: inset 0 1px 0 color-mix(in oklab, #ffffff 9%, transparent),
+                         0 14px 40px -12px color-mix(in oklab, var(--primary) 42%, transparent),
+                         0 0 0 3px color-mix(in oklab, var(--primary) 9%, transparent); }
 }
 @keyframes card-icon-bob {
   0%, 100% { transform: translateY(0) scale(1); }
@@ -594,8 +594,8 @@
 
 /* n8n / AI-flow (HowItWorks) — scroll-driven, styles set inline via JS */
 @keyframes hiw-card-glow {
-  0%, 100% { box-shadow: 0 0 0 1px color-mix(in oklab, var(--acc, #00ffff) 25%, transparent), 0 0 32px -8px color-mix(in oklab, var(--acc, #00ffff) 40%, transparent); }
-  50%      { box-shadow: 0 0 0 1px color-mix(in oklab, var(--acc, #00ffff) 55%, transparent), 0 0 64px -6px color-mix(in oklab, var(--acc, #00ffff) 70%, transparent); }
+  0%, 100% { box-shadow: 0 0 0 1px color-mix(in oklab, var(--acc, #00ffff) 12%, transparent), 0 0 32px -8px color-mix(in oklab, var(--acc, #00ffff) 20%, transparent); }
+  50%      { box-shadow: 0 0 0 1px color-mix(in oklab, var(--acc, #00ffff) 28%, transparent), 0 0 64px -6px color-mix(in oklab, var(--acc, #00ffff) 35%, transparent); }
 }
 .hiw-node { transition: opacity 220ms linear, transform 220ms linear, filter 220ms linear; }
 .hiw-link path.hiw-link-main { transition: stroke-dashoffset 180ms linear, opacity 180ms linear; }
@@ -1043,8 +1043,8 @@
     radial-gradient(ellipse 60% 50% at 100% 100%, color-mix(in oklab, var(--accent) 10%, transparent), transparent 55%),
     color-mix(in oklab, var(--card) 96%, transparent);
   box-shadow:
-    inset 0 1px 0 color-mix(in oklab, #fff 7%, transparent),
-    0 30px 70px -40px color-mix(in oklab, var(--primary) 60%, transparent);
+    inset 0 1px 0 color-mix(in oklab, #fff 6%, transparent),
+    0 30px 70px -40px color-mix(in oklab, var(--primary) 30%, transparent);
   isolation: isolate;
 }
 /* Layer 1 — drifting circuit grid */
@@ -1073,7 +1073,7 @@
     color-mix(in oklab, var(--primary) 20%, transparent) 80%,
     transparent 100%
   );
-  box-shadow: 0 0 22px 0 color-mix(in oklab, var(--primary) 80%, transparent);
+  box-shadow: 0 0 22px 0 color-mix(in oklab, var(--primary) 40%, transparent);
   animation: hero-beam-x 6s linear infinite;
   pointer-events: none;
   z-index: 1;
@@ -1127,8 +1127,8 @@
   background: color-mix(in oklab, var(--card) 97%, transparent);
   border: 1px solid color-mix(in oklab, var(--primary) 22%, transparent);
   box-shadow:
-    inset 0 1px 0 color-mix(in oklab, #fff 5%, transparent),
-    0 10px 28px -22px color-mix(in oklab, var(--primary) 55%, transparent);
+    inset 0 1px 0 color-mix(in oklab, #fff 6%, transparent),
+    0 10px 28px -22px color-mix(in oklab, var(--primary) 28%, transparent);
   transition: transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .3s ease, border-color .3s ease;
   overflow: hidden;
 }
@@ -1138,16 +1138,16 @@
   width: 2px;
   background: var(--primary);
   opacity: .7;
-  box-shadow: 0 0 14px 0 color-mix(in oklab, var(--primary) 60%, transparent);
+  box-shadow: 0 0 14px 0 color-mix(in oklab, var(--primary) 30%, transparent);
   pointer-events: none;
 }
-.dash-card-accent::before { background: var(--accent); box-shadow: 0 0 14px 0 color-mix(in oklab, var(--accent) 60%, transparent); }
+.dash-card-accent::before { background: var(--accent); box-shadow: 0 0 14px 0 color-mix(in oklab, var(--accent) 30%, transparent); }
 .dash-card:hover {
   transform: translateY(-2px);
   border-color: color-mix(in oklab, var(--primary) 55%, transparent);
   box-shadow:
-    inset 0 1px 0 color-mix(in oklab, #fff 8%, transparent),
-    0 16px 40px -22px color-mix(in oklab, var(--primary) 80%, transparent);
+    inset 0 1px 0 color-mix(in oklab, #fff 6%, transparent),
+    0 16px 40px -22px color-mix(in oklab, var(--primary) 40%, transparent);
 }
 .dash-card-accent:hover { border-color: color-mix(in oklab, var(--accent) 55%, transparent); }
 
@@ -1216,7 +1216,7 @@
   position: absolute; left: 0; top: .2em; bottom: .2em;
   width: 3px; border-radius: 2px;
   background: var(--primary);
-  box-shadow: 0 0 10px 0 color-mix(in oklab, var(--primary) 70%, transparent);
+  box-shadow: 0 0 10px 0 color-mix(in oklab, var(--primary) 35%, transparent);
 }
 
 /* Ranking bar for top customers (solid cyan, no gradient) */
@@ -1229,7 +1229,7 @@
 .rank-bar > span {
   display: block; height: 100%;
   background: var(--primary);
-  box-shadow: 0 0 8px 0 color-mix(in oklab, var(--primary) 60%, transparent);
+  box-shadow: 0 0 8px 0 color-mix(in oklab, var(--primary) 30%, transparent);
   animation: rank-fill .9s cubic-bezier(.2,.7,.2,1) both;
 }
 @keyframes rank-fill { from { transform: scaleX(0); transform-origin: left; } to { transform: scaleX(1); transform-origin: left; } }
@@ -1507,7 +1507,7 @@
   position: absolute; inset: 0; z-index: 5;
   display: grid; place-items: center;
   color: var(--primary);
-  filter: drop-shadow(0 0 12px color-mix(in oklab, var(--primary) 60%, transparent));
+  filter: drop-shadow(0 0 12px color-mix(in oklab, var(--primary) 30%, transparent));
   pointer-events: none;
 }
 .goals-mira.is-in {
@@ -1523,7 +1523,7 @@
 }
 @keyframes mira-out {
   0%   { opacity: 1; transform: scale(1); }
-  100% { opacity: 0; transform: scale(.6); filter: blur(6px) drop-shadow(0 0 20px color-mix(in oklab, var(--primary) 80%, transparent)); }
+  100% { opacity: 0; transform: scale(.6); filter: blur(6px) drop-shadow(0 0 20px color-mix(in oklab, var(--primary) 40%, transparent)); }
 }
 .mira-rot { transform-origin: 200px 200px; animation: mira-spin 8s linear infinite; }
 @keyframes mira-spin { to { transform: rotate(360deg); } }
@@ -1556,7 +1556,7 @@
 .goals-row:hover {
   transform: translateY(-2px);
   border-color: color-mix(in oklab, var(--primary) 45%, transparent);
-  box-shadow: 0 12px 28px -18px color-mix(in oklab, var(--primary) 60%, transparent);
+  box-shadow: 0 12px 28px -18px color-mix(in oklab, var(--primary) 30%, transparent);
 }
 .goals-track {
   position: relative;
@@ -1571,7 +1571,7 @@
     color-mix(in oklab, var(--primary) 60%, transparent),
     var(--primary));
   border-radius: 999px;
-  box-shadow: 0 0 12px color-mix(in oklab, var(--primary) 65%, transparent);
+  box-shadow: 0 0 12px color-mix(in oklab, var(--primary) 32%, transparent);
   animation: goals-fill-shimmer 2.4s ease-in-out infinite;
 }
 @keyframes goals-fill-shimmer {
@@ -1598,9 +1598,9 @@
     linear-gradient(180deg, color-mix(in oklab, var(--card) 92%, transparent), color-mix(in oklab, var(--background) 96%, transparent));
   border: 1px solid color-mix(in oklab, var(--primary) 28%, transparent);
   box-shadow:
-    0 0 0 1px color-mix(in oklab, var(--primary) 10%, transparent) inset,
-    0 30px 80px -30px color-mix(in oklab, var(--primary) 45%, transparent),
-    0 0 60px -20px color-mix(in oklab, var(--primary) 55%, transparent);
+    0 0 0 1px color-mix(in oklab, var(--primary) 6%, transparent) inset,
+    0 30px 80px -30px color-mix(in oklab, var(--primary) 22%, transparent),
+    0 0 60px -20px color-mix(in oklab, var(--primary) 28%, transparent);
   overflow: hidden;
 }
 .scanner-stage::before {
@@ -1630,8 +1630,8 @@
   border-radius: 1.15rem;
   overflow: hidden;
   background: #05070c;
-  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary) 22%, transparent),
-              inset 0 0 60px -10px color-mix(in oklab, var(--primary) 45%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary) 11%, transparent),
+              inset 0 0 60px -10px color-mix(in oklab, var(--primary) 22%, transparent);
 }
 .scanner-viewport > video { width: 100%; height: 100%; object-fit: cover; }
 
@@ -1658,7 +1658,7 @@
 .scan-corner {
   position: absolute; width: 44px; height: 44px;
   border-color: var(--primary);
-  filter: drop-shadow(0 0 10px color-mix(in oklab, var(--primary) 80%, transparent));
+  filter: drop-shadow(0 0 10px color-mix(in oklab, var(--primary) 40%, transparent));
   animation: scan-corner-pulse 2.4s ease-in-out infinite;
 }
 .scan-corner-tl { top: 14px; left: 14px; border-top: 2px solid; border-left: 2px solid; border-top-left-radius: 10px; }
@@ -1676,8 +1676,8 @@
   top: 10%;
   background: linear-gradient(90deg, transparent, var(--primary), transparent);
   box-shadow:
-    0 0 18px 3px color-mix(in oklab, var(--primary) 65%, transparent),
-    0 0 60px 8px color-mix(in oklab, var(--primary) 35%, transparent);
+    0 0 18px 3px color-mix(in oklab, var(--primary) 32%, transparent),
+    0 0 60px 8px color-mix(in oklab, var(--primary) 18%, transparent);
   border-radius: 999px;
   animation: scan-beam-sweep 2.8s ease-in-out infinite;
   pointer-events: none;
@@ -1737,7 +1737,7 @@
   border: 1px solid color-mix(in oklab, var(--primary) 40%, transparent);
   background: color-mix(in oklab, #000 55%, transparent);
   backdrop-filter: blur(6px);
-  box-shadow: 0 0 20px -6px color-mix(in oklab, var(--primary) 70%, transparent);
+  box-shadow: 0 0 20px -6px color-mix(in oklab, var(--primary) 35%, transparent);
 }
 .scan-hud-top { top: 20px; left: 50%; transform: translateX(-50%); }
 .scan-hud-bot { bottom: 20px; left: 50%; transform: translateX(-50%); }
@@ -1876,7 +1876,7 @@ html:not(.dark) .landing-scope .bg-cyan-500\/5 {
 html:not(.dark) .landing-scope .fz-chip {
   background: color-mix(in oklab, var(--card) 92%, transparent);
   border-color: color-mix(in oklab, var(--foreground) 12%, transparent);
-  box-shadow: 0 10px 30px -18px color-mix(in oklab, var(--foreground) 40%, transparent);
+  box-shadow: 0 10px 30px -18px color-mix(in oklab, var(--foreground) 20%, transparent);
 }
 html:not(.dark) .landing-scope .fz-chip-icon {
   background: color-mix(in oklab, var(--foreground) 5%, var(--card));
@@ -2103,7 +2103,7 @@ html:not(.dark) .landing-scope [style*="rgba(5, 11, 18"] {
     rgba(255,255,255,0.75) !important;
   border-color: color-mix(in oklab, #7c3aed 55%, transparent) !important;
   box-shadow:
-    0 0 0 3px color-mix(in oklab, #7c3aed 12%, transparent),
+    0 0 0 3px color-mix(in oklab, #7c3aed 6%, transparent),
     0 18px 40px -18px rgba(124,58,237,0.45) !important;
   backdrop-filter: blur(8px);
 }
@@ -2397,12 +2397,12 @@ html:not(.dark) .landing-scope .fz-ring-3 {
   100% { transform: translateX(100%); }
 }
 @keyframes wallet-stamp-pulse {
-  0%   { box-shadow: 0 0 0 0 color-mix(in oklab, var(--brand, hsl(var(--primary))) 65%, transparent),
-                     0 0 0 0 color-mix(in oklab, var(--brand, hsl(var(--primary))) 45%, transparent); }
-  60%  { box-shadow: 0 0 0 8px color-mix(in oklab, var(--brand, hsl(var(--primary))) 0%, transparent),
-                     0 0 14px 4px color-mix(in oklab, var(--brand, hsl(var(--primary))) 55%, transparent); }
-  100% { box-shadow: 0 0 0 12px color-mix(in oklab, var(--brand, hsl(var(--primary))) 0%, transparent),
-                     0 0 0 0 color-mix(in oklab, var(--brand, hsl(var(--primary))) 0%, transparent); }
+  0%   { box-shadow: 0 0 0 0 color-mix(in oklab, var(--brand, hsl(var(--primary))) 32%, transparent),
+                     0 0 0 0 color-mix(in oklab, var(--brand, hsl(var(--primary))) 22%, transparent); }
+  60%  { box-shadow: 0 0 0 8px color-mix(in oklab, var(--brand, hsl(var(--primary))) 6%, transparent),
+                     0 0 14px 4px color-mix(in oklab, var(--brand, hsl(var(--primary))) 28%, transparent); }
+  100% { box-shadow: 0 0 0 12px color-mix(in oklab, var(--brand, hsl(var(--primary))) 6%, transparent),
+                     0 0 0 0 color-mix(in oklab, var(--brand, hsl(var(--primary))) 6%, transparent); }
 }
 .wallet-stamp-pulse {
   animation: wallet-stamp-pulse 2.2s ease-out infinite;
@@ -2676,7 +2676,7 @@ html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"]
 }
 .kinetic-card:hover {
   transform: translateY(-6px) scale(1.015);
-  filter: drop-shadow(0 18px 40px color-mix(in oklch, var(--primary) 32%, transparent));
+  filter: drop-shadow(0 18px 40px color-mix(in oklch, var(--primary) 16%, transparent));
 }
 @keyframes kinetic-scroll {
   from { transform: translate3d(0, 0, 0); }
@@ -2723,7 +2723,7 @@ html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"]
 .camp-card:hover {
   transform: translateY(-8px);
   border-color: color-mix(in oklch, var(--tone) 55%, transparent);
-  box-shadow: 0 24px 60px -28px color-mix(in oklch, var(--tone) 70%, transparent);
+  box-shadow: 0 24px 60px -28px color-mix(in oklch, var(--tone) 35%, transparent);
 }
 @keyframes camp-scroll {
   from { transform: translate3d(0, 0, 0); }
@@ -2778,4 +2778,82 @@ html:not(.dark) .fz-ring { filter: drop-shadow(0 0 5px rgba(124, 58, 237, 0.22))
 html:not(.dark) {
   --glow-primary: color-mix(in oklab, var(--primary) 26%, transparent);
   --glow-accent: color-mix(in oklab, var(--accent) 22%, transparent);
+}
+
+/* ============================================================
+   REFINAMENTO PREMIUM — glow contido + hairline roxa
+   Bordas sutis (1px) na tonalidade da cor-mãe para dar definição
+   aos componentes sem competir com o brilho.
+   ============================================================ */
+:root {
+  --edge-soft: color-mix(in oklab, var(--primary) 14%, var(--border));
+  --edge-strong: color-mix(in oklab, var(--primary) 26%, var(--border));
+}
+.dark {
+  --edge-soft: color-mix(in oklab, var(--primary) 12%, var(--border));
+  --edge-strong: color-mix(in oklab, var(--primary) 22%, var(--border));
+}
+
+/* Cards, popovers, dialogs, dropdowns, tabelas, alertas e toasts */
+[data-slot="card"],
+[data-slot="popover-content"],
+[data-slot="dialog-content"],
+[data-slot="sheet-content"],
+[data-slot="alert-dialog-content"],
+[data-slot="dropdown-menu-content"],
+[data-slot="select-content"],
+[data-slot="command"],
+[data-slot="hover-card-content"],
+[data-slot="alert"],
+[data-sonner-toast],
+[data-slot="table-container"] {
+  border: 1px solid var(--edge-soft);
+}
+
+/* Inputs, selects, textareas — borda discreta e foco contido */
+[data-slot="input"],
+[data-slot="textarea"],
+[data-slot="select-trigger"] {
+  border: 1px solid var(--edge-soft);
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+[data-slot="input"]:hover,
+[data-slot="textarea"]:hover,
+[data-slot="select-trigger"]:hover {
+  border-color: var(--edge-strong);
+}
+[data-slot="input"]:focus-visible,
+[data-slot="textarea"]:focus-visible,
+[data-slot="select-trigger"]:focus-visible {
+  border-color: color-mix(in oklab, var(--primary) 45%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 10%, transparent);
+}
+
+/* Botões — hairline + brilho contido no hover/focus */
+[data-slot="button"] {
+  border: 1px solid transparent;
+}
+[data-slot="button"]:not([data-variant="link"]):not([data-variant="ghost"]) {
+  border-color: var(--edge-soft);
+}
+[data-slot="button"]:hover:not([data-variant="link"]):not([data-variant="ghost"]) {
+  border-color: var(--edge-strong);
+}
+[data-slot="button"]:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 10%, transparent);
+}
+
+/* Sidebar e navbar */
+[data-slot="sidebar-container"],
+[data-slot="sidebar-inner"] {
+  border-color: var(--edge-soft);
+}
+[data-slot="sidebar-menu-button"][data-active="true"],
+[aria-current="page"][data-slot="sidebar-menu-button"] {
+  border: 1px solid var(--edge-strong);
+}
+
+/* Tabelas — separadores na mesma família de cor */
+[data-slot="table"] tr {
+  border-color: color-mix(in oklab, var(--primary) 8%, var(--border));
 }
