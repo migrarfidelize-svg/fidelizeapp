@@ -2779,3 +2779,81 @@ html:not(.dark) {
   --glow-primary: color-mix(in oklab, var(--primary) 26%, transparent);
   --glow-accent: color-mix(in oklab, var(--accent) 22%, transparent);
 }
+
+/* ============================================================
+   REFINAMENTO PREMIUM — glow contido + hairline roxa
+   Bordas sutis (1px) na tonalidade da cor-mãe para dar definição
+   aos componentes sem competir com o brilho.
+   ============================================================ */
+:root {
+  --edge-soft: color-mix(in oklab, var(--primary) 14%, var(--border));
+  --edge-strong: color-mix(in oklab, var(--primary) 26%, var(--border));
+}
+.dark {
+  --edge-soft: color-mix(in oklab, var(--primary) 12%, var(--border));
+  --edge-strong: color-mix(in oklab, var(--primary) 22%, var(--border));
+}
+
+/* Cards, popovers, dialogs, dropdowns, tabelas, alertas e toasts */
+[data-slot="card"],
+[data-slot="popover-content"],
+[data-slot="dialog-content"],
+[data-slot="sheet-content"],
+[data-slot="alert-dialog-content"],
+[data-slot="dropdown-menu-content"],
+[data-slot="select-content"],
+[data-slot="command"],
+[data-slot="hover-card-content"],
+[data-slot="alert"],
+[data-sonner-toast],
+[data-slot="table-container"] {
+  border: 1px solid var(--edge-soft);
+}
+
+/* Inputs, selects, textareas — borda discreta e foco contido */
+[data-slot="input"],
+[data-slot="textarea"],
+[data-slot="select-trigger"] {
+  border: 1px solid var(--edge-soft);
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+[data-slot="input"]:hover,
+[data-slot="textarea"]:hover,
+[data-slot="select-trigger"]:hover {
+  border-color: var(--edge-strong);
+}
+[data-slot="input"]:focus-visible,
+[data-slot="textarea"]:focus-visible,
+[data-slot="select-trigger"]:focus-visible {
+  border-color: color-mix(in oklab, var(--primary) 45%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 10%, transparent);
+}
+
+/* Botões — hairline + brilho contido no hover/focus */
+[data-slot="button"] {
+  border: 1px solid transparent;
+}
+[data-slot="button"]:not([data-variant="link"]):not([data-variant="ghost"]) {
+  border-color: var(--edge-soft);
+}
+[data-slot="button"]:hover:not([data-variant="link"]):not([data-variant="ghost"]) {
+  border-color: var(--edge-strong);
+}
+[data-slot="button"]:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 10%, transparent);
+}
+
+/* Sidebar e navbar */
+[data-slot="sidebar-container"],
+[data-slot="sidebar-inner"] {
+  border-color: var(--edge-soft);
+}
+[data-slot="sidebar-menu-button"][data-active="true"],
+[aria-current="page"][data-slot="sidebar-menu-button"] {
+  border: 1px solid var(--edge-strong);
+}
+
+/* Tabelas — separadores na mesma família de cor */
+[data-slot="table"] tr {
+  border-color: color-mix(in oklab, var(--primary) 8%, var(--border));
+}
