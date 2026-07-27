@@ -121,7 +121,7 @@ function IntegrationsPage() {
               title="Inteligência Artificial"
               subtitle="Conecte modelos de linguagem para automações, respostas inteligentes e geração de conteúdo em todo o sistema."
               icon={Sparkles}
-              gradient="from-emerald-500 via-teal-500 to-cyan-600"
+              gradient="from-emerald-500 via-teal-500 to-violet-600"
               accent="#14b8a6"
               stats={[{ label: "Provedores", value: grouped.ai.length }, { label: "Ativos", value: aiConfigured }]}
             />

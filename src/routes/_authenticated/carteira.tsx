@@ -17,7 +17,7 @@ import { haptic } from "@/lib/haptics";
 export const Route = createFileRoute("/_authenticated/carteira")({
   head: () => ({
     meta: [
-      { name: "theme-color", content: "#00ffff" },
+      { name: "theme-color", content: "#a78bfa" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },

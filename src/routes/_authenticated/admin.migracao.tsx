@@ -56,7 +56,7 @@ const DOWNLOADS = [
     file: "fidelize-migrator.zip",
     size: "~18 KB",
     badge: "Essencial",
-    tone: "from-cyan-500/20 to-blue-500/10",
+    tone: "from-violet-500/20 to-blue-500/10",
   },
   {
     icon: FileText,
@@ -222,7 +222,7 @@ function MigracaoPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 space-y-8">
       {/* HERO */}
-      <div className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-primary/10 via-violet-500/5 to-cyan-500/10 p-8">
+      <div className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-primary/10 via-violet-500/5 to-violet-500/10 p-8">
         <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/20 blur-3xl" />
         <div className="relative flex items-start gap-4">
           <div className="rounded-2xl bg-primary/15 p-4 text-primary">
@@ -274,7 +274,7 @@ function MigracaoPage() {
 
       {/* EXPORT AUTH USERS */}
       <section>
-        <Card className="relative overflow-hidden border-violet-500/30 bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-cyan-500/10">
+        <Card className="relative overflow-hidden border-violet-500/30 bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-violet-500/10">
           <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-violet-500/20 blur-3xl" />
           <CardHeader className="relative">
             <div className="flex items-start gap-3">
@@ -315,11 +315,11 @@ function MigracaoPage() {
 
       {/* EXPORT STORAGE ZIP */}
       <section>
-        <Card className="relative overflow-hidden border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 via-blue-500/5 to-emerald-500/10">
-          <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-cyan-500/20 blur-3xl" />
+        <Card className="relative overflow-hidden border-violet-500/30 bg-gradient-to-br from-violet-500/10 via-blue-500/5 to-emerald-500/10">
+          <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-violet-500/20 blur-3xl" />
           <CardHeader className="relative">
             <div className="flex items-start gap-3">
-              <div className="rounded-xl bg-cyan-500/15 p-3 text-cyan-500">
+              <div className="rounded-xl bg-violet-500/15 p-3 text-violet-500">
                 <FolderArchive className="h-5 w-5" />
               </div>
               <div className="flex-1">
@@ -340,7 +340,7 @@ function MigracaoPage() {
             <Button
               onClick={handleExportStorage}
               disabled={exportingStorage}
-              className="w-full md:w-auto bg-cyan-500 hover:bg-cyan-600 text-white"
+              className="w-full md:w-auto bg-violet-500 hover:bg-violet-600 text-white"
             >
               {exportingStorage ? (
                 <>
@@ -356,7 +356,7 @@ function MigracaoPage() {
             {storageProgress && (
               <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
                 <div
-                  className="h-full bg-cyan-500 transition-all"
+                  className="h-full bg-violet-500 transition-all"
                   style={{ width: `${(storageProgress.done / storageProgress.total) * 100}%` }}
                 />
               </div>

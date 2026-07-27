@@ -64,7 +64,7 @@ export const Route = createFileRoute("/avaliar/$slug")({
   notFoundComponent: () => <div className="grid min-h-dvh place-items-center text-muted-foreground">Página não encontrada.</div>,
 });
 
-function Stars({ n, color = "#00ffff" }: { n: number; color?: string }) {
+function Stars({ n, color = "#a78bfa" }: { n: number; color?: string }) {
   return (
     <div className="flex gap-0.5">
       {[1, 2, 3, 4, 5].map((i) => (

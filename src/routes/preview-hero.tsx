@@ -16,7 +16,7 @@ export const Route = createFileRoute("/preview-hero")({
   }),
 });
 
-const CYAN = "#00ffff";
+const CYAN = "#a78bfa";
 const OBSIDIAN = "#050810";
 
 type Variant = {

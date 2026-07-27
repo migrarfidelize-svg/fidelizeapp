@@ -107,7 +107,7 @@ const THEME_PRESETS: ThemePreset[] = [
   {
     id: "cyan-circuit",
     label: "Cyan Circuit",
-    primary: "#00ffff",
+    primary: "#a78bfa",
     accent: "#ff2fd0",
     background: "#0b1220",
     text: "#ffffff",

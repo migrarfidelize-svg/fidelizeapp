@@ -60,8 +60,8 @@ function DockA() {
       style={{ width: 268 }}
     >
       <div className="flex items-center gap-3 px-4 pt-5 pb-4">
-        <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#0e1620] ring-1 ring-cyan-400/40 shadow-[0_0_24px_-6px_rgba(0,255,255,0.5)]">
-          <LogoMark className="h-5 w-5 text-cyan-300" />
+        <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#0e1620] ring-1 ring-violet-400/40 shadow-[0_0_24px_-6px_rgba(167,139,250,0.5)]">
+          <LogoMark className="h-5 w-5 text-violet-300" />
         </div>
         <div className="min-w-0">
           <div className="text-[13px] font-semibold tracking-wide text-white">Fidelize</div>
@@ -87,18 +87,18 @@ function DockA() {
                       className={[
                         "group/it relative flex w-full items-center gap-3 rounded-lg px-2 py-2 text-[13px] transition-all",
                         it.active
-                          ? "bg-cyan-400/[0.08] text-cyan-100 shadow-[inset_0_0_0_1px_rgba(0,255,255,0.18)]"
+                          ? "bg-violet-400/[0.08] text-violet-100 shadow-[inset_0_0_0_1px_rgba(167,139,250,0.18)]"
                           : "text-white/60 hover:bg-white/[0.03] hover:text-white",
                       ].join(" ")}
                     >
                       {it.active && (
-                        <span className="absolute left-0 top-1/2 h-5 w-[2px] -translate-y-1/2 rounded-full bg-cyan-300 shadow-[0_0_10px_rgba(0,255,255,0.9)]" />
+                        <span className="absolute left-0 top-1/2 h-5 w-[2px] -translate-y-1/2 rounded-full bg-violet-300 shadow-[0_0_10px_rgba(167,139,250,0.9)]" />
                       )}
                       <span
                         className={[
                           "grid h-7 w-7 place-items-center rounded-md transition-all",
                           it.active
-                            ? "bg-cyan-400/10 text-cyan-300 ring-1 ring-cyan-400/30"
+                            ? "bg-violet-400/10 text-violet-300 ring-1 ring-violet-400/30"
                             : "text-white/70 group-hover/it:bg-white/[0.04]",
                         ].join(" ")}
                       >
@@ -106,7 +106,7 @@ function DockA() {
                       </span>
                       <span className="flex-1 text-left">{it.label}</span>
                       {it.badge && (
-                        <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-1.5 py-0.5 text-[10px] font-medium text-cyan-200">
+                        <span className="rounded-full border border-violet-400/30 bg-violet-400/10 px-1.5 py-0.5 text-[10px] font-medium text-violet-200">
                           {it.badge}
                         </span>
                       )}
@@ -120,7 +120,7 @@ function DockA() {
       </nav>
       <div className="border-t border-white/[0.06] p-3">
         <div className="flex items-center gap-2.5 rounded-lg bg-white/[0.02] px-2 py-2">
-          <div className="grid h-8 w-8 place-items-center rounded-md bg-cyan-400/10 text-xs font-semibold text-cyan-200 ring-1 ring-cyan-400/25">FI</div>
+          <div className="grid h-8 w-8 place-items-center rounded-md bg-violet-400/10 text-xs font-semibold text-violet-200 ring-1 ring-violet-400/25">FI</div>
           <div className="min-w-0 flex-1">
             <div className="truncate text-[12px] text-white/85">Fidelize</div>
             <div className="text-[10px] text-white/40">Owner</div>
@@ -138,14 +138,14 @@ function DockA() {
 function DockB() {
   return (
     <div className="relative h-full p-4">
-      <div className="pointer-events-none absolute inset-4 rounded-[28px] bg-cyan-400/10 blur-2xl" />
+      <div className="pointer-events-none absolute inset-4 rounded-[28px] bg-violet-400/10 blur-2xl" />
       <aside
-        className="relative flex h-full w-[268px] flex-col overflow-hidden rounded-[24px] border border-cyan-400/25 bg-[#0b1219]/95 backdrop-blur-xl"
-        style={{ boxShadow: "0 0 0 1px rgba(0,255,255,0.08), 0 24px 60px -20px rgba(0,255,255,0.35), inset 0 1px 0 rgba(255,255,255,0.04)" }}
+        className="relative flex h-full w-[268px] flex-col overflow-hidden rounded-[24px] border border-violet-400/25 bg-[#0b1219]/95 backdrop-blur-xl"
+        style={{ boxShadow: "0 0 0 1px rgba(167,139,250,0.08), 0 24px 60px -20px rgba(167,139,250,0.35), inset 0 1px 0 rgba(255,255,255,0.04)" }}
       >
         <div className="flex items-center gap-3 px-5 pt-5 pb-4">
-          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-b from-white/[0.06] to-transparent ring-1 ring-cyan-300/40 shadow-[0_0_28px_-4px_rgba(0,255,255,0.6)]">
-            <LogoMark className="h-5 w-5 text-cyan-300" />
+          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-b from-white/[0.06] to-transparent ring-1 ring-violet-300/40 shadow-[0_0_28px_-4px_rgba(167,139,250,0.6)]">
+            <LogoMark className="h-5 w-5 text-violet-300" />
           </div>
           <div className="min-w-0">
             <div className="text-[13px] font-semibold text-white">Fidelize</div>
@@ -165,7 +165,7 @@ function DockB() {
                         className={[
                           "relative flex w-full items-center gap-3 rounded-xl px-2 py-2 text-[13px] transition-all duration-200 hover:scale-[1.02]",
                           it.active
-                            ? "bg-gradient-to-r from-cyan-400/[0.14] to-transparent text-white"
+                            ? "bg-gradient-to-r from-violet-400/[0.14] to-transparent text-white"
                             : "text-white/65 hover:bg-white/[0.03] hover:text-white",
                         ].join(" ")}
                       >
@@ -173,18 +173,18 @@ function DockB() {
                           className={[
                             "grid h-9 w-9 place-items-center rounded-xl transition-all",
                             it.active
-                              ? "bg-cyan-400/15 text-cyan-200 ring-1 ring-cyan-300/50 shadow-[0_0_18px_-2px_rgba(0,255,255,0.6)]"
-                              : "bg-white/[0.03] text-white/75 ring-1 ring-white/[0.05] hover:ring-cyan-300/30",
+                              ? "bg-violet-400/15 text-violet-200 ring-1 ring-violet-300/50 shadow-[0_0_18px_-2px_rgba(167,139,250,0.6)]"
+                              : "bg-white/[0.03] text-white/75 ring-1 ring-white/[0.05] hover:ring-violet-300/30",
                           ].join(" ")}
                         >
                           <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
                         </span>
                         <span className="flex-1 text-left">{it.label}</span>
                         {it.badge && (
-                          <span className="rounded-full bg-cyan-300/15 px-2 py-0.5 text-[10px] font-medium text-cyan-200 ring-1 ring-cyan-300/30">{it.badge}</span>
+                          <span className="rounded-full bg-violet-300/15 px-2 py-0.5 text-[10px] font-medium text-violet-200 ring-1 ring-violet-300/30">{it.badge}</span>
                         )}
                         {it.active && (
-                          <span className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-cyan-300/25" />
+                          <span className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-violet-300/25" />
                         )}
                       </button>
                     </li>
@@ -196,7 +196,7 @@ function DockB() {
         </nav>
         <div className="border-t border-white/[0.06] p-3">
           <div className="flex items-center gap-2.5 rounded-xl bg-white/[0.02] px-2 py-2 ring-1 ring-white/[0.04]">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-cyan-400/10 text-xs font-semibold text-cyan-200 ring-1 ring-cyan-300/30">FI</div>
+            <div className="grid h-9 w-9 place-items-center rounded-xl bg-violet-400/10 text-xs font-semibold text-violet-200 ring-1 ring-violet-300/30">FI</div>
             <div className="min-w-0 flex-1">
               <div className="truncate text-[12px] text-white/85">Fidelize</div>
               <div className="text-[10px] text-white/40">Owner</div>
@@ -216,16 +216,16 @@ function DockC() {
     Operação: true, Marketing: true, Conta: false, Suporte: false,
   });
   return (
-    <aside className="relative flex h-full w-[288px] flex-col overflow-hidden border-r border-cyan-400/15 bg-[#080d13]">
-      <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-cyan-400/40 to-transparent" />
+    <aside className="relative flex h-full w-[288px] flex-col overflow-hidden border-r border-violet-400/15 bg-[#080d13]">
+      <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-violet-400/40 to-transparent" />
       <div className="flex items-center gap-3 px-4 pt-5 pb-4 border-b border-white/[0.05]">
-        <div className="relative grid h-11 w-11 place-items-center rounded-lg bg-[#0d151d] ring-1 ring-cyan-400/40">
-          <LogoMark className="h-5 w-5 text-cyan-300" />
-          <span className="absolute inset-0 rounded-lg ring-1 ring-cyan-300/20 shadow-[0_0_18px_-2px_rgba(0,255,255,0.55)]" />
+        <div className="relative grid h-11 w-11 place-items-center rounded-lg bg-[#0d151d] ring-1 ring-violet-400/40">
+          <LogoMark className="h-5 w-5 text-violet-300" />
+          <span className="absolute inset-0 rounded-lg ring-1 ring-violet-300/20 shadow-[0_0_18px_-2px_rgba(167,139,250,0.55)]" />
         </div>
         <div className="min-w-0">
           <div className="text-[13px] font-semibold tracking-wide text-white">FIDELIZE</div>
-          <div className="truncate text-[11px] text-cyan-300/70">v2.0 · Pro</div>
+          <div className="truncate text-[11px] text-violet-300/70">v2.0 · Pro</div>
         </div>
       </div>
       <nav className="flex-1 overflow-y-auto px-2.5 py-3">
@@ -235,10 +235,10 @@ function DockC() {
             <div key={g.label} className="mb-1.5">
               <button
                 onClick={() => setOpen((s) => ({ ...s, [g.label]: !s[g.label] }))}
-                className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/40 hover:text-cyan-200"
+                className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/40 hover:text-violet-200"
               >
                 <span className="flex items-center gap-2">
-                  <span className="h-1 w-1 rounded-full bg-cyan-300 shadow-[0_0_6px_rgba(0,255,255,0.9)]" />
+                  <span className="h-1 w-1 rounded-full bg-violet-300 shadow-[0_0_6px_rgba(167,139,250,0.9)]" />
                   {g.label}
                 </span>
                 <ChevronRight className={`h-3 w-3 transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`} />
@@ -256,28 +256,28 @@ function DockC() {
                           className={[
                             "group/it relative flex w-full items-center gap-3 overflow-hidden rounded-lg px-2 py-2 text-[13px] transition-all",
                             it.active
-                              ? "bg-[linear-gradient(90deg,rgba(0,255,255,0.10),rgba(0,255,255,0)_60%)] text-white"
+                              ? "bg-[linear-gradient(90deg,rgba(167,139,250,0.10),rgba(167,139,250,0)_60%)] text-white"
                               : "text-white/60 hover:bg-white/[0.03] hover:text-white",
                           ].join(" ")}
                         >
                           {it.active && (
-                            <span className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-cyan-300/25">
-                              <span className="dock-c-led absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-cyan-300/40 to-transparent" />
+                            <span className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-violet-300/25">
+                              <span className="dock-c-led absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-violet-300/40 to-transparent" />
                             </span>
                           )}
                           <span
                             className={[
                               "grid h-8 w-8 place-items-center rounded-md transition-all",
                               it.active
-                                ? "bg-cyan-400/15 text-cyan-200 ring-1 ring-cyan-300/40 shadow-[0_0_14px_-2px_rgba(0,255,255,0.6)]"
-                                : "bg-white/[0.03] text-white/70 ring-1 ring-white/[0.05] group-hover/it:ring-cyan-300/25",
+                                ? "bg-violet-400/15 text-violet-200 ring-1 ring-violet-300/40 shadow-[0_0_14px_-2px_rgba(167,139,250,0.6)]"
+                                : "bg-white/[0.03] text-white/70 ring-1 ring-white/[0.05] group-hover/it:ring-violet-300/25",
                             ].join(" ")}
                           >
                             <Icon className="h-[17px] w-[17px]" strokeWidth={1.75} />
                           </span>
                           <span className="relative z-[1] flex-1 text-left">{it.label}</span>
                           {it.badge && (
-                            <span className="relative z-[1] rounded-md bg-cyan-400/10 px-1.5 py-0.5 text-[10px] font-mono font-medium text-cyan-200 ring-1 ring-cyan-300/25">{it.badge}</span>
+                            <span className="relative z-[1] rounded-md bg-violet-400/10 px-1.5 py-0.5 text-[10px] font-mono font-medium text-violet-200 ring-1 ring-violet-300/25">{it.badge}</span>
                           )}
                         </button>
                       </li>
@@ -290,11 +290,11 @@ function DockC() {
         })}
       </nav>
       <div className="border-t border-white/[0.05] p-3">
-        <div className="flex items-center gap-2.5 rounded-lg bg-[#0d151d] px-2 py-2 ring-1 ring-cyan-400/15">
-          <div className="grid h-9 w-9 place-items-center rounded-md bg-cyan-400/10 text-xs font-mono font-semibold text-cyan-200 ring-1 ring-cyan-300/30">FI</div>
+        <div className="flex items-center gap-2.5 rounded-lg bg-[#0d151d] px-2 py-2 ring-1 ring-violet-400/15">
+          <div className="grid h-9 w-9 place-items-center rounded-md bg-violet-400/10 text-xs font-mono font-semibold text-violet-200 ring-1 ring-violet-300/30">FI</div>
           <div className="min-w-0 flex-1">
             <div className="truncate text-[12px] text-white/85">Fidelize</div>
-            <div className="text-[10px] text-cyan-300/60">● online</div>
+            <div className="text-[10px] text-violet-300/60">● online</div>
           </div>
         </div>
       </div>
@@ -323,7 +323,7 @@ function PreviewDock() {
     <div className="min-h-screen bg-[#050810] text-white">
       <div className="mx-auto max-w-[1400px] px-6 py-10">
         <header className="mb-8">
-          <div className="text-[11px] font-medium uppercase tracking-[0.2em] text-cyan-300/70">Preview · Sidebar Dock</div>
+          <div className="text-[11px] font-medium uppercase tracking-[0.2em] text-violet-300/70">Preview · Sidebar Dock</div>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">Escolha a direção do menu lateral</h1>
           <p className="mt-2 max-w-2xl text-sm text-white/50">Três direções com menu expandido, ícones premium e animação leve. Clique em uma para eu implementar no painel logista e admin.</p>
         </header>
@@ -332,10 +332,10 @@ function PreviewDock() {
             <div key={c.id} className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0a1017]">
               <div className="flex items-center justify-between border-b border-white/[0.05] px-5 py-4">
                 <div>
-                  <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-cyan-300/70">Opção {c.id}</div>
+                  <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-violet-300/70">Opção {c.id}</div>
                   <div className="mt-1 text-base font-semibold text-white">{c.title}</div>
                 </div>
-                <span className="rounded-md bg-cyan-400/10 px-2 py-1 text-[10px] font-medium text-cyan-200 ring-1 ring-cyan-300/25">Expandido</span>
+                <span className="rounded-md bg-violet-400/10 px-2 py-1 text-[10px] font-medium text-violet-200 ring-1 ring-violet-300/25">Expandido</span>
               </div>
               <div className="h-[720px] overflow-hidden bg-[#060a10]">
                 {c.node}
@@ -344,7 +344,7 @@ function PreviewDock() {
             </div>
           ))}
         </div>
-        <p className="mt-8 text-center text-xs text-white/40">Me diga: <span className="text-cyan-300">A</span>, <span className="text-cyan-300">B</span> ou <span className="text-cyan-300">C</span> — implemento no painel completo.</p>
+        <p className="mt-8 text-center text-xs text-white/40">Me diga: <span className="text-violet-300">A</span>, <span className="text-violet-300">B</span> ou <span className="text-violet-300">C</span> — implemento no painel completo.</p>
       </div>
     </div>
   );

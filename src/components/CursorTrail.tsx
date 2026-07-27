@@ -48,11 +48,11 @@ export function CursorTrail() {
 
     // Brand-aligned palette (cyan → magenta → violet → soft white).
     const PALETTE: Array<[string, string]> = [
-      ["#00ffff", "#a855f7"], // cyan → magenta
-      ["#7cf5ff", "#a855f7"], // aqua → violet
-      ["#00e0ff", "#ffffff"], // cyan → white
-      ["#c084fc", "#00ffff"], // magenta → cyan
-      ["#8b5cf6", "#00ffff"], // violet → cyan
+      ["#a78bfa", "#a855f7"], // cyan → magenta
+      ["#c4b5fd", "#a855f7"], // aqua → violet
+      ["#8b5cf6", "#ffffff"], // cyan → white
+      ["#c084fc", "#a78bfa"], // magenta → cyan
+      ["#8b5cf6", "#a78bfa"], // violet → cyan
     ];
 
     type Ribbon = {

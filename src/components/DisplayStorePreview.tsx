@@ -23,8 +23,8 @@ const MODELS: DisplayModel[] = [
     price: 39.9,
     oldPrice: 59.9,
     features: ["Acrílico cristal 3mm", "Balcão 10×15 cm", "Base curvada 15°"],
-    gradient: "from-cyan-500/25 via-cyan-400/10 to-transparent",
-    accent: "border-cyan-400/40",
+    gradient: "from-violet-500/25 via-violet-400/10 to-transparent",
+    accent: "border-violet-400/40",
     icon: "▯",
   },
   {

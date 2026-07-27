@@ -105,7 +105,7 @@ export function SegmentsCarousel() {
             <button
               key={it.label}
               onClick={() => setActive(i)}
-              className="group relative flex flex-col items-center gap-2 rounded-2xl border border-cyan-400/15 bg-white/[0.03] p-3 backdrop-blur-md transition"
+              className="group relative flex flex-col items-center gap-2 rounded-2xl border border-violet-400/15 bg-white/[0.03] p-3 backdrop-blur-md transition"
               style={{
                 boxShadow: isActive
                   ? "0 12px 40px -12px color-mix(in oklab, var(--primary) 45%, transparent), inset 0 1px 0 rgba(255,255,255,0.06)"
@@ -332,7 +332,7 @@ function Constellation({
             >
               Fidelize
             </div>
-            <div className="text-xs font-semibold uppercase leading-tight tracking-widest text-cyan-300/80">
+            <div className="text-xs font-semibold uppercase leading-tight tracking-widest text-violet-300/80">
               {focusedItem.label}
             </div>
             <span

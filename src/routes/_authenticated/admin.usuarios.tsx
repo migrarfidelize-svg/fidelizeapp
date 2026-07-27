@@ -717,7 +717,7 @@ const TIER_META: Record<string, { label: string; tone: string }> = {
   bronze:   { label: "Bronze",   tone: "border-amber-700/40 text-amber-700 bg-amber-500/10" },
   prata:    { label: "Prata",    tone: "border-slate-400/40 text-slate-600 bg-slate-400/10" },
   ouro:     { label: "Ouro",     tone: "border-yellow-500/40 text-yellow-600 bg-yellow-500/10" },
-  diamante: { label: "Diamante", tone: "border-cyan-500/40 text-cyan-600 bg-cyan-500/10" },
+  diamante: { label: "Diamante", tone: "border-violet-500/40 text-violet-600 bg-violet-500/10" },
 };
 
 function UserWalletDialog({
