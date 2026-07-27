@@ -2623,3 +2623,66 @@ html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"]
   --hp-line: rgba(255, 255, 255, 0.12);
   --hp-surface: rgba(255, 255, 255, 0.03);
 }
+
+/* ── Ecossistema: marquee "kinetic cyber glass" ───────────────────── */
+.kinetic-section {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 80% at 12% 0%, color-mix(in oklch, var(--primary) 14%, transparent), transparent 60%),
+    radial-gradient(100% 70% at 88% 100%, color-mix(in oklch, var(--accent) 12%, transparent), transparent 62%),
+    var(--background);
+}
+.kinetic-marquee {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+}
+.kinetic-track {
+  display: flex;
+  width: max-content;
+  padding: 0.75rem 0;
+  animation: kinetic-scroll 60s linear infinite;
+  will-change: transform;
+}
+.kinetic-marquee:hover .kinetic-track {
+  animation-play-state: paused;
+}
+.kinetic-card {
+  position: relative;
+  width: 19rem;
+  flex: 0 0 auto;
+  margin-right: 1.25rem;
+  border-radius: 1.25rem;
+  padding: 1px;
+  background: linear-gradient(
+    140deg,
+    color-mix(in oklch, var(--primary) 45%, transparent),
+    transparent 45%,
+    color-mix(in oklch, var(--accent) 40%, transparent)
+  );
+  transition: transform 0.4s ease, filter 0.4s ease;
+}
+.kinetic-card-inner {
+  height: 100%;
+  border-radius: calc(1.25rem - 1px);
+  padding: 1.25rem;
+  background: color-mix(in oklch, var(--card) 72%, transparent);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+.kinetic-card:hover {
+  transform: translateY(-6px) scale(1.015);
+  filter: drop-shadow(0 18px 40px color-mix(in oklch, var(--primary) 32%, transparent));
+}
+@keyframes kinetic-scroll {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+@media (max-width: 767px) {
+  .kinetic-card { width: 16.5rem; margin-right: 1rem; }
+  .kinetic-track { animation-duration: 42s; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kinetic-track { animation-duration: 200s; }
+}
