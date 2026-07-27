@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { WalletCardPreview, CARD_SKINS, type CardSkin } from "@/components/wallet/WalletCardPreview";
 
 export const Route = createFileRoute("/_authenticated/app/wallet")({
   head: () => ({
@@ -69,6 +70,7 @@ function WalletPage() {
   const [frontText, setFrontText] = useState("");
   const [backText, setBackText] = useState("");
   const [customMessage, setCustomMessage] = useState("");
+  const [skin, setSkin] = useState<CardSkin>("obsidiana");
   const [showQr, setShowQr] = useState(true);
   const [showBarcode, setShowBarcode] = useState(false);
   const [validity, setValidity] = useState<string>("");
