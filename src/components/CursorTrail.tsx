@@ -51,7 +51,7 @@ export function CursorTrail() {
       ["#00ffff", "#a855f7"], // cyan → magenta
       ["#7cf5ff", "#a855f7"], // aqua → violet
       ["#00e0ff", "#ffffff"], // cyan → white
-      ["#ff5cf0", "#00ffff"], // magenta → cyan
+      ["#c084fc", "#00ffff"], // magenta → cyan
       ["#8b5cf6", "#00ffff"], // violet → cyan
     ];
 
