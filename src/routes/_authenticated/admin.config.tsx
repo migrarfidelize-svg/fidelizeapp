@@ -716,7 +716,7 @@ function SegurancaTab({ establishmentId, settings }: { establishmentId: string; 
   }
   async function onRemovePin() { await rmPin({ data: { establishment_id: establishmentId } }); toast.success("PIN removido"); }
   async function onChangePwd() {
-    if (pwd.length < 8 || pwd !== pwd2) return toast.error("Senha inválida (mín. 8, iguais)");
+    if (pwd.length < 6 || pwd.length > 15 || pwd !== pwd2) return toast.error("Senha inválida (6 a 15 caracteres, iguais)");
     try { await chpwd({ data: { new_password: pwd } }); toast.success("Senha alterada"); setPwd(""); setPwd2(""); }
     catch (e: any) { toast.error(e.message); }
   }

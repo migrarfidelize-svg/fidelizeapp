@@ -15,7 +15,7 @@ export const ERROR_MESSAGES: Record<string, string> = {
   invalid_credentials: "E-mail ou senha incorretos. Verifique e tente novamente.",
   email_not_confirmed: "Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada.",
   user_not_found: "Não encontramos uma conta com esses dados.",
-  weak_password: "A senha é muito fraca. Use ao menos 6 caracteres, com letras e números.",
+  weak_password: "Use uma senha de 6 a 15 caracteres.",
   email_already_registered: "Este e-mail já está cadastrado. Faça login ou recupere sua senha.",
   invalid_email: "Informe um e-mail válido.",
   invalid_whatsapp: "Informe um WhatsApp válido com DDD (11 dígitos).",

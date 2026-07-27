@@ -503,7 +503,10 @@ function AuthPage() {
                         <Link to="/auth/recuperar" className="text-[10px] uppercase tracking-widest text-[oklch(0.78_0.19_330)] hover:underline">Esqueci</Link>
                       )}
                     </div>
-                    <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete={isSignup ? "new-password" : "current-password"} placeholder="••••••••" className="auth-input" />
+                    <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} maxLength={15} autoComplete={isSignup ? "new-password" : "current-password"} placeholder="••••••" className="auth-input" aria-describedby={isSignup ? "password-hint" : undefined} />
+                    {isSignup && (
+                      <p id="password-hint" className="ml-1 text-[10px] text-white/50">De 6 a 15 caracteres. Pode ser só números, inclusive repetidos.</p>
+                    )}
                   </div>
                 </>
               )}

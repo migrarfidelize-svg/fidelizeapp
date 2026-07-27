@@ -349,7 +349,7 @@ export const verifyMyPin = createServerFn({ method: "POST" })
 // ---------- Change password ----------
 export const changePassword = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ new_password: z.string().min(8).max(72) }).parse(d))
+  .inputValidator((d: unknown) => z.object({ new_password: z.string().min(6).max(15) }).parse(d))
   .handler(async ({ data, context }) => {
     const { userId } = context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

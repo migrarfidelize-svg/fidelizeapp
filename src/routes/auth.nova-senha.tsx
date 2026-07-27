@@ -30,7 +30,8 @@ function NewPasswordPage() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (password.length < 8) { toast.error("Mínimo de 8 caracteres."); return; }
+    if (password.length < 6) { toast.error("Mínimo de 6 caracteres."); return; }
+    if (password.length > 15) { toast.error("Máximo de 15 caracteres."); return; }
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
@@ -47,8 +48,8 @@ function NewPasswordPage() {
           {!ready && <p className="text-xs text-muted-foreground">Validando link… se você abriu por engano, solicite outro link.</p>}
           <div className="space-y-1.5">
             <Label htmlFor="new-password">Nova senha</Label>
-            <Input id="new-password" type="password" required minLength={8} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} aria-describedby="new-password-hint" />
-            <p id="new-password-hint" className="text-xs text-muted-foreground">Use no mínimo 8 caracteres, com letras e números.</p>
+            <Input id="new-password" type="password" required minLength={6} maxLength={15} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} aria-describedby="new-password-hint" />
+            <p id="new-password-hint" className="text-xs text-muted-foreground">De 6 a 15 caracteres. Pode ser só números.</p>
           </div>
           <Button type="submit" disabled={loading || !ready} className="w-full gradient-brand text-primary-foreground">
             {loading ? "Salvando…" : "Salvar nova senha"}
