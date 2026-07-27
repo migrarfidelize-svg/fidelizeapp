@@ -120,7 +120,7 @@ function SiteHeader() {
         <Link to="/" className="shrink-0"><Logo /></Link>
         <nav className="hidden gap-7 md:flex text-sm text-muted-foreground">
           {NAV_LINKS.map(([href, label]) => (
-            <a key={href} href={href} className="hover:text-foreground transition-colors">{label}</a>
+            <a key={`${href}-${label}`} href={href} className="hover:text-foreground transition-colors">{label}</a>
           ))}
         </nav>
         <div className="flex items-center gap-2">
@@ -156,7 +156,7 @@ function SiteHeader() {
               <nav className="mt-6 flex flex-col gap-1">
                 {NAV_LINKS.map(([href, label]) => (
                   <a
-                    key={href}
+                    key={`${href}-${label}`}
                     href={href}
                     onClick={(e) => {
                       e.preventDefault();
