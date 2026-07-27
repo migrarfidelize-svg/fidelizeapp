@@ -31,11 +31,9 @@ const DURATION = 5200;
 export function HeroAppPreview() {
   const [i, setI] = useState(0);
   const [t, setT] = useState(0);
-  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
-    if (paused) return;
-    const started = performance.now() - t * DURATION;
+    const started = performance.now();
     let raf = 0;
     const tick = (now: number) => {
       const p = (now - started) / DURATION;
@@ -49,17 +47,13 @@ export function HeroAppPreview() {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [i, paused]);
+  }, [i]);
 
   const active = SCREENS[i]?.key ?? "carteira";
 
   return (
-    <div
-      className="relative w-full max-w-[380px]"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-    >
+    <div className="relative w-full max-w-[380px]">
+
       {/* halo */}
       <div
         aria-hidden
