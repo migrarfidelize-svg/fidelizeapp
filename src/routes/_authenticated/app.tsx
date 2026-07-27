@@ -170,6 +170,13 @@ function AppLayout() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState<boolean>(false);
+  const [openGroups, setOpenGroups] = useState<string[]>([]);
+  const [hoverGroup, setHoverGroup] = useState<string | null>(null);
+  // mantém a categoria da rota atual expandida
+  useEffect(() => {
+    const g = NAV_GROUPS.find((grp) => grp.items.some((n) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))));
+    if (g) setOpenGroups((prev) => (prev.includes(g.key) ? prev : [...prev, g.key]));
+  }, [pathname]);
   // fecha o menu mobile ao trocar de rota
   useEffect(() => { setMobileOpen(false); }, [pathname]);
 
