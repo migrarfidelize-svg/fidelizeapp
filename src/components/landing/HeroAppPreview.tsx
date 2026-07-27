@@ -12,6 +12,10 @@ import {
   UtensilsCrossed,
   Wallet,
 } from "lucide-react";
+import burgerImg from "@/assets/menu-templates/burgers-especiais.jpg.asset.json";
+import pizzaImg from "@/assets/menu-templates/pizzas-salgadas.jpg.asset.json";
+import acaiImg from "@/assets/menu-templates/acai-especial.jpg.asset.json";
+
 
 /** Tokens do mockup — trocam automaticamente entre claro/escuro (ver .hero-phone em styles.css). */
 const ACCENT = "var(--hp-accent)";
