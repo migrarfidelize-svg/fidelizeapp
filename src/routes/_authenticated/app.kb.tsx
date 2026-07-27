@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, FolderPlus, Eye } from "lucide-react";
+import { Plus, Pencil, Trash2, FolderPlus, Eye, DownloadCloud } from "lucide-react";
 import { toast } from "sonner";
 import { LoadingSkeleton } from "@/components/states";
 
