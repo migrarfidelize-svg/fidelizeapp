@@ -1258,8 +1258,10 @@ function ReviewQrPage() {
                 })}
               </div>
             </div>
+            </>
+            )}
 
-            {/* Text fields */}
+
             {step === 3 && (
             <>
             <div className="space-y-3">
