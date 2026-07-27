@@ -95,6 +95,16 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    key: "clientes",
+    icon: Users,
+    label: "Clientes",
+    items: [
+      { to: "/app/clientes", label: "Clientes", icon: Users, exact: true },
+      { to: "/app/equipe", label: "Equipe", icon: UsersRound },
+    ],
+  },
+  {
+
 
     key: "qrcodes",
     icon: QrCode,
@@ -159,15 +169,8 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/app/mensagens", label: "Mensagens", icon: MessageSquare },
     ],
   },
-  {
-    key: "equipe",
-    icon: UsersRound,
-    label: "Equipe",
-    items: [
-      { to: "/app/equipe", label: "Equipe", icon: UsersRound, exact: true },
-      { to: "/app/clientes", label: "Clientes", icon: Users },
-    ],
-  },
+
+
 
   {
     key: "financeiro",
