@@ -2578,3 +2578,12 @@ html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"]
 @media (prefers-reduced-motion: reduce) {
   .showcase-device { animation: none; }
 }
+
+@keyframes showcase-sheen {
+  0% { transform: translateX(0) skewX(-12deg); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translateX(320%) skewX(-12deg); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .group:hover [class*="showcase-sheen"] { animation: none !important; opacity: 0 !important; }
+}
