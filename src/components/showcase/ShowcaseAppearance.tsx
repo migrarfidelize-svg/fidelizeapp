@@ -10,7 +10,7 @@ import { Palette, Check, ImageIcon, Trash2, ExternalLink, Loader2, RotateCcw, Un
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { getMyMenuOverview, updateMenuTheme, listMenuItems } from "@/lib/menu.functions";
 import {
-  MENU_PRESETS, MENU_LAYOUTS, MENU_PATTERNS, resolveMenuTheme, menuBackgroundCss,
+  MENU_PRESETS, MENU_LAYOUTS, CATALOG_ONLY_LAYOUTS, MENU_PATTERNS, resolveMenuTheme, menuBackgroundCss,
   type MenuLayoutId, type MenuPatternId, type MenuPresetId, type MenuPreset,
   MENU_ENTRIES,
   MENU_BG_SWATCHES,
@@ -85,7 +85,11 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
     bg_color: string | null; accent_color: string | null; text_color: string | null; bg_image_url: string | null;
   }) => {
     setPreset(t.preset);
-    setLayout(isCatalog && t.layout === "magazine" ? "grid" : t.layout);
+    setLayout(
+      isCatalog
+        ? (t.layout === "magazine" ? "grid" : t.layout)
+        : (CATALOG_ONLY_LAYOUTS.includes(t.layout) ? "grid" : t.layout),
+    );
     setPattern(t.pattern);
     setEntry(t.entry);
     setBgColor(t.bg_color);
@@ -464,7 +468,9 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
             <CardHeader><CardTitle>Layout dos {L.itemsLower}</CardTitle></CardHeader>
 
             <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              {MENU_LAYOUTS.filter((l) => !(isCatalog && l.id === "magazine")).map((l) => (
+              {MENU_LAYOUTS.filter((l) =>
+                isCatalog ? l.id !== "magazine" : !CATALOG_ONLY_LAYOUTS.includes(l.id),
+              ).map((l) => (
                 <button
                   key={l.id}
                   onClick={() => setLayout(l.id)}
@@ -614,6 +620,52 @@ function ThemeSwatch({ p }: { p: MenuPreset }) {
 
 function LayoutWire({ id }: { id: MenuLayoutId }) {
   const bar = "bg-muted-foreground/25";
+  if (id === "premium") {
+    return (
+      <div className="grid h-16 grid-cols-2 gap-1.5 rounded-xl bg-muted/50 p-2">
+        {[0, 1].map((i) => (
+          <div key={i} className="relative overflow-hidden rounded-md bg-muted-foreground/25">
+            <div className="absolute inset-x-1 bottom-1 rounded-sm bg-background/85 p-1">
+              <div className={`h-1 w-3/4 rounded-full ${bar}`} />
+              <div className="mt-0.5 h-1.5 w-1/2 rounded-full bg-primary/70" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (id === "spotlight") {
+    return (
+      <div className="h-16 space-y-1.5 rounded-xl bg-muted/50 p-2">
+        <div className="flex h-8 gap-1.5 rounded-md bg-background p-1">
+          <div className="w-1/2 rounded-sm bg-muted-foreground/25" />
+          <div className="flex-1 space-y-1 py-0.5">
+            <div className={`h-1.5 w-3/4 rounded-full ${bar}`} />
+            <div className="h-2 w-1/2 rounded-full bg-primary/70" />
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-1.5">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="h-5 rounded-sm bg-background" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+  if (id === "boutique") {
+    return (
+      <div className="grid h-16 grid-cols-2 gap-2 rounded-xl bg-muted/50 p-2">
+        {[0, 1].map((i) => (
+          <div key={i} className="rounded-sm border border-primary/40 bg-background p-1 text-center">
+            <div className="mx-auto h-5 w-full rounded-sm bg-muted-foreground/20" />
+            <div className={`mx-auto mt-1 h-1 w-2/3 rounded-full ${bar}`} />
+            <div className="mx-auto mt-1 h-1.5 w-1/2 rounded-full border border-primary/60" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   if (id === "grid") {
     return (
       <div className="grid h-16 grid-cols-2 gap-1.5 rounded-xl bg-muted/50 p-2">
@@ -806,14 +858,55 @@ function MenuPreview({
 
             <div
               className={`mt-3 pb-4 ${
-                layout === "grid"
+                layout === "grid" || layout === "premium"
                   ? "grid grid-cols-2 gap-2"
-                  : layout === "lookbook"
-                    ? "columns-2 gap-2"
-                    : "space-y-2"
+                  : layout === "boutique"
+                    ? "grid grid-cols-2 gap-3"
+                    : layout === "lookbook"
+                      ? "columns-2 gap-2"
+                      : "space-y-2"
               }`}
             >
               {dishes.map((d, idx) => {
+                if (layout === "premium") {
+                  return (
+                    <div key={idx} className="relative overflow-hidden rounded-2xl" style={{ background: p.line }}>
+                      <Thumb src={d.image_url} accent={accent} emoji={emoji} className="h-28 w-full" emojiClass="text-lg" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      <div className="absolute inset-x-1.5 bottom-1.5 rounded-xl border border-white/25 bg-white/15 p-1.5 backdrop-blur-md">
+                        <div className="truncate text-[10px] font-bold text-white" style={{ fontFamily: p.fontHead }}>{d.name}</div>
+                        <div className="text-[11px] font-extrabold text-white">{priceOf(d)}</div>
+                      </div>
+                    </div>
+                  );
+                }
+                if (layout === "boutique") {
+                  return (
+                    <div key={idx} className="p-1.5 text-center" style={{ background: p.surface, border: `1px solid ${accent}44` }}>
+                      <Thumb src={d.image_url} accent={accent} emoji={emoji} className="h-16 w-full" emojiClass="text-lg" />
+                      <div className="mt-1.5 truncate text-[10px] font-bold" style={{ fontFamily: p.fontHead }}>{d.name}</div>
+                      <div className="mx-auto my-1 h-px w-5" style={{ background: `${accent}66` }} />
+                      <span className="inline-block rounded-full px-2 py-0.5 text-[9px] font-extrabold" style={{ border: `1px solid ${accent}`, color: accent }}>
+                        {priceOf(d)}
+                      </span>
+                    </div>
+                  );
+                }
+                if (layout === "spotlight" && idx === 0) {
+                  return (
+                    <div key={idx} className="overflow-hidden rounded-2xl" style={{ background: p.surface, border: `1px solid ${p.line}` }}>
+                      <Thumb src={d.image_url} accent={accent} emoji={emoji} className="h-24 w-full" emojiClass="text-xl" />
+                      <div className="p-2.5">
+                        <span className="rounded-full px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-widest" style={{ background: `${accent}22`, color: accent }}>
+                          Destaque
+                        </span>
+                        <div className="mt-1 truncate text-[13px] font-extrabold" style={{ fontFamily: p.fontHead }}>{d.name}</div>
+                        <div className="text-[15px] font-extrabold" style={{ color: accent }}>{priceOf(d)}</div>
+                      </div>
+                    </div>
+                  );
+                }
+
                 if (layout === "lookbook") {
                   const ratios = ["h-24", "h-20", "h-28", "h-16"];
                   return (

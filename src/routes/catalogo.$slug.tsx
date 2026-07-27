@@ -405,14 +405,236 @@ function PublicCatalogPage() {
     );
   };
 
-  const renderCollection = (list: Product[]) =>
-    isLookbook ? (
-      <div className="columns-2 gap-3 md:columns-3 xl:columns-4 sm:gap-4">
-        {list.map((p, i) => renderLookbookCard(p, i))}
+  // ---- Layouts premium (v4) --------------------------------------------
+  const priceBlock = (p: Product) => {
+    const off = discountOf(p);
+    return { off, value: p.promo_price ?? p.price };
+  };
+
+  const addButton = (p: Product, tone: "solid" | "glass" = "solid") => {
+    const out = p.stock_status === "out_of_stock";
+    if (out || (p.price == null && p.promo_price == null)) return null;
+    const hasVariants = Array.isArray(p.variants) && p.variants.length > 0;
+    return (
+      <div onClick={(e) => e.stopPropagation()}>
+        {hasVariants ? (
+          <button
+            onClick={() => openProduct(p)}
+            className="w-full rounded-full px-3 py-2 text-xs font-bold"
+            style={
+              tone === "glass"
+                ? { background: "rgba(255,255,255,.16)", color: "#fff", border: "1px solid rgba(255,255,255,.5)" }
+                : { border: `1px solid ${primary}`, color: primary }
+            }
+          >
+            Escolher variação
+          </button>
+        ) : cart.qtyOf(p.id) === 0 ? (
+          <button
+            onClick={() => cart.add(p.id)}
+            className="w-full rounded-full px-3 py-2 text-xs font-bold"
+            style={
+              tone === "glass"
+                ? { background: "#fff", color: "#111" }
+                : { background: primary, color: readableInk(primary) }
+            }
+          >
+            Adicionar
+          </button>
+        ) : (
+          <div
+            className="flex items-center justify-between rounded-full px-2 py-1"
+            style={
+              tone === "glass"
+                ? { background: "rgba(255,255,255,.9)", color: "#111" }
+                : { border: `1px solid ${primary}`, color: T.ink }
+            }
+          >
+            <button onClick={() => cart.setQty(p.id, cart.qtyOf(p.id) - 1)} aria-label="Diminuir" className="grid h-6 w-6 place-items-center text-sm font-bold">−</button>
+            <span className="text-xs font-bold">{cart.qtyOf(p.id)}</span>
+            <button onClick={() => cart.add(p.id)} aria-label="Aumentar" className="grid h-6 w-6 place-items-center text-sm font-bold">+</button>
+          </div>
+        )}
       </div>
-    ) : (
-      <div className={`grid gap-3 sm:gap-4 ${gridCols}`}>{list.map((p) => renderCard(p))}</div>
     );
+  };
+
+  /** VITRINE PREMIUM — foto retrato full-bleed + painel de vidro com nome e preço. */
+  const renderPremiumCard = (p: Product, variant: "grid" | "row" = "grid") => {
+    const out = p.stock_status === "out_of_stock";
+    const { off, value } = priceBlock(p);
+    return (
+      <div
+        key={p.id}
+        role="button"
+        tabIndex={0}
+        onClick={() => openProduct(p)}
+        onKeyDown={(e) => { if (e.key === "Enter") openProduct(p); }}
+        className={`group relative cursor-pointer overflow-hidden rounded-[22px] ${variant === "row" ? "w-[62vw] shrink-0 snap-start sm:w-[260px]" : ""}`}
+        style={{ background: T.line, boxShadow: "0 24px 48px -32px rgba(0,0,0,.55)" }}
+      >
+        <div className="relative aspect-[3/4] w-full overflow-hidden">
+          {p.image_url ? (
+            <LazyImg src={p.image_url} alt={p.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.06]" />
+          ) : (
+            <div className="grid h-full place-items-center opacity-40"><ShoppingBag className="h-9 w-9" /></div>
+          )}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+
+          {p.brand && (
+            <span className="absolute left-3 top-3 rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur">
+              {p.brand}
+            </span>
+          )}
+          {off > 0 && !out && (
+            <span className="absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-extrabold" style={{ background: primary, color: readableInk(primary) }}>
+              -{off}%
+            </span>
+          )}
+          {out && (
+            <div className="absolute inset-0 grid place-items-center bg-black/50">
+              <span className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-extrabold text-black">Esgotado</span>
+            </div>
+          )}
+
+          <div className="absolute inset-x-2.5 bottom-2.5 rounded-2xl border border-white/25 bg-white/10 p-3 text-white backdrop-blur-md">
+            <div className="line-clamp-2 text-[15px] font-extrabold leading-tight fx-serif">{p.name}</div>
+            <div className="mt-1 flex items-end gap-2">
+              <span className="text-lg font-extrabold leading-none">{value != null ? fmt(Number(value), p.currency) : "Sob consulta"}</span>
+              {off > 0 && <span className="text-[11px] text-white/65 line-through">{fmt(p.price, p.currency)}</span>}
+            </div>
+            {!out && (
+              <div className="mt-2 max-h-0 overflow-hidden opacity-0 transition-all duration-300 group-hover:max-h-16 group-hover:opacity-100 max-sm:max-h-16 max-sm:opacity-100">
+                {addButton(p, "glass")}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  /** BOUTIQUE — moldura fina, foto quadrada, nome centralizado e preço em selo. */
+  const renderBoutiqueCard = (p: Product, variant: "grid" | "row" = "grid") => {
+    const out = p.stock_status === "out_of_stock";
+    const { off, value } = priceBlock(p);
+    return (
+      <div
+        key={p.id}
+        role="button"
+        tabIndex={0}
+        onClick={() => openProduct(p)}
+        onKeyDown={(e) => { if (e.key === "Enter") openProduct(p); }}
+        className={`fx-card group cursor-pointer overflow-hidden rounded-none p-2.5 text-center sm:p-3 ${variant === "row" ? "w-[52vw] shrink-0 snap-start sm:w-[230px]" : ""}`}
+        style={{ background: "var(--mk-surface)", border: `1px solid ${primary}33`, outline: `1px solid var(--mk-line)`, outlineOffset: "4px" }}
+      >
+        <div className="relative aspect-square w-full overflow-hidden" style={{ background: T.line }}>
+          {p.image_url ? (
+            <LazyImg src={p.image_url} alt={p.name} className="h-full w-full object-cover" />
+          ) : (
+            <div className="grid h-full place-items-center opacity-40"><ShoppingBag className="h-8 w-8" /></div>
+          )}
+          {off > 0 && !out && (
+            <span className="absolute left-0 top-3 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-widest" style={{ background: primary, color: readableInk(primary) }}>
+              -{off}%
+            </span>
+          )}
+          {out && (
+            <div className="absolute inset-0 grid place-items-center bg-black/45">
+              <span className="bg-white/90 px-2 py-1 text-[11px] font-extrabold text-black">Esgotado</span>
+            </div>
+          )}
+        </div>
+
+        <div className="px-1 pb-1 pt-3">
+          {p.brand && <div className="text-[9px] uppercase tracking-[0.22em] opacity-55">{p.brand}</div>}
+          <div className="fx-serif mt-1 line-clamp-2 text-[14px] font-bold leading-snug">{p.name}</div>
+          <div className="mx-auto my-2.5 h-px w-8" style={{ background: `${primary}66` }} />
+          <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[13px] font-extrabold" style={{ border: `1px solid ${primary}`, color: primary }}>
+            {value != null ? fmt(Number(value), p.currency) : "Sob consulta"}
+            {off > 0 && <span className="text-[10px] font-medium opacity-55 line-through">{fmt(p.price, p.currency)}</span>}
+          </div>
+          {!out && <div className="mt-3">{addButton(p)}</div>}
+        </div>
+      </div>
+    );
+  };
+
+  /** DESTAQUE — banner largo do primeiro produto + grade nos demais. */
+  const renderSpotlightHero = (p: Product) => {
+    const out = p.stock_status === "out_of_stock";
+    const { off, value } = priceBlock(p);
+    return (
+      <div
+        key={p.id}
+        role="button"
+        tabIndex={0}
+        onClick={() => openProduct(p)}
+        onKeyDown={(e) => { if (e.key === "Enter") openProduct(p); }}
+        className="group col-span-2 grid cursor-pointer grid-cols-1 overflow-hidden rounded-3xl sm:grid-cols-[1.1fr_1fr] md:col-span-3 xl:col-span-4"
+        style={{ background: "var(--mk-surface)", border: "1px solid var(--mk-line)", boxShadow: "0 26px 60px -40px rgba(0,0,0,.6)" }}
+      >
+        <div className="relative aspect-[16/10] w-full overflow-hidden sm:aspect-auto sm:min-h-[300px]" style={{ background: T.line }}>
+          {p.image_url ? (
+            <LazyImg src={p.image_url} alt={p.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]" />
+          ) : (
+            <div className="grid h-full place-items-center opacity-40"><ShoppingBag className="h-10 w-10" /></div>
+          )}
+          {out && (
+            <div className="absolute inset-0 grid place-items-center bg-black/45">
+              <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-extrabold text-black">Esgotado</span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col justify-center gap-3 p-5 sm:p-8">
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.18em]" style={{ background: `${primary}1a`, color: primary }}>
+            {off > 0 ? `Oferta -${off}%` : "Destaque"}
+          </span>
+          {p.brand && <div className="text-[11px] uppercase tracking-[0.2em] opacity-55">{p.brand}</div>}
+          <h3 className="fx-serif text-2xl font-extrabold leading-tight sm:text-4xl">{p.name}</h3>
+          {p.short_desc && <p className="line-clamp-3 text-sm opacity-70 sm:text-base">{p.short_desc}</p>}
+          <div className="flex items-end gap-3">
+            <span className="text-3xl font-extrabold leading-none sm:text-4xl" style={{ color: primary }}>
+              {value != null ? fmt(Number(value), p.currency) : "Sob consulta"}
+            </span>
+            {off > 0 && <span className="pb-1 text-sm line-through opacity-45">{fmt(p.price, p.currency)}</span>}
+          </div>
+          {value != null && Number(value) >= 30 && (
+            <div className="text-xs opacity-60">ou 3x de {fmt(Number(value) / 3, p.currency)} sem juros</div>
+          )}
+          {!out && <div className="max-w-[220px] pt-1">{addButton(p)}</div>}
+        </div>
+      </div>
+    );
+  };
+
+  const renderCollection = (list: Product[]) => {
+    if (isLookbook) {
+      return (
+        <div className="columns-2 gap-3 md:columns-3 xl:columns-4 sm:gap-4">
+          {list.map((p, i) => renderLookbookCard(p, i))}
+        </div>
+      );
+    }
+    if (theme.layout === "premium") {
+      return <div className={`grid gap-3 sm:gap-5 ${gridCols}`}>{list.map((p) => renderPremiumCard(p))}</div>;
+    }
+    if (theme.layout === "boutique") {
+      return <div className={`grid gap-5 sm:gap-7 ${gridCols}`}>{list.map((p) => renderBoutiqueCard(p))}</div>;
+    }
+    if (theme.layout === "spotlight" && list.length > 0) {
+      const [hero, ...rest] = list;
+      return (
+        <div className={`grid gap-3 sm:gap-4 ${gridCols}`}>
+          {renderSpotlightHero(hero)}
+          {rest.map((p) => renderCard(p))}
+        </div>
+      );
+    }
+    return <div className={`grid gap-3 sm:gap-4 ${gridCols}`}>{list.map((p) => renderCard(p))}</div>;
+  };
+
 
 
 
@@ -664,7 +886,13 @@ function PublicCatalogPage() {
                   </button>
                 </div>
                 <div className="fx-hide-scroll -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0 sm:gap-4">
-                  {list.slice(0, 12).map((p) => renderCard(p, "row"))}
+                  {list.slice(0, 12).map((p) =>
+                    theme.layout === "premium"
+                      ? renderPremiumCard(p, "row")
+                      : theme.layout === "boutique"
+                        ? renderBoutiqueCard(p, "row")
+                        : renderCard(p, "row"),
+                  )}
                   {list.length > 12 && (
                     <button
                       onClick={() => setActiveCat(cat.id)}
