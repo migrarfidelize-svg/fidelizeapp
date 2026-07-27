@@ -467,30 +467,59 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
           <Card>
             <CardHeader><CardTitle>Layout dos {L.itemsLower}</CardTitle></CardHeader>
 
-            <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {MENU_LAYOUTS.filter((l) =>
                 isCatalog ? l.id !== "magazine" : !CATALOG_ONLY_LAYOUTS.includes(l.id),
-              ).map((l) => (
+              ).map((l) => {
+                const active = layout === l.id;
+                return (
                 <button
                   key={l.id}
                   onClick={() => setLayout(l.id)}
-                  className={`relative rounded-2xl border p-3 text-left transition ${
-                    layout === l.id ? "border-primary ring-2 ring-primary/40" : "border-border/60 hover:border-primary/50"
+                  aria-pressed={active}
+                  className={`group relative overflow-hidden rounded-2xl border text-left transition-all duration-300 will-change-transform hover:-translate-y-1 ${
+                    active
+                      ? "border-primary shadow-[0_18px_40px_-18px_hsl(var(--primary)/0.55)] ring-2 ring-primary/35"
+                      : "border-border/60 shadow-[0_10px_28px_-20px_rgba(0,0,0,0.6)] hover:border-primary/50 hover:shadow-[0_20px_40px_-20px_rgba(0,0,0,0.55)]"
                   }`}
                 >
-                  {layout === l.id && (
-                    <span className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-primary text-primary-foreground">
+                  {/* brilho suave no topo */}
+                  <span
+                    aria-hidden
+                    className={`pointer-events-none absolute inset-x-0 -top-16 h-32 bg-[radial-gradient(60%_100%_at_50%_100%,hsl(var(--primary)/0.28),transparent)] transition-opacity duration-500 ${
+                      active ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                    }`}
+                  />
+
+                  {active && (
+                    <span className="absolute right-3 top-3 z-10 grid h-6 w-6 place-items-center rounded-full bg-primary text-primary-foreground shadow-md">
                       <Check className="h-3.5 w-3.5" />
                     </span>
                   )}
-                  <LayoutWire id={l.id} />
-                  <div className="mt-3 text-sm font-semibold">{l.name}</div>
-                  <p className="mt-1 text-xs text-muted-foreground">{l.description}</p>
+
+                  {/* palco da miniatura animada */}
+                  <div className="relative overflow-hidden bg-gradient-to-b from-muted/70 to-muted/20 p-4">
+                    <div className="relative rounded-xl bg-background/70 p-2 shadow-inner ring-1 ring-border/50 transition-transform duration-500 ease-out group-hover:scale-[1.03]">
+                      <LayoutWire id={l.id} />
+                    </div>
+                    {/* varredura de luz */}
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/2 -skew-x-12 bg-gradient-to-r from-transparent via-foreground/10 to-transparent opacity-0 transition-none group-hover:animate-[showcase-sheen_1.1s_ease-out] group-hover:opacity-100"
+                    />
+                  </div>
+
+                  <div className="border-t border-border/50 bg-card/80 p-4">
+                    <div className="text-sm font-semibold">{l.name}</div>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{l.description}</p>
+                  </div>
                 </button>
-              ))}
+                );
+              })}
             </CardContent>
           </Card>
           )}
+
 
 
           {/* TELA INICIAL — só faz sentido no cardápio (modo Stories) */}
