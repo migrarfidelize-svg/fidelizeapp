@@ -1477,7 +1477,7 @@ function PlansComparison() {
                 className={`relative w-[78%] min-w-[78%] shrink-0 snap-center rounded-2xl border p-5 text-left transition-all duration-300 sm:w-[46%] sm:min-w-[46%] md:w-auto md:min-w-0 md:flex-1 ${
                   isActive
                     ? "border-primary bg-background shadow-[0_10px_40px_-18px_var(--primary)] md:-translate-y-1"
-                    : "border-primary/15 bg-background/70 hover:border-primary/40"
+                    : "border-primary/15 bg-background hover:border-primary/40"
                 }`}
               >
                 {p.badge && (
