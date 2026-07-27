@@ -3031,3 +3031,10 @@ header[data-slot="site-header"],
   filter: none;
   text-shadow: none;
 }
+
+/* Trilho de swipe sem barra visível (canvas de planos). */
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
