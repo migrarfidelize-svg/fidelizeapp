@@ -2934,3 +2934,45 @@ header[data-slot="site-header"],
   outline: none;
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 9%, transparent);
 }
+
+/* ============================================================
+   TEMA ESCURO — redução de iluminação (glow contido)
+   Menos brilho roxo, mais definição por hairline.
+   ============================================================ */
+.dark {
+  --glow-primary: color-mix(in oklab, var(--primary) 7%, transparent);
+  --glow-accent: color-mix(in oklab, var(--accent) 6%, transparent);
+  --glass-border: color-mix(in oklab, var(--primary) 14%, transparent);
+  --grid-line: color-mix(in oklab, var(--primary) 4%, transparent);
+  --hairline: color-mix(in oklab, var(--primary) 16%, transparent);
+
+  --gradient-hero:
+    radial-gradient(1200px 600px at 15% -10%, color-mix(in oklab, var(--primary) 7%, transparent), transparent 62%),
+    radial-gradient(900px 500px at 100% 0%, color-mix(in oklab, var(--accent) 5%, transparent), transparent 62%),
+    radial-gradient(700px 500px at 50% 120%, color-mix(in oklab, var(--primary) 4%, transparent), transparent 62%);
+}
+
+/* Superfícies e utilitários decorativos com brilho reduzido no escuro */
+.dark .surface-glow {
+  box-shadow: 0 18px 48px -34px color-mix(in oklab, var(--primary) 12%, transparent);
+}
+.dark .glass-panel {
+  box-shadow:
+    0 1px 0 color-mix(in oklab, var(--foreground) 4%, transparent) inset,
+    0 36px 80px -50px color-mix(in oklab, var(--primary) 12%, transparent);
+}
+.dark [data-slot="card"],
+.dark [data-slot="dialog-content"],
+.dark [data-slot="sheet-content"],
+.dark [data-slot="popover-content"],
+.dark .glass,
+.dark .glass-card {
+  box-shadow: 0 12px 36px -28px color-mix(in oklab, oklch(0 0 0) 60%, transparent);
+}
+.dark .dock-item,
+.dark [data-slot="tabs-trigger"][data-state="active"] {
+  --dock-item-active-glow: 0 0 12px -4px color-mix(in oklab, var(--primary) 32%, transparent);
+}
+.dark :where(a, button, [role="button"]):focus-visible {
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 22%, transparent);
+}
