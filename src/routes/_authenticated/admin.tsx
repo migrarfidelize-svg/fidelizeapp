@@ -215,7 +215,7 @@ function AdminLayout() {
                       <Logo />
                       <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-primary-soft text-primary">Admin</span>
                     </div>
-                    {renderMobileNav(closeMobile)}
+                    {renderNav(closeMobile)}
                     <div className="p-3 border-t space-y-2">
                       <div className="flex items-center justify-between px-1">
                         <span className="text-xs text-muted-foreground">Tema</span>
