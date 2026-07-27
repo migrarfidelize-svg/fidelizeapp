@@ -1355,23 +1355,25 @@ function Pricing() {
 }
 
 const COMPARE_PLANS = [
+  { name: "Gratuito", price: "R$ 0", badge: null as string | null },
   { name: "Essencial", price: "R$ 29,90", badge: null as string | null },
   { name: "Profissional", price: "R$ 59,90", badge: "Mais vendido" },
   { name: "Premium", price: "R$ 119,90", badge: null as string | null },
 ];
 
 const COMPARE_ROWS: { label: string; values: (boolean | string)[] }[] = [
-  { label: "Cartão Fidelidade Digital", values: [true, true, true] },
-  { label: "Avaliação de Atendimento", values: [true, true, true] },
-  { label: "Árvore de Links", values: [true, true, true] },
-  { label: "Cardápio Virtual", values: [false, true, true] },
-  { label: "Notificações Push", values: [true, true, true] },
-  { label: "Tag Display", values: [true, true, true] },
-  { label: "QR Codes Inteligentes", values: [true, true, true] },
-  { label: "Clientes cadastrados", values: ["Até 300", "Até 1.000", "Ilimitados"] },
-  { label: "Funcionários", values: ["1", "5", "Ilimitados"] },
-  { label: "Remover marca Fidelize", values: [false, false, true] },
+  { label: "Cartão Fidelidade Digital", values: [true, true, true, true] },
+  { label: "Avaliação de Atendimento", values: [true, true, true, true] },
+  { label: "Árvore de Links", values: [true, true, true, true] },
+  { label: "Cardápio Virtual", values: [false, false, true, true] },
+  { label: "Notificações Push", values: [false, true, true, true] },
+  { label: "Tag Display", values: [false, true, true, true] },
+  { label: "QR Codes Inteligentes", values: [true, true, true, true] },
+  { label: "Clientes cadastrados", values: ["Até 10", "Até 300", "Até 1.000", "Ilimitados"] },
+  { label: "Funcionários", values: ["1", "1", "5", "Ilimitados"] },
+  { label: "Remover marca Fidelize", values: [false, false, false, true] },
 ];
+
 
 function CompareCell({ value }: { value: boolean | string }) {
   if (typeof value === "string") return <span className="text-sm font-semibold">{value}</span>;
