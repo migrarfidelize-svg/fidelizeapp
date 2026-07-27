@@ -858,14 +858,55 @@ function MenuPreview({
 
             <div
               className={`mt-3 pb-4 ${
-                layout === "grid"
+                layout === "grid" || layout === "premium"
                   ? "grid grid-cols-2 gap-2"
-                  : layout === "lookbook"
-                    ? "columns-2 gap-2"
-                    : "space-y-2"
+                  : layout === "boutique"
+                    ? "grid grid-cols-2 gap-3"
+                    : layout === "lookbook"
+                      ? "columns-2 gap-2"
+                      : "space-y-2"
               }`}
             >
               {dishes.map((d, idx) => {
+                if (layout === "premium") {
+                  return (
+                    <div key={idx} className="relative overflow-hidden rounded-2xl" style={{ background: p.line }}>
+                      <Thumb src={d.image_url} accent={accent} emoji={emoji} className="h-28 w-full" emojiClass="text-lg" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      <div className="absolute inset-x-1.5 bottom-1.5 rounded-xl border border-white/25 bg-white/15 p-1.5 backdrop-blur-md">
+                        <div className="truncate text-[10px] font-bold text-white" style={{ fontFamily: p.fontHead }}>{d.name}</div>
+                        <div className="text-[11px] font-extrabold text-white">{priceOf(d)}</div>
+                      </div>
+                    </div>
+                  );
+                }
+                if (layout === "boutique") {
+                  return (
+                    <div key={idx} className="p-1.5 text-center" style={{ background: p.surface, border: `1px solid ${accent}44` }}>
+                      <Thumb src={d.image_url} accent={accent} emoji={emoji} className="h-16 w-full" emojiClass="text-lg" />
+                      <div className="mt-1.5 truncate text-[10px] font-bold" style={{ fontFamily: p.fontHead }}>{d.name}</div>
+                      <div className="mx-auto my-1 h-px w-5" style={{ background: `${accent}66` }} />
+                      <span className="inline-block rounded-full px-2 py-0.5 text-[9px] font-extrabold" style={{ border: `1px solid ${accent}`, color: accent }}>
+                        {priceOf(d)}
+                      </span>
+                    </div>
+                  );
+                }
+                if (layout === "spotlight" && idx === 0) {
+                  return (
+                    <div key={idx} className="overflow-hidden rounded-2xl" style={{ background: p.surface, border: `1px solid ${p.line}` }}>
+                      <Thumb src={d.image_url} accent={accent} emoji={emoji} className="h-24 w-full" emojiClass="text-xl" />
+                      <div className="p-2.5">
+                        <span className="rounded-full px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-widest" style={{ background: `${accent}22`, color: accent }}>
+                          Destaque
+                        </span>
+                        <div className="mt-1 truncate text-[13px] font-extrabold" style={{ fontFamily: p.fontHead }}>{d.name}</div>
+                        <div className="text-[15px] font-extrabold" style={{ color: accent }}>{priceOf(d)}</div>
+                      </div>
+                    </div>
+                  );
+                }
+
                 if (layout === "lookbook") {
                   const ratios = ["h-24", "h-20", "h-28", "h-16"];
                   return (
