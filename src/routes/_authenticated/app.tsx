@@ -493,7 +493,7 @@ function AppLayout() {
                       transition={{ duration: 0.18 }}
                       className="overflow-hidden"
                     >
-                      <div className={`space-y-1 py-1 ${showLabel ? "ml-4 border-l border-border/60 pl-2" : ""}`}>
+                      <div className={`flex flex-col gap-[var(--nav-gap)] py-[var(--nav-gap)] ${showLabel ? "ml-4 border-l border-border/60 pl-2" : ""}`}>
                         {g.items.map((n) => renderNavItem(n, onNavigate, forceExpanded))}
                       </div>
                     </motion.div>
