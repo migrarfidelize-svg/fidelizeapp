@@ -259,25 +259,28 @@ function Hero() {
       
 
       
-      <div className="relative z-10 mx-auto max-w-6xl px-4 py-16 md:py-24">
-        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(300px,420px)] lg:gap-14">
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-12 sm:py-16 md:py-24">
+        <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(300px,420px)] lg:gap-14">
           <div className="min-w-0 flex flex-col items-start text-left text-white">
             <span
-              className="landing-hero-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
+              className="landing-hero-badge inline-flex max-w-full items-center gap-2 rounded-full px-3 py-1 text-[11px] font-medium sm:text-xs"
               style={{ background: `${CYAN}14`, border: `1px solid ${CYAN}55`, color: CYAN }}
             >
-              <Sparkles className="h-3 w-3" /> 1 plataforma · 10 ferramentas de retenção
+              <Sparkles className="h-3 w-3 shrink-0" />
+              <span className="truncate">1 plataforma · 10 ferramentas de retenção</span>
             </span>
-            <h1 className="mt-5 font-display text-4xl font-extrabold leading-[1.12] tracking-tight sm:text-5xl md:text-6xl pb-1">
-              Tudo que seu negócio<br />
-              precisa para o<br />
+            <h1 className="mt-4 font-display text-[2rem] font-extrabold leading-[1.1] tracking-tight text-balance sm:mt-5 sm:text-5xl md:text-6xl pb-1">
+              Tudo que seu negócio{" "}
+              <span className="hidden sm:inline"><br /></span>
+              precisa para o{" "}
+              <span className="hidden sm:inline"><br /></span>
               <span style={{ color: CYAN, textShadow: `0 0 40px ${CYAN}55` }}>cliente voltar</span>.
             </h1>
 
-            <p className="mt-5 max-w-xl text-base text-white/70 md:text-lg">
+            <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-white/70 sm:mt-5 sm:text-base md:text-lg">
               Fidelidade digital, cardápio, catálogo, avaliações, QR Code, push e CRM — num só painel. Sem app, sem cartão de papel.
             </p>
-            <div className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+            <div className="mt-7 flex w-full flex-col gap-3 sm:mt-8 sm:w-auto sm:flex-row sm:items-center">
               <Button
                 asChild
                 size="lg"
@@ -298,21 +301,25 @@ function Hero() {
                 <a href="#ecossistema">Ver como funciona</a>
               </Button>
             </div>
-            <div className="mt-6 flex flex-wrap items-center gap-6 text-xs text-white/60">
+            <div className="mt-6 grid w-full grid-cols-1 gap-2 text-xs text-white/60 xs:grid-cols-2 sm:flex sm:flex-wrap sm:items-center sm:gap-6">
               <span className="flex items-center gap-1.5">
-                <Check className="h-4 w-4" style={{ color: CYAN }} /> Sem cartão de crédito
+                <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> Sem cartão de crédito
               </span>
               <span className="flex items-center gap-1.5">
-                <Check className="h-4 w-4" style={{ color: CYAN }} /> Configure em 5 minutos
+                <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> Configure em 5 minutos
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> Plano grátis para sempre
               </span>
             </div>
           </div>
 
-          <div className="flex justify-center lg:justify-end">
+          <div className="-mx-2 flex scale-95 justify-center sm:mx-0 sm:scale-100 lg:justify-end">
             <HeroAppPreview />
           </div>
         </div>
       </div>
+
 
     </section>
   );
