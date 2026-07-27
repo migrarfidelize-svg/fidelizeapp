@@ -70,7 +70,7 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
     bg_color: string | null; accent_color: string | null; text_color: string | null; bg_image_url: string | null;
   }) => {
     setPreset(t.preset);
-    setLayout(t.layout);
+    setLayout(isCatalog && t.layout === "magazine" ? "grid" : t.layout);
     setPattern(t.pattern);
     setEntry(t.entry);
     setBgColor(t.bg_color);
