@@ -5,6 +5,8 @@ import {
   ChevronRight,
   Gift,
   QrCode,
+  ShoppingBag,
+  ShoppingCart,
   Star,
   Stamp,
   TrendingUp,
