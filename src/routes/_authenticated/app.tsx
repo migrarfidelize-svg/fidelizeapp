@@ -450,198 +450,48 @@ function AppLayout() {
 
   const closeMobile = () => setMobileOpen(false);
 
-  const GROUP_ICONS: Record<string, any> = {
-    "visao-geral": LayoutDashboard,
-    pessoas: Users,
-    qrcodes: QrCode,
-    fidelidade: CreditCard,
-    linktree: Link2,
-    avaliacoes: Star,
-    cardapio: UtensilsCrossed,
-    catalogo: ShoppingBag,
-    comunicacao: Bell,
-    ajuda: LifeBuoy,
-  };
-  const unreadByGroup: Record<string, number> = {
-    ajuda: unreadSupport,
-    operacao: 0,
-    marketing: 0,
-    conta: 0,
-  };
-
   return (
     <TooltipProvider>
       <div className="min-h-screen dock-page-bg">
-        {/* Desktop: floating dock */}
+        {/* Desktop: sidebar padrão (ícone + nome) */}
         <aside
-          className="dock-surface hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-30 flex-col items-center gap-1.5 rounded-2xl p-2"
+          className={[
+            "hidden md:flex fixed inset-y-0 left-0 z-30 flex-col border-r border-border/60 bg-card/80 backdrop-blur-xl transition-[width] duration-200",
+            collapsed ? "w-[76px]" : "w-64",
+          ].join(" ")}
           data-tour="sidebar-logo"
         >
-          <Link
-            to="/app"
-            className="dock-logo dock-logo-bg relative mb-1 grid h-12 w-12 place-items-center rounded-full"
-            aria-label="Fidelize"
-          >
-            <span aria-hidden className="dock-logo-led" />
-            <span aria-hidden className="dock-logo-halo" />
-            <LogoMark size={22} className="relative z-10 text-primary" />
-          </Link>
-
-          {filteredGroups.map((g, gi) => {
-            const Icon = GROUP_ICONS[g.key] ?? LayoutDashboard;
-            const isActive = g.items.some((it) =>
-              it.exact ? pathname === it.to : pathname.startsWith(it.to),
-            );
-            const isOpen = pinnedGroup === g.key;
-            const badge = unreadByGroup[g.key] ?? 0;
-            // Grupos na metade de baixo abrem o flyout ancorado embaixo,
-            // para os últimos itens não ficarem fora da tela.
-            const anchorBottom = gi >= Math.ceil(filteredGroups.length / 2);
-            return (
-              <div
-                key={g.key}
-                className="group/dock relative"
-                onMouseEnter={() => openGroup(g.key)}
-                onMouseLeave={scheduleCloseGroup}
-              >
-                <button
-                  type="button"
-                  aria-label={g.label}
-                  aria-expanded={isOpen}
-                  onClick={() => (isOpen ? setPinnedGroup(null) : openGroup(g.key))}
-                  className={[
-                    "relative grid h-11 w-11 place-items-center rounded-xl",
-                    isActive || isOpen ? "dock-item-active" : "dock-item",
-                  ].join(" ")}
-                >
-                  <Icon className="h-[19px] w-[19px]" strokeWidth={1.8} />
-                  {badge > 0 && (
-                    <span className="dock-badge absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-bold ring-2 ring-[color:var(--dock-surface)]">
-                      {badge > 9 ? "9+" : badge}
-                    </span>
-                  )}
-                </button>
-
-                {/* Flyout — com ponte de hover (pl-3) para eliminar o gap morto */}
-                <div
-                  className={[
-                    "absolute left-full pl-3 origin-left transition-all duration-200",
-                    anchorBottom ? "bottom-0" : "top-0",
-                    isOpen
-                      ? "pointer-events-auto scale-100 opacity-100"
-                      : "pointer-events-none scale-95 opacity-0",
-                  ].join(" ")}
-                  onMouseEnter={() => openGroup(g.key)}
-                  onMouseLeave={scheduleCloseGroup}
-                >
-                  <div className="dock-flyout max-h-[80vh] min-w-[240px] overflow-y-auto rounded-2xl p-2">
-                    <div className="dock-flyout-title px-2 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em]">
-                      {g.label}
-                    </div>
-                    <ul className="space-y-0.5">
-                      {g.items.map((n) => {
-                        const active = isItemActive(n);
-                        const ItemIcon = n.icon;
-                        const itBadge =
-                          n.to === "/app/suporte" && unreadSupport > 0
-                            ? unreadSupport
-                            : 0;
-                        return (
-                          <li key={n.to}>
-                            <Link
-                              to={n.to}
-                              data-tour={`nav-${n.to}`}
-                              onClick={() => setPinnedGroup(null)}
-                              className={[
-                                "flex items-center gap-3 rounded-xl px-2 py-2 text-[13px]",
-                                active ? "dock-flyout-item-active" : "dock-flyout-item",
-                              ].join(" ")}
-                            >
-                              <span
-                                className={[
-                                  "grid h-8 w-8 place-items-center rounded-lg",
-                                  active ? "dock-item-active" : "dock-item",
-                                ].join(" ")}
-                              >
-                                <ItemIcon className="h-[17px] w-[17px]" strokeWidth={1.8} />
-                              </span>
-                              <span className="flex-1">{n.label}</span>
-                              {itBadge > 0 && (
-                                <span className="rounded-full bg-[color:var(--dock-item-active-bg)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--dock-item-active-text)] ring-1 ring-inset ring-[color:var(--dock-item-active-ring)]">
-                                  {itBadge > 9 ? "9+" : itBadge}
-                                </span>
-                              )}
-                            </Link>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                </div>
-
-                {/* Tooltip when closed */}
-                {!isOpen && (
-                  <span className="dock-tooltip pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 whitespace-nowrap rounded-md px-2 py-1 text-[11px] font-medium opacity-0 transition-opacity group-hover/dock:opacity-100">
-                    {g.label}
-                  </span>
-                )}
-              </div>
-            );
-          })}
-
-          {/* Divider */}
-          <div className="dock-divider my-1 h-px w-8" />
-
-          {/* Theme + account */}
-          <div className="grid place-items-center">
-            <ThemeToggle />
+          <div className={`flex h-14 items-center border-b border-border/60 ${collapsed ? "justify-center px-2" : "justify-between px-3"}`}>
+            {collapsed ? (
+              <Link to="/app" aria-label="Fidelize" className="grid h-9 w-9 place-items-center rounded-xl bg-primary/10">
+                <LogoMark size={20} className="text-primary" />
+              </Link>
+            ) : (
+              <Link to="/app" aria-label="Fidelize" className="min-w-0">
+                <Logo />
+              </Link>
+            )}
+            {!collapsed && (
+              <Button size="icon" variant="ghost" aria-label="Recolher menu" onClick={() => setCollapsed(true)}>
+                <PanelLeftClose className="h-4 w-4" />
+              </Button>
+            )}
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                aria-label="Conta"
-                className="dock-item grid h-11 w-11 place-items-center rounded-xl text-[11px] font-bold"
-              >
-                {activeEst?.name?.slice(0, 2).toUpperCase() ?? "FZ"}
-              </button>
-            </DropdownMenuTrigger>
 
-            <DropdownMenuContent side="right" align="end" className="w-56">
-              <div className="px-2 py-1.5 text-xs text-muted-foreground truncate">
-                {activeEst?.name}
-              </div>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/cartao/$slug" params={{ slug: activeEst!.slug }}>
-                  Ver página pública
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/lgpd">
-                  <Shield className="mr-2 h-4 w-4" />
-                  Meus Dados (LGPD)
-                </Link>
-              </DropdownMenuItem>
-              {adminStatus?.isAdmin && (
-                <DropdownMenuItem asChild>
-                  <Link to="/admin">
-                    <Shield className="mr-2 h-4 w-4" />
-                    Painel do administrador
-                  </Link>
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={signOut}>
-                <LogOut className="mr-2 h-4 w-4" />
-                Sair
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {collapsed && (
+            <div className="flex justify-center pt-2">
+              <Button size="icon" variant="ghost" aria-label="Expandir menu" onClick={() => setCollapsed(false)}>
+                <PanelLeftOpen className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
+          {renderNav()}
+          {renderFooter()}
         </aside>
 
+        <div className={`flex flex-col min-w-0 transition-[padding] duration-200 ${collapsed ? "md:pl-[76px]" : "md:pl-64"}`}>
 
-        <div className="flex flex-col min-w-0 md:pl-24">
           {/* Top bar (desktop + mobile) */}
           <header className="sticky top-0 z-20 flex items-center justify-between gap-3 h-14 px-4 md:px-6 border-b bg-card/70 backdrop-blur-xl">
             <div className="flex items-center gap-3 min-w-0">
