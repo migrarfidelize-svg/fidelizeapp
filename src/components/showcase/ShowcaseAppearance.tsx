@@ -396,6 +396,8 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
               </div>
             </CardContent>
           </Card>
+          )}
+
 
           {/* LAYOUT */}
           {step === 3 && (
