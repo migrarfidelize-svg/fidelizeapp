@@ -2602,7 +2602,7 @@ html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"]
 /* ===== Mockup do celular na hero — tokens claro/escuro ===== */
 .hero-phone {
   --hp-accent: #0e7490;
-  --hp-magenta: #c026d3;
+  --hp-magenta: #7c3aed;
   --hp-screen: #ffffff;
   --hp-notch: rgba(2, 6, 23, 0.12);
   --hp-frame-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(226, 232, 240, 0.9));
@@ -2615,7 +2615,7 @@ html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"]
 }
 .dark .hero-phone {
   --hp-accent: #00ffff;
-  --hp-magenta: #d946ef;
+  --hp-magenta: #a855f7;
   --hp-screen: #050b18;
   --hp-notch: rgba(0, 0, 0, 0.7);
   --hp-frame-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(2, 6, 23, 0.9));
@@ -2755,4 +2755,27 @@ html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"]
 }
 @media (max-height: 720px) {
   .nav-dense { --nav-item-h: 2rem; --nav-gap: 0.125rem; --nav-py: 0.25rem; --nav-icon: 1.5rem; --nav-fs: 0.78rem; }
+}
+
+/* ============================================================
+   TEMA CLARO — saneamento de magenta/rosa remanescente.
+   Substitui qualquer tom rosado por roxo/violeta da paleta.
+   ============================================================ */
+html:not(.dark) .fz-ring-1 {
+  background: conic-gradient(from 0deg, transparent 0 55%, #7c3aed 65%, #6d28d9 78%, transparent 90% 100%);
+}
+html:not(.dark) .fz-ring-2 {
+  background: conic-gradient(from 180deg, transparent 0 60%, #8b5cf6 72%, #6366f1 88%, transparent 96%);
+  filter: drop-shadow(0 0 4px rgba(124, 58, 237, 0.25));
+}
+html:not(.dark) .fz-ring-3 {
+  background: conic-gradient(from 90deg, transparent 0 70%, #8b5cf6 80%, transparent 92%);
+  opacity: 0.4;
+}
+html:not(.dark) .fz-ring { filter: drop-shadow(0 0 5px rgba(124, 58, 237, 0.22)); }
+
+/* Sombras coloridas mais discretas no tema claro */
+html:not(.dark) {
+  --glow-primary: color-mix(in oklab, var(--primary) 26%, transparent);
+  --glow-accent: color-mix(in oklab, var(--accent) 22%, transparent);
 }
