@@ -15,7 +15,7 @@ import { ScrollProgress } from "@/components/landing/ScrollProgress";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { ArrowRight, Menu, QrCode, Smartphone, ShieldCheck, BarChart3, Sparkles, Coffee, Scissors, Pizza, ShoppingBag, Wrench, IceCream, Store, PawPrint, Check, X, Cake, Clock, UserPlus, Crown, Gift, MessageCircle, Bell, Mail, Sprout, Zap, Building2, Send, Bot, HelpCircle, type LucideIcon } from "lucide-react";
+import { ArrowRight, Menu, QrCode, Smartphone, ShieldCheck, BarChart3, Sparkles, Coffee, Scissors, Pizza, ShoppingBag, Wrench, IceCream, Store, PawPrint, Check, X, Cake, Clock, UserPlus, Crown, Gift, MessageCircle, Bell, Mail, Sprout, Zap, Building2, Send, Bot, HelpCircle, ChevronDown, type LucideIcon } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { askFaqAI } from "@/lib/faq-ai.functions";
 
@@ -1388,73 +1388,233 @@ function CompareCell({ value }: { value: boolean | string }) {
   );
 }
 
+/** Destaques curtos por plano — usados nos nós do canvas. */
+const COMPARE_HIGHLIGHTS: string[][] = [
+  ["Até 10 clientes", "Cartão fidelidade digital", "QR Codes inteligentes"],
+  ["Até 300 clientes", "Notificações push", "Tag Display"],
+  ["Até 1.000 clientes", "Cardápio virtual", "5 funcionários"],
+  ["Clientes ilimitados", "Sem marca Fidelize", "Equipe ilimitada"],
+];
+
 function PlansComparison() {
+  const [active, setActive] = useState(2);
+  const [open, setOpen] = useState(false);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  /** Sincroniza o plano ativo com o swipe horizontal (mobile/tablet). */
+  function handleScroll() {
+    const el = trackRef.current;
+    if (!el) return;
+    const cards = Array.from(el.querySelectorAll<HTMLElement>("[data-plan-node]"));
+    if (!cards.length) return;
+    const center = el.scrollLeft + el.clientWidth / 2;
+    let best = 0;
+    let bestDist = Infinity;
+    cards.forEach((c, i) => {
+      const d = Math.abs(c.offsetLeft + c.offsetWidth / 2 - center);
+      if (d < bestDist) { bestDist = d; best = i; }
+    });
+    setActive(best);
+  }
+
+  function selectPlan(i: number) {
+    setActive(i);
+    const el = trackRef.current;
+    const card = el?.querySelectorAll<HTMLElement>("[data-plan-node]")[i];
+    if (el && card) {
+      el.scrollTo({ left: card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2, behavior: "smooth" });
+    }
+  }
+
   return (
     <div className="mt-14">
-      <h3 className="text-center font-display text-2xl font-bold">O que cada plano oferece</h3>
-      <p className="mt-2 text-center text-sm text-muted-foreground">Compare os recursos lado a lado.</p>
+      <h3 className="text-center font-display text-2xl font-bold md:text-3xl">O que cada plano oferece</h3>
+      <p className="mt-2 text-center text-sm text-muted-foreground">
+        Deslize entre os planos — o comparativo acompanha sua escolha.
+      </p>
 
-      {/* Desktop / tablet */}
-      <div className="mt-8 hidden overflow-hidden rounded-2xl border border-primary/15 bg-card/60 backdrop-blur md:block">
-        <table className="w-full border-collapse text-left">
-          <thead>
-            <tr className="border-b border-primary/15">
-              <th className="p-4 text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">Recursos</th>
-              {COMPARE_PLANS.map((p) => (
-                <th key={p.name} className="p-4 text-center align-bottom">
-                  {p.badge && (
-                    <span className="mb-1 inline-block rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-primary">
-                      ⭐ {p.badge}
+      {/* Canvas de automação */}
+      <div className="relative mt-8 overflow-hidden rounded-[28px] border border-primary/15 bg-card/60 p-5 backdrop-blur md:p-10">
+        {/* grid pontilhada */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-[0.06]"
+          style={{
+            backgroundImage: "radial-gradient(currentColor 1px, transparent 1px)",
+            backgroundSize: "24px 24px",
+            color: "var(--primary)",
+          }}
+        />
+
+        {/* cabos conectores (desktop) */}
+        <div aria-hidden className="pointer-events-none absolute inset-x-10 top-1/2 hidden -translate-y-1/2 md:flex">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex-1 px-2">
+              <div
+                className={`h-px w-full rounded-full transition-all duration-500 ${
+                  i < active ? "bg-primary/50 shadow-[0_0_10px_var(--primary)]" : "bg-primary/15"
+                }`}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* nós dos planos */}
+        <div
+          ref={trackRef}
+          onScroll={handleScroll}
+          className="no-scrollbar relative -mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-2 md:justify-between md:overflow-visible"
+        >
+          {COMPARE_PLANS.map((p, i) => {
+            const isActive = i === active;
+            return (
+              <button
+                key={p.name}
+                data-plan-node
+                type="button"
+                onClick={() => selectPlan(i)}
+                aria-pressed={isActive}
+                className={`relative w-[78%] min-w-[78%] shrink-0 snap-center rounded-2xl border p-5 text-left transition-all duration-300 sm:w-[46%] sm:min-w-[46%] md:w-auto md:min-w-0 md:flex-1 ${
+                  isActive
+                    ? "border-primary bg-background shadow-[0_10px_40px_-18px_var(--primary)] md:-translate-y-1"
+                    : "border-primary/15 bg-background hover:border-primary/40"
+                }`}
+              >
+                {p.badge && (
+                  <span className="absolute -top-2.5 left-5 rounded-full border border-primary/30 bg-primary px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-primary-foreground">
+                    {p.badge}
+                  </span>
+                )}
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`flex h-9 w-9 items-center justify-center rounded-xl border transition-colors ${
+                      isActive ? "border-primary/40 bg-primary/15" : "border-primary/15 bg-muted/40"
+                    }`}
+                  >
+                    <span className={`h-2 w-2 rounded-full ${isActive ? "bg-primary shadow-[0_0_8px_var(--primary)]" : "bg-muted-foreground/50"}`} />
+                  </span>
+                  <span className="font-display text-base font-bold">{p.name}</span>
+                </div>
+                <div className="mt-4">
+                  <span className={`font-display text-2xl font-extrabold ${isActive ? "text-primary" : ""}`}>{p.price}</span>
+                  <span className="text-xs text-muted-foreground">/mês</span>
+                </div>
+                <ul className="mt-4 space-y-2">
+                  {COMPARE_HIGHLIGHTS[i].map((h) => (
+                    <li key={h} className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span className={`h-1.5 w-1.5 rounded-full ${isActive ? "bg-primary" : "bg-primary/40"}`} />
+                      {h}
+                    </li>
+                  ))}
+                </ul>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* indicadores de swipe */}
+        <div className="mt-4 flex justify-center gap-1.5 md:hidden">
+          {COMPARE_PLANS.map((p, i) => (
+            <span
+              key={p.name}
+              className={`h-1 rounded-full transition-all ${i === active ? "w-6 bg-primary" : "w-2 bg-primary/25"}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Botão expansivo — só abre no clique */}
+      <div className="mt-8 flex flex-col items-center">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card px-6 py-3 text-sm font-semibold shadow-sm transition-colors hover:border-primary/50 hover:text-primary"
+        >
+          {open ? "Ocultar comparativo" : "Ver comparativo completo"}
+          <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+        </button>
+        <span className={`mt-2 w-px bg-gradient-to-b from-primary/40 to-transparent transition-all duration-300 ${open ? "h-8" : "h-0"}`} />
+      </div>
+
+      {/* Comparativo */}
+      <div
+        className={`grid transition-all duration-500 ease-out ${open ? "mt-2 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+      >
+        <div className="overflow-hidden">
+          {/* Desktop / tablet */}
+          <div className="hidden overflow-hidden rounded-2xl border border-primary/15 bg-card/60 backdrop-blur md:block">
+            <table className="w-full border-collapse text-left">
+              <thead>
+                <tr className="border-b border-primary/15">
+                  <th className="p-4 text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">Recursos</th>
+                  {COMPARE_PLANS.map((p, i) => (
+                    <th
+                      key={p.name}
+                      className={`cursor-pointer p-4 text-center align-bottom transition-colors ${
+                        i === active ? "bg-primary/[0.06] text-primary" : ""
+                      }`}
+                      onClick={() => selectPlan(i)}
+                    >
+                      {p.badge && (
+                        <span className="mb-1 inline-block rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-primary">
+                          ⭐ {p.badge}
+                        </span>
+                      )}
+                      <div className="font-display text-lg font-bold">{p.name}</div>
+                      <div className="text-xs text-muted-foreground">{p.price}/mês</div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARE_ROWS.map((row, i) => (
+                  <tr key={row.label} className={i % 2 ? "bg-muted/20" : undefined}>
+                    <td className="p-4 text-sm">{row.label}</td>
+                    {row.values.map((v, j) => (
+                      <td key={j} className={`p-4 text-center ${j === active ? "bg-primary/[0.06]" : ""}`}>
+                        <CompareCell value={v} />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile — só o plano ativo */}
+          <div className="md:hidden">
+            <div className="rounded-2xl border border-primary/20 bg-card/60 p-5">
+              <div className="flex items-baseline justify-between">
+                <div>
+                  <div className="font-display text-lg font-bold">{COMPARE_PLANS[active].name}</div>
+                  {COMPARE_PLANS[active].badge && (
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-primary">
+                      ⭐ {COMPARE_PLANS[active].badge}
                     </span>
                   )}
-                  <div className="font-display text-lg font-bold">{p.name}</div>
-                  <div className="text-xs text-muted-foreground">{p.price}/mês</div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {COMPARE_ROWS.map((row, i) => (
-              <tr key={row.label} className={i % 2 ? "bg-muted/20" : undefined}>
-                <td className="p-4 text-sm">{row.label}</td>
-                {row.values.map((v, j) => (
-                  <td key={j} className="p-4 text-center">
-                    <CompareCell value={v} />
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile */}
-      <div className="mt-8 space-y-4 md:hidden">
-        {COMPARE_PLANS.map((p, idx) => (
-          <div key={p.name} className="rounded-2xl border border-primary/15 bg-card/60 p-5">
-            <div className="flex items-baseline justify-between">
-              <div>
-                <div className="font-display text-lg font-bold">{p.name}</div>
-                {p.badge && <span className="text-[10px] font-bold uppercase tracking-widest text-primary">⭐ {p.badge}</span>}
+                </div>
+                <div className="text-sm font-semibold">{COMPARE_PLANS[active].price}/mês</div>
               </div>
-              <div className="text-sm font-semibold">{p.price}/mês</div>
+              <ul className="mt-4 space-y-2">
+                {COMPARE_ROWS.map((row) => (
+                  <li key={row.label} className="flex items-center justify-between gap-3 text-sm">
+                    <span className="text-muted-foreground">{row.label}</span>
+                    <CompareCell value={row.values[active]} />
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul className="mt-4 space-y-2">
-              {COMPARE_ROWS.map((row) => (
-                <li key={row.label} className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-muted-foreground">{row.label}</span>
-                  <CompareCell value={row.values[idx]} />
-                </li>
-              ))}
-            </ul>
+            <p className="mt-3 text-center text-xs text-muted-foreground">Deslize os cards acima para comparar outro plano.</p>
           </div>
-        ))}
-      </div>
 
-      <p className="mt-4 text-center text-xs text-muted-foreground">Preços sugeridos. Consulte condições no checkout.</p>
+          <p className="mt-4 text-center text-xs text-muted-foreground">Preços sugeridos. Consulte condições no checkout.</p>
+        </div>
+      </div>
     </div>
   );
 }
+
 
 function FAQ() {
   return <FaqChatSection />;
