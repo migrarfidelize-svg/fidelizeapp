@@ -10,7 +10,7 @@ import { Palette, Check, ImageIcon, Trash2, ExternalLink, Loader2, RotateCcw, Un
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { getMyMenuOverview, updateMenuTheme, listMenuItems } from "@/lib/menu.functions";
 import {
-  MENU_PRESETS, MENU_LAYOUTS, MENU_PATTERNS, resolveMenuTheme, menuBackgroundCss,
+  MENU_PRESETS, MENU_LAYOUTS, CATALOG_ONLY_LAYOUTS, MENU_PATTERNS, resolveMenuTheme, menuBackgroundCss,
   type MenuLayoutId, type MenuPatternId, type MenuPresetId, type MenuPreset,
   MENU_ENTRIES,
   MENU_BG_SWATCHES,
