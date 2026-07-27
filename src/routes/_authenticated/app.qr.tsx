@@ -1452,6 +1452,9 @@ function ReviewQrPage() {
                 </button>
               )}
             </div>
+            </>
+            )}
+
 
             {/* Scans do QR e Enviar para gráfica parceira — ocultos ao lojista por enquanto.
                 Tracking e diálogo de impressão continuam disponíveis no código. */}
