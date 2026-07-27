@@ -71,52 +71,54 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.16 0.03 285);
 
-  /* Roxo oficial — hue 288 (violeta puro, longe de magenta ≥ 320) */
-  --primary: oklch(0.50 0.145 288);
+  /* Roxo oficial — hue 288 (violeta puro, longe de magenta ≥ 320).
+     Chroma reduzido ~24% (0.145 → 0.110) para um roxo profundo e elegante. */
+  --primary: oklch(0.47 0.110 288);
   --primary-foreground: oklch(0.99 0.004 288);
-  --primary-soft: oklch(0.92 0.045 288);
+  --primary-soft: oklch(0.93 0.032 288);
 
-  --secondary: oklch(0.94 0.012 285);
-  --secondary-foreground: oklch(0.20 0.03 285);
+  --secondary: oklch(0.94 0.010 285);
+  --secondary-foreground: oklch(0.20 0.026 285);
 
-  --muted: oklch(0.96 0.008 285);
-  --muted-foreground: oklch(0.40 0.025 285);
+  --muted: oklch(0.96 0.007 285);
+  --muted-foreground: oklch(0.40 0.020 285);
 
-  /* Acento: violeta/índigo (antes era magenta 335) */
-  --accent: oklch(0.54 0.125 275);
+  /* Acento: violeta/índigo (mesmo matiz, chroma −24%) */
+  --accent: oklch(0.52 0.095 275);
   --accent-foreground: oklch(0.99 0.004 275);
-  --accent-soft: oklch(0.93 0.045 275);
+  --accent-soft: oklch(0.94 0.032 275);
 
-  --destructive: oklch(0.55 0.175 25);
+  --destructive: oklch(0.55 0.150 25);
   --destructive-foreground: oklch(0.99 0.004 25);
-  --success: oklch(0.55 0.125 165);
+  --success: oklch(0.55 0.100 165);
   --success-foreground: oklch(0.99 0.004 165);
 
-  --border: oklch(0.20 0.03 285 / 16%);
-  --input: oklch(0.20 0.03 285 / 20%);
-  --ring: oklch(0.50 0.145 288);
+  --border: oklch(0.20 0.026 285 / 16%);
+  --input: oklch(0.20 0.026 285 / 20%);
+  --ring: oklch(0.47 0.110 288);
 
-  --chart-1: oklch(0.50 0.155 288);
-  --chart-2: oklch(0.55 0.135 272);
-  --chart-3: oklch(0.55 0.12 165);
-  --chart-4: oklch(0.66 0.12 85);
-  --chart-5: oklch(0.52 0.13 255);
+  --chart-1: oklch(0.48 0.118 288);
+  --chart-2: oklch(0.54 0.104 272);
+  --chart-3: oklch(0.55 0.095 165);
+  --chart-4: oklch(0.66 0.095 85);
+  --chart-5: oklch(0.52 0.100 255);
 
-  --sidebar: oklch(0.975 0.007 285);
-  --sidebar-foreground: oklch(0.20 0.03 285);
-  --sidebar-primary: oklch(0.50 0.145 288);
+  --sidebar: oklch(0.975 0.006 285);
+  --sidebar-foreground: oklch(0.20 0.026 285);
+  --sidebar-primary: oklch(0.47 0.110 288);
   --sidebar-primary-foreground: oklch(0.99 0.004 288);
-  --sidebar-accent: oklch(0.94 0.012 285);
-  --sidebar-accent-foreground: oklch(0.20 0.03 285);
-  --sidebar-border: oklch(0.20 0.03 285 / 16%);
-  --sidebar-ring: oklch(0.50 0.145 288);
+  --sidebar-accent: oklch(0.94 0.010 285);
+  --sidebar-accent-foreground: oklch(0.20 0.026 285);
+  --sidebar-border: oklch(0.20 0.026 285 / 16%);
+  --sidebar-ring: oklch(0.47 0.110 288);
 
-  --grid-line: color-mix(in oklab, var(--primary) 11%, transparent);
-  --glass-bg: color-mix(in oklab, var(--card) 80%, transparent);
-  --glass-border: color-mix(in oklab, var(--primary) 18%, transparent);
-  --glow-primary: color-mix(in oklab, var(--primary) 15%, transparent);
-  --glow-accent: color-mix(in oklab, var(--accent) 13%, transparent);
-  --hairline: color-mix(in oklab, var(--primary) 20%, transparent);
+  --grid-line: color-mix(in oklab, var(--primary) 8%, transparent);
+  --glass-bg: color-mix(in oklab, var(--card) 82%, transparent);
+  --glass-border: color-mix(in oklab, var(--primary) 20%, transparent);
+  --glow-primary: color-mix(in oklab, var(--primary) 8%, transparent);
+  --glow-accent: color-mix(in oklab, var(--accent) 7%, transparent);
+  --hairline: color-mix(in oklab, var(--primary) 22%, transparent);
+
 
   --gradient-hero:
     radial-gradient(1200px 600px at 15% -10%, color-mix(in oklab, var(--primary) 12%, transparent), transparent 60%),
