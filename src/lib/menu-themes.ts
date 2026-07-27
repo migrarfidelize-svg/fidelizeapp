@@ -3,7 +3,17 @@
  * Salvos em restaurant_menus.theme (jsonb) — { preset, layout, pattern, bg_image_url }.
  */
 
-export type MenuLayoutId = "list" | "grid" | "magazine" | "lookbook";
+export type MenuLayoutId =
+  | "list"
+  | "grid"
+  | "magazine"
+  | "lookbook"
+  | "premium"
+  | "spotlight"
+  | "boutique";
+
+/** Layouts exclusivos do Catálogo Digital (vitrine premium). */
+export const CATALOG_ONLY_LAYOUTS: MenuLayoutId[] = ["premium", "spotlight", "boutique"];
 export type MenuPresetId = "papel" | "noir" | "fresh" | "terracota" | "oceano" | "citrico" | "rose";
 export type MenuPatternId = "none" | "grain" | "dots" | "grid" | "aurora";
 export type MenuEntryId = "dishes" | "categories";
