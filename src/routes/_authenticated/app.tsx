@@ -433,7 +433,7 @@ function AppLayout() {
     const showLabel = forceExpanded || !collapsed;
     return (
       <LayoutGroup id="sidebar-nav">
-        <nav className="flex-1 px-2.5 py-3 space-y-1.5 overflow-y-auto overflow-x-visible">
+        <nav className="nav-dense flex flex-1 flex-col gap-[var(--nav-gap)] px-2.5 py-[var(--nav-py)] overflow-y-auto overflow-x-visible">
           {filteredGroups.map((g) => {
             const GroupIcon = g.icon;
             const groupActive = g.items.some(isItemActive);
