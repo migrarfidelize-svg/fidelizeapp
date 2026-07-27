@@ -1146,8 +1146,10 @@ function ReviewQrPage() {
 
 
             {/* Format */}
-
+            {step === 2 && (
+            <>
             <div className="space-y-3">
+
               <Label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Formato do cartaz</Label>
               <div className="grid grid-cols-4 gap-2">
                 {(Object.keys(FORMATS) as FormatKey[]).map((k) => {
