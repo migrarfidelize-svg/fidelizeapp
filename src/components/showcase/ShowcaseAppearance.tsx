@@ -421,6 +421,8 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
               ))}
             </CardContent>
           </Card>
+          )}
+
 
           {/* TELA INICIAL — só faz sentido no cardápio (modo Stories) */}
           {!isCatalog && step === 4 && (
