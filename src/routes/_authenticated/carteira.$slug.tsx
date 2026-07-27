@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { ExpiredCardState, WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
 import { PushOptIn } from "@/components/PushOptIn";
+import { WalletButtons } from "@/components/WalletButtons";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { filterByRating, sortReviews } from "@/lib/reviews-sort";
 
@@ -272,7 +273,10 @@ function WalletEstablishment() {
         )}
 
         {primaryCard && campaignActive && d.customer.token && (
-          <PushOptIn token={d.customer.token} />
+          <>
+            <WalletButtons token={d.customer.token} />
+            <PushOptIn token={d.customer.token} />
+          </>
         )}
 
         {/* Atalhos do estabelecimento: cardápio digital e promoções ativas */}
