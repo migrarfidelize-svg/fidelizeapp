@@ -131,6 +131,10 @@ export const MENU_LAYOUTS: { id: MenuLayoutId; name: string; description: string
   { id: "grid", name: "Vitrine em grade", description: "Cartões grandes em 2 colunas, foto em destaque. Ótimo para fotos boas." },
   { id: "magazine", name: "Editorial", description: "Texto em primeiro plano com miniatura discreta. Elegante e enxuto." },
   { id: "lookbook", name: "Lookbook", description: "Imagens grandes em mosaico (alturas variadas) e preço discreto no hover. Ideal para moda e artesanato." },
+  { id: "premium", name: "Vitrine Premium", description: "Foto retrato ocupando o cartão, com nome e preço num painel de vidro sobre a imagem. Máximo destaque visual." },
+  { id: "spotlight", name: "Destaque", description: "O primeiro produto vira um banner largo com nome grande e preço em evidência; os demais seguem em grade." },
+  { id: "boutique", name: "Boutique", description: "Cartão com moldura fina, foto quadrada, nome centralizado e preço em selo. Ar de loja de luxo." },
+
 
 ];
 
