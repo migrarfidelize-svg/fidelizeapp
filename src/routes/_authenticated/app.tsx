@@ -439,6 +439,15 @@ function AppLayout() {
             const groupActive = g.items.some(isItemActive);
             const expanded = openGroups.includes(g.key);
             const flyout = !forceExpanded && hoverGroup === g.key;
+            // Categoria com um único destino vira link direto (sem submenu).
+            if (g.items.length === 1) {
+              return (
+                <div key={g.key}>
+                  {renderNavItem({ ...g.items[0], label: g.label }, onNavigate, forceExpanded)}
+                </div>
+              );
+            }
+
             return (
               <div
                 key={g.key}
