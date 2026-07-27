@@ -1075,14 +1075,68 @@ function PaperHalf({ side }: { side: "left" | "right" }) {
 }
 
 function Examples() {
-  const items: Array<{ icon: typeof Cake; title: string; desc: string; kpi: string; kpiLabel: string; channel: string; channelIcon: typeof MessageCircle; featured?: boolean }> = [
-    { icon: Cake, title: "Aniversariante do mês", desc: "Mimo automático 3 dias antes.", kpi: "+38%", kpiLabel: "retorno", channel: "WhatsApp", channelIcon: MessageCircle, featured: true },
-    { icon: UserPlus, title: "Indique e ganhe", desc: "QR próprio do cliente. Todo mundo ganha.", kpi: "4.1x", kpiLabel: "CAC menor", channel: "QR + Wpp", channelIcon: QrCode, featured: true },
-    { icon: Clock, title: "Reengajar inativos", desc: "15 dias sem visita? Dispara empurrão.", kpi: "2.4x", kpiLabel: "LTV", channel: "WhatsApp", channelIcon: MessageCircle },
-    { icon: Sparkles, title: "1º carimbo grátis", desc: "Ativação imediata do cliente novo.", kpi: "73%", kpiLabel: "ativação", channel: "E-mail", channelIcon: Mail },
-    { icon: Crown, title: "Níveis VIP", desc: "Bronze, Prata, Ouro com benefícios.", kpi: "+62%", kpiLabel: "frequência", channel: "Push", channelIcon: Bell },
+  const items: Array<{ icon: typeof Cake; title: string; desc: string; kpi: string; kpiLabel: string; channel: string; channelIcon: typeof MessageCircle; tone: string }> = [
+    { icon: Cake, title: "Aniversariante do mês", desc: "Mimo automático 3 dias antes.", kpi: "+38%", kpiLabel: "retorno", channel: "WhatsApp", channelIcon: MessageCircle, tone: "#00ffff" },
+    { icon: UserPlus, title: "Indique e ganhe", desc: "QR próprio do cliente. Todo mundo ganha.", kpi: "4.1x", kpiLabel: "CAC menor", channel: "QR + Wpp", channelIcon: QrCode, tone: "#ff00ff" },
+    { icon: Clock, title: "Reengajar inativos", desc: "15 dias sem visita? Dispara empurrão.", kpi: "2.4x", kpiLabel: "LTV", channel: "WhatsApp", channelIcon: MessageCircle, tone: "#00ffff" },
+    { icon: Sparkles, title: "1º carimbo grátis", desc: "Ativação imediata do cliente novo.", kpi: "73%", kpiLabel: "ativação", channel: "E-mail", channelIcon: Mail, tone: "#ff00ff" },
+    { icon: Crown, title: "Níveis VIP", desc: "Bronze, Prata, Ouro com benefícios.", kpi: "+62%", kpiLabel: "frequência", channel: "Push", channelIcon: Bell, tone: "#00ffff" },
   ];
 
+  const renderCard = (it: (typeof items)[number], key: string, ariaHidden?: boolean) => {
+    const Icon = it.icon;
+    const ChannelIcon = it.channelIcon;
+    return (
+      <article
+        key={key}
+        aria-hidden={ariaHidden}
+        className="camp-card group flex flex-col"
+        style={{ ["--tone" as string]: it.tone }}
+      >
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full blur-3xl transition-opacity duration-500 opacity-60 group-hover:opacity-100"
+          style={{ background: `radial-gradient(circle, ${it.tone}44, transparent 70%)` }}
+        />
+        <div className="relative mb-6 flex items-start justify-between">
+          <div className="grid h-11 w-11 place-items-center rounded-xl" style={{ background: `${it.tone}1a` }}>
+            <Icon className="h-5 w-5" style={{ color: it.tone }} />
+          </div>
+          <span className="inline-flex items-center gap-1 rounded border border-white/10 bg-white/[0.06] px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-white/55">
+            <ChannelIcon className="h-3 w-3" style={{ color: it.tone }} /> {it.channel}
+          </span>
+        </div>
+        <h3 className="relative font-display text-lg font-bold leading-tight text-white">{it.title}</h3>
+        <p className="relative mt-2 text-sm text-white/55">{it.desc}</p>
+        <div className="relative mt-6">
+          <span className="block text-[10px] font-bold uppercase tracking-widest" style={{ color: it.tone }}>
+            Performance
+          </span>
+          <span className="metric-number mt-1 block text-4xl leading-none">
+            {it.kpi}
+            <span className="ml-2 align-middle text-xs font-normal text-white/40">{it.kpiLabel}</span>
+          </span>
+        </div>
+        <Link
+          to="/auth"
+          tabIndex={ariaHidden ? -1 : undefined}
+          aria-label={`Usar template ${it.title}`}
+          className="relative mt-6 inline-flex w-full items-center justify-center gap-1 rounded-xl border py-3 text-sm font-bold transition-colors duration-300"
+          style={{ borderColor: it.tone, color: it.tone }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = it.tone;
+            e.currentTarget.style.color = "#001010";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.color = it.tone;
+          }}
+        >
+          Usar template <ArrowRight className="h-4 w-4" />
+        </Link>
+      </article>
+    );
+  };
 
   return (
     <section
@@ -1099,89 +1153,18 @@ function Examples() {
           </h2>
           <p className="mt-3 text-sm text-white/60">5 templates prontos. Ative em 1 clique.</p>
         </div>
+      </div>
 
-        {/* 01 e 02 em destaque · demais em versão compacta */}
-        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
-          {items.map((it, idx) => {
-            const Icon = it.icon;
-            const ChannelIcon = it.channelIcon;
-            const hero = idx < 2;
-            return (
-              <article
-                key={it.title}
-                className={`group relative flex flex-col overflow-hidden rounded-2xl border transition-all duration-500 hover:-translate-y-1.5 ${
-                  hero
-                    ? "p-6 lg:col-span-3 border-cyan-400/40 bg-gradient-to-br from-cyan-500/[0.12] via-white/[0.03] to-transparent"
-                    : "p-4 lg:col-span-2 border-white/10 bg-white/[0.025] hover:border-cyan-400/30"
-                }`}
-                style={{
-                  boxShadow: hero
-                    ? "0 30px 80px -32px rgba(0,255,255,0.55), inset 0 1px 0 rgba(255,255,255,0.08)"
-                    : "inset 0 1px 0 rgba(255,255,255,0.04)",
-                  animation: `fade-in 0.6s ease-out ${idx * 90}ms both`,
-                }}
-              >
-                {hero && (
-                  <>
-                    {/* spotlight glow */}
-                    <span
-                      aria-hidden
-                      className="pointer-events-none absolute -top-28 left-1/3 h-56 w-56 -translate-x-1/2 rounded-full opacity-60 blur-3xl transition-opacity duration-500 group-hover:opacity-100"
-                      style={{ background: "radial-gradient(circle, rgba(0,255,255,0.35), transparent 70%)" }}
-                    />
-                    {/* sheen sweep */}
-                    <span
-                      aria-hidden
-                      className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-[1100ms] ease-out group-hover:translate-x-full"
-                    />
-                    {/* numeral em destaque */}
-                    <span
-                      aria-hidden
-                      className="pointer-events-none absolute -right-2 -top-4 font-display text-[7rem] font-black leading-none"
-                      style={{
-                        background: "linear-gradient(180deg, rgba(0,255,255,0.35), rgba(0,255,255,0))",
-                        WebkitBackgroundClip: "text",
-                        backgroundClip: "text",
-                        color: "transparent",
-                      }}
-                    >
-                      {String(idx + 1).padStart(2, "0")}
-                    </span>
-                  </>
-                )}
-
-                <div className={`relative grid place-items-center rounded-xl border border-cyan-400/30 bg-cyan-400/10 transition-all duration-500 group-hover:scale-110 group-hover:border-cyan-400/70 group-hover:bg-cyan-400/20 ${hero ? "h-14 w-14 group-hover:shadow-[0_0_32px_-4px_rgba(0,255,255,0.8)]" : "h-10 w-10"}`}>
-                  <Icon className={hero ? "h-6 w-6" : "h-4 w-4"} style={{ color: "#00ffff" }} />
-                </div>
-                <h3 className={`relative mt-4 font-display font-bold leading-tight text-white ${hero ? "text-xl md:text-2xl" : "text-sm"}`}>{it.title}</h3>
-                <p className={`relative mt-1 text-white/55 ${hero ? "text-sm" : "line-clamp-2 text-xs"}`}>{it.desc}</p>
-
-                <div className="relative mt-auto pt-4">
-                  <div className="h-px w-full bg-gradient-to-r from-cyan-400/40 via-white/10 to-transparent" />
-                  <div className={`metric-number mt-3 leading-none origin-left transition-transform duration-500 group-hover:scale-105 ${hero ? "text-5xl" : "text-2xl"}`}>
-                    {it.kpi}
-                    <sup className="ml-0.5 text-[10px] font-normal text-white/40">*</sup>
-                  </div>
-                  <span className="text-[10px] font-semibold uppercase tracking-widest text-white/45">{it.kpiLabel}</span>
-                </div>
-
-                <div className="relative mt-4 flex items-center justify-between gap-2">
-                  <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-white/60">
-                    <ChannelIcon className="h-3 w-3" style={{ color: "#00ffff" }} /> {it.channel}
-                  </span>
-                  <Link
-                    to="/auth"
-                    aria-label={`Usar template ${it.title}`}
-                    className={`inline-flex items-center gap-1 rounded-full border border-cyan-400/30 font-bold transition-all duration-300 group-hover:bg-cyan-400 group-hover:text-[#001010] ${hero ? "px-4 py-1.5 text-xs" : "px-2.5 py-1 text-[11px]"}`}
-                    style={{ color: "#00ffff" }}
-                  >
-                    Usar <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </div>
-              </article>
-            );
-          })}
+      {/* Ticker neon em loop infinito */}
+      <div className="camp-marquee mt-6">
+        <div className="camp-track">
+          {items.map((it) => renderCard(it, it.title))}
+          {items.map((it) => renderCard(it, `${it.title}-dup`, true))}
         </div>
+      </div>
+
+      <div className="relative mx-auto max-w-6xl px-4">
+
 
 
 

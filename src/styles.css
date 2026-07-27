@@ -2687,6 +2687,55 @@ html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"]
   .kinetic-track { animation-duration: 200s; }
 }
 
+/* ── Campanhas: ticker neon outline ──────────────────────────────── */
+.camp-marquee {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
+}
+.camp-track {
+  display: flex;
+  width: max-content;
+  padding: 2rem 0;
+  animation: camp-scroll 46s linear infinite;
+  will-change: transform;
+}
+.camp-marquee:hover .camp-track {
+  animation-play-state: paused;
+}
+.camp-card {
+  position: relative;
+  width: 20rem;
+  flex: 0 0 auto;
+  margin-right: 1.5rem;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1.5rem;
+  backdrop-filter: blur(14px) saturate(130%);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.camp-card:hover {
+  transform: translateY(-8px);
+  border-color: color-mix(in oklch, var(--tone) 55%, transparent);
+  box-shadow: 0 24px 60px -28px color-mix(in oklch, var(--tone) 70%, transparent);
+}
+@keyframes camp-scroll {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+@media (max-width: 767px) {
+  .camp-card { width: 17rem; margin-right: 1rem; padding: 1.25rem; }
+  .camp-track { animation-duration: 34s; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .camp-track { animation-duration: 180s; }
+}
+
+
+
 /* ---- Densidade adaptativa da sidebar (mantém o menu inteiro visível sem scroll) ---- */
 .nav-dense {
   --nav-item-h: 2.5rem;
