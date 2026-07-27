@@ -192,12 +192,12 @@
   --hairline: color-mix(in oklab, var(--primary) 24%, transparent);
 
   --gradient-hero:
-    radial-gradient(1200px 600px at 15% -10%, color-mix(in oklab, var(--primary) 26%, transparent), transparent 60%),
-    radial-gradient(900px 500px at 100% 0%, color-mix(in oklab, var(--accent) 22%, transparent), transparent 60%),
-    radial-gradient(700px 500px at 50% 120%, color-mix(in oklab, var(--primary) 16%, transparent), transparent 60%);
+    radial-gradient(1200px 600px at 15% -10%, color-mix(in oklab, var(--primary) 14%, transparent), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, color-mix(in oklab, var(--accent) 11%, transparent), transparent 60%),
+    radial-gradient(700px 500px at 50% 120%, color-mix(in oklab, var(--primary) 8%, transparent), transparent 60%);
   --gradient-line: linear-gradient(135deg,
-    color-mix(in oklab, var(--primary) 85%, transparent),
-    color-mix(in oklab, var(--accent) 70%, transparent));
+    color-mix(in oklab, var(--primary) 62%, transparent),
+    color-mix(in oklab, var(--accent) 48%, transparent));
 }
 
 
