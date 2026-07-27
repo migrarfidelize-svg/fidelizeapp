@@ -214,8 +214,10 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
           </Card>
 
           {/* FUNDO */}
+          {step === 2 && (
           <Card>
-            <CardHeader><CardTitle>2. Fundo</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Fundo e cores</CardTitle></CardHeader>
+
             <CardContent className="space-y-4">
               <div className="flex flex-wrap gap-2">
                 {MENU_PATTERNS.map((pt) => {
