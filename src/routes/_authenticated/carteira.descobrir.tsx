@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -21,14 +22,8 @@ export const Route = createFileRoute("/_authenticated/carteira/descobrir")({
     ],
   }),
   component: DiscoverPage,
-  pendingComponent: () => (
-    <div className="space-y-3 pt-2">
-      <div className="h-7 w-56 rounded-full bg-muted/70" />
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="h-20 rounded-2xl border border-border/60 bg-card/40" />
-      ))}
-    </div>
-  ),
+  pendingComponent: () => <RouteLoading label="Carregando estabelecimentos…" fullscreen={false} />,
+
   errorComponent: ({ error, reset }) => <WalletErrorState error={error} onRetry={reset} />,
 });
 

@@ -28,7 +28,7 @@ import { GuidedTour, type TourStep } from "@/components/GuidedTour";
 import { PageGuidePrompt } from "@/components/merchant/PageGuidePrompt";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePermissions } from "@/hooks/usePermissions";
-import { AppShellSkeleton } from "@/components/AppShellSkeleton";
+import { RouteLoading } from "@/components/RouteLoading";
 import { ROUTE_PERMISSIONS } from "@/lib/permissions";
 
 const MERCHANT_TOUR_STEPS: TourStep[] = [
@@ -333,12 +333,12 @@ function AppLayout() {
   })).filter((g) => g.items.length > 0);
   const FLAT_ALLOWED = filteredGroups.flatMap((g) => g.items);
 
-  if (isLoading) return <AppShellSkeleton />;
+  if (isLoading) return <RouteLoading label="Carregando seu painel…" />;
   if (!memberships?.length) {
     if (typeof window !== "undefined" && !pathname.startsWith("/onboarding")) {
       navigate({ to: "/onboarding" });
     }
-    return <AppShellSkeleton label="Configurando sua empresa…" />;
+    return <RouteLoading label="Configurando sua empresa…" />;
   }
 
   const isItemActive = (n: NavItem) => (n.exact ? pathname === n.to : pathname.startsWith(n.to));

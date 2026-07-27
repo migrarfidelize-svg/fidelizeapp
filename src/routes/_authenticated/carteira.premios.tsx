@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMyWallet, getMyRewards } from "@/lib/my-wallet.functions";
@@ -7,7 +8,6 @@ import {
   WalletErrorState,
   WithOfflineFallback,
 } from "@/components/wallet/WalletStates";
-import { WalletCardSkeletonList } from "@/components/wallet/WalletCardSkeleton";
 import { Gift, Sparkles, ChevronRight, CreditCard, Search, X, Clock } from "lucide-react";
 import { useMemo, useState } from "react";
 import { z } from "zod";
@@ -43,12 +43,7 @@ export const Route = createFileRoute("/_authenticated/carteira/premios")({
     ],
   }),
   component: RewardsHub,
-  pendingComponent: () => (
-    <div className="space-y-4 pt-2">
-      <div className="h-7 w-48 rounded-full bg-muted/70" />
-      <WalletCardSkeletonList count={3} />
-    </div>
-  ),
+  pendingComponent: () => <RouteLoading label="Carregando seus cartões…" fullscreen={false} />,
   errorComponent: ({ error, reset }) => <WalletErrorState error={error} onRetry={reset} />,
 });
 
