@@ -142,7 +142,7 @@ function KbManager() {
                 </tr>
               );
             })}
-            {!data?.articles.length && <tr><td colSpan={6} className="p-8 text-center text-muted-foreground text-sm">Nenhum artigo ainda.</td></tr>}
+            {!data?.articles.length && <tr><td colSpan={6} className="p-8 text-center text-muted-foreground text-sm">Nenhum artigo ainda. Clique em <strong>Importar artigos Fidelize</strong> para trazer os artigos oficiais, ou crie o seu.</td></tr>}
           </tbody>
         </table>
       </div>
