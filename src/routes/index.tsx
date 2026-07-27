@@ -1408,6 +1408,17 @@ function PlansComparison() {
   const [open, setOpen] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
 
+  /** Centraliza o plano em destaque no carrossel ao montar (mobile). */
+  useEffect(() => {
+    const el = trackRef.current;
+    const card = el?.querySelectorAll<HTMLElement>("[data-plan-node]")[2];
+    if (el && card && el.scrollWidth > el.clientWidth) {
+      el.scrollLeft = card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2;
+    }
+  }, []);
+
+
+
   /** Sincroniza o plano ativo com o swipe horizontal (mobile/tablet). */
   function handleScroll() {
     const el = trackRef.current;
