@@ -14,7 +14,8 @@ function getInitialTheme(): Theme {
   if (typeof document !== "undefined") {
     return document.documentElement.classList.contains("dark") ? "dark" : "light";
   }
-  return "dark";
+  // Padrão do sistema: tema claro.
+  return "light";
 }
 
 function applyTheme(theme: Theme) {
@@ -33,16 +34,6 @@ export function useTheme() {
 
   useEffect(() => {
     setTheme(getInitialTheme());
-    const mql = window.matchMedia("(prefers-color-scheme: dark)");
-    const onChange = (e: MediaQueryListEvent) => {
-      const stored = localStorage.getItem("theme");
-      if (stored === "light" || stored === "dark") return;
-      const next: Theme = e.matches ? "dark" : "light";
-      applyTheme(next);
-      setTheme(next);
-    };
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
   }, []);
 
   const toggle = () => {
