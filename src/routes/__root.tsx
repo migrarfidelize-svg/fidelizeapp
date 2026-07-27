@@ -110,12 +110,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
-// Tema respeita preferência do usuário em todas as rotas.
-// Sem preferência salva: landing ("/") abre em claro, demais rotas em escuro.
+// Tema padrão do sistema: CLARO em todas as rotas.
+// O usuário pode alternar (hero, painel lojista, admin) e a escolha é respeitada.
 function forcedThemeForPath(_p: string): "dark" | null {
   return null;
 }
-const THEME_INIT_SCRIPT = `(function(){try{var s=null;try{s=localStorage.getItem('theme');}catch(_){}var d=location.pathname==='/'?'light':'dark';var t=(s==='light'||s==='dark')?s:d;var r=document.documentElement;r.classList.toggle('dark',t==='dark');r.style.colorScheme=t;}catch(e){}})();`;
+const THEME_INIT_SCRIPT = `(function(){try{var s=null;try{s=localStorage.getItem('theme');}catch(_){}var t=(s==='light'||s==='dark')?s:'light';var r=document.documentElement;r.classList.toggle('dark',t==='dark');r.style.colorScheme=t;}catch(e){}})();`;
 
 
 
