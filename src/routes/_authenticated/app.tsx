@@ -376,7 +376,7 @@ function AppLayout() {
         data-tour={`nav-${n.to}`}
         onClick={onNavigate}
         className={[
-          "group relative flex items-center gap-3 rounded-xl h-10 text-sm font-medium transition-colors",
+          "group relative flex items-center gap-3 rounded-xl h-[var(--nav-item-h,2.5rem)] text-[length:var(--nav-fs,0.875rem)] font-medium transition-colors",
           showLabel ? "px-3" : "px-0 justify-center",
           active ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
         ].join(" ")}
