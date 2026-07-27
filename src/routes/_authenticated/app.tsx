@@ -86,54 +86,20 @@ type NavGroup = { key: string; label: string; items: NavItem[] };
 
 const NAV_GROUPS: NavGroup[] = [
   {
-    key: "visao-geral",
-    label: "Visão geral",
+    key: "principal",
+    label: "Principal",
     items: [
       { to: "/app", label: "Painel", icon: LayoutDashboard, exact: true },
+      { to: "/app/carimbar", label: "Carimbar", icon: Stamp },
+      { to: "/app/clientes", label: "Clientes", icon: Users },
+      { to: "/app/campanhas", label: "Campanhas", icon: Sparkles },
+      { to: "/app/qr", label: "QR Codes", icon: QrCode },
       { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
     ],
   },
   {
-    key: "pessoas",
-    label: "Pessoas",
-    items: [
-      { to: "/app/clientes", label: "Clientes", icon: Users },
-      { to: "/app/equipe", label: "Equipe", icon: UsersRound },
-    ],
-  },
-  {
-    key: "qrcodes",
-    label: "QR Codes",
-    items: [
-      { to: "/app/qr", label: "QR Codes", icon: QrCode },
-    ],
-  },
-  {
-    key: "fidelidade",
-    label: "Cartão fidelidade",
-    items: [
-      { to: "/app/carimbar", label: "Carimbar", icon: Stamp },
-      { to: "/app/campanhas", label: "Campanhas de fidelidade", icon: Sparkles },
-    ],
-  },
-  {
-    key: "linktree",
-    label: "Árvore de links",
-    items: [
-      { to: "/app/linktree", label: "Árvore de Links", icon: Link2 },
-    ],
-  },
-  {
-    key: "avaliacoes",
-    label: "Avaliações",
-    items: [
-      { to: "/app/avaliacoes", label: "Avaliações", icon: Star },
-      { to: "/app/avaliacoes/tema", label: "Tema e cores", icon: Palette },
-    ],
-  },
-  {
     key: "cardapio",
-    label: "Cardápio",
+    label: "Cardápio digital",
     items: [
       { to: "/app/cardapio", label: "Visão geral", icon: UtensilsCrossed, exact: true },
       { to: "/app/cardapio/categorias", label: "Categorias", icon: FolderTree },
@@ -143,7 +109,7 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     key: "catalogo",
-    label: "Catálogo",
+    label: "Catálogo digital",
     items: [
       { to: "/app/catalogo", label: "Visão geral", icon: ShoppingBag, exact: true },
       { to: "/app/catalogo/colecoes", label: "Coleções", icon: FolderTree },
@@ -152,21 +118,24 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/app/pedidos", label: "Pedidos", icon: Receipt },
     ],
   },
-
   {
-    key: "comunicacao",
-    label: "Comunicação",
+    key: "relacionamento",
+    label: "Relacionamento",
     items: [
-      { to: "/app/retencao", label: "Retenção", icon: HeartHandshake },
+      { to: "/app/avaliacoes", label: "Avaliações", icon: Star },
+      { to: "/app/avaliacoes/tema", label: "Tema das avaliações", icon: Palette },
+      { to: "/app/linktree", label: "Árvore de links", icon: Link2 },
       { to: "/app/notificacoes", label: "Notificações", icon: Bell },
+      { to: "/app/retencao", label: "Retenção", icon: HeartHandshake },
       { to: "/app/promocoes", label: "Promoções", icon: Megaphone },
       { to: "/app/mensagens", label: "Mensagens", icon: MessageSquare },
     ],
   },
   {
-    key: "ajuda",
-    label: "Planos e Suporte",
+    key: "conta",
+    label: "Conta",
     items: [
+      { to: "/app/equipe", label: "Equipe", icon: UsersRound },
       { to: "/app/planos", label: "Planos", icon: Package },
       { to: "/app/pagamentos", label: "Pagamentos", icon: Receipt },
       { to: "/app/kb", label: "Central de Ajuda", icon: BookOpen },
@@ -174,6 +143,7 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
 ];
+
 
 const FLAT_NAV = NAV_GROUPS.flatMap((g) => g.items);
 
