@@ -1260,7 +1260,10 @@ function ReviewQrPage() {
             </div>
 
             {/* Text fields */}
+            {step === 3 && (
+            <>
             <div className="space-y-3">
+
 
               <div className="space-y-1.5">
                 <Label className="text-xs">Título</Label>
