@@ -4872,6 +4872,182 @@ export type Database = {
           },
         ]
       }
+      wallet_pass_devices: {
+        Row: {
+          created_at: string
+          device_library_identifier: string
+          id: string
+          pass_id: string
+          push_token: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          device_library_identifier: string
+          id?: string
+          pass_id: string
+          push_token: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          device_library_identifier?: string
+          id?: string
+          pass_id?: string
+          push_token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_pass_devices_pass_id_fkey"
+            columns: ["pass_id"]
+            isOneToOne: false
+            referencedRelation: "wallet_passes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallet_passes: {
+        Row: {
+          auth_token: string
+          card_id: string | null
+          created_at: string
+          customer_id: string
+          establishment_id: string
+          google_class_id: string | null
+          google_object_id: string | null
+          id: string
+          last_synced_at: string | null
+          platform: string
+          serial_number: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          auth_token?: string
+          card_id?: string | null
+          created_at?: string
+          customer_id: string
+          establishment_id: string
+          google_class_id?: string | null
+          google_object_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          platform: string
+          serial_number: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          auth_token?: string
+          card_id?: string | null
+          created_at?: string
+          customer_id?: string
+          establishment_id?: string
+          google_class_id?: string | null
+          google_object_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          platform?: string
+          serial_number?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_passes_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_passes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_passes_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallet_settings: {
+        Row: {
+          apple_enabled: boolean
+          back_text: string | null
+          background_color: string
+          barcode_format: string
+          created_at: string
+          custom_message: string | null
+          establishment_id: string
+          fields: Json
+          foreground_color: string
+          front_text: string | null
+          google_enabled: boolean
+          hero_image_url: string | null
+          label_color: string
+          logo_url: string | null
+          show_barcode: boolean
+          show_qr: boolean
+          updated_at: string
+          validity_days: number | null
+        }
+        Insert: {
+          apple_enabled?: boolean
+          back_text?: string | null
+          background_color?: string
+          barcode_format?: string
+          created_at?: string
+          custom_message?: string | null
+          establishment_id: string
+          fields?: Json
+          foreground_color?: string
+          front_text?: string | null
+          google_enabled?: boolean
+          hero_image_url?: string | null
+          label_color?: string
+          logo_url?: string | null
+          show_barcode?: boolean
+          show_qr?: boolean
+          updated_at?: string
+          validity_days?: number | null
+        }
+        Update: {
+          apple_enabled?: boolean
+          back_text?: string | null
+          background_color?: string
+          barcode_format?: string
+          created_at?: string
+          custom_message?: string | null
+          establishment_id?: string
+          fields?: Json
+          foreground_color?: string
+          front_text?: string | null
+          google_enabled?: boolean
+          hero_image_url?: string | null
+          label_color?: string
+          logo_url?: string | null
+          show_barcode?: boolean
+          show_qr?: boolean
+          updated_at?: string
+          validity_days?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_settings_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: true
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       webhook_deliveries: {
         Row: {
           attempted_at: string
