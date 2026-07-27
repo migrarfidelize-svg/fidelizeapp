@@ -2565,3 +2565,16 @@ html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"]
     animation-duration: 140s;
   }
 }
+
+@keyframes showcase-float {
+  0%, 100% { transform: translateY(0) rotate(-0.3deg); }
+  50% { transform: translateY(-8px) rotate(0.3deg); }
+}
+.showcase-device {
+  animation: showcase-float 7s ease-in-out infinite;
+  transition: transform 300ms ease;
+}
+.showcase-device:hover { animation-play-state: paused; transform: scale(1.015); }
+@media (prefers-reduced-motion: reduce) {
+  .showcase-device { animation: none; }
+}

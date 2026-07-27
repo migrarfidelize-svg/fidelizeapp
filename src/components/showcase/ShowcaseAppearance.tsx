@@ -1,9 +1,10 @@
 import { useBlocker } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Palette, Check, ImageIcon, Trash2, ExternalLink, Loader2, RotateCcw, Undo2 } from "lucide-react";
+import { Palette, Check, ImageIcon, Trash2, ExternalLink, Loader2, RotateCcw, Undo2, ArrowLeft, ArrowRight, Sparkles, Store, Paintbrush, LayoutGrid, DoorOpen } from "lucide-react";
+
 
 
 import { getMyEstablishments } from "@/lib/loyalty.functions";
@@ -64,6 +65,20 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
   const [textColor, setTextColor] = useState<string | null>(null);
   const [bgImage, setBgImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [step, setStep] = useState(0);
+
+  const steps = useMemo(
+    () =>
+      [
+        { id: "brand", title: "Marca", icon: Store },
+        { id: "theme", title: "Tema de cores", icon: Palette },
+        { id: "bg", title: "Fundo e cores", icon: Paintbrush },
+        { id: "layout", title: `Layout dos ${L.itemsLower}`, icon: LayoutGrid },
+        ...(isCatalog ? [] : [{ id: "entry", title: "Tela de entrada", icon: DoorOpen }]),
+      ] as const,
+    [isCatalog, L.itemsLower],
+  );
+
 
   const applyThemeToForm = (t: {
     preset: MenuPresetId; layout: MenuLayoutId; pattern: MenuPatternId; entry: MenuEntryId;
@@ -145,13 +160,54 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
         icon={Palette}
         eyebrow={L.eyebrow}
         title="Aparência da vitrine"
-        subtitle={`Escolha o tema de cores, a textura de fundo (ou sua própria imagem) e o layout dos ${L.itemsLower}. A prévia ao lado mostra exatamente como o cliente vai ver.`}
+        subtitle={`Monte sua vitrine em ${steps.length} passos. Cada ajuste aparece na hora no celular ao lado — do jeitinho que o cliente vai ver.`}
       />
+
+      {/* STEPPER */}
+      <div className="overflow-hidden rounded-3xl border border-border/60 bg-card/60 p-3 backdrop-blur">
+        <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {steps.map((s, i) => {
+            const active = i === step;
+            const done = i < step;
+            const Icon = s.icon;
+            return (
+              <button
+                key={s.id}
+                onClick={() => setStep(i)}
+                className={`group flex min-w-[9.5rem] flex-1 items-center gap-2.5 rounded-2xl border px-3 py-2.5 text-left transition-all ${
+                  active
+                    ? "border-primary bg-primary/10 shadow-[0_0_0_3px_hsl(var(--primary)/0.12)]"
+                    : "border-border/60 hover:border-primary/50 hover:bg-muted/50"
+                }`}
+              >
+                <span
+                  className={`grid h-8 w-8 flex-none place-items-center rounded-xl text-xs font-bold transition ${
+                    active ? "bg-primary text-primary-foreground" : done ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {done ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Passo {i + 1}</span>
+                  <span className="block truncate text-sm font-semibold">{s.title}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="mt-2 h-1 overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-primary transition-all duration-500"
+            style={{ width: `${((step + 1) / steps.length) * 100}%` }}
+          />
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.5fr_1fr]">
         <div className="space-y-4">
           {/* LOGO */}
-          {est && (
+          {step === 0 && est && (
+
             <Card>
               <CardHeader><CardTitle>Logo {isCatalog ? "do catálogo" : "do cardápio"}</CardTitle></CardHeader>
               <CardContent>
@@ -188,8 +244,10 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
           )}
 
           {/* TEMAS */}
+          {step === 1 && (
           <Card>
-            <CardHeader><CardTitle>1. Tema de cores</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Tema de cores</CardTitle></CardHeader>
+
             <CardContent className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {MENU_PRESETS.map((p) => (
                 <button
@@ -211,10 +269,14 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
               ))}
             </CardContent>
           </Card>
+          )}
+
 
           {/* FUNDO */}
+          {step === 2 && (
           <Card>
-            <CardHeader><CardTitle>2. Fundo</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Fundo e cores</CardTitle></CardHeader>
+
             <CardContent className="space-y-4">
               <div className="flex flex-wrap gap-2">
                 {MENU_PATTERNS.map((pt) => {
@@ -393,10 +455,14 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
               </div>
             </CardContent>
           </Card>
+          )}
+
 
           {/* LAYOUT */}
+          {step === 3 && (
           <Card>
-            <CardHeader><CardTitle>3. Layout dos {L.itemsLower}</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Layout dos {L.itemsLower}</CardTitle></CardHeader>
+
             <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               {MENU_LAYOUTS.filter((l) => !(isCatalog && l.id === "magazine")).map((l) => (
                 <button
@@ -418,11 +484,14 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
               ))}
             </CardContent>
           </Card>
+          )}
+
 
           {/* TELA INICIAL — só faz sentido no cardápio (modo Stories) */}
-          {!isCatalog && (
+          {!isCatalog && step === 4 && (
           <Card>
-            <CardHeader><CardTitle>4. Ao entrar no cardápio</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Ao entrar no cardápio</CardTitle></CardHeader>
+
             <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {MENU_ENTRIES.map((e) => (
                 <button
@@ -445,7 +514,33 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
           </Card>
           )}
 
+          <div className="flex items-center justify-between gap-2">
+            <Button variant="ghost" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+            </Button>
+            <div className="flex items-center gap-1.5">
+              {steps.map((s, i) => (
+                <button
+                  key={s.id}
+                  aria-label={s.title}
+                  onClick={() => setStep(i)}
+                  className={`h-1.5 rounded-full transition-all ${i === step ? "w-6 bg-primary" : "w-2 bg-border hover:bg-primary/50"}`}
+                />
+              ))}
+            </div>
+            {step < steps.length - 1 ? (
+              <Button onClick={() => setStep((s) => Math.min(steps.length - 1, s + 1))}>
+                Continuar <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            ) : (
+              <Button variant="outline" onClick={() => setStep(0)}>
+                <RotateCcw className="mr-2 h-4 w-4" /> Revisar
+              </Button>
+            )}
+          </div>
+
           <div className="sticky bottom-3 z-20 flex flex-wrap items-center gap-2 rounded-2xl border border-border/60 bg-background/90 p-3 backdrop-blur">
+
             <Button onClick={() => mut.mutate()} disabled={!estId || mut.isPending || !dirty}>
               {mut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Salvar aparência
@@ -473,9 +568,16 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
         </div>
 
         {/* PRÉVIA */}
-        <Card className="xl:sticky xl:top-4 h-fit">
-          <CardHeader><CardTitle>Prévia ao vivo</CardTitle></CardHeader>
-          <CardContent>
+        <div className="xl:sticky xl:top-4 h-fit">
+          <div className="overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-b from-muted/40 to-background p-4 shadow-sm">
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <Sparkles className="h-4 w-4 text-primary" /> Prévia ao vivo
+              </div>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" /> Ao vivo
+              </span>
+            </div>
             <MenuPreview
               kind={kind}
               preset={preset} layout={layout} pattern={pattern}
@@ -487,8 +589,9 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
               items={(menuData.data?.items ?? []) as PreviewItem[]}
               loading={menuData.isLoading || ests.isLoading}
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+
       </div>
     </div>
   );
@@ -623,10 +726,47 @@ function MenuPreview({
     return typeof v === "number" ? brl(v) : "—";
   };
 
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || paused) return;
+    let raf = 0;
+    let dir = 1;
+    let last = performance.now();
+    const tick = (now: number) => {
+      const dt = Math.min(now - last, 48);
+      last = now;
+      const max = el.scrollHeight - el.clientHeight;
+      if (max > 8) {
+        el.scrollTop += dir * (dt * 0.022);
+        if (el.scrollTop >= max - 1) dir = -1;
+        if (el.scrollTop <= 0) dir = 1;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [paused, layout, preset, pattern, items]);
+
   return (
-    <div className="space-y-2">
-      <div className="mx-auto w-full max-w-[320px] overflow-hidden rounded-[2rem] border-4 border-foreground/10 shadow-xl">
-        <div style={{ background: bg, color: p.ink }} className="h-[440px] overflow-y-auto">
+    <div className="space-y-3">
+      <div
+        className="showcase-device relative mx-auto w-full max-w-[320px]"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -inset-6 rounded-[3rem] opacity-60 blur-2xl"
+          style={{ background: `radial-gradient(60% 50% at 50% 0%, ${accent}55, transparent 70%)` }}
+        />
+        <div className="relative overflow-hidden rounded-[2.5rem] border-[6px] border-foreground/15 bg-foreground/5 shadow-2xl ring-1 ring-white/10">
+          <span className="absolute left-1/2 top-2 z-20 h-5 w-24 -translate-x-1/2 rounded-full bg-foreground/70" />
+          <span className="absolute inset-x-0 bottom-1.5 z-20 mx-auto h-1 w-24 rounded-full bg-foreground/30" />
+        <div ref={scrollRef} style={{ background: bg, color: p.ink }} className="h-[470px] overflow-y-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+
           <div
             className="h-20 w-full bg-cover bg-center"
             style={
@@ -731,7 +871,10 @@ function MenuPreview({
             </div>
           </div>
         </div>
+        </div>
       </div>
+
+
 
       <p className="text-center text-[11px] text-muted-foreground">
         {loading
