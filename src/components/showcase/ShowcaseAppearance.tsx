@@ -65,6 +65,20 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
   const [textColor, setTextColor] = useState<string | null>(null);
   const [bgImage, setBgImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [step, setStep] = useState(0);
+
+  const steps = useMemo(
+    () =>
+      [
+        { id: "brand", title: "Marca", icon: Store },
+        { id: "theme", title: "Tema de cores", icon: Palette },
+        { id: "bg", title: "Fundo e cores", icon: Paintbrush },
+        { id: "layout", title: `Layout dos ${L.itemsLower}`, icon: LayoutGrid },
+        ...(isCatalog ? [] : [{ id: "entry", title: "Tela de entrada", icon: DoorOpen }]),
+      ] as const,
+    [isCatalog, L.itemsLower],
+  );
+
 
   const applyThemeToForm = (t: {
     preset: MenuPresetId; layout: MenuLayoutId; pattern: MenuPatternId; entry: MenuEntryId;
