@@ -2642,8 +2642,7 @@ html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"]
 .kinetic-track {
   display: flex;
   width: max-content;
-  gap: 1.25rem;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 0;
   animation: kinetic-scroll 60s linear infinite;
   will-change: transform;
 }
@@ -2654,6 +2653,7 @@ html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"]
   position: relative;
   width: 19rem;
   flex: 0 0 auto;
+  margin-right: 1.25rem;
   border-radius: 1.25rem;
   padding: 1px;
   background: linear-gradient(
@@ -2680,7 +2680,7 @@ html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"]
   to { transform: translate3d(-50%, 0, 0); }
 }
 @media (max-width: 767px) {
-  .kinetic-card { width: 16.5rem; }
+  .kinetic-card { width: 16.5rem; margin-right: 1rem; }
   .kinetic-track { animation-duration: 42s; }
 }
 @media (prefers-reduced-motion: reduce) {
