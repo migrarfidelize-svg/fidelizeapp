@@ -66,3 +66,22 @@ export async function syncEstablishmentWallets(establishmentId: string, origin: 
   for (const id of ids) results.push(await syncCustomerWallet(id, origin));
   return results;
 }
+
+/** Origem pública padrão para links/QR dentro dos passes. */
+export function defaultWalletOrigin(): string {
+  return (
+    process.env.PUBLISHED_APP_URL ||
+    process.env.PUBLIC_APP_URL ||
+    "https://fidelizeapp.lovable.app"
+  ).replace(/\/+$/, "");
+}
+
+/** Versão "fire-and-forget": nunca lança, usada dentro de fluxos de negócio. */
+export async function syncCustomerWalletSafe(customerId: string) {
+  try {
+    return await syncCustomerWallet(customerId, defaultWalletOrigin());
+  } catch (e) {
+    console.warn("[wallet-sync] falhou", e instanceof Error ? e.message : String(e));
+    return null;
+  }
+}
