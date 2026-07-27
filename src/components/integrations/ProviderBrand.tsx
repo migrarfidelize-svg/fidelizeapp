@@ -15,7 +15,7 @@ const glyph = (paths: React.ReactNode) => (
 const BRANDS: Record<string, BrandDef> = {
   // ---------- AI ----------
   openai: {
-    gradient: "from-emerald-400 via-teal-500 to-cyan-600",
+    gradient: "from-emerald-400 via-teal-500 to-violet-600",
     ring: "#10b981",
     glyph: glyph(
       <path

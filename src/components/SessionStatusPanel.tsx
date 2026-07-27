@@ -109,7 +109,7 @@ export function SessionStatusPanel() {
   };
   const roleColor: Record<Role, string> = {
     admin: "bg-rose-500/20 text-rose-300 border-rose-500/40",
-    establishment: "bg-cyan-500/20 text-cyan-300 border-cyan-500/40",
+    establishment: "bg-violet-500/20 text-violet-300 border-violet-500/40",
     customer: "bg-violet-500/20 text-violet-300 border-violet-500/40",
     anônimo: "bg-zinc-500/20 text-zinc-300 border-zinc-500/40",
     "…": "bg-zinc-500/20 text-zinc-400 border-zinc-500/40",

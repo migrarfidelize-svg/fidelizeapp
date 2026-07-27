@@ -116,7 +116,7 @@ function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   return (
     <header className="sticky top-4 z-40 px-4">
-      <div className="nav-dock mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 rounded-full border border-cyan-400/60 bg-background/60 pl-5 pr-2 backdrop-blur-xl">
+      <div className="nav-dock mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 rounded-full border border-violet-400/60 bg-background/60 pl-5 pr-2 backdrop-blur-xl">
         <Link to="/" className="shrink-0"><Logo /></Link>
         <nav className="hidden gap-7 md:flex text-sm text-muted-foreground">
           {NAV_LINKS.map(([href, label]) => (
@@ -128,7 +128,7 @@ function SiteHeader() {
             <Button
               asChild
               size="sm"
-              className="rounded-full bg-primary text-primary-foreground font-semibold px-5 shadow-[0_0_0_1px_rgba(0,255,255,0.4),0_0_24px_-4px_rgba(0,255,255,0.65)] hover:brightness-110"
+              className="rounded-full bg-primary text-primary-foreground font-semibold px-5 shadow-[0_0_0_1px_rgba(167,139,250,0.4),0_0_24px_-4px_rgba(167,139,250,0.65)] hover:brightness-110"
             >
               <Link to="/app">Meu painel <ArrowRight className="ml-1 h-4 w-4" /></Link>
             </Button>
@@ -149,7 +149,7 @@ function SiteHeader() {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[86vw] max-w-xs border-l border-cyan-400/30 bg-background/95 backdrop-blur-xl">
+            <SheetContent side="right" className="w-[86vw] max-w-xs border-l border-violet-400/30 bg-background/95 backdrop-blur-xl">
               <SheetHeader className="text-left">
                 <SheetTitle><Logo /></SheetTitle>
               </SheetHeader>
@@ -168,7 +168,7 @@ function SiteHeader() {
                         history.replaceState(null, "", href);
                       }, 360);
                     }}
-                    className="rounded-xl border border-transparent px-4 py-3 text-base font-semibold text-foreground/90 transition-colors hover:border-cyan-400/40 hover:bg-primary/10 hover:text-foreground"
+                    className="rounded-xl border border-transparent px-4 py-3 text-base font-semibold text-foreground/90 transition-colors hover:border-violet-400/40 hover:bg-primary/10 hover:text-foreground"
                   >
                     {label}
                   </a>
@@ -202,7 +202,7 @@ function SiteHeader() {
 
 
 function Hero() {
-  const CYAN = "#00ffff";
+  const CYAN = "#a78bfa";
   const OBSIDIAN = "#020617";
   return (
     <section className="relative overflow-hidden" style={{ background: OBSIDIAN }}>
@@ -219,7 +219,7 @@ function Hero() {
             </filter>
           </defs>
           {/* base traces (dim) */}
-          <g stroke="rgba(0,255,255,0.14)" strokeWidth="1.2" fill="none">
+          <g stroke="rgba(167,139,250,0.14)" strokeWidth="1.2" fill="none">
             <path d="M0,720 L280,720 L320,680 L560,680 L600,640 L900,640 L940,600 L1600,600" />
             <path d="M0,540 L200,540 L240,500 L520,500 L560,460 L860,460 L900,420 L1600,420" />
             <path d="M0,300 L340,300 L380,340 L640,340 L680,380 L1600,380" />
@@ -232,7 +232,7 @@ function Hero() {
             <path d="M1220,0 L1220,300 L1260,340 L1260,380" />
           </g>
           {/* animated bright traces */}
-          <g stroke="#00ffff" strokeWidth="1.6" fill="none" filter="url(#pcbGlow)" strokeDasharray="140 900" strokeLinecap="round">
+          <g stroke="#a78bfa" strokeWidth="1.6" fill="none" filter="url(#pcbGlow)" strokeDasharray="140 900" strokeLinecap="round">
             <path className="pcb-trace pcb-t1" d="M0,720 L280,720 L320,680 L560,680 L600,640 L900,640 L940,600 L1600,600" />
             <path className="pcb-trace pcb-t2" d="M0,540 L200,540 L240,500 L520,500 L560,460 L860,460 L900,420 L1600,420" />
             <path className="pcb-trace pcb-t3" d="M1600,380 L680,380 L640,340 L380,340 L340,300 L0,300" />
@@ -241,7 +241,7 @@ function Hero() {
             <path className="pcb-trace pcb-t6" d="M760,0 L760,240 L800,280 L800,340" />
           </g>
           {/* nodes with pulsing glow */}
-          <g fill="#00ffff" filter="url(#pcbNodeGlow)">
+          <g fill="#a78bfa" filter="url(#pcbNodeGlow)">
             <circle className="pcb-node pcb-n1" cx="320" cy="680" r="3.5" />
             <circle className="pcb-node pcb-n2" cx="600" cy="640" r="3.5" />
             <circle className="pcb-node pcb-n3" cx="940" cy="600" r="3.5" />
@@ -350,7 +350,7 @@ function HowItWorks() {
       n: "01",
       title: "Crie seu cartão",
       desc: "Escolha suas cores, adicione sua logo e defina a recompensa que seus clientes vão amar.",
-      color: "#00ffff",
+      color: "#a78bfa",
     },
     {
       n: "02",
@@ -422,12 +422,12 @@ function HowItWorks() {
   return (
     <section ref={sectionRef} id="como-funciona" className="relative py-16 md:py-20">
       <div ref={stageRef} className="relative overflow-hidden">
-        <div aria-hidden className="pointer-events-none absolute -left-40 top-1/4 h-96 w-96 rounded-full bg-cyan-500/5 blur-[120px]" />
+        <div aria-hidden className="pointer-events-none absolute -left-40 top-1/4 h-96 w-96 rounded-full bg-violet-500/5 blur-[120px]" />
         <div aria-hidden className="pointer-events-none absolute -right-40 bottom-1/4 h-96 w-96 rounded-full blur-[120px]" style={{ background: "rgba(255,43,214,0.05)" }} />
 
         <div className="mx-auto w-full max-w-6xl px-6">
           <div className="mb-14 text-center">
-            <span className="font-display text-xs font-bold uppercase tracking-[0.25em]" style={{ color: "#00ffff" }}>
+            <span className="font-display text-xs font-bold uppercase tracking-[0.25em]" style={{ color: "#a78bfa" }}>
               Fluxo de experiência
             </span>
             <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight text-white md:text-5xl">
@@ -445,7 +445,7 @@ function HowItWorks() {
             >
               <defs>
                 <linearGradient id="hiwLinkA" x1="0" x2="1" y1="0" y2="0">
-                  <stop offset="0%" stopColor="#00ffff" />
+                  <stop offset="0%" stopColor="#a78bfa" />
                   <stop offset="100%" stopColor="#a855f7" />
                 </linearGradient>
                 <linearGradient id="hiwLinkB" x1="0" x2="1" y1="0" y2="0">
@@ -535,7 +535,7 @@ function HowItWorks() {
                 {i === steps.length - 1 && (
                   <span
                     aria-hidden
-                    className="pointer-events-none absolute -top-3 right-4 rounded-full border border-cyan-400/40 bg-black px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-300 transition-opacity duration-500"
+                    className="pointer-events-none absolute -top-3 right-4 rounded-full border border-violet-400/40 bg-black px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-violet-300 transition-opacity duration-500"
                     style={{ opacity: visible ? 1 : 0, transitionDelay: "900ms" }}
                   >
                     Pronto ✓
@@ -554,7 +554,7 @@ function HowItWorks() {
 
 function Benefits() {
   const items = [
-    { icon: Smartphone, title: "Sem app para baixar", desc: "Acesso direto pelo navegador. Zero atrito.", color: "#00ffff" },
+    { icon: Smartphone, title: "Sem app para baixar", desc: "Acesso direto pelo navegador. Zero atrito.", color: "#a78bfa" },
     { icon: QrCode, title: "QR Code exclusivo", desc: "Cada empresa, campanha e cliente com ID seguro.", color: "#22d3ee" },
     { icon: ShieldCheck, title: "Anti-fraude", desc: "Só sua equipe carimba. Tudo registrado.", color: "#a855f7" },
     { icon: BarChart3, title: "Painel completo", desc: "Clientes, visitas, retorno e alertas num só lugar.", color: "#a855f7" },
@@ -565,11 +565,11 @@ function Benefits() {
 
   return (
     <section className="relative overflow-hidden py-16 md:py-20">
-      <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,255,255,0.06),transparent_60%)]" />
+      <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(167,139,250,0.06),transparent_60%)]" />
 
       <div className="mx-auto max-w-6xl px-5 md:px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="font-display text-[11px] font-bold uppercase tracking-[0.25em] md:text-xs" style={{ color: "#00ffff" }}>
+          <span className="font-display text-[11px] font-bold uppercase tracking-[0.25em] md:text-xs" style={{ color: "#a78bfa" }}>
             Ecossistema Fidelize
           </span>
           <h2 className="mt-3 font-display text-3xl font-extrabold leading-tight tracking-tight text-white md:text-5xl">
@@ -591,7 +591,7 @@ function Benefits() {
               <defs>
                 <linearGradient id="fzHeroCyan" x1="0" y1="0" x2="1" y2="1">
                   <stop offset="0" stopColor="#7dfcff" />
-                  <stop offset="1" stopColor="#00ffff" />
+                  <stop offset="1" stopColor="#a78bfa" />
                 </linearGradient>
               </defs>
               <path d="M 384 256 A 128 128 0 1 1 256 128" fill="none" stroke="url(#fzHeroCyan)" strokeWidth="28" strokeLinecap="round" opacity="0.85" />
@@ -608,7 +608,7 @@ function Benefits() {
           <svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 720 720" preserveAspectRatio="xMidYMid meet">
             <defs>
               <linearGradient id="fzLink" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stopColor="#00ffff" />
+                <stop offset="0" stopColor="#a78bfa" />
                 <stop offset="0.5" stopColor="#a855f7" />
                 <stop offset="1" stopColor="#a855f7" />
               </linearGradient>
@@ -661,7 +661,7 @@ function Benefits() {
               <circle cx="360" cy="360" r="300" fill="none" stroke="url(#fzLink)" strokeWidth="3" strokeLinecap="round" filter="url(#fzLinkGlow)" className="fz-n8n-run-mobile" />
               <defs>
                 <linearGradient id="fzLink" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#00ffff" />
+                  <stop offset="0" stopColor="#a78bfa" />
                   <stop offset="0.5" stopColor="#a855f7" />
                   <stop offset="1" stopColor="#a855f7" />
                 </linearGradient>
@@ -676,7 +676,7 @@ function Benefits() {
                 <defs>
                   <linearGradient id="fzHeroCyanM" x1="0" y1="0" x2="1" y2="1">
                     <stop offset="0" stopColor="#7dfcff" />
-                    <stop offset="1" stopColor="#00ffff" />
+                    <stop offset="1" stopColor="#a78bfa" />
                   </linearGradient>
                 </defs>
                 <path d="M 384 256 A 128 128 0 1 1 256 128" fill="none" stroke="url(#fzHeroCyanM)" strokeWidth="28" strokeLinecap="round" opacity="0.85" />
@@ -784,7 +784,7 @@ function Comparison() {
               {/* Digital card underneath */}
               <div className="tear-digital absolute inset-0 grid place-items-center">
                 <div className="relative w-[80%] max-w-[420px]">
-                <div className="tear-digital-card relative z-20 overflow-hidden rounded-3xl border border-cyan-400/40 p-4 md:p-5"
+                <div className="tear-digital-card relative z-20 overflow-hidden rounded-3xl border border-violet-400/40 p-4 md:p-5"
                   style={{
                     background: "linear-gradient(135deg, #0a1420 0%, #0d1a28 50%, #0a0f1a 100%)",
                     boxShadow: "0 20px 60px -10px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.08)",
@@ -793,21 +793,21 @@ function Comparison() {
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="grid h-9 w-9 place-items-center rounded-xl border border-cyan-400/40 bg-cyan-400/10">
-                        <Sparkles className="h-4 w-4" style={{ color: "#00ffff" }} />
+                      <div className="grid h-9 w-9 place-items-center rounded-xl border border-violet-400/40 bg-violet-400/10">
+                        <Sparkles className="h-4 w-4" style={{ color: "#a78bfa" }} />
                       </div>
                       <span className="font-display text-sm font-bold uppercase tracking-widest text-white">Fidelize</span>
                     </div>
-                    <span className="rounded-full border border-cyan-400/40 bg-cyan-400/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest" style={{ color: "#00ffff" }}>
+                    <span className="rounded-full border border-violet-400/40 bg-violet-400/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest" style={{ color: "#a78bfa" }}>
                       Ativo
                     </span>
                   </div>
                   <div className="mt-5 grid grid-cols-5 gap-2">
                     {Array.from({ length: 10 }).map((_, i) => (
-                      <div key={i} className={`aspect-square rounded-xl border ${i < 7 ? "border-cyan-400/60 bg-cyan-400/15" : "border-white/10 bg-white/[0.02]"}`}
-                        style={i < 7 ? { boxShadow: "0 0 18px rgba(0,255,255,0.35)" } : undefined}
+                      <div key={i} className={`aspect-square rounded-xl border ${i < 7 ? "border-violet-400/60 bg-violet-400/15" : "border-white/10 bg-white/[0.02]"}`}
+                        style={i < 7 ? { boxShadow: "0 0 18px rgba(167,139,250,0.35)" } : undefined}
                       >
-                        {i < 7 && <div className="grid h-full w-full place-items-center"><Check className="h-4 w-4" style={{ color: "#00ffff" }} /></div>}
+                        {i < 7 && <div className="grid h-full w-full place-items-center"><Check className="h-4 w-4" style={{ color: "#a78bfa" }} /></div>}
                       </div>
                     ))}
                   </div>
@@ -821,14 +821,14 @@ function Comparison() {
                 {wins.map((w, i) => (
                   <span
                     key={w}
-                    className="tear-win absolute rounded-full border border-cyan-400/40 bg-black/40 px-3 py-1.5 text-[11px] font-semibold text-white backdrop-blur"
+                    className="tear-win absolute rounded-full border border-violet-400/40 bg-black/40 px-3 py-1.5 text-[11px] font-semibold text-white backdrop-blur"
                     style={{
                       ["--i" as never]: i,
-                      boxShadow: "0 0 24px rgba(0,255,255,0.25)",
+                      boxShadow: "0 0 24px rgba(167,139,250,0.25)",
                       color: "#e6ffff",
                     } as never}
                   >
-                    <Check className="mr-1 inline h-3 w-3" style={{ color: "#00ffff" }} /> {w}
+                    <Check className="mr-1 inline h-3 w-3" style={{ color: "#a78bfa" }} /> {w}
                   </span>
                 ))}
                 </div>
@@ -866,7 +866,7 @@ function Comparison() {
               <p className="relative z-40 max-w-xl text-white/70">
                 Chega de cartão perdido, carimbo torto e cliente esquecido. Ative o Fidelize em minutos.
               </p>
-              <Button asChild size="lg" className="tear-cta-btn rounded-full px-8 font-bold" style={{ background: "#00ffff", color: "#001010" }}>
+              <Button asChild size="lg" className="tear-cta-btn rounded-full px-8 font-bold" style={{ background: "#a78bfa", color: "#001010" }}>
                 <Link to="/auth">
                   Começar grátis <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>
@@ -1076,11 +1076,11 @@ function PaperHalf({ side }: { side: "left" | "right" }) {
 
 function Examples() {
   const items: Array<{ icon: typeof Cake; title: string; desc: string; kpi: string; kpiLabel: string; channel: string; channelIcon: typeof MessageCircle; tone: string }> = [
-    { icon: Cake, title: "Aniversariante do mês", desc: "Mimo automático 3 dias antes.", kpi: "+38%", kpiLabel: "retorno", channel: "WhatsApp", channelIcon: MessageCircle, tone: "#00ffff" },
+    { icon: Cake, title: "Aniversariante do mês", desc: "Mimo automático 3 dias antes.", kpi: "+38%", kpiLabel: "retorno", channel: "WhatsApp", channelIcon: MessageCircle, tone: "#a78bfa" },
     { icon: UserPlus, title: "Indique e ganhe", desc: "QR próprio do cliente. Todo mundo ganha.", kpi: "4.1x", kpiLabel: "CAC menor", channel: "QR + Wpp", channelIcon: QrCode, tone: "#7c3aed" },
-    { icon: Clock, title: "Reengajar inativos", desc: "15 dias sem visita? Dispara empurrão.", kpi: "2.4x", kpiLabel: "LTV", channel: "WhatsApp", channelIcon: MessageCircle, tone: "#00ffff" },
+    { icon: Clock, title: "Reengajar inativos", desc: "15 dias sem visita? Dispara empurrão.", kpi: "2.4x", kpiLabel: "LTV", channel: "WhatsApp", channelIcon: MessageCircle, tone: "#a78bfa" },
     { icon: Sparkles, title: "1º carimbo grátis", desc: "Ativação imediata do cliente novo.", kpi: "73%", kpiLabel: "ativação", channel: "E-mail", channelIcon: Mail, tone: "#7c3aed" },
-    { icon: Crown, title: "Níveis VIP", desc: "Bronze, Prata, Ouro com benefícios.", kpi: "+62%", kpiLabel: "frequência", channel: "Push", channelIcon: Bell, tone: "#00ffff" },
+    { icon: Crown, title: "Níveis VIP", desc: "Bronze, Prata, Ouro com benefícios.", kpi: "+62%", kpiLabel: "frequência", channel: "Push", channelIcon: Bell, tone: "#a78bfa" },
   ];
 
   const renderCard = (it: (typeof items)[number], key: string, ariaHidden?: boolean) => {
@@ -1145,11 +1145,11 @@ function Examples() {
     >
       <div className="relative mx-auto max-w-6xl px-4">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/5 px-3 py-1 text-[11px] font-bold uppercase tracking-widest" style={{ color: "#00ffff" }}>
+          <span className="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-400/5 px-3 py-1 text-[11px] font-bold uppercase tracking-widest" style={{ color: "#a78bfa" }}>
             <Sparkles className="h-3 w-3" /> Templates prontos
           </span>
           <h2 className="mt-4 font-display text-3xl font-bold text-white md:text-4xl">
-            Campanhas <span style={{ color: "#00ffff" }}>que funcionam</span>
+            Campanhas <span style={{ color: "#a78bfa" }}>que funcionam</span>
           </h2>
           <p className="mt-3 text-sm text-white/60">5 templates prontos. Ative em 1 clique.</p>
         </div>
@@ -1176,13 +1176,13 @@ function Examples() {
 
         {/* CTA */}
         <div className="mx-auto mt-10 flex flex-col items-center gap-2 text-center">
-          <Button asChild size="lg" className="rounded-full px-8 font-bold" style={{ background: "#00ffff", color: "#001010" }}>
+          <Button asChild size="lg" className="rounded-full px-8 font-bold" style={{ background: "#a78bfa", color: "#001010" }}>
             <Link to="/auth">
               Começar grátis <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </Button>
           <p className="text-[11px] uppercase tracking-widest text-white/40">
-            <Gift className="mr-1 inline h-3 w-3" style={{ color: "#00ffff" }} /> 14 dias grátis · sem cartão
+            <Gift className="mr-1 inline h-3 w-3" style={{ color: "#a78bfa" }} /> 14 dias grátis · sem cartão
           </p>
         </div>
       </div>
@@ -1239,7 +1239,7 @@ function Pricing() {
       <div className="mx-auto max-w-6xl px-4">
         <div className="text-center">
           <h2 className="font-display text-4xl font-bold">
-            Planos <span style={{ color: "#00ffff" }}>simples</span> e transparentes
+            Planos <span style={{ color: "#a78bfa" }}>simples</span> e transparentes
           </h2>
           <p className="mt-3 text-muted-foreground">Escolha na dock abaixo. O plano em destaque troca ao vivo.</p>
         </div>
@@ -1250,7 +1250,7 @@ function Pricing() {
             {/* expanding halo on swap */}
             <div className="pointer-events-none absolute inset-0 -z-10 rounded-[2rem] bg-primary/20 blur-3xl plan-halo" />
             {/* LED breathing gradient border */}
-            <div className="relative rounded-[2rem] p-[2px] bg-gradient-to-b from-[#00ffff] via-[#00ffff]/20 to-transparent shadow-[0_0_40px_rgba(0,255,255,0.15)]">
+            <div className="relative rounded-[2rem] p-[2px] bg-gradient-to-b from-[#a78bfa] via-[#a78bfa]/20 to-transparent shadow-[0_0_40px_rgba(167,139,250,0.15)]">
               <div className="rounded-[calc(2rem-2px)] bg-card p-8 md:p-10 relative overflow-hidden plan-sweep">
                 <div className="relative flex items-start justify-between">
                   <div>
@@ -1269,7 +1269,7 @@ function Pricing() {
 
                 {/* price */}
                 <div className="mt-8 flex items-baseline gap-2">
-                  <span className="font-display text-6xl font-extrabold tracking-tight" style={{ textShadow: "0 0 20px rgba(0,255,255,0.35)" }}>
+                  <span className="font-display text-6xl font-extrabold tracking-tight" style={{ textShadow: "0 0 20px rgba(167,139,250,0.35)" }}>
                     {active.price}
                   </span>
                   <span className="text-sm text-muted-foreground">/mês</span>
@@ -1319,14 +1319,14 @@ function Pricing() {
                     aria-label={p.name}
                     className={`relative flex flex-col items-center justify-center gap-1 rounded-2xl border transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
                       isActive
-                        ? "h-16 w-16 -translate-y-2 border-primary/40 bg-primary/10 text-primary shadow-[0_0_24px_rgba(0,255,255,0.25)]"
+                        ? "h-16 w-16 -translate-y-2 border-primary/40 bg-primary/10 text-primary shadow-[0_0_24px_rgba(167,139,250,0.25)]"
                         : "h-14 w-14 border-white/10 bg-white/5 text-muted-foreground hover:-translate-y-3 hover:scale-110 hover:border-white/25 hover:bg-white/10 hover:text-foreground"
                     }`}
                   >
                     <Icon className={isActive ? "h-7 w-7 transition-transform duration-300" : "h-6 w-6 transition-transform duration-300"} />
                     {isActive && (
                       <>
-                        <span className="absolute -bottom-1.5 h-1 w-1 rounded-full bg-primary shadow-[0_0_8px_#00ffff]" />
+                        <span className="absolute -bottom-1.5 h-1 w-1 rounded-full bg-primary shadow-[0_0_8px_#a78bfa]" />
                         <span
                           key={shockKey}
                           className="dock-shock pointer-events-none absolute left-1/2 top-1/2 h-full w-full rounded-2xl border border-primary/60"
@@ -1370,19 +1370,19 @@ function CTA() {
             <h2 className="font-display text-5xl md:text-7xl font-extrabold text-foreground leading-[0.95] tracking-tighter">
               Pronto para <br />
               seus clientes <br />
-              <span className="text-[#00ffff]">voltarem sempre?</span>
+              <span className="text-[#a78bfa]">voltarem sempre?</span>
             </h2>
           </div>
           <div className="hidden lg:block mt-12">
-            <div className="w-24 h-px bg-[#00ffff]" />
+            <div className="w-24 h-px bg-[#a78bfa]" />
           </div>
         </div>
 
         {/* Vertical divider */}
         <div className="hidden lg:block lg:col-span-1 relative">
           <div className="absolute inset-y-0 left-1/2 w-px bg-primary/20" />
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#00ffff] rotate-45" />
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#00ffff] rotate-45" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#a78bfa] rotate-45" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#a78bfa] rotate-45" />
         </div>
 
         {/* Right: action */}
@@ -1392,7 +1392,7 @@ function CTA() {
           </p>
 
           <div className="flex flex-col gap-3">
-            <Button asChild size="lg" className="h-14 rounded-none bg-[#00ffff] text-background hover:bg-white font-bold uppercase tracking-widest text-sm justify-between shadow-[0_0_30px_rgba(0,255,255,0.25)]">
+            <Button asChild size="lg" className="h-14 rounded-none bg-[#a78bfa] text-background hover:bg-white font-bold uppercase tracking-widest text-sm justify-between shadow-[0_0_30px_rgba(167,139,250,0.25)]">
               <Link to="/auth" search={{ mode: "signup" }}>
                 Começar grátis
                 <ArrowRight className="h-5 w-5" />
@@ -1405,8 +1405,8 @@ function CTA() {
 
           <div className="flex gap-3 items-center opacity-60">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00ffff] opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00ffff]" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#a78bfa] opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#a78bfa]" />
             </span>
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
               14 dias grátis · sem cartão · cancele quando quiser
@@ -1497,7 +1497,7 @@ function FaqChatSection() {
             <HelpCircle className="h-3.5 w-3.5" /> Suporte instantâneo
           </div>
           <h2 className="mt-4 font-display text-4xl md:text-5xl font-bold">
-            Dúvidas <span className="text-[#00ffff]">frequentes</span>
+            Dúvidas <span className="text-[#a78bfa]">frequentes</span>
           </h2>
           <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
             Clique numa dúvida ou converse com a <strong className="text-primary">Fidê</strong>, nossa assistente inteligente.
@@ -1517,7 +1517,7 @@ function FaqCannedPanel() {
   const [selected, setSelected] = useState<number | null>(null);
   const activeAnswer = selected !== null ? FAQ_ITEMS[selected][1] : "";
   return (
-    <div className="rounded-3xl border border-white/10 bg-card/40 backdrop-blur-xl p-5 md:p-6 shadow-2xl shadow-cyan-500/5">
+    <div className="rounded-3xl border border-white/10 bg-card/40 backdrop-blur-xl p-5 md:p-6 shadow-2xl shadow-violet-500/5">
       <div className="flex items-center gap-2 mb-4 pb-4 border-b border-white/10">
         <div className="grid h-9 w-9 place-items-center rounded-full bg-primary/15 border border-primary/30">
           <MessageCircle className="h-4 w-4 text-primary" />
@@ -1535,7 +1535,7 @@ function FaqCannedPanel() {
             onClick={() => setSelected(i)}
             className={`text-left text-sm rounded-xl border px-4 py-3 transition-all ${
               selected === i
-                ? "border-primary/60 bg-primary/10 text-foreground shadow-[0_0_20px_-5px_rgba(0,255,255,0.4)]"
+                ? "border-primary/60 bg-primary/10 text-foreground shadow-[0_0_20px_-5px_rgba(167,139,250,0.4)]"
                 : "border-white/10 bg-card/30 hover:border-primary/40 hover:bg-primary/5 text-foreground/90"
             }`}
           >
@@ -1608,8 +1608,8 @@ function FaqAIPanel() {
   const suggestions = ["Como funciona o QR Code?", "Posso testar grátis?", "Como recompenso meus clientes?"];
 
   return (
-    <div className="relative rounded-3xl border border-primary/30 bg-gradient-to-br from-card/60 to-background/40 backdrop-blur-xl p-5 md:p-6 shadow-2xl shadow-cyan-500/10">
-      <div className="pointer-events-none absolute inset-0 rounded-3xl bg-[radial-gradient(circle_at_top,rgba(0,255,255,0.08),transparent_60%)]" />
+    <div className="relative rounded-3xl border border-primary/30 bg-gradient-to-br from-card/60 to-background/40 backdrop-blur-xl p-5 md:p-6 shadow-2xl shadow-violet-500/10">
+      <div className="pointer-events-none absolute inset-0 rounded-3xl bg-[radial-gradient(circle_at_top,rgba(167,139,250,0.08),transparent_60%)]" />
       <div className="relative">
         <div className="flex items-center gap-3 mb-4 pb-4 border-b border-white/10">
           <div className="relative">
@@ -1659,7 +1659,7 @@ function FaqAIPanel() {
           <button
             onClick={send}
             disabled={loading || !input.trim()}
-            className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_0_15px_rgba(0,255,255,0.4)] hover:shadow-[0_0_20px_rgba(0,255,255,0.6)] disabled:opacity-40 disabled:shadow-none transition"
+            className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_0_15px_rgba(167,139,250,0.4)] hover:shadow-[0_0_20px_rgba(167,139,250,0.6)] disabled:opacity-40 disabled:shadow-none transition"
             aria-label="Enviar"
           >
             <Send className="h-4 w-4" />

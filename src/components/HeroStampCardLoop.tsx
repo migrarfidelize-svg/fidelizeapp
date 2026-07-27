@@ -2,7 +2,7 @@ import { Gift, Coffee, Sparkles } from "lucide-react";
 
 /**
  * Animated hero variant of <StampCard/>. Same visual model — header (logo+brand),
- * 5-column stamp grid, reward block — but styled in fixed cyan #00ffff over
+ * 5-column stamp grid, reward block — but styled in fixed cyan #a78bfa over
  * obsidian and running a perpetual loop: 10 stamps fill one-by-one, then a
  * reward overlay flashes in with confetti, then everything resets.
  *
@@ -15,7 +15,7 @@ import { Gift, Coffee, Sparkles } from "lucide-react";
  *   10.5s – 12s   → fade back to empty card
  */
 export function HeroStampCardLoop() {
-  const CYAN = "#00ffff";
+  const CYAN = "#a78bfa";
   const OBSIDIAN = "#020617";
   const stamps = Array.from({ length: 10 });
 
@@ -65,7 +65,7 @@ export function HeroStampCardLoop() {
         className="hero-card-loop relative w-full rounded-3xl p-6 overflow-hidden"
         style={{
           background: `linear-gradient(160deg, #0b1220 0%, ${OBSIDIAN} 100%)`,
-          border: "1px solid rgba(0,255,255,0.18)",
+          border: "1px solid rgba(167,139,250,0.18)",
         }}
       >
         {/* Header */}

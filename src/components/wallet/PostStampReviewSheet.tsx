@@ -87,7 +87,7 @@ export function PostStampReviewSheet() {
         rating >= (pending.settings.google_redirect_min_rating ?? 5);
       setThanks({
         estName: pending.establishment.name,
-        primary: pending.establishment.primary_color || "#00ffff",
+        primary: pending.establishment.primary_color || "#a78bfa",
         googleUrl: pending.settings.google_place_url ?? null,
         showGoogle,
         message: pending.settings.thank_you_message,
@@ -131,7 +131,7 @@ export function PostStampReviewSheet() {
   if (!open || !pending) return null;
 
   const est = pending.establishment;
-  const primary = est.primary_color || "#00ffff";
+  const primary = est.primary_color || "#a78bfa";
 
   return (
     <>

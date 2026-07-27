@@ -32,7 +32,7 @@ export const Route = createFileRoute("/videos")({
 
 // ---------- Constants ----------
 const DURATION = 8; // seconds per loop
-const ACCENT = "#00ffff";
+const ACCENT = "#a78bfa";
 const MAGENTA = "#ff2fd6";
 
 // ---------- Shared UI ----------
@@ -73,7 +73,7 @@ function PlayerChrome({
   const secs = Math.floor(t);
 
   return (
-    <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-[#0a0a0f] shadow-[0_30px_80px_-40px_rgba(0,255,255,0.35)]">
+    <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-[#0a0a0f] shadow-[0_30px_80px_-40px_rgba(167,139,250,0.35)]">
       {/* Top bar */}
       <div className="flex items-center justify-between border-b border-white/5 px-4 py-2.5">
         <div className="flex items-center gap-1.5">
@@ -157,10 +157,10 @@ function ScenePreview1() {
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: [0, 1, 1, 0], y: [-8, 0, 0, -4] }}
         transition={{ duration: DURATION, repeat: Infinity, times: [0, 0.1, 0.85, 1] }}
-        className="inline-flex items-center gap-2 rounded-full border border-cyan-400/40 bg-cyan-400/10 px-3 py-1"
+        className="inline-flex items-center gap-2 rounded-full border border-violet-400/40 bg-violet-400/10 px-3 py-1"
       >
-        <QrCode className="h-3.5 w-3.5 text-cyan-300" />
-        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-cyan-200">
+        <QrCode className="h-3.5 w-3.5 text-violet-300" />
+        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-violet-200">
           Escaneie seu cartão
         </span>
       </motion.div>
@@ -176,16 +176,16 @@ function ScenePreview1() {
         }}
         transition={{ duration: DURATION, repeat: Infinity, times: [0, 0.15, 0.5, 0.85, 1] }}
         style={{ transformStyle: "preserve-3d", perspective: 800 }}
-        className="relative w-full rounded-2xl border border-white/10 bg-gradient-to-br from-[#0e1a24] to-[#0a0a12] p-4 shadow-[0_20px_60px_-20px_rgba(0,255,255,0.55)]"
+        className="relative w-full rounded-2xl border border-white/10 bg-gradient-to-br from-[#0e1a24] to-[#0a0a12] p-4 shadow-[0_20px_60px_-20px_rgba(167,139,250,0.55)]"
       >
         <div className="flex items-center justify-between">
           <div>
-            <div className="font-mono text-[9px] uppercase tracking-widest text-cyan-300/80">
+            <div className="font-mono text-[9px] uppercase tracking-widest text-violet-300/80">
               Fidelize
             </div>
             <div className="text-sm font-bold text-white">Café do Centro</div>
           </div>
-          <QrCode className="h-8 w-8 text-cyan-300" />
+          <QrCode className="h-8 w-8 text-violet-300" />
         </div>
         <div className="mt-4 grid grid-cols-5 gap-2">
           {Array.from({ length: 10 }).map((_, i) => (
@@ -210,7 +210,7 @@ function ScenePreview1() {
         </div>
         <div className="mt-3 flex items-center justify-between text-[10px]">
           <span className="text-white/50">Progresso</span>
-          <span className="font-mono font-bold text-cyan-300">
+          <span className="font-mono font-bold text-violet-300">
             {stampsFilled}/10 carimbos
           </span>
         </div>
@@ -268,7 +268,7 @@ function ScenePreview2() {
               transition={{ duration: 0.4 }}
             >
               <Star
-                className={`h-9 w-9 ${on ? "fill-cyan-300 text-cyan-300" : "text-white/20"}`}
+                className={`h-9 w-9 ${on ? "fill-violet-300 text-violet-300" : "text-white/20"}`}
               />
             </motion.div>
           );
@@ -296,7 +296,7 @@ function ScenePreview2() {
               <div className="font-mono text-[9px] uppercase tracking-widest text-white/40">
                 Média
               </div>
-              <div className="mt-0.5 font-mono text-lg font-bold text-cyan-300 tabular-nums">
+              <div className="mt-0.5 font-mono text-lg font-bold text-violet-300 tabular-nums">
                 4.9
               </div>
             </div>
@@ -346,7 +346,7 @@ function ScenePreview3() {
         initial={{ y: 24, opacity: 0 }}
         animate={{ y: [24, 0, 0, 8], opacity: [0, 1, 1, 0] }}
         transition={{ duration: DURATION, repeat: Infinity, times: [0, 0.12, 0.9, 1] }}
-        className="relative w-64 rounded-[36px] border border-white/10 bg-black p-2 shadow-[0_30px_80px_-25px_rgba(0,255,255,0.45)]"
+        className="relative w-64 rounded-[36px] border border-white/10 bg-black p-2 shadow-[0_30px_80px_-25px_rgba(167,139,250,0.45)]"
       >
         {/* Notch */}
         <div className="mx-auto h-4 w-20 rounded-b-2xl bg-black" />
@@ -362,8 +362,8 @@ function ScenePreview3() {
 
           {/* Profile */}
           <div className="mt-3 text-center">
-            <div className="mx-auto grid h-14 w-14 place-items-center rounded-full border border-cyan-300/40 bg-gradient-to-br from-cyan-300/20 to-violet-400/20">
-              <Sparkles className="h-5 w-5 text-cyan-300" />
+            <div className="mx-auto grid h-14 w-14 place-items-center rounded-full border border-violet-300/40 bg-gradient-to-br from-violet-300/20 to-violet-400/20">
+              <Sparkles className="h-5 w-5 text-violet-300" />
             </div>
             <div className="mt-2 text-sm font-bold text-white">@caferitual</div>
             <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-white/40">
@@ -465,7 +465,7 @@ function ScenePreview4() {
       <div className="relative z-10 flex flex-col items-center">
         {/* Acrylic panel */}
         <div
-          className="relative w-44 rounded-t-xl border border-white/25 bg-gradient-to-b from-white/[0.14] to-white/[0.05] p-3 shadow-[0_25px_50px_-20px_rgba(0,255,255,0.35),inset_0_1px_0_rgba(255,255,255,0.5)] backdrop-blur"
+          className="relative w-44 rounded-t-xl border border-white/25 bg-gradient-to-b from-white/[0.14] to-white/[0.05] p-3 shadow-[0_25px_50px_-20px_rgba(167,139,250,0.35),inset_0_1px_0_rgba(255,255,255,0.5)] backdrop-blur"
           style={{
             borderTopColor: "rgba(255,255,255,0.55)",
             borderLeftColor: "rgba(255,255,255,0.35)",
@@ -506,8 +506,8 @@ function ScenePreview4() {
             />
             {/* NFC ripple target (overlay hint) */}
             <div className="pointer-events-none absolute inset-x-0 bottom-1 flex justify-center">
-              <div className="relative grid h-7 w-7 place-items-center rounded-full border border-cyan-300/40 bg-cyan-300/10 backdrop-blur">
-                <Nfc className="h-3.5 w-3.5 text-cyan-300" />
+              <div className="relative grid h-7 w-7 place-items-center rounded-full border border-violet-300/40 bg-violet-300/10 backdrop-blur">
+                <Nfc className="h-3.5 w-3.5 text-violet-300" />
                 {[0, 1, 2].map((r) => (
                   <motion.span
                     key={r}
@@ -543,7 +543,7 @@ function ScenePreview4() {
           style={{
             background:
               "linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02))",
-            boxShadow: "0 6px 16px -6px rgba(0,255,255,0.35)",
+            boxShadow: "0 6px 16px -6px rgba(167,139,250,0.35)",
           }}
         />
       </div>
@@ -558,7 +558,7 @@ function ScenePreview4() {
           opacity: [0, 1, 1, 0],
         }}
         transition={{ duration: DURATION, repeat: Infinity, times: [0, 0.45, 0.75, 1] }}
-        className="absolute bottom-14 right-2 z-20 w-24 rounded-xl border border-white/15 bg-gradient-to-br from-violet-500/30 via-black/60 to-cyan-500/30 p-2.5 shadow-[0_20px_40px_-15px_rgba(124,58,237,0.6)] backdrop-blur"
+        className="absolute bottom-14 right-2 z-20 w-24 rounded-xl border border-white/15 bg-gradient-to-br from-violet-500/30 via-black/60 to-violet-500/30 p-2.5 shadow-[0_20px_40px_-15px_rgba(124,58,237,0.6)] backdrop-blur"
       >
         <div className="flex items-center justify-between">
           <Nfc className="h-3.5 w-3.5 text-white" />

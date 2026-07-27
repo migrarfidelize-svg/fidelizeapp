@@ -267,21 +267,21 @@ function AuthPage() {
       {/* Overlay de transição — cobre a tela durante o redirect pós-login para eliminar qualquer flash de telas anteriores. */}
       {redirecting && (
         <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-4 bg-[oklch(0.14_0.02_230)] animate-in fade-in duration-150">
-          <div className="pointer-events-none absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#00ffff]/8 blur-[120px]" />
-          <Loader2 className="h-10 w-10 animate-spin text-[#00ffff]" />
+          <div className="pointer-events-none absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#a78bfa]/8 blur-[120px]" />
+          <Loader2 className="h-10 w-10 animate-spin text-[#a78bfa]" />
           <div className="text-xs uppercase tracking-[0.3em] text-white/60">Carregando seu painel…</div>
         </div>
       )}
       {/* Ambient glows */}
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#00ffff]/5 blur-[120px]" />
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#a78bfa]/5 blur-[120px]" />
       <div className="pointer-events-none absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-[oklch(0.78_0.19_330)]/10 blur-[100px]" />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(#00ffff 1px, transparent 1px), linear-gradient(90deg, #00ffff 1px, transparent 1px)", backgroundSize: "100px 100px" }} />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(#a78bfa 1px, transparent 1px), linear-gradient(90deg, #a78bfa 1px, transparent 1px)", backgroundSize: "100px 100px" }} />
 
 
       {/* Top bar */}
       <div className="relative z-10 mx-auto flex max-w-6xl items-center justify-between">
         <Link to="/" className="text-white"><Logo className="text-white" /></Link>
-        <Link to="/" className="text-xs uppercase tracking-[0.2em] text-white/40 hover:text-[#00ffff]">← Voltar</Link>
+        <Link to="/" className="text-xs uppercase tracking-[0.2em] text-white/40 hover:text-[#a78bfa]">← Voltar</Link>
       </div>
 
       <div className="relative z-10 mx-auto grid min-h-[calc(100vh-8rem)] max-w-6xl grid-cols-1 items-center gap-16 lg:grid-cols-2">
@@ -289,7 +289,7 @@ function AuthPage() {
         <div className="flex flex-col items-center space-y-8 lg:items-start">
           <div className="auth-card-stage group [perspective:2200px]">
             {/* Floating ambient chips behind card */}
-            <div className="pointer-events-none absolute -left-8 -top-6 h-24 w-24 rounded-full bg-[#00ffff]/20 blur-2xl animate-[auth-float_9s_ease-in-out_infinite]" />
+            <div className="pointer-events-none absolute -left-8 -top-6 h-24 w-24 rounded-full bg-[#a78bfa]/20 blur-2xl animate-[auth-float_9s_ease-in-out_infinite]" />
             <div className="pointer-events-none absolute -bottom-10 -right-6 h-32 w-32 rounded-full bg-[oklch(0.78_0.19_330)]/25 blur-3xl animate-[auth-float_11s_ease-in-out_infinite_reverse]" />
 
             <div className="auth-loyalty-card relative aspect-[1.6/1] w-[min(320px,70vw)] sm:w-[min(460px,88vw)] transform-gpu transition-transform duration-700 will-change-transform [transform:rotateY(-14deg)_rotateX(9deg)] group-hover:[transform:rotateY(-4deg)_rotateX(3deg)]">
@@ -297,9 +297,9 @@ function AuthPage() {
               <div className="auth-card-body relative h-full w-full overflow-hidden rounded-[26px] border border-white/12">
                 {/* Layered background */}
                 <div className="absolute inset-0 bg-[radial-gradient(120%_80%_at_0%_0%,oklch(0.22_0.06_235)_0%,oklch(0.14_0.03_235)_55%,oklch(0.11_0.02_240)_100%)]" />
-                <div className="absolute inset-0 opacity-[0.14]" style={{ backgroundImage: "radial-gradient(circle at 1.5px 1.5px, #00ffff 1px, transparent 0)", backgroundSize: "18px 18px" }} />
+                <div className="absolute inset-0 opacity-[0.14]" style={{ backgroundImage: "radial-gradient(circle at 1.5px 1.5px, #a78bfa 1px, transparent 0)", backgroundSize: "18px 18px" }} />
                 {/* Corner glows */}
-                <div className="absolute -top-24 -right-20 h-56 w-56 rounded-full bg-[#00ffff]/22 blur-3xl" />
+                <div className="absolute -top-24 -right-20 h-56 w-56 rounded-full bg-[#a78bfa]/22 blur-3xl" />
                 <div className="absolute -bottom-24 -left-16 h-48 w-48 rounded-full bg-[oklch(0.78_0.19_330)]/22 blur-3xl" />
 
                 {/* Content grid — locks alignment */}
@@ -308,18 +308,18 @@ function AuthPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2.5 min-w-0">
                       {/* Holo chip */}
-                      <div className="relative h-9 w-11 shrink-0 overflow-hidden rounded-md border border-[#00ffff]/40 bg-gradient-to-br from-[#00ffff]/30 via-white/10 to-[oklch(0.78_0.19_330)]/30">
+                      <div className="relative h-9 w-11 shrink-0 overflow-hidden rounded-md border border-[#a78bfa]/40 bg-gradient-to-br from-[#a78bfa]/30 via-white/10 to-[oklch(0.78_0.19_330)]/30">
                         <div className="absolute inset-0 animate-[auth-holo_3s_linear_infinite] bg-[linear-gradient(115deg,transparent_35%,rgba(255,255,255,0.55)_50%,transparent_65%)]" />
                         <div className="absolute inset-1 rounded-[3px] border border-white/30" />
                       </div>
                       <div className="min-w-0">
                         <div className="text-[9px] uppercase tracking-[0.28em] text-white/45">Cartão fidelidade</div>
                         <div className="font-display text-lg font-bold leading-tight tracking-tight text-white truncate">
-                          Café <span className="text-[#00ffff]">Aurora</span>
+                          Café <span className="text-[#a78bfa]">Aurora</span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex shrink-0 items-center gap-1.5 rounded-md border border-[#00ffff]/35 bg-[#00ffff]/10 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-[#00ffff]">
+                    <div className="flex shrink-0 items-center gap-1.5 rounded-md border border-[#a78bfa]/35 bg-[#a78bfa]/10 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-[#a78bfa]">
                       <Sparkles className="h-3 w-3" /> Ouro
                     </div>
                   </div>
@@ -336,7 +336,7 @@ function AuthPage() {
                           className={
                             "auth-stamp relative flex aspect-square items-center justify-center rounded-full border text-[10px] " +
                             (filled
-                              ? "auth-stamp-filled border-[#00ffff]/55 bg-[#00ffff]/12 text-[#00ffff]"
+                              ? "auth-stamp-filled border-[#a78bfa]/55 bg-[#a78bfa]/12 text-[#a78bfa]"
                               : isNext
                               ? "border-[oklch(0.78_0.19_330)]/50 border-dashed text-[oklch(0.78_0.19_330)]"
                               : "border-dashed border-white/12 text-white/25")
@@ -364,7 +364,7 @@ function AuthPage() {
                       </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
-                      <Wifi className="h-3 w-3 rotate-90 text-[#00ffff]/70" />
+                      <Wifi className="h-3 w-3 rotate-90 text-[#a78bfa]/70" />
                       <div className="text-right">
                         <div className="text-[8px] uppercase tracking-[0.2em] text-white/40">Membro</div>
                         <div className="font-display text-[11px] font-semibold text-white">Ana R.</div>
@@ -388,7 +388,7 @@ function AuthPage() {
 
           <div className="max-w-md text-center lg:text-left">
             <h1 className="font-display text-4xl font-bold leading-tight text-white">
-              Onde a lealdade vira <span className="text-[#00ffff]">experiência.</span>
+              Onde a lealdade vira <span className="text-[#a78bfa]">experiência.</span>
             </h1>
             <p className="mt-3 text-white/50">Cartão fidelidade digital, carimbos em tempo real e clientes que voltam sempre.</p>
           </div>
@@ -401,7 +401,7 @@ function AuthPage() {
             {/* Sliding switch toggle */}
             <div className="relative mb-5 grid grid-cols-2 rounded-full border border-white/10 bg-black/40 p-1">
               <span
-                className="pointer-events-none absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full bg-[#00ffff] shadow-[0_0_24px_rgba(0,255,255,0.45)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                className="pointer-events-none absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full bg-[#a78bfa] shadow-[0_0_24px_rgba(167,139,250,0.45)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
                 style={{ transform: isSignup ? "translateX(100%)" : "translateX(0%)" }}
               />
               <Link
@@ -425,7 +425,7 @@ function AuthPage() {
               {/* Toggle Cliente / Estabelecimento — oculto quando o fluxo veio da carteira */}
               {search.source !== "wallet" && (
                 <div className="animate-fade-in">
-                  <div className="mb-1 ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">Sou</div>
+                  <div className="mb-1 ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">Sou</div>
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
@@ -433,7 +433,7 @@ function AuthPage() {
                       className={
                         "flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all " +
                         (role === "customer"
-                          ? "border-[#00ffff] bg-[#00ffff]/10 text-white shadow-[0_0_20px_-6px_rgba(0,255,255,0.6)]"
+                          ? "border-[#a78bfa] bg-[#a78bfa]/10 text-white shadow-[0_0_20px_-6px_rgba(167,139,250,0.6)]"
                           : "border-white/10 bg-white/5 text-white/60 hover:text-white")
                       }
                     >
@@ -445,7 +445,7 @@ function AuthPage() {
                       className={
                         "flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all " +
                         (role === "establishment"
-                          ? "border-[#00ffff] bg-[#00ffff]/10 text-white shadow-[0_0_20px_-6px_rgba(0,255,255,0.6)]"
+                          ? "border-[#a78bfa] bg-[#a78bfa]/10 text-white shadow-[0_0_20px_-6px_rgba(167,139,250,0.6)]"
                           : "border-white/10 bg-white/5 text-white/60 hover:text-white")
                       }
                     >
@@ -462,8 +462,8 @@ function AuthPage() {
                 </div>
               )}
               {search.source === "wallet" && (
-                <div className="animate-fade-in rounded-xl border border-[#00ffff]/25 bg-[#00ffff]/5 px-3 py-2.5 text-[11px] text-white/70 flex items-center gap-2">
-                  <User className="h-3.5 w-3.5 text-[#00ffff]" />
+                <div className="animate-fade-in rounded-xl border border-[#a78bfa]/25 bg-[#a78bfa]/5 px-3 py-2.5 text-[11px] text-white/70 flex items-center gap-2">
+                  <User className="h-3.5 w-3.5 text-[#a78bfa]" />
                   Acesso à carteira do cliente. Use seu WhatsApp para entrar.
                 </div>
               )}
@@ -471,7 +471,7 @@ function AuthPage() {
 
               {isSignup && (
                 <div className="animate-fade-in space-y-1.5">
-                  <label htmlFor="name" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">Seu nome</label>
+                  <label htmlFor="name" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">Seu nome</label>
                   <input id="name" value={name} onChange={(e) => setName(e.target.value)} required minLength={2} className="auth-input" />
                 </div>
               )}
@@ -479,7 +479,7 @@ function AuthPage() {
               {/* WhatsApp: obrigatório para cliente (sempre) e para estabelecimento no signup */}
               {(walletFlow || isEstablishmentSignup) && (
                 <div className="animate-fade-in space-y-1.5">
-                  <label htmlFor="whatsapp" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">WhatsApp</label>
+                  <label htmlFor="whatsapp" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">WhatsApp</label>
                   <input id="whatsapp" type="tel" inputMode="tel" autoComplete="tel" placeholder="(11) 91234-5678" value={whatsapp} onChange={(e) => setWhatsapp(formatWhatsapp(e.target.value))} required className="auth-input" />
                   {walletFlow && (
                     <p className="ml-1 text-[10px] text-white/40">
@@ -493,12 +493,12 @@ function AuthPage() {
               {!walletFlow && (
                 <>
                   <div className="space-y-1.5">
-                    <label htmlFor="email" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">E-mail</label>
+                    <label htmlFor="email" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">E-mail</label>
                     <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" placeholder="voce@empresa.com" className="auth-input" />
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <label htmlFor="password" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00ffff]">Senha</label>
+                      <label htmlFor="password" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">Senha</label>
                       {!isSignup && (
                         <Link to="/auth/recuperar" className="text-[10px] uppercase tracking-widest text-[oklch(0.78_0.19_330)] hover:underline">Esqueci</Link>
                       )}
@@ -511,7 +511,7 @@ function AuthPage() {
                 </>
               )}
 
-              <button type="submit" disabled={loading} className="auth-cta group mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-[#00ffff] py-3 font-display text-sm font-bold uppercase tracking-widest text-black shadow-[0_0_30px_-4px_rgba(0,255,255,0.55)] transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60">
+              <button type="submit" disabled={loading} className="auth-cta group mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-[#a78bfa] py-3 font-display text-sm font-bold uppercase tracking-widest text-black shadow-[0_0_30px_-4px_rgba(167,139,250,0.55)] transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60">
                 {loading ? (
                   "Aguarde…"
                 ) : (
@@ -524,16 +524,16 @@ function AuthPage() {
             </form>
 
             <div className="mt-4 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/30">
-              <Check className="h-3 w-3 text-[#00ffff]" /> Criptografia ativa · SSL
+              <Check className="h-3 w-3 text-[#a78bfa]" /> Criptografia ativa · SSL
             </div>
 
             <p className="mt-3 text-center text-[10px] leading-relaxed text-white/40">
               Ao continuar você concorda com os{" "}
-              <a href="/termos" target="_blank" rel="noopener noreferrer" className="underline decoration-[#00ffff]/40 underline-offset-2 hover:text-white/70">
+              <a href="/termos" target="_blank" rel="noopener noreferrer" className="underline decoration-[#a78bfa]/40 underline-offset-2 hover:text-white/70">
                 Termos de uso
               </a>{" "}
               e a{" "}
-              <a href="/privacidade" target="_blank" rel="noopener noreferrer" className="underline decoration-[#00ffff]/40 underline-offset-2 hover:text-white/70">
+              <a href="/privacidade" target="_blank" rel="noopener noreferrer" className="underline decoration-[#a78bfa]/40 underline-offset-2 hover:text-white/70">
                 Política de privacidade
               </a>
               .

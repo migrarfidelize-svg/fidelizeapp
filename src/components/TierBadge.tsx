@@ -21,7 +21,7 @@ const TIER_META: Record<CustomerTier, { label: string; className: string; Icon: 
   },
   diamante: {
     label: "Diamante",
-    className: "bg-cyan-400/15 text-cyan-800 ring-cyan-500/40 dark:text-cyan-200",
+    className: "bg-violet-400/15 text-violet-800 ring-violet-500/40 dark:text-violet-200",
     Icon: Gem,
   },
 };

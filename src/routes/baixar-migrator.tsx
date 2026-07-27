@@ -48,18 +48,18 @@ function DownloadPage() {
 
         <button
           onClick={download}
-          className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-3 rounded-xl transition"
+          className="w-full bg-violet-500 hover:bg-violet-400 text-slate-950 font-bold py-3 rounded-xl transition"
         >
           ⬇️  Baixar extensão (.zip)
         </button>
 
-        {status && <div className="text-sm text-cyan-300">{status}</div>}
+        {status && <div className="text-sm text-violet-300">{status}</div>}
 
         <div className="text-sm text-slate-300 space-y-2">
           <p className="font-semibold text-slate-100">Como instalar:</p>
           <ol className="list-decimal list-inside space-y-1 text-slate-400">
-            <li>Descompacte o arquivo <code className="text-cyan-300">fidelize-migrator.zip</code>.</li>
-            <li>Abra <code className="text-cyan-300">chrome://extensions</code> no Chrome/Edge/Brave.</li>
+            <li>Descompacte o arquivo <code className="text-violet-300">fidelize-migrator.zip</code>.</li>
+            <li>Abra <code className="text-violet-300">chrome://extensions</code> no Chrome/Edge/Brave.</li>
             <li>Ative o <b>Modo do desenvolvedor</b> (canto superior direito).</li>
             <li>Clique em <b>Carregar sem compactação</b> e selecione a pasta descompactada.</li>
             <li>Clique no ícone 🚀 na barra do navegador.</li>

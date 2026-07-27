@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Coffee, Gift, RotateCw, Sparkles, Star, QrCode } from "lucide-react";
 
-const CYAN = "#00ffff";
+const CYAN = "#a78bfa";
 
 /**
  * Cartão fidelidade 3D interativo.

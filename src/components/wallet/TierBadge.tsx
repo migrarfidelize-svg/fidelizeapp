@@ -6,7 +6,7 @@ const META: Record<string, { label: string; color: string; ring: string; Icon: R
   bronze: { label: "Bronze", color: "#c48b57", ring: "border-[#c48b57]/50 bg-[#c48b57]/10 text-[#e5b48a]", Icon: Medal },
   prata: { label: "Prata", color: "#c5c9d1", ring: "border-[#c5c9d1]/50 bg-[#c5c9d1]/10 text-[#e2e5eb]", Icon: Award },
   ouro: { label: "Ouro", color: "#facc15", ring: "border-yellow-400/50 bg-yellow-400/10 text-yellow-300", Icon: Crown },
-  diamante: { label: "Diamante", color: "#67e8f9", ring: "border-cyan-300/60 bg-cyan-300/10 text-cyan-200", Icon: Gem },
+  diamante: { label: "Diamante", color: "#67e8f9", ring: "border-violet-300/60 bg-violet-300/10 text-violet-200", Icon: Gem },
 };
 
 /** Selo compacto do nível do cliente (bronze/prata/ouro/diamante). */
