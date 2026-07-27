@@ -30,7 +30,8 @@ function NewPasswordPage() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (password.length < 8) { toast.error("Mínimo de 8 caracteres."); return; }
+    if (password.length < 6) { toast.error("Mínimo de 6 caracteres."); return; }
+    if (password.length > 15) { toast.error("Máximo de 15 caracteres."); return; }
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
