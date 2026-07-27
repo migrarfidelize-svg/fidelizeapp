@@ -651,7 +651,7 @@ function LayoutWire({ id }: { id: MenuLayoutId }) {
   const bar = "bg-muted-foreground/25";
   if (id === "premium") {
     return (
-      <div className="grid h-16 grid-cols-2 gap-1.5 rounded-xl bg-muted/50 p-2">
+      <div className="grid h-20 grid-cols-2 gap-1.5 rounded-xl bg-muted/50 p-2">
         {[0, 1].map((i) => (
           <div key={i} className="relative overflow-hidden rounded-md bg-muted-foreground/25">
             <div className="absolute inset-x-1 bottom-1 rounded-sm bg-background/85 p-1">
@@ -665,7 +665,7 @@ function LayoutWire({ id }: { id: MenuLayoutId }) {
   }
   if (id === "spotlight") {
     return (
-      <div className="h-16 space-y-1.5 rounded-xl bg-muted/50 p-2">
+      <div className="h-20 space-y-1.5 rounded-xl bg-muted/50 p-2">
         <div className="flex h-8 gap-1.5 rounded-md bg-background p-1">
           <div className="w-1/2 rounded-sm bg-muted-foreground/25" />
           <div className="flex-1 space-y-1 py-0.5">
@@ -683,7 +683,7 @@ function LayoutWire({ id }: { id: MenuLayoutId }) {
   }
   if (id === "boutique") {
     return (
-      <div className="grid h-16 grid-cols-2 gap-2 rounded-xl bg-muted/50 p-2">
+      <div className="grid h-20 grid-cols-2 gap-2 rounded-xl bg-muted/50 p-2">
         {[0, 1].map((i) => (
           <div key={i} className="rounded-sm border border-primary/40 bg-background p-1 text-center">
             <div className="mx-auto h-5 w-full rounded-sm bg-muted-foreground/20" />
@@ -697,7 +697,7 @@ function LayoutWire({ id }: { id: MenuLayoutId }) {
 
   if (id === "grid") {
     return (
-      <div className="grid h-16 grid-cols-2 gap-1.5 rounded-xl bg-muted/50 p-2">
+      <div className="grid h-20 grid-cols-2 gap-1.5 rounded-xl bg-muted/50 p-2">
         {[0, 1, 2, 3].map((i) => (
           <div key={i} className="rounded-md bg-background p-1">
             <div className="h-4 rounded-sm bg-muted-foreground/20" />
@@ -709,7 +709,7 @@ function LayoutWire({ id }: { id: MenuLayoutId }) {
   }
   if (id === "magazine") {
     return (
-      <div className="h-16 space-y-1.5 rounded-xl bg-muted/50 p-2">
+      <div className="h-20 space-y-1.5 rounded-xl bg-muted/50 p-2">
         {[0, 1, 2].map((i) => (
           <div key={i} className="flex items-center gap-2 rounded-md bg-background px-1.5 py-1">
             <div className="flex-1 space-y-1">
@@ -723,7 +723,7 @@ function LayoutWire({ id }: { id: MenuLayoutId }) {
     );
   }
   return (
-    <div className="h-16 space-y-1.5 rounded-xl bg-muted/50 p-2">
+    <div className="h-20 space-y-1.5 rounded-xl bg-muted/50 p-2">
       {[0, 1].map((i) => (
         <div key={i} className="flex items-center gap-2 rounded-md bg-background p-1.5">
           <div className="h-6 w-8 rounded-sm bg-muted-foreground/20" />
