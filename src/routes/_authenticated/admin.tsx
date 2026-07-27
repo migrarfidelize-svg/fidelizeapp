@@ -30,13 +30,15 @@ const OVERVIEW: NavItem = { to: "/admin", label: "Visão geral", icon: LayoutDas
 
 const NAV_GROUPS: NavGroup[] = [
   {
-    key: "empresas",
-    label: "Empresas",
+    key: "plataforma",
+    label: "Plataforma",
     icon: Building2,
     items: [
       { to: "/admin/empresas", label: "Empresas", icon: Building2 },
       { to: "/admin/usuarios", label: "Usuários", icon: UsersRound },
-      { to: "/admin/equipe", label: "Equipe", icon: UsersRound },
+      { to: "/admin/equipe", label: "Equipe", icon: Shield },
+      { to: "/admin/suporte", label: "Suporte", icon: LifeBuoy },
+      { to: "/admin/avaliacoes", label: "Avaliações", icon: Star },
     ],
   },
   {
@@ -51,17 +53,6 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    key: "operacao",
-    label: "Operação",
-    icon: Megaphone,
-    items: [
-      { to: "/admin/alertas", label: "Alertas", icon: Bell },
-      { to: "/admin/avaliacoes", label: "Avaliações", icon: Star },
-      { to: "/admin/auditoria", label: "Auditoria", icon: FileClock },
-      { to: "/admin/suporte", label: "Suporte", icon: LifeBuoy },
-    ],
-  },
-  {
     key: "comunicacao",
     label: "Comunicação",
     icon: Mail,
@@ -70,6 +61,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/admin/email-templates", label: "Templates", icon: FileText },
       { to: "/admin/email-fila", label: "Fila de envio", icon: ListChecks },
       { to: "/admin/notificacoes", label: "Push", icon: Bell },
+      { to: "/admin/alertas", label: "Alertas", icon: Megaphone },
       { to: "/admin/ajuda", label: "Central de Ajuda", icon: BookOpen },
     ],
   },
@@ -81,11 +73,13 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/admin/integracoes", label: "Integrações", icon: Plug },
       { to: "/admin/liberacoes", label: "Liberações de recursos", icon: KeyRound },
       { to: "/admin/cardapio-jsonld", label: "JSON-LD do cardápio", icon: FileJson },
+      { to: "/admin/auditoria", label: "Auditoria", icon: FileClock },
       { to: "/admin/migracao", label: "Migração & Downloads", icon: Rocket },
       { to: "/admin/config", label: "Configurações", icon: Settings },
     ],
   },
 ];
+
 
 function AdminLayout() {
   const navigate = useNavigate();
