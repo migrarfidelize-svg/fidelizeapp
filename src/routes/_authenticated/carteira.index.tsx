@@ -13,7 +13,6 @@ import {
   WithOfflineFallback,
 } from "@/components/wallet/WalletStates";
 import { WalletStack } from "@/components/wallet/WalletStack";
-import { WalletHomeSkeleton } from "@/components/wallet/WalletCardSkeleton";
 import { WalletOnboarding } from "@/components/wallet/WalletOnboarding";
 
 
