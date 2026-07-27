@@ -91,7 +91,7 @@ export function HeroAppPreview() {
 
 
       {/* tabs / progress */}
-      <div className="mx-auto mt-5 flex max-w-[300px] items-center justify-center gap-2">
+      <div className="mx-auto mt-5 flex max-w-[340px] items-center justify-center gap-1.5">
         {SCREENS.map((s, k) => {
           const Icon = s.icon;
           const on = k === i;
@@ -103,7 +103,7 @@ export function HeroAppPreview() {
                 setI(k);
                 setT(0);
               }}
-              className="group relative flex-1 overflow-hidden rounded-lg border px-2 py-1.5 text-left transition-colors"
+              className="group relative flex-1 overflow-hidden rounded-lg border px-1.5 py-1.5 text-left transition-colors"
               style={{
                 borderColor: on ? `${CYAN}66` : "rgba(255,255,255,0.12)",
                 background: on ? `${CYAN}12` : "rgba(255,255,255,0.04)",
