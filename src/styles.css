@@ -2777,10 +2777,10 @@ html:not(.dark) .fz-ring-3 {
 }
 html:not(.dark) .fz-ring { filter: drop-shadow(0 0 5px rgba(124, 58, 237, 0.22)); }
 
-/* Sombras coloridas mais discretas no tema claro */
+/* Sombras coloridas mais discretas no tema claro (~50% menos que antes) */
 html:not(.dark) {
-  --glow-primary: color-mix(in oklab, var(--primary) 26%, transparent);
-  --glow-accent: color-mix(in oklab, var(--accent) 22%, transparent);
+  --glow-primary: color-mix(in oklab, var(--primary) 12%, transparent);
+  --glow-accent: color-mix(in oklab, var(--accent) 10%, transparent);
 }
 
 /* ============================================================
