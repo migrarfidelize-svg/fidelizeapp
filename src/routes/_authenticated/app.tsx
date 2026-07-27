@@ -95,6 +95,16 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    key: "clientes",
+    icon: Users,
+    label: "Clientes",
+    items: [
+      { to: "/app/clientes", label: "Clientes", icon: Users, exact: true },
+      { to: "/app/equipe", label: "Equipe", icon: UsersRound },
+    ],
+  },
+  {
+
 
     key: "qrcodes",
     icon: QrCode,
