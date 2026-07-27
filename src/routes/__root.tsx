@@ -168,7 +168,7 @@ function RootComponent() {
   useEffect(() => {
     const apply = () => {
       const forced = forcedThemeForPath(window.location.pathname);
-      const fallback: "light" | "dark" = window.location.pathname === "/" ? "light" : "dark";
+      const fallback: "light" | "dark" = "light";
       let t: "light" | "dark" = fallback;
       if (forced) t = forced;
       else {
