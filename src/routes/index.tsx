@@ -1101,48 +1101,71 @@ function Examples() {
         </div>
 
         {/* Uniform 5-up strip — desktop 5 cols, tablet 2/3, mobile 1 */}
-        <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {items.map((it) => {
+        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {items.map((it, idx) => {
             const Icon = it.icon;
             const ChannelIcon = it.channelIcon;
             return (
               <article
                 key={it.title}
-                className={`group relative flex flex-col overflow-hidden rounded-2xl border p-5 transition-all duration-300 hover:-translate-y-1 ${
+                className={`group relative flex flex-col overflow-hidden rounded-2xl border p-5 transition-all duration-500 hover:-translate-y-2 ${
                   it.featured
-                    ? "border-cyan-400/30 bg-gradient-to-br from-cyan-500/[0.08] to-white/[0.02] hover:border-cyan-400/60"
-                    : "border-white/10 bg-white/[0.03] hover:border-white/25"
+                    ? "border-cyan-400/35 bg-gradient-to-b from-cyan-500/[0.10] to-white/[0.02]"
+                    : "border-white/10 bg-white/[0.03] hover:border-cyan-400/35"
                 }`}
-                style={
-                  it.featured
-                    ? { boxShadow: "0 20px 60px -25px rgba(0,255,255,0.4), inset 0 1px 0 rgba(255,255,255,0.06)" }
-                    : { boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)" }
-                }
+                style={{
+                  boxShadow: it.featured
+                    ? "0 24px 70px -30px rgba(0,255,255,0.55), inset 0 1px 0 rgba(255,255,255,0.07)"
+                    : "inset 0 1px 0 rgba(255,255,255,0.04)",
+                  animation: `fade-in 0.6s ease-out ${idx * 90}ms both`,
+                }}
               >
+                {/* spotlight glow on hover */}
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute -top-24 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-100"
+                  style={{ background: "radial-gradient(circle, rgba(0,255,255,0.35), transparent 70%)" }}
+                />
+                {/* sheen sweep */}
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-[1100ms] ease-out group-hover:translate-x-full"
+                />
+                {/* index marker */}
+                <span className="pointer-events-none absolute right-4 top-6 font-display text-5xl font-black leading-none text-white/[0.06] transition-colors duration-500 group-hover:text-cyan-400/15">
+                  {String(idx + 1).padStart(2, "0")}
+                </span>
+
                 {it.featured && (
                   <span className="absolute right-3 top-3 rounded-full bg-cyan-400/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest" style={{ color: "#00ffff" }}>
                     Destaque
                   </span>
                 )}
-                <div className="grid h-11 w-11 place-items-center rounded-xl border border-cyan-400/30 bg-cyan-400/10">
+                <div className="relative grid h-12 w-12 place-items-center rounded-xl border border-cyan-400/30 bg-cyan-400/10 transition-all duration-500 group-hover:scale-110 group-hover:border-cyan-400/70 group-hover:bg-cyan-400/20 group-hover:shadow-[0_0_28px_-4px_rgba(0,255,255,0.75)]">
                   <Icon className="h-5 w-5" style={{ color: "#00ffff" }} />
                 </div>
-                <h3 className="mt-4 font-display text-base font-bold leading-tight text-white">{it.title}</h3>
-                <p className="mt-1 line-clamp-2 text-xs text-white/55">{it.desc}</p>
+                <h3 className="relative mt-4 font-display text-base font-bold leading-tight text-white">{it.title}</h3>
+                <p className="relative mt-1 line-clamp-2 text-xs text-white/55">{it.desc}</p>
 
-                <div className="mt-4 border-t border-white/5 pt-3">
-                  <div className="metric-number text-2xl leading-none">
+                <div className="relative mt-auto pt-4">
+                  <div className="h-px w-full bg-gradient-to-r from-cyan-400/40 via-white/10 to-transparent" />
+                  <div className="metric-number mt-3 text-3xl leading-none transition-transform duration-500 group-hover:scale-105 origin-left">
                     {it.kpi}
                     <sup className="ml-0.5 text-[10px] font-normal text-white/40">*</sup>
                   </div>
                   <span className="text-[10px] font-semibold uppercase tracking-widest text-white/45">{it.kpiLabel}</span>
                 </div>
 
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-widest text-white/55">
+                <div className="relative mt-4 flex items-center justify-between">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-white/60">
                     <ChannelIcon className="h-3 w-3" style={{ color: "#00ffff" }} /> {it.channel}
                   </span>
-                  <Link to="/auth" aria-label={`Usar template ${it.title}`} className="inline-flex items-center gap-1 text-[11px] font-bold transition-transform group-hover:translate-x-0.5" style={{ color: "#00ffff" }}>
+                  <Link
+                    to="/auth"
+                    aria-label={`Usar template ${it.title}`}
+                    className="inline-flex items-center gap-1 rounded-full border border-cyan-400/30 px-2.5 py-1 text-[11px] font-bold transition-all duration-300 group-hover:bg-cyan-400 group-hover:text-[#001010]"
+                    style={{ color: "#00ffff" }}
+                  >
                     Usar <ArrowRight className="h-3 w-3" />
                   </Link>
                 </div>
@@ -1150,6 +1173,7 @@ function Examples() {
             );
           })}
         </div>
+
 
         <p className="mx-auto mt-6 max-w-2xl text-center text-[11px] leading-relaxed text-white/40">
           * Média dos clientes Fidelize com a campanha ativa por pelo menos 90 dias. Resultados variam conforme segmento,
