@@ -301,7 +301,7 @@ function Hero() {
                 <a href="#ecossistema">Ver como funciona</a>
               </Button>
             </div>
-            <div className="mt-6 grid w-full grid-cols-1 gap-2 text-xs text-white/60 xs:grid-cols-2 sm:flex sm:flex-wrap sm:items-center sm:gap-6">
+            <div className="mt-6 flex w-full flex-wrap items-center gap-x-5 gap-y-2 text-xs text-white/60 sm:gap-x-6">
               <span className="flex items-center gap-1.5">
                 <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> Sem cartão de crédito
               </span>
