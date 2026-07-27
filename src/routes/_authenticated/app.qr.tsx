@@ -159,14 +159,14 @@ type LayoutPos = { x: number; y: number }; // percent 0-100 (element center)
 type PosterLayout = Record<LayoutKey, LayoutPos>;
 
 const DEFAULT_LAYOUT: PosterLayout = {
-  header:      { x: 50, y: 16 },
-  title:       { x: 50, y: 34 },
-  subtitle:    { x: 50, y: 42 },
-  primaryQr:   { x: 50, y: 61 },
-  secondaryQr: { x: 74, y: 61 },
-  nfc:         { x: 50, y: 76 },
-  ctaNear:     { x: 50, y: 84 },
-  ctaFooter:   { x: 50, y: 92 },
+  header:      { x: 50, y: 14 },
+  title:       { x: 50, y: 37 },
+  subtitle:    { x: 50, y: 45 },
+  primaryQr:   { x: 50, y: 65 },
+  secondaryQr: { x: 74, y: 65 },
+  nfc:         { x: 50, y: 80 },
+  ctaNear:     { x: 50, y: 87 },
+  ctaFooter:   { x: 50, y: 94 },
 };
 
 
@@ -215,7 +215,7 @@ const BADGE_KEYS = Object.keys(BADGE_CATALOG) as BadgeKey[];
 type BadgeInstance = { key: BadgeKey; x: number; y: number };
 const DEFAULT_BADGE_POS: Record<BadgeKey, { x: number; y: number }> = {
   stars5:   { x: 22, y: 50 },
-  wifi:     { x: 50, y: 26 },
+  wifi:     { x: 50, y: 30 },
 
   pix:      { x: 22, y: 72 },
   card:     { x: 78, y: 72 },
