@@ -144,7 +144,7 @@ function WalletPage() {
       <PageHero
         icon={Wallet}
         title="Carteira digital"
-        description="Personalize o cartão que seus clientes salvam no Google Wallet e no Apple Wallet. Carimbos e nível são atualizados automaticamente."
+        subtitle="Personalize o cartão que seus clientes salvam no Google Wallet e no Apple Wallet. Carimbos e nível são atualizados automaticamente."
       />
 
       {cfg.isLoading && (
