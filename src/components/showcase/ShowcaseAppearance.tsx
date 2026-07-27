@@ -768,7 +768,10 @@ function MenuPreview({
             </div>
           </div>
         </div>
+        </div>
       </div>
+
+
 
       <p className="text-center text-[11px] text-muted-foreground">
         {loading
