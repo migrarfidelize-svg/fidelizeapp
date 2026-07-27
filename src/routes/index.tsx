@@ -322,19 +322,20 @@ function Segments() {
   return (
     <section
       id="segmentos"
-      className="relative overflow-hidden border-y py-16 md:py-20"
-      style={{ background: "#050810", borderColor: "rgba(255,255,255,0.08)" }}
+      className="relative overflow-hidden border-y border-border bg-white py-16 dark:border-white/10 md:py-20"
+      style={undefined}
     >
       <div
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none absolute inset-0 hidden dark:block"
         style={{ background: "radial-gradient(70% 60% at 50% 0%, rgba(255,255,255,0.07), transparent 70%)" }}
       />
-      <div className="relative z-10 mx-auto max-w-5xl px-4 text-center text-white">
+      <div className="relative z-10 mx-auto max-w-5xl px-4 text-center text-foreground dark:text-white">
         <h2 className="font-display text-2xl font-bold leading-snug text-balance md:text-4xl">
           As marcas que mais crescem no mundo já descobriram o poder da fidelização.
         </h2>
-        <p className="mt-3 text-base text-white/60 md:text-lg">Agora, é a sua vez.</p>
+        <p className="mt-3 text-base text-muted-foreground dark:text-white/60 md:text-lg">Agora, é a sua vez.</p>
       </div>
+
       <div className="relative z-10 mt-10 md:mt-14">
         <BrandMarquee />
       </div>
