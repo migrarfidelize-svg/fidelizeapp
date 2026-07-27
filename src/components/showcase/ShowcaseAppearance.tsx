@@ -620,6 +620,52 @@ function ThemeSwatch({ p }: { p: MenuPreset }) {
 
 function LayoutWire({ id }: { id: MenuLayoutId }) {
   const bar = "bg-muted-foreground/25";
+  if (id === "premium") {
+    return (
+      <div className="grid h-16 grid-cols-2 gap-1.5 rounded-xl bg-muted/50 p-2">
+        {[0, 1].map((i) => (
+          <div key={i} className="relative overflow-hidden rounded-md bg-muted-foreground/25">
+            <div className="absolute inset-x-1 bottom-1 rounded-sm bg-background/85 p-1">
+              <div className={`h-1 w-3/4 rounded-full ${bar}`} />
+              <div className="mt-0.5 h-1.5 w-1/2 rounded-full bg-primary/70" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (id === "spotlight") {
+    return (
+      <div className="h-16 space-y-1.5 rounded-xl bg-muted/50 p-2">
+        <div className="flex h-8 gap-1.5 rounded-md bg-background p-1">
+          <div className="w-1/2 rounded-sm bg-muted-foreground/25" />
+          <div className="flex-1 space-y-1 py-0.5">
+            <div className={`h-1.5 w-3/4 rounded-full ${bar}`} />
+            <div className="h-2 w-1/2 rounded-full bg-primary/70" />
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-1.5">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="h-5 rounded-sm bg-background" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+  if (id === "boutique") {
+    return (
+      <div className="grid h-16 grid-cols-2 gap-2 rounded-xl bg-muted/50 p-2">
+        {[0, 1].map((i) => (
+          <div key={i} className="rounded-sm border border-primary/40 bg-background p-1 text-center">
+            <div className="mx-auto h-5 w-full rounded-sm bg-muted-foreground/20" />
+            <div className={`mx-auto mt-1 h-1 w-2/3 rounded-full ${bar}`} />
+            <div className="mx-auto mt-1 h-1.5 w-1/2 rounded-full border border-primary/60" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   if (id === "grid") {
     return (
       <div className="grid h-16 grid-cols-2 gap-1.5 rounded-xl bg-muted/50 p-2">
