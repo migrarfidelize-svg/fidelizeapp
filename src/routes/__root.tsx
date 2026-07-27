@@ -206,6 +206,38 @@ function RootComponent() {
     return () => navigator.serviceWorker.removeEventListener("message", onMessage);
   }, []);
 
+  useEffect(() => {
+    let lastSync = 0;
+    const syncVisibleData = async () => {
+      const now = Date.now();
+      if (now - lastSync < 2500) return;
+      lastSync = now;
+      router.invalidate();
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          queryClient.invalidateQueries({ refetchType: "active" });
+        }
+      } catch {
+        /* a sincronização não pode quebrar a navegação */
+      }
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") void syncVisibleData();
+    };
+    const onPageShow = () => void syncVisibleData();
+    window.addEventListener("focus", onPageShow);
+    window.addEventListener("online", onPageShow);
+    window.addEventListener("pageshow", onPageShow);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("focus", onPageShow);
+      window.removeEventListener("online", onPageShow);
+      window.removeEventListener("pageshow", onPageShow);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [router, queryClient]);
+
 
 
 

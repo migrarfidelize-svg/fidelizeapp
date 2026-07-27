@@ -232,7 +232,7 @@ function Hero() {
             <path d="M1220,0 L1220,300 L1260,340 L1260,380" />
           </g>
           {/* animated bright traces */}
-          <g stroke="#a78bfa" strokeWidth="1.6" fill="none" filter="url(#pcbGlow)" strokeDasharray="140 900" strokeLinecap="round">
+          <g className="pcb-fx" stroke="#a78bfa" strokeWidth="1.6" fill="none" filter="url(#pcbGlow)" strokeDasharray="140 900" strokeLinecap="round">
             <path className="pcb-trace pcb-t1" d="M0,720 L280,720 L320,680 L560,680 L600,640 L900,640 L940,600 L1600,600" />
             <path className="pcb-trace pcb-t2" d="M0,540 L200,540 L240,500 L520,500 L560,460 L860,460 L900,420 L1600,420" />
             <path className="pcb-trace pcb-t3" d="M1600,380 L680,380 L640,340 L380,340 L340,300 L0,300" />
@@ -241,7 +241,7 @@ function Hero() {
             <path className="pcb-trace pcb-t6" d="M760,0 L760,240 L800,280 L800,340" />
           </g>
           {/* nodes with pulsing glow */}
-          <g fill="#a78bfa" filter="url(#pcbNodeGlow)">
+          <g className="pcb-fx" fill="#a78bfa" filter="url(#pcbNodeGlow)">
             <circle className="pcb-node pcb-n1" cx="320" cy="680" r="3.5" />
             <circle className="pcb-node pcb-n2" cx="600" cy="640" r="3.5" />
             <circle className="pcb-node pcb-n3" cx="940" cy="600" r="3.5" />

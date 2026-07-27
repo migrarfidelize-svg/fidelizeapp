@@ -3076,6 +3076,10 @@ header[data-slot="site-header"],
   /* 4. animações que animam filter / box-shadow / background forçam
      repaint em cada frame. Desligadas no mobile. */
   .aurora-bg::before,
+  .logo-mark-aurora::after,
+  .sidebar-toggle::before,
+  .nav-item-active-aurora::after,
+  .card-icon::before,
   .card-icon,
   .card-icon::after,
   .nav-icon-active,
@@ -3094,14 +3098,36 @@ header[data-slot="site-header"],
   .segment-sweep,
   .segment-ring,
   .pcb-node,
-  .pcb-signal,
+  .pcb-trace,
   .hero-bokeh,
   .hero-grid,
   .hero-beam,
   .hero-scan,
-  .fz-core,
+  .fz-core-mark,
   .dock-logo-breathe {
     animation: none !important;
+  }
+
+  .hero-pcb .pcb-fx {
+    filter: none !important;
+  }
+
+  .hero-phone-halo {
+    display: none !important;
+  }
+
+  .hero-3d-card {
+    transform: translateZ(0);
+  }
+
+  .hero-3d-card [style*="preserve-3d"] {
+    transition-duration: 220ms !important;
+  }
+
+  .tear-half,
+  .tear-digital > div:first-child {
+    filter: none !important;
+    will-change: transform, opacity;
   }
 
   /* 5. marquees continuam (são só transform), mas em camada própria
@@ -3122,5 +3148,9 @@ header[data-slot="site-header"],
   /* 7. transições longas viram delay percebido no toque. */
   a, button, [role="button"], [role="tab"] {
     transition-duration: 140ms;
+  }
+
+  .transition-all {
+    transition-property: color, background-color, border-color, opacity, transform !important;
   }
 }

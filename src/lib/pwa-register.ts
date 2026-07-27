@@ -10,6 +10,8 @@ const SW_READY_TIMEOUT_MS = 20000;
 
 let registrationPromise: Promise<ServiceWorkerRegistration> | null = null;
 let routeWatcherInstalled = false;
+let controllerReloadInstalled = false;
+let updateWatcherInstalled = false;
 
 function isPreviewHost(hostname: string): boolean {
   if (hostname.startsWith("id-preview--") || hostname.startsWith("preview--")) return true;
@@ -176,12 +178,42 @@ function registerServiceWorkerNow(): Promise<ServiceWorkerRegistration> {
   return registrationPromise;
 }
 
+function installControllerReload() {
+  if (controllerReloadInstalled || !("serviceWorker" in navigator)) return;
+  controllerReloadInstalled = true;
+  const hadControllerAtBoot = Boolean(navigator.serviceWorker.controller);
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (!hadControllerAtBoot || refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
+}
+
+function installUpdateWatcher() {
+  if (updateWatcherInstalled || !("serviceWorker" in navigator)) return;
+  updateWatcherInstalled = true;
+  const update = () => {
+    if (isHardRefusedContext()) return;
+    void navigator.serviceWorker.getRegistration(SW_URL).then((registration) => {
+      void registration?.update().catch(() => { /* noop */ });
+    }).catch(() => { /* noop */ });
+  };
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") update();
+  });
+  window.addEventListener("online", update);
+  window.setInterval(update, 15 * 60 * 1000);
+}
+
 function triggerRegistrationIfNeeded() {
   if (isHardRefusedContext()) {
     cleanupPwa();
     return;
   }
   if (!shouldRegisterForLocation(window.location)) return;
+  installControllerReload();
+  installUpdateWatcher();
   void registerServiceWorkerNow().catch(() => { /* noop */ });
 }
 
@@ -259,6 +291,9 @@ export function registerPWA() {
   installRouteWatcher();
 
   if (!shouldRegisterForLocation(window.location)) return;
+
+  installControllerReload();
+  installUpdateWatcher();
 
   // Defer registration until after load so first paint isn't blocked.
   const doRegister = () => {
