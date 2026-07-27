@@ -421,9 +421,10 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
           </Card>
 
           {/* TELA INICIAL — só faz sentido no cardápio (modo Stories) */}
-          {!isCatalog && (
+          {!isCatalog && step === 4 && (
           <Card>
-            <CardHeader><CardTitle>4. Ao entrar no cardápio</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Ao entrar no cardápio</CardTitle></CardHeader>
+
             <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {MENU_ENTRIES.map((e) => (
                 <button
