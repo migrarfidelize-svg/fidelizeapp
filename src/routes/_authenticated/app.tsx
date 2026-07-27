@@ -172,6 +172,7 @@ function AppLayout() {
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const [openGroups, setOpenGroups] = useState<string[]>([]);
   const [hoverGroup, setHoverGroup] = useState<string | null>(null);
+  const [hoverPos, setHoverPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   // mantém a categoria da rota atual expandida
   useEffect(() => {
     const g = NAV_GROUPS.find((grp) => grp.items.some((n) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))));
@@ -400,7 +401,12 @@ function AppLayout() {
               <div
                 key={g.key}
                 className="relative"
-                onMouseEnter={() => { if (!forceExpanded) setHoverGroup(g.key); }}
+                onMouseEnter={(e) => {
+                  if (forceExpanded) return;
+                  const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  setHoverPos({ top: Math.min(r.top, window.innerHeight - 340), left: r.right + 8 });
+                  setHoverGroup(g.key);
+                }}
                 onMouseLeave={() => { if (!forceExpanded) setHoverGroup((c) => (c === g.key ? null : c)); }}
               >
                 <button
@@ -451,7 +457,8 @@ function AppLayout() {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -8 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute left-full top-0 z-50 ml-2 w-60 rounded-2xl border border-border/60 bg-popover/95 p-2 shadow-xl backdrop-blur-xl"
+                      style={{ position: "fixed", top: hoverPos.top, left: hoverPos.left }}
+                      className="z-50 w-60 max-h-[70vh] overflow-y-auto rounded-2xl border border-border/60 bg-popover/95 p-2 shadow-xl backdrop-blur-xl"
                     >
                       <div className="px-2 pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
                         {g.label}
