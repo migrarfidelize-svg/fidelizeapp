@@ -2595,3 +2595,31 @@ html:not(.dark) .landing-scope .campaigns-section article[class*="border-cyan-"]
 @media (prefers-reduced-motion: reduce) {
   .group:hover [class*="showcase-sheen"] { animation: none !important; opacity: 0 !important; }
 }
+
+/* ===== Mockup do celular na hero — tokens claro/escuro ===== */
+.hero-phone {
+  --hp-accent: #0e7490;
+  --hp-magenta: #c026d3;
+  --hp-screen: #ffffff;
+  --hp-notch: rgba(2, 6, 23, 0.12);
+  --hp-frame-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(226, 232, 240, 0.9));
+  --hp-frame-line: rgba(2, 6, 23, 0.12);
+  --hp-ink: #0b1220;
+  --hp-ink-dim: rgba(11, 18, 32, 0.62);
+  --hp-ink-faint: rgba(11, 18, 32, 0.45);
+  --hp-line: rgba(2, 6, 23, 0.1);
+  --hp-surface: rgba(2, 6, 23, 0.035);
+}
+.dark .hero-phone {
+  --hp-accent: #00ffff;
+  --hp-magenta: #d946ef;
+  --hp-screen: #050b18;
+  --hp-notch: rgba(0, 0, 0, 0.7);
+  --hp-frame-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(2, 6, 23, 0.9));
+  --hp-frame-line: rgba(255, 255, 255, 0.14);
+  --hp-ink: #ffffff;
+  --hp-ink-dim: rgba(255, 255, 255, 0.6);
+  --hp-ink-faint: rgba(255, 255, 255, 0.45);
+  --hp-line: rgba(255, 255, 255, 0.12);
+  --hp-surface: rgba(255, 255, 255, 0.03);
+}
