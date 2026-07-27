@@ -1086,14 +1086,15 @@ function ReviewQrPage() {
         subtitle="Um único cartaz, três destinos: Avaliação, Árvore de Links ou Cartão Fidelidade. Escolha abaixo para onde o cliente será direcionado ao escanear."
       />
 
-      <QrStepper step={step} onSelect={setStep} />
-
       {step === 1 && (
         <>
           <QrDestinationCard establishmentId={est.id} initialDest={search.dest} />
           <QrTagsManager establishmentId={est.id} />
         </>
       )}
+
+      <QrStepper step={step} onSelect={setStep} />
+
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
         {/* CONTROLS — glass panel */}
