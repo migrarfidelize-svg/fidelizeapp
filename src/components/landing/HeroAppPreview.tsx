@@ -304,3 +304,50 @@ function Metric({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+function CatalogScreen() {
+  const products = [
+    { name: "Fone Bluetooth", price: "R$ 189", hue: 210 },
+    { name: "Kit Skincare", price: "R$ 129", hue: 340 },
+    { name: "Tênis Runner", price: "R$ 299", hue: 150 },
+    { name: "Relógio Smart", price: "R$ 459", hue: 45 },
+  ];
+  const [n, setN] = useState(1);
+  useEffect(() => {
+    const id = setTimeout(() => setN(2), 1200);
+    return () => clearTimeout(id);
+  }, []);
+  return (
+    <ScreenShell sub="Cliente" title="Catálogo digital">
+      <div className="grid grid-cols-2 gap-2">
+        {products.map((p) => (
+          <div
+            key={p.name}
+            className="overflow-hidden rounded-xl border"
+            style={{ borderColor: "rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)" }}
+          >
+            <div
+              className="h-14 w-full"
+              style={{ background: `radial-gradient(110% 80% at 50% 20%, oklch(0.5 0.13 ${p.hue}), oklch(0.18 0.03 ${p.hue}) 75%)` }}
+            />
+            <div className="p-1.5">
+              <p className="truncate text-[10px] font-semibold text-white">{p.name}</p>
+              <div className="mt-1 flex items-center justify-between">
+                <span className="text-[10px] font-bold" style={{ color: CYAN }}>{p.price}</span>
+                <span
+                  className="grid h-5 w-5 place-items-center rounded-md"
+                  style={{ background: `${CYAN}1f`, color: CYAN }}
+                >
+                  <ShoppingCart className="h-3 w-3" />
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3">
+        <Row icon={ShoppingCart} title={`Carrinho · ${n} itens`} sub="Enviar pedido pelo WhatsApp" tone={MAGENTA} />
+      </div>
+    </ScreenShell>
+  );
+}
