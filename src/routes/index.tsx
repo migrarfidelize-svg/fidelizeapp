@@ -1470,7 +1470,7 @@ function PlansComparison() {
         <div
           ref={trackRef}
           onScroll={handleScroll}
-          className="no-scrollbar relative -mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-2 md:justify-between md:overflow-visible"
+          className="no-scrollbar relative -mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pt-3 pb-2 md:justify-between md:overflow-visible"
         >
           {COMPARE_PLANS.map((p, i) => {
             const isActive = i === active;
@@ -1481,17 +1481,18 @@ function PlansComparison() {
                 type="button"
                 onClick={() => selectPlan(i)}
                 aria-pressed={isActive}
-                className={`relative w-[78%] min-w-[78%] shrink-0 snap-center rounded-2xl border p-5 text-left transition-all duration-300 sm:w-[46%] sm:min-w-[46%] md:w-auto md:min-w-0 md:flex-1 ${
+                className={`relative w-[82%] min-w-[82%] shrink-0 snap-center rounded-2xl border p-4 pt-5 text-left transition-all duration-300 sm:w-[46%] sm:min-w-[46%] sm:p-5 md:w-auto md:min-w-0 md:flex-1 ${
                   isActive
                     ? "border-primary bg-background shadow-[0_10px_40px_-18px_var(--primary)] md:-translate-y-1"
                     : "border-primary/15 bg-background hover:border-primary/40"
                 }`}
               >
                 {p.badge && (
-                  <span className="absolute -top-2.5 left-5 rounded-full border border-primary/30 bg-primary px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-primary-foreground">
+                  <span className="absolute right-3 top-3 z-10 max-w-[60%] truncate rounded-full border border-primary/30 bg-primary px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-primary-foreground">
                     {p.badge}
                   </span>
                 )}
+
                 <div className="flex items-center gap-3">
                   <span
                     className={`flex h-9 w-9 items-center justify-center rounded-xl border transition-colors ${
