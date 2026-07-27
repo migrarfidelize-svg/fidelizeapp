@@ -297,7 +297,75 @@ function contrastRatio(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
+const QR_STEPS: { id: number; label: string; title: string; hint: string; icon: LucideIcon }[] = [
+  { id: 1, label: "Destino", title: "Para onde o QR leva", hint: "Escolha o destino do scan, o link público e um 2º QR opcional.", icon: QrCodeIcon },
+  { id: 2, label: "Formato", title: "Formato e modelo do cartaz", hint: "Tamanho da peça, logo do estabelecimento e estilo visual.", icon: Layers },
+  { id: 3, label: "Conteúdo", title: "Textos e cores", hint: "Título, chamadas, escala tipográfica e paleta da peça.", icon: Palette },
+  { id: 4, label: "Extras", title: "Designs e emblemas", hint: "Salve variações para a equipe e adicione selos ao cartaz.", icon: Sparkles },
+  { id: 5, label: "Baixar", title: "Exportar e imprimir", hint: "PNG, PDF, SVG, link do QR e displays físicos de balcão.", icon: FileImage },
+];
+
+function QrStepper({ step, onSelect }: { step: number; onSelect: (s: number) => void }) {
+  const pct = ((step - 1) / (QR_STEPS.length - 1)) * 100;
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-card/70 p-4 backdrop-blur-xl">
+      <div className="pointer-events-none absolute -left-16 -top-16 h-40 w-40 rounded-full bg-primary/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-20 -right-10 h-40 w-40 rounded-full bg-accent/15 blur-3xl" />
+
+      <div className="relative">
+        <div className="mb-3 h-1 w-full overflow-hidden rounded-full bg-border/60">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-[width] duration-500 ease-out"
+            style={{ width: `${Math.max(pct, 6)}%` }}
+          />
+        </div>
+
+        <div className="flex snap-x gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {QR_STEPS.map((s) => {
+            const Icon = s.icon;
+            const active = s.id === step;
+            const done = s.id < step;
+            return (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => onSelect(s.id)}
+                aria-current={active ? "step" : undefined}
+                className={`group relative flex min-w-[7.5rem] flex-1 snap-start items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-all duration-300 ${
+                  active
+                    ? "border-primary bg-primary/10 shadow-[0_0_30px_-10px_hsl(var(--primary)/0.9)]"
+                    : done
+                      ? "border-primary/30 bg-primary/5 hover:border-primary/60"
+                      : "border-border/60 bg-background/40 hover:border-primary/40"
+                }`}
+              >
+                <span
+                  className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[12px] font-black transition ${
+                    active ? "bg-primary text-primary-foreground" : done ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {done ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Etapa {s.id}
+                  </span>
+                  <span className={`block truncate text-[13px] font-bold ${active ? "text-primary" : "text-foreground"}`}>
+                    {s.label}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ReviewQrPage() {
+  const [step, setStep] = useState(1);
+
 
   const getEsts = useServerFn(getMyEstablishments);
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
