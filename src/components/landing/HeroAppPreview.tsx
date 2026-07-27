@@ -9,13 +9,19 @@ import {
   ShoppingCart,
   Star,
   Stamp,
-  
   UtensilsCrossed,
   Wallet,
 } from "lucide-react";
 
-const CYAN = "#00ffff";
-const MAGENTA = "#d946ef";
+/** Tokens do mockup — trocam automaticamente entre claro/escuro (ver .hero-phone em styles.css). */
+const ACCENT = "var(--hp-accent)";
+const TONE_MAGENTA = "var(--hp-magenta)";
+const tint = (c: string, pct: number) => `color-mix(in srgb, ${c} ${pct}%, transparent)`;
+const INK = "var(--hp-ink)";
+const INK_DIM = "var(--hp-ink-dim)";
+const INK_FAINT = "var(--hp-ink-faint)";
+const LINE = "var(--hp-line)";
+const SURFACE = "var(--hp-surface)";
 
 type ScreenKey = "carteira" | "carimbar" | "cardapio" | "catalogo";
 
@@ -52,14 +58,13 @@ export function HeroAppPreview() {
   const active = SCREENS[i]?.key ?? "carteira";
 
   return (
-    <div className="relative w-full max-w-[380px]">
-
+    <div className="hero-phone relative w-full max-w-[380px]">
       {/* halo */}
       <div
         aria-hidden
         className="pointer-events-none absolute -inset-10 -z-10 rounded-[3rem] blur-3xl"
         style={{
-          background: `radial-gradient(60% 50% at 50% 25%, ${CYAN}22, transparent 70%), radial-gradient(50% 40% at 80% 80%, ${MAGENTA}1f, transparent 70%)`,
+          background: `radial-gradient(60% 50% at 50% 25%, ${tint(ACCENT, 14)}, transparent 70%), radial-gradient(50% 40% at 80% 80%, ${tint(TONE_MAGENTA, 12)}, transparent 70%)`,
         }}
       />
 
@@ -67,22 +72,23 @@ export function HeroAppPreview() {
       <div
         className="relative mx-auto aspect-[9/18.5] w-[280px] overflow-hidden rounded-[2.4rem] border p-2 shadow-2xl backdrop-blur"
         style={{
-          borderColor: "rgba(255,255,255,0.14)",
-          background: "linear-gradient(160deg, rgba(255,255,255,0.09), rgba(2,6,23,0.9))",
+          borderColor: "var(--hp-frame-line)",
+          background: "var(--hp-frame-bg)",
         }}
       >
-        <div className="relative h-full w-full overflow-hidden rounded-[2rem] bg-[#050b18]">
-          <div className="absolute left-1/2 top-2 z-30 h-4 w-20 -translate-x-1/2 rounded-full bg-black/70" />
+        <div className="relative h-full w-full overflow-hidden rounded-[2rem]" style={{ background: "var(--hp-screen)" }}>
+          <div
+            className="absolute left-1/2 top-2 z-30 h-4 w-20 -translate-x-1/2 rounded-full"
+            style={{ background: "var(--hp-notch)" }}
+          />
           <div className="relative h-full w-full">
             {active === "carteira" && <WalletScreen />}
             {active === "carimbar" && <MerchantScreen />}
             {active === "cardapio" && <MenuScreen />}
             {active === "catalogo" && <CatalogScreen />}
-
           </div>
         </div>
       </div>
-
 
       {/* tabs / progress */}
       <div className="mx-auto mt-5 flex max-w-[340px] items-center justify-center gap-1.5">
@@ -99,19 +105,19 @@ export function HeroAppPreview() {
               }}
               className="group relative flex-1 overflow-hidden rounded-lg border px-1.5 py-1.5 text-left transition-colors"
               style={{
-                borderColor: on ? `${CYAN}66` : "rgba(255,255,255,0.12)",
-                background: on ? `${CYAN}12` : "rgba(255,255,255,0.04)",
+                borderColor: on ? tint(ACCENT, 45) : LINE,
+                background: on ? tint(ACCENT, 8) : SURFACE,
               }}
               aria-label={s.label}
             >
               <span
                 aria-hidden
                 className="absolute inset-y-0 left-0"
-                style={{ width: on ? `${t * 100}%` : "0%", background: `${CYAN}14` }}
+                style={{ width: on ? `${t * 100}%` : "0%", background: tint(ACCENT, 10) }}
               />
               <span className="relative flex items-center gap-1.5">
-                <Icon className="h-3.5 w-3.5" style={{ color: on ? CYAN : "rgba(255,255,255,0.6)" }} />
-                <span className={`truncate text-[10px] font-medium ${on ? "text-white" : "text-white/60"}`}>
+                <Icon className="h-3.5 w-3.5" style={{ color: on ? ACCENT : INK_DIM }} />
+                <span className="truncate text-[10px] font-medium" style={{ color: on ? INK : INK_DIM }}>
                   {s.label}
                 </span>
               </span>
@@ -127,8 +133,12 @@ function ScreenShell({ title, sub, children }: { title: string; sub: string; chi
   return (
     <div className="flex h-full flex-col pt-9 animate-[fzFade_.5s_ease-out]">
       <div className="px-4 pb-3">
-        <p className="text-[10px] uppercase tracking-[0.18em] text-white/40">{sub}</p>
-        <h3 className="text-sm font-bold text-white">{title}</h3>
+        <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: INK_FAINT }}>
+          {sub}
+        </p>
+        <h3 className="text-sm font-bold" style={{ color: INK }}>
+          {title}
+        </h3>
       </div>
       <div className="min-h-0 flex-1 px-4 pb-4">{children}</div>
       <style>{`@keyframes fzFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}`}</style>
@@ -146,13 +156,18 @@ function WalletScreen() {
     <ScreenShell sub="Cliente" title="Meu cartão fidelidade">
       <div
         className="rounded-2xl border p-3"
-        style={{ borderColor: `${CYAN}33`, background: `linear-gradient(150deg, ${CYAN}14, rgba(255,255,255,0.03))` }}
+        style={{
+          borderColor: tint(ACCENT, 25),
+          background: `linear-gradient(150deg, ${tint(ACCENT, 10)}, ${SURFACE})`,
+        }}
       >
         <div className="flex items-center justify-between">
-          <div className="text-[11px] font-semibold text-white">Café da Serra</div>
+          <div className="text-[11px] font-semibold" style={{ color: INK }}>
+            Café da Serra
+          </div>
           <span
             className="rounded-full px-2 py-0.5 text-[9px] font-bold"
-            style={{ background: `${CYAN}22`, color: CYAN }}
+            style={{ background: tint(ACCENT, 16), color: ACCENT }}
           >
             Ouro
           </span>
@@ -165,24 +180,24 @@ function WalletScreen() {
                 key={k}
                 className="grid aspect-square place-items-center rounded-lg border transition-all duration-500"
                 style={{
-                  borderColor: on ? `${CYAN}77` : "rgba(255,255,255,0.12)",
-                  background: on ? `${CYAN}1f` : "rgba(255,255,255,0.03)",
-                  boxShadow: on && k === filled - 1 ? `0 0 16px ${CYAN}66` : "none",
+                  borderColor: on ? tint(ACCENT, 50) : LINE,
+                  background: on ? tint(ACCENT, 14) : SURFACE,
+                  boxShadow: on && k === filled - 1 ? `0 0 16px ${tint(ACCENT, 45)}` : "none",
                 }}
               >
-                {on ? <Stamp className="h-3 w-3" style={{ color: CYAN }} /> : null}
+                {on ? <Stamp className="h-3 w-3" style={{ color: ACCENT }} /> : null}
               </span>
             );
           })}
         </div>
-        <div className="mt-3 flex items-center justify-between text-[10px] text-white/60">
+        <div className="mt-3 flex items-center justify-between text-[10px]" style={{ color: INK_DIM }}>
           <span>Faltam {Math.max(0, 10 - filled)} carimbos</span>
-          <span style={{ color: CYAN }}>{filled}/10</span>
+          <span style={{ color: ACCENT }}>{filled}/10</span>
         </div>
       </div>
       <div className="mt-3 space-y-2">
-        <Row icon={Gift} title="Recompensa liberada" sub="1 café grátis · expira em 7 dias" tone={MAGENTA} />
-        <Row icon={Bell} title="Notificação recebida" sub="Terça do combo: 2 carimbos" tone={CYAN} />
+        <Row icon={Gift} title="Recompensa liberada" sub="1 café grátis · expira em 7 dias" tone={TONE_MAGENTA} />
+        <Row icon={Bell} title="Notificação recebida" sub="Terça do combo: 2 carimbos" tone={ACCENT} />
       </div>
     </ScreenShell>
   );
@@ -193,20 +208,25 @@ function MerchantScreen() {
     <ScreenShell sub="Lojista" title="Carimbar cliente">
       <div
         className="grid place-items-center rounded-2xl border py-4"
-        style={{ borderColor: `${CYAN}33`, background: "rgba(255,255,255,0.03)" }}
+        style={{ borderColor: tint(ACCENT, 25), background: SURFACE }}
       >
-        <div className="relative grid h-24 w-24 place-items-center rounded-xl border" style={{ borderColor: `${CYAN}44` }}>
-          <QrCode className="h-14 w-14" style={{ color: CYAN }} />
+        <div
+          className="relative grid h-24 w-24 place-items-center rounded-xl border"
+          style={{ borderColor: tint(ACCENT, 30) }}
+        >
+          <QrCode className="h-14 w-14" style={{ color: ACCENT }} />
           <span
             className="absolute inset-x-2 h-[2px] animate-[fzScan_2.2s_ease-in-out_infinite]"
-            style={{ background: CYAN, boxShadow: `0 0 12px ${CYAN}` }}
+            style={{ background: ACCENT, boxShadow: `0 0 12px ${tint(ACCENT, 70)}` }}
           />
         </div>
-        <p className="mt-2 text-[10px] text-white/55">Leia o QR do cliente</p>
+        <p className="mt-2 text-[10px]" style={{ color: INK_DIM }}>
+          Leia o QR do cliente
+        </p>
       </div>
       <div className="mt-3 space-y-2">
-        <Row icon={BadgeCheck} title="Ana Souza · #3140" sub="Carimbo 8 de 10 registrado" tone={CYAN} />
-        <Row icon={Star} title="Avaliação 5 estrelas" sub="Enviada após o atendimento" tone={MAGENTA} />
+        <Row icon={BadgeCheck} title="Ana Souza · #3140" sub="Carimbo 8 de 10 registrado" tone={ACCENT} />
+        <Row icon={Star} title="Avaliação 5 estrelas" sub="Enviada após o atendimento" tone={TONE_MAGENTA} />
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2">
         <Metric label="Carimbos hoje" value="42" />
@@ -234,16 +254,21 @@ function MenuScreen() {
   const d = dishes[k] ?? dishes[0];
   return (
     <ScreenShell sub="Cliente" title="Cardápio em stories">
+      {/* o story é sempre uma foto escura — mantém texto branco em ambos os temas */}
       <div
         className="relative h-[190px] overflow-hidden rounded-2xl border transition-[background] duration-700"
         style={{
-          borderColor: "rgba(255,255,255,0.12)",
+          borderColor: LINE,
           background: `radial-gradient(120% 80% at 50% 15%, oklch(0.45 0.16 ${d.hue}), oklch(0.16 0.03 ${d.hue}) 72%)`,
         }}
       >
         <div className="absolute inset-x-2 top-2 flex gap-1">
           {dishes.map((_, x) => (
-            <span key={x} className="h-[3px] flex-1 rounded-full" style={{ background: x <= k ? "#fff" : "rgba(255,255,255,0.28)" }} />
+            <span
+              key={x}
+              className="h-[3px] flex-1 rounded-full"
+              style={{ background: x <= k ? "#fff" : "rgba(255,255,255,0.28)" }}
+            />
           ))}
         </div>
         <div className="absolute inset-x-0 bottom-0 p-3">
@@ -257,7 +282,7 @@ function MenuScreen() {
         </div>
       </div>
       <div className="mt-3">
-        <Row icon={Stamp} title="Ganhe carimbo no pedido" sub="Cardápio conectado à fidelidade" tone={CYAN} />
+        <Row icon={Stamp} title="Ganhe carimbo no pedido" sub="Cardápio conectado à fidelidade" tone={ACCENT} />
       </div>
     </ScreenShell>
   );
@@ -275,16 +300,20 @@ function Row({
   tone: string;
 }) {
   return (
-    <div
-      className="flex items-center gap-2 rounded-xl border p-2"
-      style={{ borderColor: "rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)" }}
-    >
-      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg" style={{ background: `${tone}1f`, color: tone }}>
+    <div className="flex items-center gap-2 rounded-xl border p-2" style={{ borderColor: LINE, background: SURFACE }}>
+      <span
+        className="grid h-7 w-7 shrink-0 place-items-center rounded-lg"
+        style={{ background: tint(tone, 14), color: tone }}
+      >
         <Icon className="h-3.5 w-3.5" />
       </span>
       <div className="min-w-0">
-        <p className="truncate text-[11px] font-semibold text-white">{title}</p>
-        <p className="truncate text-[10px] text-white/50">{sub}</p>
+        <p className="truncate text-[11px] font-semibold" style={{ color: INK }}>
+          {title}
+        </p>
+        <p className="truncate text-[10px]" style={{ color: INK_FAINT }}>
+          {sub}
+        </p>
       </div>
     </div>
   );
@@ -292,9 +321,13 @@ function Row({
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border p-2" style={{ borderColor: "rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)" }}>
-      <p className="text-[9px] uppercase tracking-wider text-white/45">{label}</p>
-      <p className="text-lg font-bold text-white">{value}</p>
+    <div className="rounded-xl border p-2" style={{ borderColor: LINE, background: SURFACE }}>
+      <p className="text-[9px] uppercase tracking-wider" style={{ color: INK_FAINT }}>
+        {label}
+      </p>
+      <p className="text-lg font-bold" style={{ color: INK }}>
+        {value}
+      </p>
     </div>
   );
 }
@@ -315,22 +348,24 @@ function CatalogScreen() {
     <ScreenShell sub="Cliente" title="Catálogo digital">
       <div className="grid grid-cols-2 gap-2">
         {products.map((p) => (
-          <div
-            key={p.name}
-            className="overflow-hidden rounded-xl border"
-            style={{ borderColor: "rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)" }}
-          >
+          <div key={p.name} className="overflow-hidden rounded-xl border" style={{ borderColor: LINE, background: SURFACE }}>
             <div
               className="h-14 w-full"
-              style={{ background: `radial-gradient(110% 80% at 50% 20%, oklch(0.5 0.13 ${p.hue}), oklch(0.18 0.03 ${p.hue}) 75%)` }}
+              style={{
+                background: `radial-gradient(110% 80% at 50% 20%, oklch(0.62 0.13 ${p.hue}), oklch(0.42 0.08 ${p.hue}) 78%)`,
+              }}
             />
             <div className="p-1.5">
-              <p className="truncate text-[10px] font-semibold text-white">{p.name}</p>
+              <p className="truncate text-[10px] font-semibold" style={{ color: INK }}>
+                {p.name}
+              </p>
               <div className="mt-1 flex items-center justify-between">
-                <span className="text-[10px] font-bold" style={{ color: CYAN }}>{p.price}</span>
+                <span className="text-[10px] font-bold" style={{ color: ACCENT }}>
+                  {p.price}
+                </span>
                 <span
                   className="grid h-5 w-5 place-items-center rounded-md"
-                  style={{ background: `${CYAN}1f`, color: CYAN }}
+                  style={{ background: tint(ACCENT, 14), color: ACCENT }}
                 >
                   <ShoppingCart className="h-3 w-3" />
                 </span>
@@ -340,7 +375,7 @@ function CatalogScreen() {
         ))}
       </div>
       <div className="mt-3">
-        <Row icon={ShoppingCart} title={`Carrinho · ${n} itens`} sub="Enviar pedido pelo WhatsApp" tone={MAGENTA} />
+        <Row icon={ShoppingCart} title={`Carrinho · ${n} itens`} sub="Enviar pedido pelo WhatsApp" tone={TONE_MAGENTA} />
       </div>
     </ScreenShell>
   );
