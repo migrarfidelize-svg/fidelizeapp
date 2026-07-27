@@ -21,6 +21,11 @@ export function HeroStampCard3D() {
   const [pulseKey, setPulseKey] = useState(0);
   const dragging = useRef<{ startX: number; startRot: number } | null>(null);
 
+  const shouldReduce3d = () => {
+    if (typeof window === "undefined") return false;
+    return window.innerWidth < 768 || window.matchMedia("(pointer: coarse)").matches;
+  };
+
   // Loop de carimbos apenas quando frente
   useEffect(() => {
     if (flipped) return;
@@ -40,6 +45,7 @@ export function HeroStampCard3D() {
   const rotX = -tiltX;
 
   const handlePointerMove = (e: React.PointerEvent) => {
+    if (shouldReduce3d()) return;
     if (dragging.current) {
       const dx = e.clientX - dragging.current.startX;
       setDragRotY(dragging.current.startRot + dx * 0.6);
@@ -55,6 +61,7 @@ export function HeroStampCard3D() {
   };
 
   const handlePointerDown = (e: React.PointerEvent) => {
+    if (shouldReduce3d()) return;
     (e.target as Element).setPointerCapture?.(e.pointerId);
     dragging.current = { startX: e.clientX, startRot: dragRotY };
   };

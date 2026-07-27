@@ -40,24 +40,15 @@ const DURATION = 5200;
 
 export function HeroAppPreview() {
   const [i, setI] = useState(0);
-  const [t, setT] = useState(0);
+  const [cycleKey, setCycleKey] = useState(0);
 
   useEffect(() => {
-    const started = performance.now();
-    let raf = 0;
-    const tick = (now: number) => {
-      const p = (now - started) / DURATION;
-      if (p >= 1) {
-        setT(0);
-        setI((v) => (v + 1) % SCREENS.length);
-        return;
-      }
-      setT(p);
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [i]);
+    const id = window.setTimeout(() => {
+      setI((v) => (v + 1) % SCREENS.length);
+      setCycleKey((v) => v + 1);
+    }, DURATION);
+    return () => window.clearTimeout(id);
+  }, [cycleKey]);
 
   const active = SCREENS[i]?.key ?? "carteira";
 
@@ -66,7 +57,7 @@ export function HeroAppPreview() {
       {/* halo */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -inset-10 -z-10 rounded-[3rem] blur-3xl"
+        className="pointer-events-none absolute -inset-10 -z-10 rounded-[3rem] blur-3xl hero-phone-halo"
         style={{
           background: `radial-gradient(60% 50% at 50% 25%, ${tint(ACCENT, 14)}, transparent 70%), radial-gradient(50% 40% at 80% 80%, ${tint(TONE_MAGENTA, 12)}, transparent 70%)`,
         }}
@@ -105,7 +96,7 @@ export function HeroAppPreview() {
               type="button"
               onClick={() => {
                 setI(k);
-                setT(0);
+                setCycleKey((v) => v + 1);
               }}
               className="group relative flex-1 overflow-hidden rounded-lg border px-1.5 py-1.5 text-left transition-colors"
               style={{
@@ -115,9 +106,15 @@ export function HeroAppPreview() {
               aria-label={s.label}
             >
               <span
+                key={on ? `${s.key}-${cycleKey}` : s.key}
                 aria-hidden
-                className="absolute inset-y-0 left-0"
-                style={{ width: on ? `${t * 100}%` : "0%", background: tint(ACCENT, 10) }}
+                className="absolute inset-y-0 left-0 origin-left"
+                style={{
+                  width: "100%",
+                  transform: on ? "scaleX(1)" : "scaleX(0)",
+                  animation: on ? `heroPhoneProgress ${DURATION}ms linear both` : undefined,
+                  background: tint(ACCENT, 10),
+                }}
               />
               <span className="relative flex items-center gap-1.5">
                 <Icon className="h-3.5 w-3.5" style={{ color: on ? ACCENT : INK_DIM }} />
@@ -129,6 +126,7 @@ export function HeroAppPreview() {
           );
         })}
       </div>
+      <style>{`@keyframes heroPhoneProgress{from{transform:scaleX(0)}to{transform:scaleX(1)}}`}</style>
     </div>
   );
 }

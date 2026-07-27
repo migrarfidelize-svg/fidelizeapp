@@ -16,7 +16,8 @@ export function CursorTrail() {
     if (typeof window === "undefined") return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const coarse = window.matchMedia("(pointer: coarse)").matches;
-    if (reduced || coarse) return;
+    const mobile = window.innerWidth < 768;
+    if (reduced || coarse || mobile) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
