@@ -159,15 +159,16 @@ type LayoutPos = { x: number; y: number }; // percent 0-100 (element center)
 type PosterLayout = Record<LayoutKey, LayoutPos>;
 
 const DEFAULT_LAYOUT: PosterLayout = {
-  header:      { x: 50, y: 13 },
-  title:       { x: 50, y: 26 },
-  subtitle:    { x: 50, y: 34 },
-  primaryQr:   { x: 50, y: 58 },
-  secondaryQr: { x: 72, y: 58 },
-  nfc:         { x: 50, y: 74 },
-  ctaNear:     { x: 50, y: 86 },
-  ctaFooter:   { x: 50, y: 93 },
+  header:      { x: 50, y: 14 },
+  title:       { x: 50, y: 37 },
+  subtitle:    { x: 50, y: 43 },
+  primaryQr:   { x: 50, y: 65 },
+  secondaryQr: { x: 74, y: 65 },
+  nfc:         { x: 50, y: 80 },
+  ctaNear:     { x: 50, y: 87 },
+  ctaFooter:   { x: 50, y: 94 },
 };
+
 
 /** Layouts ajustados por formato — canvas quadrado (feed) e paisagem precisam
  * de espaçamento vertical mais denso para não sobrepor a estrela ao QR. */
@@ -213,8 +214,9 @@ const BADGE_CATALOG: Record<BadgeKey, { label: string; Icon: LucideIcon; short: 
 const BADGE_KEYS = Object.keys(BADGE_CATALOG) as BadgeKey[];
 type BadgeInstance = { key: BadgeKey; x: number; y: number };
 const DEFAULT_BADGE_POS: Record<BadgeKey, { x: number; y: number }> = {
-  stars5:   { x: 22, y: 46 },
-  wifi:     { x: 50, y: 18 },
+  stars5:   { x: 22, y: 50 },
+  wifi:     { x: 50, y: 30 },
+
   pix:      { x: 22, y: 72 },
   card:     { x: 78, y: 72 },
   pet:      { x: 22, y: 82 },
@@ -417,7 +419,7 @@ function ReviewQrPage() {
   // without wiping user customizations.
   const prevFormatRef = useRef<FormatKey>("counter15x10");
   const prevLandscapeRef = useRef(false);
-  const [badges, setBadges] = useState<BadgeInstance[]>([{ key: "wifi", x: 50, y: 18 }]);
+  const [badges, setBadges] = useState<BadgeInstance[]>([{ key: "wifi", ...DEFAULT_BADGE_POS.wifi }]);
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [savedTarget, setSavedTarget] = useState<"ls" | "idb" | "fail">("ls");
   const [savedTick, setSavedTick] = useState(0);
@@ -2394,14 +2396,15 @@ function PortraitBody(p: PosterProps) {
       </DraggableItem>
 
       {/* Title */}
-      <DraggableItem itemKey="title" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[90%]">
-        <h2 className="text-center font-black leading-tight" style={{ color: p.textColor, fontSize: `${20 * (effectiveScale / 100)}px` }}>{p.title}</h2>
+      <DraggableItem itemKey="title" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[84%]">
+        <h2 className="text-center font-black leading-tight [text-wrap:balance]" style={{ color: p.textColor, fontSize: `${19 * (effectiveScale / 100)}px` }}>{p.title}</h2>
       </DraggableItem>
 
       {/* Subtitle */}
-      <DraggableItem itemKey="subtitle" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[80%]">
-        <p className="text-center opacity-70" style={{ color: p.textColor, fontSize: `${11 * (effectiveScale / 100)}px` }}>{p.subtitle}</p>
+      <DraggableItem itemKey="subtitle" layout={p.layout} setLayout={p.setLayout} editable={p.editable} className="w-[76%]">
+        <p className="text-center opacity-70 [text-wrap:balance]" style={{ color: p.textColor, fontSize: `${11 * (effectiveScale / 100)}px` }}>{p.subtitle}</p>
       </DraggableItem>
+
 
       {/* Primary QR */}
       <DraggableItem itemKey="primaryQr" layout={p.layout} setLayout={p.setLayout} editable={p.editable}>
