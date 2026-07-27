@@ -84,44 +84,6 @@ export function HeroAppPreview() {
         </div>
       </div>
 
-      {/* floating real-time toast */}
-      <div
-        className="absolute -left-8 top-[6%] hidden w-[180px] rounded-xl border p-2.5 shadow-xl backdrop-blur lg:block"
-        style={{ borderColor: `${CYAN}44`, background: "rgba(2,6,23,0.82)" }}
-      >
-        <div className="flex items-center gap-2">
-          <span
-            className="grid h-7 w-7 shrink-0 place-items-center rounded-lg"
-            style={{ background: `${CYAN}1f`, color: CYAN }}
-          >
-            <BadgeCheck className="h-4 w-4" />
-          </span>
-          <div className="min-w-0">
-            <p className="truncate text-[11px] font-semibold text-white">Carimbo confirmado</p>
-            <p className="truncate text-[10px] text-white/55">Ana · agora mesmo</p>
-          </div>
-        </div>
-      </div>
-
-      {/* floating metric */}
-      <div
-        className="absolute -right-3 bottom-[16%] hidden w-[170px] rounded-xl border p-3 shadow-xl backdrop-blur md:block"
-        style={{ borderColor: "rgba(255,255,255,0.14)", background: "rgba(2,6,23,0.82)" }}
-      >
-        <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-white/50">
-          <TrendingUp className="h-3 w-3" style={{ color: CYAN }} /> Retorno
-        </div>
-        <div className="mt-1 text-2xl font-bold text-white">+38%</div>
-        <div className="mt-2 flex h-8 items-end gap-1">
-          {[9, 13, 11, 17, 20, 24].map((h, k) => (
-            <span
-              key={k}
-              className="flex-1 rounded-[2px]"
-              style={{ height: `${h}px`, background: k === 5 ? CYAN : `${CYAN}55` }}
-            />
-          ))}
-        </div>
-      </div>
 
       {/* tabs / progress */}
       <div className="mx-auto mt-5 flex max-w-[300px] items-center justify-center gap-2">
