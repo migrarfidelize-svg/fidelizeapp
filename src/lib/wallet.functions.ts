@@ -74,5 +74,5 @@ export const getPassJson = createServerFn({ method: "POST" })
       serialNumber: `PREVIEW-${model.customer.id}`,
       authenticationToken: "preview",
     });
-    return JSON.parse(JSON.stringify(pass)) as Record<string, string | number | boolean | null | object>;
+    return { json: JSON.stringify(pass, null, 2) };
   });
