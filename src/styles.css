@@ -3038,3 +3038,10 @@ header[data-slot="site-header"],
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
 }
+
+/* Brilho que percorre o cartão da carteira digital. */
+@keyframes wallet-sheen {
+  0%, 100% { transform: translateX(0) skewX(-12deg); opacity: 0; }
+  45% { opacity: 0.35; }
+  60% { transform: translateX(420%) skewX(-12deg); opacity: 0; }
+}
