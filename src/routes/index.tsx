@@ -1398,7 +1398,7 @@ function CTA() {
                 <ArrowRight className="h-5 w-5" />
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="h-14 rounded-none border-primary/20 hover:bg-primary/5 font-semibold uppercase tracking-widest text-sm">
+            <Button asChild size="lg" variant="outline" className="h-14 rounded-none border-primary/30 text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary font-semibold uppercase tracking-widest text-sm transition-colors">
               <Link to="/precos">Ver planos</Link>
             </Button>
           </div>
