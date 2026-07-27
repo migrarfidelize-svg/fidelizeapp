@@ -30,13 +30,15 @@ const OVERVIEW: NavItem = { to: "/admin", label: "Visão geral", icon: LayoutDas
 
 const NAV_GROUPS: NavGroup[] = [
   {
-    key: "empresas",
-    label: "Empresas",
+    key: "plataforma",
+    label: "Plataforma",
     icon: Building2,
     items: [
       { to: "/admin/empresas", label: "Empresas", icon: Building2 },
       { to: "/admin/usuarios", label: "Usuários", icon: UsersRound },
-      { to: "/admin/equipe", label: "Equipe", icon: UsersRound },
+      { to: "/admin/equipe", label: "Equipe", icon: Shield },
+      { to: "/admin/suporte", label: "Suporte", icon: LifeBuoy },
+      { to: "/admin/avaliacoes", label: "Avaliações", icon: Star },
     ],
   },
   {
@@ -51,17 +53,6 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    key: "operacao",
-    label: "Operação",
-    icon: Megaphone,
-    items: [
-      { to: "/admin/alertas", label: "Alertas", icon: Bell },
-      { to: "/admin/avaliacoes", label: "Avaliações", icon: Star },
-      { to: "/admin/auditoria", label: "Auditoria", icon: FileClock },
-      { to: "/admin/suporte", label: "Suporte", icon: LifeBuoy },
-    ],
-  },
-  {
     key: "comunicacao",
     label: "Comunicação",
     icon: Mail,
@@ -70,6 +61,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/admin/email-templates", label: "Templates", icon: FileText },
       { to: "/admin/email-fila", label: "Fila de envio", icon: ListChecks },
       { to: "/admin/notificacoes", label: "Push", icon: Bell },
+      { to: "/admin/alertas", label: "Alertas", icon: Megaphone },
       { to: "/admin/ajuda", label: "Central de Ajuda", icon: BookOpen },
     ],
   },
@@ -81,11 +73,13 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/admin/integracoes", label: "Integrações", icon: Plug },
       { to: "/admin/liberacoes", label: "Liberações de recursos", icon: KeyRound },
       { to: "/admin/cardapio-jsonld", label: "JSON-LD do cardápio", icon: FileJson },
+      { to: "/admin/auditoria", label: "Auditoria", icon: FileClock },
       { to: "/admin/migracao", label: "Migração & Downloads", icon: Rocket },
       { to: "/admin/config", label: "Configurações", icon: Settings },
     ],
   },
 ];
+
 
 function AdminLayout() {
   const navigate = useNavigate();
@@ -94,19 +88,8 @@ function AdminLayout() {
   const { data, isLoading, refetch } = useQuery({ queryKey: ["admin-status"], queryFn: () => getStatus() });
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [pinnedGroup, setPinnedGroup] = useState<string | null>(null);
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => { setMobileOpen(false); }, [pathname]);
 
-  const openGroup = (key: string) => {
-    if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null; }
-    setPinnedGroup(key);
-  };
-  const scheduleCloseGroup = () => {
-    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-    closeTimerRef.current = setTimeout(() => setPinnedGroup(null), 180);
-  };
-  useEffect(() => () => { if (closeTimerRef.current) clearTimeout(closeTimerRef.current); }, []);
-  useEffect(() => { setPinnedGroup(null); }, [pathname]);
 
   if (isLoading) return <div className="grid min-h-dvh place-items-center text-muted-foreground">Verificando permissões…</div>;
 
@@ -142,169 +125,71 @@ function AdminLayout() {
 
   const closeMobile = () => setMobileOpen(false);
 
-  const renderMobileNav = (onNavigate?: () => void) => (
-    <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-      {(() => {
-        const active = isItemActive(OVERVIEW);
-        return (
-          <Link to={OVERVIEW.to} onClick={onNavigate} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${active ? "bg-primary-soft text-primary" : "text-muted-foreground hover:bg-muted"}`}>
-            <OVERVIEW.icon className="h-4 w-4" /> {OVERVIEW.label}
-          </Link>
-        );
-      })()}
-      {NAV_GROUPS.map((g) => {
-        const hasActive = g.items.some(isItemActive);
-        return (
-          <div key={g.key} className="pt-2">
-            <div className={`flex items-center gap-3 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider ${hasActive ? "text-primary" : "text-muted-foreground"}`}>
-              <g.icon className="h-3.5 w-3.5" />
-              <span className="flex-1">{g.label}</span>
-            </div>
-            <div className="mt-1 ml-3 pl-3 border-l space-y-1">
-              {g.items.map((n) => {
-                const active = isItemActive(n);
-                return (
-                  <Link key={n.to} to={n.to} onClick={onNavigate} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${active ? "bg-primary-soft text-primary font-medium" : "text-muted-foreground hover:bg-muted"}`}>
-                    <n.icon className="h-4 w-4" /> {n.label}
-                  </Link>
-                );
-              })}
-            </div>
+  const navItemClass = (active: boolean) =>
+    [
+      "flex items-center gap-3 rounded-xl px-3 h-10 text-sm font-medium transition-colors",
+      active
+        ? "bg-primary-soft text-primary"
+        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+    ].join(" ");
+
+  const renderNav = (onNavigate?: () => void) => (
+    <nav className="flex-1 space-y-4 overflow-y-auto px-2.5 py-3">
+      <div className="space-y-1">
+        <Link to={OVERVIEW.to} onClick={onNavigate} className={navItemClass(isItemActive(OVERVIEW))}>
+          <OVERVIEW.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.8} />
+          <span className="truncate">{OVERVIEW.label}</span>
+        </Link>
+      </div>
+      {NAV_GROUPS.map((g) => (
+        <div key={g.key} className="space-y-1">
+          <div className="px-3 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+            {g.label}
           </div>
-        );
-      })}
+          {g.items.map((n) => (
+            <Link key={n.to} to={n.to} onClick={onNavigate} className={navItemClass(isItemActive(n))}>
+              <n.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.8} />
+              <span className="truncate">{n.label}</span>
+            </Link>
+          ))}
+        </div>
+      ))}
     </nav>
   );
 
   return (
     <TooltipProvider>
       <div className="min-h-screen dock-page-bg">
-        {/* Desktop: floating dock */}
-        <aside className="dock-surface hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-30 flex-col items-center gap-1.5 rounded-2xl p-2 backdrop-blur-xl">
-          <Link
-            to="/admin"
-            className="dock-logo dock-logo-bg relative mb-1 grid h-12 w-12 place-items-center rounded-full"
-            aria-label="Fidelize Admin"
-          >
-            <span aria-hidden className="dock-logo-led" />
-            <span aria-hidden className="dock-logo-halo" />
-            <LogoMark size={22} className="relative z-10 text-[color:var(--color-primary)]" />
-          </Link>
-
-          {/* Overview quick-link */}
-          {(() => {
-            const active = isItemActive(OVERVIEW);
-            return (
-              <Link
-                to={OVERVIEW.to}
-                aria-label={OVERVIEW.label}
-                className={[
-                  "relative grid h-11 w-11 place-items-center rounded-xl transition-all duration-200 group/dock",
-                  active ? "dock-item-active" : "dock-item",
-                ].join(" ")}
-              >
-                <OVERVIEW.icon className="h-[19px] w-[19px]" strokeWidth={1.8} />
-                <span className="dock-tooltip pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 whitespace-nowrap rounded-md px-2 py-1 text-[11px] font-medium opacity-0 transition-opacity group-hover/dock:opacity-100">
-                  {OVERVIEW.label}
-                </span>
-              </Link>
-            );
-          })()}
-
-          {NAV_GROUPS.map((g) => {
-            const Icon = g.icon;
-            const isActive = g.items.some(isItemActive);
-            const isOpen = pinnedGroup === g.key;
-            return (
-              <div
-                key={g.key}
-                className="group/dock relative"
-                onMouseEnter={() => openGroup(g.key)}
-                onMouseLeave={scheduleCloseGroup}
-              >
-                <button
-                  type="button"
-                  aria-label={g.label}
-                  aria-expanded={isOpen}
-                  onClick={() => (isOpen ? setPinnedGroup(null) : openGroup(g.key))}
-                  className={[
-                    "relative grid h-11 w-11 place-items-center rounded-xl transition-all duration-200",
-                    isActive || isOpen ? "dock-item-active" : "dock-item",
-                  ].join(" ")}
-                >
-                  <Icon className="h-[19px] w-[19px]" strokeWidth={1.8} />
-                </button>
-
-                <div
-                  className={[
-                    "absolute left-full top-0 pl-3 origin-left transition-all duration-200",
-                    isOpen ? "pointer-events-auto scale-100 opacity-100" : "pointer-events-none scale-95 opacity-0",
-                  ].join(" ")}
-                  onMouseEnter={() => openGroup(g.key)}
-                  onMouseLeave={scheduleCloseGroup}
-                >
-                  <div className="dock-flyout min-w-[240px] rounded-2xl p-2 backdrop-blur-xl">
-                    <div className="dock-flyout-title px-2 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em]">
-                      {g.label}
-                    </div>
-                    <ul className="space-y-0.5">
-                      {g.items.map((n) => {
-                        const active = isItemActive(n);
-                        const ItemIcon = n.icon;
-                        return (
-                          <li key={n.to}>
-                            <Link
-                              to={n.to}
-                              onClick={() => setPinnedGroup(null)}
-                              className={[
-                                "flex items-center gap-3 rounded-xl px-2 py-2 text-[13px] transition-all",
-                                active ? "dock-flyout-item-active" : "dock-flyout-item",
-                              ].join(" ")}
-                            >
-                              <span
-                                className={[
-                                  "grid h-8 w-8 place-items-center rounded-lg transition-all",
-                                  active ? "dock-item-active" : "dock-item",
-                                ].join(" ")}
-                              >
-                                <ItemIcon className="h-[17px] w-[17px]" strokeWidth={1.8} />
-                              </span>
-                              <span className="flex-1">{n.label}</span>
-                            </Link>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                </div>
-
-                {!isOpen && (
-                  <span className="dock-tooltip pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 whitespace-nowrap rounded-md px-2 py-1 text-[11px] font-medium opacity-0 transition-opacity group-hover/dock:opacity-100">
-                    {g.label}
-                  </span>
-                )}
-              </div>
-            );
-          })}
-
-          <div className="dock-divider my-1 h-px w-8" />
-
-          <div className="grid place-items-center">
-            <ThemeToggle />
-          </div>
-          <Link
-            to="/app"
-            aria-label="Voltar ao painel do lojista"
-            className="dock-item group/dock relative grid h-11 w-11 place-items-center rounded-xl transition-all"
-          >
-            <ArrowLeft className="h-[18px] w-[18px]" strokeWidth={1.8} />
-            <span className="dock-tooltip pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 whitespace-nowrap rounded-md px-2 py-1 text-[11px] font-medium opacity-0 transition-opacity group-hover/dock:opacity-100">
-              Painel do lojista
+        {/* Desktop: sidebar padrão (ícone + nome) */}
+        <aside className="hidden md:flex fixed inset-y-0 left-0 z-30 w-64 flex-col border-r border-border/60 bg-card/80 backdrop-blur-xl">
+          <div className="flex h-14 items-center gap-2 border-b border-border/60 px-3">
+            <Link to="/admin" aria-label="Fidelize Admin" className="flex min-w-0 items-center gap-2">
+              <LogoMark size={20} className="text-primary" />
+              <span className="font-display text-sm font-bold">Fidelize</span>
+            </Link>
+            <span className="rounded bg-primary-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+              Admin
             </span>
-          </Link>
+          </div>
+
+          {renderNav()}
+
+          <div className="space-y-2 border-t border-border/60 p-3">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-xs text-muted-foreground">Tema</span>
+              <ThemeToggle />
+            </div>
+            <Link
+              to="/app"
+              className="flex items-center gap-2 rounded-lg px-1 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" /> Painel do lojista
+            </Link>
+          </div>
         </aside>
 
-        <div className="flex flex-col min-w-0 md:pl-24">
+        <div className="flex flex-col min-w-0 md:pl-64">
+
           {/* Top bar */}
           <header className="sticky top-0 z-20 flex items-center justify-between gap-3 h-14 px-4 md:px-6 border-b bg-card/70 backdrop-blur-xl">
             <div className="flex items-center gap-3 min-w-0">
@@ -319,7 +204,7 @@ function AdminLayout() {
                       <Logo />
                       <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-primary-soft text-primary">Admin</span>
                     </div>
-                    {renderMobileNav(closeMobile)}
+                    {renderNav(closeMobile)}
                     <div className="p-3 border-t space-y-2">
                       <div className="flex items-center justify-between px-1">
                         <span className="text-xs text-muted-foreground">Tema</span>
