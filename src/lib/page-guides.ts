@@ -249,3 +249,40 @@ export function findPageGuide(pathname: string): { path: string; module: string;
     .sort((a, b) => b.length - a.length)[0];
   return match ? { path: match, module: moduleOf(clean), guide: PAGE_GUIDES[match] } : null;
 }
+
+/**
+ * Telas em que o passo a passo é oferecido automaticamente na primeira visita.
+ * Nas demais, o guia existe mas só abre quando o lojista clica no botão de ajuda.
+ */
+export const AUTO_GUIDE_MODULES = new Set<string>([
+  // "/app" fica de fora: a visão geral já tem o tour guiado completo.
+  "/app/carimbar",
+  "/app/clientes",
+  "/app/qrcodes",
+  "/app/cardapio",
+  "/app/campanhas",
+]);
+
+const GUIDE_KEY_PREFIX = "fidelize_page_guide_v1";
+
+export function guideStorageKey(scope: string, module: string) {
+  return `${GUIDE_KEY_PREFIX}:${scope}:${module}`;
+}
+
+export function isGuideSeen(scope: string, module: string) {
+  if (typeof window === "undefined") return true;
+  try { return !!window.localStorage.getItem(guideStorageKey(scope, module)); } catch { return true; }
+}
+
+export function markGuideSeen(scope: string, module: string) {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.setItem(guideStorageKey(scope, module), "seen"); } catch { /* noop */ }
+}
+
+/** Evento global: abre o passo a passo da tela atual. */
+export const OPEN_PAGE_GUIDE_EVENT = "fidelize:open-page-guide";
+
+export function openPageGuide() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(OPEN_PAGE_GUIDE_EVENT));
+}

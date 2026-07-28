@@ -5,17 +5,15 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
-import { findPageGuide, type PageGuide as Guide } from "@/lib/page-guides";
-
-const KEY_PREFIX = "fidelize_page_guide_v1";
-
-function storageKey(scope: string, path: string) {
-  return `${KEY_PREFIX}:${scope}:${path}`;
-}
+import {
+  findPageGuide, isGuideSeen, markGuideSeen, AUTO_GUIDE_MODULES,
+  OPEN_PAGE_GUIDE_EVENT, type PageGuide as Guide,
+} from "@/lib/page-guides";
 
 /**
- * Na primeira visita de cada aba do painel, pergunta se o lojista quer um
- * passo a passo daquela tela. A resposta fica salva por aba.
+ * Passo a passo por tela. Abre sozinho apenas nas telas de maior fricção
+ * (AUTO_GUIDE_MODULES) e somente na primeira visita. Em qualquer outra tela,
+ * o guia é aberto sob demanda pelo botão de ajuda do cabeçalho.
  */
 export function PageGuidePrompt({ scope }: { scope: string }) {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
@@ -31,10 +29,8 @@ export function PageGuidePrompt({ scope }: { scope: string }) {
     if (!match) return;
     if (typeof window === "undefined") return;
     // Marca por módulo (ex.: todo o /app/cardapio/*), não por subaba.
-    const key = storageKey(scope, match.module);
-    let seen = false;
-    try { seen = !!window.localStorage.getItem(key); } catch { /* noop */ }
-    if (seen) return;
+    if (!AUTO_GUIDE_MODULES.has(match.module)) return;
+    if (isGuideSeen(scope, match.module)) return;
     // Pequeno atraso: deixa a página montar antes de convidar.
     const t = setTimeout(() => {
       setGuide(match.guide);
@@ -45,9 +41,24 @@ export function PageGuidePrompt({ scope }: { scope: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [match?.module, scope]);
 
+  // Abertura sob demanda (botão de ajuda no cabeçalho).
+  useEffect(() => {
+    function onOpen() {
+      if (!match) return;
+      markGuideSeen(scope, match.module);
+      setGuide(match.guide);
+      setPath(match.module);
+      setI(0);
+      setPhase("steps");
+    }
+    window.addEventListener(OPEN_PAGE_GUIDE_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_PAGE_GUIDE_EVENT, onOpen);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [match?.module, scope]);
+
   function remember() {
     if (!path) return;
-    try { window.localStorage.setItem(storageKey(scope, path), "seen"); } catch { /* noop */ }
+    markGuideSeen(scope, path);
   }
 
   function decline() {
@@ -60,6 +71,7 @@ export function PageGuidePrompt({ scope }: { scope: string }) {
     setI(0);
     setPhase("steps");
   }
+
 
   if (!guide || phase === "idle") return null;
 

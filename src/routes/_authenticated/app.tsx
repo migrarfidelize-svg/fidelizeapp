@@ -26,6 +26,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { QuickSearch } from "@/components/merchant/QuickSearch";
 import { GuidedTour, type TourStep } from "@/components/GuidedTour";
 import { PageGuidePrompt } from "@/components/merchant/PageGuidePrompt";
+import { PageGuideButton } from "@/components/merchant/PageGuideButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePermissions } from "@/hooks/usePermissions";
 import { RouteLoading } from "@/components/RouteLoading";
@@ -671,6 +672,8 @@ function AppLayout() {
                 navTargets={FLAT_NAV.map((n) => ({ to: n.to, label: n.label }))}
               />
 
+              <PageGuideButton scope={activeEst?.id ?? "user"} />
+
               <div className="hidden md:block"><ThemeToggle /></div>
             </div>
           </header>
@@ -728,15 +731,16 @@ function AppLayout() {
           </nav>
         </div>
 
-        {pathname === "/app" ? (
+        {pathname === "/app" && (
           <GuidedTour
             steps={MERCHANT_TOUR_STEPS}
             mobileSteps={MERCHANT_TOUR_STEPS_MOBILE}
             storageKey={`fidelize_tour_v1_${activeEst?.id ?? "user"}`}
           />
-        ) : (
-          <PageGuidePrompt scope={activeEst?.id ?? "user"} />
         )}
+        {/* Sempre montado: responde ao botão de ajuda em qualquer tela. */}
+        <PageGuidePrompt scope={activeEst?.id ?? "user"} />
+
       </div>
     </TooltipProvider>
   );
