@@ -117,20 +117,64 @@ function DiscoverPage() {
   // Ordenação: quando temos cidade do usuário, prioriza estabelecimentos na mesma cidade,
   // depois não-visitados, depois o resto. Sem cidade, mantém heurística "não visitados no topo".
   const myCityNorm = normalizeCity(myCity);
-  const sorted = [...data].sort((a, b) => {
-    // 1) Promoções ativas primeiro — o cliente vê ofertas antes de tudo.
-    const aPromo = a.has_promotion ? 1 : 0;
-    const bPromo = b.has_promotion ? 1 : 0;
-    if (aPromo !== bPromo) return bPromo - aPromo;
-    // 2) Proximidade (mesma cidade) quando disponível.
-    if (myCityNorm) {
-      const aMatch = normalizeCity(a.city) === myCityNorm ? 1 : 0;
-      const bMatch = normalizeCity(b.city) === myCityNorm ? 1 : 0;
-      if (aMatch !== bMatch) return bMatch - aMatch;
-    }
-    // 3) Não visitados no topo.
-    return Number(a.visited) - Number(b.visited);
-  });
+  const sorted = useMemo(
+    () =>
+      [...data]
+        .map((e) => ({ ...e, category: categorizeEstablishment(e) }))
+        .sort((a, b) => {
+          // 1) Promoções ativas primeiro — o cliente vê ofertas antes de tudo.
+          const aPromo = a.has_promotion ? 1 : 0;
+          const bPromo = b.has_promotion ? 1 : 0;
+          if (aPromo !== bPromo) return bPromo - aPromo;
+          // 2) Proximidade (mesma cidade) quando disponível.
+          if (myCityNorm) {
+            const aMatch = normalizeCity(a.city) === myCityNorm ? 1 : 0;
+            const bMatch = normalizeCity(b.city) === myCityNorm ? 1 : 0;
+            if (aMatch !== bMatch) return bMatch - aMatch;
+          }
+          // 3) Não visitados no topo.
+          return Number(a.visited) - Number(b.visited);
+        }),
+    [data, myCityNorm],
+  );
+
+  // Categorias disponíveis (só as que têm estabelecimentos), com contagem.
+  const categories = useMemo(() => {
+    const counts = new Map<DiscoverCategoryId, number>();
+    for (const e of sorted) counts.set(e.category, (counts.get(e.category) ?? 0) + 1);
+    return DISCOVER_CATEGORIES.filter((c) => (counts.get(c.id) ?? 0) > 0).map((c) => ({
+      ...c,
+      count: counts.get(c.id) ?? 0,
+    }));
+  }, [sorted]);
+
+  const promoCount = sorted.filter((e) => e.has_promotion).length;
+  const nearbyCount = myCityNorm ? sorted.filter((e) => normalizeCity(e.city) === myCityNorm).length : 0;
+
+  const visible = useMemo(() => {
+    const q = normalizeCity(query);
+    return sorted.filter((e) => {
+      if (active === "promo" && !e.has_promotion) return false;
+      if (active === "perto" && normalizeCity(e.city) !== myCityNorm) return false;
+      if (active && active !== "promo" && active !== "perto" && e.category !== active) return false;
+      if (q) {
+        const hay = normalizeCity(`${e.name} ${e.city ?? ""} ${e.description ?? ""}`);
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [sorted, active, query, myCityNorm]);
+
+  const showList = !!active || query.trim().length > 0;
+  const activeLabel =
+    active === "promo"
+      ? "Com promoção"
+      : active === "perto"
+      ? `Perto de você${myCity ? ` · ${myCity}` : ""}`
+      : active
+      ? CATEGORY_BY_ID.get(active)?.label ?? "Todos"
+      : "Todos os lugares";
+
 
   return (
     <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["discovery-establishments"] })}>
