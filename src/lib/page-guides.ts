@@ -255,8 +255,9 @@ export function findPageGuide(pathname: string): { path: string; module: string;
  * Nas demais, o guia existe mas só abre quando o lojista clica no botão de ajuda.
  */
 export const AUTO_GUIDE_MODULES = new Set<string>([
-  "/app",
+  // "/app" fica de fora: a visão geral já tem o tour guiado completo.
   "/app/carimbar",
+  "/app/clientes",
   "/app/qrcodes",
   "/app/cardapio",
   "/app/campanhas",
