@@ -13,10 +13,15 @@ import {
 } from "@/lib/discover-categories";
 
 
+// Lista aberta a todos os estabelecimentos ativos — sem distinção de plano.
+// Revalidamos sempre ao abrir para que parceiros recém-criados (tipicamente
+// no plano gratuito) apareçam na hora, sem depender de cache antigo.
 const opts = queryOptions({
   queryKey: ["discovery-establishments"],
   queryFn: () => getDiscoveryEstablishments(),
-  staleTime: 60_000,
+  staleTime: 0,
+  refetchOnMount: "always",
+  refetchOnWindowFocus: true,
 });
 
 export const Route = createFileRoute("/_authenticated/carteira/descobrir")({
