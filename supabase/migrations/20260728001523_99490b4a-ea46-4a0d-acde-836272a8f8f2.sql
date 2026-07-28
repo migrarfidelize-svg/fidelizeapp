@@ -1,0 +1,1 @@
+ALTER TABLE public.retention_settings ALTER COLUMN referral_enabled SET DEFAULT false;

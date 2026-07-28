@@ -45,7 +45,7 @@ export const getRetentionSettings = createServerFn({ method: "GET" })
           "Sentimos sua falta! Que tal voltar e acumular mais carimbos?",
         tiers_enabled: true,
         tier_thresholds: DEFAULT_THRESHOLDS,
-        referral_enabled: true,
+        referral_enabled: false,
         referral_bonus_stamps: 1,
       }
     );
