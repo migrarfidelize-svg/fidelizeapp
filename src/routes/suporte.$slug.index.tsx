@@ -6,6 +6,7 @@ import { getHelpCenter, searchArticles } from "@/lib/helpdesk.functions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, MessageCircle, BookOpen, HelpCircle, ArrowRight } from "lucide-react";
+import { SupportHeader } from "@/components/support/SupportHeader";
 
 export const Route = createFileRoute("/suporte/$slug/")({
   head: ({ params }) => ({
