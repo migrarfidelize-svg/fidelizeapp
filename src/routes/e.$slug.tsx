@@ -24,6 +24,8 @@ import {
   Wallet,
   UserCircle2,
   UtensilsCrossed,
+  ShoppingBag,
+
 
 } from "lucide-react";
 import { getStampIcon } from "@/lib/stampIcons";
