@@ -36,12 +36,8 @@ function ArticlePage() {
 
   return (
     <div className="min-h-dvh bg-background">
-      <header className="border-b">
-        <div className="max-w-3xl mx-auto flex items-center justify-between px-4 py-4">
-          <Link to="/suporte/$slug" params={{ slug: params.slug }} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> {establishment.name}</Link>
-          <Link to="/suporte/$slug/novo" params={{ slug: params.slug }} search={{ assunto: "" }}><Button size="sm" variant="outline"><MessageCircle className="mr-2 h-3.5 w-3.5" />Abrir chamado</Button></Link>
-        </div>
-      </header>
+      <SupportHeader slug={params.slug} name={establishment.name} logoUrl={(establishment as { logo_url?: string | null }).logo_url} />
+
       <main className="max-w-3xl mx-auto px-4 py-10">
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight">{article.title}</h1>
         {article.excerpt && <p className="mt-3 text-lg text-muted-foreground">{article.excerpt}</p>}
