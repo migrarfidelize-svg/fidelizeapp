@@ -1,10 +1,17 @@
 import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { Compass, MapPin, Sparkles, ChevronRight, ShieldCheck, Tag } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Compass, MapPin, Sparkles, ChevronRight, ShieldCheck, Tag, Search, ArrowLeft, X } from "lucide-react";
 import { getDiscoveryEstablishments } from "@/lib/my-wallet.functions";
 import { WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
+import {
+  DISCOVER_CATEGORIES,
+  CATEGORY_BY_ID,
+  categorizeEstablishment,
+  type DiscoverCategoryId,
+} from "@/lib/discover-categories";
+
 
 const opts = queryOptions({
   queryKey: ["discovery-establishments"],
