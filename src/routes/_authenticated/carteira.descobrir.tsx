@@ -192,6 +192,13 @@ function DiscoverPage() {
           <div className="flex items-center gap-2">
             <Compass className="h-5 w-5 text-primary" />
             <h1 className="font-display text-2xl font-bold tracking-tight">Descobrir</h1>
+            <button
+              onClick={() => qc.invalidateQueries({ queryKey: ["discovery-establishments"] })}
+              aria-label="Atualizar lista"
+              className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-card/40 px-3 py-1.5 text-[11px] font-bold text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+            >
+              <RefreshCw className="h-3.5 w-3.5" /> Atualizar
+            </button>
           </div>
           <p className="text-sm text-muted-foreground">
             Outros lugares Fidelize esperando por você — colecione novos cartões e ganhe recompensas.
