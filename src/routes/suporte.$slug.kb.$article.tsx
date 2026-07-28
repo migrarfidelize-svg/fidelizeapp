@@ -5,6 +5,7 @@ import { getArticle, submitArticleFeedback } from "@/lib/helpdesk.functions";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ThumbsUp, ThumbsDown, MessageCircle, Check } from "lucide-react";
 import { toast } from "sonner";
+import { SupportHeader } from "@/components/support/SupportHeader";
 
 export const Route = createFileRoute("/suporte/$slug/kb/$article")({
   loader: ({ params }) => getArticle({ data: { slug: params.slug, article_slug: params.article } }),
