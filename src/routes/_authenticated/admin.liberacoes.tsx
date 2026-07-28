@@ -212,9 +212,14 @@ function FeatureOverridesPage() {
             <Label>Recurso</Label>
             <Select value={featureKey} onValueChange={setFeatureKey}>
               <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {FEATURES.map((f) => (
-                  <SelectItem key={f.key} value={f.key}>{f.label}</SelectItem>
+              <SelectContent className="max-h-[320px]">
+                {FEATURE_GROUPS.map((g) => (
+                  <SelectGroup key={g.group}>
+                    <SelectLabel>{g.group}</SelectLabel>
+                    {g.items.map((f) => (
+                      <SelectItem key={f.key} value={f.key}>{f.label}</SelectItem>
+                    ))}
+                  </SelectGroup>
                 ))}
               </SelectContent>
             </Select>
