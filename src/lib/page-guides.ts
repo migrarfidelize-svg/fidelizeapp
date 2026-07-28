@@ -6,6 +6,16 @@ export type GuideStep = { title: string; description: string };
 export type PageGuide = { title: string; subtitle: string; steps: GuideStep[] };
 
 export const PAGE_GUIDES: Record<string, PageGuide> = {
+  "/app": {
+    title: "Visão geral",
+    subtitle: "O painel do seu negócio",
+    steps: [
+      { title: "Primeiros passos", description: "O checklist do topo mostra o que falta configurar para o programa de fidelidade rodar sozinho." },
+      { title: "Indicadores do dia", description: "Carimbos, clientes novos e prêmios resgatados são atualizados em tempo real." },
+      { title: "Atalhos rápidos", description: "Use os blocos de atalho para carimbar, convidar a equipe ou abrir o QR sem passar pelo menu." },
+    ],
+  },
+
   "/app/carimbar": {
     title: "Carimbar cliente",
     subtitle: "Como registrar uma visita em segundos",
