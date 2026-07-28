@@ -6,6 +6,7 @@ import { getHelpCenter, searchArticles } from "@/lib/helpdesk.functions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, MessageCircle, BookOpen, HelpCircle, ArrowRight } from "lucide-react";
+import { SupportHeader } from "@/components/support/SupportHeader";
 
 export const Route = createFileRoute("/suporte/$slug/")({
   head: ({ params }) => ({
@@ -38,18 +39,13 @@ function HelpCenterHub() {
 
   return (
     <div className="min-h-dvh bg-gradient-to-b from-primary-soft/40 to-background">
-      <header className="border-b bg-background/70 backdrop-blur">
-        <div className="max-w-5xl mx-auto flex items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-3">
-            {establishment.logo_url && <img src={establishment.logo_url} alt="" className="h-9 w-9 rounded-full object-cover" />}
-            <div>
-              <div className="font-semibold">{establishment.name}</div>
-              <div className="text-xs text-muted-foreground">Central de ajuda</div>
-            </div>
-          </div>
-          <Link to="/suporte/meus" className="text-sm font-medium text-primary hover:underline">Meus chamados</Link>
-        </div>
-      </header>
+      <SupportHeader
+        slug={params.slug}
+        name={establishment.name}
+        logoUrl={establishment.logo_url}
+        categories={categories}
+      />
+
 
       <section className="max-w-3xl mx-auto px-4 pt-14 pb-10 text-center">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Como podemos ajudar?</h1>
@@ -85,7 +81,7 @@ function HelpCenterHub() {
             {categories.map((c: { id: string; name: string; description: string | null }) => {
               const catArts = articles.filter((a: { category_id: string | null }) => a.category_id === c.id);
               return (
-                <div key={c.id} className="rounded-2xl bg-card border p-5 shadow-sm">
+                <div key={c.id} id={`cat-${c.id}`} className="scroll-mt-24 rounded-2xl bg-card border p-5 shadow-sm">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="h-8 w-8 rounded-lg bg-primary-soft grid place-items-center"><HelpCircle className="h-4 w-4 text-primary" /></div>
                     <h3 className="font-semibold">{c.name}</h3>

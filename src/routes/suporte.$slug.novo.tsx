@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SupportHeader } from "@/components/support/SupportHeader";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { LoadingSkeleton } from "@/components/states";
@@ -65,11 +66,7 @@ function NewTicket() {
 
   return (
     <div className="min-h-dvh bg-background">
-      <header className="border-b">
-        <div className="max-w-3xl mx-auto flex items-center justify-between px-4 py-4">
-          <Link to="/suporte/$slug" params={params} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> {data?.establishment.name}</Link>
-        </div>
-      </header>
+      <SupportHeader slug={params.slug} name={data?.establishment.name ?? "Central de ajuda"} logoUrl={data?.establishment.logo_url} categories={data?.categories ?? []} />
       <main className="max-w-2xl mx-auto px-4 py-10">
         <h1 className="text-3xl font-bold">Abrir chamado</h1>
         <p className="mt-2 text-muted-foreground">Nossa equipe responde no menor tempo possível.</p>
