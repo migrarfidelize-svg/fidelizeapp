@@ -757,6 +757,9 @@ const establishmentSchema = z.object({
     .max(60, "O endereço público pode ter no máximo 60 caracteres.")
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use apenas letras minúsculas, números e hífens (sem espaços ou acentos).")
     .refine((v) => !SLUG_RESERVED.has(v), "Este endereço é reservado. Escolha outro."),
+  segment: z.string({ required_error: "Selecione a categoria do seu negócio." })
+    .trim()
+    .min(2, "Selecione a categoria do seu negócio."),
   description: z.string().max(500, "A descrição pode ter no máximo 500 caracteres.").optional(),
   address: z.string().max(200, "O endereço pode ter no máximo 200 caracteres.").optional(),
   phone: z.string().max(20, "Telefone inválido.").optional(),
@@ -785,7 +788,7 @@ export const createEstablishment = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: est, error } = await supabase.from("establishments").insert({
-      slug: data.slug, name: data.name, description: data.description, address: data.address, phone: data.phone, whatsapp: data.whatsapp,
+      slug: data.slug, name: data.name, segment: data.segment, description: data.description, address: data.address, phone: data.phone, whatsapp: data.whatsapp,
       primary_color: data.primary_color, accent_color: data.accent_color, logo_url: data.logo_url, created_by: userId,
     }).select("*").single();
     if (error) {
