@@ -81,7 +81,7 @@ function HelpCenterHub() {
             {categories.map((c: { id: string; name: string; description: string | null }) => {
               const catArts = articles.filter((a: { category_id: string | null }) => a.category_id === c.id);
               return (
-                <div key={c.id} className="rounded-2xl bg-card border p-5 shadow-sm">
+                <div key={c.id} id={`cat-${c.id}`} className="scroll-mt-24 rounded-2xl bg-card border p-5 shadow-sm">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="h-8 w-8 rounded-lg bg-primary-soft grid place-items-center"><HelpCircle className="h-4 w-4 text-primary" /></div>
                     <h3 className="font-semibold">{c.name}</h3>
