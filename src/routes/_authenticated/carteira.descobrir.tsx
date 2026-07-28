@@ -2,7 +2,7 @@ import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Compass, MapPin, Sparkles, ChevronRight, ShieldCheck, Tag, Search, ArrowLeft, X } from "lucide-react";
+import { Compass, MapPin, Sparkles, ChevronRight, ShieldCheck, Tag, Search, ArrowLeft, X, RefreshCw } from "lucide-react";
 import { getDiscoveryEstablishments } from "@/lib/my-wallet.functions";
 import { WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
 import {
