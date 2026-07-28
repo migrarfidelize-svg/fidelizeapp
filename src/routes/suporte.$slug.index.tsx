@@ -38,18 +38,13 @@ function HelpCenterHub() {
 
   return (
     <div className="min-h-dvh bg-gradient-to-b from-primary-soft/40 to-background">
-      <header className="border-b bg-background/70 backdrop-blur">
-        <div className="max-w-5xl mx-auto flex items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-3">
-            {establishment.logo_url && <img src={establishment.logo_url} alt="" className="h-9 w-9 rounded-full object-cover" />}
-            <div>
-              <div className="font-semibold">{establishment.name}</div>
-              <div className="text-xs text-muted-foreground">Central de ajuda</div>
-            </div>
-          </div>
-          <Link to="/suporte/meus" className="text-sm font-medium text-primary hover:underline">Meus chamados</Link>
-        </div>
-      </header>
+      <SupportHeader
+        slug={params.slug}
+        name={establishment.name}
+        logoUrl={establishment.logo_url}
+        categories={categories}
+      />
+
 
       <section className="max-w-3xl mx-auto px-4 pt-14 pb-10 text-center">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Como podemos ajudar?</h1>
