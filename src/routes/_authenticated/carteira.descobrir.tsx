@@ -58,6 +58,9 @@ function DiscoverPage() {
     return localStorage.getItem("wallet:geo:city") || "";
   });
   const [locating, setLocating] = useState(false);
+  const [active, setActive] = useState<DiscoverCategoryId | "promo" | "perto" | null>(null);
+  const [query, setQuery] = useState("");
+
 
   useEffect(() => {
     if (geo === "granted" || geo === "denied" || geo === "unsupported") {
