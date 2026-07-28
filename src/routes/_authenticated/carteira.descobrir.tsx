@@ -58,7 +58,7 @@ function DiscoverPage() {
     return localStorage.getItem("wallet:geo:city") || "";
   });
   const [locating, setLocating] = useState(false);
-  const [active, setActive] = useState<DiscoverCategoryId | "promo" | "perto" | null>(null);
+  const [active, setActive] = useState<DiscoverCategoryId | "promo" | "perto" | "todos" | null>(null);
   const [query, setQuery] = useState("");
 
 
@@ -159,7 +159,8 @@ function DiscoverPage() {
     return sorted.filter((e) => {
       if (active === "promo" && !e.has_promotion) return false;
       if (active === "perto" && normalizeCity(e.city) !== myCityNorm) return false;
-      if (active && active !== "promo" && active !== "perto" && e.category !== active) return false;
+      if (active && active !== "promo" && active !== "perto" && active !== "todos" && e.category !== active)
+        return false;
       if (q) {
         const hay = normalizeCity(`${e.name} ${e.city ?? ""} ${e.description ?? ""}`);
         if (!hay.includes(q)) return false;
@@ -174,7 +175,7 @@ function DiscoverPage() {
       ? "Com promoção"
       : active === "perto"
       ? `Perto de você${myCity ? ` · ${myCity}` : ""}`
-      : active
+      : active && active !== "todos"
       ? CATEGORY_BY_ID.get(active)?.label ?? "Todos"
       : "Todos os lugares";
 
@@ -313,7 +314,7 @@ function DiscoverPage() {
                 </div>
 
                 <button
-                  onClick={() => setActive("todos" as DiscoverCategoryId)}
+                  onClick={() => setActive("todos")}
                   className="flex w-full items-center justify-between rounded-2xl border border-border/60 bg-card/30 px-4 py-3 text-sm font-semibold transition-colors hover:border-primary/40"
                 >
                   Ver todos os {sorted.length} estabelecimentos
