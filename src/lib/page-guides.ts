@@ -63,7 +63,54 @@ export const PAGE_GUIDES: Record<string, PageGuide> = {
       { title: "Responda", description: "Responda cada avaliação pelo painel — o cliente recebe a resposta e sente que foi ouvido." },
     ],
   },
+  "/app/qrcodes": {
+    title: "QR Codes",
+    subtitle: "Todos os seus códigos em um lugar",
+    steps: [
+      { title: "Escolha o destino", description: "Cada QR pode apontar para avaliação, árvore de links, cardápio, catálogo ou cartão fidelidade." },
+      { title: "Crie etiquetas", description: "Gere QRs diferentes por mesa, balcão ou campanha para saber de onde vem cada acesso." },
+      { title: "Acompanhe os scans", description: "As leituras aparecem em Analytics, separadas por etiqueta." },
+    ],
+  },
+  "/app/catalogo": {
+    title: "Catálogo digital",
+    subtitle: "Sua vitrine de produtos e serviços",
+    steps: [
+      { title: "Comece por um modelo", description: "Escolha um modelo pronto do seu segmento — já vem com coleções e produtos de exemplo." },
+      { title: "Cadastre produtos", description: "Fotos, preço, variações e estoque. Sem estoque, o item some da vitrine automaticamente." },
+      { title: "Aparência", description: "No editor por etapas você define layout, cores e vê a prévia ao vivo no celular." },
+      { title: "Publique e venda", description: "Ao publicar, o cliente monta o carrinho e envia o pedido direto no seu WhatsApp." },
+    ],
+  },
+  "/app/pedidos": {
+    title: "Pedidos",
+    subtitle: "Acompanhe o que chega do catálogo",
+    steps: [
+      { title: "Novos pedidos", description: "Cada carrinho enviado pelo cliente vira um pedido aqui, com itens e valor total." },
+      { title: "Mude o status", description: "Confirme, prepare e finalize — o histórico fica registrado para consulta." },
+      { title: "Fale com o cliente", description: "Abra a conversa no WhatsApp direto pelo pedido para combinar entrega ou retirada." },
+    ],
+  },
+  "/app/wallet": {
+    title: "Carteira digital",
+    subtitle: "Apple Wallet e Google Wallet",
+    steps: [
+      { title: "Personalize o cartão", description: "Escolha textura, cores e logo — a prévia mostra exatamente como o cliente vai ver." },
+      { title: "Ative os passes", description: "Com a carteira ligada, o cliente adiciona o cartão ao celular em um toque." },
+      { title: "Atualização automática", description: "Cada carimbo novo sincroniza no passe do cliente, sem ele precisar abrir o app." },
+    ],
+  },
+  "/app/perfil": {
+    title: "Perfil do estabelecimento",
+    subtitle: "Como seu negócio aparece",
+    steps: [
+      { title: "Dados do negócio", description: "Nome, logo, endereço e contato — é o que o cliente vê nas páginas públicas." },
+      { title: "Endereço público", description: "Confira o seu link (/e/seu-slug); ele é usado no QR, na carteira e na aba Descobrir." },
+      { title: "Redes e horários", description: "Preencha redes sociais e funcionamento para aumentar a confiança de quem chega pelo QR." },
+    ],
+  },
   "/app/qr": {
+
     title: "QR Codes e materiais",
     subtitle: "Divulgação pronta para imprimir",
     steps: [
