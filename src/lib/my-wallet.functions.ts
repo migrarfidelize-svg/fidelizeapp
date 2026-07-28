@@ -536,7 +536,7 @@ export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
 
     const { data, error } = await context.supabase
       .from("establishments")
-      .select("id, slug, name, logo_url, primary_color, address, city, description, created_at")
+      .select("id, slug, name, logo_url, primary_color, address, city, description, segment, created_at")
       .eq("active", true)
       .order("created_at", { ascending: false })
       .limit(60);
@@ -553,6 +553,7 @@ export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
       address: e.address,
       city: e.city,
       description: e.description,
+      segment: e.segment,
       visited: visited.has(e.id),
       has_promotion: promoted.has(e.id),
     }));

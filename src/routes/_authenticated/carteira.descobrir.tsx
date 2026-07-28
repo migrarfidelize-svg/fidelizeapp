@@ -1,10 +1,17 @@
 import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { Compass, MapPin, Sparkles, ChevronRight, ShieldCheck, Tag } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Compass, MapPin, Sparkles, ChevronRight, ShieldCheck, Tag, Search, ArrowLeft, X } from "lucide-react";
 import { getDiscoveryEstablishments } from "@/lib/my-wallet.functions";
 import { WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
+import {
+  DISCOVER_CATEGORIES,
+  CATEGORY_BY_ID,
+  categorizeEstablishment,
+  type DiscoverCategoryId,
+} from "@/lib/discover-categories";
+
 
 const opts = queryOptions({
   queryKey: ["discovery-establishments"],
@@ -51,6 +58,9 @@ function DiscoverPage() {
     return localStorage.getItem("wallet:geo:city") || "";
   });
   const [locating, setLocating] = useState(false);
+  const [active, setActive] = useState<DiscoverCategoryId | "promo" | "perto" | "todos" | null>(null);
+  const [query, setQuery] = useState("");
+
 
   useEffect(() => {
     if (geo === "granted" || geo === "denied" || geo === "unsupported") {
@@ -110,20 +120,65 @@ function DiscoverPage() {
   // Ordenação: quando temos cidade do usuário, prioriza estabelecimentos na mesma cidade,
   // depois não-visitados, depois o resto. Sem cidade, mantém heurística "não visitados no topo".
   const myCityNorm = normalizeCity(myCity);
-  const sorted = [...data].sort((a, b) => {
-    // 1) Promoções ativas primeiro — o cliente vê ofertas antes de tudo.
-    const aPromo = a.has_promotion ? 1 : 0;
-    const bPromo = b.has_promotion ? 1 : 0;
-    if (aPromo !== bPromo) return bPromo - aPromo;
-    // 2) Proximidade (mesma cidade) quando disponível.
-    if (myCityNorm) {
-      const aMatch = normalizeCity(a.city) === myCityNorm ? 1 : 0;
-      const bMatch = normalizeCity(b.city) === myCityNorm ? 1 : 0;
-      if (aMatch !== bMatch) return bMatch - aMatch;
-    }
-    // 3) Não visitados no topo.
-    return Number(a.visited) - Number(b.visited);
-  });
+  const sorted = useMemo(
+    () =>
+      [...data]
+        .map((e) => ({ ...e, category: categorizeEstablishment(e) }))
+        .sort((a, b) => {
+          // 1) Promoções ativas primeiro — o cliente vê ofertas antes de tudo.
+          const aPromo = a.has_promotion ? 1 : 0;
+          const bPromo = b.has_promotion ? 1 : 0;
+          if (aPromo !== bPromo) return bPromo - aPromo;
+          // 2) Proximidade (mesma cidade) quando disponível.
+          if (myCityNorm) {
+            const aMatch = normalizeCity(a.city) === myCityNorm ? 1 : 0;
+            const bMatch = normalizeCity(b.city) === myCityNorm ? 1 : 0;
+            if (aMatch !== bMatch) return bMatch - aMatch;
+          }
+          // 3) Não visitados no topo.
+          return Number(a.visited) - Number(b.visited);
+        }),
+    [data, myCityNorm],
+  );
+
+  // Categorias disponíveis (só as que têm estabelecimentos), com contagem.
+  const categories = useMemo(() => {
+    const counts = new Map<DiscoverCategoryId, number>();
+    for (const e of sorted) counts.set(e.category, (counts.get(e.category) ?? 0) + 1);
+    return DISCOVER_CATEGORIES.filter((c) => (counts.get(c.id) ?? 0) > 0).map((c) => ({
+      ...c,
+      count: counts.get(c.id) ?? 0,
+    }));
+  }, [sorted]);
+
+  const promoCount = sorted.filter((e) => e.has_promotion).length;
+  const nearbyCount = myCityNorm ? sorted.filter((e) => normalizeCity(e.city) === myCityNorm).length : 0;
+
+  const visible = useMemo(() => {
+    const q = normalizeCity(query);
+    return sorted.filter((e) => {
+      if (active === "promo" && !e.has_promotion) return false;
+      if (active === "perto" && normalizeCity(e.city) !== myCityNorm) return false;
+      if (active && active !== "promo" && active !== "perto" && active !== "todos" && e.category !== active)
+        return false;
+      if (q) {
+        const hay = normalizeCity(`${e.name} ${e.city ?? ""} ${e.description ?? ""}`);
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [sorted, active, query, myCityNorm]);
+
+  const showList = !!active || query.trim().length > 0;
+  const activeLabel =
+    active === "promo"
+      ? "Com promoção"
+      : active === "perto"
+      ? `Perto de você${myCity ? ` · ${myCity}` : ""}`
+      : active && active !== "todos"
+      ? CATEGORY_BY_ID.get(active)?.label ?? "Todos"
+      : "Todos os lugares";
+
 
   return (
     <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["discovery-establishments"] })}>
@@ -193,12 +248,132 @@ function DiscoverPage() {
             </p>
           </div>
         ) : (
-          <ul className="space-y-2.5">
-            {sorted.map((e) => (
-              <DiscoverRow key={e.id} e={e} nearby={!!myCityNorm && normalizeCity(e.city) === myCityNorm} />
-            ))}
-          </ul>
+          <>
+            {/* Busca sempre disponível */}
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                value={query}
+                onChange={(ev) => setQuery(ev.target.value)}
+                placeholder="Buscar por nome, cidade ou tipo…"
+                className="w-full rounded-2xl border border-border/60 bg-card/40 py-2.5 pl-9 pr-9 text-sm outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-primary/50"
+              />
+              {query && (
+                <button
+                  onClick={() => setQuery("")}
+                  aria-label="Limpar busca"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-muted/60"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+
+            {!showList ? (
+              /* Passo 1 — o cliente escolhe onde quer navegar */
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-2">
+                  {promoCount > 0 && (
+                    <button
+                      onClick={() => setActive("promo")}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/50 bg-amber-500/10 px-3 py-1.5 text-xs font-bold text-amber-600 transition-transform active:scale-95 dark:text-amber-300"
+                    >
+                      <Tag className="h-3.5 w-3.5" /> Com promoção · {promoCount}
+                    </button>
+                  )}
+                  {nearbyCount > 0 && (
+                    <button
+                      onClick={() => setActive("perto")}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary transition-transform active:scale-95"
+                    >
+                      <MapPin className="h-3.5 w-3.5" /> Perto de você · {nearbyCount}
+                    </button>
+                  )}
+                </div>
+
+                <div>
+                  <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    Escolha uma categoria
+                  </div>
+                  <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                    {categories.map((c) => (
+                      <button
+                        key={c.id}
+                        onClick={() => setActive(c.id)}
+                        className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card/40 p-3 text-left transition-all hover:border-primary/40 hover:bg-card/60 active:scale-[0.98]"
+                      >
+                        <div className="pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full bg-primary/15 opacity-40 blur-2xl transition-opacity group-hover:opacity-70" />
+                        <div className="text-xl">{c.emoji}</div>
+                        <div className="mt-1.5 font-display text-sm font-bold">{c.label}</div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {c.count} {c.count === 1 ? "lugar" : "lugares"}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setActive("todos")}
+                  className="flex w-full items-center justify-between rounded-2xl border border-border/60 bg-card/30 px-4 py-3 text-sm font-semibold transition-colors hover:border-primary/40"
+                >
+                  Ver todos os {sorted.length} estabelecimentos
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </button>
+              </div>
+            ) : (
+              /* Passo 2 — lista filtrada */
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <button
+                    onClick={() => {
+                      setActive(null);
+                      setQuery("");
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-card/40 px-3 py-1.5 text-xs font-bold transition-colors hover:border-primary/40"
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5" /> Categorias
+                  </button>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {activeLabel} · {visible.length}
+                  </span>
+                </div>
+
+                {/* Troca rápida entre categorias sem voltar */}
+                <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  {categories.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => setActive(c.id)}
+                      className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                        active === c.id
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border/60 bg-card/40 hover:border-primary/40"
+                      }`}
+                    >
+                      {c.emoji} {c.label}
+                    </button>
+                  ))}
+                </div>
+
+                {visible.length === 0 ? (
+                  <div className="rounded-3xl border border-dashed border-border/60 bg-card/30 p-8 text-center">
+                    <Sparkles className="mx-auto mb-2 h-6 w-6 text-primary" />
+                    <div className="font-display text-sm font-bold">Nenhum resultado</div>
+                    <p className="mt-1 text-xs text-muted-foreground">Tente outra categoria ou busca.</p>
+                  </div>
+                ) : (
+                  <ul className="space-y-2.5">
+                    {visible.map((e) => (
+                      <DiscoverRow key={e.id} e={e} nearby={!!myCityNorm && normalizeCity(e.city) === myCityNorm} />
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </>
         )}
+
       </div>
     </WithOfflineFallback>
   );
