@@ -194,11 +194,12 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
       stamp_validity_days: number | null;
       reward_validity_days: number | null;
     };
-    const empty: { establishment: PublicEst | null; promotions: PublicPromo[]; campaigns: PublicCampaign[]; has_menu: boolean } = {
+    const empty: { establishment: PublicEst | null; promotions: PublicPromo[]; campaigns: PublicCampaign[]; has_menu: boolean; has_catalog: boolean } = {
       establishment: null,
       promotions: [],
       campaigns: [],
       has_menu: false,
+      has_catalog: false,
     };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: est } = await supabaseAdmin
@@ -252,10 +253,14 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
       reward_validity_days: (c.reward_validity_days as number | null) ?? null,
     }));
     // Vitrine digital: só expomos o atalho quando o plano libera e o cardápio está publicado.
-    const { isMenuDestinationValid } = await import("@/lib/qr-target.server");
-    const hasMenu = await isMenuDestinationValid(supabaseAdmin, est.id as string);
+    const { isShowcaseDestinationValid } = await import("@/lib/qr-target.server");
+    const [hasMenu, hasCatalog] = await Promise.all([
+      isShowcaseDestinationValid(supabaseAdmin, est.id as string, "menu"),
+      isShowcaseDestinationValid(supabaseAdmin, est.id as string, "catalog"),
+    ]);
     return {
       has_menu: hasMenu,
+      has_catalog: hasCatalog,
       establishment: {
         id: est.id,
         name: est.name,
