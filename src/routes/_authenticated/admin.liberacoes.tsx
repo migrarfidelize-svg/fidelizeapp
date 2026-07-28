@@ -34,12 +34,113 @@ export const Route = createFileRoute("/_authenticated/admin/liberacoes")({
   }),
 });
 
-const FEATURES = [
-  { key: "digital_menu", label: "Cardápio digital (acesso à área)" },
-  { key: "public_reviews", label: "Avaliações públicas" },
-  { key: "auto_campaigns", label: "Campanhas automáticas" },
-  { key: "advanced_reports", label: "Relatórios avançados" },
+const FEATURE_GROUPS: { group: string; items: { key: string; label: string }[] }[] = [
+  {
+    group: "Vitrines digitais",
+    items: [
+      { key: "digital_menu", label: "Cardápio digital (vitrine + QR)" },
+      { key: "digital_catalog", label: "Catálogo digital" },
+      { key: "qr_generator", label: "Gerador de QR Code / material impresso" },
+      { key: "qrcode", label: "QR Code" },
+    ],
+  },
+  {
+    group: "Fidelidade",
+    items: [
+      { key: "loyalty_card", label: "Cartão fidelidade digital" },
+      { key: "loyalty_cards", label: "Cartões de fidelidade digitais" },
+      { key: "stamps", label: "Carimbos" },
+      { key: "rewards", label: "Recompensas" },
+      { key: "custom_stamp_icons", label: "Ícones de carimbo personalizados" },
+    ],
+  },
+  {
+    group: "Clientes & CRM",
+    items: [
+      { key: "customers", label: "Clientes ilimitados" },
+      { key: "customer_crm", label: "CRM de clientes" },
+      { key: "customer_segments", label: "Segmentação avançada" },
+      { key: "customer_import", label: "Importação de clientes (CSV)" },
+      { key: "customer_export", label: "Exportação de clientes" },
+    ],
+  },
+  {
+    group: "Campanhas & Comunicação",
+    items: [
+      { key: "campaigns", label: "Campanhas ilimitadas" },
+      { key: "auto_campaigns", label: "Campanhas automáticas" },
+      { key: "push_notifications", label: "Notificações push" },
+      { key: "email_notifications", label: "Notificações por e-mail" },
+      { key: "email_marketing", label: "E-mail marketing" },
+      { key: "whatsapp_notifications", label: "Notificações via WhatsApp" },
+    ],
+  },
+  {
+    group: "Avaliações",
+    items: [
+      { key: "public_reviews", label: "Avaliações públicas (QR + página)" },
+      { key: "reviews", label: "Avaliações de atendimento" },
+      { key: "reviews_public_page", label: "Página pública de avaliações" },
+      { key: "reviews_nps", label: "NPS" },
+      { key: "reviews_categories", label: "Categorias de avaliação" },
+      { key: "reviews_reply", label: "Responder avaliações" },
+      { key: "reviews_google", label: "Redirecionar para Google Reviews" },
+      { key: "reviews_export", label: "Exportar avaliações" },
+    ],
+  },
+  {
+    group: "Relatórios & Dados",
+    items: [
+      { key: "dashboard", label: "Dashboard básico" },
+      { key: "dashboard_realtime", label: "Dashboard em tempo real" },
+      { key: "reports", label: "Relatórios" },
+      { key: "advanced_reports", label: "Relatórios avançados" },
+      { key: "export", label: "Exportação de dados" },
+      { key: "csv_pdf_export", label: "Exportação CSV / PDF" },
+      { key: "history", label: "Histórico completo" },
+      { key: "audit", label: "Auditoria" },
+    ],
+  },
+  {
+    group: "Marca & Personalização",
+    items: [
+      { key: "branding", label: "Personalização da identidade visual" },
+      { key: "custom_branding", label: "Marca e cores personalizadas" },
+      { key: "remove_branding", label: "Remover marca Fidelize" },
+      { key: "custom_domain", label: "Domínio personalizado" },
+    ],
+  },
+  {
+    group: "Equipe & Unidades",
+    items: [
+      { key: "employees", label: "Funcionários ilimitados" },
+      { key: "custom_permissions", label: "Permissões personalizadas" },
+      { key: "multi_units", label: "Múltiplas unidades" },
+      { key: "multi_unit", label: "Multi-unidades / filiais" },
+    ],
+  },
+  {
+    group: "Integrações & API",
+    items: [
+      { key: "api", label: "Acesso à API" },
+      { key: "webhooks", label: "Webhooks" },
+      { key: "integrations", label: "Integrações" },
+    ],
+  },
+  {
+    group: "Suporte",
+    items: [
+      { key: "support_email", label: "Suporte por e-mail" },
+      { key: "support_ticket", label: "Suporte por ticket" },
+      { key: "support_priority", label: "Suporte prioritário" },
+      { key: "priority_support", label: "Suporte prioritário (legado)" },
+      { key: "support_dedicated", label: "Gerente de conta dedicado" },
+      { key: "knowledge_base", label: "Base de conhecimento" },
+    ],
+  },
 ];
+
+const FEATURES = FEATURE_GROUPS.flatMap((g) => g.items);
 
 function FeatureOverridesPage() {
   const qc = useQueryClient();
