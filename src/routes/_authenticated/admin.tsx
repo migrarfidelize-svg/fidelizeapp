@@ -49,7 +49,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/admin/financeiro", label: "Financeiro", icon: DollarSign },
       { to: "/admin/assinaturas", label: "Assinaturas", icon: CreditCard },
       { to: "/admin/planos", label: "Planos", icon: Package },
-      { to: "/admin/pagamentos", label: "Mercado Pago", icon: CreditCard },
+      
     ],
   },
   {
