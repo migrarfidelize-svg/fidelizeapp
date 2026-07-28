@@ -396,7 +396,10 @@ function PlanCard({
             <Icon className="h-5 w-5" />
           </div>
           <h3 className="font-display text-2xl font-bold mt-4 tracking-tight">{plan.name}</h3>
-          <p className="text-sm mt-1 text-muted-foreground">{plan.description}</p>
+          <p className="text-sm mt-1 text-muted-foreground leading-relaxed min-h-[3.75rem]">
+            {plan.description?.trim() || "Plano Fidelize com cartão fidelidade digital e ferramentas de retenção."}
+          </p>
+
 
           <div className="mt-5 flex items-baseline gap-1">
             <span className="font-display text-5xl font-bold tracking-tight">
