@@ -1373,6 +1373,8 @@ const COMPARE_ROWS: { label: string; values: (boolean | string)[] }[] = [
   { label: "Avaliação de Atendimento", values: [true, true, true, true] },
   { label: "Árvore de Links", values: [true, true, true, true] },
   { label: "Cardápio Virtual", values: [false, false, true, true] },
+  { label: "Catálogo Digital", values: [false, false, true, true] },
+
   { label: "Notificações Push", values: [false, true, true, true] },
   { label: "Tag Display", values: [false, true, true, true] },
   { label: "QR Codes Inteligentes", values: [true, true, true, true] },
