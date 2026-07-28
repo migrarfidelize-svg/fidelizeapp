@@ -118,7 +118,12 @@ export function categorizeEstablishment(e: {
   name?: string | null;
   description?: string | null;
 }): DiscoverCategoryId {
-  const fields = [norm(e.segment), norm(e.name), norm(e.description)];
+  // Categoria escolhida explicitamente no onboarding/configurações vence a inferência.
+  const seg = norm(e.segment);
+  const direct = DISCOVER_CATEGORIES.find((c) => c.id === seg);
+  if (direct) return direct.id;
+
+  const fields = [seg, norm(e.name), norm(e.description)];
   for (const field of fields) {
     if (!field) continue;
     for (const cat of DISCOVER_CATEGORIES) {

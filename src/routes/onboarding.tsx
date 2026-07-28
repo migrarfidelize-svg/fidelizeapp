@@ -26,6 +26,7 @@ import {
 import { LogoCropper } from "@/components/LogoCropper";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { STAMP_ICON_OPTIONS, getStampIcon, stampIconLabel } from "@/lib/stampIcons";
+import { DISCOVER_CATEGORIES } from "@/lib/discover-categories";
 
 export const Route = createFileRoute("/onboarding")({
   ssr: false,
@@ -95,6 +96,7 @@ function Onboarding() {
   const [f, setF] = useState({
     name: "",
     slug: "",
+    segment: "",
     description: "",
     primary_color: "#22d3ee",
     accent_color: "#e879f9",
@@ -116,7 +118,7 @@ function Onboarding() {
 
   const completion = useMemo(() => {
     const checks = {
-      empresa: f.name.trim().length >= 2 && slugify(f.slug).length >= 3,
+      empresa: f.name.trim().length >= 2 && slugify(f.slug).length >= 3 && !!f.segment,
       marca: !!f.logo_url || (!!f.primary_color && !!f.accent_color),
       campanha: f.reward_title.trim().length >= 2 && f.stamps_required >= 2,
     };
@@ -201,6 +203,10 @@ function Onboarding() {
     }
     if (f.name.trim().length < 2) {
       toast.error("Informe o nome da empresa.");
+      return;
+    }
+    if (!f.segment) {
+      toast.error("Selecione a categoria do seu negócio.");
       return;
     }
     if (f.reward_title.trim().length < 2) {
@@ -345,6 +351,24 @@ function Onboarding() {
                 </div>
               </Field>
             </div>
+
+            <Field label="Categoria do negócio">
+              <Select value={f.segment} onValueChange={(v) => set("segment", v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DISCOVER_CATEGORIES.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.emoji} {c.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Usada para seu negócio aparecer na categoria certa no Descobrir da carteira.
+              </p>
+            </Field>
 
             <Field label="Descrição (opcional)">
               <Textarea
