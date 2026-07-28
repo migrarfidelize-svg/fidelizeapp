@@ -392,6 +392,8 @@ const FEATURE_LABELS: Record<string, string> = {
   api: "Acesso à API",
   webhooks: "Webhooks",
   custom_branding: "Personalização de marca",
+  remove_branding: "Remover marca Fidelize",
+
   custom_stamp_icons: "Ícones de carimbo personalizados",
   multi_units: "Múltiplas unidades",
   email_marketing: "E-mail marketing",
