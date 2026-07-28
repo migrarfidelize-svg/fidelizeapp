@@ -2,7 +2,7 @@ import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Compass, MapPin, Sparkles, ChevronRight, ShieldCheck, Tag, Search, ArrowLeft, X } from "lucide-react";
+import { Compass, MapPin, Sparkles, ChevronRight, ShieldCheck, Tag, Search, ArrowLeft, X, RefreshCw } from "lucide-react";
 import { getDiscoveryEstablishments } from "@/lib/my-wallet.functions";
 import { WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
 import {
@@ -13,10 +13,15 @@ import {
 } from "@/lib/discover-categories";
 
 
+// Lista aberta a todos os estabelecimentos ativos — sem distinção de plano.
+// Revalidamos sempre ao abrir para que parceiros recém-criados (tipicamente
+// no plano gratuito) apareçam na hora, sem depender de cache antigo.
 const opts = queryOptions({
   queryKey: ["discovery-establishments"],
   queryFn: () => getDiscoveryEstablishments(),
-  staleTime: 60_000,
+  staleTime: 0,
+  refetchOnMount: "always",
+  refetchOnWindowFocus: true,
 });
 
 export const Route = createFileRoute("/_authenticated/carteira/descobrir")({
@@ -187,6 +192,13 @@ function DiscoverPage() {
           <div className="flex items-center gap-2">
             <Compass className="h-5 w-5 text-primary" />
             <h1 className="font-display text-2xl font-bold tracking-tight">Descobrir</h1>
+            <button
+              onClick={() => qc.invalidateQueries({ queryKey: ["discovery-establishments"] })}
+              aria-label="Atualizar lista"
+              className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-card/40 px-3 py-1.5 text-[11px] font-bold text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+            >
+              <RefreshCw className="h-3.5 w-3.5" /> Atualizar
+            </button>
           </div>
           <p className="text-sm text-muted-foreground">
             Outros lugares Fidelize esperando por você — colecione novos cartões e ganhe recompensas.
