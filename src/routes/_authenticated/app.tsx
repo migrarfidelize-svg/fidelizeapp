@@ -26,6 +26,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { QuickSearch } from "@/components/merchant/QuickSearch";
 import { GuidedTour, type TourStep } from "@/components/GuidedTour";
 import { PageGuidePrompt } from "@/components/merchant/PageGuidePrompt";
+import { PageGuideButton } from "@/components/merchant/PageGuideButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePermissions } from "@/hooks/usePermissions";
 import { RouteLoading } from "@/components/RouteLoading";
@@ -670,6 +671,8 @@ function AppLayout() {
                 establishmentId={activeEstId ?? null}
                 navTargets={FLAT_NAV.map((n) => ({ to: n.to, label: n.label }))}
               />
+
+              <PageGuideButton scope={activeEst?.id ?? "user"} />
 
               <div className="hidden md:block"><ThemeToggle /></div>
             </div>
