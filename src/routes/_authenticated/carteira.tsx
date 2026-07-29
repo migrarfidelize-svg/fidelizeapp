@@ -78,10 +78,18 @@ function WalletLayout() {
   }, []);
 
 
-  // Perfil vira obrigatório nas ações de valor: prêmios e cartão do estabelecimento.
+  // Perfil vira obrigatório APENAS nas ações de valor (prêmios e cartão do estabelecimento).
   const profileRequired =
     pathname.startsWith("/carteira/premios") ||
     /^\/carteira\/(?!premios|historico|descobrir|perfil|conquistas|mensagens|retrospectiva|e\/)[^/]+/.test(pathname);
+
+  // O modal informativo só aparece na home da carteira e na aba de perfil.
+  // Nas rotas informativas (histórico, descobrir, mensagens, conquistas,
+  // retrospectiva) ele NÃO é montado — evita virar "parede" a cada navegação.
+  const showProfileDialog =
+    profileRequired ||
+    pathname === "/carteira" ||
+    pathname.startsWith("/carteira/perfil");
 
 
   // Piggyback no cache já hidratado pela home para descobrir os customer_ids.
@@ -202,7 +210,7 @@ function WalletLayout() {
       <MyQrSheet open={qrOpen} onOpenChange={setQrOpen} />
       <AchievementUnlockListener />
       <PostStampReviewSheet />
-      <CompleteProfileDialog required={profileRequired} />
+      {showProfileDialog && <CompleteProfileDialog required={profileRequired} />}
     </div>
   );
 }

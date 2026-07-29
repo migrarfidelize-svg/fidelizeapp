@@ -397,22 +397,29 @@ function addDays(d: Date, days: number): Date {
 
 function StreakCard({ weeks, lastVisit, atRisk, daysLeft }: { weeks: number; lastVisit: string | null; atRisk: boolean; daysLeft: number }) {
   if (atRisk) {
+    // Vermelho SÓ quando faltar menos de 2 dias. Antes disso, tom âmbar (lembrete, não alarme).
+    const critical = daysLeft < 2;
+    const accent = critical ? "destructive" : "amber-500";
     return (
-      <div className="relative overflow-hidden rounded-3xl border border-destructive/50 bg-gradient-to-br from-destructive/15 via-amber-500/10 to-orange-500/10 p-4">
-        <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-destructive/25 blur-3xl" />
+      <div className={`relative overflow-hidden rounded-3xl border ${critical ? "border-destructive/50" : "border-amber-500/40"} bg-gradient-to-br ${critical ? "from-destructive/15 via-amber-500/10 to-orange-500/10" : "from-amber-500/12 via-orange-500/8 to-primary/8"} p-4`}>
+        <div className={`pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full blur-3xl ${critical ? "bg-destructive/25" : "bg-amber-500/20"}`} />
         <div className="relative flex items-center gap-3">
-          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-destructive to-orange-600 text-white shadow-lg">
+          <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${critical ? "from-destructive to-orange-600" : "from-amber-500 to-orange-500"} text-white shadow-lg`}>
             <Flame className="wallet-streak-flame h-6 w-6" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-[10px] font-black uppercase tracking-widest text-destructive">
-              Sua sequência está em risco
+            <div className={`text-[10px] font-black uppercase tracking-widest ${critical ? "text-destructive" : "text-amber-600 dark:text-amber-300"}`}>
+              {critical ? "Sua sequência está em risco" : "Sequência quase pausando"}
             </div>
             <div className="font-display text-base font-bold">
-              Faltam <span className="text-destructive">{daysLeft} {daysLeft === 1 ? "dia" : "dias"}</span> para quebrar {weeks} {weeks === 1 ? "semana" : "semanas"} 🔥
+              {critical ? (
+                <>Faltam <span className="text-destructive">{daysLeft} {daysLeft === 1 ? "dia" : "dias"}</span> para pausar {weeks} {weeks === 1 ? "semana" : "semanas"} 🔥</>
+              ) : (
+                <>Ainda dá tempo — <span className="text-amber-600 dark:text-amber-300">{daysLeft} dias</span> para manter {weeks} {weeks === 1 ? "semana" : "semanas"} de combo</>
+              )}
             </div>
             <div className="text-[11px] text-muted-foreground">
-              Passe em uma loja essa semana para manter o combo vivo.
+              {critical ? "Passe em uma loja hoje ou amanhã para manter o combo vivo." : "Uma visita esta semana mantém o combo em pé."}
             </div>
           </div>
         </div>
