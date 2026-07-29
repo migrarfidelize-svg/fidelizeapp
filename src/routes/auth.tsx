@@ -420,17 +420,18 @@ function AuthPage() {
           </div>
 
           <div className="max-w-md text-center lg:text-left">
-            <h1 className="font-display text-4xl font-bold leading-tight text-white">
+            <h1 className="font-display text-3xl font-bold leading-tight text-white">
               Onde a lealdade vira <span className="text-[#a78bfa]">experiência.</span>
             </h1>
-            <p className="mt-3 text-white/50">Cartão fidelidade digital, carimbos em tempo real e clientes que voltam sempre.</p>
+            <p className="mt-2 text-sm text-white/50">Cartão fidelidade digital, carimbos em tempo real e clientes que voltam sempre.</p>
           </div>
         </div>
 
 
         {/* Form panel */}
         <div className="mx-auto w-full max-w-md">
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl sm:p-7">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 backdrop-blur-xl sm:p-6">
+
             {/* Sliding switch toggle */}
             <div className="relative mb-5 grid grid-cols-2 rounded-full border border-white/10 bg-black/40 p-1">
               <span
