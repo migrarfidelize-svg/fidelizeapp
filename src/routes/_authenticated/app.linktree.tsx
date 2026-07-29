@@ -248,6 +248,7 @@ function LinkTreeEditor() {
       header_image: { image_url: "", link_url: "" },
     };
     setLinks((prev) => [...prev, {
+      _uid: uid(),
       kind,
       label: KIND_META[kind].label,
       url: prefill,
