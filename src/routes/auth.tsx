@@ -316,9 +316,10 @@ function AuthPage() {
         <Link to="/" className="text-xs uppercase tracking-[0.2em] text-white/40 hover:text-[#a78bfa]">← Voltar</Link>
       </div>
 
-      <div className="relative z-10 mx-auto grid min-h-[calc(100vh-8rem)] max-w-6xl grid-cols-1 items-center gap-16 lg:grid-cols-2">
+      <div className="relative z-10 mx-auto grid min-h-[calc(100vh-5rem)] max-w-6xl grid-cols-1 items-center gap-8 lg:gap-12 lg:grid-cols-2">
         {/* Protagonist: Premium loyalty stamp card */}
-        <div className="flex flex-col items-center space-y-8 lg:items-start">
+        <div className="hidden flex-col items-center space-y-6 lg:flex lg:items-start">
+
           <div className="auth-card-stage group [perspective:2200px]">
             {/* Floating ambient chips behind card */}
             <div className="pointer-events-none absolute -left-8 -top-6 h-24 w-24 rounded-full bg-[#a78bfa]/20 blur-2xl animate-[auth-float_9s_ease-in-out_infinite]" />
