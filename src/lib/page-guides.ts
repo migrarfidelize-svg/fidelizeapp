@@ -255,12 +255,9 @@ export function findPageGuide(pathname: string): { path: string; module: string;
  * Nas demais, o guia existe mas só abre quando o lojista clica no botão de ajuda.
  */
 export const AUTO_GUIDE_MODULES = new Set<string>([
-  // "/app" fica de fora: a visão geral já tem o tour guiado completo.
-  "/app/carimbar",
-  "/app/clientes",
-  "/app/qrcodes",
-  "/app/cardapio",
-  "/app/campanhas",
+  // Auto-popup APENAS no Dashboard (que usa GuidedTour separado).
+  // Nos demais módulos o guia existe, mas só é aberto quando o lojista clica
+  // no ícone "?" pulsante do cabeçalho — evita empilhar popups a cada rota.
 ]);
 
 const GUIDE_KEY_PREFIX = "fidelize_page_guide_v1";
