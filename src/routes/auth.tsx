@@ -95,7 +95,7 @@ export const Route = createFileRoute("/auth")({
       throw redirect({ to: dest.to });
     }
   },
-  head: () => ({ meta: [{ title: "Entrar — Fidelize" }] }),
+  head: () => ({ meta: [{ title: "Entrar — Fidelize" }, { name: "robots", content: "noindex, nofollow" }] }),
   component: AuthPage,
 });
 
