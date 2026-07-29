@@ -1326,7 +1326,7 @@ function ReviewQrPage() {
               <Label className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                 <Layers className="h-3.5 w-3.5" /> Modelo de cartaz
               </Label>
-              <div className="grid grid-cols-4 gap-1.5">
+              <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
                 {(Object.keys(TEMPLATES) as TemplateKey[]).map((k) => {
                   const t = TEMPLATES[k];
                   const active = template === k;
