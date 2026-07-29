@@ -543,12 +543,14 @@ function ItemDialog({
             <Label>Descrição curta</Label>
             <Textarea value={shortDesc} onChange={(e) => setShortDesc(e.target.value)} rows={2} maxLength={200}
               placeholder={isCatalog ? "Uma linha que resume o produto (aparece no card)." : "Uma linha que abre o apetite (aparece no card do cardápio)."} />
+            <DescriptionTemplates kind={showKind} itemName={name} onPick={(t) => setShortDesc(t.slice(0, 200))} />
           </div>
 
           <div className="space-y-2 md:col-span-2">
             <Label>Descrição completa</Label>
             <Textarea value={longDesc} onChange={(e) => setLongDesc(e.target.value)} rows={3} maxLength={2000}
               placeholder="Detalhes, modo de preparo, sugestões de acompanhamento..." />
+            <DescriptionTemplates kind={showKind} itemName={name} long onPick={(t) => setLongDesc(t.slice(0, 2000))} />
           </div>
 
           <div className="space-y-2">
