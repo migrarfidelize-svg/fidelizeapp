@@ -9,7 +9,7 @@ import { clearWalletCache } from "@/lib/offline-wallet-cache";
 import { PushStatusCard } from "@/components/wallet/PushStatusCard";
 import { TierBadge } from "@/components/wallet/TierBadge";
 import { toast } from "sonner";
-import { User, Download, Trash2, ShieldCheck, AlertTriangle, ChevronRight, Trophy } from "lucide-react";
+import { User, Download, Trash2, ShieldCheck, AlertTriangle, ChevronRight, Trophy, KeyRound, Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/carteira/perfil")({
   ssr: false,
