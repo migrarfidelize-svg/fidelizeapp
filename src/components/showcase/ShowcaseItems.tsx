@@ -258,6 +258,16 @@ export function ShowcaseItems({ kind }: { kind: ShowcaseKind }) {
                   <Button size="icon" variant="ghost" onClick={() => dup.mutate(it.id)} title="Duplicar">
                     <CopyIcon className="h-4 w-4" />
                   </Button>
+                  {estId && aiAllowed && (
+                    <ImproveWithAiButton
+                      establishmentId={estId}
+                      itemId={it.id}
+                      itemName={it.name}
+                      currentDescription={it.short_desc ?? null}
+                      kind={kind}
+                      compact
+                    />
+                  )}
                   <Button size="icon" variant="ghost" onClick={() => openEdit(it)} title="Editar">
                     <Pencil className="h-4 w-4" />
                   </Button>
