@@ -217,7 +217,7 @@ function AuthPage() {
           try {
             localStorage.setItem(
               ONBOARDING_PREFILL_KEY,
-              JSON.stringify({ name: company.trim(), at: Date.now() }),
+              JSON.stringify({ name: company.trim(), segment, at: Date.now() }),
             );
           } catch { /* ignore */ }
           toast.success("Conta criada! Vamos configurar seu cartão.");
