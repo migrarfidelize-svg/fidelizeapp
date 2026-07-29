@@ -525,6 +525,29 @@ function AuthPage() {
                 </div>
               )}
 
+              {isEstablishmentSignup && (
+                <div className="animate-fade-in space-y-1.5">
+                  <label htmlFor="segment" className="ml-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">
+                    <Store className="h-3 w-3" /> Categoria do negócio
+                  </label>
+                  <select
+                    id="segment"
+                    value={segment}
+                    onChange={(e) => setSegment(e.target.value)}
+                    required
+                    className="auth-input appearance-none"
+                  >
+                    <option value="" disabled>Selecione a categoria</option>
+                    {DISCOVER_CATEGORIES.map((c) => (
+                      <option key={c.id} value={c.id} className="bg-[#12101c] text-white">
+                        {c.emoji} {c.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="ml-1 text-[10px] text-white/40">Define onde seu negócio aparece no Descobrir da carteira.</p>
+                </div>
+              )}
+
 
 
               {/* WhatsApp: obrigatório para cliente (sempre) e para estabelecimento no signup */}
