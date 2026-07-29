@@ -311,7 +311,7 @@ const QR_STEPS: { id: number; label: string; title: string; hint: string; icon: 
 function QrStepper({ step, onSelect }: { step: number; onSelect: (s: number) => void }) {
   const pct = ((step - 1) / (QR_STEPS.length - 1)) * 100;
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-card/70 p-4 backdrop-blur-xl">
+    <div className="relative min-w-0 overflow-hidden rounded-2xl border border-primary/20 bg-card/70 p-4 backdrop-blur-xl">
       <div className="pointer-events-none absolute -left-16 -top-16 h-40 w-40 rounded-full bg-primary/20 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-20 -right-10 h-40 w-40 rounded-full bg-accent/15 blur-3xl" />
 
