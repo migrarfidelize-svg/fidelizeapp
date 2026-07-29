@@ -48,6 +48,7 @@ type LinkKind =
 
 type LinkRow = {
   id?: string;
+  _uid?: string;
   kind: LinkKind;
   label: string;
   url: string;
@@ -56,6 +57,11 @@ type LinkRow = {
   sort_order: number;
   data?: Record<string, any>;
 };
+
+const uid = () =>
+  (typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : Math.random().toString(36).slice(2) + Date.now().toString(36));
 
 const KIND_META: Record<LinkKind, { label: string; icon: any; placeholder: string; isBlock?: boolean }> = {
   whatsapp: { label: "WhatsApp", icon: MessageCircle, placeholder: "5511999999999" },
