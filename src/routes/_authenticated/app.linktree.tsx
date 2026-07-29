@@ -178,6 +178,7 @@ function LinkTreeEditor() {
   const [published, setPublished] = useState(false);
   const [links, setLinks] = useState<LinkRow[]>([]);
   const [saving, setSaving] = useState(false);
+  const [mobileEditIdx, setMobileEditIdx] = useState<number | null>(null);
 
   // Load once
   useEffect(() => {
