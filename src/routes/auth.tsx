@@ -288,10 +288,12 @@ function AuthPage() {
           }
         }
 
+        if (walletFlow) setWalletHint(whatsapp);
         const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
         if (dest.toastKind === "error") toast.error(dest.toast ?? "Não foi possível vincular seu cartão.");
         else toast.success(dest.toast ?? "Bem-vindo de volta!");
         await completeAuthRedirect(dest.to, "SIGNED_IN");
+
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao autenticar");
