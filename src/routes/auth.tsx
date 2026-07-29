@@ -295,7 +295,7 @@ function AuthPage() {
   }
 
   return (
-    <div className="auth-cinema relative min-h-screen w-full overflow-hidden bg-[oklch(0.14_0.02_230)] px-6 py-10">
+    <div className="auth-cinema relative min-h-screen w-full overflow-hidden bg-[oklch(0.14_0.02_230)] px-6 py-4">
       {/* Overlay de transição — cobre a tela durante o redirect pós-login para eliminar qualquer flash de telas anteriores. */}
       {redirecting && (
         <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-4 bg-[oklch(0.14_0.02_230)] animate-in fade-in duration-150">
@@ -316,9 +316,10 @@ function AuthPage() {
         <Link to="/" className="text-xs uppercase tracking-[0.2em] text-white/40 hover:text-[#a78bfa]">← Voltar</Link>
       </div>
 
-      <div className="relative z-10 mx-auto grid min-h-[calc(100vh-8rem)] max-w-6xl grid-cols-1 items-center gap-16 lg:grid-cols-2">
+      <div className="relative z-10 mx-auto grid min-h-[calc(100vh-5rem)] max-w-6xl grid-cols-1 items-center gap-8 lg:gap-12 lg:grid-cols-2">
         {/* Protagonist: Premium loyalty stamp card */}
-        <div className="flex flex-col items-center space-y-8 lg:items-start">
+        <div className="hidden flex-col items-center space-y-6 lg:flex lg:items-start">
+
           <div className="auth-card-stage group [perspective:2200px]">
             {/* Floating ambient chips behind card */}
             <div className="pointer-events-none absolute -left-8 -top-6 h-24 w-24 rounded-full bg-[#a78bfa]/20 blur-2xl animate-[auth-float_9s_ease-in-out_infinite]" />
@@ -419,19 +420,20 @@ function AuthPage() {
           </div>
 
           <div className="max-w-md text-center lg:text-left">
-            <h1 className="font-display text-4xl font-bold leading-tight text-white">
+            <h1 className="font-display text-3xl font-bold leading-tight text-white">
               Onde a lealdade vira <span className="text-[#a78bfa]">experiência.</span>
             </h1>
-            <p className="mt-3 text-white/50">Cartão fidelidade digital, carimbos em tempo real e clientes que voltam sempre.</p>
+            <p className="mt-2 text-sm text-white/50">Cartão fidelidade digital, carimbos em tempo real e clientes que voltam sempre.</p>
           </div>
         </div>
 
 
         {/* Form panel */}
         <div className="mx-auto w-full max-w-md">
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl sm:p-7">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 backdrop-blur-xl sm:p-6">
+
             {/* Sliding switch toggle */}
-            <div className="relative mb-5 grid grid-cols-2 rounded-full border border-white/10 bg-black/40 p-1">
+            <div className="relative mb-4 grid grid-cols-2 rounded-full border border-white/10 bg-black/40 p-1">
               <span
                 className="pointer-events-none absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full bg-[#a78bfa] shadow-[0_0_24px_rgba(167,139,250,0.45)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
                 style={{ transform: isSignup ? "translateX(100%)" : "translateX(0%)" }}
@@ -452,7 +454,7 @@ function AuthPage() {
               </Link>
             </div>
 
-            <form onSubmit={handleSubmit} className={isSignup ? "space-y-3" : "space-y-4"}>
+            <form onSubmit={handleSubmit} className={isSignup ? "space-y-2" : "space-y-3.5"}>
 
               {/* Toggle Cliente / Estabelecimento — oculto quando o fluxo veio da carteira */}
               {search.source !== "wallet" && (
@@ -463,7 +465,7 @@ function AuthPage() {
                       type="button"
                       onClick={() => setRole("customer")}
                       className={
-                        "flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all " +
+                        "flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-all " +
                         (role === "customer"
                           ? "border-[#a78bfa] bg-[#a78bfa]/10 text-white shadow-[0_0_20px_-6px_rgba(167,139,250,0.6)]"
                           : "border-white/10 bg-white/5 text-white/60 hover:text-white")
@@ -475,7 +477,7 @@ function AuthPage() {
                       type="button"
                       onClick={() => setRole("establishment")}
                       className={
-                        "flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all " +
+                        "flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-all " +
                         (role === "establishment"
                           ? "border-[#a78bfa] bg-[#a78bfa]/10 text-white shadow-[0_0_20px_-6px_rgba(167,139,250,0.6)]"
                           : "border-white/10 bg-white/5 text-white/60 hover:text-white")
@@ -502,14 +504,14 @@ function AuthPage() {
 
 
               {isSignup && (
-                <div className="animate-fade-in space-y-1.5">
+                <div className="animate-fade-in space-y-1">
                   <label htmlFor="name" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">Seu nome</label>
                   <input id="name" value={name} onChange={(e) => setName(e.target.value)} required minLength={2} className="auth-input" />
                 </div>
               )}
 
               {isEstablishmentSignup && (
-                <div className="animate-fade-in space-y-1.5">
+                <div className="animate-fade-in space-y-1">
                   <label htmlFor="company" className="ml-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">
                     <Building2 className="h-3 w-3" /> Nome do negócio
                   </label>
@@ -522,12 +524,12 @@ function AuthPage() {
                     placeholder="Ex: Café Aurora"
                     className="auth-input"
                   />
-                  <p className="ml-1 text-[10px] text-white/40">Já deixamos tudo pronto no próximo passo com esse nome.</p>
+                  
                 </div>
               )}
 
               {isEstablishmentSignup && (
-                <div className="animate-fade-in space-y-1.5">
+                <div className="animate-fade-in space-y-1">
                   <label htmlFor="segment" className="ml-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">
                     <Store className="h-3 w-3" /> Categoria do negócio
                   </label>
@@ -545,7 +547,7 @@ function AuthPage() {
                       </option>
                     ))}
                   </select>
-                  <p className="ml-1 text-[10px] text-white/40">Define onde seu negócio aparece no Descobrir da carteira.</p>
+                  
                 </div>
               )}
 
@@ -553,7 +555,7 @@ function AuthPage() {
 
               {/* WhatsApp: obrigatório para cliente (sempre) e para estabelecimento no signup */}
               {(walletFlow || isEstablishmentSignup) && (
-                <div className="animate-fade-in space-y-1.5">
+                <div className="animate-fade-in space-y-1">
                   <label htmlFor="whatsapp" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">WhatsApp</label>
                   <input id="whatsapp" type="tel" inputMode="tel" autoComplete="tel" placeholder="(11) 91234-5678" value={whatsapp} onChange={(e) => setWhatsapp(formatWhatsapp(e.target.value))} required className="auth-input" />
                   {walletFlow && (
@@ -618,7 +620,7 @@ function AuthPage() {
                 </>
               )}
 
-              <button type="submit" disabled={loading} className="auth-cta group mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-[#a78bfa] py-3 font-display text-sm font-bold uppercase tracking-widest text-black shadow-[0_0_30px_-4px_rgba(167,139,250,0.55)] transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60">
+              <button type="submit" disabled={loading} className="auth-cta group mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-[#a78bfa] py-2.5 font-display text-sm font-bold uppercase tracking-widest text-black shadow-[0_0_30px_-4px_rgba(167,139,250,0.55)] transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60">
                 {loading ? (
                   "Aguarde…"
                 ) : (
@@ -630,11 +632,11 @@ function AuthPage() {
               </button>
             </form>
 
-            <div className="mt-4 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/30">
+            <div className="mt-3 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/30">
               <Check className="h-3 w-3 text-[#a78bfa]" /> Criptografia ativa · SSL
             </div>
 
-            <p className="mt-3 text-center text-[10px] leading-relaxed text-white/40">
+            <p className="mt-2 text-center text-[10px] leading-relaxed text-white/40">
               Ao continuar você concorda com os{" "}
               <a href="/termos" target="_blank" rel="noopener noreferrer" className="underline decoration-[#a78bfa]/40 underline-offset-2 hover:text-white/70">
                 Termos de uso

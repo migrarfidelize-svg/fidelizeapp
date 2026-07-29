@@ -1372,7 +1372,8 @@
   border-radius: 0.75rem;
   border: 1px solid rgba(255,255,255,0.10);
   background: rgba(0,0,0,0.35);
-  padding: 0.65rem 0.9rem;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.875rem;
   color: #fff;
   font-family: var(--font-sans);
   outline: none;
