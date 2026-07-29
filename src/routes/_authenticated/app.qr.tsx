@@ -1645,7 +1645,8 @@ function ReviewQrPage() {
             )}
             <div className="flex w-full max-w-[440px] flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-start">
             <div
-              className="relative mx-auto w-full max-w-[320px] flex-1"
+              className="relative mx-auto w-full max-w-[360px] flex-1 sm:max-w-[320px]"
+
               style={displayMode ? { perspective: "1600px", perspectiveOrigin: "50% 65%" } : undefined}
             >
 
