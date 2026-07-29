@@ -2545,7 +2545,9 @@ function BadgeDraggable({
   return (
     <div
       ref={ref}
+      data-draggable={editable ? "badge" : undefined}
       onPointerDown={onPointerDown}
+
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
