@@ -180,6 +180,11 @@ function AuthPage() {
           setLoading(false);
           return;
         }
+        if (isEstablishmentSignup && !segment) {
+          toast.error("Selecione a categoria do seu negócio.");
+          setLoading(false);
+          return;
+        }
         const creds = walletFlow ? walletCredentials(digits) : { email, password };
         const { data: signUpData, error } = await supabase.auth.signUp({
           email: creds.email,
