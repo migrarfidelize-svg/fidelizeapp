@@ -295,7 +295,7 @@ function AuthPage() {
   }
 
   return (
-    <div className="auth-cinema relative min-h-screen w-full overflow-hidden bg-[oklch(0.14_0.02_230)] px-6 py-10">
+    <div className="auth-cinema relative min-h-screen w-full overflow-hidden bg-[oklch(0.14_0.02_230)] px-6 py-5">
       {/* Overlay de transição — cobre a tela durante o redirect pós-login para eliminar qualquer flash de telas anteriores. */}
       {redirecting && (
         <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-4 bg-[oklch(0.14_0.02_230)] animate-in fade-in duration-150">
