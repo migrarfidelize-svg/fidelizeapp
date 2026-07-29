@@ -405,17 +405,20 @@ function DiscoverRow({
     description: string | null;
     visited: boolean;
     has_promotion: boolean;
+    has_menu: boolean;
+    has_catalog: boolean;
   };
   nearby?: boolean;
 }) {
   const brand = e.primary_color || "hsl(var(--primary))";
   const location = [e.address, e.city].filter(Boolean).join(" · ");
+  const hasShowcase = e.has_menu || e.has_catalog;
   return (
-    <li>
+    <li className="group overflow-hidden rounded-2xl border border-border/60 bg-card/40 transition-all hover:border-primary/40 hover:bg-card/60">
       <Link
         to="/carteira/e/$slug"
         params={{ slug: e.slug }}
-        className="group relative flex items-center gap-3 overflow-hidden rounded-2xl border border-border/60 bg-card/40 p-3 transition-all hover:border-primary/40 hover:bg-card/60"
+        className="relative flex items-center gap-3 p-3"
       >
         <div
           className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full opacity-20 blur-2xl"
@@ -469,6 +472,28 @@ function DiscoverRow({
         )}
         <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
       </Link>
+      {hasShowcase && (
+        <div className="flex flex-wrap gap-2 border-t border-border/40 px-3 pb-3 pt-2">
+          {e.has_menu && (
+            <Link
+              to="/cardapio/$slug"
+              params={{ slug: e.slug }}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 bg-background/60 px-3 py-1.5 text-xs font-semibold transition hover:border-primary/40 hover:text-primary"
+            >
+              <UtensilsCrossed className="h-3.5 w-3.5" /> Ver cardápio
+            </Link>
+          )}
+          {e.has_catalog && (
+            <Link
+              to="/catalogo/$slug"
+              params={{ slug: e.slug }}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 bg-background/60 px-3 py-1.5 text-xs font-semibold transition hover:border-primary/40 hover:text-primary"
+            >
+              <ShoppingBag className="h-3.5 w-3.5" /> Ver catálogo
+            </Link>
+          )}
+        </div>
+      )}
     </li>
   );
 }
