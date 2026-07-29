@@ -324,58 +324,63 @@ function LinkTreeEditor() {
   if (!est) return <div className="p-6 text-muted-foreground">Carregando…</div>;
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
-      <header className="sticky top-0 z-20 -mx-4 md:-mx-6 px-4 md:px-6 py-3 flex flex-wrap items-start justify-between gap-4 bg-background/85 backdrop-blur-md border-b">
-        <div>
-          <h1 className="font-display text-2xl md:text-3xl font-bold">Árvore de Links</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Sua página pública com todos os links em um só lugar.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <ConfigureQrButton dest="linktree" />
-          {published && (
-            <>
-              <Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success("Link copiado!"); }}>
-                <Copy className="h-4 w-4 mr-2" /> Copiar link
-              </Button>
-              <Button variant="outline" size="sm" asChild>
-                <a href={publicUrl} target="_blank" rel="noreferrer"><Eye className="h-4 w-4 mr-2" /> Ver pública</a>
-              </Button>
-            </>
-          )}
-          <Button variant="secondary" onClick={() => save()} disabled={saving}>
-            {saving ? "Salvando…" : "Salvar rascunho"}
-          </Button>
-          {published ? (
-            <Button variant="destructive" onClick={() => save(false)} disabled={saving}>Despublicar</Button>
-          ) : (
-            <Button onClick={() => save(true)} disabled={saving}>Publicar</Button>
-          )}
+    <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6 overflow-x-clip p-3 sm:p-4 md:p-8">
+      <header className="sticky top-0 z-20 -mx-3 sm:-mx-4 md:-mx-8 px-3 sm:px-4 md:px-8 py-3 bg-background/85 backdrop-blur-md border-b">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 sm:flex sm:flex-wrap sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="font-display text-xl sm:text-2xl md:text-3xl font-bold truncate">Árvore de Links</h1>
+            <p className="hidden sm:block text-sm text-muted-foreground mt-1">
+              Sua página pública com todos os links em um só lugar.
+            </p>
+          </div>
+          <div className="shrink-0">
+            <ConfigureQrButton dest="linktree" />
+          </div>
+          <div className="col-span-2 -mx-3 sm:mx-0 flex items-center gap-2 overflow-x-auto px-3 sm:overflow-visible sm:px-0 sm:flex-wrap">
+            {published && (
+              <>
+                <Button variant="outline" size="sm" className="shrink-0" onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success("Link copiado!"); }}>
+                  <Copy className="h-4 w-4 sm:mr-2" /> <span className="hidden sm:inline">Copiar link</span>
+                </Button>
+                <Button variant="outline" size="sm" className="shrink-0" asChild>
+                  <a href={publicUrl} target="_blank" rel="noreferrer"><Eye className="h-4 w-4 sm:mr-2" /> <span className="hidden sm:inline">Ver pública</span></a>
+                </Button>
+              </>
+            )}
+            <Button variant="secondary" size="sm" className="shrink-0" onClick={() => save()} disabled={saving}>
+              {saving ? "Salvando…" : "Salvar"}
+            </Button>
+            {published ? (
+              <Button variant="destructive" size="sm" className="shrink-0" onClick={() => save(false)} disabled={saving}>Despublicar</Button>
+            ) : (
+              <Button size="sm" className="shrink-0" onClick={() => save(true)} disabled={saving}>Publicar</Button>
+            )}
+          </div>
         </div>
       </header>
 
 
       {/* URL pública sempre visível */}
-      <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-3 text-sm">
-        <span className={`inline-flex h-2 w-2 rounded-full ${published ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
-        <span className="font-medium shrink-0">{published ? "Publicada em:" : "Endereço público (após publicar):"}</span>
-        <code className="rounded bg-muted px-2 py-1 text-xs break-all flex-1 min-w-[220px]">{publicUrl}</code>
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 rounded-xl border bg-card p-3 text-sm">
+        <span className={`inline-flex h-2 w-2 shrink-0 rounded-full ${published ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
+        <span className="font-medium shrink-0 text-xs sm:text-sm">{published ? "Publicada em:" : "Endereço público:"}</span>
+        <code className="min-w-0 flex-1 basis-full sm:basis-auto truncate rounded bg-muted px-2 py-1 text-xs">{publicUrl}</code>
         <div className="flex items-center gap-1 ml-auto">
           <Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success("Link copiado!"); }}>
-            <Copy className="h-4 w-4 mr-1.5" /> Copiar
+            <Copy className="h-4 w-4 sm:mr-1.5" /> <span className="hidden sm:inline">Copiar</span>
           </Button>
           {published && (
             <Button variant="outline" size="sm" asChild>
-              <a href={publicUrl} target="_blank" rel="noreferrer"><Eye className="h-4 w-4 mr-1.5" /> Abrir</a>
+              <a href={publicUrl} target="_blank" rel="noreferrer"><Eye className="h-4 w-4 sm:mr-1.5" /> <span className="hidden sm:inline">Abrir</span></a>
             </Button>
           )}
         </div>
       </div>
 
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-        <div className="space-y-6">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="min-w-0 space-y-6">
+
           {/* Identidade */}
           <Card>
             <CardHeader><CardTitle className="text-base">Identidade</CardTitle></CardHeader>
