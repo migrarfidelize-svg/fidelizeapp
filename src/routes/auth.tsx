@@ -108,6 +108,8 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  const [company, setCompany] = useState("");
+  const [showPw, setShowPw] = useState(false);
   // Sem claim/est_slug (cadastro vindo do site institucional) o padrão é "estabelecimento".
   // Fluxos de cliente final sempre chegam com `claim` ou `est_slug` (QR/scan) ou `as=customer`.
   // Se abriu como PWA instalado (source=pwa), assume "cliente".
