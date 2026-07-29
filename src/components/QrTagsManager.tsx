@@ -71,9 +71,9 @@ export function QrTagsManager({ establishmentId }: Props) {
     <Card className="border-primary/15">
       <CardHeader className="pb-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
+          <div className="min-w-0">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <MapPin className="h-5 w-5 text-primary" />
+              <MapPin className="h-5 w-5 shrink-0 text-primary" />
               QR Codes por local
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
