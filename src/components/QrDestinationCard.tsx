@@ -80,18 +80,18 @@ export function QrDestinationCard({
 
   return (
     <Card className="border-primary/20 bg-card/70">
-      <CardContent className="space-y-3 p-4">
-        <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+      <CardContent className="space-y-4 p-4 sm:p-5">
+        <div className="flex flex-col gap-3 sm:grid sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start sm:gap-4">
           <div className="min-w-0">
             <Label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
               Para onde o QR leva
             </Label>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="mt-1 text-xs text-muted-foreground">
               O QR físico continua o mesmo — você troca o destino a qualquer momento.
             </p>
           </div>
           <Select value={dest} onValueChange={(v) => save(v as Dest)} disabled={saving}>
-            <SelectTrigger className="w-full sm:w-[240px] shrink-0"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-11 w-full shrink-0 sm:h-10 sm:w-[240px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="reviews">Avaliação de atendimento</SelectItem>
               <SelectItem value="linktree">Árvore de Links</SelectItem>
@@ -105,6 +105,7 @@ export function QrDestinationCard({
             </SelectContent>
           </Select>
         </div>
+
 
         {showWarning ? (
           <div className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/5 p-3 text-xs">

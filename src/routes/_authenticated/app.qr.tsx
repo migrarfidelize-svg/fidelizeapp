@@ -1590,30 +1590,31 @@ function ReviewQrPage() {
             )}
 
             {/* Navegação entre etapas — fixa no rodapé do painel em telas pequenas */}
-            <div className="sticky bottom-0 z-20 -mx-4 flex items-center justify-between gap-2 border-t border-border/60 bg-card/95 px-4 py-3 backdrop-blur-md sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-4 sm:backdrop-blur-none">
+            <div className="sticky bottom-0 z-20 -mx-4 grid grid-cols-[auto_1fr_auto] items-center gap-2 border-t border-border/60 bg-card/95 px-3 py-3 backdrop-blur-md sm:static sm:mx-0 sm:flex sm:justify-between sm:gap-3 sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-4 sm:backdrop-blur-none">
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-11 px-3 sm:h-9"
+                className="h-11 justify-self-start px-3 sm:h-9"
                 disabled={step === 1}
                 onClick={() => setStep((s) => Math.max(1, s - 1))}
               >
                 ← Voltar
               </Button>
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:text-[11px]">
+              <span className="text-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:text-[11px]">
                 Etapa {step}/{QR_STEPS.length}
               </span>
               <Button
                 type="button"
                 size="sm"
-                className="h-11 px-3 sm:h-9"
+                className="h-11 justify-self-end px-3 sm:h-9"
                 disabled={step === QR_STEPS.length}
                 onClick={() => setStep((s) => Math.min(QR_STEPS.length, s + 1))}
               >
                 Avançar →
               </Button>
             </div>
+
           </CardContent>
         </Card>
 
