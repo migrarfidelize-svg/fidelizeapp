@@ -591,60 +591,35 @@ function LinkTreeEditor() {
                   Adicione seu primeiro bloco acima. <Plus className="inline h-3.5 w-3.5" />
                 </p>
               )}
-              {links.map((l, i) => {
-                const M = KIND_META[l.kind];
-                const isBlock = !!M.isBlock;
-                return (
-                  <div key={i} className={`rounded-lg border p-3 space-y-2 ${isBlock ? "bg-secondary/30 border-primary/20" : "bg-card"}`}>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <M.icon className="h-4 w-4 text-primary shrink-0" />
-                      {/* Desktop: inline kind selector */}
-                      <div className="hidden sm:block">
-                        <Select value={l.kind} onValueChange={(v) => updateLink(i, { kind: v as LinkKind })}>
-                          <SelectTrigger className="h-8 w-[220px]"><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            {(Object.keys(KIND_META) as LinkKind[]).map((k) => (
-                              <SelectItem key={k} value={k}>{KIND_META[k].label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      {/* Mobile: summary text (label or kind name) */}
-                      <div className="sm:hidden min-w-0 flex-1 truncate text-sm font-medium">
-                        {l.label?.trim() || M.label}
-                      </div>
-                      {isBlock && (
-                        <span className="hidden sm:inline text-[10px] font-bold uppercase tracking-wider text-primary/70 bg-primary/10 px-1.5 py-0.5 rounded">Bloco</span>
-                      )}
-                      <div className="ml-auto flex items-center gap-0.5 sm:gap-1 shrink-0">
-                        <Switch checked={l.enabled} onCheckedChange={(v) => updateLink(i, { enabled: !!v })} />
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 sm:hidden"
-                          onClick={() => setMobileEditIdx(i)}
-                          aria-label="Editar link"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => move(i, -1)} disabled={i === 0}><ArrowUp className="h-4 w-4" /></Button>
-                        <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => move(i, 1)} disabled={i === links.length - 1}><ArrowDown className="h-4 w-4" /></Button>
-                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => removeLink(i)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                      </div>
-                    </div>
-                    {/* Fields — inline on desktop, hidden on mobile (edited via Sheet) */}
-                    <div className="hidden sm:block space-y-2">
-                      <LinkFields
-                        link={l}
-                        onChange={(patch) => updateLink(i, patch)}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+              <DndContext
+                sensors={dndSensors}
+                collisionDetection={closestCenter}
+                modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={links.map((l, i) => l._uid ?? l.id ?? `row-${i}`)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {links.map((l, i) => (
+                    <SortableLinkRow
+                      key={l._uid ?? l.id ?? `row-${i}`}
+                      id={l._uid ?? l.id ?? `row-${i}`}
+                      link={l}
+                      index={i}
+                      total={links.length}
+                      onUpdate={(patch) => updateLink(i, patch)}
+                      onRemove={() => removeLink(i)}
+                      onMove={(dir) => move(i, dir)}
+                      onOpenMobileEdit={() => setMobileEditIdx(i)}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
             </CardContent>
           </Card>
         </div>
+
 
 
         {/* Preview */}
