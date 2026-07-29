@@ -5254,7 +5254,7 @@ export type Database = {
         | "ready"
         | "completed"
         | "cancelled"
-      plan_tier: "free" | "starter" | "enterprise" | "pro"
+      plan_tier: "free" | "starter" | "pro" | "enterprise"
       platform_role: "super_admin"
       public_review_action:
         | "apologize"
@@ -5446,7 +5446,7 @@ export const Constants = {
         "completed",
         "cancelled",
       ],
-      plan_tier: ["free", "starter", "enterprise", "pro"],
+      plan_tier: ["free", "starter", "pro", "enterprise"],
       platform_role: ["super_admin"],
       public_review_action: [
         "apologize",
