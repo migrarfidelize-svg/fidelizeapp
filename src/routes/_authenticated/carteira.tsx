@@ -65,6 +65,19 @@ function WalletLayout() {
   const qc = useQueryClient();
   useWalletFlash();
 
+  // Persiste o WhatsApp do cliente para que o /auth pré-preencha o campo
+  // quando o PWA instalado abrir em contexto de storage isolado (iOS).
+  useEffect(() => {
+    let cancelled = false;
+    supabase.auth.getUser().then(({ data }) => {
+      if (cancelled) return;
+      const meta = (data.user?.user_metadata ?? {}) as { whatsapp?: string; phone?: string };
+      setWalletHint(meta.whatsapp || meta.phone || data.user?.phone || "");
+    }).catch(() => { /* noop */ });
+    return () => { cancelled = true; };
+  }, []);
+
+
   // Perfil vira obrigatório nas ações de valor: prêmios e cartão do estabelecimento.
   const profileRequired =
     pathname.startsWith("/carteira/premios") ||
