@@ -1080,7 +1080,7 @@ function ReviewQrPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-4 md:p-8">
+    <div className="mx-auto max-w-6xl space-y-6 p-3 sm:p-4 md:p-8">
       <PageHero
         icon={Star}
         eyebrow="Marketing · QR"
