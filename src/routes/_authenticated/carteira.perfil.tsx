@@ -9,7 +9,7 @@ import { clearWalletCache } from "@/lib/offline-wallet-cache";
 import { PushStatusCard } from "@/components/wallet/PushStatusCard";
 import { TierBadge } from "@/components/wallet/TierBadge";
 import { toast } from "sonner";
-import { User, Download, Trash2, ShieldCheck, AlertTriangle, ChevronRight, Trophy } from "lucide-react";
+import { User, Download, Trash2, ShieldCheck, AlertTriangle, ChevronRight, Trophy, KeyRound, Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/carteira/perfil")({
   ssr: false,
@@ -154,6 +154,8 @@ function WalletProfile() {
         </button>
       </form>
 
+      <PasswordCard />
+
       <TierOverview />
 
       <PushStatusCard />
@@ -273,6 +275,131 @@ function WalletProfile() {
     </div>
   );
 }
+
+function PasswordCard() {
+  const [pw, setPw] = useState("");
+  const [pw2, setPw2] = useState("");
+  const [show, setShow] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  const strength = useMemo(() => {
+    let s = 0;
+    if (pw.length >= 6) s++;
+    if (pw.length >= 10) s++;
+    if (/[a-zA-Z]/.test(pw) && /\d/.test(pw)) s++;
+    if (/[^a-zA-Z0-9]/.test(pw)) s++;
+    return s;
+  }, [pw]);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (pw.length < 6) return toast.error("A senha precisa ter pelo menos 6 caracteres.");
+    if (pw !== pw2) return toast.error("As senhas não conferem.");
+    setSaving(true);
+    const { error } = await supabase.auth.updateUser({ password: pw });
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    setPw("");
+    setPw2("");
+    setOpen(false);
+    toast.success("Senha definida! Use-a no próximo login.");
+  }
+
+  return (
+    <section className="rounded-3xl border border-border/60 bg-card/40 p-5">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between text-left"
+      >
+        <span className="flex items-center gap-2">
+          <KeyRound className="h-4 w-4 text-primary" />
+          <span>
+            <span className="block font-display text-sm font-bold uppercase tracking-widest">
+              Criar / alterar senha
+            </span>
+            <span className="block text-[11px] text-muted-foreground">
+              Defina uma senha própria para acessar sua carteira.
+            </span>
+          </span>
+        </span>
+        <ChevronRight
+          className={"h-4 w-4 text-muted-foreground transition-transform " + (open ? "rotate-90" : "")}
+        />
+      </button>
+
+      {open && (
+        <form onSubmit={submit} className="mt-4 space-y-3">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              Nova senha
+            </label>
+            <div className="relative">
+              <input
+                type={show ? "text" : "password"}
+                value={pw}
+                onChange={(e) => setPw(e.target.value)}
+                minLength={6}
+                maxLength={64}
+                autoComplete="new-password"
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 pr-10 text-sm"
+                placeholder="Mínimo 6 caracteres"
+              />
+              <button
+                type="button"
+                onClick={() => setShow((v) => !v)}
+                className="absolute inset-y-0 right-2 grid place-items-center text-muted-foreground"
+                aria-label={show ? "Ocultar senha" : "Mostrar senha"}
+              >
+                {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            <div className="flex gap-1">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className={
+                    "h-1 flex-1 rounded-full " +
+                    (strength >= i
+                      ? strength >= 3
+                        ? "bg-emerald-500"
+                        : strength === 2
+                          ? "bg-amber-500"
+                          : "bg-orange-500"
+                      : "bg-border")
+                  }
+                />
+              ))}
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              Confirmar nova senha
+            </label>
+            <input
+              type={show ? "text" : "password"}
+              value={pw2}
+              onChange={(e) => setPw2(e.target.value)}
+              minLength={6}
+              maxLength={64}
+              autoComplete="new-password"
+              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
+              placeholder="Repita a senha"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={saving || !pw || pw !== pw2}
+            className="w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+          >
+            {saving ? "Salvando…" : "Salvar senha"}
+          </button>
+        </form>
+      )}
+    </section>
+  );
+}
+
 
 const TIER_ORDER: Record<string, number> = { bronze: 1, prata: 2, ouro: 3, diamante: 4 };
 
