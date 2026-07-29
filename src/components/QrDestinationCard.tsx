@@ -143,9 +143,9 @@ export function QrDestinationCard({
             )}
           </div>
         ) : (
-          <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-2 text-xs">
-            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-            <span className="text-muted-foreground">
+          <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-2 text-xs min-w-0">
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+            <span className="min-w-0 text-muted-foreground">
               Destino ativo e pronto para receber scans.
             </span>
             {q.data?.slug && (
@@ -153,7 +153,7 @@ export function QrDestinationCard({
                 href={`/${qrDestinationPath(dest)}/${q.data.slug}`}
                 target="_blank"
                 rel="noreferrer"
-                className="ml-auto inline-flex items-center gap-1 text-primary hover:underline"
+                className="ml-auto inline-flex shrink-0 items-center gap-1 text-primary hover:underline"
               >
                 Ver <ExternalLink className="h-3 w-3" />
               </a>
