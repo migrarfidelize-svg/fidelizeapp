@@ -720,6 +720,22 @@ const TIER_META: Record<string, { label: string; tone: string }> = {
   diamante: { label: "Diamante", tone: "border-violet-500/40 text-violet-600 bg-violet-500/10" },
 };
 
+type WalletEst = {
+  id: string; slug: string; name: string; logo_url: string | null; primary_color: string | null; active: boolean;
+};
+type WalletCampaign = {
+  id: string; name: string; stamps_required: number; reward_title: string; reward_description: string;
+  active: boolean; stamp_icon: string | null; primary_color: string | null; accent_color: string | null;
+};
+type WalletCard = { id: string; stamps: number; cycle: number; updatedAt: string; campaign: WalletCampaign };
+type WalletCustomer = {
+  id: string; name: string | null; code: string | null; token: string; phone: string | null;
+  email: string | null; lastVisitAt: string | null; visitsCount: number; tier: string | null; createdAt: string;
+};
+type WalletItem = { customer: WalletCustomer; establishment: WalletEst; card: WalletCard | null; cardsCount: number; totalStamps: number };
+type WalletStamp = { id: string; cardId: string; createdAt: string; revertedAt: string | null; note: string | null; establishment: { name?: string } | null };
+type WalletData = { items: WalletItem[]; recentStamps: WalletStamp[] };
+
 function UserWalletDialog({
   target,
   onClose,
