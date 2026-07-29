@@ -25,6 +25,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { PageHero } from "@/components/PageHero";
 import { LogoUploadButton } from "@/components/LogoUploadButton";
+import { LogoPaletteSync } from "@/components/LogoPaletteSync";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { showcase, type ShowcaseKind } from "@/lib/showcase";
@@ -302,6 +303,17 @@ export function ShowcaseAppearance({ kind }: { kind: ShowcaseKind }) {
                   );
                 })}
               </div>
+
+              <LogoPaletteSync
+                logoUrl={est?.logo_url ?? null}
+                onApply={(p) => {
+                  setBgColor(p.background);
+                  setAccentColor(p.primary);
+                  setTextColor(p.text);
+                }}
+                fields={{ background: true, accent: true, text: true }}
+                hint="Sincronize fundo, acento e texto da vitrine com base nas cores da sua logo."
+              />
 
               <div className="rounded-2xl border border-border/70 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
