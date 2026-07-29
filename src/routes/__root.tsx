@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { initSentryClient, captureClientError } from "../lib/sentry-client";
 import { registerPWA } from "../lib/pwa-register";
 import { supabase } from "@/integrations/supabase/client";
+import { startSessionKeeper } from "../lib/session-keeper";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 
@@ -24,6 +25,7 @@ const AUTH_SYNC_CHANNEL = "fidelize-auth-sync";
 if (typeof window !== "undefined") {
   initSentryClient();
   registerPWA();
+  startSessionKeeper();
 }
 
 function NotFoundComponent() {

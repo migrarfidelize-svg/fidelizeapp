@@ -1,6 +1,7 @@
 import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { getWalletHint, setWalletHint, formatWalletHint, isStandaloneLaunch } from "@/lib/wallet-hint";
+import { getKeepSignedIn, setKeepSignedIn } from "@/lib/session-keeper";
 
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -116,6 +117,8 @@ function AuthPage() {
 
   const [segment, setSegment] = useState("");
   const [showPw, setShowPw] = useState(false);
+  const [keepSignedIn, setKeepSignedInState] = useState<boolean>(() => getKeepSignedIn());
+  useEffect(() => { setKeepSignedIn(keepSignedIn); }, [keepSignedIn]);
   const pwScore = (() => {
     let s = 0;
     if (password.length >= 6) s++;
@@ -625,8 +628,20 @@ function AuthPage() {
                     )}
 
                   </div>
+                  {!isSignup && (
+                    <label className="ml-1 flex cursor-pointer select-none items-center gap-2 text-[11px] text-white/70 transition-colors hover:text-white/90">
+                      <input
+                        type="checkbox"
+                        checked={keepSignedIn}
+                        onChange={(e) => setKeepSignedInState(e.target.checked)}
+                        className="h-3.5 w-3.5 accent-[#a78bfa]"
+                      />
+                      <span>Manter-me conectado neste dispositivo</span>
+                    </label>
+                  )}
                 </>
               )}
+
 
               <button type="submit" disabled={loading} className="auth-cta group mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-[#a78bfa] py-2.5 font-display text-sm font-bold uppercase tracking-widest text-black shadow-[0_0_30px_-4px_rgba(167,139,250,0.55)] transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60">
                 {loading ? (
