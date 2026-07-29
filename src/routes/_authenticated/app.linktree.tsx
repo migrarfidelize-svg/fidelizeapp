@@ -19,7 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ExternalLink, Instagram, MessageCircle, Globe, MapPin, Youtube, Facebook,
   Music2, Mail, Phone, Star, Trash2, ArrowUp, ArrowDown, Plus, Eye, Copy, QrCode, Wifi, KeyRound,
-  UtensilsCrossed, CreditCard,
+  UtensilsCrossed, CreditCard, PlayCircle, Music, Images, MessageSquareQuote, ImageIcon,
 } from "lucide-react";
 
 
@@ -29,7 +29,11 @@ export const Route = createFileRoute("/_authenticated/app/linktree")({
   component: LinkTreeEditor,
 });
 
-type LinkKind = "whatsapp" | "instagram" | "facebook" | "tiktok" | "youtube" | "site" | "google" | "maps" | "email" | "phone" | "wifi" | "pix" | "cardapio" | "cartao" | "custom";
+type LinkKind =
+  | "whatsapp" | "instagram" | "facebook" | "tiktok" | "youtube"
+  | "site" | "google" | "maps" | "email" | "phone" | "wifi" | "pix"
+  | "cardapio" | "cartao" | "custom"
+  | "video" | "spotify" | "gallery" | "menu_carousel" | "reviews" | "header_image";
 
 type LinkRow = {
   id?: string;
@@ -39,9 +43,10 @@ type LinkRow = {
   icon?: string | null;
   enabled: boolean;
   sort_order: number;
+  data?: Record<string, any>;
 };
 
-const KIND_META: Record<LinkKind, { label: string; icon: any; placeholder: string }> = {
+const KIND_META: Record<LinkKind, { label: string; icon: any; placeholder: string; isBlock?: boolean }> = {
   whatsapp: { label: "WhatsApp", icon: MessageCircle, placeholder: "5511999999999" },
   instagram: { label: "Instagram", icon: Instagram, placeholder: "@seuperfil" },
   facebook: { label: "Facebook", icon: Facebook, placeholder: "https://facebook.com/…" },
@@ -57,6 +62,13 @@ const KIND_META: Record<LinkKind, { label: string; icon: any; placeholder: strin
   cardapio: { label: "Cardápio Digital", icon: UtensilsCrossed, placeholder: "/cardapio/seu-slug" },
   cartao: { label: "Cartão Fidelidade", icon: CreditCard, placeholder: "/cartao/seu-slug" },
   custom: { label: "Link personalizado", icon: ExternalLink, placeholder: "https://…" },
+  // Blocos ricos
+  video: { label: "Vídeo (YouTube/Reels/TikTok)", icon: PlayCircle, placeholder: "https://youtube.com/…", isBlock: true },
+  spotify: { label: "Música (Spotify)", icon: Music, placeholder: "https://open.spotify.com/…", isBlock: true },
+  gallery: { label: "Galeria de imagens", icon: Images, placeholder: "", isBlock: true },
+  menu_carousel: { label: "Vitrine do Cardápio/Catálogo", icon: UtensilsCrossed, placeholder: "", isBlock: true },
+  reviews: { label: "Depoimentos & Avaliações", icon: MessageSquareQuote, placeholder: "", isBlock: true },
+  header_image: { label: "Banner de destaque", icon: ImageIcon, placeholder: "https://…", isBlock: true },
 };
 
 // Encode/decode helpers for Wi-Fi credentials stored in the `url` field
@@ -193,6 +205,7 @@ function LinkTreeEditor() {
       (q.data?.links ?? []).map((l: any) => ({
         id: l.id, kind: l.kind, label: l.label, url: l.url,
         icon: l.icon, enabled: l.enabled, sort_order: l.sort_order,
+        data: (l.data ?? {}) as Record<string, any>,
       })),
     );
   }, [q.data, est]);
@@ -205,8 +218,24 @@ function LinkTreeEditor() {
     const prefill =
       kind === "cardapio" && slug ? `${origin}/cardapio/${slug}` :
       kind === "cartao" && slug ? `${origin}/cartao/${slug}` : "";
+    const defaults: Record<LinkKind, Record<string, any>> = {
+      whatsapp: {}, instagram: {}, facebook: {}, tiktok: {}, youtube: {},
+      site: {}, google: {}, maps: {}, email: {}, phone: {}, wifi: {}, pix: {},
+      cardapio: {}, cartao: {}, custom: {},
+      video: { url: "", autoplay: false },
+      spotify: { url: "" },
+      gallery: { images: [] as string[] },
+      menu_carousel: { source: "menu", limit: 8 },
+      reviews: { limit: 3, min_rating: 4 },
+      header_image: { image_url: "", link_url: "" },
+    };
     setLinks((prev) => [...prev, {
-      kind, label: KIND_META[kind].label, url: prefill, enabled: true, sort_order: prev.length,
+      kind,
+      label: KIND_META[kind].label,
+      url: prefill,
+      enabled: true,
+      sort_order: prev.length,
+      data: defaults[kind] ?? {},
     }]);
   }
   function updateLink(i: number, patch: Partial<LinkRow>) {
@@ -229,6 +258,23 @@ function LinkTreeEditor() {
     if (!est) return;
     // basic validation
     for (const [i, l] of links.entries()) {
+      const meta = KIND_META[l.kind];
+      if (meta.isBlock) {
+        // Blocos ricos têm validação própria (opcional).
+        if (l.kind === "video" && !String(l.data?.url ?? "").trim()) {
+          toast.error(`Bloco #${i + 1} (Vídeo): informe a URL do vídeo.`); return;
+        }
+        if (l.kind === "spotify" && !String(l.data?.url ?? "").trim()) {
+          toast.error(`Bloco #${i + 1} (Spotify): informe a URL.`); return;
+        }
+        if (l.kind === "header_image" && !String(l.data?.image_url ?? "").trim()) {
+          toast.error(`Bloco #${i + 1} (Banner): informe a imagem.`); return;
+        }
+        if (l.kind === "gallery" && !(Array.isArray(l.data?.images) && l.data!.images.length > 0)) {
+          toast.error(`Bloco #${i + 1} (Galeria): adicione ao menos uma imagem.`); return;
+        }
+        continue;
+      }
       if (l.kind === "wifi") {
         const { ssid } = decodeWifi(l.url);
         if (!ssid.trim()) {
@@ -258,7 +304,7 @@ function LinkTreeEditor() {
           cover_url: coverUrl.trim() || null,
           theme: { primary, accent, background, text, button_style: buttonStyle, rounded },
           social: {},
-          links: links.map((l, i) => ({ ...l, sort_order: i })),
+          links: links.map((l, i) => ({ ...l, sort_order: i, data: l.data ?? {} })),
           published: typeof publish === "boolean" ? publish : undefined,
         },
       });
@@ -454,41 +500,63 @@ function LinkTreeEditor() {
           </Card>
 
 
-          {/* Links */}
+          {/* Links + Blocos */}
           <Card>
-            <CardHeader className="flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-base">Links ({links.length})</CardTitle>
-              <div className="flex flex-wrap gap-1">
-                {(["cardapio","cartao","whatsapp","instagram","site","google","maps","wifi","pix","custom"] as LinkKind[]).map((k) => {
-                  const M = KIND_META[k];
-                  return (
-                    <Button key={k} size="sm" variant="outline" onClick={() => addLink(k)}>
-                      <M.icon className="h-3.5 w-3.5 mr-1" /> {M.label}
-                    </Button>
-                  );
-                })}
+            <CardHeader className="space-y-3">
+              <CardTitle className="text-base">Blocos ({links.length})</CardTitle>
+              <div className="space-y-2">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Links rápidos</p>
+                  <div className="flex flex-wrap gap-1">
+                    {(["cardapio","cartao","whatsapp","instagram","site","google","maps","wifi","pix","custom"] as LinkKind[]).map((k) => {
+                      const M = KIND_META[k];
+                      return (
+                        <Button key={k} size="sm" variant="outline" onClick={() => addLink(k)}>
+                          <M.icon className="h-3.5 w-3.5 mr-1" /> {M.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Blocos ricos</p>
+                  <div className="flex flex-wrap gap-1">
+                    {(["menu_carousel","video","spotify","gallery","reviews","header_image"] as LinkKind[]).map((k) => {
+                      const M = KIND_META[k];
+                      return (
+                        <Button key={k} size="sm" variant="secondary" onClick={() => addLink(k)}>
+                          <M.icon className="h-3.5 w-3.5 mr-1" /> {M.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-2">
               {links.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-6">
-                  Adicione seu primeiro link acima. <Plus className="inline h-3.5 w-3.5" />
+                  Adicione seu primeiro bloco acima. <Plus className="inline h-3.5 w-3.5" />
                 </p>
               )}
               {links.map((l, i) => {
                 const M = KIND_META[l.kind];
+                const isBlock = !!M.isBlock;
                 return (
-                  <div key={i} className="rounded-lg border p-3 space-y-2 bg-card">
+                  <div key={i} className={`rounded-lg border p-3 space-y-2 ${isBlock ? "bg-secondary/30 border-primary/20" : "bg-card"}`}>
                     <div className="flex items-center gap-2">
                       <M.icon className="h-4 w-4 text-primary shrink-0" />
                       <Select value={l.kind} onValueChange={(v) => updateLink(i, { kind: v as LinkKind })}>
-                        <SelectTrigger className="h-8 w-[180px]"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="h-8 w-[220px]"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {(Object.keys(KIND_META) as LinkKind[]).map((k) => (
                             <SelectItem key={k} value={k}>{KIND_META[k].label}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
+                      {isBlock && (
+                        <span className="hidden sm:inline text-[10px] font-bold uppercase tracking-wider text-primary/70 bg-primary/10 px-1.5 py-0.5 rounded">Bloco</span>
+                      )}
                       <div className="ml-auto flex items-center gap-1">
                         <Switch checked={l.enabled} onCheckedChange={(v) => updateLink(i, { enabled: !!v })} />
                         <Button size="icon" variant="ghost" onClick={() => move(i, -1)} disabled={i === 0}><ArrowUp className="h-4 w-4" /></Button>
@@ -516,6 +584,8 @@ function LinkTreeEditor() {
                           })
                         }
                       />
+                    ) : isBlock ? (
+                      <BlockFields row={l} onChange={(patch) => updateLink(i, patch)} />
                     ) : (
                       <div className="grid gap-2 md:grid-cols-2">
                         <Input placeholder="Rótulo" value={l.label} onChange={(e) => updateLink(i, { label: e.target.value })} maxLength={80} />
@@ -703,4 +773,108 @@ function PixFields({ url, onChange }: { url: string; onChange: (type: PixKeyType
     </div>
   );
 }
+
+// ============================================================================
+// BlockFields — editor per rich block type
+// ============================================================================
+function BlockFields({ row, onChange }: { row: LinkRow; onChange: (patch: Partial<LinkRow>) => void }) {
+  const data = row.data ?? {};
+  const setData = (patch: Record<string, any>) => onChange({ data: { ...data, ...patch } });
+
+  if (row.kind === "video") {
+    return (
+      <div className="space-y-2">
+        <Input placeholder="Rótulo (aparece acima do vídeo)" value={row.label} onChange={(e) => onChange({ label: e.target.value })} maxLength={80} />
+        <Input placeholder="URL do YouTube, Vimeo, TikTok ou MP4" value={data.url ?? ""} onChange={(e) => setData({ url: e.target.value })} maxLength={500} />
+        <p className="text-[11px] text-muted-foreground">Suportamos YouTube, Vimeo, TikTok, Reels e arquivos MP4/WebM diretos.</p>
+      </div>
+    );
+  }
+  if (row.kind === "spotify") {
+    return (
+      <div className="space-y-2">
+        <Input placeholder="Rótulo" value={row.label} onChange={(e) => onChange({ label: e.target.value })} maxLength={80} />
+        <Input placeholder="https://open.spotify.com/track|album|playlist/..." value={data.url ?? ""} onChange={(e) => setData({ url: e.target.value })} maxLength={500} />
+      </div>
+    );
+  }
+  if (row.kind === "header_image") {
+    return (
+      <div className="space-y-2">
+        <Input placeholder="Rótulo (para acessibilidade)" value={row.label} onChange={(e) => onChange({ label: e.target.value })} maxLength={80} />
+        <Input placeholder="URL da imagem (JPG/PNG/WebP)" value={data.image_url ?? ""} onChange={(e) => setData({ image_url: e.target.value })} maxLength={500} />
+        <Input placeholder="Link ao clicar (opcional)" value={data.link_url ?? ""} onChange={(e) => setData({ link_url: e.target.value })} maxLength={500} />
+      </div>
+    );
+  }
+  if (row.kind === "gallery") {
+    const images: string[] = Array.isArray(data.images) ? data.images : [];
+    return (
+      <div className="space-y-2">
+        <Input placeholder="Título da galeria" value={row.label} onChange={(e) => onChange({ label: e.target.value })} maxLength={80} />
+        {images.map((src, idx) => (
+          <div key={idx} className="flex gap-2">
+            <Input placeholder={`Imagem #${idx + 1} (URL)`} value={src} onChange={(e) => {
+              const next = images.slice(); next[idx] = e.target.value; setData({ images: next });
+            }} maxLength={500} />
+            <Button size="icon" variant="ghost" onClick={() => setData({ images: images.filter((_, i) => i !== idx) })}>
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
+        ))}
+        <Button size="sm" variant="outline" onClick={() => setData({ images: [...images, ""] })}>
+          <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar imagem
+        </Button>
+      </div>
+    );
+  }
+  if (row.kind === "menu_carousel") {
+    return (
+      <div className="grid gap-2 md:grid-cols-2">
+        <div className="space-y-1">
+          <Label className="text-xs">Fonte</Label>
+          <Select value={data.source ?? "menu"} onValueChange={(v) => setData({ source: v })}>
+            <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="menu">Cardápio publicado</SelectItem>
+              <SelectItem value="catalog">Catálogo publicado</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">Quantidade de itens</Label>
+          <Input type="number" min={3} max={12} value={data.limit ?? 8} onChange={(e) => setData({ limit: Math.max(3, Math.min(12, Number(e.target.value) || 8)) })} />
+        </div>
+        <div className="md:col-span-2">
+          <Input placeholder="Título do bloco" value={row.label} onChange={(e) => onChange({ label: e.target.value })} maxLength={80} />
+        </div>
+        <p className="md:col-span-2 text-[11px] text-muted-foreground">Os itens são carregados automaticamente do seu cardápio/catálogo publicado.</p>
+      </div>
+    );
+  }
+  if (row.kind === "reviews") {
+    return (
+      <div className="grid gap-2 md:grid-cols-2">
+        <div className="space-y-1">
+          <Label className="text-xs">Quantas mostrar</Label>
+          <Input type="number" min={1} max={10} value={data.limit ?? 3} onChange={(e) => setData({ limit: Math.max(1, Math.min(10, Number(e.target.value) || 3)) })} />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">Nota mínima</Label>
+          <Select value={String(data.min_rating ?? 4)} onValueChange={(v) => setData({ min_rating: Number(v) })}>
+            <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {[1,2,3,4,5].map((n) => <SelectItem key={n} value={String(n)}>{n} estrela{n > 1 ? "s" : ""}+</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="md:col-span-2">
+          <Input placeholder="Título do bloco" value={row.label} onChange={(e) => onChange({ label: e.target.value })} maxLength={80} />
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
+
 

@@ -8,6 +8,8 @@ import { hasFeature } from "@/lib/plans.functions";
 const LinkKind = z.enum([
   "whatsapp", "instagram", "facebook", "tiktok", "youtube",
   "site", "google", "maps", "email", "phone", "wifi", "pix", "cardapio", "cartao", "custom",
+  // Blocos ricos
+  "video", "spotify", "gallery", "menu_carousel", "reviews", "header_image",
 ]);
 
 
@@ -15,10 +17,12 @@ const LinkInput = z.object({
   id: z.string().uuid().optional(),
   kind: LinkKind,
   label: z.string().trim().min(1).max(80),
-  url: z.string().trim().min(1).max(500),
+  // Blocos ricos podem ter url vazia (a config vive em `data`).
+  url: z.string().trim().max(500).default(""),
   icon: z.string().trim().max(40).nullable().optional(),
   enabled: z.boolean().default(true),
   sort_order: z.number().int().nonnegative(),
+  data: z.record(z.string(), z.any()).optional().default({}),
 });
 
 const ThemeInput = z.object({
@@ -124,6 +128,7 @@ export const upsertLinkTree = createServerFn({ method: "POST" })
         icon: l.icon ?? null,
         enabled: l.enabled,
         sort_order: l.sort_order ?? i,
+        data: (l.data ?? {}) as any,
       }));
       const { error: e2 } = await context.supabase.from("link_tree_links").insert(rows);
       if (e2) throw new Error(e2.message);
@@ -246,4 +251,72 @@ export const getPublicLinkTreeBySlug = createServerFn({ method: "GET" })
       .eq("enabled", true)
       .order("sort_order", { ascending: true });
     return { establishment: est, page, links: links ?? [] };
+  });
+
+// ---------- Public: data for rich blocks (menu preview + reviews) ----------
+export const getLinkTreeBlockData = createServerFn({ method: "GET" })
+  .inputValidator((d: { slug: string }) => z.object({ slug: z.string().min(1).max(80) }).parse(d))
+  .handler(async ({ data }) => {
+    const s = publicClient();
+    const { data: est } = await s
+      .from("establishments")
+      .select("id")
+      .eq("slug", data.slug)
+      .eq("active", true)
+      .maybeSingle();
+    if (!est) return { menu: [], catalog: [], reviews: [], stats: null };
+
+    // Cardápio publicado
+    const { data: menuRow } = await s
+      .from("restaurant_menus")
+      .select("id")
+      .eq("establishment_id", est.id)
+      .eq("kind", "menu")
+      .eq("status", "published")
+      .maybeSingle();
+    const { data: catalogRow } = await s
+      .from("restaurant_menus")
+      .select("id")
+      .eq("establishment_id", est.id)
+      .eq("kind", "catalog")
+      .eq("status", "published")
+      .maybeSingle();
+
+    const fetchItems = async (menu_id: string) => {
+      const { data } = await s
+        .from("menu_items")
+        .select("id, name, short_desc, price, promo_price, image_url")
+        .eq("menu_id", menu_id)
+        .limit(12);
+      return data ?? [];
+    };
+    const menu = menuRow ? await fetchItems(menuRow.id) : [];
+    const catalog = catalogRow ? await fetchItems(catalogRow.id) : [];
+
+    // Avaliações públicas (não ocultas) — apenas campos seguros
+    const { data: reviewsRaw } = await s
+      .from("customer_reviews")
+      .select("id, rating, comment, customer_name, merchant_reply, submitted_at, anonymous")
+      .eq("establishment_id", est.id)
+      .eq("public_hidden", false)
+      .order("submitted_at", { ascending: false })
+      .limit(20);
+    const reviews = (reviewsRaw ?? []).map((r) => ({
+      id: r.id,
+      rating: r.rating,
+      comment: r.comment,
+      merchant_reply: r.merchant_reply,
+      submitted_at: r.submitted_at,
+      customer_name: r.anonymous ? "Anônimo" : (r.customer_name ?? "Cliente"),
+    }));
+
+    const rated = (reviewsRaw ?? []).filter((r) => typeof r.rating === "number");
+    const stats = rated.length
+      ? {
+          count: rated.length,
+          avg: rated.reduce((s, r) => s + (r.rating ?? 0), 0) / rated.length,
+        }
+      : null;
+
+    return { menu, catalog, reviews, stats };
   });
