@@ -749,6 +749,7 @@ function UserWalletDialog({
     queryFn: () => walletFn({ data: { user_id: target!.id } }),
     enabled: !!target,
     staleTime: 15_000,
+    select: (d) => d as WalletData,
   });
 
   return (
