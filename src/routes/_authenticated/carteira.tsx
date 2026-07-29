@@ -13,6 +13,8 @@ import { PostStampReviewSheet } from "@/components/wallet/PostStampReviewSheet";
 import { CompleteProfileDialog } from "@/components/wallet/CompleteProfileDialog";
 import { InboxBellBadge } from "@/components/wallet/InboxBellBadge";
 import { haptic } from "@/lib/haptics";
+import { setWalletHint } from "@/lib/wallet-hint";
+
 
 
 export const Route = createFileRoute("/_authenticated/carteira")({
@@ -62,6 +64,19 @@ function WalletLayout() {
   const [qrOpen, setQrOpen] = useState(false);
   const qc = useQueryClient();
   useWalletFlash();
+
+  // Persiste o WhatsApp do cliente para que o /auth pré-preencha o campo
+  // quando o PWA instalado abrir em contexto de storage isolado (iOS).
+  useEffect(() => {
+    let cancelled = false;
+    supabase.auth.getUser().then(({ data }) => {
+      if (cancelled) return;
+      const meta = (data.user?.user_metadata ?? {}) as { whatsapp?: string; phone?: string };
+      setWalletHint(meta.whatsapp || meta.phone || data.user?.phone || "");
+    }).catch(() => { /* noop */ });
+    return () => { cancelled = true; };
+  }, []);
+
 
   // Perfil vira obrigatório nas ações de valor: prêmios e cartão do estabelecimento.
   const profileRequired =

@@ -1,5 +1,7 @@
 import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { getWalletHint, setWalletHint, formatWalletHint, isStandaloneLaunch } from "@/lib/wallet-hint";
+
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
@@ -108,8 +110,10 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
+  const [whatsapp, setWhatsapp] = useState(() => formatWalletHint(getWalletHint()));
   const [company, setCompany] = useState("");
+  const walletHintApplied = useRef<boolean>(Boolean(getWalletHint()));
+
   const [segment, setSegment] = useState("");
   const [showPw, setShowPw] = useState(false);
   const pwScore = (() => {
@@ -224,11 +228,13 @@ function AuthPage() {
           toast.success("Conta criada! Vamos configurar seu cartão.");
           await completeAuthRedirect("/onboarding", "SIGNED_UP");
         } else {
+          if (walletFlow) setWalletHint(whatsapp);
           const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
           if (dest.toastKind === "error") toast.error(dest.toast ?? "Não foi possível vincular seu cartão.");
           else toast.success(dest.toast ?? "Conta criada!");
           await completeAuthRedirect(dest.to, "SIGNED_UP");
         }
+
       } else {
         let creds: { email: string; password: string };
         if (walletFlow) {
@@ -282,10 +288,12 @@ function AuthPage() {
           }
         }
 
+        if (walletFlow) setWalletHint(whatsapp);
         const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
         if (dest.toastKind === "error") toast.error(dest.toast ?? "Não foi possível vincular seu cartão.");
         else toast.success(dest.toast ?? "Bem-vindo de volta!");
         await completeAuthRedirect(dest.to, "SIGNED_IN");
+
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao autenticar");
