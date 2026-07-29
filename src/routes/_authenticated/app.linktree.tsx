@@ -17,10 +17,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetClose } from "@/components/ui/sheet";
 import {
   ExternalLink, Instagram, MessageCircle, Globe, MapPin, Youtube, Facebook,
   Music2, Mail, Phone, Star, Trash2, ArrowUp, ArrowDown, Plus, Eye, Copy, QrCode, Wifi, KeyRound,
-  UtensilsCrossed, CreditCard, PlayCircle, Music, Images, MessageSquareQuote, ImageIcon,
+  UtensilsCrossed, CreditCard, PlayCircle, Music, Images, MessageSquareQuote, ImageIcon, Pencil, Check,
 } from "lucide-react";
 
 
@@ -177,6 +178,7 @@ function LinkTreeEditor() {
   const [published, setPublished] = useState(false);
   const [links, setLinks] = useState<LinkRow[]>([]);
   const [saving, setSaving] = useState(false);
+  const [mobileEditIdx, setMobileEditIdx] = useState<number | null>(null);
 
   // Load once
   useEffect(() => {
@@ -563,54 +565,47 @@ function LinkTreeEditor() {
                   <div key={i} className={`rounded-lg border p-3 space-y-2 ${isBlock ? "bg-secondary/30 border-primary/20" : "bg-card"}`}>
                     <div className="flex flex-wrap items-center gap-2">
                       <M.icon className="h-4 w-4 text-primary shrink-0" />
-                      <Select value={l.kind} onValueChange={(v) => updateLink(i, { kind: v as LinkKind })}>
-                        <SelectTrigger className="h-8 w-full min-w-0 flex-1 sm:w-[220px] sm:flex-none"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {(Object.keys(KIND_META) as LinkKind[]).map((k) => (
-                            <SelectItem key={k} value={k}>{KIND_META[k].label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      {/* Desktop: inline kind selector */}
+                      <div className="hidden sm:block">
+                        <Select value={l.kind} onValueChange={(v) => updateLink(i, { kind: v as LinkKind })}>
+                          <SelectTrigger className="h-8 w-[220px]"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {(Object.keys(KIND_META) as LinkKind[]).map((k) => (
+                              <SelectItem key={k} value={k}>{KIND_META[k].label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {/* Mobile: summary text (label or kind name) */}
+                      <div className="sm:hidden min-w-0 flex-1 truncate text-sm font-medium">
+                        {l.label?.trim() || M.label}
+                      </div>
                       {isBlock && (
                         <span className="hidden sm:inline text-[10px] font-bold uppercase tracking-wider text-primary/70 bg-primary/10 px-1.5 py-0.5 rounded">Bloco</span>
                       )}
                       <div className="ml-auto flex items-center gap-0.5 sm:gap-1 shrink-0">
                         <Switch checked={l.enabled} onCheckedChange={(v) => updateLink(i, { enabled: !!v })} />
-                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => move(i, -1)} disabled={i === 0}><ArrowUp className="h-4 w-4" /></Button>
-                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => move(i, 1)} disabled={i === links.length - 1}><ArrowDown className="h-4 w-4" /></Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 sm:hidden"
+                          onClick={() => setMobileEditIdx(i)}
+                          aria-label="Editar link"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => move(i, -1)} disabled={i === 0}><ArrowUp className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => move(i, 1)} disabled={i === links.length - 1}><ArrowDown className="h-4 w-4" /></Button>
                         <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => removeLink(i)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                       </div>
                     </div>
-                    {l.kind === "wifi" ? (
-                      <WifiFields
-                        url={l.url}
-                        onChange={(ssid, password) =>
-                          updateLink(i, {
-                            label: ssid ? `Wi-Fi · ${ssid}` : "Wi-Fi",
-                            url: encodeWifi(ssid, password),
-                          })
-                        }
+                    {/* Fields — inline on desktop, hidden on mobile (edited via Sheet) */}
+                    <div className="hidden sm:block space-y-2">
+                      <LinkFields
+                        link={l}
+                        onChange={(patch) => updateLink(i, patch)}
                       />
-                    ) : l.kind === "pix" ? (
-                      <PixFields
-                        url={l.url}
-                        onChange={(type, key, name) =>
-                          updateLink(i, {
-                            label: name ? `Pix · ${name}` : "Chave Pix",
-                            url: encodePix(type, key, name),
-                          })
-                        }
-                      />
-                    ) : isBlock ? (
-                      <BlockFields row={l} onChange={(patch) => updateLink(i, patch)} />
-                    ) : (
-                      <div className="grid gap-2 sm:grid-cols-2">
-                        <Input placeholder="Rótulo" value={l.label} onChange={(e) => updateLink(i, { label: e.target.value })} maxLength={80} />
-                        <Input placeholder={M.placeholder} value={l.url} onChange={(e) => updateLink(i, { url: e.target.value })} maxLength={500} />
-                      </div>
-                    )}
-
-
+                    </div>
                   </div>
                 );
               })}
@@ -673,6 +668,117 @@ function LinkTreeEditor() {
             </CardContent>
           </Card>
         </div>
+      </div>
+
+      {/* Mobile-focused edit sheet */}
+      <Sheet open={mobileEditIdx !== null} onOpenChange={(o) => !o && setMobileEditIdx(null)}>
+        <SheetContent side="bottom" className="h-[92vh] max-h-[92vh] w-full overflow-y-auto p-0 sm:max-w-lg sm:mx-auto sm:rounded-t-2xl">
+          {mobileEditIdx !== null && links[mobileEditIdx] && (() => {
+            const idx = mobileEditIdx;
+            const l = links[idx];
+            const M = KIND_META[l.kind];
+            return (
+              <>
+                <SheetHeader className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur px-4 py-3 text-left">
+                  <SheetTitle className="flex items-center gap-2 text-base">
+                    <M.icon className="h-4 w-4 text-primary" />
+                    <span className="truncate">Editar · {M.label}</span>
+                  </SheetTitle>
+                </SheetHeader>
+                <div className="space-y-4 px-4 py-4 pb-28">
+                  <div>
+                    <Label className="text-xs">Tipo</Label>
+                    <Select value={l.kind} onValueChange={(v) => updateLink(idx, { kind: v as LinkKind })}>
+                      <SelectTrigger className="h-10 w-full mt-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {(Object.keys(KIND_META) as LinkKind[]).map((k) => (
+                          <SelectItem key={k} value={k}>{KIND_META[k].label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg border p-3">
+                    <div>
+                      <div className="text-sm font-medium">Visível na página</div>
+                      <div className="text-xs text-muted-foreground">Desative para ocultar sem apagar.</div>
+                    </div>
+                    <Switch checked={l.enabled} onCheckedChange={(v) => updateLink(idx, { enabled: !!v })} />
+                  </div>
+                  <LinkFields link={l} onChange={(patch) => updateLink(idx, patch)} />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button variant="outline" onClick={() => { move(idx, -1); }} disabled={idx === 0}>
+                      <ArrowUp className="h-4 w-4 mr-1" /> Mover acima
+                    </Button>
+                    <Button variant="outline" onClick={() => { move(idx, 1); }} disabled={idx === links.length - 1}>
+                      <ArrowDown className="h-4 w-4 mr-1" /> Mover abaixo
+                    </Button>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    className="w-full"
+                    onClick={() => { removeLink(idx); setMobileEditIdx(null); }}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" /> Remover este link
+                  </Button>
+                </div>
+                <SheetFooter className="sticky bottom-0 z-10 flex-row gap-2 border-t bg-background/95 backdrop-blur px-4 py-3">
+                  <SheetClose asChild>
+                    <Button variant="outline" className="flex-1">Fechar</Button>
+                  </SheetClose>
+                  <Button className="flex-1" onClick={() => { setMobileEditIdx(null); toast.success("Alterações mantidas. Toque em Salvar para persistir."); }}>
+                    <Check className="h-4 w-4 mr-2" /> Concluir
+                  </Button>
+                </SheetFooter>
+              </>
+            );
+          })()}
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}
+
+function LinkFields({ link: l, onChange }: { link: LinkRow; onChange: (patch: Partial<LinkRow>) => void }) {
+  const M = KIND_META[l.kind];
+  const isBlock = !!M.isBlock;
+  if (l.kind === "wifi") {
+    return (
+      <WifiFields
+        url={l.url}
+        onChange={(ssid, password) =>
+          onChange({
+            label: ssid ? `Wi-Fi · ${ssid}` : "Wi-Fi",
+            url: encodeWifi(ssid, password),
+          })
+        }
+      />
+    );
+  }
+  if (l.kind === "pix") {
+    return (
+      <PixFields
+        url={l.url}
+        onChange={(type, key, name) =>
+          onChange({
+            label: name ? `Pix · ${name}` : "Chave Pix",
+            url: encodePix(type, key, name),
+          })
+        }
+      />
+    );
+  }
+  if (isBlock) {
+    return <BlockFields row={l} onChange={onChange} />;
+  }
+  return (
+    <div className="grid gap-2 sm:grid-cols-2">
+      <div>
+        <Label className="text-xs">Rótulo</Label>
+        <Input className="mt-1" placeholder="Rótulo" value={l.label} onChange={(e) => onChange({ label: e.target.value })} maxLength={80} />
+      </div>
+      <div>
+        <Label className="text-xs">Destino</Label>
+        <Input className="mt-1" placeholder={M.placeholder} value={l.url} onChange={(e) => onChange({ url: e.target.value })} maxLength={500} />
       </div>
     </div>
   );
