@@ -558,7 +558,7 @@ export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
     ]);
 
     const planIds = (plansResult.data ?? []).map((p) => p.id);
-    const tierToPlanId = new Map((plansResult.data ?? []).map((p) => [p.tier, p.id]));
+    const tierToPlanId = new Map<string, string>((plansResult.data ?? []).map((p) => [p.tier as string, p.id]));
 
     const { data: features } = await context.supabase
       .from("plan_features")
