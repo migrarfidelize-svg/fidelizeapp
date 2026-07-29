@@ -104,8 +104,8 @@ function Onboarding() {
     }
   })();
   const [f, setF] = useState({
-    name: "",
-    slug: "",
+    name: prefillName,
+    slug: prefillName ? slugify(prefillName) : "",
     segment: "",
     description: "",
     primary_color: "#22d3ee",
