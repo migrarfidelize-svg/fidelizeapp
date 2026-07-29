@@ -10,6 +10,7 @@ import { getMyWallet, getMyRewards } from "@/lib/my-wallet.functions";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AchievementUnlockListener } from "@/components/wallet/AchievementUnlockListener";
 import { PostStampReviewSheet } from "@/components/wallet/PostStampReviewSheet";
+import { CompleteProfileDialog } from "@/components/wallet/CompleteProfileDialog";
 import { InboxBellBadge } from "@/components/wallet/InboxBellBadge";
 import { haptic } from "@/lib/haptics";
 
@@ -61,6 +62,12 @@ function WalletLayout() {
   const [qrOpen, setQrOpen] = useState(false);
   const qc = useQueryClient();
   useWalletFlash();
+
+  // Perfil vira obrigatório nas ações de valor: prêmios e cartão do estabelecimento.
+  const profileRequired =
+    pathname.startsWith("/carteira/premios") ||
+    /^\/carteira\/(?!premios|historico|descobrir|perfil|conquistas|mensagens|retrospectiva|e\/)[^/]+/.test(pathname);
+
 
   // Piggyback no cache já hidratado pela home para descobrir os customer_ids.
   const { data: wallet } = useQuery({
@@ -180,6 +187,7 @@ function WalletLayout() {
       <MyQrSheet open={qrOpen} onOpenChange={setQrOpen} />
       <AchievementUnlockListener />
       <PostStampReviewSheet />
+      <CompleteProfileDialog required={profileRequired} />
     </div>
   );
 }
