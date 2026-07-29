@@ -295,7 +295,7 @@ function AuthPage() {
   }
 
   return (
-    <div className="auth-cinema relative min-h-screen w-full overflow-hidden bg-[oklch(0.14_0.02_230)] px-6 py-5">
+    <div className="auth-cinema relative min-h-screen w-full overflow-hidden bg-[oklch(0.14_0.02_230)] px-6 py-4">
       {/* Overlay de transição — cobre a tela durante o redirect pós-login para eliminar qualquer flash de telas anteriores. */}
       {redirecting && (
         <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-4 bg-[oklch(0.14_0.02_230)] animate-in fade-in duration-150">
@@ -316,7 +316,7 @@ function AuthPage() {
         <Link to="/" className="text-xs uppercase tracking-[0.2em] text-white/40 hover:text-[#a78bfa]">← Voltar</Link>
       </div>
 
-      <div className="relative z-10 mx-auto grid min-h-[calc(100vh-5rem)] max-w-6xl grid-cols-1 items-center gap-8 lg:gap-12 lg:grid-cols-2">
+      <div className="relative z-10 mx-auto grid min-h-[calc(100vh-4rem)] max-w-6xl grid-cols-1 items-center gap-8 lg:gap-12 lg:grid-cols-2">
         {/* Protagonist: Premium loyalty stamp card */}
         <div className="hidden flex-col items-center space-y-6 lg:flex lg:items-start">
 
@@ -454,7 +454,7 @@ function AuthPage() {
               </Link>
             </div>
 
-            <form onSubmit={handleSubmit} className={isSignup ? "space-y-2.5" : "space-y-3.5"}>
+            <form onSubmit={handleSubmit} className={isSignup ? "space-y-2" : "space-y-3.5"}>
 
               {/* Toggle Cliente / Estabelecimento — oculto quando o fluxo veio da carteira */}
               {search.source !== "wallet" && (
@@ -524,7 +524,7 @@ function AuthPage() {
                     placeholder="Ex: Café Aurora"
                     className="auth-input"
                   />
-                  <p className="ml-1 text-[10px] text-white/40">Já deixamos tudo pronto no próximo passo com esse nome.</p>
+                  
                 </div>
               )}
 
@@ -547,7 +547,7 @@ function AuthPage() {
                       </option>
                     ))}
                   </select>
-                  <p className="ml-1 text-[10px] text-white/40">Define onde seu negócio aparece no Descobrir da carteira.</p>
+                  
                 </div>
               )}
 
