@@ -1128,7 +1128,7 @@ function ReviewQrPage() {
                   <Button
                     size="sm"
                     variant={copiedPublic ? "default" : "outline"}
-                    className="h-8 gap-1.5 px-2.5"
+                    className="h-8 shrink-0 gap-1.5 px-2.5"
                     onClick={copyPublicUrl}
                     disabled={!fidelizeUrl || copiedPublic}
                     aria-label="Copiar link público"
