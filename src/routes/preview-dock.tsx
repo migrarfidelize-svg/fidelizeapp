@@ -9,7 +9,7 @@ import { LogoMark } from "@/components/LogoMark";
 
 export const Route = createFileRoute("/preview-dock")({
   component: PreviewDock,
-  head: () => ({ meta: [{ title: "Preview · Dock lateral" }] }),
+  head: () => ({ meta: [{ title: "Preview · Dock lateral" }, { name: "robots", content: "noindex, nofollow" }] }),
 });
 
 type Item = { label: string; icon: any; active?: boolean; badge?: string | null };

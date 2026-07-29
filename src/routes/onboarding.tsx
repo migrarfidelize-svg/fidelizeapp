@@ -45,7 +45,7 @@ export const Route = createFileRoute("/onboarding")({
       if (e && typeof e === "object" && ("isRedirect" in e || "to" in e)) throw e;
     }
   },
-  head: () => ({ meta: [{ title: "Configurar minha empresa — Fidelize" }] }),
+  head: () => ({ meta: [{ title: "Configurar minha empresa — Fidelize" }, { name: "robots", content: "noindex, nofollow" }] }),
   component: Onboarding,
 });
 

@@ -9,7 +9,7 @@ import { buildDefaultDesignName, type QrDest } from "@/lib/qr-design-name";
  * `/app/qr` — sem depender de autenticação.
  */
 export const Route = createFileRoute("/dev/qr-design-name")({
-  head: () => ({ meta: [{ title: "Dev — QR design name" }] }),
+  head: () => ({ meta: [{ title: "Dev — QR design name" }, { name: "robots", content: "noindex, nofollow" }] }),
   component: QrDesignNameHarness,
 });
 
