@@ -316,7 +316,7 @@ function AuthPage() {
         <Link to="/" className="text-xs uppercase tracking-[0.2em] text-white/40 hover:text-[#a78bfa]">← Voltar</Link>
       </div>
 
-      <div className="relative z-10 mx-auto grid min-h-[calc(100vh-4rem)] max-w-6xl grid-cols-1 items-center gap-8 lg:gap-12 lg:grid-cols-2">
+      <div className="relative z-10 mx-auto grid min-h-[calc(100vh-5rem)] max-w-6xl grid-cols-1 items-center gap-8 lg:gap-12 lg:grid-cols-2">
         {/* Protagonist: Premium loyalty stamp card */}
         <div className="hidden flex-col items-center space-y-6 lg:flex lg:items-start">
 
