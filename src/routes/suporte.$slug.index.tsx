@@ -87,12 +87,16 @@ function HelpCenterHub() {
                     <h3 className="font-semibold">{c.name}</h3>
                   </div>
                   {c.description && <p className="text-xs text-muted-foreground mb-3">{c.description}</p>}
-                  <ul className="space-y-1.5">
+                  <ul className="-mx-2 flex flex-col">
                     {catArts.slice(0, 5).map((a: { id: string; slug: string; title: string }) => (
                       <li key={a.id}>
-                        <Link to="/suporte/$slug/kb/$article" params={{ slug: params.slug, article: a.slug }} className="text-sm text-muted-foreground hover:text-primary flex items-center justify-between group">
+                        <Link
+                          to="/suporte/$slug/kb/$article"
+                          params={{ slug: params.slug, article: a.slug }}
+                          className="flex min-h-[48px] items-center justify-between gap-3 rounded-xl px-3 py-3 text-sm text-foreground/90 hover:bg-muted active:bg-muted/70 transition"
+                        >
                           <span className="truncate">{a.title}</span>
-                          <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100" />
+                          <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
                         </Link>
                       </li>
                     ))}
