@@ -104,6 +104,42 @@ export const MENU_TEMPLATE_MEDIA: Record<string, Record<string, string>> = {
     tortas: tortas.url,
     "docinhos (100g)": docinhos.url,
   },
+  churrascaria: {
+    "carnes nobres": churrascoCarnes,
+    espetos: churrascoEspetos,
+    acompanhamentos: churrascoAcompanhamentos,
+    bebidas: churrascoBebidas,
+  },
+  mexicano: {
+    tacos: mexicanoTacos,
+    burritos: mexicanoBurritos,
+    "nachos & porções": mexicanoNachos,
+    "margaritas & bebidas": mexicanoBebidas,
+  },
+  padaria: {
+    "pães artesanais": padariaPaes,
+    salgados: padariaSalgados,
+    bolos: padariaBolos,
+    "cafés & bebidas": padariaCafes,
+  },
+  italiano: {
+    massas: italianoMassas,
+    risotos: italianoRisotos,
+    entradas: italianoEntradas,
+    "vinhos & bebidas": italianoBebidas,
+  },
+  saudavel: {
+    bowls: saudavelBowls,
+    saladas: saudavelSaladas,
+    wraps: saudavelWraps,
+    "sucos & detox": saudavelSucos,
+  },
+  marisqueira: {
+    camarões: marisqueiraCamaroes,
+    "frutos do mar": marisqueiraFrutos,
+    peixes: marisqueiraPeixes,
+    bebidas: marisqueiraBebidas,
+  },
 };
 
 /** Imagem de modelo para uma categoria de um template (ou null). */
