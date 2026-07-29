@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   UtensilsCrossed, LayoutList, FolderTree, Video, Eye, Store,
-  Copy, ExternalLink, CheckCircle2, Circle, Sparkles, QrCode, Palette, ArrowRight,
+  Copy, ExternalLink, CheckCircle2, Circle, Sparkles, QrCode, Palette, ArrowRight, Wand2,
 } from "lucide-react";
 
 import { getMyEstablishments } from "@/lib/loyalty.functions";
@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { showcase, type ShowcaseKind } from "@/lib/showcase";
+import { AiImportDialog } from "@/components/showcase/AiImportDialog";
+import { useMyFeature } from "@/hooks/useMyFeature";
 
 const STATUS_LABEL: Record<string, { label: string; tone: string }> = {
   draft:     { label: "Rascunho",  tone: "bg-muted text-muted-foreground" },
@@ -80,6 +82,9 @@ export function ShowcaseOverview({ kind }: { kind: ShowcaseKind }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const [importOpen, setImportOpen] = useState(false);
+  const aiFeature = useMyFeature(estId, isCatalog ? "catalog.ai" : "menu.ai");
+
   return (
     <div className="space-y-6">
       <PageHero
@@ -93,7 +98,24 @@ export function ShowcaseOverview({ kind }: { kind: ShowcaseKind }) {
 
       <div className="flex flex-wrap gap-2">
         <ConfigureQrButton dest={isCatalog ? "catalog" : "menu"} />
+        {aiFeature.allowed && estId && (
+          <Button variant="outline" onClick={() => setImportOpen(true)}>
+            <Wand2 className="mr-2 h-4 w-4" />
+            Importar {isCatalog ? "catálogo" : "cardápio"} com IA
+          </Button>
+        )}
       </div>
+
+      {estId && (
+        <AiImportDialog
+          open={importOpen}
+          onOpenChange={setImportOpen}
+          establishmentId={estId}
+          kind={kind}
+          onImported={() => qc.invalidateQueries({ queryKey: ["menu-overview", estId, kind] })}
+        />
+      )}
+
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <MetricCard icon={FolderTree} label={L.categories} value={counts?.categories ?? 0} />
