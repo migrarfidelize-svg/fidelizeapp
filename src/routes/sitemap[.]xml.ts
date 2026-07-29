@@ -12,7 +12,7 @@ interface SitemapEntry {
 
 /**
  * Apenas rotas públicas e indexáveis.
- * Áreas autenticadas (/app, /admin, /carteira), fluxos de conta (/auth,
+ * Áreas autenticadas (/app, /hash, /carteira), fluxos de conta (/auth,
  * /onboarding), links tokenizados (/c/, /r/, /invite/) e endpoints de API
  * NUNCA entram aqui — além de bloqueados no robots.txt, recebem noindex.
  */

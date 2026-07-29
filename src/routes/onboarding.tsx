@@ -40,7 +40,7 @@ export const Route = createFileRoute("/onboarding")({
         .eq("id", data.user.id)
         .maybeSingle();
       if (p?.account_type === "customer") throw redirect({ to: "/carteira" });
-      if (p?.account_type === "super_admin") throw redirect({ to: "/admin" });
+      if (p?.account_type === "super_admin") throw redirect({ to: "/hash" });
     } catch (e) {
       if (e && typeof e === "object" && ("isRedirect" in e || "to" in e)) throw e;
     }

@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { RefreshCw, PlayCircle, Trash2, ListChecks } from "lucide-react";
 import { LoadingSkeleton } from "@/components/states";
 
-export const Route = createFileRoute("/_authenticated/admin/email-fila")({
+export const Route = createFileRoute("/_authenticated/hash/email-fila")({
   head: () => ({ meta: [{ title: "Fila de e-mails — Fidelize" }] }),
   component: QueuePage,
 });

@@ -15,7 +15,7 @@ import { formatBRL, formatDate } from "@/lib/format";
 
 
 
-export const Route = createFileRoute("/_authenticated/admin/")({
+export const Route = createFileRoute("/_authenticated/hash/")({
   component: AdminOverview,
 });
 
@@ -167,7 +167,7 @@ function AdminOverview() {
             <div className="text-xs uppercase tracking-widest text-muted-foreground">Cadastros</div>
             <h3 className="font-display text-lg font-semibold">Empresas recentes</h3>
           </div>
-          <Link to="/admin/empresas" className="text-xs text-primary font-medium hover:underline">
+          <Link to="/hash/empresas" className="text-xs text-primary font-medium hover:underline">
             Ver todas →
           </Link>
         </div>

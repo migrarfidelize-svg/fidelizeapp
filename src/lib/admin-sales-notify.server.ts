@@ -67,7 +67,7 @@ export async function notifyAdminsOfSale(sale: SaleInfo) {
 
     const title = "Nova venda aprovada 🎉";
     const body = `${productName} · ${money(sale.amount, sale.currency)}${estName ? ` · ${estName}` : ""}`;
-    const url = "/admin/pagamentos";
+    const url = "/hash/pagamentos";
 
     const { sendPushToSub } = await import("@/lib/push.server");
     const { notificationTargetKey, recordPushDelivery } = await import("@/lib/push-inbox.server");

@@ -16,7 +16,7 @@ import { exportAuthUsersJson } from "@/lib/migration-export.functions";
 import { listStorageForMigration } from "@/lib/migration-storage.functions";
 import { zipSync, strToU8 } from "fflate";
 
-export const Route = createFileRoute("/_authenticated/admin/migracao")({
+export const Route = createFileRoute("/_authenticated/hash/migracao")({
   head: () => ({
     meta: [
       { title: "Migração & Downloads — Fidelize Admin" },

@@ -10,7 +10,7 @@ import {
   adminReassignOrphanCustomer,
   adminListEstablishments,
   adminGetUserWallet,
-} from "@/lib/admin.functions";
+} from "@/lib/hash.functions";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -34,7 +34,7 @@ import {
 
 import { formatPhone } from "@/lib/format";
 
-export const Route = createFileRoute("/_authenticated/admin/usuarios")({
+export const Route = createFileRoute("/_authenticated/hash/usuarios")({
   head: () => ({ meta: [{ title: "Usuários — Admin • Fidelize" }] }),
   component: AdminUsers,
 });
@@ -341,7 +341,7 @@ function AdminUsers() {
                   <SelectContent>
                     <SelectItem value="customer">Cliente final — vai para /carteira</SelectItem>
                     <SelectItem value="establishment">Estabelecimento — acesso a /app</SelectItem>
-                    <SelectItem value="super_admin">Super admin — acesso a /admin</SelectItem>
+                    <SelectItem value="super_admin">Super admin — acesso a /hash</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -354,7 +354,7 @@ function AdminUsers() {
               )}
               {nextType === "super_admin" && (
                 <div className="rounded-lg border border-primary/40 bg-primary-soft text-primary p-3 text-xs">
-                  Concede acesso total ao painel <strong>/admin</strong>. Use com cautela.
+                  Concede acesso total ao painel <strong>/hash</strong>. Use com cautela.
                 </div>
               )}
             </div>
@@ -379,7 +379,7 @@ function AdminUsers() {
       />
 
       <div className="text-xs text-muted-foreground">
-        Precisa gerenciar vínculos específicos de uma empresa? Acesse <Link to="/admin/empresas" className="underline">Empresas</Link>.
+        Precisa gerenciar vínculos específicos de uma empresa? Acesse <Link to="/hash/empresas" className="underline">Empresas</Link>.
       </div>
     </div>
   );
@@ -520,7 +520,7 @@ function OrphanCustomers({ establishments }: { establishments: Array<{ id: strin
                     </TableCell>
                     <TableCell className="hidden md:table-cell text-sm">
                       {c.establishment_name ? (
-                        <Link to="/admin/empresa/$id" params={{ id: c.establishment_id }} className="underline hover:text-primary">
+                        <Link to="/hash/empresa/$id" params={{ id: c.establishment_id }} className="underline hover:text-primary">
                           {c.establishment_name}
                         </Link>
                       ) : <span className="text-muted-foreground">—</span>}

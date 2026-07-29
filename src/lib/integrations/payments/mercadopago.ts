@@ -4,7 +4,7 @@ import { timedFetch } from "../types";
 
 /**
  * Adapter fino para o Mercado Pago. A configuração completa continua em
- * `/admin/pagamentos` e `payment_settings`. Aqui só provemos metadados e
+ * `/hash/pagamentos` e `payment_settings`. Aqui só provemos metadados e
  * um teste de conexão consistente com o restante do hub.
  */
 export const mercadopagoProvider: PaymentProvider = {
@@ -12,7 +12,7 @@ export const mercadopagoProvider: PaymentProvider = {
     id: "mercadopago",
     label: "Mercado Pago",
     category: "payments",
-    description: "PIX, cartão e boleto. Configuração completa em /admin/pagamentos.",
+    description: "PIX, cartão e boleto. Configuração completa em /hash/pagamentos.",
     icon: "💳",
     docsUrl: "https://www.mercadopago.com.br/developers/pt",
     supportsMode: true,

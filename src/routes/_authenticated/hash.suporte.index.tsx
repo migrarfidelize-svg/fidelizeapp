@@ -17,7 +17,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Ticket, Clock, AlertTriangle, CheckCircle2, MessageSquare, Zap, Plus, Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/admin/suporte/")({
+export const Route = createFileRoute("/_authenticated/hash/suporte/")({
   head: () => ({ meta: [{ title: "Suporte — Administração" }] }),
   component: AdminSupport,
 });
@@ -126,7 +126,7 @@ function AdminSupport() {
           const st = STATUS[t.status] ?? STATUS.open;
           const waitingHours = Math.round((Date.now() - new Date(t.updated_at).getTime()) / 3600000);
           return (
-            <Link key={t.id} to="/admin/suporte/$id" params={{ id: t.id }} className="block p-4 hover:bg-muted/30 transition">
+            <Link key={t.id} to="/hash/suporte/$id" params={{ id: t.id }} className="block p-4 hover:bg-muted/30 transition">
               <div className="flex items-start gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">

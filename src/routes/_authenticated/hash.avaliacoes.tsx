@@ -26,7 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { formatDate } from "@/lib/format";
 
-export const Route = createFileRoute("/_authenticated/admin/avaliacoes")({
+export const Route = createFileRoute("/_authenticated/hash/avaliacoes")({
   component: Page,
 });
 
@@ -429,7 +429,7 @@ function BlockedByPlan({ days }: { days: number }) {
       r.context ? JSON.stringify(r.context) : "",
     ]);
     const preamble = [
-      `Exportação: Bloqueios de plano — /admin/avaliações`,
+      `Exportação: Bloqueios de plano — /hash/avaliações`,
       `Gerado em: ${new Date().toISOString()}`,
       `Período: últimos ${days} dias`,
       `Filtro Recurso: ${feature === "all" ? "Todos" : (FEATURE_LABELS[feature] ?? feature)}`,

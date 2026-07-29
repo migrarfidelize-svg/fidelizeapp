@@ -77,7 +77,7 @@ async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: 
   if (opts.next && opts.next.startsWith("/")) return { to: opts.next };
   try {
     const { data } = await supabase.rpc("my_account_type");
-    if (data === "super_admin") return { to: "/admin" };
+    if (data === "super_admin") return { to: "/hash" };
     if (data === "establishment") return { to: "/app" };
     return { to: "/carteira" };
   } catch {

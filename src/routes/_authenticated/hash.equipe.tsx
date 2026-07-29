@@ -8,7 +8,7 @@ import { getAdminStatus } from "@/lib/admin.functions";
 import { EquipeTab } from "./admin.config";
 import { LoadingSkeleton } from "@/components/states";
 
-export const Route = createFileRoute("/_authenticated/admin/equipe")({
+export const Route = createFileRoute("/_authenticated/hash/equipe")({
   head: () => ({ meta: [{ title: "Equipe — Fidelize" }] }),
   component: EquipePage,
 });

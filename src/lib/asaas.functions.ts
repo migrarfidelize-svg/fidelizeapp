@@ -4,7 +4,7 @@ import { z } from "zod";
 
 /**
  * Wrapper Asaas: chamadas autenticadas usando o access_token do painel
- * (`/admin/integracoes` → Asaas). Nunca lê `process.env` diretamente aqui:
+ * (`/hash/integracoes` → Asaas). Nunca lê `process.env` diretamente aqui:
  * fluxo passa por `loadAsaasCredentials`, que já contempla env como fallback.
  */
 async function asaasFetch(path: string, init: RequestInit = {}) {

@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import { FileText, Plus, Trash2, Eye, Send, Save, Code2 } from "lucide-react";
 import { LoadingSkeleton } from "@/components/states";
 
-export const Route = createFileRoute("/_authenticated/admin/email-templates")({
+export const Route = createFileRoute("/_authenticated/hash/email-templates")({
   head: () => ({ meta: [{ title: "Templates de e-mail — Fidelize" }] }),
   component: TemplatesPage,
 });

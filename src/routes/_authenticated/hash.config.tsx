@@ -41,7 +41,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { LoadingSkeleton } from "@/components/states";
 
-export const Route = createFileRoute("/_authenticated/admin/config")({
+export const Route = createFileRoute("/_authenticated/hash/config")({
   head: () => ({ meta: [{ title: "Configurações — Fidelize" }] }),
   component: ConfigPage,
 });

@@ -33,7 +33,7 @@ import {
   saveIntegrationCredentials,
 } from "@/lib/integrations/integrations.functions";
 
-export const Route = createFileRoute("/_authenticated/admin/integracoes")({
+export const Route = createFileRoute("/_authenticated/hash/integracoes")({
   component: IntegrationsPage,
 });
 

@@ -38,17 +38,36 @@ import { Route as AvaliacoesSlugRouteImport } from './routes/avaliacoes.$slug'
 import { Route as AuthRecuperarRouteImport } from './routes/auth.recuperar'
 import { Route as AuthNovaSenhaRouteImport } from './routes/auth.nova-senha'
 import { Route as AuthenticatedLgpdRouteImport } from './routes/_authenticated/lgpd'
+import { Route as AuthenticatedHashRouteImport } from './routes/_authenticated/hash'
 import { Route as AuthenticatedCarteiraRouteImport } from './routes/_authenticated/carteira'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
-import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as SuporteSlugIndexRouteImport } from './routes/suporte.$slug.index'
 import { Route as AjudaCategoryIndexRouteImport } from './routes/ajuda.$category.index'
+import { Route as AuthenticatedHashIndexRouteImport } from './routes/_authenticated/hash.index'
 import { Route as AuthenticatedCarteiraIndexRouteImport } from './routes/_authenticated/carteira.index'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
-import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as SuporteChamadoIdRouteImport } from './routes/suporte.chamado.$id'
 import { Route as SuporteSlugNovoRouteImport } from './routes/suporte.$slug.novo'
 import { Route as AjudaCategoryArticleRouteImport } from './routes/ajuda.$category.$article'
+import { Route as AuthenticatedHashUsuariosRouteImport } from './routes/_authenticated/hash.usuarios'
+import { Route as AuthenticatedHashPagamentosRouteImport } from './routes/_authenticated/hash.pagamentos'
+import { Route as AuthenticatedHashNotificacoesRouteImport } from './routes/_authenticated/hash.notificacoes'
+import { Route as AuthenticatedHashMigracaoRouteImport } from './routes/_authenticated/hash.migracao'
+import { Route as AuthenticatedHashLiberacoesRouteImport } from './routes/_authenticated/hash.liberacoes'
+import { Route as AuthenticatedHashIntegracoesRouteImport } from './routes/_authenticated/hash.integracoes'
+import { Route as AuthenticatedHashFinanceiroRouteImport } from './routes/_authenticated/hash.financeiro'
+import { Route as AuthenticatedHashEquipeRouteImport } from './routes/_authenticated/hash.equipe'
+import { Route as AuthenticatedHashEmpresasRouteImport } from './routes/_authenticated/hash.empresas'
+import { Route as AuthenticatedHashEmailsRouteImport } from './routes/_authenticated/hash.emails'
+import { Route as AuthenticatedHashEmailTemplatesRouteImport } from './routes/_authenticated/hash.email-templates'
+import { Route as AuthenticatedHashEmailFilaRouteImport } from './routes/_authenticated/hash.email-fila'
+import { Route as AuthenticatedHashConfigRouteImport } from './routes/_authenticated/hash.config'
+import { Route as AuthenticatedHashCardapioJsonldRouteImport } from './routes/_authenticated/hash.cardapio-jsonld'
+import { Route as AuthenticatedHashAvaliacoesRouteImport } from './routes/_authenticated/hash.avaliacoes'
+import { Route as AuthenticatedHashAuditoriaRouteImport } from './routes/_authenticated/hash.auditoria'
+import { Route as AuthenticatedHashAssinaturasRouteImport } from './routes/_authenticated/hash.assinaturas'
+import { Route as AuthenticatedHashAlertasRouteImport } from './routes/_authenticated/hash.alertas'
+import { Route as AuthenticatedHashAjudaRouteImport } from './routes/_authenticated/hash.ajuda'
 import { Route as AuthenticatedCarteiraRetrospectivaRouteImport } from './routes/_authenticated/carteira.retrospectiva'
 import { Route as AuthenticatedCarteiraPremiosRouteImport } from './routes/_authenticated/carteira.premios'
 import { Route as AuthenticatedCarteiraPerfilRouteImport } from './routes/_authenticated/carteira.perfil'
@@ -76,32 +95,13 @@ import { Route as AuthenticatedAppCarimbarRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppCardapioRouteImport } from './routes/_authenticated/app.cardapio'
 import { Route as AuthenticatedAppCampanhasRouteImport } from './routes/_authenticated/app.campanhas'
 import { Route as AuthenticatedAppAnalyticsRouteImport } from './routes/_authenticated/app.analytics'
-import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin.usuarios'
-import { Route as AuthenticatedAdminPagamentosRouteImport } from './routes/_authenticated/admin.pagamentos'
-import { Route as AuthenticatedAdminNotificacoesRouteImport } from './routes/_authenticated/admin.notificacoes'
-import { Route as AuthenticatedAdminMigracaoRouteImport } from './routes/_authenticated/admin.migracao'
-import { Route as AuthenticatedAdminLiberacoesRouteImport } from './routes/_authenticated/admin.liberacoes'
-import { Route as AuthenticatedAdminIntegracoesRouteImport } from './routes/_authenticated/admin.integracoes'
-import { Route as AuthenticatedAdminFinanceiroRouteImport } from './routes/_authenticated/admin.financeiro'
-import { Route as AuthenticatedAdminEquipeRouteImport } from './routes/_authenticated/admin.equipe'
-import { Route as AuthenticatedAdminEmpresasRouteImport } from './routes/_authenticated/admin.empresas'
-import { Route as AuthenticatedAdminEmailsRouteImport } from './routes/_authenticated/admin.emails'
-import { Route as AuthenticatedAdminEmailTemplatesRouteImport } from './routes/_authenticated/admin.email-templates'
-import { Route as AuthenticatedAdminEmailFilaRouteImport } from './routes/_authenticated/admin.email-fila'
-import { Route as AuthenticatedAdminConfigRouteImport } from './routes/_authenticated/admin.config'
-import { Route as AuthenticatedAdminCardapioJsonldRouteImport } from './routes/_authenticated/admin.cardapio-jsonld'
-import { Route as AuthenticatedAdminAvaliacoesRouteImport } from './routes/_authenticated/admin.avaliacoes'
-import { Route as AuthenticatedAdminAuditoriaRouteImport } from './routes/_authenticated/admin.auditoria'
-import { Route as AuthenticatedAdminAssinaturasRouteImport } from './routes/_authenticated/admin.assinaturas'
-import { Route as AuthenticatedAdminAlertasRouteImport } from './routes/_authenticated/admin.alertas'
-import { Route as AuthenticatedAdminAjudaRouteImport } from './routes/_authenticated/admin.ajuda'
+import { Route as AuthenticatedHashSuporteIndexRouteImport } from './routes/_authenticated/hash.suporte.index'
+import { Route as AuthenticatedHashPlanosIndexRouteImport } from './routes/_authenticated/hash.planos.index'
 import { Route as AuthenticatedAppPlanosIndexRouteImport } from './routes/_authenticated/app.planos.index'
 import { Route as AuthenticatedAppFidelizeIndexRouteImport } from './routes/_authenticated/app.fidelize.index'
 import { Route as AuthenticatedAppCatalogoIndexRouteImport } from './routes/_authenticated/app.catalogo.index'
 import { Route as AuthenticatedAppCardapioIndexRouteImport } from './routes/_authenticated/app.cardapio.index'
 import { Route as AuthenticatedAppAvaliacoesIndexRouteImport } from './routes/_authenticated/app.avaliacoes.index'
-import { Route as AuthenticatedAdminSuporteIndexRouteImport } from './routes/_authenticated/admin.suporte.index'
-import { Route as AuthenticatedAdminPlanosIndexRouteImport } from './routes/_authenticated/admin.planos.index'
 import { Route as SuporteSlugKbArticleRouteImport } from './routes/suporte.$slug.kb.$article'
 import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api/public/webhooks/mercadopago'
 import { Route as ApiPublicWebhooksAsaasRouteImport } from './routes/api/public/webhooks/asaas'
@@ -114,6 +114,8 @@ import { Route as ApiPublicHooksMercadopagoRetryRouteImport } from './routes/api
 import { Route as ApiPublicHooksDispatchScheduledPushRouteImport } from './routes/api/public/hooks/dispatch-scheduled-push'
 import { Route as ApiPublicCronReengagementRouteImport } from './routes/api/public/cron/reengagement'
 import { Route as ApiPublicCronBirthdayRouteImport } from './routes/api/public/cron/birthday'
+import { Route as AuthenticatedHashSuporteIdRouteImport } from './routes/_authenticated/hash.suporte.$id'
+import { Route as AuthenticatedHashEmpresaIdRouteImport } from './routes/_authenticated/hash.empresa.$id'
 import { Route as AuthenticatedCarteiraESlugRouteImport } from './routes/_authenticated/carteira.e.$slug'
 import { Route as AuthenticatedCarteiraSlugPromocoesRouteImport } from './routes/_authenticated/carteira.$slug.promocoes'
 import { Route as AuthenticatedAppCatalogoProdutosRouteImport } from './routes/_authenticated/app.catalogo.produtos'
@@ -124,8 +126,6 @@ import { Route as AuthenticatedAppCardapioCategoriasRouteImport } from './routes
 import { Route as AuthenticatedAppCardapioAparenciaRouteImport } from './routes/_authenticated/app.cardapio.aparencia'
 import { Route as AuthenticatedAppAvaliacoesTemaRouteImport } from './routes/_authenticated/app.avaliacoes.tema'
 import { Route as AuthenticatedAppAvaliacoesQrRouteImport } from './routes/_authenticated/app.avaliacoes.qr'
-import { Route as AuthenticatedAdminSuporteIdRouteImport } from './routes/_authenticated/admin.suporte.$id'
-import { Route as AuthenticatedAdminEmpresaIdRouteImport } from './routes/_authenticated/admin.empresa.$id'
 import { Route as ApiPublicWalletV1LogRouteImport } from './routes/api/public/wallet/v1/log'
 import { Route as ApiPublicWalletAppleTokenRouteImport } from './routes/api/public/wallet.apple.$token'
 import { Route as ApiPublicRTCodeRouteImport } from './routes/api/public/r/t/$code'
@@ -279,6 +279,11 @@ const AuthenticatedLgpdRoute = AuthenticatedLgpdRouteImport.update({
   path: '/lgpd',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHashRoute = AuthenticatedHashRouteImport.update({
+  id: '/hash',
+  path: '/hash',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCarteiraRoute = AuthenticatedCarteiraRouteImport.update({
   id: '/carteira',
   path: '/carteira',
@@ -287,11 +292,6 @@ const AuthenticatedCarteiraRoute = AuthenticatedCarteiraRouteImport.update({
 const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   id: '/app',
   path: '/app',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const SuporteSlugIndexRoute = SuporteSlugIndexRouteImport.update({
@@ -304,6 +304,11 @@ const AjudaCategoryIndexRoute = AjudaCategoryIndexRouteImport.update({
   path: '/ajuda/$category/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedHashIndexRoute = AuthenticatedHashIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedHashRoute,
+} as any)
 const AuthenticatedCarteiraIndexRoute =
   AuthenticatedCarteiraIndexRouteImport.update({
     id: '/',
@@ -314,11 +319,6 @@ const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedAppRoute,
-} as any)
-const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
 const SuporteChamadoIdRoute = SuporteChamadoIdRouteImport.update({
   id: '/suporte/chamado/$id',
@@ -334,6 +334,116 @@ const AjudaCategoryArticleRoute = AjudaCategoryArticleRouteImport.update({
   id: '/ajuda/$category/$article',
   path: '/ajuda/$category/$article',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedHashUsuariosRoute =
+  AuthenticatedHashUsuariosRouteImport.update({
+    id: '/usuarios',
+    path: '/usuarios',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashPagamentosRoute =
+  AuthenticatedHashPagamentosRouteImport.update({
+    id: '/pagamentos',
+    path: '/pagamentos',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashNotificacoesRoute =
+  AuthenticatedHashNotificacoesRouteImport.update({
+    id: '/notificacoes',
+    path: '/notificacoes',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashMigracaoRoute =
+  AuthenticatedHashMigracaoRouteImport.update({
+    id: '/migracao',
+    path: '/migracao',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashLiberacoesRoute =
+  AuthenticatedHashLiberacoesRouteImport.update({
+    id: '/liberacoes',
+    path: '/liberacoes',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashIntegracoesRoute =
+  AuthenticatedHashIntegracoesRouteImport.update({
+    id: '/integracoes',
+    path: '/integracoes',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashFinanceiroRoute =
+  AuthenticatedHashFinanceiroRouteImport.update({
+    id: '/financeiro',
+    path: '/financeiro',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashEquipeRoute = AuthenticatedHashEquipeRouteImport.update({
+  id: '/equipe',
+  path: '/equipe',
+  getParentRoute: () => AuthenticatedHashRoute,
+} as any)
+const AuthenticatedHashEmpresasRoute =
+  AuthenticatedHashEmpresasRouteImport.update({
+    id: '/empresas',
+    path: '/empresas',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashEmailsRoute = AuthenticatedHashEmailsRouteImport.update({
+  id: '/emails',
+  path: '/emails',
+  getParentRoute: () => AuthenticatedHashRoute,
+} as any)
+const AuthenticatedHashEmailTemplatesRoute =
+  AuthenticatedHashEmailTemplatesRouteImport.update({
+    id: '/email-templates',
+    path: '/email-templates',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashEmailFilaRoute =
+  AuthenticatedHashEmailFilaRouteImport.update({
+    id: '/email-fila',
+    path: '/email-fila',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashConfigRoute = AuthenticatedHashConfigRouteImport.update({
+  id: '/config',
+  path: '/config',
+  getParentRoute: () => AuthenticatedHashRoute,
+} as any)
+const AuthenticatedHashCardapioJsonldRoute =
+  AuthenticatedHashCardapioJsonldRouteImport.update({
+    id: '/cardapio-jsonld',
+    path: '/cardapio-jsonld',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashAvaliacoesRoute =
+  AuthenticatedHashAvaliacoesRouteImport.update({
+    id: '/avaliacoes',
+    path: '/avaliacoes',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashAuditoriaRoute =
+  AuthenticatedHashAuditoriaRouteImport.update({
+    id: '/auditoria',
+    path: '/auditoria',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashAssinaturasRoute =
+  AuthenticatedHashAssinaturasRouteImport.update({
+    id: '/assinaturas',
+    path: '/assinaturas',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashAlertasRoute =
+  AuthenticatedHashAlertasRouteImport.update({
+    id: '/alertas',
+    path: '/alertas',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashAjudaRoute = AuthenticatedHashAjudaRouteImport.update({
+  id: '/ajuda',
+  path: '/ajuda',
+  getParentRoute: () => AuthenticatedHashRoute,
 } as any)
 const AuthenticatedCarteiraRetrospectivaRoute =
   AuthenticatedCarteiraRetrospectivaRouteImport.update({
@@ -490,119 +600,18 @@ const AuthenticatedAppAnalyticsRoute =
     path: '/analytics',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
-const AuthenticatedAdminUsuariosRoute =
-  AuthenticatedAdminUsuariosRouteImport.update({
-    id: '/usuarios',
-    path: '/usuarios',
-    getParentRoute: () => AuthenticatedAdminRoute,
+const AuthenticatedHashSuporteIndexRoute =
+  AuthenticatedHashSuporteIndexRouteImport.update({
+    id: '/suporte/',
+    path: '/suporte/',
+    getParentRoute: () => AuthenticatedHashRoute,
   } as any)
-const AuthenticatedAdminPagamentosRoute =
-  AuthenticatedAdminPagamentosRouteImport.update({
-    id: '/pagamentos',
-    path: '/pagamentos',
-    getParentRoute: () => AuthenticatedAdminRoute,
+const AuthenticatedHashPlanosIndexRoute =
+  AuthenticatedHashPlanosIndexRouteImport.update({
+    id: '/planos/',
+    path: '/planos/',
+    getParentRoute: () => AuthenticatedHashRoute,
   } as any)
-const AuthenticatedAdminNotificacoesRoute =
-  AuthenticatedAdminNotificacoesRouteImport.update({
-    id: '/notificacoes',
-    path: '/notificacoes',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminMigracaoRoute =
-  AuthenticatedAdminMigracaoRouteImport.update({
-    id: '/migracao',
-    path: '/migracao',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminLiberacoesRoute =
-  AuthenticatedAdminLiberacoesRouteImport.update({
-    id: '/liberacoes',
-    path: '/liberacoes',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminIntegracoesRoute =
-  AuthenticatedAdminIntegracoesRouteImport.update({
-    id: '/integracoes',
-    path: '/integracoes',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminFinanceiroRoute =
-  AuthenticatedAdminFinanceiroRouteImport.update({
-    id: '/financeiro',
-    path: '/financeiro',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminEquipeRoute =
-  AuthenticatedAdminEquipeRouteImport.update({
-    id: '/equipe',
-    path: '/equipe',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminEmpresasRoute =
-  AuthenticatedAdminEmpresasRouteImport.update({
-    id: '/empresas',
-    path: '/empresas',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminEmailsRoute =
-  AuthenticatedAdminEmailsRouteImport.update({
-    id: '/emails',
-    path: '/emails',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminEmailTemplatesRoute =
-  AuthenticatedAdminEmailTemplatesRouteImport.update({
-    id: '/email-templates',
-    path: '/email-templates',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminEmailFilaRoute =
-  AuthenticatedAdminEmailFilaRouteImport.update({
-    id: '/email-fila',
-    path: '/email-fila',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminConfigRoute =
-  AuthenticatedAdminConfigRouteImport.update({
-    id: '/config',
-    path: '/config',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminCardapioJsonldRoute =
-  AuthenticatedAdminCardapioJsonldRouteImport.update({
-    id: '/cardapio-jsonld',
-    path: '/cardapio-jsonld',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminAvaliacoesRoute =
-  AuthenticatedAdminAvaliacoesRouteImport.update({
-    id: '/avaliacoes',
-    path: '/avaliacoes',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminAuditoriaRoute =
-  AuthenticatedAdminAuditoriaRouteImport.update({
-    id: '/auditoria',
-    path: '/auditoria',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminAssinaturasRoute =
-  AuthenticatedAdminAssinaturasRouteImport.update({
-    id: '/assinaturas',
-    path: '/assinaturas',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminAlertasRoute =
-  AuthenticatedAdminAlertasRouteImport.update({
-    id: '/alertas',
-    path: '/alertas',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminAjudaRoute = AuthenticatedAdminAjudaRouteImport.update({
-  id: '/ajuda',
-  path: '/ajuda',
-  getParentRoute: () => AuthenticatedAdminRoute,
-} as any)
 const AuthenticatedAppPlanosIndexRoute =
   AuthenticatedAppPlanosIndexRouteImport.update({
     id: '/planos/',
@@ -632,18 +641,6 @@ const AuthenticatedAppAvaliacoesIndexRoute =
     id: '/avaliacoes/',
     path: '/avaliacoes/',
     getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAdminSuporteIndexRoute =
-  AuthenticatedAdminSuporteIndexRouteImport.update({
-    id: '/suporte/',
-    path: '/suporte/',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminPlanosIndexRoute =
-  AuthenticatedAdminPlanosIndexRouteImport.update({
-    id: '/planos/',
-    path: '/planos/',
-    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const SuporteSlugKbArticleRoute = SuporteSlugKbArticleRouteImport.update({
   id: '/suporte/$slug/kb/$article',
@@ -713,6 +710,18 @@ const ApiPublicCronBirthdayRoute = ApiPublicCronBirthdayRouteImport.update({
   path: '/api/public/cron/birthday',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedHashSuporteIdRoute =
+  AuthenticatedHashSuporteIdRouteImport.update({
+    id: '/suporte/$id',
+    path: '/suporte/$id',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashEmpresaIdRoute =
+  AuthenticatedHashEmpresaIdRouteImport.update({
+    id: '/empresa/$id',
+    path: '/empresa/$id',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
 const AuthenticatedCarteiraESlugRoute =
   AuthenticatedCarteiraESlugRouteImport.update({
     id: '/e/$slug',
@@ -772,18 +781,6 @@ const AuthenticatedAppAvaliacoesQrRoute =
     id: '/avaliacoes/qr',
     path: '/avaliacoes/qr',
     getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAdminSuporteIdRoute =
-  AuthenticatedAdminSuporteIdRouteImport.update({
-    id: '/suporte/$id',
-    path: '/suporte/$id',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminEmpresaIdRoute =
-  AuthenticatedAdminEmpresaIdRouteImport.update({
-    id: '/empresa/$id',
-    path: '/empresa/$id',
-    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const ApiPublicWalletV1LogRoute = ApiPublicWalletV1LogRouteImport.update({
   id: '/api/public/wallet/v1/log',
@@ -846,9 +843,9 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
   '/videos': typeof VideosRoute
-  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/carteira': typeof AuthenticatedCarteiraRouteWithChildren
+  '/hash': typeof AuthenticatedHashRouteWithChildren
   '/lgpd': typeof AuthenticatedLgpdRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
@@ -866,25 +863,6 @@ export interface FileRoutesByFullPath {
   '/r/$code': typeof RCodeRoute
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda/': typeof AjudaIndexRoute
-  '/admin/ajuda': typeof AuthenticatedAdminAjudaRoute
-  '/admin/alertas': typeof AuthenticatedAdminAlertasRoute
-  '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
-  '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
-  '/admin/avaliacoes': typeof AuthenticatedAdminAvaliacoesRoute
-  '/admin/cardapio-jsonld': typeof AuthenticatedAdminCardapioJsonldRoute
-  '/admin/config': typeof AuthenticatedAdminConfigRoute
-  '/admin/email-fila': typeof AuthenticatedAdminEmailFilaRoute
-  '/admin/email-templates': typeof AuthenticatedAdminEmailTemplatesRoute
-  '/admin/emails': typeof AuthenticatedAdminEmailsRoute
-  '/admin/empresas': typeof AuthenticatedAdminEmpresasRoute
-  '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
-  '/admin/financeiro': typeof AuthenticatedAdminFinanceiroRoute
-  '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
-  '/admin/liberacoes': typeof AuthenticatedAdminLiberacoesRoute
-  '/admin/migracao': typeof AuthenticatedAdminMigracaoRoute
-  '/admin/notificacoes': typeof AuthenticatedAdminNotificacoesRoute
-  '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
-  '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/app/analytics': typeof AuthenticatedAppAnalyticsRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/cardapio': typeof AuthenticatedAppCardapioRouteWithChildren
@@ -912,16 +890,33 @@ export interface FileRoutesByFullPath {
   '/carteira/perfil': typeof AuthenticatedCarteiraPerfilRoute
   '/carteira/premios': typeof AuthenticatedCarteiraPremiosRoute
   '/carteira/retrospectiva': typeof AuthenticatedCarteiraRetrospectivaRoute
+  '/hash/ajuda': typeof AuthenticatedHashAjudaRoute
+  '/hash/alertas': typeof AuthenticatedHashAlertasRoute
+  '/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
+  '/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
+  '/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
+  '/hash/cardapio-jsonld': typeof AuthenticatedHashCardapioJsonldRoute
+  '/hash/config': typeof AuthenticatedHashConfigRoute
+  '/hash/email-fila': typeof AuthenticatedHashEmailFilaRoute
+  '/hash/email-templates': typeof AuthenticatedHashEmailTemplatesRoute
+  '/hash/emails': typeof AuthenticatedHashEmailsRoute
+  '/hash/empresas': typeof AuthenticatedHashEmpresasRoute
+  '/hash/equipe': typeof AuthenticatedHashEquipeRoute
+  '/hash/financeiro': typeof AuthenticatedHashFinanceiroRoute
+  '/hash/integracoes': typeof AuthenticatedHashIntegracoesRoute
+  '/hash/liberacoes': typeof AuthenticatedHashLiberacoesRoute
+  '/hash/migracao': typeof AuthenticatedHashMigracaoRoute
+  '/hash/notificacoes': typeof AuthenticatedHashNotificacoesRoute
+  '/hash/pagamentos': typeof AuthenticatedHashPagamentosRoute
+  '/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
-  '/admin/': typeof AuthenticatedAdminIndexRoute
   '/app/': typeof AuthenticatedAppIndexRoute
   '/carteira/': typeof AuthenticatedCarteiraIndexRoute
+  '/hash/': typeof AuthenticatedHashIndexRoute
   '/ajuda/$category/': typeof AjudaCategoryIndexRoute
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
-  '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
-  '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/app/avaliacoes/qr': typeof AuthenticatedAppAvaliacoesQrRoute
   '/app/avaliacoes/tema': typeof AuthenticatedAppAvaliacoesTemaRoute
   '/app/cardapio/aparencia': typeof AuthenticatedAppCardapioAparenciaRoute
@@ -932,6 +927,8 @@ export interface FileRoutesByFullPath {
   '/app/catalogo/produtos': typeof AuthenticatedAppCatalogoProdutosRoute
   '/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
   '/carteira/e/$slug': typeof AuthenticatedCarteiraESlugRoute
+  '/hash/empresa/$id': typeof AuthenticatedHashEmpresaIdRoute
+  '/hash/suporte/$id': typeof AuthenticatedHashSuporteIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
   '/api/public/hooks/dispatch-scheduled-push': typeof ApiPublicHooksDispatchScheduledPushRoute
@@ -944,13 +941,13 @@ export interface FileRoutesByFullPath {
   '/api/public/webhooks/asaas': typeof ApiPublicWebhooksAsaasRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
-  '/admin/planos/': typeof AuthenticatedAdminPlanosIndexRoute
-  '/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
   '/app/avaliacoes/': typeof AuthenticatedAppAvaliacoesIndexRoute
   '/app/cardapio/': typeof AuthenticatedAppCardapioIndexRoute
   '/app/catalogo/': typeof AuthenticatedAppCatalogoIndexRoute
   '/app/fidelize/': typeof AuthenticatedAppFidelizeIndexRoute
   '/app/planos/': typeof AuthenticatedAppPlanosIndexRoute
+  '/hash/planos/': typeof AuthenticatedHashPlanosIndexRoute
+  '/hash/suporte/': typeof AuthenticatedHashSuporteIndexRoute
   '/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
   '/api/public/r/t/$code': typeof ApiPublicRTCodeRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
@@ -989,25 +986,6 @@ export interface FileRoutesByTo {
   '/r/$code': typeof RCodeRoute
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda': typeof AjudaIndexRoute
-  '/admin/ajuda': typeof AuthenticatedAdminAjudaRoute
-  '/admin/alertas': typeof AuthenticatedAdminAlertasRoute
-  '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
-  '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
-  '/admin/avaliacoes': typeof AuthenticatedAdminAvaliacoesRoute
-  '/admin/cardapio-jsonld': typeof AuthenticatedAdminCardapioJsonldRoute
-  '/admin/config': typeof AuthenticatedAdminConfigRoute
-  '/admin/email-fila': typeof AuthenticatedAdminEmailFilaRoute
-  '/admin/email-templates': typeof AuthenticatedAdminEmailTemplatesRoute
-  '/admin/emails': typeof AuthenticatedAdminEmailsRoute
-  '/admin/empresas': typeof AuthenticatedAdminEmpresasRoute
-  '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
-  '/admin/financeiro': typeof AuthenticatedAdminFinanceiroRoute
-  '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
-  '/admin/liberacoes': typeof AuthenticatedAdminLiberacoesRoute
-  '/admin/migracao': typeof AuthenticatedAdminMigracaoRoute
-  '/admin/notificacoes': typeof AuthenticatedAdminNotificacoesRoute
-  '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
-  '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/app/analytics': typeof AuthenticatedAppAnalyticsRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
@@ -1033,16 +1011,33 @@ export interface FileRoutesByTo {
   '/carteira/perfil': typeof AuthenticatedCarteiraPerfilRoute
   '/carteira/premios': typeof AuthenticatedCarteiraPremiosRoute
   '/carteira/retrospectiva': typeof AuthenticatedCarteiraRetrospectivaRoute
+  '/hash/ajuda': typeof AuthenticatedHashAjudaRoute
+  '/hash/alertas': typeof AuthenticatedHashAlertasRoute
+  '/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
+  '/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
+  '/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
+  '/hash/cardapio-jsonld': typeof AuthenticatedHashCardapioJsonldRoute
+  '/hash/config': typeof AuthenticatedHashConfigRoute
+  '/hash/email-fila': typeof AuthenticatedHashEmailFilaRoute
+  '/hash/email-templates': typeof AuthenticatedHashEmailTemplatesRoute
+  '/hash/emails': typeof AuthenticatedHashEmailsRoute
+  '/hash/empresas': typeof AuthenticatedHashEmpresasRoute
+  '/hash/equipe': typeof AuthenticatedHashEquipeRoute
+  '/hash/financeiro': typeof AuthenticatedHashFinanceiroRoute
+  '/hash/integracoes': typeof AuthenticatedHashIntegracoesRoute
+  '/hash/liberacoes': typeof AuthenticatedHashLiberacoesRoute
+  '/hash/migracao': typeof AuthenticatedHashMigracaoRoute
+  '/hash/notificacoes': typeof AuthenticatedHashNotificacoesRoute
+  '/hash/pagamentos': typeof AuthenticatedHashPagamentosRoute
+  '/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
-  '/admin': typeof AuthenticatedAdminIndexRoute
   '/app': typeof AuthenticatedAppIndexRoute
   '/carteira': typeof AuthenticatedCarteiraIndexRoute
+  '/hash': typeof AuthenticatedHashIndexRoute
   '/ajuda/$category': typeof AjudaCategoryIndexRoute
   '/suporte/$slug': typeof SuporteSlugIndexRoute
-  '/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
-  '/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/app/avaliacoes/qr': typeof AuthenticatedAppAvaliacoesQrRoute
   '/app/avaliacoes/tema': typeof AuthenticatedAppAvaliacoesTemaRoute
   '/app/cardapio/aparencia': typeof AuthenticatedAppCardapioAparenciaRoute
@@ -1053,6 +1048,8 @@ export interface FileRoutesByTo {
   '/app/catalogo/produtos': typeof AuthenticatedAppCatalogoProdutosRoute
   '/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
   '/carteira/e/$slug': typeof AuthenticatedCarteiraESlugRoute
+  '/hash/empresa/$id': typeof AuthenticatedHashEmpresaIdRoute
+  '/hash/suporte/$id': typeof AuthenticatedHashSuporteIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
   '/api/public/hooks/dispatch-scheduled-push': typeof ApiPublicHooksDispatchScheduledPushRoute
@@ -1065,13 +1062,13 @@ export interface FileRoutesByTo {
   '/api/public/webhooks/asaas': typeof ApiPublicWebhooksAsaasRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
-  '/admin/planos': typeof AuthenticatedAdminPlanosIndexRoute
-  '/admin/suporte': typeof AuthenticatedAdminSuporteIndexRoute
   '/app/avaliacoes': typeof AuthenticatedAppAvaliacoesIndexRoute
   '/app/cardapio': typeof AuthenticatedAppCardapioIndexRoute
   '/app/catalogo': typeof AuthenticatedAppCatalogoIndexRoute
   '/app/fidelize': typeof AuthenticatedAppFidelizeIndexRoute
   '/app/planos': typeof AuthenticatedAppPlanosIndexRoute
+  '/hash/planos': typeof AuthenticatedHashPlanosIndexRoute
+  '/hash/suporte': typeof AuthenticatedHashSuporteIndexRoute
   '/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
   '/api/public/r/t/$code': typeof ApiPublicRTCodeRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
@@ -1095,9 +1092,9 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
   '/videos': typeof VideosRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/_authenticated/carteira': typeof AuthenticatedCarteiraRouteWithChildren
+  '/_authenticated/hash': typeof AuthenticatedHashRouteWithChildren
   '/_authenticated/lgpd': typeof AuthenticatedLgpdRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
@@ -1115,25 +1112,6 @@ export interface FileRoutesById {
   '/r/$code': typeof RCodeRoute
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda/': typeof AjudaIndexRoute
-  '/_authenticated/admin/ajuda': typeof AuthenticatedAdminAjudaRoute
-  '/_authenticated/admin/alertas': typeof AuthenticatedAdminAlertasRoute
-  '/_authenticated/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
-  '/_authenticated/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
-  '/_authenticated/admin/avaliacoes': typeof AuthenticatedAdminAvaliacoesRoute
-  '/_authenticated/admin/cardapio-jsonld': typeof AuthenticatedAdminCardapioJsonldRoute
-  '/_authenticated/admin/config': typeof AuthenticatedAdminConfigRoute
-  '/_authenticated/admin/email-fila': typeof AuthenticatedAdminEmailFilaRoute
-  '/_authenticated/admin/email-templates': typeof AuthenticatedAdminEmailTemplatesRoute
-  '/_authenticated/admin/emails': typeof AuthenticatedAdminEmailsRoute
-  '/_authenticated/admin/empresas': typeof AuthenticatedAdminEmpresasRoute
-  '/_authenticated/admin/equipe': typeof AuthenticatedAdminEquipeRoute
-  '/_authenticated/admin/financeiro': typeof AuthenticatedAdminFinanceiroRoute
-  '/_authenticated/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
-  '/_authenticated/admin/liberacoes': typeof AuthenticatedAdminLiberacoesRoute
-  '/_authenticated/admin/migracao': typeof AuthenticatedAdminMigracaoRoute
-  '/_authenticated/admin/notificacoes': typeof AuthenticatedAdminNotificacoesRoute
-  '/_authenticated/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
-  '/_authenticated/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/_authenticated/app/analytics': typeof AuthenticatedAppAnalyticsRoute
   '/_authenticated/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/_authenticated/app/cardapio': typeof AuthenticatedAppCardapioRouteWithChildren
@@ -1161,16 +1139,33 @@ export interface FileRoutesById {
   '/_authenticated/carteira/perfil': typeof AuthenticatedCarteiraPerfilRoute
   '/_authenticated/carteira/premios': typeof AuthenticatedCarteiraPremiosRoute
   '/_authenticated/carteira/retrospectiva': typeof AuthenticatedCarteiraRetrospectivaRoute
+  '/_authenticated/hash/ajuda': typeof AuthenticatedHashAjudaRoute
+  '/_authenticated/hash/alertas': typeof AuthenticatedHashAlertasRoute
+  '/_authenticated/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
+  '/_authenticated/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
+  '/_authenticated/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
+  '/_authenticated/hash/cardapio-jsonld': typeof AuthenticatedHashCardapioJsonldRoute
+  '/_authenticated/hash/config': typeof AuthenticatedHashConfigRoute
+  '/_authenticated/hash/email-fila': typeof AuthenticatedHashEmailFilaRoute
+  '/_authenticated/hash/email-templates': typeof AuthenticatedHashEmailTemplatesRoute
+  '/_authenticated/hash/emails': typeof AuthenticatedHashEmailsRoute
+  '/_authenticated/hash/empresas': typeof AuthenticatedHashEmpresasRoute
+  '/_authenticated/hash/equipe': typeof AuthenticatedHashEquipeRoute
+  '/_authenticated/hash/financeiro': typeof AuthenticatedHashFinanceiroRoute
+  '/_authenticated/hash/integracoes': typeof AuthenticatedHashIntegracoesRoute
+  '/_authenticated/hash/liberacoes': typeof AuthenticatedHashLiberacoesRoute
+  '/_authenticated/hash/migracao': typeof AuthenticatedHashMigracaoRoute
+  '/_authenticated/hash/notificacoes': typeof AuthenticatedHashNotificacoesRoute
+  '/_authenticated/hash/pagamentos': typeof AuthenticatedHashPagamentosRoute
+  '/_authenticated/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
-  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
   '/_authenticated/carteira/': typeof AuthenticatedCarteiraIndexRoute
+  '/_authenticated/hash/': typeof AuthenticatedHashIndexRoute
   '/ajuda/$category/': typeof AjudaCategoryIndexRoute
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
-  '/_authenticated/admin/empresa/$id': typeof AuthenticatedAdminEmpresaIdRoute
-  '/_authenticated/admin/suporte/$id': typeof AuthenticatedAdminSuporteIdRoute
   '/_authenticated/app/avaliacoes/qr': typeof AuthenticatedAppAvaliacoesQrRoute
   '/_authenticated/app/avaliacoes/tema': typeof AuthenticatedAppAvaliacoesTemaRoute
   '/_authenticated/app/cardapio/aparencia': typeof AuthenticatedAppCardapioAparenciaRoute
@@ -1181,6 +1176,8 @@ export interface FileRoutesById {
   '/_authenticated/app/catalogo/produtos': typeof AuthenticatedAppCatalogoProdutosRoute
   '/_authenticated/carteira/$slug/promocoes': typeof AuthenticatedCarteiraSlugPromocoesRoute
   '/_authenticated/carteira/e/$slug': typeof AuthenticatedCarteiraESlugRoute
+  '/_authenticated/hash/empresa/$id': typeof AuthenticatedHashEmpresaIdRoute
+  '/_authenticated/hash/suporte/$id': typeof AuthenticatedHashSuporteIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
   '/api/public/hooks/dispatch-scheduled-push': typeof ApiPublicHooksDispatchScheduledPushRoute
@@ -1193,13 +1190,13 @@ export interface FileRoutesById {
   '/api/public/webhooks/asaas': typeof ApiPublicWebhooksAsaasRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
-  '/_authenticated/admin/planos/': typeof AuthenticatedAdminPlanosIndexRoute
-  '/_authenticated/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
   '/_authenticated/app/avaliacoes/': typeof AuthenticatedAppAvaliacoesIndexRoute
   '/_authenticated/app/cardapio/': typeof AuthenticatedAppCardapioIndexRoute
   '/_authenticated/app/catalogo/': typeof AuthenticatedAppCatalogoIndexRoute
   '/_authenticated/app/fidelize/': typeof AuthenticatedAppFidelizeIndexRoute
   '/_authenticated/app/planos/': typeof AuthenticatedAppPlanosIndexRoute
+  '/_authenticated/hash/planos/': typeof AuthenticatedHashPlanosIndexRoute
+  '/_authenticated/hash/suporte/': typeof AuthenticatedHashSuporteIndexRoute
   '/_authenticated/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
   '/api/public/r/t/$code': typeof ApiPublicRTCodeRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
@@ -1223,9 +1220,9 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/termos'
     | '/videos'
-    | '/admin'
     | '/app'
     | '/carteira'
+    | '/hash'
     | '/lgpd'
     | '/auth/nova-senha'
     | '/auth/recuperar'
@@ -1243,25 +1240,6 @@ export interface FileRouteTypes {
     | '/r/$code'
     | '/suporte/meus'
     | '/ajuda/'
-    | '/admin/ajuda'
-    | '/admin/alertas'
-    | '/admin/assinaturas'
-    | '/admin/auditoria'
-    | '/admin/avaliacoes'
-    | '/admin/cardapio-jsonld'
-    | '/admin/config'
-    | '/admin/email-fila'
-    | '/admin/email-templates'
-    | '/admin/emails'
-    | '/admin/empresas'
-    | '/admin/equipe'
-    | '/admin/financeiro'
-    | '/admin/integracoes'
-    | '/admin/liberacoes'
-    | '/admin/migracao'
-    | '/admin/notificacoes'
-    | '/admin/pagamentos'
-    | '/admin/usuarios'
     | '/app/analytics'
     | '/app/campanhas'
     | '/app/cardapio'
@@ -1289,16 +1267,33 @@ export interface FileRouteTypes {
     | '/carteira/perfil'
     | '/carteira/premios'
     | '/carteira/retrospectiva'
+    | '/hash/ajuda'
+    | '/hash/alertas'
+    | '/hash/assinaturas'
+    | '/hash/auditoria'
+    | '/hash/avaliacoes'
+    | '/hash/cardapio-jsonld'
+    | '/hash/config'
+    | '/hash/email-fila'
+    | '/hash/email-templates'
+    | '/hash/emails'
+    | '/hash/empresas'
+    | '/hash/equipe'
+    | '/hash/financeiro'
+    | '/hash/integracoes'
+    | '/hash/liberacoes'
+    | '/hash/migracao'
+    | '/hash/notificacoes'
+    | '/hash/pagamentos'
+    | '/hash/usuarios'
     | '/ajuda/$category/$article'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
-    | '/admin/'
     | '/app/'
     | '/carteira/'
+    | '/hash/'
     | '/ajuda/$category/'
     | '/suporte/$slug/'
-    | '/admin/empresa/$id'
-    | '/admin/suporte/$id'
     | '/app/avaliacoes/qr'
     | '/app/avaliacoes/tema'
     | '/app/cardapio/aparencia'
@@ -1309,6 +1304,8 @@ export interface FileRouteTypes {
     | '/app/catalogo/produtos'
     | '/carteira/$slug/promocoes'
     | '/carteira/e/$slug'
+    | '/hash/empresa/$id'
+    | '/hash/suporte/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
     | '/api/public/hooks/dispatch-scheduled-push'
@@ -1321,13 +1318,13 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/asaas'
     | '/api/public/webhooks/mercadopago'
     | '/suporte/$slug/kb/$article'
-    | '/admin/planos/'
-    | '/admin/suporte/'
     | '/app/avaliacoes/'
     | '/app/cardapio/'
     | '/app/catalogo/'
     | '/app/fidelize/'
     | '/app/planos/'
+    | '/hash/planos/'
+    | '/hash/suporte/'
     | '/app/fidelize/ticket/$id'
     | '/api/public/r/t/$code'
     | '/api/public/wallet/apple/$token'
@@ -1366,25 +1363,6 @@ export interface FileRouteTypes {
     | '/r/$code'
     | '/suporte/meus'
     | '/ajuda'
-    | '/admin/ajuda'
-    | '/admin/alertas'
-    | '/admin/assinaturas'
-    | '/admin/auditoria'
-    | '/admin/avaliacoes'
-    | '/admin/cardapio-jsonld'
-    | '/admin/config'
-    | '/admin/email-fila'
-    | '/admin/email-templates'
-    | '/admin/emails'
-    | '/admin/empresas'
-    | '/admin/equipe'
-    | '/admin/financeiro'
-    | '/admin/integracoes'
-    | '/admin/liberacoes'
-    | '/admin/migracao'
-    | '/admin/notificacoes'
-    | '/admin/pagamentos'
-    | '/admin/usuarios'
     | '/app/analytics'
     | '/app/campanhas'
     | '/app/carimbar'
@@ -1410,16 +1388,33 @@ export interface FileRouteTypes {
     | '/carteira/perfil'
     | '/carteira/premios'
     | '/carteira/retrospectiva'
+    | '/hash/ajuda'
+    | '/hash/alertas'
+    | '/hash/assinaturas'
+    | '/hash/auditoria'
+    | '/hash/avaliacoes'
+    | '/hash/cardapio-jsonld'
+    | '/hash/config'
+    | '/hash/email-fila'
+    | '/hash/email-templates'
+    | '/hash/emails'
+    | '/hash/empresas'
+    | '/hash/equipe'
+    | '/hash/financeiro'
+    | '/hash/integracoes'
+    | '/hash/liberacoes'
+    | '/hash/migracao'
+    | '/hash/notificacoes'
+    | '/hash/pagamentos'
+    | '/hash/usuarios'
     | '/ajuda/$category/$article'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
-    | '/admin'
     | '/app'
     | '/carteira'
+    | '/hash'
     | '/ajuda/$category'
     | '/suporte/$slug'
-    | '/admin/empresa/$id'
-    | '/admin/suporte/$id'
     | '/app/avaliacoes/qr'
     | '/app/avaliacoes/tema'
     | '/app/cardapio/aparencia'
@@ -1430,6 +1425,8 @@ export interface FileRouteTypes {
     | '/app/catalogo/produtos'
     | '/carteira/$slug/promocoes'
     | '/carteira/e/$slug'
+    | '/hash/empresa/$id'
+    | '/hash/suporte/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
     | '/api/public/hooks/dispatch-scheduled-push'
@@ -1442,13 +1439,13 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/asaas'
     | '/api/public/webhooks/mercadopago'
     | '/suporte/$slug/kb/$article'
-    | '/admin/planos'
-    | '/admin/suporte'
     | '/app/avaliacoes'
     | '/app/cardapio'
     | '/app/catalogo'
     | '/app/fidelize'
     | '/app/planos'
+    | '/hash/planos'
+    | '/hash/suporte'
     | '/app/fidelize/ticket/$id'
     | '/api/public/r/t/$code'
     | '/api/public/wallet/apple/$token'
@@ -1471,9 +1468,9 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/termos'
     | '/videos'
-    | '/_authenticated/admin'
     | '/_authenticated/app'
     | '/_authenticated/carteira'
+    | '/_authenticated/hash'
     | '/_authenticated/lgpd'
     | '/auth/nova-senha'
     | '/auth/recuperar'
@@ -1491,25 +1488,6 @@ export interface FileRouteTypes {
     | '/r/$code'
     | '/suporte/meus'
     | '/ajuda/'
-    | '/_authenticated/admin/ajuda'
-    | '/_authenticated/admin/alertas'
-    | '/_authenticated/admin/assinaturas'
-    | '/_authenticated/admin/auditoria'
-    | '/_authenticated/admin/avaliacoes'
-    | '/_authenticated/admin/cardapio-jsonld'
-    | '/_authenticated/admin/config'
-    | '/_authenticated/admin/email-fila'
-    | '/_authenticated/admin/email-templates'
-    | '/_authenticated/admin/emails'
-    | '/_authenticated/admin/empresas'
-    | '/_authenticated/admin/equipe'
-    | '/_authenticated/admin/financeiro'
-    | '/_authenticated/admin/integracoes'
-    | '/_authenticated/admin/liberacoes'
-    | '/_authenticated/admin/migracao'
-    | '/_authenticated/admin/notificacoes'
-    | '/_authenticated/admin/pagamentos'
-    | '/_authenticated/admin/usuarios'
     | '/_authenticated/app/analytics'
     | '/_authenticated/app/campanhas'
     | '/_authenticated/app/cardapio'
@@ -1537,16 +1515,33 @@ export interface FileRouteTypes {
     | '/_authenticated/carteira/perfil'
     | '/_authenticated/carteira/premios'
     | '/_authenticated/carteira/retrospectiva'
+    | '/_authenticated/hash/ajuda'
+    | '/_authenticated/hash/alertas'
+    | '/_authenticated/hash/assinaturas'
+    | '/_authenticated/hash/auditoria'
+    | '/_authenticated/hash/avaliacoes'
+    | '/_authenticated/hash/cardapio-jsonld'
+    | '/_authenticated/hash/config'
+    | '/_authenticated/hash/email-fila'
+    | '/_authenticated/hash/email-templates'
+    | '/_authenticated/hash/emails'
+    | '/_authenticated/hash/empresas'
+    | '/_authenticated/hash/equipe'
+    | '/_authenticated/hash/financeiro'
+    | '/_authenticated/hash/integracoes'
+    | '/_authenticated/hash/liberacoes'
+    | '/_authenticated/hash/migracao'
+    | '/_authenticated/hash/notificacoes'
+    | '/_authenticated/hash/pagamentos'
+    | '/_authenticated/hash/usuarios'
     | '/ajuda/$category/$article'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
-    | '/_authenticated/admin/'
     | '/_authenticated/app/'
     | '/_authenticated/carteira/'
+    | '/_authenticated/hash/'
     | '/ajuda/$category/'
     | '/suporte/$slug/'
-    | '/_authenticated/admin/empresa/$id'
-    | '/_authenticated/admin/suporte/$id'
     | '/_authenticated/app/avaliacoes/qr'
     | '/_authenticated/app/avaliacoes/tema'
     | '/_authenticated/app/cardapio/aparencia'
@@ -1557,6 +1552,8 @@ export interface FileRouteTypes {
     | '/_authenticated/app/catalogo/produtos'
     | '/_authenticated/carteira/$slug/promocoes'
     | '/_authenticated/carteira/e/$slug'
+    | '/_authenticated/hash/empresa/$id'
+    | '/_authenticated/hash/suporte/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
     | '/api/public/hooks/dispatch-scheduled-push'
@@ -1569,13 +1566,13 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/asaas'
     | '/api/public/webhooks/mercadopago'
     | '/suporte/$slug/kb/$article'
-    | '/_authenticated/admin/planos/'
-    | '/_authenticated/admin/suporte/'
     | '/_authenticated/app/avaliacoes/'
     | '/_authenticated/app/cardapio/'
     | '/_authenticated/app/catalogo/'
     | '/_authenticated/app/fidelize/'
     | '/_authenticated/app/planos/'
+    | '/_authenticated/hash/planos/'
+    | '/_authenticated/hash/suporte/'
     | '/_authenticated/app/fidelize/ticket/$id'
     | '/api/public/r/t/$code'
     | '/api/public/wallet/apple/$token'
@@ -1843,6 +1840,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLgpdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hash': {
+      id: '/_authenticated/hash'
+      path: '/hash'
+      fullPath: '/hash'
+      preLoaderRoute: typeof AuthenticatedHashRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/carteira': {
       id: '/_authenticated/carteira'
       path: '/carteira'
@@ -1855,13 +1859,6 @@ declare module '@tanstack/react-router' {
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AuthenticatedAppRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/admin': {
-      id: '/_authenticated/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/suporte/$slug/': {
@@ -1878,6 +1875,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AjudaCategoryIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/hash/': {
+      id: '/_authenticated/hash/'
+      path: '/'
+      fullPath: '/hash/'
+      preLoaderRoute: typeof AuthenticatedHashIndexRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
     '/_authenticated/carteira/': {
       id: '/_authenticated/carteira/'
       path: '/'
@@ -1891,13 +1895,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/'
       preLoaderRoute: typeof AuthenticatedAppIndexRouteImport
       parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/admin/': {
-      id: '/_authenticated/admin/'
-      path: '/'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/suporte/chamado/$id': {
       id: '/suporte/chamado/$id'
@@ -1919,6 +1916,139 @@ declare module '@tanstack/react-router' {
       fullPath: '/ajuda/$category/$article'
       preLoaderRoute: typeof AjudaCategoryArticleRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/hash/usuarios': {
+      id: '/_authenticated/hash/usuarios'
+      path: '/usuarios'
+      fullPath: '/hash/usuarios'
+      preLoaderRoute: typeof AuthenticatedHashUsuariosRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/pagamentos': {
+      id: '/_authenticated/hash/pagamentos'
+      path: '/pagamentos'
+      fullPath: '/hash/pagamentos'
+      preLoaderRoute: typeof AuthenticatedHashPagamentosRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/notificacoes': {
+      id: '/_authenticated/hash/notificacoes'
+      path: '/notificacoes'
+      fullPath: '/hash/notificacoes'
+      preLoaderRoute: typeof AuthenticatedHashNotificacoesRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/migracao': {
+      id: '/_authenticated/hash/migracao'
+      path: '/migracao'
+      fullPath: '/hash/migracao'
+      preLoaderRoute: typeof AuthenticatedHashMigracaoRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/liberacoes': {
+      id: '/_authenticated/hash/liberacoes'
+      path: '/liberacoes'
+      fullPath: '/hash/liberacoes'
+      preLoaderRoute: typeof AuthenticatedHashLiberacoesRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/integracoes': {
+      id: '/_authenticated/hash/integracoes'
+      path: '/integracoes'
+      fullPath: '/hash/integracoes'
+      preLoaderRoute: typeof AuthenticatedHashIntegracoesRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/financeiro': {
+      id: '/_authenticated/hash/financeiro'
+      path: '/financeiro'
+      fullPath: '/hash/financeiro'
+      preLoaderRoute: typeof AuthenticatedHashFinanceiroRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/equipe': {
+      id: '/_authenticated/hash/equipe'
+      path: '/equipe'
+      fullPath: '/hash/equipe'
+      preLoaderRoute: typeof AuthenticatedHashEquipeRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/empresas': {
+      id: '/_authenticated/hash/empresas'
+      path: '/empresas'
+      fullPath: '/hash/empresas'
+      preLoaderRoute: typeof AuthenticatedHashEmpresasRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/emails': {
+      id: '/_authenticated/hash/emails'
+      path: '/emails'
+      fullPath: '/hash/emails'
+      preLoaderRoute: typeof AuthenticatedHashEmailsRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/email-templates': {
+      id: '/_authenticated/hash/email-templates'
+      path: '/email-templates'
+      fullPath: '/hash/email-templates'
+      preLoaderRoute: typeof AuthenticatedHashEmailTemplatesRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/email-fila': {
+      id: '/_authenticated/hash/email-fila'
+      path: '/email-fila'
+      fullPath: '/hash/email-fila'
+      preLoaderRoute: typeof AuthenticatedHashEmailFilaRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/config': {
+      id: '/_authenticated/hash/config'
+      path: '/config'
+      fullPath: '/hash/config'
+      preLoaderRoute: typeof AuthenticatedHashConfigRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/cardapio-jsonld': {
+      id: '/_authenticated/hash/cardapio-jsonld'
+      path: '/cardapio-jsonld'
+      fullPath: '/hash/cardapio-jsonld'
+      preLoaderRoute: typeof AuthenticatedHashCardapioJsonldRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/avaliacoes': {
+      id: '/_authenticated/hash/avaliacoes'
+      path: '/avaliacoes'
+      fullPath: '/hash/avaliacoes'
+      preLoaderRoute: typeof AuthenticatedHashAvaliacoesRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/auditoria': {
+      id: '/_authenticated/hash/auditoria'
+      path: '/auditoria'
+      fullPath: '/hash/auditoria'
+      preLoaderRoute: typeof AuthenticatedHashAuditoriaRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/assinaturas': {
+      id: '/_authenticated/hash/assinaturas'
+      path: '/assinaturas'
+      fullPath: '/hash/assinaturas'
+      preLoaderRoute: typeof AuthenticatedHashAssinaturasRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/alertas': {
+      id: '/_authenticated/hash/alertas'
+      path: '/alertas'
+      fullPath: '/hash/alertas'
+      preLoaderRoute: typeof AuthenticatedHashAlertasRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/ajuda': {
+      id: '/_authenticated/hash/ajuda'
+      path: '/ajuda'
+      fullPath: '/hash/ajuda'
+      preLoaderRoute: typeof AuthenticatedHashAjudaRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
     }
     '/_authenticated/carteira/retrospectiva': {
       id: '/_authenticated/carteira/retrospectiva'
@@ -2109,138 +2239,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAnalyticsRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_authenticated/admin/usuarios': {
-      id: '/_authenticated/admin/usuarios'
-      path: '/usuarios'
-      fullPath: '/admin/usuarios'
-      preLoaderRoute: typeof AuthenticatedAdminUsuariosRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
+    '/_authenticated/hash/suporte/': {
+      id: '/_authenticated/hash/suporte/'
+      path: '/suporte'
+      fullPath: '/hash/suporte/'
+      preLoaderRoute: typeof AuthenticatedHashSuporteIndexRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
     }
-    '/_authenticated/admin/pagamentos': {
-      id: '/_authenticated/admin/pagamentos'
-      path: '/pagamentos'
-      fullPath: '/admin/pagamentos'
-      preLoaderRoute: typeof AuthenticatedAdminPagamentosRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/notificacoes': {
-      id: '/_authenticated/admin/notificacoes'
-      path: '/notificacoes'
-      fullPath: '/admin/notificacoes'
-      preLoaderRoute: typeof AuthenticatedAdminNotificacoesRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/migracao': {
-      id: '/_authenticated/admin/migracao'
-      path: '/migracao'
-      fullPath: '/admin/migracao'
-      preLoaderRoute: typeof AuthenticatedAdminMigracaoRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/liberacoes': {
-      id: '/_authenticated/admin/liberacoes'
-      path: '/liberacoes'
-      fullPath: '/admin/liberacoes'
-      preLoaderRoute: typeof AuthenticatedAdminLiberacoesRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/integracoes': {
-      id: '/_authenticated/admin/integracoes'
-      path: '/integracoes'
-      fullPath: '/admin/integracoes'
-      preLoaderRoute: typeof AuthenticatedAdminIntegracoesRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/financeiro': {
-      id: '/_authenticated/admin/financeiro'
-      path: '/financeiro'
-      fullPath: '/admin/financeiro'
-      preLoaderRoute: typeof AuthenticatedAdminFinanceiroRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/equipe': {
-      id: '/_authenticated/admin/equipe'
-      path: '/equipe'
-      fullPath: '/admin/equipe'
-      preLoaderRoute: typeof AuthenticatedAdminEquipeRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/empresas': {
-      id: '/_authenticated/admin/empresas'
-      path: '/empresas'
-      fullPath: '/admin/empresas'
-      preLoaderRoute: typeof AuthenticatedAdminEmpresasRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/emails': {
-      id: '/_authenticated/admin/emails'
-      path: '/emails'
-      fullPath: '/admin/emails'
-      preLoaderRoute: typeof AuthenticatedAdminEmailsRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/email-templates': {
-      id: '/_authenticated/admin/email-templates'
-      path: '/email-templates'
-      fullPath: '/admin/email-templates'
-      preLoaderRoute: typeof AuthenticatedAdminEmailTemplatesRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/email-fila': {
-      id: '/_authenticated/admin/email-fila'
-      path: '/email-fila'
-      fullPath: '/admin/email-fila'
-      preLoaderRoute: typeof AuthenticatedAdminEmailFilaRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/config': {
-      id: '/_authenticated/admin/config'
-      path: '/config'
-      fullPath: '/admin/config'
-      preLoaderRoute: typeof AuthenticatedAdminConfigRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/cardapio-jsonld': {
-      id: '/_authenticated/admin/cardapio-jsonld'
-      path: '/cardapio-jsonld'
-      fullPath: '/admin/cardapio-jsonld'
-      preLoaderRoute: typeof AuthenticatedAdminCardapioJsonldRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/avaliacoes': {
-      id: '/_authenticated/admin/avaliacoes'
-      path: '/avaliacoes'
-      fullPath: '/admin/avaliacoes'
-      preLoaderRoute: typeof AuthenticatedAdminAvaliacoesRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/auditoria': {
-      id: '/_authenticated/admin/auditoria'
-      path: '/auditoria'
-      fullPath: '/admin/auditoria'
-      preLoaderRoute: typeof AuthenticatedAdminAuditoriaRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/assinaturas': {
-      id: '/_authenticated/admin/assinaturas'
-      path: '/assinaturas'
-      fullPath: '/admin/assinaturas'
-      preLoaderRoute: typeof AuthenticatedAdminAssinaturasRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/alertas': {
-      id: '/_authenticated/admin/alertas'
-      path: '/alertas'
-      fullPath: '/admin/alertas'
-      preLoaderRoute: typeof AuthenticatedAdminAlertasRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/ajuda': {
-      id: '/_authenticated/admin/ajuda'
-      path: '/ajuda'
-      fullPath: '/admin/ajuda'
-      preLoaderRoute: typeof AuthenticatedAdminAjudaRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
+    '/_authenticated/hash/planos/': {
+      id: '/_authenticated/hash/planos/'
+      path: '/planos'
+      fullPath: '/hash/planos/'
+      preLoaderRoute: typeof AuthenticatedHashPlanosIndexRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
     }
     '/_authenticated/app/planos/': {
       id: '/_authenticated/app/planos/'
@@ -2276,20 +2287,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/avaliacoes/'
       preLoaderRoute: typeof AuthenticatedAppAvaliacoesIndexRouteImport
       parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/admin/suporte/': {
-      id: '/_authenticated/admin/suporte/'
-      path: '/suporte'
-      fullPath: '/admin/suporte/'
-      preLoaderRoute: typeof AuthenticatedAdminSuporteIndexRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/planos/': {
-      id: '/_authenticated/admin/planos/'
-      path: '/planos'
-      fullPath: '/admin/planos/'
-      preLoaderRoute: typeof AuthenticatedAdminPlanosIndexRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/suporte/$slug/kb/$article': {
       id: '/suporte/$slug/kb/$article'
@@ -2375,6 +2372,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronBirthdayRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/hash/suporte/$id': {
+      id: '/_authenticated/hash/suporte/$id'
+      path: '/suporte/$id'
+      fullPath: '/hash/suporte/$id'
+      preLoaderRoute: typeof AuthenticatedHashSuporteIdRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/empresa/$id': {
+      id: '/_authenticated/hash/empresa/$id'
+      path: '/empresa/$id'
+      fullPath: '/hash/empresa/$id'
+      preLoaderRoute: typeof AuthenticatedHashEmpresaIdRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
     '/_authenticated/carteira/e/$slug': {
       id: '/_authenticated/carteira/e/$slug'
       path: '/e/$slug'
@@ -2445,20 +2456,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAvaliacoesQrRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_authenticated/admin/suporte/$id': {
-      id: '/_authenticated/admin/suporte/$id'
-      path: '/suporte/$id'
-      fullPath: '/admin/suporte/$id'
-      preLoaderRoute: typeof AuthenticatedAdminSuporteIdRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/empresa/$id': {
-      id: '/_authenticated/admin/empresa/$id'
-      path: '/empresa/$id'
-      fullPath: '/admin/empresa/$id'
-      preLoaderRoute: typeof AuthenticatedAdminEmpresaIdRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
     '/api/public/wallet/v1/log': {
       id: '/api/public/wallet/v1/log'
       path: '/api/public/wallet/v1/log'
@@ -2517,63 +2514,6 @@ declare module '@tanstack/react-router' {
     }
   }
 }
-
-interface AuthenticatedAdminRouteChildren {
-  AuthenticatedAdminAjudaRoute: typeof AuthenticatedAdminAjudaRoute
-  AuthenticatedAdminAlertasRoute: typeof AuthenticatedAdminAlertasRoute
-  AuthenticatedAdminAssinaturasRoute: typeof AuthenticatedAdminAssinaturasRoute
-  AuthenticatedAdminAuditoriaRoute: typeof AuthenticatedAdminAuditoriaRoute
-  AuthenticatedAdminAvaliacoesRoute: typeof AuthenticatedAdminAvaliacoesRoute
-  AuthenticatedAdminCardapioJsonldRoute: typeof AuthenticatedAdminCardapioJsonldRoute
-  AuthenticatedAdminConfigRoute: typeof AuthenticatedAdminConfigRoute
-  AuthenticatedAdminEmailFilaRoute: typeof AuthenticatedAdminEmailFilaRoute
-  AuthenticatedAdminEmailTemplatesRoute: typeof AuthenticatedAdminEmailTemplatesRoute
-  AuthenticatedAdminEmailsRoute: typeof AuthenticatedAdminEmailsRoute
-  AuthenticatedAdminEmpresasRoute: typeof AuthenticatedAdminEmpresasRoute
-  AuthenticatedAdminEquipeRoute: typeof AuthenticatedAdminEquipeRoute
-  AuthenticatedAdminFinanceiroRoute: typeof AuthenticatedAdminFinanceiroRoute
-  AuthenticatedAdminIntegracoesRoute: typeof AuthenticatedAdminIntegracoesRoute
-  AuthenticatedAdminLiberacoesRoute: typeof AuthenticatedAdminLiberacoesRoute
-  AuthenticatedAdminMigracaoRoute: typeof AuthenticatedAdminMigracaoRoute
-  AuthenticatedAdminNotificacoesRoute: typeof AuthenticatedAdminNotificacoesRoute
-  AuthenticatedAdminPagamentosRoute: typeof AuthenticatedAdminPagamentosRoute
-  AuthenticatedAdminUsuariosRoute: typeof AuthenticatedAdminUsuariosRoute
-  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
-  AuthenticatedAdminEmpresaIdRoute: typeof AuthenticatedAdminEmpresaIdRoute
-  AuthenticatedAdminSuporteIdRoute: typeof AuthenticatedAdminSuporteIdRoute
-  AuthenticatedAdminPlanosIndexRoute: typeof AuthenticatedAdminPlanosIndexRoute
-  AuthenticatedAdminSuporteIndexRoute: typeof AuthenticatedAdminSuporteIndexRoute
-}
-
-const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
-  AuthenticatedAdminAjudaRoute: AuthenticatedAdminAjudaRoute,
-  AuthenticatedAdminAlertasRoute: AuthenticatedAdminAlertasRoute,
-  AuthenticatedAdminAssinaturasRoute: AuthenticatedAdminAssinaturasRoute,
-  AuthenticatedAdminAuditoriaRoute: AuthenticatedAdminAuditoriaRoute,
-  AuthenticatedAdminAvaliacoesRoute: AuthenticatedAdminAvaliacoesRoute,
-  AuthenticatedAdminCardapioJsonldRoute: AuthenticatedAdminCardapioJsonldRoute,
-  AuthenticatedAdminConfigRoute: AuthenticatedAdminConfigRoute,
-  AuthenticatedAdminEmailFilaRoute: AuthenticatedAdminEmailFilaRoute,
-  AuthenticatedAdminEmailTemplatesRoute: AuthenticatedAdminEmailTemplatesRoute,
-  AuthenticatedAdminEmailsRoute: AuthenticatedAdminEmailsRoute,
-  AuthenticatedAdminEmpresasRoute: AuthenticatedAdminEmpresasRoute,
-  AuthenticatedAdminEquipeRoute: AuthenticatedAdminEquipeRoute,
-  AuthenticatedAdminFinanceiroRoute: AuthenticatedAdminFinanceiroRoute,
-  AuthenticatedAdminIntegracoesRoute: AuthenticatedAdminIntegracoesRoute,
-  AuthenticatedAdminLiberacoesRoute: AuthenticatedAdminLiberacoesRoute,
-  AuthenticatedAdminMigracaoRoute: AuthenticatedAdminMigracaoRoute,
-  AuthenticatedAdminNotificacoesRoute: AuthenticatedAdminNotificacoesRoute,
-  AuthenticatedAdminPagamentosRoute: AuthenticatedAdminPagamentosRoute,
-  AuthenticatedAdminUsuariosRoute: AuthenticatedAdminUsuariosRoute,
-  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
-  AuthenticatedAdminEmpresaIdRoute: AuthenticatedAdminEmpresaIdRoute,
-  AuthenticatedAdminSuporteIdRoute: AuthenticatedAdminSuporteIdRoute,
-  AuthenticatedAdminPlanosIndexRoute: AuthenticatedAdminPlanosIndexRoute,
-  AuthenticatedAdminSuporteIndexRoute: AuthenticatedAdminSuporteIndexRoute,
-}
-
-const AuthenticatedAdminRouteWithChildren =
-  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
 interface AuthenticatedAppCardapioRouteChildren {
   AuthenticatedAppCardapioAparenciaRoute: typeof AuthenticatedAppCardapioAparenciaRoute
@@ -2728,17 +2668,74 @@ const AuthenticatedCarteiraRouteWithChildren =
     AuthenticatedCarteiraRouteChildren,
   )
 
+interface AuthenticatedHashRouteChildren {
+  AuthenticatedHashAjudaRoute: typeof AuthenticatedHashAjudaRoute
+  AuthenticatedHashAlertasRoute: typeof AuthenticatedHashAlertasRoute
+  AuthenticatedHashAssinaturasRoute: typeof AuthenticatedHashAssinaturasRoute
+  AuthenticatedHashAuditoriaRoute: typeof AuthenticatedHashAuditoriaRoute
+  AuthenticatedHashAvaliacoesRoute: typeof AuthenticatedHashAvaliacoesRoute
+  AuthenticatedHashCardapioJsonldRoute: typeof AuthenticatedHashCardapioJsonldRoute
+  AuthenticatedHashConfigRoute: typeof AuthenticatedHashConfigRoute
+  AuthenticatedHashEmailFilaRoute: typeof AuthenticatedHashEmailFilaRoute
+  AuthenticatedHashEmailTemplatesRoute: typeof AuthenticatedHashEmailTemplatesRoute
+  AuthenticatedHashEmailsRoute: typeof AuthenticatedHashEmailsRoute
+  AuthenticatedHashEmpresasRoute: typeof AuthenticatedHashEmpresasRoute
+  AuthenticatedHashEquipeRoute: typeof AuthenticatedHashEquipeRoute
+  AuthenticatedHashFinanceiroRoute: typeof AuthenticatedHashFinanceiroRoute
+  AuthenticatedHashIntegracoesRoute: typeof AuthenticatedHashIntegracoesRoute
+  AuthenticatedHashLiberacoesRoute: typeof AuthenticatedHashLiberacoesRoute
+  AuthenticatedHashMigracaoRoute: typeof AuthenticatedHashMigracaoRoute
+  AuthenticatedHashNotificacoesRoute: typeof AuthenticatedHashNotificacoesRoute
+  AuthenticatedHashPagamentosRoute: typeof AuthenticatedHashPagamentosRoute
+  AuthenticatedHashUsuariosRoute: typeof AuthenticatedHashUsuariosRoute
+  AuthenticatedHashIndexRoute: typeof AuthenticatedHashIndexRoute
+  AuthenticatedHashEmpresaIdRoute: typeof AuthenticatedHashEmpresaIdRoute
+  AuthenticatedHashSuporteIdRoute: typeof AuthenticatedHashSuporteIdRoute
+  AuthenticatedHashPlanosIndexRoute: typeof AuthenticatedHashPlanosIndexRoute
+  AuthenticatedHashSuporteIndexRoute: typeof AuthenticatedHashSuporteIndexRoute
+}
+
+const AuthenticatedHashRouteChildren: AuthenticatedHashRouteChildren = {
+  AuthenticatedHashAjudaRoute: AuthenticatedHashAjudaRoute,
+  AuthenticatedHashAlertasRoute: AuthenticatedHashAlertasRoute,
+  AuthenticatedHashAssinaturasRoute: AuthenticatedHashAssinaturasRoute,
+  AuthenticatedHashAuditoriaRoute: AuthenticatedHashAuditoriaRoute,
+  AuthenticatedHashAvaliacoesRoute: AuthenticatedHashAvaliacoesRoute,
+  AuthenticatedHashCardapioJsonldRoute: AuthenticatedHashCardapioJsonldRoute,
+  AuthenticatedHashConfigRoute: AuthenticatedHashConfigRoute,
+  AuthenticatedHashEmailFilaRoute: AuthenticatedHashEmailFilaRoute,
+  AuthenticatedHashEmailTemplatesRoute: AuthenticatedHashEmailTemplatesRoute,
+  AuthenticatedHashEmailsRoute: AuthenticatedHashEmailsRoute,
+  AuthenticatedHashEmpresasRoute: AuthenticatedHashEmpresasRoute,
+  AuthenticatedHashEquipeRoute: AuthenticatedHashEquipeRoute,
+  AuthenticatedHashFinanceiroRoute: AuthenticatedHashFinanceiroRoute,
+  AuthenticatedHashIntegracoesRoute: AuthenticatedHashIntegracoesRoute,
+  AuthenticatedHashLiberacoesRoute: AuthenticatedHashLiberacoesRoute,
+  AuthenticatedHashMigracaoRoute: AuthenticatedHashMigracaoRoute,
+  AuthenticatedHashNotificacoesRoute: AuthenticatedHashNotificacoesRoute,
+  AuthenticatedHashPagamentosRoute: AuthenticatedHashPagamentosRoute,
+  AuthenticatedHashUsuariosRoute: AuthenticatedHashUsuariosRoute,
+  AuthenticatedHashIndexRoute: AuthenticatedHashIndexRoute,
+  AuthenticatedHashEmpresaIdRoute: AuthenticatedHashEmpresaIdRoute,
+  AuthenticatedHashSuporteIdRoute: AuthenticatedHashSuporteIdRoute,
+  AuthenticatedHashPlanosIndexRoute: AuthenticatedHashPlanosIndexRoute,
+  AuthenticatedHashSuporteIndexRoute: AuthenticatedHashSuporteIndexRoute,
+}
+
+const AuthenticatedHashRouteWithChildren =
+  AuthenticatedHashRoute._addFileChildren(AuthenticatedHashRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
   AuthenticatedCarteiraRoute: typeof AuthenticatedCarteiraRouteWithChildren
+  AuthenticatedHashRoute: typeof AuthenticatedHashRouteWithChildren
   AuthenticatedLgpdRoute: typeof AuthenticatedLgpdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
   AuthenticatedCarteiraRoute: AuthenticatedCarteiraRouteWithChildren,
+  AuthenticatedHashRoute: AuthenticatedHashRouteWithChildren,
   AuthenticatedLgpdRoute: AuthenticatedLgpdRoute,
 }
 

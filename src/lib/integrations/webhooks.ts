@@ -12,7 +12,7 @@ export type WebhookEntry = {
   path: string;             // "/api/public/webhooks/mercadopago"
   methods: string[];        // ["POST"]
   description: string;
-  configurable_in?: string; // "/admin/pagamentos"
+  configurable_in?: string; // "/hash/pagamentos"
 };
 
 export const WEBHOOK_CATALOG: WebhookEntry[] = [
@@ -26,7 +26,7 @@ export const WEBHOOK_CATALOG: WebhookEntry[] = [
     methods: ["POST"],
     description:
       "Endpoint único aceito pelo Mercado Pago para eventos payment, order.* e subscription_preapproval. Cole essa URL no painel do MP e deixe HMAC ativo.",
-    configurable_in: "/admin/pagamentos",
+    configurable_in: "/hash/pagamentos",
   },
   {
     id: "mp-retry",

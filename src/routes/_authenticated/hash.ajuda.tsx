@@ -25,7 +25,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
-export const Route = createFileRoute("/_authenticated/admin/ajuda")({
+export const Route = createFileRoute("/_authenticated/hash/ajuda")({
   component: AdminHelp,
 });
 

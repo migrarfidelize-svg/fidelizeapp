@@ -6,7 +6,7 @@ import { mapAsaasStatus, mapAsaasBillingTypeToMethod } from "@/lib/asaas.functio
  * Ref: https://docs.asaas.com/reference/receba-notificacoes-por-webhook
  *
  * Autenticação: cabeçalho `asaas-access-token` deve bater com o token
- * configurado em /admin/integracoes → Asaas → Webhook Token.
+ * configurado em /hash/integracoes → Asaas → Webhook Token.
  * (O Asaas envia o token exatamente como você cadastrar no painel deles.)
  *
  * A rota vive em /api/public/* — a autorização vem do header + consulta

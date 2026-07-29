@@ -73,7 +73,7 @@ export const Route = createFileRoute("/_authenticated/app")({
     try {
       const { data } = await supabase.rpc("my_account_type");
       if (data === "customer") throw redirect({ to: "/carteira" });
-      if (data === "super_admin") throw redirect({ to: "/admin" });
+      if (data === "super_admin") throw redirect({ to: "/hash" });
     } catch (e) {
       if (e && typeof e === "object" && ("isRedirect" in e || "to" in e)) throw e;
       // Fail-open on transient RPC errors — layout still renders; auth gate protects.
@@ -564,7 +564,7 @@ function AppLayout() {
             <DropdownMenuItem asChild><Link to="/lgpd" onClick={onNavigate}><Shield className="mr-2 h-4 w-4" />Meus Dados (LGPD)</Link></DropdownMenuItem>
 
             {adminStatus?.isAdmin && (
-              <DropdownMenuItem asChild><Link to="/admin" onClick={onNavigate}><Shield className="mr-2 h-4 w-4" />Painel do administrador</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link to="/hash" onClick={onNavigate}><Shield className="mr-2 h-4 w-4" />Painel do administrador</Link></DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => { onNavigate?.(); signOut(); }}><LogOut className="mr-2 h-4 w-4" />Sair</DropdownMenuItem>

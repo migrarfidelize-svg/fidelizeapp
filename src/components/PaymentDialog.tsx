@@ -533,7 +533,7 @@ function CardForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, onD
   }, [paymentId, status, statusFn, qc, onDone]);
 
   async function submit() {
-    if (!mpInstance) { toast.error(publicKeyLoading ? "Carregando SDK do Mercado Pago…" : "SDK Mercado Pago não carregado. Verifique a Public Key em /admin/pagamentos."); return; }
+    if (!mpInstance) { toast.error(publicKeyLoading ? "Carregando SDK do Mercado Pago…" : "SDK Mercado Pago não carregado. Verifique a Public Key em /hash/pagamentos."); return; }
     if (!validateSandboxBuyerEmail(isSandboxLike, email)) return;
     const cleanNumber = number.replace(/\s+/g, "");
     const [expMonth, expYearShort] = exp.split("/").map(s => s.trim());
@@ -621,7 +621,7 @@ function CardForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, onD
       )}
       {!publicKey && !publicKeyLoading && (
         <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
-          <div>Public Key do Mercado Pago não configurada ou não carregada. Confirme em /admin/pagamentos e tente novamente.</div>
+          <div>Public Key do Mercado Pago não configurada ou não carregada. Confirme em /hash/pagamentos e tente novamente.</div>
           {publicKeyError && <div className="mt-1 text-xs opacity-80">Detalhe: {publicKeyError}</div>}
           <Button type="button" variant="outline" size="sm" className="mt-2" onClick={loadPublicKey}>Verificar novamente</Button>
         </div>

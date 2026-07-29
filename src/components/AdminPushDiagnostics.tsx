@@ -248,7 +248,7 @@ export function AdminPushDiagnostics() {
         renotify: true,
         requireInteraction: true,
         silent: false,
-        data: { url: "/admin/notificacoes" },
+        data: { url: "/hash/notificacoes" },
       } as NotificationOptions;
       await reg.showNotification("Teste local Fidelize", localNotificationOptions);
       toast.success("Teste local disparado. Se não apareceu, o bloqueio está no navegador ou no sistema operacional.");
