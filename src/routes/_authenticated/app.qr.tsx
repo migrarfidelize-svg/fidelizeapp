@@ -2351,7 +2351,9 @@ function DraggableItem({
   return (
     <div
       ref={ref}
+      data-draggable={editable ? "layout" : undefined}
       onPointerDown={onPointerDown}
+
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
