@@ -15,7 +15,7 @@ import { ArrowLeft, Send, Zap, Lock, EyeOff, Building2, User, Mail } from "lucid
 import { toast } from "sonner";
 import { LoadingSkeleton } from "@/components/states";
 
-export const Route = createFileRoute("/_authenticated/admin/suporte/$id")({
+export const Route = createFileRoute("/_authenticated/hash/suporte/$id")({
   head: () => ({ meta: [{ title: "Ticket — Admin" }] }),
   component: AdminTicket,
 });
@@ -28,7 +28,7 @@ const STATUS_LABEL: Record<string,string> = {
 };
 
 function AdminTicket() {
-  const { id } = useParams({ from: "/_authenticated/admin/suporte/$id" });
+  const { id } = useParams({ from: "/_authenticated/hash/suporte/$id" });
   const qc = useQueryClient();
   const getFn = useServerFn(adminGetSupportTicket);
   const replyFn = useServerFn(adminReplySupportTicket);

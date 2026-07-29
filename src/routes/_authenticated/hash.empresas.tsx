@@ -19,7 +19,7 @@ import { adminReportPaymentFailure } from "@/lib/admin.functions";
 import { EmptyState, ErrorState, LoadingSkeleton } from "@/components/states";
 import { Building2 } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/admin/empresas")({
+export const Route = createFileRoute("/_authenticated/hash/empresas")({
   component: AdminEmpresas,
 });
 

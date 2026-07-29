@@ -12,7 +12,7 @@ import { downloadCSV, downloadPDF } from "@/lib/export";
 import { toast } from "sonner";
 import { LoadingSkeleton } from "@/components/states";
 
-export const Route = createFileRoute("/_authenticated/admin/empresa/$id")({
+export const Route = createFileRoute("/_authenticated/hash/empresa/$id")({
   component: EmpresaDetail,
 });
 

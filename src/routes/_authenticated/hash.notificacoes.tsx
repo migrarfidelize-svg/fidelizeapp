@@ -50,7 +50,7 @@ import {
 } from "@/lib/push.functions";
 
 
-export const Route = createFileRoute("/_authenticated/admin/notificacoes")({
+export const Route = createFileRoute("/_authenticated/hash/notificacoes")({
   component: AdminNotifPage,
 });
 

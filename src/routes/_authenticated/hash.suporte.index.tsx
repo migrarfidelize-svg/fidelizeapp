@@ -17,7 +17,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Ticket, Clock, AlertTriangle, CheckCircle2, MessageSquare, Zap, Plus, Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/admin/suporte/")({
+export const Route = createFileRoute("/_authenticated/hash/suporte/")({
   head: () => ({ meta: [{ title: "Suporte — Administração" }] }),
   component: AdminSupport,
 });

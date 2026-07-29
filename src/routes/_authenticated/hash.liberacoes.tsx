@@ -20,7 +20,7 @@ import {
 import { toast } from "sonner";
 import { KeyRound, Trash2, ShieldCheck } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/admin/liberacoes")({
+export const Route = createFileRoute("/_authenticated/hash/liberacoes")({
   component: FeatureOverridesPage,
   head: () => ({
     meta: [

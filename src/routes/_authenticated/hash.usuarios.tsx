@@ -34,7 +34,7 @@ import {
 
 import { formatPhone } from "@/lib/format";
 
-export const Route = createFileRoute("/_authenticated/admin/usuarios")({
+export const Route = createFileRoute("/_authenticated/hash/usuarios")({
   head: () => ({ meta: [{ title: "Usuários — Admin • Fidelize" }] }),
   component: AdminUsers,
 });

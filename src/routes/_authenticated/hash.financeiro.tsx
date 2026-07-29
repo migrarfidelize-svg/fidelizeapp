@@ -11,7 +11,7 @@ import { Download, TrendingUp, TrendingDown, DollarSign, Repeat, Users, AlertTri
 import { formatBRL } from "@/lib/format";
 import { downloadCSV, downloadPDF } from "@/lib/export";
 
-export const Route = createFileRoute("/_authenticated/admin/financeiro")({
+export const Route = createFileRoute("/_authenticated/hash/financeiro")({
   component: AdminFinanceiro,
 });
 

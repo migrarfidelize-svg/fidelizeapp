@@ -21,7 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Mail, Eye, EyeOff, Save, Send, CheckCircle2, AlertTriangle, Clock } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/admin/emails")({
+export const Route = createFileRoute("/_authenticated/hash/emails")({
   head: () => ({ meta: [{ title: "E-mail (Resend) — Fidelize" }] }),
   component: EmailsPage,
 });

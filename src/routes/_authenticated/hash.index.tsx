@@ -15,7 +15,7 @@ import { formatBRL, formatDate } from "@/lib/format";
 
 
 
-export const Route = createFileRoute("/_authenticated/admin/")({
+export const Route = createFileRoute("/_authenticated/hash/")({
   component: AdminOverview,
 });
 

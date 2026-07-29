@@ -18,7 +18,7 @@ import { Star, Users, Sparkles, UserCog, CheckCircle2, XCircle, Pencil, Loader2,
 
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/admin/planos/")({
+export const Route = createFileRoute("/_authenticated/hash/planos/")({
   component: AdminPlansPage,
 });
 

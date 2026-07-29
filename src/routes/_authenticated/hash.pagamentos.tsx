@@ -35,7 +35,7 @@ import { Copy, Loader2, CheckCircle2, XCircle, AlertCircle, ExternalLink, Refres
 import { toast } from "sonner";
 
 
-export const Route = createFileRoute("/_authenticated/admin/pagamentos")({
+export const Route = createFileRoute("/_authenticated/hash/pagamentos")({
   component: AdminPaymentsPage,
 });
 

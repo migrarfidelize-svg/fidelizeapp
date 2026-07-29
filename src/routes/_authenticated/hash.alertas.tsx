@@ -11,7 +11,7 @@ import { CheckCircle2, ExternalLink, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { LoadingSkeleton } from "@/components/states";
 
-export const Route = createFileRoute("/_authenticated/admin/alertas")({
+export const Route = createFileRoute("/_authenticated/hash/alertas")({
   component: AdminAlertas,
 });
 

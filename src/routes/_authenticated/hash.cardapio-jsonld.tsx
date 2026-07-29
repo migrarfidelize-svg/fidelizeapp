@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/admin/cardapio-jsonld")({
+export const Route = createFileRoute("/_authenticated/hash/cardapio-jsonld")({
   component: JsonLdAuditPage,
 });
 

@@ -10,7 +10,7 @@ import { Download, ExternalLink, FileClock } from "lucide-react";
 import { downloadCSV, downloadPDF } from "@/lib/export";
 import { LoadingSkeleton } from "@/components/states";
 
-export const Route = createFileRoute("/_authenticated/admin/auditoria")({
+export const Route = createFileRoute("/_authenticated/hash/auditoria")({
   component: AdminAuditoria,
 });
 

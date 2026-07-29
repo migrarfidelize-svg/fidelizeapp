@@ -11,7 +11,7 @@ import { formatBRL } from "@/lib/format";
 import { downloadCSV, downloadPDF } from "@/lib/export";
 import { LoadingSkeleton } from "@/components/states";
 
-export const Route = createFileRoute("/_authenticated/admin/assinaturas")({
+export const Route = createFileRoute("/_authenticated/hash/assinaturas")({
   component: AdminAssinaturas,
 });
 

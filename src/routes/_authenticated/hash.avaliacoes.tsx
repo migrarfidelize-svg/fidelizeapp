@@ -26,7 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { formatDate } from "@/lib/format";
 
-export const Route = createFileRoute("/_authenticated/admin/avaliacoes")({
+export const Route = createFileRoute("/_authenticated/hash/avaliacoes")({
   component: Page,
 });
 
