@@ -311,7 +311,7 @@ const QR_STEPS: { id: number; label: string; title: string; hint: string; icon: 
 function QrStepper({ step, onSelect }: { step: number; onSelect: (s: number) => void }) {
   const pct = ((step - 1) / (QR_STEPS.length - 1)) * 100;
   return (
-    <div className="relative min-w-0 overflow-hidden rounded-2xl border border-primary/20 bg-card/70 p-4 backdrop-blur-xl">
+    <div className="relative w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-primary/20 bg-card/70 p-3 backdrop-blur-xl sm:p-4">
       <div className="pointer-events-none absolute -left-16 -top-16 h-40 w-40 rounded-full bg-primary/20 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-20 -right-10 h-40 w-40 rounded-full bg-accent/15 blur-3xl" />
 
@@ -334,7 +334,7 @@ function QrStepper({ step, onSelect }: { step: number; onSelect: (s: number) => 
                 type="button"
                 onClick={() => onSelect(s.id)}
                 aria-current={active ? "step" : undefined}
-                className={`group relative flex min-w-[7.5rem] flex-1 snap-start items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-all duration-300 ${
+                className={`group relative flex min-w-[5.75rem] shrink-0 snap-start items-center gap-2 rounded-xl border px-2.5 py-2 text-left transition-all duration-300 sm:min-w-[7.5rem] sm:flex-1 sm:gap-2.5 sm:px-3 sm:py-2.5 ${
                   active
                     ? "border-primary bg-primary/10 shadow-[0_0_30px_-10px_hsl(var(--primary)/0.9)]"
                     : done
@@ -1081,7 +1081,7 @@ function ReviewQrPage() {
   }
 
   return (
-    <div className="mx-auto min-w-0 max-w-6xl space-y-6 p-3 sm:p-4 md:p-8">
+    <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6 overflow-x-clip p-3 sm:p-4 md:p-8">
       <PageHero
         icon={Star}
         eyebrow="Marketing · QR"
