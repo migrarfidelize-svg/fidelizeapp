@@ -10,6 +10,7 @@ import { getMyWallet, getMyRewards } from "@/lib/my-wallet.functions";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AchievementUnlockListener } from "@/components/wallet/AchievementUnlockListener";
 import { PostStampReviewSheet } from "@/components/wallet/PostStampReviewSheet";
+import { CompleteProfileDialog } from "@/components/wallet/CompleteProfileDialog";
 import { InboxBellBadge } from "@/components/wallet/InboxBellBadge";
 import { haptic } from "@/lib/haptics";
 
@@ -180,6 +181,7 @@ function WalletLayout() {
       <MyQrSheet open={qrOpen} onOpenChange={setQrOpen} />
       <AchievementUnlockListener />
       <PostStampReviewSheet />
+      <CompleteProfileDialog required={profileRequired} />
     </div>
   );
 }
