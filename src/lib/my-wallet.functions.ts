@@ -536,13 +536,57 @@ export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
 
     const { data, error } = await context.supabase
       .from("establishments")
-      .select("id, slug, name, logo_url, primary_color, address, city, description, segment, created_at")
+      .select("id, slug, name, logo_url, primary_color, address, city, description, segment, plan, created_at")
       .eq("active", true)
       .order("created_at", { ascending: false })
       .limit(60);
     if (error) throw error;
 
-    const promoted = await fetchPromotedEstablishmentIds(context.supabase);
+    const estIds = (data ?? []).map((e) => e.id);
+    const tiers = Array.from(new Set((data ?? []).map((e) => e.plan).filter(Boolean)));
+
+    const [promoted, plansResult, showcasesResult] = await Promise.all([
+      fetchPromotedEstablishmentIds(context.supabase),
+      context.supabase.from("plans").select("id, tier").in("tier", tiers),
+      estIds.length
+        ? context.supabase
+            .from("restaurant_menus")
+            .select("establishment_id, kind")
+            .in("establishment_id", estIds)
+            .eq("status", "published")
+        : { data: [] },
+    ]);
+
+    const planIds = (plansResult.data ?? []).map((p) => p.id);
+    const tierToPlanId = new Map((plansResult.data ?? []).map((p) => [p.tier, p.id]));
+
+    const { data: features } = await context.supabase
+      .from("plan_features")
+      .select("plan_id, feature_key, enabled")
+      .in("plan_id", planIds)
+      .in("feature_key", ["digital_menu", "digital_catalog"]);
+
+    const featureEnabled = new Map<string, Map<string, boolean>>();
+    for (const f of features ?? []) {
+      const m = featureEnabled.get(f.plan_id) ?? new Map();
+      m.set(f.feature_key, f.enabled);
+      featureEnabled.set(f.plan_id, m);
+    }
+
+    const showcasesByEst = new Map<string, Set<string>>();
+    for (const s of showcasesResult.data ?? []) {
+      const set = showcasesByEst.get(s.establishment_id) ?? new Set();
+      set.add(s.kind);
+      showcasesByEst.set(s.establishment_id, set);
+    }
+
+    function showcaseEnabled(estId: string, tier: string, kind: "menu" | "catalog") {
+      const planId = tierToPlanId.get(tier);
+      if (!planId) return false;
+      const featureKey = kind === "menu" ? "digital_menu" : "digital_catalog";
+      if (!featureEnabled.get(planId)?.get(featureKey)) return false;
+      return showcasesByEst.get(estId)?.has(kind) ?? false;
+    }
 
     return (data ?? []).map((e) => ({
       id: e.id,
@@ -556,6 +600,8 @@ export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
       segment: e.segment,
       visited: visited.has(e.id),
       has_promotion: promoted.has(e.id),
+      has_menu: showcaseEnabled(e.id, e.plan, "menu"),
+      has_catalog: showcaseEnabled(e.id, e.plan, "catalog"),
     }));
   });
 
