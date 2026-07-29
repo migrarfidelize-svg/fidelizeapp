@@ -4,7 +4,8 @@ import { queryOptions, useSuspenseQuery, useQuery } from "@tanstack/react-query"
 import { toast } from "sonner";
 import { getPublicLinkTreeBySlug, getLinkTreeBlockData } from "@/lib/linktree.functions";
 import { trackChannelEvent, useChannelPageView } from "@/lib/tracking";
-import { ExternalLink, Instagram, MessageCircle, Globe, MapPin, Youtube, Facebook, Music2, Mail, Phone, Star, Wifi, KeyRound, Copy, Check, Eye, EyeOff, UserPlus, UtensilsCrossed, CreditCard, PlayCircle, Music, Images as ImagesIcon, MessageSquareQuote, ChevronLeft, ChevronRight } from "lucide-react";
+import { ExternalLink, Instagram, MessageCircle, Globe, MapPin, Youtube, Facebook, Music2, Mail, Phone, Star, Wifi, KeyRound, Copy, Check, Eye, EyeOff, UserPlus, UtensilsCrossed, CreditCard, PlayCircle, Music, Images as ImagesIcon, MessageSquareQuote, ChevronLeft, ChevronRight, X as XIcon, ZoomIn } from "lucide-react";
+import { useEffect } from "react";
 
 
 const opts = (slug: string) =>
@@ -670,21 +671,11 @@ function RichBlock({
     if (images.length === 0) return null;
     return (
       <BlockCard title={link.label} icon={<ImagesIcon className="h-3.5 w-3.5" />} rounded={rounded} primary={primary} accent={accent}>
-        <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory pb-1 -mx-1 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {images.map((src, idx) => (
-            <img
-              key={idx}
-              src={src}
-              alt={`${link.label || "Imagem"} ${idx + 1}`}
-              loading="lazy"
-              decoding="async"
-              className="h-48 w-40 shrink-0 snap-start rounded-lg object-cover"
-            />
-          ))}
-        </div>
+        <GalleryGrid images={images} label={link.label || "Imagem"} primary={primary} />
       </BlockCard>
     );
   }
+
 
   if (link.kind === "menu_carousel") {
     const source = (d.source ?? "menu") as "menu" | "catalog";
@@ -769,5 +760,169 @@ function RichBlock({
 
   return null;
 }
+
+// ============================================================================
+// GalleryGrid — grid responsivo + lightbox com teclado, swipe e miniaturas
+// ============================================================================
+function GalleryGrid({ images, label, primary }: { images: string[]; label: string; primary: string }) {
+  const [openIdx, setOpenIdx] = useState<number | null>(null);
+  const count = images.length;
+
+  const close = () => setOpenIdx(null);
+  const prev = () => setOpenIdx((i) => (i == null ? i : (i - 1 + count) % count));
+  const next = () => setOpenIdx((i) => (i == null ? i : (i + 1) % count));
+
+  useEffect(() => {
+    if (openIdx == null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+      else if (e.key === "ArrowLeft") prev();
+      else if (e.key === "ArrowRight") next();
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openIdx, count]);
+
+  // Swipe (touch) no lightbox
+  const touchRef = { current: null as null | { x: number; y: number } };
+  const onTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    touchRef.current = { x: t.clientX, y: t.clientY };
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const start = touchRef.current;
+    if (!start) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+      if (dx < 0) next();
+      else prev();
+    }
+    touchRef.current = null;
+  };
+
+  return (
+    <>
+      <div
+        className="grid gap-1.5"
+        style={{
+          gridTemplateColumns: count === 1 ? "1fr" : count === 2 ? "repeat(2, 1fr)" : "repeat(3, 1fr)",
+        }}
+      >
+        {images.map((src, idx) => (
+          <button
+            key={idx}
+            type="button"
+            onClick={() => setOpenIdx(idx)}
+            className="group relative overflow-hidden rounded-lg bg-black/25 focus:outline-none focus:ring-2"
+            style={{ aspectRatio: "1 / 1", ["--tw-ring-color" as any]: primary }}
+            aria-label={`Ampliar ${label} ${idx + 1}`}
+          >
+            <img
+              src={src}
+              alt={`${label} ${idx + 1}`}
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+            />
+            <div className="pointer-events-none absolute inset-0 grid place-items-center bg-black/0 opacity-0 transition group-hover:bg-black/40 group-hover:opacity-100">
+              <ZoomIn className="h-6 w-6 text-white drop-shadow" />
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {openIdx != null && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex flex-col animate-in fade-in duration-200"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${label} — imagem ${openIdx + 1} de ${count}`}
+          onClick={close}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 text-white text-sm" onClick={(e) => e.stopPropagation()}>
+            <span className="tabular-nums font-mono opacity-80">
+              {openIdx + 1} / {count}
+            </span>
+            <button
+              type="button"
+              onClick={close}
+              className="rounded-full p-2 hover:bg-white/10 transition"
+              aria-label="Fechar"
+            >
+              <XIcon className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Imagem principal */}
+          <div
+            className="relative flex-1 grid place-items-center overflow-hidden px-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={images[openIdx]}
+              alt={`${label} ${openIdx + 1}`}
+              className="max-h-[80vh] max-w-full object-contain select-none"
+              draggable={false}
+            />
+
+            {count > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); prev(); }}
+                  className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur p-2 sm:p-3 text-white transition"
+                  aria-label="Imagem anterior"
+                >
+                  <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); next(); }}
+                  className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur p-2 sm:p-3 text-white transition"
+                  aria-label="Próxima imagem"
+                >
+                  <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Miniaturas */}
+          {count > 1 && (
+            <div className="p-3" onClick={(e) => e.stopPropagation()}>
+              <div className="mx-auto flex max-w-3xl gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {images.map((src, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setOpenIdx(idx)}
+                    className={`shrink-0 overflow-hidden rounded-md transition ${idx === openIdx ? "ring-2 opacity-100" : "opacity-50 hover:opacity-100"}`}
+                    style={{ ["--tw-ring-color" as any]: primary }}
+                    aria-label={`Ir para imagem ${idx + 1}`}
+                    aria-current={idx === openIdx ? "true" : undefined}
+                  >
+                    <img src={src} alt="" className="h-14 w-14 object-cover" loading="lazy" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+
 
 
