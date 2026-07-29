@@ -671,21 +671,11 @@ function RichBlock({
     if (images.length === 0) return null;
     return (
       <BlockCard title={link.label} icon={<ImagesIcon className="h-3.5 w-3.5" />} rounded={rounded} primary={primary} accent={accent}>
-        <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory pb-1 -mx-1 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {images.map((src, idx) => (
-            <img
-              key={idx}
-              src={src}
-              alt={`${link.label || "Imagem"} ${idx + 1}`}
-              loading="lazy"
-              decoding="async"
-              className="h-48 w-40 shrink-0 snap-start rounded-lg object-cover"
-            />
-          ))}
-        </div>
+        <GalleryGrid images={images} label={link.label || "Imagem"} primary={primary} />
       </BlockCard>
     );
   }
+
 
   if (link.kind === "menu_carousel") {
     const source = (d.source ?? "menu") as "menu" | "catalog";
