@@ -81,8 +81,8 @@ export function QrDestinationCard({
   return (
     <Card className="border-primary/20 bg-card/70">
       <CardContent className="space-y-3 p-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex-1 min-w-[220px]">
+        <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+          <div className="min-w-0">
             <Label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
               Para onde o QR leva
             </Label>
@@ -91,7 +91,7 @@ export function QrDestinationCard({
             </p>
           </div>
           <Select value={dest} onValueChange={(v) => save(v as Dest)} disabled={saving}>
-            <SelectTrigger className="w-[240px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-full sm:w-[240px] shrink-0"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="reviews">Avaliação de atendimento</SelectItem>
               <SelectItem value="linktree">Árvore de Links</SelectItem>
