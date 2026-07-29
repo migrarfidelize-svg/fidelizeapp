@@ -30,7 +30,6 @@ import { DisplayStorePreview } from "@/components/DisplayStorePreview";
 import { PrintOrderDialog } from "@/components/PrintOrderDialog";
 import { LogoUploadButton } from "@/components/LogoUploadButton";
 import { QrTagsManager } from "@/components/QrTagsManager";
-import { QrMobileAudit } from "@/components/QrMobileAudit";
 
 
 import {
@@ -1089,11 +1088,6 @@ function ReviewQrPage() {
         title="QR Code do estabelecimento"
         subtitle="Um único cartaz, três destinos: Avaliação, Árvore de Links ou Cartão Fidelidade. Escolha abaixo para onde o cliente será direcionado ao escanear."
       />
-
-      <div className="flex justify-end">
-        <QrMobileAudit />
-      </div>
-
 
       {step === 1 && (
         <>

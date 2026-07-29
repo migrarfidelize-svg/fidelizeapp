@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { getAdminStatus } from "@/lib/admin.functions";
-import { EquipeTab } from "./admin.config";
+import { EquipeTab } from "./hash.config";
 import { LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/hash/equipe")({
