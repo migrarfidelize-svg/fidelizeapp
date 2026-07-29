@@ -8,6 +8,7 @@ import { Coffee, Check, ArrowRight, Sparkles, Wifi, Store, User, Loader2, Eye, E
 
 export const ONBOARDING_PREFILL_KEY = "fidelize:onboarding-prefill";
 import { claimCustomerByToken, attachEstablishmentBySlug } from "@/lib/my-wallet.functions";
+import { DISCOVER_CATEGORIES } from "@/lib/discover-categories";
 
 const AUTH_SYNC_CHANNEL = "fidelize-auth-sync";
 
@@ -109,6 +110,7 @@ function AuthPage() {
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [company, setCompany] = useState("");
+  const [segment, setSegment] = useState("");
   const [showPw, setShowPw] = useState(false);
   const pwScore = (() => {
     let s = 0;
@@ -179,6 +181,11 @@ function AuthPage() {
           setLoading(false);
           return;
         }
+        if (isEstablishmentSignup && !segment) {
+          toast.error("Selecione a categoria do seu negócio.");
+          setLoading(false);
+          return;
+        }
         const creds = walletFlow ? walletCredentials(digits) : { email, password };
         const { data: signUpData, error } = await supabase.auth.signUp({
           email: creds.email,
@@ -211,7 +218,7 @@ function AuthPage() {
           try {
             localStorage.setItem(
               ONBOARDING_PREFILL_KEY,
-              JSON.stringify({ name: company.trim(), at: Date.now() }),
+              JSON.stringify({ name: company.trim(), segment, at: Date.now() }),
             );
           } catch { /* ignore */ }
           toast.success("Conta criada! Vamos configurar seu cartão.");
@@ -516,6 +523,29 @@ function AuthPage() {
                     className="auth-input"
                   />
                   <p className="ml-1 text-[10px] text-white/40">Já deixamos tudo pronto no próximo passo com esse nome.</p>
+                </div>
+              )}
+
+              {isEstablishmentSignup && (
+                <div className="animate-fade-in space-y-1.5">
+                  <label htmlFor="segment" className="ml-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">
+                    <Store className="h-3 w-3" /> Categoria do negócio
+                  </label>
+                  <select
+                    id="segment"
+                    value={segment}
+                    onChange={(e) => setSegment(e.target.value)}
+                    required
+                    className="auth-input appearance-none"
+                  >
+                    <option value="" disabled>Selecione a categoria</option>
+                    {DISCOVER_CATEGORIES.map((c) => (
+                      <option key={c.id} value={c.id} className="bg-[#12101c] text-white">
+                        {c.emoji} {c.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="ml-1 text-[10px] text-white/40">Define onde seu negócio aparece no Descobrir da carteira.</p>
                 </div>
               )}
 

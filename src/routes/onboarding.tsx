@@ -93,20 +93,21 @@ function Onboarding() {
   const [cropOpen, setCropOpen] = useState(false);
   const [rawFile, setRawFile] = useState<File | null>(null);
   const [logoRev, setLogoRev] = useState(0);
-  const prefillName = (() => {
+  const prefill = (() => {
     try {
       const raw = localStorage.getItem("fidelize:onboarding-prefill");
-      if (!raw) return "";
-      const p = JSON.parse(raw) as { name?: string };
-      return (p?.name ?? "").slice(0, 60);
+      if (!raw) return { name: "", segment: "" };
+      const p = JSON.parse(raw) as { name?: string; segment?: string };
+      return { name: (p?.name ?? "").slice(0, 60), segment: p?.segment ?? "" };
     } catch {
-      return "";
+      return { name: "", segment: "" };
     }
   })();
+  const prefillName = prefill.name;
   const [f, setF] = useState({
     name: prefillName,
     slug: prefillName ? slugify(prefillName) : "",
-    segment: "",
+    segment: prefill.segment,
     description: "",
     primary_color: "#22d3ee",
     accent_color: "#e879f9",
