@@ -1888,6 +1888,30 @@ function ReviewQrPage() {
 
       </div>
 
+      {/* Atalho flutuante (mobile): alterna entre editor e prévia sem rolagem manual */}
+      <div className="pointer-events-none fixed inset-x-0 bottom-4 z-40 flex justify-center px-4 lg:hidden">
+        <button
+          type="button"
+          onClick={() => {
+            const preview = document.getElementById("qr-preview");
+            if (!preview) return;
+            const r = preview.getBoundingClientRect();
+            const previewVisible = r.top < window.innerHeight * 0.5 && r.bottom > 0;
+            if (previewVisible) {
+              document.getElementById("qr-editor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            } else {
+              preview.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+          }}
+          className="pointer-events-auto inline-flex h-12 items-center gap-2 rounded-full border border-primary/40 bg-card/95 px-5 text-sm font-bold text-primary shadow-[0_10px_30px_-10px_hsl(var(--primary)/0.7)] backdrop-blur-md active:scale-95"
+        >
+          <Eye className="h-4 w-4" />
+          Prévia / Editor
+        </button>
+      </div>
+
+
+
       {est && (
         <PrintOrderDialog
           open={printOpen}
