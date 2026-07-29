@@ -1,6 +1,6 @@
 /**
  * Guia passo a passo por provedor. Renderizado na aba "Como configurar"
- * do card de cada integração em /admin/integracoes.
+ * do card de cada integração em /hash/integracoes.
  */
 export type ProviderGuide = {
   intro: string;

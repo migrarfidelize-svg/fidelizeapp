@@ -280,7 +280,7 @@ function AdminPlansPage() {
                   </div>
                 ) : (
                   <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
-                    Os lojistas neste plano perderão o acesso ao recurso. QRs de avaliação já criados continuam existindo, mas a geração de novos QRs e o backend serão bloqueados — cada tentativa aparecerá em <strong>/admin/avaliações → Bloqueios de plano</strong>.
+                    Os lojistas neste plano perderão o acesso ao recurso. QRs de avaliação já criados continuam existindo, mas a geração de novos QRs e o backend serão bloqueados — cada tentativa aparecerá em <strong>/hash/avaliações → Bloqueios de plano</strong>.
                   </div>
                 )}
                 <div className="text-[11px] text-muted-foreground">Esta ação é registrada em auditoria com data, responsável e diferença antes/depois.</div>

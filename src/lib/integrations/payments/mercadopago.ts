@@ -12,7 +12,7 @@ export const mercadopagoProvider: PaymentProvider = {
     id: "mercadopago",
     label: "Mercado Pago",
     category: "payments",
-    description: "PIX, cartão e boleto. Configuração completa em /admin/pagamentos.",
+    description: "PIX, cartão e boleto. Configuração completa em /hash/pagamentos.",
     icon: "💳",
     docsUrl: "https://www.mercadopago.com.br/developers/pt",
     supportsMode: true,

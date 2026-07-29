@@ -19,7 +19,7 @@ function looksLikeMercadoPagoTestEmail(email: string | null | undefined): boolea
 function formatMpCredentialMismatchMessage(details: { configuredEnvironment?: string | null; accountNickname?: string | null }) {
   const nickname = details.accountNickname ? ` (${details.accountNickname})` : "";
   const environment = details.configuredEnvironment === "sandbox" ? "Sandbox/Teste" : "Produção";
-  return `Configuração Mercado Pago incompatível: o Access Token cadastrado em /admin/integracoes pertence a um usuário de teste${nickname}, mas o painel está em ${environment}. Para receber pagamentos reais, atualize o Access Token em /admin/integracoes → Pagamentos → Mercado Pago (aba Credenciais) com um token de produção da conta real. Para simular, mude o ambiente para Sandbox/Teste e use um comprador de teste do Mercado Pago.`;
+  return `Configuração Mercado Pago incompatível: o Access Token cadastrado em /hash/integracoes pertence a um usuário de teste${nickname}, mas o painel está em ${environment}. Para receber pagamentos reais, atualize o Access Token em /hash/integracoes → Pagamentos → Mercado Pago (aba Credenciais) com um token de produção da conta real. Para simular, mude o ambiente para Sandbox/Teste e use um comprador de teste do Mercado Pago.`;
 }
 
 async function mpFetch(path: string, init: RequestInit & { idempotencyKey?: string } = {}) {
@@ -40,7 +40,7 @@ async function mpFetch(path: string, init: RequestInit & { idempotencyKey?: stri
     const msgStr = typeof rawMsg === "string" ? rawMsg : JSON.stringify(rawMsg);
     if (res.status === 401 && /unauthorized use of live credentials/i.test(msgStr)) {
       throw new Error(
-        "Mercado Pago recusou o pagamento: as credenciais e o comprador parecem estar em ambientes diferentes, ou o pagador é o próprio titular da conta que recebe. Se a conexão em /admin/integracoes mostrar TESTUSER, troque o Access Token para um de produção de uma conta real. Em produção, use e-mail/CPF/CNPJ reais e diferentes da conta recebedora.",
+        "Mercado Pago recusou o pagamento: as credenciais e o comprador parecem estar em ambientes diferentes, ou o pagador é o próprio titular da conta que recebe. Se a conexão em /hash/integracoes mostrar TESTUSER, troque o Access Token para um de produção de uma conta real. Em produção, use e-mail/CPF/CNPJ reais e diferentes da conta recebedora.",
       );
     }
     throw new Error(`Mercado Pago (${res.status}): ${msgStr}`);

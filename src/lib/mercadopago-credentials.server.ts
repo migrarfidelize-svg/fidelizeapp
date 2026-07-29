@@ -3,7 +3,7 @@
  *
  * Ordem de prioridade (a mais alta primeiro):
  *   1) `integrations.credentials` (category=payments, provider=mercadopago) — configurado
- *      manualmente pelo Super Admin em /admin/integracoes.
+ *      manualmente pelo Super Admin em /hash/integracoes.
  *   2) `payment_settings.public_key` — legado, apenas para public_key.
  *   3) `process.env.MERCADOPAGO_*` — fallback de deploy.
  *
@@ -110,7 +110,7 @@ export async function requireMercadoPagoAccessToken(): Promise<string> {
   const { access_token } = await loadMercadoPagoCredentials();
   if (!access_token) {
     throw new Error(
-      "Mercado Pago não configurado: cadastre o Access Token em /admin/integracoes → Pagamentos → Mercado Pago (aba Credenciais).",
+      "Mercado Pago não configurado: cadastre o Access Token em /hash/integracoes → Pagamentos → Mercado Pago (aba Credenciais).",
     );
   }
   return access_token;

@@ -429,7 +429,7 @@ function BlockedByPlan({ days }: { days: number }) {
       r.context ? JSON.stringify(r.context) : "",
     ]);
     const preamble = [
-      `Exportação: Bloqueios de plano — /admin/avaliações`,
+      `Exportação: Bloqueios de plano — /hash/avaliações`,
       `Gerado em: ${new Date().toISOString()}`,
       `Período: últimos ${days} dias`,
       `Filtro Recurso: ${feature === "all" ? "Todos" : (FEATURE_LABELS[feature] ?? feature)}`,
