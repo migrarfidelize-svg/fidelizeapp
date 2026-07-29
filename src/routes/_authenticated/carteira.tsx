@@ -210,7 +210,7 @@ function WalletLayout() {
       <MyQrSheet open={qrOpen} onOpenChange={setQrOpen} />
       <AchievementUnlockListener />
       <PostStampReviewSheet />
-      <CompleteProfileDialog required={profileRequired} />
+      {showProfileDialog && <CompleteProfileDialog required={profileRequired} />}
     </div>
   );
 }
