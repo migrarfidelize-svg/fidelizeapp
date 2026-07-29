@@ -1101,7 +1101,7 @@ function ReviewQrPage() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
         {/* CONTROLS — glass panel */}
         <Card className="border-primary/15 bg-card/70 backdrop-blur-xl">
-          <CardContent className="space-y-6 p-5">
+          <CardContent className="space-y-6 p-4 sm:p-5">
             <div className="flex items-start gap-3 rounded-xl border border-primary/25 bg-primary/5 p-3">
               <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
                 {(() => { const I = QR_STEPS[step - 1].icon; return <I className="h-4 w-4" />; })()}
