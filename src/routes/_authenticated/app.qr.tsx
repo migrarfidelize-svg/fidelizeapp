@@ -1099,7 +1099,7 @@ function ReviewQrPage() {
       <QrStepper step={step} onSelect={setStep} />
 
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
         {/* CONTROLS — glass panel */}
         <Card id="qr-editor" className="scroll-mt-4 border-primary/15 bg-card/70 backdrop-blur-xl">
           <CardContent className="space-y-6 p-4 sm:p-5">
