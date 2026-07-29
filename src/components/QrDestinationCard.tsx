@@ -134,7 +134,7 @@ export function QrDestinationCard({
                 </Button>
               </div>
             ) : (
-              <div className="flex-1">
+              <div className="min-w-0 flex-1">
                 <p className="font-medium">Você ainda não possui uma avaliação ativa.</p>
                 <Button asChild size="sm" variant="outline" className="mt-2">
                   <Link to="/app/avaliacoes">Configurar avaliação</Link>
