@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   UtensilsCrossed, LayoutList, FolderTree, Video, Eye, Store,
-  Copy, ExternalLink, CheckCircle2, Circle, Sparkles, QrCode, Palette, ArrowRight,
+  Copy, ExternalLink, CheckCircle2, Circle, Sparkles, QrCode, Palette, ArrowRight, Wand2,
 } from "lucide-react";
 
 import { getMyEstablishments } from "@/lib/loyalty.functions";
@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { showcase, type ShowcaseKind } from "@/lib/showcase";
+import { AiImportDialog } from "@/components/showcase/AiImportDialog";
+import { useMyFeature } from "@/hooks/useMyFeature";
 
 const STATUS_LABEL: Record<string, { label: string; tone: string }> = {
   draft:     { label: "Rascunho",  tone: "bg-muted text-muted-foreground" },
