@@ -221,7 +221,7 @@ function LinkTreeEditor() {
     setPublished(!!p.published);
     setLinks(
       (q.data?.links ?? []).map((l: any) => ({
-        id: l.id, kind: l.kind, label: l.label, url: l.url,
+        id: l.id, _uid: l.id ?? uid(), kind: l.kind, label: l.label, url: l.url,
         icon: l.icon, enabled: l.enabled, sort_order: l.sort_order,
         data: (l.data ?? {}) as Record<string, any>,
       })),
