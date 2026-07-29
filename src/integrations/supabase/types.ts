@@ -56,6 +56,151 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_analyses: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          establishment_id: string
+          findings_json: Json
+          id: string
+          model: string | null
+          overall_score: number
+          scores_json: Json
+          surface: string
+          target_id: string | null
+          tokens_used: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          establishment_id: string
+          findings_json?: Json
+          id?: string
+          model?: string | null
+          overall_score?: number
+          scores_json?: Json
+          surface: string
+          target_id?: string | null
+          tokens_used?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          establishment_id?: string
+          findings_json?: Json
+          id?: string
+          model?: string | null
+          overall_score?: number
+          scores_json?: Json
+          surface?: string
+          target_id?: string | null
+          tokens_used?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_analyses_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_findings_state: {
+        Row: {
+          actor_id: string | null
+          analysis_id: string
+          applied_payload: Json | null
+          establishment_id: string
+          finding_key: string
+          id: string
+          status: string
+          target_id: string | null
+          target_type: string | null
+          updated_at: string
+        }
+        Insert: {
+          actor_id?: string | null
+          analysis_id: string
+          applied_payload?: Json | null
+          establishment_id: string
+          finding_key: string
+          id?: string
+          status?: string
+          target_id?: string | null
+          target_type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actor_id?: string | null
+          analysis_id?: string
+          applied_payload?: Json | null
+          establishment_id?: string
+          finding_key?: string
+          id?: string
+          status?: string
+          target_id?: string | null
+          target_type?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_findings_state_analysis_id_fkey"
+            columns: ["analysis_id"]
+            isOneToOne: false
+            referencedRelation: "ai_analyses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_findings_state_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_usage: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          establishment_id: string
+          id: string
+          kind: string
+          surface: string
+          tokens: number
+          units: number
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          establishment_id: string
+          id?: string
+          kind: string
+          surface: string
+          tokens?: number
+          units?: number
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          establishment_id?: string
+          id?: string
+          kind?: string
+          surface?: string
+          tokens?: number
+          units?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       api_keys: {
         Row: {
           created_at: string
@@ -2009,6 +2154,8 @@ export type Database = {
         Row: {
           active: boolean
           addons: Json
+          ai_analyzed_at: string | null
+          ai_hash: string | null
           allergens: string[]
           available_days: number[]
           badges: Json
@@ -2046,6 +2193,8 @@ export type Database = {
         Insert: {
           active?: boolean
           addons?: Json
+          ai_analyzed_at?: string | null
+          ai_hash?: string | null
           allergens?: string[]
           available_days?: number[]
           badges?: Json
@@ -2083,6 +2232,8 @@ export type Database = {
         Update: {
           active?: boolean
           addons?: Json
+          ai_analyzed_at?: string | null
+          ai_hash?: string | null
           allergens?: string[]
           available_days?: number[]
           badges?: Json
