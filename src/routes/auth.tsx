@@ -116,6 +116,8 @@ function AuthPage() {
 
   const [segment, setSegment] = useState("");
   const [showPw, setShowPw] = useState(false);
+  const [keepSignedIn, setKeepSignedInState] = useState<boolean>(() => getKeepSignedIn());
+  useEffect(() => { setKeepSignedIn(keepSignedIn); }, [keepSignedIn]);
   const pwScore = (() => {
     let s = 0;
     if (password.length >= 6) s++;
