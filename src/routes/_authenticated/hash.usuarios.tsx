@@ -10,7 +10,7 @@ import {
   adminReassignOrphanCustomer,
   adminListEstablishments,
   adminGetUserWallet,
-} from "@/lib/admin.functions";
+} from "@/lib/hash.functions";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -341,7 +341,7 @@ function AdminUsers() {
                   <SelectContent>
                     <SelectItem value="customer">Cliente final — vai para /carteira</SelectItem>
                     <SelectItem value="establishment">Estabelecimento — acesso a /app</SelectItem>
-                    <SelectItem value="super_admin">Super admin — acesso a /admin</SelectItem>
+                    <SelectItem value="super_admin">Super admin — acesso a /hash</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -354,7 +354,7 @@ function AdminUsers() {
               )}
               {nextType === "super_admin" && (
                 <div className="rounded-lg border border-primary/40 bg-primary-soft text-primary p-3 text-xs">
-                  Concede acesso total ao painel <strong>/admin</strong>. Use com cautela.
+                  Concede acesso total ao painel <strong>/hash</strong>. Use com cautela.
                 </div>
               )}
             </div>
