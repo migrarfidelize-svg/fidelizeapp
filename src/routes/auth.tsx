@@ -494,6 +494,26 @@ function AuthPage() {
                 </div>
               )}
 
+              {isEstablishmentSignup && (
+                <div className="animate-fade-in space-y-1.5">
+                  <label htmlFor="company" className="ml-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">
+                    <Building2 className="h-3 w-3" /> Nome do negócio
+                  </label>
+                  <input
+                    id="company"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value.slice(0, 60))}
+                    required
+                    minLength={2}
+                    placeholder="Ex: Café Aurora"
+                    className="auth-input"
+                  />
+                  <p className="ml-1 text-[10px] text-white/40">Já deixamos tudo pronto no próximo passo com esse nome.</p>
+                </div>
+              )}
+
+
+
               {/* WhatsApp: obrigatório para cliente (sempre) e para estabelecimento no signup */}
               {(walletFlow || isEstablishmentSignup) && (
                 <div className="animate-fade-in space-y-1.5">
