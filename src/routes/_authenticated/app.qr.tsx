@@ -1080,7 +1080,7 @@ function ReviewQrPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-4 md:p-8">
+    <div className="mx-auto max-w-6xl space-y-6 p-3 sm:p-4 md:p-8">
       <PageHero
         icon={Star}
         eyebrow="Marketing · QR"
@@ -1100,8 +1100,8 @@ function ReviewQrPage() {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
         {/* CONTROLS — glass panel */}
-        <Card className="border-primary/15 bg-card/70 backdrop-blur-xl">
-          <CardContent className="space-y-6 p-5">
+        <Card id="qr-editor" className="scroll-mt-4 border-primary/15 bg-card/70 backdrop-blur-xl">
+          <CardContent className="space-y-6 p-4 sm:p-5">
             <div className="flex items-start gap-3 rounded-xl border border-primary/25 bg-primary/5 p-3">
               <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
                 {(() => { const I = QR_STEPS[step - 1].icon; return <I className="h-4 w-4" />; })()}
@@ -1240,7 +1240,7 @@ function ReviewQrPage() {
             <div className="space-y-3">
 
               <Label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Formato do cartaz</Label>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {(Object.keys(FORMATS) as FormatKey[]).map((k) => {
                   const f = FORMATS[k];
                   const active = format === k;
@@ -1326,7 +1326,7 @@ function ReviewQrPage() {
               <Label className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                 <Layers className="h-3.5 w-3.5" /> Modelo de cartaz
               </Label>
-              <div className="grid grid-cols-4 gap-1.5">
+              <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
                 {(Object.keys(TEMPLATES) as TemplateKey[]).map((k) => {
                   const t = TEMPLATES[k];
                   const active = template === k;
@@ -1567,7 +1567,7 @@ function ReviewQrPage() {
             {/* Actions */}
             {step === 5 && (
             <>
-            <div className="grid grid-cols-2 gap-2 pt-1">
+            <div className="grid grid-cols-2 gap-2 pt-1 [&_button]:h-11 [&_button]:text-xs sm:[&_button]:text-sm">
               <Button onClick={exportPng} disabled={exporting || !targetUrl}>
                 <FileImage className="mr-2 h-4 w-4" /> Baixar PNG
               </Button>
@@ -1588,23 +1588,25 @@ function ReviewQrPage() {
             </>
             )}
 
-            {/* Navegação entre etapas */}
-            <div className="flex items-center justify-between gap-2 border-t border-border/60 pt-4">
+            {/* Navegação entre etapas — fixa no rodapé do painel em telas pequenas */}
+            <div className="sticky bottom-0 z-20 -mx-4 flex items-center justify-between gap-2 border-t border-border/60 bg-card/95 px-4 py-3 backdrop-blur-md sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-4 sm:backdrop-blur-none">
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
+                className="h-11 px-3 sm:h-9"
                 disabled={step === 1}
                 onClick={() => setStep((s) => Math.max(1, s - 1))}
               >
                 ← Voltar
               </Button>
-              <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Etapa {step} de {QR_STEPS.length}
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:text-[11px]">
+                Etapa {step}/{QR_STEPS.length}
               </span>
               <Button
                 type="button"
                 size="sm"
+                className="h-11 px-3 sm:h-9"
                 disabled={step === QR_STEPS.length}
                 onClick={() => setStep((s) => Math.min(QR_STEPS.length, s + 1))}
               >
@@ -1616,8 +1618,9 @@ function ReviewQrPage() {
 
 
         {/* PREVIEW */}
-        <div className="min-w-0">
+        <div id="qr-preview" className="min-w-0 scroll-mt-4">
           <div className="sticky top-4 flex flex-col items-center gap-3">
+
             {/* CTA: Loja física */}
             <div className="flex w-full max-w-[420px] items-center gap-2">
               <button
@@ -1642,7 +1645,8 @@ function ReviewQrPage() {
             )}
             <div className="flex w-full max-w-[440px] flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-start">
             <div
-              className="relative mx-auto w-full max-w-[320px] flex-1"
+              className="relative mx-auto w-full max-w-[360px] flex-1 sm:max-w-[320px]"
+
               style={displayMode ? { perspective: "1600px", perspectiveOrigin: "50% 65%" } : undefined}
             >
 
@@ -1883,6 +1887,30 @@ function ReviewQrPage() {
         </div>
 
       </div>
+
+      {/* Atalho flutuante (mobile): alterna entre editor e prévia sem rolagem manual */}
+      <div className="pointer-events-none fixed inset-x-0 bottom-4 z-40 flex justify-center px-4 lg:hidden">
+        <button
+          type="button"
+          onClick={() => {
+            const preview = document.getElementById("qr-preview");
+            if (!preview) return;
+            const r = preview.getBoundingClientRect();
+            const previewVisible = r.top < window.innerHeight * 0.5 && r.bottom > 0;
+            if (previewVisible) {
+              document.getElementById("qr-editor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            } else {
+              preview.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+          }}
+          className="pointer-events-auto inline-flex h-12 items-center gap-2 rounded-full border border-primary/40 bg-card/95 px-5 text-sm font-bold text-primary shadow-[0_10px_30px_-10px_hsl(var(--primary)/0.7)] backdrop-blur-md active:scale-95"
+        >
+          <Eye className="h-4 w-4" />
+          Prévia / Editor
+        </button>
+      </div>
+
+
 
       {est && (
         <PrintOrderDialog
