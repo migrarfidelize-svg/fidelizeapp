@@ -1,10 +1,10 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
+import { queryOptions, useSuspenseQuery, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { getPublicLinkTreeBySlug } from "@/lib/linktree.functions";
+import { getPublicLinkTreeBySlug, getLinkTreeBlockData } from "@/lib/linktree.functions";
 import { trackChannelEvent, useChannelPageView } from "@/lib/tracking";
-import { ExternalLink, Instagram, MessageCircle, Globe, MapPin, Youtube, Facebook, Music2, Mail, Phone, Star, Wifi, KeyRound, Copy, Check, Eye, EyeOff, UserPlus, UtensilsCrossed, CreditCard } from "lucide-react";
+import { ExternalLink, Instagram, MessageCircle, Globe, MapPin, Youtube, Facebook, Music2, Mail, Phone, Star, Wifi, KeyRound, Copy, Check, Eye, EyeOff, UserPlus, UtensilsCrossed, CreditCard, PlayCircle, Music, Images as ImagesIcon, MessageSquareQuote, ChevronLeft, ChevronRight } from "lucide-react";
 
 
 const opts = (slug: string) =>
@@ -113,6 +113,19 @@ function PublicLinkTreePage() {
   const links = data!.links ?? [];
   useChannelPageView(slug, "linktree");
 
+  const hasRichBlocks = useMemo(
+    () => links.some((l: any) => ["menu_carousel", "reviews"].includes(l.kind)),
+    [links],
+  );
+  const blockDataQ = useQuery({
+    queryKey: ["public-linktree-blocks", slug],
+    queryFn: () => getLinkTreeBlockData({ data: { slug } }),
+    enabled: hasRichBlocks,
+    staleTime: 60_000,
+  });
+  const blockData = blockDataQ.data ?? { menu: [], catalog: [], reviews: [], stats: null };
+
+
   const theme = (page?.theme as Record<string, string> | null) ?? {};
   const primary = theme.primary || est.primary_color || "#0ea5e9";
   const accent = theme.accent || est.accent_color || "#8b5cf6";
@@ -197,6 +210,23 @@ function PublicLinkTreePage() {
                 );
               }
 
+              const RICH_KINDS = ["video", "spotify", "gallery", "menu_carousel", "reviews", "header_image"];
+              if (RICH_KINDS.includes(l.kind)) {
+                return (
+                  <li key={l.id} className="text-left">
+                    <RichBlock
+                      link={l as any}
+                      slug={slug}
+                      blockData={blockData}
+                      rounded={rounded}
+                      primary={primary}
+                      accent={accent}
+                      text={text}
+                    />
+                  </li>
+                );
+              }
+
               return (
                 <li key={l.id}>
                   <a
@@ -213,6 +243,7 @@ function PublicLinkTreePage() {
                 </li>
               );
             })}
+
 
           </ul>
         )}
@@ -497,4 +528,246 @@ function SaveContactButton({
     </button>
   );
 }
+
+// ============================================================================
+// Rich blocks
+// ============================================================================
+type RichLink = {
+  id: string;
+  kind: string;
+  label: string;
+  url: string;
+  data?: Record<string, any> | null;
+};
+type BlockData = {
+  menu: Array<{ id: string; name: string; short_desc: string | null; price: number | null; promo_price: number | null; image_url: string | null }>;
+  catalog: Array<{ id: string; name: string; short_desc: string | null; price: number | null; promo_price: number | null; image_url: string | null }>;
+  reviews: Array<{ id: string; rating: number | null; comment: string | null; merchant_reply: string | null; submitted_at: string | null; customer_name: string }>;
+  stats: { count: number; avg: number } | null;
+};
+
+function parseVideoUrl(u: string): { kind: "youtube" | "vimeo" | "tiktok" | "file" | "unknown"; embed?: string; direct?: string } {
+  const url = (u ?? "").trim();
+  if (!url) return { kind: "unknown" };
+  const yt = /(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/i.exec(url);
+  if (yt) return { kind: "youtube", embed: `https://www.youtube.com/embed/${yt[1]}?rel=0&modestbranding=1` };
+  const vm = /vimeo\.com\/(?:video\/)?(\d+)/i.exec(url);
+  if (vm) return { kind: "vimeo", embed: `https://player.vimeo.com/video/${vm[1]}` };
+  const tt = /tiktok\.com\/@[^/]+\/video\/(\d+)/i.exec(url);
+  if (tt) return { kind: "tiktok", embed: `https://www.tiktok.com/embed/v2/${tt[1]}` };
+  if (/\.(mp4|webm|mov)(\?|$)/i.test(url)) return { kind: "file", direct: url };
+  return { kind: "unknown" };
+}
+
+function parseSpotifyUrl(u: string): string | null {
+  const m = /open\.spotify\.com\/(track|album|playlist|episode|show)\/([A-Za-z0-9]+)/i.exec((u ?? "").trim());
+  if (!m) return null;
+  return `https://open.spotify.com/embed/${m[1]}/${m[2]}?utm_source=generator&theme=0`;
+}
+
+function fmtBRL(n: number | null) {
+  if (n == null) return "";
+  try { return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); } catch { return `R$ ${n.toFixed(2)}`; }
+}
+
+function BlockCard({ title, icon, rounded, primary, accent, children }: { title?: string; icon?: React.ReactNode; rounded: string; primary: string; accent: string; children: React.ReactNode }) {
+  return (
+    <div
+      className={`overflow-hidden ${rounded}`}
+      style={{
+        background: `linear-gradient(135deg, ${primary}18, ${accent}12)`,
+        border: "1px solid rgba(255,255,255,0.12)",
+        backdropFilter: "blur(12px)",
+      }}
+    >
+      {title && (
+        <div className="flex items-center gap-2 px-4 pt-3 pb-2 text-[11px] font-semibold uppercase tracking-wider opacity-80">
+          {icon}
+          <span>{title}</span>
+        </div>
+      )}
+      <div className="p-3">{children}</div>
+    </div>
+  );
+}
+
+function RichBlock({
+  link, slug, blockData, rounded, primary, accent, text,
+}: {
+  link: RichLink; slug: string; blockData: BlockData; rounded: string;
+  primary: string; accent: string; text: string;
+}) {
+  const d = (link.data ?? {}) as Record<string, any>;
+
+  if (link.kind === "header_image") {
+    const src = String(d.image_url ?? "");
+    const href = String(d.link_url ?? "").trim();
+    if (!src) return null;
+    const img = (
+      <img
+        src={src}
+        alt={link.label || ""}
+        loading="lazy"
+        decoding="async"
+        className={`w-full h-auto object-cover ${rounded}`}
+      />
+    );
+    return href ? (
+      <a
+        href={normalizeUrl("custom", href)}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => trackChannelEvent({ slug, channel: "linktree", event_type: "link_click", ref_id: link.id, ref_label: link.label })}
+        className="block"
+      >
+        {img}
+      </a>
+    ) : img;
+  }
+
+  if (link.kind === "video") {
+    const parsed = parseVideoUrl(String(d.url ?? ""));
+    if (parsed.kind === "unknown") return null;
+    return (
+      <BlockCard title={link.label} icon={<PlayCircle className="h-3.5 w-3.5" />} rounded={rounded} primary={primary} accent={accent}>
+        <div className="relative w-full overflow-hidden rounded-lg" style={{ aspectRatio: "16/9" }}>
+          {parsed.embed ? (
+            <iframe
+              src={parsed.embed}
+              title={link.label || "Vídeo"}
+              className="absolute inset-0 h-full w-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              loading="lazy"
+            />
+          ) : parsed.direct ? (
+            <video src={parsed.direct} controls playsInline className="absolute inset-0 h-full w-full object-cover" />
+          ) : null}
+        </div>
+      </BlockCard>
+    );
+  }
+
+  if (link.kind === "spotify") {
+    const embed = parseSpotifyUrl(String(d.url ?? ""));
+    if (!embed) return null;
+    return (
+      <BlockCard title={link.label} icon={<Music className="h-3.5 w-3.5" />} rounded={rounded} primary={primary} accent={accent}>
+        <iframe
+          src={embed}
+          title={link.label || "Spotify"}
+          className="w-full rounded-lg"
+          style={{ height: 152, border: 0 }}
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"
+        />
+      </BlockCard>
+    );
+  }
+
+  if (link.kind === "gallery") {
+    const images: string[] = Array.isArray(d.images) ? d.images.filter((s: any) => typeof s === "string" && s.trim()) : [];
+    if (images.length === 0) return null;
+    return (
+      <BlockCard title={link.label} icon={<ImagesIcon className="h-3.5 w-3.5" />} rounded={rounded} primary={primary} accent={accent}>
+        <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory pb-1 -mx-1 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {images.map((src, idx) => (
+            <img
+              key={idx}
+              src={src}
+              alt={`${link.label || "Imagem"} ${idx + 1}`}
+              loading="lazy"
+              decoding="async"
+              className="h-48 w-40 shrink-0 snap-start rounded-lg object-cover"
+            />
+          ))}
+        </div>
+      </BlockCard>
+    );
+  }
+
+  if (link.kind === "menu_carousel") {
+    const source = (d.source ?? "menu") as "menu" | "catalog";
+    const limit = Math.max(3, Math.min(12, Number(d.limit ?? 8)));
+    const items = (source === "catalog" ? blockData.catalog : blockData.menu).slice(0, limit);
+    if (items.length === 0) return null;
+    return (
+      <BlockCard title={link.label || (source === "catalog" ? "Catálogo" : "Cardápio")} icon={<UtensilsCrossed className="h-3.5 w-3.5" />} rounded={rounded} primary={primary} accent={accent}>
+        <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory pb-1 -mx-1 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {items.map((it) => {
+            const priceEl = it.promo_price != null && it.promo_price < (it.price ?? Infinity) ? (
+              <div className="text-xs">
+                <span className="line-through opacity-60 mr-1">{fmtBRL(it.price)}</span>
+                <span className="font-semibold" style={{ color: primary }}>{fmtBRL(it.promo_price)}</span>
+              </div>
+            ) : it.price != null ? (
+              <div className="text-xs font-semibold" style={{ color: primary }}>{fmtBRL(it.price)}</div>
+            ) : null;
+            return (
+              <div key={it.id} className="w-40 shrink-0 snap-start rounded-lg overflow-hidden bg-black/25">
+                {it.image_url ? (
+                  <img src={it.image_url} alt={it.name} loading="lazy" decoding="async" className="h-28 w-full object-cover" />
+                ) : (
+                  <div className="h-28 w-full grid place-items-center opacity-40 text-[10px]">Sem imagem</div>
+                )}
+                <div className="p-2 space-y-1">
+                  <div className="text-xs font-semibold line-clamp-2" style={{ color: text }}>{it.name}</div>
+                  {priceEl}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <Link
+          to={source === "catalog" ? "/catalogo/$slug" : "/cardapio/$slug"}
+          params={{ slug }}
+          onClick={() => trackChannelEvent({ slug, channel: "linktree", event_type: "link_click", ref_id: link.id, ref_label: link.label })}
+          className="mt-2 block text-center text-xs font-semibold opacity-80 hover:opacity-100 underline underline-offset-2"
+        >
+          Ver {source === "catalog" ? "catálogo" : "cardápio"} completo →
+        </Link>
+      </BlockCard>
+    );
+  }
+
+  if (link.kind === "reviews") {
+    const min = Number(d.min_rating ?? 4);
+    const limit = Math.max(1, Math.min(10, Number(d.limit ?? 3)));
+    const filtered = blockData.reviews.filter((r) => (r.rating ?? 0) >= min).slice(0, limit);
+    if (filtered.length === 0) return null;
+    const avg = blockData.stats?.avg ?? null;
+    return (
+      <BlockCard title={link.label || "O que dizem sobre nós"} icon={<MessageSquareQuote className="h-3.5 w-3.5" />} rounded={rounded} primary={primary} accent={accent}>
+        {avg != null && (
+          <div className="flex items-center justify-center gap-1 mb-2 text-xs">
+            <Star className="h-3.5 w-3.5" style={{ color: primary, fill: primary }} />
+            <span className="font-semibold">{avg.toFixed(1)}</span>
+            <span className="opacity-60">· {blockData.stats!.count} avaliações</span>
+          </div>
+        )}
+        <div className="space-y-2">
+          {filtered.map((r) => (
+            <div key={r.id} className="rounded-lg bg-black/25 p-3">
+              <div className="flex items-center gap-1 text-xs">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <Star key={n} className="h-3 w-3" style={{ color: primary, fill: (r.rating ?? 0) >= n ? primary : "transparent" }} />
+                ))}
+                <span className="ml-1 opacity-70">{r.customer_name}</span>
+              </div>
+              {r.comment && <p className="mt-1 text-xs opacity-90">"{r.comment}"</p>}
+              {r.merchant_reply && (
+                <p className="mt-1 pl-2 border-l-2 text-[11px] opacity-75" style={{ borderColor: primary }}>
+                  <strong>Resposta:</strong> {r.merchant_reply}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      </BlockCard>
+    );
+  }
+
+  return null;
+}
+
 

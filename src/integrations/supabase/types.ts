@@ -1653,6 +1653,7 @@ export type Database = {
       link_tree_links: {
         Row: {
           created_at: string
+          data: Json
           enabled: boolean
           icon: string | null
           id: string
@@ -1665,6 +1666,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          data?: Json
           enabled?: boolean
           icon?: string | null
           id?: string
@@ -1677,6 +1679,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          data?: Json
           enabled?: boolean
           icon?: string | null
           id?: string
