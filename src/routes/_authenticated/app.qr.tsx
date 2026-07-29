@@ -1088,6 +1088,11 @@ function ReviewQrPage() {
         subtitle="Um único cartaz, três destinos: Avaliação, Árvore de Links ou Cartão Fidelidade. Escolha abaixo para onde o cliente será direcionado ao escanear."
       />
 
+      <div className="flex justify-end">
+        <QrMobileAudit />
+      </div>
+
+
       {step === 1 && (
         <>
           <QrDestinationCard establishmentId={est.id} initialDest={search.dest} />
