@@ -1588,23 +1588,25 @@ function ReviewQrPage() {
             </>
             )}
 
-            {/* Navegação entre etapas */}
-            <div className="flex items-center justify-between gap-2 border-t border-border/60 pt-4">
+            {/* Navegação entre etapas — fixa no rodapé do painel em telas pequenas */}
+            <div className="sticky bottom-0 z-20 -mx-4 flex items-center justify-between gap-2 border-t border-border/60 bg-card/95 px-4 py-3 backdrop-blur-md sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-4 sm:backdrop-blur-none">
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
+                className="h-11 px-3 sm:h-9"
                 disabled={step === 1}
                 onClick={() => setStep((s) => Math.max(1, s - 1))}
               >
                 ← Voltar
               </Button>
-              <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Etapa {step} de {QR_STEPS.length}
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:text-[11px]">
+                Etapa {step}/{QR_STEPS.length}
               </span>
               <Button
                 type="button"
                 size="sm"
+                className="h-11 px-3 sm:h-9"
                 disabled={step === QR_STEPS.length}
                 onClick={() => setStep((s) => Math.min(QR_STEPS.length, s + 1))}
               >
@@ -1616,8 +1618,9 @@ function ReviewQrPage() {
 
 
         {/* PREVIEW */}
-        <div className="min-w-0">
+        <div id="qr-preview" className="min-w-0 scroll-mt-4">
           <div className="sticky top-4 flex flex-col items-center gap-3">
+
             {/* CTA: Loja física */}
             <div className="flex w-full max-w-[420px] items-center gap-2">
               <button
