@@ -19,9 +19,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetClose } from "@/components/ui/sheet";
 import {
+  DndContext, closestCenter, PointerSensor, TouchSensor, KeyboardSensor,
+  useSensor, useSensors, type DragEndEvent,
+} from "@dnd-kit/core";
+import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
+import {
+  SortableContext, arrayMove, useSortable, verticalListSortingStrategy, sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
   ExternalLink, Instagram, MessageCircle, Globe, MapPin, Youtube, Facebook,
   Music2, Mail, Phone, Star, Trash2, ArrowUp, ArrowDown, Plus, Eye, Copy, QrCode, Wifi, KeyRound,
-  UtensilsCrossed, CreditCard, PlayCircle, Music, Images, MessageSquareQuote, ImageIcon, Pencil, Check,
+  UtensilsCrossed, CreditCard, PlayCircle, Music, Images, MessageSquareQuote, ImageIcon, Pencil, Check, GripVertical,
 } from "lucide-react";
 
 
@@ -39,6 +48,7 @@ type LinkKind =
 
 type LinkRow = {
   id?: string;
+  _uid?: string;
   kind: LinkKind;
   label: string;
   url: string;
@@ -47,6 +57,11 @@ type LinkRow = {
   sort_order: number;
   data?: Record<string, any>;
 };
+
+const uid = () =>
+  (typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : Math.random().toString(36).slice(2) + Date.now().toString(36));
 
 const KIND_META: Record<LinkKind, { label: string; icon: any; placeholder: string; isBlock?: boolean }> = {
   whatsapp: { label: "WhatsApp", icon: MessageCircle, placeholder: "5511999999999" },
@@ -206,7 +221,7 @@ function LinkTreeEditor() {
     setPublished(!!p.published);
     setLinks(
       (q.data?.links ?? []).map((l: any) => ({
-        id: l.id, kind: l.kind, label: l.label, url: l.url,
+        id: l.id, _uid: l.id ?? uid(), kind: l.kind, label: l.label, url: l.url,
         icon: l.icon, enabled: l.enabled, sort_order: l.sort_order,
         data: (l.data ?? {}) as Record<string, any>,
       })),
@@ -233,6 +248,7 @@ function LinkTreeEditor() {
       header_image: { image_url: "", link_url: "" },
     };
     setLinks((prev) => [...prev, {
+      _uid: uid(),
       kind,
       label: KIND_META[kind].label,
       url: prefill,
@@ -255,6 +271,23 @@ function LinkTreeEditor() {
       [next[i], next[j]] = [next[j], next[i]];
       return next.map((l, idx) => ({ ...l, sort_order: idx }));
     });
+  }
+  function reorderByUid(fromUid: string, toUid: string) {
+    setLinks((prev) => {
+      const from = prev.findIndex((l) => (l._uid ?? l.id) === fromUid);
+      const to = prev.findIndex((l) => (l._uid ?? l.id) === toUid);
+      if (from < 0 || to < 0 || from === to) return prev;
+      return arrayMove(prev, from, to).map((l, idx) => ({ ...l, sort_order: idx }));
+    });
+  }
+  const dndSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+  function handleDragEnd(e: DragEndEvent) {
+    if (!e.over || e.active.id === e.over.id) return;
+    reorderByUid(String(e.active.id), String(e.over.id));
   }
 
   async function save(publish?: boolean) {
@@ -558,60 +591,35 @@ function LinkTreeEditor() {
                   Adicione seu primeiro bloco acima. <Plus className="inline h-3.5 w-3.5" />
                 </p>
               )}
-              {links.map((l, i) => {
-                const M = KIND_META[l.kind];
-                const isBlock = !!M.isBlock;
-                return (
-                  <div key={i} className={`rounded-lg border p-3 space-y-2 ${isBlock ? "bg-secondary/30 border-primary/20" : "bg-card"}`}>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <M.icon className="h-4 w-4 text-primary shrink-0" />
-                      {/* Desktop: inline kind selector */}
-                      <div className="hidden sm:block">
-                        <Select value={l.kind} onValueChange={(v) => updateLink(i, { kind: v as LinkKind })}>
-                          <SelectTrigger className="h-8 w-[220px]"><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            {(Object.keys(KIND_META) as LinkKind[]).map((k) => (
-                              <SelectItem key={k} value={k}>{KIND_META[k].label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      {/* Mobile: summary text (label or kind name) */}
-                      <div className="sm:hidden min-w-0 flex-1 truncate text-sm font-medium">
-                        {l.label?.trim() || M.label}
-                      </div>
-                      {isBlock && (
-                        <span className="hidden sm:inline text-[10px] font-bold uppercase tracking-wider text-primary/70 bg-primary/10 px-1.5 py-0.5 rounded">Bloco</span>
-                      )}
-                      <div className="ml-auto flex items-center gap-0.5 sm:gap-1 shrink-0">
-                        <Switch checked={l.enabled} onCheckedChange={(v) => updateLink(i, { enabled: !!v })} />
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 sm:hidden"
-                          onClick={() => setMobileEditIdx(i)}
-                          aria-label="Editar link"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => move(i, -1)} disabled={i === 0}><ArrowUp className="h-4 w-4" /></Button>
-                        <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => move(i, 1)} disabled={i === links.length - 1}><ArrowDown className="h-4 w-4" /></Button>
-                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => removeLink(i)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                      </div>
-                    </div>
-                    {/* Fields — inline on desktop, hidden on mobile (edited via Sheet) */}
-                    <div className="hidden sm:block space-y-2">
-                      <LinkFields
-                        link={l}
-                        onChange={(patch) => updateLink(i, patch)}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+              <DndContext
+                sensors={dndSensors}
+                collisionDetection={closestCenter}
+                modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={links.map((l, i) => l._uid ?? l.id ?? `row-${i}`)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {links.map((l, i) => (
+                    <SortableLinkRow
+                      key={l._uid ?? l.id ?? `row-${i}`}
+                      id={l._uid ?? l.id ?? `row-${i}`}
+                      link={l}
+                      index={i}
+                      total={links.length}
+                      onUpdate={(patch) => updateLink(i, patch)}
+                      onRemove={() => removeLink(i)}
+                      onMove={(dir) => move(i, dir)}
+                      onOpenMobileEdit={() => setMobileEditIdx(i)}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
             </CardContent>
           </Card>
         </div>
+
 
 
         {/* Preview */}
@@ -734,6 +742,82 @@ function LinkTreeEditor() {
           })()}
         </SheetContent>
       </Sheet>
+    </div>
+  );
+}
+
+function SortableLinkRow({
+  id, link: l, index: i, total, onUpdate, onRemove, onMove, onOpenMobileEdit,
+}: {
+  id: string;
+  link: LinkRow;
+  index: number;
+  total: number;
+  onUpdate: (patch: Partial<LinkRow>) => void;
+  onRemove: () => void;
+  onMove: (dir: -1 | 1) => void;
+  onOpenMobileEdit: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const M = KIND_META[l.kind];
+  const isBlock = !!M.isBlock;
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 30 : undefined,
+    opacity: isDragging ? 0.9 : 1,
+    boxShadow: isDragging ? "0 12px 32px -8px rgba(0,0,0,0.35)" : undefined,
+    touchAction: "manipulation",
+  };
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`rounded-lg border p-3 space-y-2 ${isBlock ? "bg-secondary/30 border-primary/20" : "bg-card"} ${isDragging ? "ring-2 ring-primary/40" : ""}`}
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          {...attributes}
+          {...listeners}
+          aria-label="Arrastar para reordenar"
+          className="shrink-0 -ml-1 rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground cursor-grab active:cursor-grabbing touch-none"
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+        <M.icon className="h-4 w-4 text-primary shrink-0" />
+        {/* Desktop: inline kind selector */}
+        <div className="hidden sm:block">
+          <Select value={l.kind} onValueChange={(v) => onUpdate({ kind: v as LinkKind })}>
+            <SelectTrigger className="h-8 w-[220px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {(Object.keys(KIND_META) as LinkKind[]).map((k) => (
+                <SelectItem key={k} value={k}>{KIND_META[k].label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {/* Mobile: summary text */}
+        <div className="sm:hidden min-w-0 flex-1 truncate text-sm font-medium">
+          {l.label?.trim() || M.label}
+        </div>
+        {isBlock && (
+          <span className="hidden sm:inline text-[10px] font-bold uppercase tracking-wider text-primary/70 bg-primary/10 px-1.5 py-0.5 rounded">Bloco</span>
+        )}
+        <div className="ml-auto flex items-center gap-0.5 sm:gap-1 shrink-0">
+          <Switch checked={l.enabled} onCheckedChange={(v) => onUpdate({ enabled: !!v })} />
+          <Button size="icon" variant="ghost" className="h-8 w-8 sm:hidden" onClick={onOpenMobileEdit} aria-label="Editar link">
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => onMove(-1)} disabled={i === 0}><ArrowUp className="h-4 w-4" /></Button>
+          <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => onMove(1)} disabled={i === total - 1}><ArrowDown className="h-4 w-4" /></Button>
+          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={onRemove}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+        </div>
+      </div>
+      {/* Fields — inline on desktop, hidden on mobile (edited via Sheet) */}
+      <div className="hidden sm:block space-y-2">
+        <LinkFields link={l} onChange={onUpdate} />
+      </div>
     </div>
   );
 }
