@@ -13,6 +13,8 @@ import { PostStampReviewSheet } from "@/components/wallet/PostStampReviewSheet";
 import { CompleteProfileDialog } from "@/components/wallet/CompleteProfileDialog";
 import { InboxBellBadge } from "@/components/wallet/InboxBellBadge";
 import { haptic } from "@/lib/haptics";
+import { setWalletHint } from "@/lib/wallet-hint";
+
 
 
 export const Route = createFileRoute("/_authenticated/carteira")({
