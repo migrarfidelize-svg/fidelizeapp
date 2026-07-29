@@ -31,6 +31,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { ImproveWithAiButton } from "@/components/showcase/ImproveWithAiButton";
+import { DescriptionTemplates } from "@/components/showcase/DescriptionTemplates";
 import { useMyFeature } from "@/hooks/useMyFeature";
 
 const BADGE_PRESETS = ["Novidade", "Vegetariano", "Vegano", "Sem glúten", "Sem lactose", "Picante", "Chef recomenda", "Best-seller"];
