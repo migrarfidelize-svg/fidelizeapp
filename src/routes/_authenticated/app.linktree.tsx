@@ -561,10 +561,10 @@ function LinkTreeEditor() {
                 const isBlock = !!M.isBlock;
                 return (
                   <div key={i} className={`rounded-lg border p-3 space-y-2 ${isBlock ? "bg-secondary/30 border-primary/20" : "bg-card"}`}>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <M.icon className="h-4 w-4 text-primary shrink-0" />
                       <Select value={l.kind} onValueChange={(v) => updateLink(i, { kind: v as LinkKind })}>
-                        <SelectTrigger className="h-8 w-[220px]"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="h-8 w-full min-w-0 flex-1 sm:w-[220px] sm:flex-none"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {(Object.keys(KIND_META) as LinkKind[]).map((k) => (
                             <SelectItem key={k} value={k}>{KIND_META[k].label}</SelectItem>
@@ -574,11 +574,11 @@ function LinkTreeEditor() {
                       {isBlock && (
                         <span className="hidden sm:inline text-[10px] font-bold uppercase tracking-wider text-primary/70 bg-primary/10 px-1.5 py-0.5 rounded">Bloco</span>
                       )}
-                      <div className="ml-auto flex items-center gap-1">
+                      <div className="ml-auto flex items-center gap-0.5 sm:gap-1 shrink-0">
                         <Switch checked={l.enabled} onCheckedChange={(v) => updateLink(i, { enabled: !!v })} />
-                        <Button size="icon" variant="ghost" onClick={() => move(i, -1)} disabled={i === 0}><ArrowUp className="h-4 w-4" /></Button>
-                        <Button size="icon" variant="ghost" onClick={() => move(i, 1)} disabled={i === links.length - 1}><ArrowDown className="h-4 w-4" /></Button>
-                        <Button size="icon" variant="ghost" onClick={() => removeLink(i)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => move(i, -1)} disabled={i === 0}><ArrowUp className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => move(i, 1)} disabled={i === links.length - 1}><ArrowDown className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => removeLink(i)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                       </div>
                     </div>
                     {l.kind === "wifi" ? (
@@ -604,7 +604,7 @@ function LinkTreeEditor() {
                     ) : isBlock ? (
                       <BlockFields row={l} onChange={(patch) => updateLink(i, patch)} />
                     ) : (
-                      <div className="grid gap-2 md:grid-cols-2">
+                      <div className="grid gap-2 sm:grid-cols-2">
                         <Input placeholder="Rótulo" value={l.label} onChange={(e) => updateLink(i, { label: e.target.value })} maxLength={80} />
                         <Input placeholder={M.placeholder} value={l.url} onChange={(e) => updateLink(i, { url: e.target.value })} maxLength={500} />
                       </div>
@@ -617,6 +617,7 @@ function LinkTreeEditor() {
             </CardContent>
           </Card>
         </div>
+
 
         {/* Preview */}
         <div className="lg:sticky lg:top-4 lg:self-start">
