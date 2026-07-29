@@ -140,7 +140,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     key: "cardapio",
     icon: UtensilsCrossed,
-    label: "Cardápio",
+    label: "Cardápio Story",
     items: [
       { to: "/app/cardapio", label: "Visão geral", icon: UtensilsCrossed, exact: true },
       { to: "/app/cardapio/categorias", label: "Categorias", icon: FolderTree },
