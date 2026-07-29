@@ -30,6 +30,8 @@ import { DisplayStorePreview } from "@/components/DisplayStorePreview";
 import { PrintOrderDialog } from "@/components/PrintOrderDialog";
 import { LogoUploadButton } from "@/components/LogoUploadButton";
 import { QrTagsManager } from "@/components/QrTagsManager";
+import { QrMobileAudit } from "@/components/QrMobileAudit";
+
 
 import {
   AlertDialog,
