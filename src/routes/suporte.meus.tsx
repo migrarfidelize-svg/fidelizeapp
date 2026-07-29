@@ -10,7 +10,7 @@ import { ArrowLeft, Ticket } from "lucide-react";
 import { LoadingSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/suporte/meus")({
-  head: () => ({ meta: [{ title: "Meus chamados" }] }),
+  head: () => ({ meta: [{ title: "Meus chamados" }, { name: "robots", content: "noindex, nofollow" }] }),
   component: MyTickets,
 });
 
