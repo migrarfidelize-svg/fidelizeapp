@@ -154,6 +154,8 @@ function WalletProfile() {
         </button>
       </form>
 
+      <PasswordCard />
+
       <TierOverview />
 
       <PushStatusCard />
