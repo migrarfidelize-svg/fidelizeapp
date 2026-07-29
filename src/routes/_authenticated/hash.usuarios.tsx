@@ -10,7 +10,7 @@ import {
   adminReassignOrphanCustomer,
   adminListEstablishments,
   adminGetUserWallet,
-} from "@/lib/hash.functions";
+} from "@/lib/admin.functions";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
