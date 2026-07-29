@@ -110,8 +110,10 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
+  const [whatsapp, setWhatsapp] = useState(() => formatWalletHint(getWalletHint()));
   const [company, setCompany] = useState("");
+  const walletHintApplied = useRef<boolean>(Boolean(getWalletHint()));
+
   const [segment, setSegment] = useState("");
   const [showPw, setShowPw] = useState(false);
   const pwScore = (() => {
