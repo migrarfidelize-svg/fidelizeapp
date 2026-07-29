@@ -87,12 +87,16 @@ function HelpCenterHub() {
                     <h3 className="font-semibold">{c.name}</h3>
                   </div>
                   {c.description && <p className="text-xs text-muted-foreground mb-3">{c.description}</p>}
-                  <ul className="space-y-1.5">
+                  <ul className="-mx-2 flex flex-col">
                     {catArts.slice(0, 5).map((a: { id: string; slug: string; title: string }) => (
                       <li key={a.id}>
-                        <Link to="/suporte/$slug/kb/$article" params={{ slug: params.slug, article: a.slug }} className="text-sm text-muted-foreground hover:text-primary flex items-center justify-between group">
+                        <Link
+                          to="/suporte/$slug/kb/$article"
+                          params={{ slug: params.slug, article: a.slug }}
+                          className="flex min-h-[48px] items-center justify-between gap-3 rounded-xl px-3 py-3 text-sm text-foreground/90 hover:bg-muted active:bg-muted/70 transition"
+                        >
                           <span className="truncate">{a.title}</span>
-                          <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100" />
+                          <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
                         </Link>
                       </li>
                     ))}
@@ -105,7 +109,7 @@ function HelpCenterHub() {
         {categories.length === 0 && articles.length > 0 && (
           <div className="grid gap-3 md:grid-cols-2">
             {articles.slice(0, 10).map((a: { id: string; slug: string; title: string; excerpt: string | null }) => (
-              <Link key={a.id} to="/suporte/$slug/kb/$article" params={{ slug: params.slug, article: a.slug }} className="p-4 rounded-xl border bg-card hover:border-primary transition">
+              <Link key={a.id} to="/suporte/$slug/kb/$article" params={{ slug: params.slug, article: a.slug }} className="block min-h-[64px] p-4 rounded-xl border bg-card hover:border-primary active:bg-muted/50 transition">
                 <div className="font-medium text-sm">{a.title}</div>
                 {a.excerpt && <div className="text-xs text-muted-foreground line-clamp-2 mt-1">{a.excerpt}</div>}
               </Link>
