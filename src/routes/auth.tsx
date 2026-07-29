@@ -167,12 +167,17 @@ function AuthPage() {
           setLoading(false);
           return;
         }
+        if (isEstablishmentSignup && company.trim().length < 2) {
+          toast.error("Informe o nome do seu negócio.");
+          setLoading(false);
+          return;
+        }
         const creds = walletFlow ? walletCredentials(digits) : { email, password };
         const { data: signUpData, error } = await supabase.auth.signUp({
           email: creds.email,
           password: creds.password,
           options: {
-            data: { full_name: name, phone: whatsapp, whatsapp },
+            data: { full_name: name, phone: whatsapp, whatsapp, company_name: company.trim() || undefined },
             emailRedirectTo: window.location.origin + "/auth",
           },
         });
@@ -181,10 +186,13 @@ function AuthPage() {
           if (walletFlow && (msg.includes("already") || msg.includes("registered") || msg.includes("exists"))) {
             const retry = await supabase.auth.signInWithPassword(creds);
             if (retry.error) throw new Error("Este WhatsApp já tem cadastro. Toque em Entrar.");
+          } else if (msg.includes("already") || msg.includes("registered") || msg.includes("exists")) {
+            throw new Error("Já existe uma conta com este e-mail. Use “Entrar” ou recupere sua senha.");
           } else {
             throw error;
           }
         }
+
         const uid = signUpData.user?.id ?? (await supabase.auth.getUser()).data.user?.id;
         if (uid) {
           await supabase.from("profiles").upsert(
