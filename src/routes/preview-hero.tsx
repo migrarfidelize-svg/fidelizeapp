@@ -12,6 +12,8 @@ export const Route = createFileRoute("/preview-hero")({
       { property: "og:description", content: "Compare três direções de texto para o topo da landing da Fidelize." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "robots", content: "noindex, nofollow" },
+
     ],
   }),
 });
