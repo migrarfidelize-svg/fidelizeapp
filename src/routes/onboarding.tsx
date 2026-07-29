@@ -226,6 +226,7 @@ function Onboarding() {
     setLoading(true);
     try {
       await create({ data: { ...f, slug: cleanSlug } });
+      try { localStorage.removeItem("fidelize:onboarding-prefill"); } catch { /* ignore */ }
       qc.removeQueries({ queryKey: ["memberships"] });
       const fresh = await getEsts();
       qc.setQueryData(["memberships"], fresh);
