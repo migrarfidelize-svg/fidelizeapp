@@ -228,11 +228,13 @@ function AuthPage() {
           toast.success("Conta criada! Vamos configurar seu cartão.");
           await completeAuthRedirect("/onboarding", "SIGNED_UP");
         } else {
+          if (walletFlow) setWalletHint(whatsapp);
           const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
           if (dest.toastKind === "error") toast.error(dest.toast ?? "Não foi possível vincular seu cartão.");
           else toast.success(dest.toast ?? "Conta criada!");
           await completeAuthRedirect(dest.to, "SIGNED_UP");
         }
+
       } else {
         let creds: { email: string; password: string };
         if (walletFlow) {
