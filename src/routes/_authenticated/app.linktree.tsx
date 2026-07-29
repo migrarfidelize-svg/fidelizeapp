@@ -466,6 +466,17 @@ function LinkTreeEditor() {
                 </p>
               </div>
 
+              <LogoPaletteSync
+                logoUrl={logoUrl || null}
+                onApply={(p) => {
+                  setPrimary(p.primary);
+                  setAccent(p.accent);
+                  setBackground(p.background);
+                  setText(p.text);
+                }}
+                className="md:col-span-2"
+                hint="Analisamos a sua logo e aplicamos automaticamente as 4 cores da árvore de links."
+              />
               <div className="grid gap-4 md:grid-cols-2">
                 <ColorField label="Cor primária" value={primary} onChange={setPrimary} />
                 <ColorField label="Cor de destaque" value={accent} onChange={setAccent} />
