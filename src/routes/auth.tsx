@@ -4,7 +4,9 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
-import { Coffee, Check, ArrowRight, Sparkles, Wifi, Store, User, Loader2 } from "lucide-react";
+import { Coffee, Check, ArrowRight, Sparkles, Wifi, Store, User, Loader2, Eye, EyeOff, Building2 } from "lucide-react";
+
+export const ONBOARDING_PREFILL_KEY = "fidelize:onboarding-prefill";
 import { claimCustomerByToken, attachEstablishmentBySlug } from "@/lib/my-wallet.functions";
 
 const AUTH_SYNC_CHANNEL = "fidelize-auth-sync";
@@ -106,6 +108,15 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  const [company, setCompany] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const pwScore = (() => {
+    let s = 0;
+    if (password.length >= 6) s++;
+    if (password.length >= 10) s++;
+    if (/[a-zA-Z]/.test(password) && /\d/.test(password)) s++;
+    return Math.min(s, 3);
+  })();
   // Sem claim/est_slug (cadastro vindo do site institucional) o padrão é "estabelecimento".
   // Fluxos de cliente final sempre chegam com `claim` ou `est_slug` (QR/scan) ou `as=customer`.
   // Se abriu como PWA instalado (source=pwa), assume "cliente".
@@ -163,12 +174,17 @@ function AuthPage() {
           setLoading(false);
           return;
         }
+        if (isEstablishmentSignup && company.trim().length < 2) {
+          toast.error("Informe o nome do seu negócio.");
+          setLoading(false);
+          return;
+        }
         const creds = walletFlow ? walletCredentials(digits) : { email, password };
         const { data: signUpData, error } = await supabase.auth.signUp({
           email: creds.email,
           password: creds.password,
           options: {
-            data: { full_name: name, phone: whatsapp, whatsapp },
+            data: { full_name: name, phone: whatsapp, whatsapp, company_name: company.trim() || undefined },
             emailRedirectTo: window.location.origin + "/auth",
           },
         });
@@ -177,10 +193,13 @@ function AuthPage() {
           if (walletFlow && (msg.includes("already") || msg.includes("registered") || msg.includes("exists"))) {
             const retry = await supabase.auth.signInWithPassword(creds);
             if (retry.error) throw new Error("Este WhatsApp já tem cadastro. Toque em Entrar.");
+          } else if (msg.includes("already") || msg.includes("registered") || msg.includes("exists")) {
+            throw new Error("Já existe uma conta com este e-mail. Use “Entrar” ou recupere sua senha.");
           } else {
             throw error;
           }
         }
+
         const uid = signUpData.user?.id ?? (await supabase.auth.getUser()).data.user?.id;
         if (uid) {
           await supabase.from("profiles").upsert(
@@ -189,6 +208,12 @@ function AuthPage() {
           );
         }
         if (isEstablishmentSignup) {
+          try {
+            localStorage.setItem(
+              ONBOARDING_PREFILL_KEY,
+              JSON.stringify({ name: company.trim(), at: Date.now() }),
+            );
+          } catch { /* ignore */ }
           toast.success("Conta criada! Vamos configurar seu cartão.");
           await completeAuthRedirect("/onboarding", "SIGNED_UP");
         } else {
@@ -476,6 +501,26 @@ function AuthPage() {
                 </div>
               )}
 
+              {isEstablishmentSignup && (
+                <div className="animate-fade-in space-y-1.5">
+                  <label htmlFor="company" className="ml-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">
+                    <Building2 className="h-3 w-3" /> Nome do negócio
+                  </label>
+                  <input
+                    id="company"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value.slice(0, 60))}
+                    required
+                    minLength={2}
+                    placeholder="Ex: Café Aurora"
+                    className="auth-input"
+                  />
+                  <p className="ml-1 text-[10px] text-white/40">Já deixamos tudo pronto no próximo passo com esse nome.</p>
+                </div>
+              )}
+
+
+
               {/* WhatsApp: obrigatório para cliente (sempre) e para estabelecimento no signup */}
               {(walletFlow || isEstablishmentSignup) && (
                 <div className="animate-fade-in space-y-1.5">
@@ -503,10 +548,42 @@ function AuthPage() {
                         <Link to="/auth/recuperar" className="text-[10px] uppercase tracking-widest text-[oklch(0.78_0.19_330)] hover:underline">Esqueci</Link>
                       )}
                     </div>
-                    <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} maxLength={15} autoComplete={isSignup ? "new-password" : "current-password"} placeholder="••••••" className="auth-input" aria-describedby={isSignup ? "password-hint" : undefined} />
+                    <div className="relative">
+                      <input id="password" type={showPw ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} maxLength={15} autoComplete={isSignup ? "new-password" : "current-password"} placeholder="••••••" className="auth-input pr-10" aria-describedby={isSignup ? "password-hint" : undefined} />
+                      <button
+                        type="button"
+                        onClick={() => setShowPw((v) => !v)}
+                        aria-label={showPw ? "Ocultar senha" : "Mostrar senha"}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 transition-colors hover:text-white/80"
+                      >
+                        {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                     {isSignup && (
-                      <p id="password-hint" className="ml-1 text-[10px] text-white/50">De 6 a 15 caracteres. Pode ser só números, inclusive repetidos.</p>
+                      <>
+                        <div className="ml-1 flex items-center gap-1.5" aria-hidden>
+                          {[0, 1, 2].map((i) => (
+                            <span
+                              key={i}
+                              className={
+                                "h-1 flex-1 rounded-full transition-colors " +
+                                (pwScore > i
+                                  ? pwScore === 1
+                                    ? "bg-amber-400/70"
+                                    : pwScore === 2
+                                    ? "bg-[#a78bfa]"
+                                    : "bg-emerald-400"
+                                  : "bg-white/10")
+                              }
+                            />
+                          ))}
+                        </div>
+                        <p id="password-hint" className="ml-1 text-[10px] text-white/50">
+                          De 6 a 15 caracteres. {pwScore < 2 ? "Misture letras e números para deixar mais forte." : "Boa senha!"}
+                        </p>
+                      </>
                     )}
+
                   </div>
                 </>
               )}

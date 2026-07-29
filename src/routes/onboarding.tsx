@@ -93,9 +93,19 @@ function Onboarding() {
   const [cropOpen, setCropOpen] = useState(false);
   const [rawFile, setRawFile] = useState<File | null>(null);
   const [logoRev, setLogoRev] = useState(0);
+  const prefillName = (() => {
+    try {
+      const raw = localStorage.getItem("fidelize:onboarding-prefill");
+      if (!raw) return "";
+      const p = JSON.parse(raw) as { name?: string };
+      return (p?.name ?? "").slice(0, 60);
+    } catch {
+      return "";
+    }
+  })();
   const [f, setF] = useState({
-    name: "",
-    slug: "",
+    name: prefillName,
+    slug: prefillName ? slugify(prefillName) : "",
     segment: "",
     description: "",
     primary_color: "#22d3ee",
@@ -216,6 +226,7 @@ function Onboarding() {
     setLoading(true);
     try {
       await create({ data: { ...f, slug: cleanSlug } });
+      try { localStorage.removeItem("fidelize:onboarding-prefill"); } catch { /* ignore */ }
       qc.removeQueries({ queryKey: ["memberships"] });
       const fresh = await getEsts();
       qc.setQueryData(["memberships"], fresh);
