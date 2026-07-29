@@ -311,7 +311,7 @@ const QR_STEPS: { id: number; label: string; title: string; hint: string; icon: 
 function QrStepper({ step, onSelect }: { step: number; onSelect: (s: number) => void }) {
   const pct = ((step - 1) / (QR_STEPS.length - 1)) * 100;
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-card/70 p-4 backdrop-blur-xl">
+    <div className="relative min-w-0 overflow-hidden rounded-2xl border border-primary/20 bg-card/70 p-4 backdrop-blur-xl">
       <div className="pointer-events-none absolute -left-16 -top-16 h-40 w-40 rounded-full bg-primary/20 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-20 -right-10 h-40 w-40 rounded-full bg-accent/15 blur-3xl" />
 
@@ -1081,7 +1081,7 @@ function ReviewQrPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-3 sm:p-4 md:p-8">
+    <div className="mx-auto min-w-0 max-w-6xl space-y-6 p-3 sm:p-4 md:p-8">
       <PageHero
         icon={Star}
         eyebrow="Marketing · QR"
@@ -1128,7 +1128,7 @@ function ReviewQrPage() {
                   <Button
                     size="sm"
                     variant={copiedPublic ? "default" : "outline"}
-                    className="h-8 gap-1.5 px-2.5"
+                    className="h-8 shrink-0 gap-1.5 px-2.5"
                     onClick={copyPublicUrl}
                     disabled={!fidelizeUrl || copiedPublic}
                     aria-label="Copiar link público"

@@ -81,8 +81,8 @@ export function QrDestinationCard({
   return (
     <Card className="border-primary/20 bg-card/70">
       <CardContent className="space-y-3 p-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex-1 min-w-[220px]">
+        <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+          <div className="min-w-0">
             <Label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
               Para onde o QR leva
             </Label>
@@ -91,7 +91,7 @@ export function QrDestinationCard({
             </p>
           </div>
           <Select value={dest} onValueChange={(v) => save(v as Dest)} disabled={saving}>
-            <SelectTrigger className="w-[240px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-full sm:w-[240px] shrink-0"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="reviews">Avaliação de atendimento</SelectItem>
               <SelectItem value="linktree">Árvore de Links</SelectItem>
@@ -110,7 +110,7 @@ export function QrDestinationCard({
           <div className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/5 p-3 text-xs">
             <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
             {isShowcase ? (
-              <div className="flex-1">
+              <div className="min-w-0 flex-1">
                 <p className="font-medium">
                   {(isCatalog ? catalogAllowed : menuAllowed)
                     ? `Seu ${isCatalog ? "catálogo" : "cardápio"} ainda não está publicado — o QR cai na página de avaliação até publicar.`
@@ -127,14 +127,14 @@ export function QrDestinationCard({
                 </Button>
               </div>
             ) : dest === "linktree" ? (
-              <div className="flex-1">
+              <div className="min-w-0 flex-1">
                 <p className="font-medium">Você ainda não possui uma Árvore de Links publicada.</p>
                 <Button asChild size="sm" variant="outline" className="mt-2">
                   <Link to="/app/linktree">Criar Árvore de Links</Link>
                 </Button>
               </div>
             ) : (
-              <div className="flex-1">
+              <div className="min-w-0 flex-1">
                 <p className="font-medium">Você ainda não possui uma avaliação ativa.</p>
                 <Button asChild size="sm" variant="outline" className="mt-2">
                   <Link to="/app/avaliacoes">Configurar avaliação</Link>
@@ -143,9 +143,9 @@ export function QrDestinationCard({
             )}
           </div>
         ) : (
-          <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-2 text-xs">
-            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-            <span className="text-muted-foreground">
+          <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-2 text-xs min-w-0">
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+            <span className="min-w-0 text-muted-foreground">
               Destino ativo e pronto para receber scans.
             </span>
             {q.data?.slug && (
@@ -153,7 +153,7 @@ export function QrDestinationCard({
                 href={`/${qrDestinationPath(dest)}/${q.data.slug}`}
                 target="_blank"
                 rel="noreferrer"
-                className="ml-auto inline-flex items-center gap-1 text-primary hover:underline"
+                className="ml-auto inline-flex shrink-0 items-center gap-1 text-primary hover:underline"
               >
                 Ver <ExternalLink className="h-3 w-3" />
               </a>
