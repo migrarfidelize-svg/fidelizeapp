@@ -272,6 +272,23 @@ function LinkTreeEditor() {
       return next.map((l, idx) => ({ ...l, sort_order: idx }));
     });
   }
+  function reorderByUid(fromUid: string, toUid: string) {
+    setLinks((prev) => {
+      const from = prev.findIndex((l) => (l._uid ?? l.id) === fromUid);
+      const to = prev.findIndex((l) => (l._uid ?? l.id) === toUid);
+      if (from < 0 || to < 0 || from === to) return prev;
+      return arrayMove(prev, from, to).map((l, idx) => ({ ...l, sort_order: idx }));
+    });
+  }
+  const dndSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+  function handleDragEnd(e: DragEndEvent) {
+    if (!e.over || e.active.id === e.over.id) return;
+    reorderByUid(String(e.active.id), String(e.over.id));
+  }
 
   async function save(publish?: boolean) {
     if (!est) return;
