@@ -3,7 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
+  // Nenhuma página autenticada deve entrar em índice de busca ou cache de IA.
+  head: () => ({
+    meta: [{ name: "robots", content: "noindex, nofollow, noarchive, nosnippet" }],
+  }),
   beforeLoad: async ({ location }) => {
+
     // Se o usuário estava tentando abrir /carteira, sinaliza para a tela
     // de login exibir apenas o fluxo de cliente final.
     const fromWallet = location.pathname === "/carteira" || location.pathname.startsWith("/carteira/");
