@@ -110,7 +110,7 @@ export function QrDestinationCard({
           <div className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/5 p-3 text-xs">
             <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
             {isShowcase ? (
-              <div className="flex-1">
+              <div className="min-w-0 flex-1">
                 <p className="font-medium">
                   {(isCatalog ? catalogAllowed : menuAllowed)
                     ? `Seu ${isCatalog ? "catálogo" : "cardápio"} ainda não está publicado — o QR cai na página de avaliação até publicar.`
