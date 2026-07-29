@@ -91,6 +91,7 @@ export function CompleteProfileDialog({ required = false }: { required?: boolean
   function later() {
     try {
       localStorage.setItem(SNOOZE_KEY, String(Date.now()));
+      sessionStorage.setItem(SESSION_DISMISS_KEY, "1");
     } catch {
       /* ignore */
     }
