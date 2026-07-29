@@ -30,6 +30,8 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { ImproveWithAiButton } from "@/components/showcase/ImproveWithAiButton";
+import { useMyFeature } from "@/hooks/useMyFeature";
 
 const BADGE_PRESETS = ["Novidade", "Vegetariano", "Vegano", "Sem glúten", "Sem lactose", "Picante", "Chef recomenda", "Best-seller"];
 
@@ -81,6 +83,8 @@ export function ShowcaseItems({ kind }: { kind: ShowcaseKind }) {
 
   const [catFilter, setCatFilter] = useState<string>("all"); // 'all' | 'none' | uuid
   const [search, setSearch] = useState("");
+  const aiFeature = useMyFeature(estId, kind === "catalog" ? "catalog.ai" : "menu.ai");
+  const aiAllowed = aiFeature.allowed;
 
   const cats = useQuery({
     queryKey: ["menu-categories", estId, kind],
@@ -258,6 +262,16 @@ export function ShowcaseItems({ kind }: { kind: ShowcaseKind }) {
                   <Button size="icon" variant="ghost" onClick={() => dup.mutate(it.id)} title="Duplicar">
                     <CopyIcon className="h-4 w-4" />
                   </Button>
+                  {estId && aiAllowed && (
+                    <ImproveWithAiButton
+                      establishmentId={estId}
+                      itemId={it.id}
+                      itemName={it.name}
+                      currentDescription={it.short_desc ?? null}
+                      kind={kind}
+                      compact
+                    />
+                  )}
                   <Button size="icon" variant="ghost" onClick={() => openEdit(it)} title="Editar">
                     <Pencil className="h-4 w-4" />
                   </Button>
