@@ -83,6 +83,8 @@ export function ShowcaseItems({ kind }: { kind: ShowcaseKind }) {
 
   const [catFilter, setCatFilter] = useState<string>("all"); // 'all' | 'none' | uuid
   const [search, setSearch] = useState("");
+  const aiFeature = useMyFeature(estId, kind === "catalog" ? "catalog.ai" : "menu.ai");
+  const aiAllowed = aiFeature.allowed;
 
   const cats = useQuery({
     queryKey: ["menu-categories", estId, kind],
