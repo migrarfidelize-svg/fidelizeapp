@@ -109,7 +109,7 @@ function HelpCenterHub() {
         {categories.length === 0 && articles.length > 0 && (
           <div className="grid gap-3 md:grid-cols-2">
             {articles.slice(0, 10).map((a: { id: string; slug: string; title: string; excerpt: string | null }) => (
-              <Link key={a.id} to="/suporte/$slug/kb/$article" params={{ slug: params.slug, article: a.slug }} className="p-4 rounded-xl border bg-card hover:border-primary transition">
+              <Link key={a.id} to="/suporte/$slug/kb/$article" params={{ slug: params.slug, article: a.slug }} className="block min-h-[64px] p-4 rounded-xl border bg-card hover:border-primary active:bg-muted/50 transition">
                 <div className="font-medium text-sm">{a.title}</div>
                 {a.excerpt && <div className="text-xs text-muted-foreground line-clamp-2 mt-1">{a.excerpt}</div>}
               </Link>
