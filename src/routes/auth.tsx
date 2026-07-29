@@ -201,6 +201,12 @@ function AuthPage() {
           );
         }
         if (isEstablishmentSignup) {
+          try {
+            localStorage.setItem(
+              ONBOARDING_PREFILL_KEY,
+              JSON.stringify({ name: company.trim(), at: Date.now() }),
+            );
+          } catch { /* ignore */ }
           toast.success("Conta criada! Vamos configurar seu cartão.");
           await completeAuthRedirect("/onboarding", "SIGNED_UP");
         } else {
