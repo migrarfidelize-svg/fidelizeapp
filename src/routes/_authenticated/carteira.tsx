@@ -63,6 +63,12 @@ function WalletLayout() {
   const qc = useQueryClient();
   useWalletFlash();
 
+  // Perfil vira obrigatório nas ações de valor: prêmios e cartão do estabelecimento.
+  const profileRequired =
+    pathname.startsWith("/carteira/premios") ||
+    /^\/carteira\/(?!premios|historico|descobrir|perfil|conquistas|mensagens|retrospectiva|e\/)[^/]+/.test(pathname);
+
+
   // Piggyback no cache já hidratado pela home para descobrir os customer_ids.
   const { data: wallet } = useQuery({
     queryKey: ["my-wallet"],
