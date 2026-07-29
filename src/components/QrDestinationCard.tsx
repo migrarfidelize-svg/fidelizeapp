@@ -127,7 +127,7 @@ export function QrDestinationCard({
                 </Button>
               </div>
             ) : dest === "linktree" ? (
-              <div className="flex-1">
+              <div className="min-w-0 flex-1">
                 <p className="font-medium">Você ainda não possui uma Árvore de Links publicada.</p>
                 <Button asChild size="sm" variant="outline" className="mt-2">
                   <Link to="/app/linktree">Criar Árvore de Links</Link>
