@@ -17,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { showcase, type ShowcaseKind } from "@/lib/showcase";
 import { AiImportDialog } from "@/components/showcase/AiImportDialog";
+import { AnalyzeShowcasePanel } from "@/components/showcase/AnalyzeShowcasePanel";
 import { useMyFeature } from "@/hooks/useMyFeature";
 
 const STATUS_LABEL: Record<string, { label: string; tone: string }> = {
