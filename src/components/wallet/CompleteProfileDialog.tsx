@@ -103,10 +103,9 @@ export function CompleteProfileDialog({ required = false }: { required?: boolean
       }}
     >
       <DialogContent
-        className="max-w-md"
-        onInteractOutside={(e) => required && e.preventDefault()}
-        onEscapeKeyDown={(e) => required && e.preventDefault()}
-        showCloseButton={!required}
+        className={`max-w-md ${required ? "[&>button]:hidden" : ""}`}
+        onInteractOutside={(e) => { if (required) e.preventDefault(); }}
+        onEscapeKeyDown={(e) => { if (required) e.preventDefault(); }}
       >
         <DialogHeader>
           <div className="mb-2 grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-primary/25 to-primary/5 text-primary">
