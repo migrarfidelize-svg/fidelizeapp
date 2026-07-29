@@ -334,7 +334,7 @@ function QrStepper({ step, onSelect }: { step: number; onSelect: (s: number) => 
                 type="button"
                 onClick={() => onSelect(s.id)}
                 aria-current={active ? "step" : undefined}
-                className={`group relative flex min-w-[7.5rem] flex-1 snap-start items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-all duration-300 ${
+                className={`group relative flex min-w-[5.75rem] shrink-0 snap-start items-center gap-2 rounded-xl border px-2.5 py-2 text-left transition-all duration-300 sm:min-w-[7.5rem] sm:flex-1 sm:gap-2.5 sm:px-3 sm:py-2.5 ${
                   active
                     ? "border-primary bg-primary/10 shadow-[0_0_30px_-10px_hsl(var(--primary)/0.9)]"
                     : done
