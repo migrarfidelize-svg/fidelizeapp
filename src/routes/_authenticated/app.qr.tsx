@@ -1399,6 +1399,15 @@ function ReviewQrPage() {
 
 
             {/* Colors */}
+            <LogoPaletteSync
+              logoUrl={est?.logo_url ?? null}
+              onApply={(p) => {
+                setPrimaryColor(p.primary);
+                setBackgroundColor(p.background);
+                setTextColor(p.text);
+              }}
+              hint="Extraímos as cores da sua logo e ajustamos automaticamente cor principal, fundo e texto do QR/cartaz."
+            />
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="space-y-1.5">
                 <Label className="text-xs">Cor principal</Label>
