@@ -4,7 +4,8 @@ import { queryOptions, useSuspenseQuery, useQuery } from "@tanstack/react-query"
 import { toast } from "sonner";
 import { getPublicLinkTreeBySlug, getLinkTreeBlockData } from "@/lib/linktree.functions";
 import { trackChannelEvent, useChannelPageView } from "@/lib/tracking";
-import { ExternalLink, Instagram, MessageCircle, Globe, MapPin, Youtube, Facebook, Music2, Mail, Phone, Star, Wifi, KeyRound, Copy, Check, Eye, EyeOff, UserPlus, UtensilsCrossed, CreditCard, PlayCircle, Music, Images as ImagesIcon, MessageSquareQuote, ChevronLeft, ChevronRight } from "lucide-react";
+import { ExternalLink, Instagram, MessageCircle, Globe, MapPin, Youtube, Facebook, Music2, Mail, Phone, Star, Wifi, KeyRound, Copy, Check, Eye, EyeOff, UserPlus, UtensilsCrossed, CreditCard, PlayCircle, Music, Images as ImagesIcon, MessageSquareQuote, ChevronLeft, ChevronRight, X as XIcon, ZoomIn } from "lucide-react";
+import { useEffect } from "react";
 
 
 const opts = (slug: string) =>
