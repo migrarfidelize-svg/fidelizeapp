@@ -541,10 +541,42 @@ function AuthPage() {
                         <Link to="/auth/recuperar" className="text-[10px] uppercase tracking-widest text-[oklch(0.78_0.19_330)] hover:underline">Esqueci</Link>
                       )}
                     </div>
-                    <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} maxLength={15} autoComplete={isSignup ? "new-password" : "current-password"} placeholder="••••••" className="auth-input" aria-describedby={isSignup ? "password-hint" : undefined} />
+                    <div className="relative">
+                      <input id="password" type={showPw ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} maxLength={15} autoComplete={isSignup ? "new-password" : "current-password"} placeholder="••••••" className="auth-input pr-10" aria-describedby={isSignup ? "password-hint" : undefined} />
+                      <button
+                        type="button"
+                        onClick={() => setShowPw((v) => !v)}
+                        aria-label={showPw ? "Ocultar senha" : "Mostrar senha"}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 transition-colors hover:text-white/80"
+                      >
+                        {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                     {isSignup && (
-                      <p id="password-hint" className="ml-1 text-[10px] text-white/50">De 6 a 15 caracteres. Pode ser só números, inclusive repetidos.</p>
+                      <>
+                        <div className="ml-1 flex items-center gap-1.5" aria-hidden>
+                          {[0, 1, 2].map((i) => (
+                            <span
+                              key={i}
+                              className={
+                                "h-1 flex-1 rounded-full transition-colors " +
+                                (pwScore > i
+                                  ? pwScore === 1
+                                    ? "bg-amber-400/70"
+                                    : pwScore === 2
+                                    ? "bg-[#a78bfa]"
+                                    : "bg-emerald-400"
+                                  : "bg-white/10")
+                              }
+                            />
+                          ))}
+                        </div>
+                        <p id="password-hint" className="ml-1 text-[10px] text-white/50">
+                          De 6 a 15 caracteres. {pwScore < 2 ? "Misture letras e números para deixar mais forte." : "Boa senha!"}
+                        </p>
+                      </>
                     )}
+
                   </div>
                 </>
               )}
