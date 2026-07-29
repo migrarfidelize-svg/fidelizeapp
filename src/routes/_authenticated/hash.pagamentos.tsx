@@ -1317,7 +1317,7 @@ function PaymentDetailDialog({ id, onClose }: { id: string | null; onClose: () =
 
               {est?.slug && (
                 <div className="border-t pt-3 text-right">
-                  <Link to="/admin/empresas" className="text-xs text-primary underline-offset-4 hover:underline">Ver empresa →</Link>
+                  <Link to="/hash/empresas" className="text-xs text-primary underline-offset-4 hover:underline">Ver empresa →</Link>
                 </div>
               )}
             </div>

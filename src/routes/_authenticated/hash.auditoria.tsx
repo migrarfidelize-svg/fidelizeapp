@@ -88,7 +88,7 @@ function AdminAuditoria() {
                   )}
                 </div>
                 {l.establishment && l.action !== "admin_delete_establishment" && (l.establishment_id || l.entity_id) && (
-                  <Button asChild variant="ghost" size="sm"><Link to="/admin/empresa/$id" params={{ id: (l.establishment_id ?? l.entity_id)! }}><ExternalLink className="h-4 w-4" /></Link></Button>
+                  <Button asChild variant="ghost" size="sm"><Link to="/hash/empresa/$id" params={{ id: (l.establishment_id ?? l.entity_id)! }}><ExternalLink className="h-4 w-4" /></Link></Button>
                 )}
               </div>
             ))}

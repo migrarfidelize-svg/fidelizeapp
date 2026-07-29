@@ -79,7 +79,7 @@ function EmpresaDetail() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <button onClick={() => navigate({ to: "/admin/empresas" })} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-2"><ArrowLeft className="h-3 w-3" /> Empresas</button>
+          <button onClick={() => navigate({ to: "/hash/empresas" })} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-2"><ArrowLeft className="h-3 w-3" /> Empresas</button>
           <h1 className="font-display text-3xl font-bold">{e.name}</h1>
           <div className="mt-1 text-sm text-muted-foreground flex items-center gap-3 flex-wrap">
             <span>/{e.slug}</span>

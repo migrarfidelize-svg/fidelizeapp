@@ -70,7 +70,7 @@ function AdminAlertas() {
                   <div className="text-xs text-muted-foreground mt-1">{new Date(ev.created_at).toLocaleString("pt-BR")}{ev.acknowledged_at && " · visto"}</div>
                 </div>
                 <div className="flex gap-2 shrink-0">
-                  {ev.establishment && <Button asChild variant="ghost" size="sm"><Link to="/admin/empresa/$id" params={{ id: ev.establishment_id }}><ExternalLink className="h-4 w-4" /></Link></Button>}
+                  {ev.establishment && <Button asChild variant="ghost" size="sm"><Link to="/hash/empresa/$id" params={{ id: ev.establishment_id }}><ExternalLink className="h-4 w-4" /></Link></Button>}
                   {!ev.acknowledged_at && <Button variant="outline" size="sm" onClick={() => ack.mutate(ev.id)}><CheckCircle2 className="mr-2 h-4 w-4" />Marcar visto</Button>}
                 </div>
               </div>

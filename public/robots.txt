@@ -8,7 +8,7 @@ Allow: /
 
 # --- Áreas autenticadas (painel, admin, carteira do cliente) ---
 Disallow: /app/
-Disallow: /admin/
+Disallow: /hash/
 Disallow: /carteira/
 Disallow: /lgpd
 

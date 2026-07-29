@@ -160,7 +160,7 @@ function AdminFinanceiro() {
                   return (
                     <li key={u.id} className="py-2.5 flex items-center gap-3">
                       <div className="flex-1 min-w-0">
-                        <Link to="/admin/empresa/$id" params={{ id: u.establishment_id }} className="text-sm font-medium hover:underline block truncate">{u.establishment_name}</Link>
+                        <Link to="/hash/empresa/$id" params={{ id: u.establishment_id }} className="text-sm font-medium hover:underline block truncate">{u.establishment_name}</Link>
                         <div className="text-xs text-muted-foreground">{u.tier} · {fmtDate(u.current_period_end)} · em {days}d</div>
                       </div>
                       <div className="text-right">
@@ -189,7 +189,7 @@ function AdminFinanceiro() {
                   <li key={e.id} className="py-2.5 flex items-center gap-3">
                     <div className="w-6 text-center text-xs font-bold text-muted-foreground">#{i + 1}</div>
                     <div className="flex-1 min-w-0">
-                      <Link to="/admin/empresa/$id" params={{ id: e.id }} className="text-sm font-medium hover:underline block truncate">{e.name}</Link>
+                      <Link to="/hash/empresa/$id" params={{ id: e.id }} className="text-sm font-medium hover:underline block truncate">{e.name}</Link>
                       <div className="text-xs text-muted-foreground uppercase">{e.plan}</div>
                     </div>
                     <div className="text-sm font-semibold">{formatBRL(e.mrr)}</div>

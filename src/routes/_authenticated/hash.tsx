@@ -26,7 +26,7 @@ export const Route = createFileRoute("/_authenticated/hash")({
 type NavItem = { to: string; label: string; icon: any; exact?: boolean };
 type NavGroup = { key: string; label: string; icon: any; items: NavItem[] };
 
-const OVERVIEW: NavItem = { to: "/admin", label: "Visão geral", icon: LayoutDashboard, exact: true };
+const OVERVIEW: NavItem = { to: "/hash", label: "Visão geral", icon: LayoutDashboard, exact: true };
 
 const NAV_GROUPS: NavGroup[] = [
   {
@@ -34,11 +34,11 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Plataforma",
     icon: Building2,
     items: [
-      { to: "/admin/empresas", label: "Empresas", icon: Building2 },
-      { to: "/admin/usuarios", label: "Usuários", icon: UsersRound },
-      { to: "/admin/equipe", label: "Equipe", icon: Shield },
-      { to: "/admin/suporte", label: "Suporte", icon: LifeBuoy },
-      { to: "/admin/avaliacoes", label: "Avaliações", icon: Star },
+      { to: "/hash/empresas", label: "Empresas", icon: Building2 },
+      { to: "/hash/usuarios", label: "Usuários", icon: UsersRound },
+      { to: "/hash/equipe", label: "Equipe", icon: Shield },
+      { to: "/hash/suporte", label: "Suporte", icon: LifeBuoy },
+      { to: "/hash/avaliacoes", label: "Avaliações", icon: Star },
     ],
   },
   {
@@ -46,9 +46,9 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Financeiro",
     icon: Wallet,
     items: [
-      { to: "/admin/financeiro", label: "Financeiro", icon: DollarSign },
-      { to: "/admin/assinaturas", label: "Assinaturas", icon: CreditCard },
-      { to: "/admin/planos", label: "Planos", icon: Package },
+      { to: "/hash/financeiro", label: "Financeiro", icon: DollarSign },
+      { to: "/hash/assinaturas", label: "Assinaturas", icon: CreditCard },
+      { to: "/hash/planos", label: "Planos", icon: Package },
       
     ],
   },
@@ -57,12 +57,12 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Comunicação",
     icon: Mail,
     items: [
-      { to: "/admin/emails", label: "E-mail", icon: Mail, exact: true },
-      { to: "/admin/email-templates", label: "Templates", icon: FileText },
-      { to: "/admin/email-fila", label: "Fila de envio", icon: ListChecks },
-      { to: "/admin/notificacoes", label: "Push", icon: Bell },
-      { to: "/admin/alertas", label: "Alertas", icon: Megaphone },
-      { to: "/admin/ajuda", label: "Central de Ajuda", icon: BookOpen },
+      { to: "/hash/emails", label: "E-mail", icon: Mail, exact: true },
+      { to: "/hash/email-templates", label: "Templates", icon: FileText },
+      { to: "/hash/email-fila", label: "Fila de envio", icon: ListChecks },
+      { to: "/hash/notificacoes", label: "Push", icon: Bell },
+      { to: "/hash/alertas", label: "Alertas", icon: Megaphone },
+      { to: "/hash/ajuda", label: "Central de Ajuda", icon: BookOpen },
     ],
   },
   {
@@ -70,12 +70,12 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Sistema",
     icon: Cog,
     items: [
-      { to: "/admin/integracoes", label: "Integrações", icon: Plug },
-      { to: "/admin/liberacoes", label: "Liberações de recursos", icon: KeyRound },
-      { to: "/admin/cardapio-jsonld", label: "JSON-LD do cardápio", icon: FileJson },
-      { to: "/admin/auditoria", label: "Auditoria", icon: FileClock },
-      { to: "/admin/migracao", label: "Migração & Downloads", icon: Rocket },
-      { to: "/admin/config", label: "Configurações", icon: Settings },
+      { to: "/hash/integracoes", label: "Integrações", icon: Plug },
+      { to: "/hash/liberacoes", label: "Liberações de recursos", icon: KeyRound },
+      { to: "/hash/cardapio-jsonld", label: "JSON-LD do cardápio", icon: FileJson },
+      { to: "/hash/auditoria", label: "Auditoria", icon: FileClock },
+      { to: "/hash/migracao", label: "Migração & Downloads", icon: Rocket },
+      { to: "/hash/config", label: "Configurações", icon: Settings },
     ],
   },
 ];
@@ -235,7 +235,7 @@ function AdminLayout() {
         {/* Desktop: sidebar padrão (ícone + nome) */}
         <aside className="hidden md:flex fixed inset-y-0 left-0 z-30 w-64 flex-col border-r border-border/60 bg-card/80 backdrop-blur-xl">
           <div className="flex h-14 items-center gap-2 border-b border-border/60 px-3">
-            <Link to="/admin" aria-label="Fidelize Admin" className="flex min-w-0 items-center gap-2">
+            <Link to="/hash" aria-label="Fidelize Admin" className="flex min-w-0 items-center gap-2">
               <LogoMark size={20} className="text-primary" />
               <span className="font-display text-sm font-bold">Fidelize</span>
             </Link>

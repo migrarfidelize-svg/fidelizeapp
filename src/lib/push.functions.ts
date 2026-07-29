@@ -1395,7 +1395,7 @@ export const sendAdminTestPush = createServerFn({ method: "POST" })
     const r = await sendPushToSub(sub as any, {
       title: "Notificações ativadas",
       body: "Seu dispositivo está pronto para receber novidades.",
-      url: "/admin/notificacoes",
+      url: "/hash/notificacoes",
       tag: "admin-test-push",
     });
     await supabaseAdmin.from("push_events").insert({
@@ -1412,7 +1412,7 @@ export const sendAdminTestPush = createServerFn({ method: "POST" })
       {
         title: "Notificações ativadas",
         body: "Seu dispositivo está pronto para receber novidades.",
-        url: "/admin/notificacoes",
+        url: "/hash/notificacoes",
         kind: "aviso",
       },
       r,
@@ -1603,7 +1603,7 @@ export const sendEstablishmentTestPush = createServerFn({ method: "POST" })
     // 5. Enviar (usa retry/backoff + desativação em 404/410 já existentes)
     const title = data.title ?? `Teste de notificação — ${est.name}`;
     const body = data.body ?? `Esta é uma notificação de teste. O sistema de notificações da ${est.name} está funcionando.`;
-    const url = data.url ?? "/admin/notificacoes";
+    const url = data.url ?? "/hash/notificacoes";
 
     const { sendPushToSub } = await import("./push.server");
     const r = await sendPushToSub(sub as never, {

@@ -1,5 +1,5 @@
 /**
- * Credenciais Asaas — carregadas do painel `/admin/integracoes` (fonte de verdade)
+ * Credenciais Asaas — carregadas do painel `/hash/integracoes` (fonte de verdade)
  * com fallback para `process.env.ASAAS_*`.
  */
 

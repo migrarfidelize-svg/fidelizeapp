@@ -63,7 +63,7 @@ function AdminTicket() {
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [data?.messages.length]);
 
   if (isLoading) return <div className="p-8"><LoadingSkeleton variant="page" /></div>;
-  if (!data) return <div className="p-8 text-center">Ticket não encontrado. <Link to="/admin/suporte" className="text-primary underline">Voltar</Link></div>;
+  if (!data) return <div className="p-8 text-center">Ticket não encontrado. <Link to="/hash/suporte" className="text-primary underline">Voltar</Link></div>;
 
   const { ticket, messages, history, establishment } = data;
 
@@ -96,7 +96,7 @@ function AdminTicket() {
   return (
     <div className="grid lg:grid-cols-[1fr_320px] gap-4">
       <div className="space-y-4">
-        <Link to="/admin/suporte" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+        <Link to="/hash/suporte" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Voltar
         </Link>
 
@@ -195,7 +195,7 @@ function AdminTicket() {
           {establishment && (
             <div className="text-sm flex items-center gap-2 pt-2 border-t">
               <Building2 className="h-4 w-4 text-muted-foreground" />
-              <Link to="/admin/empresa/$id" params={{ id: establishment.id }} className="text-primary hover:underline">
+              <Link to="/hash/empresa/$id" params={{ id: establishment.id }} className="text-primary hover:underline">
                 {establishment.name}
               </Link>
             </div>

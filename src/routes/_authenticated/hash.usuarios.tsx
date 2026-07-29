@@ -379,7 +379,7 @@ function AdminUsers() {
       />
 
       <div className="text-xs text-muted-foreground">
-        Precisa gerenciar vínculos específicos de uma empresa? Acesse <Link to="/admin/empresas" className="underline">Empresas</Link>.
+        Precisa gerenciar vínculos específicos de uma empresa? Acesse <Link to="/hash/empresas" className="underline">Empresas</Link>.
       </div>
     </div>
   );
@@ -520,7 +520,7 @@ function OrphanCustomers({ establishments }: { establishments: Array<{ id: strin
                     </TableCell>
                     <TableCell className="hidden md:table-cell text-sm">
                       {c.establishment_name ? (
-                        <Link to="/admin/empresa/$id" params={{ id: c.establishment_id }} className="underline hover:text-primary">
+                        <Link to="/hash/empresa/$id" params={{ id: c.establishment_id }} className="underline hover:text-primary">
                           {c.establishment_name}
                         </Link>
                       ) : <span className="text-muted-foreground">—</span>}
