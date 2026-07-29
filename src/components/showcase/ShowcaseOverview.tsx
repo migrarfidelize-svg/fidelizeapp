@@ -117,6 +117,11 @@ export function ShowcaseOverview({ kind }: { kind: ShowcaseKind }) {
         />
       )}
 
+      {estId && aiFeature.allowed && (
+        <AnalyzeShowcasePanel establishmentId={estId} kind={kind} />
+      )}
+
+
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <MetricCard icon={FolderTree} label={L.categories} value={counts?.categories ?? 0} />
