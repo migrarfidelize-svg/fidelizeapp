@@ -19,9 +19,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetClose } from "@/components/ui/sheet";
 import {
+  DndContext, closestCenter, PointerSensor, TouchSensor, KeyboardSensor,
+  useSensor, useSensors, type DragEndEvent,
+} from "@dnd-kit/core";
+import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
+import {
+  SortableContext, arrayMove, useSortable, verticalListSortingStrategy, sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
   ExternalLink, Instagram, MessageCircle, Globe, MapPin, Youtube, Facebook,
   Music2, Mail, Phone, Star, Trash2, ArrowUp, ArrowDown, Plus, Eye, Copy, QrCode, Wifi, KeyRound,
-  UtensilsCrossed, CreditCard, PlayCircle, Music, Images, MessageSquareQuote, ImageIcon, Pencil, Check,
+  UtensilsCrossed, CreditCard, PlayCircle, Music, Images, MessageSquareQuote, ImageIcon, Pencil, Check, GripVertical,
 } from "lucide-react";
 
 
