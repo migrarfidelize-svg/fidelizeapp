@@ -8,7 +8,8 @@ import { toast } from "sonner";
 import { UserCheck, Sparkles } from "lucide-react";
 
 const SNOOZE_KEY = "wallet:profile-snooze";
-const SNOOZE_MS = 24 * 60 * 60 * 1000;
+const SESSION_DISMISS_KEY = "wallet:profile-dismissed-session";
+const SNOOZE_MS = 7 * 24 * 60 * 60 * 1000; // 7 dias
 
 function onlyDigits(v: string) {
   return v.replace(/\D/g, "");
@@ -24,6 +25,8 @@ function maskPhone(v: string) {
 
 function snoozed() {
   try {
+    // Se já dispensou nesta sessão do navegador, não volta a incomodar.
+    if (sessionStorage.getItem(SESSION_DISMISS_KEY)) return true;
     const raw = localStorage.getItem(SNOOZE_KEY);
     return !!raw && Date.now() - Number(raw) < SNOOZE_MS;
   } catch {
