@@ -109,6 +109,7 @@ function AuthPage() {
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [company, setCompany] = useState("");
+  const [segment, setSegment] = useState("");
   const [showPw, setShowPw] = useState(false);
   const pwScore = (() => {
     let s = 0;
