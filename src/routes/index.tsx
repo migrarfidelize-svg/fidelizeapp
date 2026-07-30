@@ -8,6 +8,7 @@ import { trackPlanFunnel, rememberSelectedPlan } from "@/lib/plan-funnel";
 import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
 import { BrandMarquee } from "@/components/landing/BrandMarquee";
+import { DEFAULT_BRANDS, type LandingBrandsContent, type LandingHeroContent, type PublicPlan } from "@/lib/landing-content";
 import { HeroAppPreview } from "@/components/landing/HeroAppPreview";
 import { EcosystemBento } from "@/components/landing/EcosystemBento";
 
@@ -21,10 +22,11 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { ArrowRight, Menu, QrCode, Smartphone, ShieldCheck, BarChart3, Sparkles, Coffee, Scissors, Pizza, ShoppingBag, Wrench, IceCream, Store, PawPrint, Check, X, Cake, Clock, UserPlus, Crown, Gift, MessageCircle, Bell, Mail, Sprout, Zap, Building2, Send, Bot, HelpCircle, ChevronDown, type LucideIcon } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { askFaqAI, getFaqAIStatus } from "@/lib/faq-ai.functions";
+import { getLandingPublic } from "@/lib/landing-content.functions";
 
 const SITE_URL = "https://warm-hug-genie.lovable.app";
 const PAGE_TITLE = "Fidelize — Cartão fidelidade digital para clientes fiéis";
-const PAGE_DESC = "Crie cartões fidelidade digitais com QR Code, painel de análise em tempo real e campanhas que fazem seus clientes voltarem sempre. Planos a partir de R$ 29,90/mês.";
+const PAGE_DESC = "Crie cartões fidelidade digitais com QR Code, painel de análise em tempo real e campanhas que fazem seus clientes voltarem sempre. Planos a partir de {useFromPrice()}/mês.";
 
 const FAQ_ITEMS: Array<[string, string]> = [
   ["Meu cliente precisa baixar um app?", "Não. Tudo funciona direto pelo navegador do celular. Ele escaneia o QR Code, informa nome e telefone e já sai com o cartão pronto."],
@@ -79,8 +81,37 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
+  loader: () => getLandingPublic(),
+  errorComponent: () => <Landing />,
   component: Landing,
 });
+
+type LandingData = {
+  hero: LandingHeroContent;
+  brands: LandingBrandsContent;
+  plans: PublicPlan[];
+};
+
+/** Dados públicos da landing (mockup, marcas e planos) vindos do loader. */
+function useLandingData(): LandingData | undefined {
+  try {
+    return Route.useLoaderData() as LandingData;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Menor preço ativo cadastrado no admin (fallback: R$ 29,90). */
+function useFromPrice() {
+  const plans = useLandingData()?.plans ?? [];
+  const prices = plans.map((p) => Number(p.price_monthly)).filter((n) => Number.isFinite(n) && n > 0);
+  return prices.length ? brl(Math.min(...prices)) : "R$ 29,90";
+}
+
+
+function brl(v: number) {
+  return `R$ ${v.toFixed(2).replace(".", ",")}`;
+}
 
 function Landing() {
   return (
@@ -109,12 +140,13 @@ function Landing() {
 }
 
 function MobileStickyCta() {
+  const fromPrice = useFromPrice();
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-violet-400/30 bg-background/90 px-4 pb-[env(safe-area-inset-bottom)] pt-3 backdrop-blur-xl md:hidden">
       <div className="flex items-center gap-3 pb-3">
         <div className="min-w-0 flex-1">
-          <div className="text-sm font-semibold leading-tight">A partir de R$ 29,90/mês</div>
-          <div className="text-[11px] text-muted-foreground">A partir de R$ 29,90/mês · cancele quando quiser</div>
+          <div className="text-sm font-semibold leading-tight">A partir de {fromPrice}/mês</div>
+          <div className="text-[11px] text-muted-foreground">A partir de {fromPrice}/mês · cancele quando quiser</div>
         </div>
         <Button asChild className="h-12 shrink-0 rounded-full px-6 font-bold">
           <a href="#precos">Quero assinar</a>
@@ -215,7 +247,7 @@ function SiteHeader() {
                   </>
                 )}
 
-                <p className="pt-2 text-center text-xs text-muted-foreground">A partir de R$ 29,90/mês · cancele quando quiser</p>
+                <p className="pt-2 text-center text-xs text-muted-foreground">A partir de {useFromPrice()}/mês · cancele quando quiser</p>
               </div>
             </SheetContent>
           </Sheet>
@@ -335,13 +367,13 @@ function Hero() {
                 <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> Configure em 5 minutos
               </span>
               <span className="flex items-center gap-1.5">
-                <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> Planos a partir de R$ 29,90/mês
+                <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> Planos a partir de {useFromPrice()}/mês
               </span>
             </div>
           </div>
 
           <div className="-mx-2 flex scale-95 justify-center sm:mx-0 sm:scale-100 lg:justify-end">
-            <HeroAppPreview />
+            <HeroAppPreview content={useLandingData()?.hero} />
           </div>
         </div>
       </div>
@@ -352,6 +384,7 @@ function Hero() {
 }
 
 function Segments() {
+  const brands = useLandingData()?.brands ?? DEFAULT_BRANDS;
   return (
     <section
       id="segmentos"
@@ -364,13 +397,13 @@ function Segments() {
       />
       <div className="relative z-10 mx-auto max-w-5xl px-4 text-center text-foreground dark:text-white">
         <h2 className="font-display text-2xl font-bold leading-snug text-balance md:text-4xl">
-          As marcas que mais crescem no mundo já descobriram o poder da fidelização.
+          {brands.title}
         </h2>
-        <p className="mt-3 text-base text-muted-foreground dark:text-white/60 md:text-lg">Agora, é a sua vez.</p>
+        <p className="mt-3 text-base text-muted-foreground dark:text-white/60 md:text-lg">{brands.subtitle}</p>
       </div>
 
       <div className="relative z-10 mt-10 md:mt-14">
-        <BrandMarquee />
+        <BrandMarquee brands={brands.brands} />
       </div>
     </section>
   );
@@ -1245,13 +1278,21 @@ type Plan = {
 
 
 function Pricing() {
-  const plans: Plan[] = [
+  const dbPlans = useLandingData()?.plans ?? [];
+  const basePlans: Plan[] = [
     { name: "Essencial", short: "Essencial", price: "R$ 29,90", numeric: 29.9, slug: "essencial", desc: "Para começar do jeito certo", tagline: "Ideal pra validar e já fidelizar desde o primeiro cliente.", features: ["Até 300 clientes", "Cartão fidelidade digital", "Notificações push", "Tag Display", "1 funcionário"], cta: "Assinar agora", icon: Sprout },
     { name: "Profissional", short: "Pro", price: "R$ 59,90", numeric: 59.9, slug: "profissional", desc: "Para negócios em crescimento", tagline: "O favorito de quem quer escalar retenção com automações.", features: ["Até 1.000 clientes", "Cardápio virtual e catálogo digital", "5 funcionários", "Avaliações e relatórios completos"], cta: "Assinar agora", badge: "Mais popular", icon: Sparkles },
     { name: "Premium", short: "Premium", price: "R$ 119,90", numeric: 119.9, slug: "ilimitado", desc: "Operação sem limites", tagline: "Recursos completos, equipe ilimitada e marca própria.", features: ["Clientes ilimitados", "Equipe ilimitada", "Carteira Apple/Google", "Integrações avançadas", "Sem marca Fidelize"], cta: "Assinar agora", icon: Building2 },
     { name: "Empresarial", short: "Empresarial", price: "R$ 349,00", numeric: 349, slug: "empresarial", desc: "Para redes e franquias", tagline: "Multi-unidades, suporte dedicado e onboarding assistido.", features: ["Tudo do Premium", "Múltiplas unidades", "Gestor de conta dedicado", "Onboarding assistido", "SLA prioritário"], cta: "Falar com vendas", icon: Building2 },
   ];
 
+
+  // Preço/nome vêm do painel admin (tabela de planos); o texto de marketing permanece local.
+  const plans: Plan[] = basePlans.map((p) => {
+    const db = dbPlans.find((d) => d.slug === p.slug);
+    if (!db || db.price_monthly == null) return p;
+    return { ...p, name: db.name || p.name, price: brl(Number(db.price_monthly)), numeric: Number(db.price_monthly) };
+  });
 
   const [activeIdx, setActiveIdx] = useState(1);
   
@@ -1401,7 +1442,7 @@ function Pricing() {
 
         {/* trust line */}
         <p className="mt-8 text-center text-xs uppercase tracking-[0.3em] text-muted-foreground">
-          A partir de R$ 29,90/mês · cancele quando quiser
+          A partir de {useFromPrice()}/mês · cancele quando quiser
         </p>
 
       </div>
@@ -1409,12 +1450,23 @@ function Pricing() {
   );
 }
 
-const COMPARE_PLANS = [
-  { name: "Essencial", price: "R$ 29,90", badge: null as string | null },
-  { name: "Profissional", price: "R$ 59,90", badge: "Mais vendido" },
-  { name: "Premium", price: "R$ 119,90", badge: null as string | null },
-  { name: "Empresarial", price: "R$ 349,00", badge: null as string | null },
+const COMPARE_PLANS_BASE = [
+  { name: "Essencial", slug: "essencial", price: "R$ 29,90", badge: null as string | null },
+  { name: "Profissional", slug: "profissional", price: "R$ 59,90", badge: "Mais vendido" },
+  { name: "Premium", slug: "ilimitado", price: "R$ 119,90", badge: null as string | null },
+  { name: "Empresarial", slug: "empresarial", price: "R$ 349,00", badge: null as string | null },
 ];
+
+/** Aplica os preços cadastrados no painel admin sobre a tabela comparativa. */
+function useComparePlans() {
+  const dbPlans = useLandingData()?.plans ?? [];
+  return COMPARE_PLANS_BASE.map((p) => {
+    const db = dbPlans.find((d) => d.slug === p.slug);
+    return db && db.price_monthly != null
+      ? { ...p, name: db.name || p.name, price: brl(Number(db.price_monthly)) }
+      : p;
+  });
+}
 
 const COMPARE_ROWS: { label: string; values: (boolean | string)[] }[] = [
   { label: "Cartão Fidelidade Digital", values: [true, true, true, true] },
@@ -1495,6 +1547,8 @@ function PlansComparison() {
       el.scrollTo({ left: card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2, behavior: "smooth" });
     }
   }
+
+  const COMPARE_PLANS = useComparePlans();
 
   return (
     <div className="mt-14">

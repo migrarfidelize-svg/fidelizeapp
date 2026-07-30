@@ -13,9 +13,7 @@ import {
   UtensilsCrossed,
   Wallet,
 } from "lucide-react";
-import burgerImg from "@/assets/menu-templates/burgers-especiais.jpg.asset.json";
-import pizzaImg from "@/assets/menu-templates/pizzas-salgadas.jpg.asset.json";
-import acaiImg from "@/assets/menu-templates/acai-especial.jpg.asset.json";
+import { DEFAULT_HERO, type LandingHeroContent } from "@/lib/landing-content";
 
 
 /** Tokens do mockup — trocam automaticamente entre claro/escuro (ver .hero-phone em styles.css). */
@@ -39,7 +37,8 @@ const SCREENS: { key: ScreenKey; label: string; icon: typeof Wallet }[] = [
 
 const DURATION = 5200;
 
-export function HeroAppPreview() {
+export function HeroAppPreview({ content }: { content?: LandingHeroContent } = {}) {
+  const data = content ?? DEFAULT_HERO;
   const [i, setI] = useState(0);
   const [cycleKey, setCycleKey] = useState(0);
   const { ref: rootRef, onScreen } = useOnScreen<HTMLDivElement>("200px");
@@ -83,8 +82,8 @@ export function HeroAppPreview() {
           <div className="relative h-full w-full">
             {active === "carteira" && <WalletScreen />}
             {active === "carimbar" && <MerchantScreen />}
-            {active === "cardapio" && <MenuScreen />}
-            {active === "catalogo" && <CatalogScreen />}
+            {active === "cardapio" && <MenuScreen data={data.menu} />}
+            {active === "catalogo" && <CatalogScreen data={data.catalog} />}
           </div>
         </div>
       </div>
@@ -243,20 +242,16 @@ function MerchantScreen() {
   );
 }
 
-function MenuScreen() {
+function MenuScreen({ data }: { data: LandingHeroContent["menu"] }) {
   const dishes = useMemo(
-    () => [
-      { name: "Burger Trufado", desc: "Blend 180g, cheddar e trufa", price: "R$ 38,90", img: burgerImg.url },
-      { name: "Pizza Nduja", desc: "Mussarela de búfala e nduja", price: "R$ 64,00", img: pizzaImg.url },
-      { name: "Açaí 500g", desc: "Banana, granola e leite ninho", price: "R$ 24,50", img: acaiImg.url },
-    ],
-    [],
+    () => (data.dishes.length ? data.dishes : DEFAULT_HERO.menu.dishes),
+    [data.dishes],
   );
   const [k, setK] = useState(0);
   useVisibleInterval(() => setK((v) => (v + 1) % dishes.length), 1700, true);
   const d = dishes[k] ?? dishes[0];
   return (
-    <ScreenShell sub="Cliente" title="Cardápio em stories">
+    <ScreenShell sub="Cliente" title={data.title || "Cardápio em stories"}>
       {/* o story é sempre uma foto escura — mantém texto branco em ambos os temas */}
       <div className="relative h-[190px] overflow-hidden rounded-2xl border" style={{ borderColor: LINE, background: "#0b0b0d" }}>
         {dishes.map((item, x) => (
@@ -364,28 +359,24 @@ function Metric({ label, value }: { label: string; value: string }) {
   );
 }
 
-function CatalogScreen() {
-  const products = [
-    { name: "Fone Bluetooth", price: "R$ 189", hue: 210 },
-    { name: "Kit Skincare", price: "R$ 129", hue: 340 },
-    { name: "Tênis Runner", price: "R$ 299", hue: 150 },
-    { name: "Relógio Smart", price: "R$ 459", hue: 45 },
-  ];
+function CatalogScreen({ data }: { data: LandingHeroContent["catalog"] }) {
+  const products = (data.products.length ? data.products : DEFAULT_HERO.catalog.products).slice(0, 4);
   const [n, setN] = useState(1);
   useEffect(() => {
     const id = setTimeout(() => setN(2), 1200);
     return () => clearTimeout(id);
   }, []);
   return (
-    <ScreenShell sub="Cliente" title="Catálogo digital">
+    <ScreenShell sub="Cliente" title={data.title || "Catálogo digital"}>
       <div className="grid grid-cols-2 gap-2">
         {products.map((p) => (
           <div key={p.name} className="overflow-hidden rounded-xl border" style={{ borderColor: LINE, background: SURFACE }}>
-            <div
-              className="h-14 w-full"
-              style={{
-                background: `radial-gradient(110% 80% at 50% 20%, oklch(0.62 0.13 ${p.hue}), oklch(0.42 0.08 ${p.hue}) 78%)`,
-              }}
+            <img
+              src={p.img}
+              alt={p.name}
+              loading="lazy"
+              className="h-16 w-full object-cover"
+              style={{ background: SURFACE }}
             />
             <div className="p-1.5">
               <p className="truncate text-[10px] font-semibold" style={{ color: INK }}>

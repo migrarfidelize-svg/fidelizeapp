@@ -1,3 +1,5 @@
+import { DEFAULT_BRANDS, type BrandItem } from "@/lib/landing-content";
+
 type Brand = {
   name: string;
   node: React.ReactNode;
@@ -88,8 +90,37 @@ const BRANDS: Brand[] = [
   { name: "Apple", node: <AppleMark /> },
 ];
 
-export function BrandMarquee() {
-  const loop = [...BRANDS, ...BRANDS];
+/** Marca vinda do painel admin: usa logo enviada ou o glifo/wordmark padrão. */
+function resolveBrand(item: BrandItem): Brand {
+  if (item.img) {
+    return {
+      name: item.name,
+      node: (
+        <img
+          src={item.img}
+          alt={item.name}
+          loading="lazy"
+          className="h-8 w-auto max-w-[140px] object-contain md:h-10"
+        />
+      ),
+    };
+  }
+  const known = BRANDS.find((b) => b.name.toLowerCase() === item.name.toLowerCase());
+  if (known) return known;
+  return {
+    name: item.name,
+    node: (
+      <Word label={item.name} className="text-2xl font-bold tracking-tight md:text-3xl">
+        {item.name}
+      </Word>
+    ),
+  };
+}
+
+export function BrandMarquee({ brands }: { brands?: BrandItem[] } = {}) {
+  const source = brands?.length ? brands : DEFAULT_BRANDS.brands;
+  const resolved = source.map(resolveBrand);
+  const loop = [...resolved, ...resolved];
 
   return (
     <div className="brand-marquee">
