@@ -8,6 +8,7 @@ import { trackPlanFunnel, rememberSelectedPlan } from "@/lib/plan-funnel";
 import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
 import { BrandMarquee } from "@/components/landing/BrandMarquee";
+import { DEFAULT_BRANDS } from "@/lib/landing-content";
 import { HeroAppPreview } from "@/components/landing/HeroAppPreview";
 import { EcosystemBento } from "@/components/landing/EcosystemBento";
 
@@ -21,6 +22,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { ArrowRight, Menu, QrCode, Smartphone, ShieldCheck, BarChart3, Sparkles, Coffee, Scissors, Pizza, ShoppingBag, Wrench, IceCream, Store, PawPrint, Check, X, Cake, Clock, UserPlus, Crown, Gift, MessageCircle, Bell, Mail, Sprout, Zap, Building2, Send, Bot, HelpCircle, ChevronDown, type LucideIcon } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { askFaqAI, getFaqAIStatus } from "@/lib/faq-ai.functions";
+import { getLandingPublic } from "@/lib/landing-content.functions";
 
 const SITE_URL = "https://warm-hug-genie.lovable.app";
 const PAGE_TITLE = "Fidelize — Cartão fidelidade digital para clientes fiéis";
@@ -79,8 +81,23 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
+  loader: () => getLandingPublic(),
+  errorComponent: () => <Landing />,
   component: Landing,
 });
+
+/** Preço formatado a partir do banco; cai no padrão quando o plano não existe. */
+function useLandingData() {
+  try {
+    return Route.useLoaderData();
+  } catch {
+    return undefined;
+  }
+}
+
+function brl(v: number) {
+  return `R$ ${v.toFixed(2).replace(".", ",")}`;
+}
 
 function Landing() {
   return (
@@ -341,7 +358,7 @@ function Hero() {
           </div>
 
           <div className="-mx-2 flex scale-95 justify-center sm:mx-0 sm:scale-100 lg:justify-end">
-            <HeroAppPreview />
+            <HeroAppPreview content={useLandingData()?.hero} />
           </div>
         </div>
       </div>
@@ -352,6 +369,7 @@ function Hero() {
 }
 
 function Segments() {
+  const brands = useLandingData()?.brands ?? DEFAULT_BRANDS;
   return (
     <section
       id="segmentos"
@@ -364,13 +382,13 @@ function Segments() {
       />
       <div className="relative z-10 mx-auto max-w-5xl px-4 text-center text-foreground dark:text-white">
         <h2 className="font-display text-2xl font-bold leading-snug text-balance md:text-4xl">
-          As marcas que mais crescem no mundo já descobriram o poder da fidelização.
+          {brands.title}
         </h2>
-        <p className="mt-3 text-base text-muted-foreground dark:text-white/60 md:text-lg">Agora, é a sua vez.</p>
+        <p className="mt-3 text-base text-muted-foreground dark:text-white/60 md:text-lg">{brands.subtitle}</p>
       </div>
 
       <div className="relative z-10 mt-10 md:mt-14">
-        <BrandMarquee />
+        <BrandMarquee brands={brands.brands} />
       </div>
     </section>
   );
