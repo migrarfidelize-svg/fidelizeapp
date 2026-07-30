@@ -1963,14 +1963,29 @@ function FaqAIPanel() {
             <div className="grid h-10 w-10 place-items-center rounded-full bg-primary/20 border border-primary/50">
               <Bot className="h-5 w-5 text-primary" />
             </div>
-            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-background animate-pulse" />
+            <span
+              className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background ${
+                aiOnline === null
+                  ? "bg-muted-foreground/50"
+                  : aiOnline
+                    ? "bg-emerald-400 animate-pulse"
+                    : "bg-muted-foreground"
+              }`}
+            />
           </div>
           <div className="flex-1">
             <div className="text-sm font-semibold flex items-center gap-2">
               Fidê <span className="text-[10px] font-normal rounded bg-primary/20 text-primary px-1.5 py-0.5">IA</span>
             </div>
-            <div className="text-xs text-emerald-400">● online agora</div>
+            {aiOnline === null ? (
+              <div className="text-xs text-muted-foreground">● verificando conexão…</div>
+            ) : aiOnline ? (
+              <div className="text-xs text-emerald-400">● online agora</div>
+            ) : (
+              <div className="text-xs text-muted-foreground">● offline · IA não conectada</div>
+            )}
           </div>
+
           <div className="text-xs text-muted-foreground hidden sm:block">Não achou sua dúvida?</div>
         </div>
 
