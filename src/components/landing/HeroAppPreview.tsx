@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useOnScreen, useVisibleInterval, prefersReducedMotion } from "./use-in-view";
 import {
   BadgeCheck,
   Bell,
@@ -41,19 +42,22 @@ const DURATION = 5200;
 export function HeroAppPreview() {
   const [i, setI] = useState(0);
   const [cycleKey, setCycleKey] = useState(0);
+  const { ref: rootRef, onScreen } = useOnScreen<HTMLDivElement>("200px");
 
   useEffect(() => {
+    // Pausa o carrossel quando o mockup sai da tela ou o usuário pediu menos movimento.
+    if (!onScreen || prefersReducedMotion()) return;
     const id = window.setTimeout(() => {
       setI((v) => (v + 1) % SCREENS.length);
       setCycleKey((v) => v + 1);
     }, DURATION);
     return () => window.clearTimeout(id);
-  }, [cycleKey]);
+  }, [cycleKey, onScreen]);
 
   const active = SCREENS[i]?.key ?? "carteira";
 
   return (
-    <div className="hero-phone relative w-full max-w-[380px]">
+    <div ref={rootRef} className="hero-phone relative w-full max-w-[380px]">
       {/* halo */}
       <div
         aria-hidden
@@ -249,10 +253,7 @@ function MenuScreen() {
     [],
   );
   const [k, setK] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setK((v) => (v + 1) % dishes.length), 1700);
-    return () => clearInterval(id);
-  }, [dishes.length]);
+  useVisibleInterval(() => setK((v) => (v + 1) % dishes.length), 1700, true);
   const d = dishes[k] ?? dishes[0];
   return (
     <ScreenShell sub="Cliente" title="Cardápio em stories">
