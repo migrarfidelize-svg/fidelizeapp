@@ -20,7 +20,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ArrowRight, Menu, QrCode, Smartphone, ShieldCheck, BarChart3, Sparkles, Coffee, Scissors, Pizza, ShoppingBag, Wrench, IceCream, Store, PawPrint, Check, X, Cake, Clock, UserPlus, Crown, Gift, MessageCircle, Bell, Mail, Sprout, Zap, Building2, Send, Bot, HelpCircle, ChevronDown, type LucideIcon } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { askFaqAI } from "@/lib/faq-ai.functions";
+import { askFaqAI, getFaqAIStatus } from "@/lib/faq-ai.functions";
 
 const SITE_URL = "https://warm-hug-genie.lovable.app";
 const PAGE_TITLE = "Fidelize — Cartão fidelidade digital para clientes fiéis";
