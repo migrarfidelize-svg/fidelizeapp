@@ -117,7 +117,7 @@ export const createAsaasPayment = createServerFn({ method: "POST" })
 
     const { data: plan } = await supabase
       .from("plans")
-      .select("id, slug, tier, name, price_monthly, is_active, archived_at")
+      .select("id, slug, tier, name, price_monthly, is_active, archived_at, features")
       .eq("slug", data.planSlug)
       .maybeSingle();
     if (!plan || !plan.is_active || plan.archived_at) throw new Error("Plano indisponível.");
