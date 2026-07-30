@@ -1221,6 +1221,7 @@ function Pricing() {
     { name: "Essencial", short: "Essencial", price: "R$ 29,90", numeric: 29.9, desc: "Para começar do jeito certo", tagline: "Ideal pra validar e já fidelizar desde o primeiro cliente.", features: ["Até 300 clientes", "Cartão fidelidade digital", "Notificações push", "Tag Display", "1 funcionário"], cta: "Assinar agora", icon: Sprout },
     { name: "Profissional", short: "Pro", price: "R$ 59,90", numeric: 59.9, desc: "Para negócios em crescimento", tagline: "O favorito de quem quer escalar retenção com automações.", features: ["Até 1.000 clientes", "Cardápio virtual e catálogo digital", "5 funcionários", "Avaliações e relatórios completos"], cta: "Assinar agora", badge: "Mais popular", icon: Sparkles },
     { name: "Premium", short: "Premium", price: "R$ 119,90", numeric: 119.9, desc: "Operação sem limites", tagline: "Recursos completos, equipe ilimitada e marca própria.", features: ["Clientes ilimitados", "Equipe ilimitada", "Carteira Apple/Google", "Integrações avançadas", "Sem marca Fidelize"], cta: "Assinar agora", icon: Building2 },
+    { name: "Empresarial", short: "Empresarial", price: "R$ 349,00", numeric: 349, desc: "Para redes e franquias", tagline: "Multi-unidades, suporte dedicado e onboarding assistido.", features: ["Tudo do Premium", "Múltiplas unidades", "Gestor de conta dedicado", "Onboarding assistido", "SLA prioritário"], cta: "Falar com vendas", icon: Building2 },
   ];
 
   const [activeIdx, setActiveIdx] = useState(1);
@@ -1364,21 +1365,24 @@ const COMPARE_PLANS = [
   { name: "Essencial", price: "R$ 29,90", badge: null as string | null },
   { name: "Profissional", price: "R$ 59,90", badge: "Mais vendido" },
   { name: "Premium", price: "R$ 119,90", badge: null as string | null },
+  { name: "Empresarial", price: "R$ 349,00", badge: null as string | null },
 ];
 
 const COMPARE_ROWS: { label: string; values: (boolean | string)[] }[] = [
-  { label: "Cartão Fidelidade Digital", values: [true, true, true] },
-  { label: "Avaliação de Atendimento", values: [true, true, true] },
-  { label: "Árvore de Links", values: [true, true, true] },
-  { label: "Cardápio Virtual", values: [false, true, true] },
-  { label: "Catálogo Digital", values: [false, true, true] },
+  { label: "Cartão Fidelidade Digital", values: [true, true, true, true] },
+  { label: "Avaliação de Atendimento", values: [true, true, true, true] },
+  { label: "Árvore de Links", values: [true, true, true, true] },
+  { label: "Cardápio Virtual", values: [false, true, true, true] },
+  { label: "Catálogo Digital", values: [false, true, true, true] },
 
-  { label: "Notificações Push", values: [true, true, true] },
-  { label: "Tag Display", values: [true, true, true] },
-  { label: "QR Codes Inteligentes", values: [true, true, true] },
-  { label: "Clientes cadastrados", values: ["Até 300", "Até 1.000", "Ilimitados"] },
-  { label: "Funcionários", values: ["1", "5", "Ilimitados"] },
-  { label: "Remover marca Fidelize", values: [false, false, true] },
+  { label: "Notificações Push", values: [true, true, true, true] },
+  { label: "Tag Display", values: [true, true, true, true] },
+  { label: "QR Codes Inteligentes", values: [true, true, true, true] },
+  { label: "Clientes cadastrados", values: ["Até 300", "Até 1.000", "Ilimitados", "Ilimitados"] },
+  { label: "Funcionários", values: ["1", "5", "Ilimitados", "Ilimitados"] },
+  { label: "Remover marca Fidelize", values: [false, false, true, true] },
+  { label: "Múltiplas unidades", values: [false, false, false, true] },
+  { label: "Gestor de conta dedicado", values: [false, false, false, true] },
 ];
 
 
@@ -1400,6 +1404,7 @@ const COMPARE_HIGHLIGHTS: string[][] = [
   ["Até 300 clientes", "Cartão fidelidade digital", "Notificações push"],
   ["Até 1.000 clientes", "Cardápio e catálogo", "5 funcionários"],
   ["Clientes ilimitados", "Sem marca Fidelize", "Equipe ilimitada"],
+  ["Múltiplas unidades", "Gestor dedicado", "SLA prioritário"],
 ];
 
 function PlansComparison() {
@@ -1465,7 +1470,7 @@ function PlansComparison() {
 
         {/* cabos conectores (desktop) */}
         <div aria-hidden className="pointer-events-none absolute inset-x-10 top-1/2 hidden -translate-y-1/2 md:flex">
-          {[0, 1, 2].map((i) => (
+          {COMPARE_PLANS.map((_, i) => (
             <div key={i} className="flex-1 px-2">
               <div
                 className={`h-px w-full rounded-full transition-all duration-500 ${
