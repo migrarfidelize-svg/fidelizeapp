@@ -1,3 +1,4 @@
+import { assertActiveSubscription } from "@/lib/subscription-guard";
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
@@ -96,6 +97,7 @@ export const upsertLinkTree = createServerFn({ method: "POST" })
     published: z.boolean().optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
+    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
     const patch: Database["public"]["Tables"]["link_tree_pages"]["Insert"] = {
       establishment_id: data.establishment_id,
       title: data.title ?? null,

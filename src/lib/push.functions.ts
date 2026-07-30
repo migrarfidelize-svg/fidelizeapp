@@ -1,3 +1,4 @@
+import { assertActiveSubscription } from "@/lib/subscription-guard";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -368,6 +369,7 @@ export const broadcastPush = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
+    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
     const { data: isManager } = await context.supabase.rpc("has_establishment_role", {
       _user: context.userId,
       _est: data.establishment_id,
@@ -436,6 +438,7 @@ export const scheduleBroadcast = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
+    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
     const { data: isManager } = await context.supabase.rpc("has_establishment_role", {
       _user: context.userId,
       _est: data.establishment_id,
@@ -1542,6 +1545,7 @@ export const sendEstablishmentTestPush = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
+    await assertActiveSubscription(context.supabase, (data as any).establishmentId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // 1. Confirmar empresa

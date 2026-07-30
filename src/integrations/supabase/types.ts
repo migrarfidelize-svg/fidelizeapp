@@ -6000,6 +6000,7 @@ export type Database = {
           tracking_token: string
         }[]
       }
+      has_active_subscription: { Args: { _est: string }; Returns: boolean }
       has_establishment_access: {
         Args: { _est: string; _user: string }
         Returns: boolean
@@ -6046,6 +6047,7 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["account_type"]
       }
+      my_subscription_gate: { Args: never; Returns: Json }
       purge_expired_logs: { Args: never; Returns: Json }
       register_sponsored_ad_event: {
         Args: {

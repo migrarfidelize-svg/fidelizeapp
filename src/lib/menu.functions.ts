@@ -1,3 +1,4 @@
+import { assertActiveSubscription } from "@/lib/subscription-guard";
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
@@ -122,6 +123,7 @@ export const setMenuStatus = createServerFn({ method: "POST" })
     kind: kindEnum.optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
+    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
     const { supabase } = context;
     const kind = data.kind ?? "menu";
     const label = kind === "catalog" ? "Catálogo digital" : "Cardápio digital";
@@ -202,6 +204,7 @@ export const upsertMenuCategory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => categoryUpsertSchema.parse(d))
   .handler(async ({ data, context }) => {
+    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
     const { supabase } = context;
     const menuId = await ensureMenuId(supabase, data.establishment_id, (data as any).kind ?? "menu");
 
@@ -373,6 +376,7 @@ export const upsertMenuItem = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => itemUpsertSchema.parse(d))
   .handler(async ({ data, context }) => {
+    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
     const { supabase } = context;
     const menuId = await ensureMenuId(supabase, data.establishment_id, (data as any).kind ?? "menu");
 
@@ -554,6 +558,7 @@ export const seedMenuFromTemplate = createServerFn({ method: "POST" })
     mode: z.enum(["append", "reset"]).optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
+    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
     const kind = (data as any).kind ?? "menu";
     const isCatalog = kind === "catalog";
 
@@ -705,6 +710,7 @@ export const updateMenuTheme = createServerFn({ method: "POST" })
     }),
   }).parse(d))
   .handler(async ({ data, context }) => {
+    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
     const { supabase } = context;
     const menuId = await ensureMenuId(supabase, data.establishment_id, (data as any).kind ?? "menu");
     const { data: menu, error } = await supabase

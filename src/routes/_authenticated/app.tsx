@@ -67,8 +67,15 @@ const MERCHANT_TOUR_STEPS_MOBILE: TourStep[] = [
 
 
 
+/** Rotas liberadas mesmo sem assinatura ativa (pagamento, perfil e suporte de cobrança). */
+const BILLING_EXEMPT = ["/app/planos", "/app/perfil", "/app/checkout", "/app/assinatura"];
+
+function isBillingExempt(pathname: string) {
+  return BILLING_EXEMPT.some((p) => pathname === p || pathname.startsWith(p + "/"));
+}
+
 export const Route = createFileRoute("/_authenticated/app")({
-  beforeLoad: async () => {
+  beforeLoad: async ({ location }) => {
     // Block customer accounts from the merchant panel.
     // `_authenticated` is ssr:false, so it's safe to use the browser client here.
     try {
@@ -79,7 +86,22 @@ export const Route = createFileRoute("/_authenticated/app")({
       if (e && typeof e === "object" && ("isRedirect" in e || "to" in e)) throw e;
       // Fail-open on transient RPC errors — layout still renders; auth gate protects.
     }
+
+    // Subscription gate: contas sem plano pago só acessam planos/perfil.
+    if (!isBillingExempt(location.pathname)) {
+      try {
+        const { data, error } = await supabase.rpc("my_subscription_gate");
+        if (error) return; // fail-open apenas em erro de rede/RPC
+        const gate = (data ?? {}) as { has_establishment?: boolean; active?: boolean; super_admin?: boolean };
+        if (gate.super_admin) return;
+        if (!gate.has_establishment) throw redirect({ to: "/onboarding" });
+        if (!gate.active) throw redirect({ to: "/app/planos" });
+      } catch (e) {
+        if (e && typeof e === "object" && ("isRedirect" in e || "to" in e)) throw e;
+      }
+    }
   },
+
   component: AppLayout,
 });
 
