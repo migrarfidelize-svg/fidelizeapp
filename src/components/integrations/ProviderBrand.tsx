@@ -105,6 +105,18 @@ const BRANDS: Record<string, BrandDef> = {
       <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z" stroke="white" strokeWidth="1.8" fill="none" />,
     ),
   },
+  // ---------- Marketing ----------
+  meta_pixel: {
+    gradient: "from-sky-500 via-blue-600 to-indigo-700",
+    ring: "#0866ff",
+    glyph: glyph(
+      <>
+        <circle cx="12" cy="12" r="8.5" stroke="white" strokeWidth="1.6" />
+        <circle cx="12" cy="12" r="3.6" stroke="white" strokeWidth="1.6" />
+        <circle cx="12" cy="12" r="1.2" fill="white" />
+      </>,
+    ),
+  },
 };
 
 const FALLBACK: BrandDef = {
