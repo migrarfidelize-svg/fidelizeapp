@@ -210,7 +210,7 @@ async function sendTestEvent(version: string, pixelId: string, token: string, te
         },
       },
     ],
-    test_event_code: testCode,
+    ...(testCode ? { test_event_code: testCode } : {}),
   };
   try {
     const { response, body, latency_ms } = await timedFetch(url, {
