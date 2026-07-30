@@ -480,6 +480,29 @@ function CreativeThree() {
           </div>
         </div>
 
+        <div className="mt-14 grid grid-cols-3 gap-5">
+          {[
+            { k: "1 QR Code", v: "Fidelidade, cardápio, avaliação ou links" },
+            { k: "9 módulos", v: "Na mesma assinatura, sem plugin extra" },
+            { k: "100% digital", v: "Sem app para o cliente instalar" },
+          ].map((s) => (
+            <div
+              key={s.k}
+              className="rounded-3xl border border-white/10 px-7 py-6"
+              style={{ background: "rgba(255,255,255,0.035)" }}
+            >
+              <p className="text-[30px] leading-none font-bold tracking-tight text-violet-200">
+                {s.k}
+              </p>
+              <p className="mt-3 text-[17px] leading-snug text-white/50">
+                {s.v}
+              </p>
+            </div>
+          ))}
+        </div>
+
+
+
         <div className="mt-auto flex items-center justify-between rounded-3xl border border-white/12 px-9 py-7 backdrop-blur-xl"
           style={{
             background:
