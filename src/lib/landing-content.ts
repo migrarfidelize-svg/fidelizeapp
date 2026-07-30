@@ -80,3 +80,13 @@ export function normalizeBrands(raw: unknown): LandingBrandsContent {
     brands: Array.isArray(d.brands) && d.brands.length ? d.brands : DEFAULT_BRANDS.brands,
   };
 }
+
+export type PublicPlan = {
+  slug: string;
+  name: string;
+  price_monthly: number | null;
+  description: string | null;
+  display_order: number;
+  is_featured: boolean;
+  button_text: string | null;
+};

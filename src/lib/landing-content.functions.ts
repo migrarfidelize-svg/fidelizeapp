@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { normalizeBrands, normalizeHero, type LandingBrandsContent, type LandingHeroContent } from "@/lib/landing-content";
-export type { PublicPlan } from "@/lib/landing-content.server";
+
 
 /** Conteúdo público da landing: mockup, marcas e preços dos planos (fonte: banco). */
 export const getLandingPublic = createServerFn({ method: "GET" }).handler(async () => {

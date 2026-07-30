@@ -1,15 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { normalizeBrands, normalizeHero } from "@/lib/landing-content";
-
-export type PublicPlan = {
-  slug: string;
-  name: string;
-  price_monthly: number | null;
-  description: string | null;
-  display_order: number;
-  is_featured: boolean;
-  button_text: string | null;
-};
+import { normalizeBrands, normalizeHero, type PublicPlan } from "@/lib/landing-content";
 
 function publicClient() {
   const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
