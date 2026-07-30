@@ -195,7 +195,7 @@ export const metaPixelProvider: MarketingProvider = {
   },
 };
 
-async function sendTestEvent(version: string, pixelId: string, token: string, testCode: string) {
+async function sendTestEvent(version: string, pixelId: string, token: string, testCode?: string) {
   const url = `https://graph.facebook.com/${version}/${pixelId}/events`;
   const payload = {
     data: [
