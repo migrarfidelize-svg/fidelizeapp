@@ -30,7 +30,7 @@ export const Route = createFileRoute("/api/public/t/plan")({
           const amountRaw = Number(body.amount);
           const amount = Number.isFinite(amountRaw) && amountRaw >= 0 ? Math.min(amountRaw, 999999) : null;
 
-          const meta = body.meta && typeof body.meta === "object" ? body.meta : {};
+          const meta = (body.meta && typeof body.meta === "object" ? body.meta : {}) as Record<string, string | number | boolean | null>;
 
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           await supabaseAdmin.from("plan_funnel_events").insert({
