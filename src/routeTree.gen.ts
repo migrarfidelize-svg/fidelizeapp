@@ -97,6 +97,7 @@ import { Route as AuthenticatedAppCatalogoRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppCarimbarRouteImport } from './routes/_authenticated/app.carimbar'
 import { Route as AuthenticatedAppCardapioRouteImport } from './routes/_authenticated/app.cardapio'
 import { Route as AuthenticatedAppCampanhasRouteImport } from './routes/_authenticated/app.campanhas'
+import { Route as AuthenticatedAppAnunciosRouteImport } from './routes/_authenticated/app.anuncios'
 import { Route as AuthenticatedAppAnalyticsRouteImport } from './routes/_authenticated/app.analytics'
 import { Route as AuthenticatedHashSuporteIndexRouteImport } from './routes/_authenticated/hash.suporte.index'
 import { Route as AuthenticatedHashPlanosIndexRouteImport } from './routes/_authenticated/hash.planos.index'
@@ -613,6 +614,12 @@ const AuthenticatedAppCampanhasRoute =
     path: '/campanhas',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppAnunciosRoute =
+  AuthenticatedAppAnunciosRouteImport.update({
+    id: '/anuncios',
+    path: '/anuncios',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppAnalyticsRoute =
   AuthenticatedAppAnalyticsRouteImport.update({
     id: '/analytics',
@@ -890,6 +897,7 @@ export interface FileRoutesByFullPath {
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda/': typeof AjudaIndexRoute
   '/app/analytics': typeof AuthenticatedAppAnalyticsRoute
+  '/app/anuncios': typeof AuthenticatedAppAnunciosRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/cardapio': typeof AuthenticatedAppCardapioRouteWithChildren
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
@@ -1017,6 +1025,7 @@ export interface FileRoutesByTo {
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda': typeof AjudaIndexRoute
   '/app/analytics': typeof AuthenticatedAppAnalyticsRoute
+  '/app/anuncios': typeof AuthenticatedAppAnunciosRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
@@ -1147,6 +1156,7 @@ export interface FileRoutesById {
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda/': typeof AjudaIndexRoute
   '/_authenticated/app/analytics': typeof AuthenticatedAppAnalyticsRoute
+  '/_authenticated/app/anuncios': typeof AuthenticatedAppAnunciosRoute
   '/_authenticated/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/_authenticated/app/cardapio': typeof AuthenticatedAppCardapioRouteWithChildren
   '/_authenticated/app/carimbar': typeof AuthenticatedAppCarimbarRoute
@@ -1279,6 +1289,7 @@ export interface FileRouteTypes {
     | '/suporte/meus'
     | '/ajuda/'
     | '/app/analytics'
+    | '/app/anuncios'
     | '/app/campanhas'
     | '/app/cardapio'
     | '/app/carimbar'
@@ -1406,6 +1417,7 @@ export interface FileRouteTypes {
     | '/suporte/meus'
     | '/ajuda'
     | '/app/analytics'
+    | '/app/anuncios'
     | '/app/campanhas'
     | '/app/carimbar'
     | '/app/clientes'
@@ -1535,6 +1547,7 @@ export interface FileRouteTypes {
     | '/suporte/meus'
     | '/ajuda/'
     | '/_authenticated/app/analytics'
+    | '/_authenticated/app/anuncios'
     | '/_authenticated/app/campanhas'
     | '/_authenticated/app/cardapio'
     | '/_authenticated/app/carimbar'
@@ -2304,6 +2317,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppCampanhasRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/anuncios': {
+      id: '/_authenticated/app/anuncios'
+      path: '/anuncios'
+      fullPath: '/app/anuncios'
+      preLoaderRoute: typeof AuthenticatedAppAnunciosRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/app/analytics': {
       id: '/_authenticated/app/analytics'
       path: '/analytics'
@@ -2641,6 +2661,7 @@ const AuthenticatedAppCatalogoRouteWithChildren =
 
 interface AuthenticatedAppRouteChildren {
   AuthenticatedAppAnalyticsRoute: typeof AuthenticatedAppAnalyticsRoute
+  AuthenticatedAppAnunciosRoute: typeof AuthenticatedAppAnunciosRoute
   AuthenticatedAppCampanhasRoute: typeof AuthenticatedAppCampanhasRoute
   AuthenticatedAppCardapioRoute: typeof AuthenticatedAppCardapioRouteWithChildren
   AuthenticatedAppCarimbarRoute: typeof AuthenticatedAppCarimbarRoute
@@ -2670,6 +2691,7 @@ interface AuthenticatedAppRouteChildren {
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppAnalyticsRoute: AuthenticatedAppAnalyticsRoute,
+  AuthenticatedAppAnunciosRoute: AuthenticatedAppAnunciosRoute,
   AuthenticatedAppCampanhasRoute: AuthenticatedAppCampanhasRoute,
   AuthenticatedAppCardapioRoute: AuthenticatedAppCardapioRouteWithChildren,
   AuthenticatedAppCarimbarRoute: AuthenticatedAppCarimbarRoute,
