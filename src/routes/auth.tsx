@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { getWalletHint, setWalletHint, formatWalletHint, isStandaloneLaunch } from "@/lib/wallet-hint";
