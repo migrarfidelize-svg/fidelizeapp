@@ -192,8 +192,21 @@ function AuthPage() {
   }, [isMobile]);
   const captchaRequired = !isMobile && !!captcha?.enabled;
 
+  /**
+   * Anti-bot simples: campo honeypot invisível + tempo mínimo de preenchimento.
+   * Automações genéricas preenchem todos os campos e enviam em milissegundos.
+   */
+  const [honeypot, setHoneypot] = useState("");
+  const formOpenedAt = useRef(Date.now());
+  useEffect(() => { formOpenedAt.current = Date.now(); }, [mode, role]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (honeypot.trim() !== "" || Date.now() - formOpenedAt.current < 1500) {
+      toast.error("Não foi possível validar o envio. Tente novamente.");
+      return;
+    }
+
     if (captchaRequired) {
       if (!captchaToken) {
         toast.error("Confirme o desafio de segurança para continuar.");
