@@ -38,7 +38,12 @@ const opts = (slug: string) =>
   });
 
 export const Route = createFileRoute("/e/$slug")({
-  loader: ({ context, params }) => context.queryClient.ensureQueryData(opts(params.slug)),
+  loader: async ({ context, params }) => {
+    const d = await context.queryClient.ensureQueryData(opts(params.slug));
+    // 404 real (evita soft-404 para os buscadores) quando o slug não existe.
+    if (!d?.establishment) throw notFound();
+    return d;
+  },
   head: ({ params, loaderData }) => {
     const est = loaderData?.establishment;
     const title = est ? `${est.name} — Promoções e fidelidade` : `Descobrir — Fidelize`;
