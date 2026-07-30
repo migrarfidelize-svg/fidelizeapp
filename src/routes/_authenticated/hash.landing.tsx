@@ -413,6 +413,23 @@ function LandingAdmin() {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-2">
+              <div className="mb-4 rounded-xl border bg-[#020617] p-4 text-left text-white">
+                {copy.badge ? (
+                  <span className="inline-flex rounded-full border border-[#a78bfa55] bg-[#a78bfa14] px-2 py-0.5 text-[10px] text-[#a78bfa]">
+                    {copy.badge}
+                  </span>
+                ) : null}
+                <p className="mt-2 font-display text-lg font-extrabold leading-tight">
+                  {copy.titlePrefix} <span className="text-[#a78bfa]">{copy.titleHighlight}</span>.
+                </p>
+                <p className="mt-1.5 text-[11px] leading-snug text-white/60">{copy.subtitle}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="rounded-md bg-[#a78bfa] px-2.5 py-1 text-[11px] font-bold text-[#020617]">
+                    {copy.primaryCta.label}
+                  </span>
+                  <span className="rounded-md border border-white/20 px-2.5 py-1 text-[11px]">{copy.secondaryCta.label}</span>
+                </div>
+              </div>
               <div className="scale-90 origin-top">
                 <HeroAppPreview content={hero} />
               </div>
