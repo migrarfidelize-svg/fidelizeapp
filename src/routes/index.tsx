@@ -2009,18 +2009,24 @@ function FaqAIPanel() {
           </div>
         )}
 
+        {aiOnline === false && (
+          <div className="mb-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-600 dark:text-amber-300">
+            A Fidê está offline: nenhuma chave de IA válida configurada no servidor. Fale com a gente em <strong>/ajuda</strong> 💛
+          </div>
+        )}
+
         <div className="flex items-center gap-2 rounded-full border border-white/10 bg-background/60 pl-4 pr-1.5 py-1.5 focus-within:border-primary/50 transition">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") send(); }}
-            placeholder="Pergunte qualquer coisa…"
-            disabled={loading}
+            placeholder={aiOnline === false ? "Fidê offline no momento" : "Pergunte qualquer coisa…"}
+            disabled={loading || aiOnline === false}
             className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/60 disabled:opacity-50"
           />
           <button
             onClick={send}
-            disabled={loading || !input.trim()}
+            disabled={loading || !input.trim() || aiOnline === false}
             className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_0_15px_rgba(167,139,250,0.4)] hover:shadow-[0_0_20px_rgba(167,139,250,0.6)] disabled:opacity-40 disabled:shadow-none transition"
             aria-label="Enviar"
           >
@@ -2028,6 +2034,7 @@ function FaqAIPanel() {
           </button>
         </div>
         <div className="mt-2 text-[10px] text-center text-muted-foreground/70">Powered by IA · respostas podem conter imprecisões</div>
+
       </div>
     </div>
   );
