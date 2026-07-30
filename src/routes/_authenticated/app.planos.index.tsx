@@ -226,6 +226,47 @@ function MerchantPlansPage() {
         </AlertDialogContent>
       </AlertDialog>
 
+      <AlertDialog open={!!quoteFor} onOpenChange={(o) => !o && setQuoteFor(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 font-display">
+              <Crown className="h-5 w-5 text-primary" />
+              Orçamento {quoteFor?.name}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 text-sm">
+                <p>
+                  O plano <strong>{quoteFor?.name}</strong> ({fmtBRL(quoteFor?.price ?? 0)}/mês) é contratado com
+                  o time comercial: múltiplas unidades, onboarding assistido e SLA prioritário.
+                </p>
+                <p className="text-muted-foreground">
+                  Abra um chamado comercial e nosso time responde com a proposta e o link de pagamento.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Agora não</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                trackPlanFunnel({
+                  stage: "checkout_open",
+                  plan_slug: quoteFor?.slug ?? null,
+                  plan_name: quoteFor?.name ?? null,
+                  amount: quoteFor?.price ?? null,
+                  source: "quote_dialog",
+                  provider: "sales_quote",
+                  meta: { action: "open_ticket" },
+                });
+                window.location.href = "/app/fidelize?assunto=orcamento-empresarial";
+              }}
+            >
+              Falar com vendas
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <PaymentDialog
         open={!!payFor}
         onOpenChange={(o) => !o && setPayFor(null)}
