@@ -164,8 +164,9 @@ function AuthPage() {
   async function completeAuthRedirect(to: string, type: "SIGNED_IN" | "SIGNED_UP") {
     notifyAuthSync(type);
     // Garante que a sessão está hidratada antes do guard do /_authenticated rodar.
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) {
+    const session = await getSettledSession(2000);
+    if (!session) {
+
       // Sem sessão (ex.: confirmação de e-mail pendente) qualquer rota privada
       // devolve o usuário para /auth — evitamos o overlay "Carregando seu painel…" infinito.
       setRedirecting(false);
