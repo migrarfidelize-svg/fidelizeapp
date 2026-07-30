@@ -56,6 +56,8 @@ export function trackPlanFunnel(payload: Payload): void {
 /** Guarda o plano escolhido na landing para comparar depois com o checkout. */
 export function rememberSelectedPlan(slug: string, name?: string, amount?: number) {
   try {
+    const prev = readSelectedPlan();
+    if (prev && prev.slug === slug && name === undefined && amount === undefined) return;
     localStorage.setItem(LAST_SELECT_KEY, JSON.stringify({ slug, name: name ?? null, amount: amount ?? null }));
   } catch {}
 }
