@@ -131,7 +131,73 @@ export const PROVIDER_GUIDES: Record<string, ProviderGuide> = {
       { title: "Testar", description: "Testar conexão." },
     ],
   },
+
+  // ---------- Marketing ----------
+  meta_pixel: {
+    intro:
+      "Rastreamento do Meta (Facebook/Instagram): o Pixel roda no navegador nas páginas públicas e a Conversions API envia eventos server-side, resistentes a bloqueadores e ao fim dos cookies de terceiros.",
+    prerequisites: [
+      "Conta no Gerenciador de Negócios (business.facebook.com)",
+      "Um Pixel criado no Events Manager",
+      "Permissão de administrador no conjunto de dados",
+    ],
+    steps: [
+      {
+        title: "Abrir o Events Manager",
+        description: "Acesse Gerenciador de Eventos → Fontes de dados e selecione (ou crie) o seu Pixel.",
+        url: "https://business.facebook.com/events_manager2",
+      },
+      {
+        title: "Copiar o Pixel ID",
+        description: "No topo da página aparece o ID do conjunto de dados — uma sequência só de números. Cole no campo Pixel ID, na aba Configuração.",
+      },
+      {
+        title: "Gerar o token da Conversions API",
+        description:
+          "No Pixel, abra Configurações → Conversions API → Gerar token de acesso. Copie o token (ele só é exibido uma vez).",
+      },
+      {
+        title: "Salvar o token com segurança",
+        description:
+          "Cole o token na aba Credenciais e clique em Salvar. Ele é gravado apenas no backend — nunca é devolvido ao navegador nem aparece no código do site.",
+      },
+      {
+        title: "Código de teste (recomendado)",
+        description:
+          "Em Testar eventos, copie o código TESTxxxxx e cole no campo Código de teste. Com ele preenchido, o botão Testar envia um PageView real que aparece na tela em segundos.",
+      },
+      {
+        title: "Testar conexão",
+        description:
+          "Clique em Testar. O sistema lê o conjunto de dados na Graph API para validar token + Pixel e, se houver código de teste, dispara o evento de validação.",
+      },
+      {
+        title: "Ativar",
+        description:
+          "Ligue a chave da integração. Com Rastrear páginas públicas em Sim, o Pixel passa a carregar apenas nas páginas públicas (landing, perfil da loja, cardápio, árvore de links) — nunca no painel autenticado.",
+      },
+    ],
+    troubleshooting: [
+      {
+        symptom: "OAuthException (190): Invalid OAuth access token",
+        fix: "O token expirou ou foi revogado. Gere um novo em Conversions API → Gerar token de acesso e salve novamente.",
+      },
+      {
+        symptom: "(#100) Unsupported get request / Object does not exist",
+        fix: "O Pixel ID está errado ou o token pertence a outro Gerenciador de Negócios. Confirme o ID do conjunto de dados e o negócio dono do token.",
+      },
+      {
+        symptom: "(#200) Permissões insuficientes",
+        fix: "O usuário que gerou o token não é administrador do conjunto de dados. Peça o acesso no Gerenciador de Negócios e gere o token de novo.",
+      },
+      {
+        symptom: "Teste passa, mas nada aparece no Events Manager",
+        fix: "Sem o código de teste os eventos vão para o fluxo normal e levam alguns minutos. Preencha o Código de teste para ver em tempo real.",
+      },
+    ],
+  },
 };
+
 
 export function getGuide(providerId: string): ProviderGuide | null {
   return PROVIDER_GUIDES[providerId] ?? null;
