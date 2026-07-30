@@ -109,7 +109,7 @@ function PlanFunnelCard() {
     queryFn: () => getFunnel({ data: { days: 7 } }),
   });
 
-  const byStage = data?.byStage ?? {};
+  const byStage = (data?.byStage ?? {}) as Record<string, number>;
   const mismatches = data?.mismatches ?? [];
 
   return (

@@ -176,7 +176,7 @@ function AdminEmpresas() {
                     <DropdownMenuSeparator />
                     <div className="px-2 py-1.5 text-xs text-muted-foreground flex items-center gap-2"><CreditCard className="h-3 w-3" /> Mudar plano</div>
                     {PLAN_OPTIONS.map((p) => (
-                      <DropdownMenuItem key={p} disabled={e.plan === p} onClick={() => changePlan.mutate({ id: e.id, plan: p })}>
+                      <DropdownMenuItem key={p} disabled={e.plan === p} onClick={() => changePlan.mutate({ id: e.id, plan: p as any })}>
                         {PLAN_LABEL[p]}{e.plan === p ? " (atual)" : ""}
                       </DropdownMenuItem>
                     ))}
