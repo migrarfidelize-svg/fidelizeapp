@@ -116,7 +116,7 @@ function MobileStickyCta() {
           <div className="text-[11px] text-muted-foreground">A partir de R$ 29,90/mês · cancele quando quiser</div>
         </div>
         <Button asChild className="h-12 shrink-0 rounded-full px-6 font-bold">
-          <Link to="/auth" search={{ mode: "signup" }}>Criar minha conta</Link>
+          <a href="#precos">Quero assinar</a>
         </Button>
       </div>
     </div>
@@ -157,7 +157,7 @@ function SiteHeader() {
           ) : (
             <>
               <Button asChild variant="ghost" size="sm" className="h-10 rounded-full hidden sm:inline-flex"><Link to="/auth">Entrar</Link></Button>
-              <Button asChild size="sm" className="h-10 rounded-full px-4"><Link to="/auth" search={{ mode: "signup" }}>Criar minha conta</Link></Button>
+              <Button asChild size="sm" className="h-10 rounded-full px-4"><a href="#precos">Quero assinar</a></Button>
 
             </>
           )}
@@ -206,7 +206,7 @@ function SiteHeader() {
                 ) : (
                   <>
                     <Button asChild className="h-12 rounded-full" onClick={() => setMenuOpen(false)}>
-                      <Link to="/auth" search={{ mode: "signup" }}>Criar minha conta</Link>
+                      <a href="#precos">Quero assinar</a>
                     </Button>
                     <Button asChild variant="outline" className="h-12 rounded-full" onClick={() => setMenuOpen(false)}>
                       <Link to="/auth">Entrar</Link>
@@ -312,9 +312,9 @@ function Hero() {
                 className="w-full sm:w-auto font-bold hover:brightness-110 transition-all"
                 style={{ background: CYAN, color: OBSIDIAN, boxShadow: `0 0 30px ${CYAN}55` }}
               >
-                <Link to="/auth" search={{ mode: "signup" }}>
-                  Criar minha conta <ArrowRight className="ml-1 h-4 w-4" />
-                </Link>
+                <a href="#precos">
+                  Escolher meu plano <ArrowRight className="ml-1 h-4 w-4" />
+                </a>
               </Button>
 
               <Button
@@ -899,9 +899,9 @@ function Comparison() {
                 Chega de cartão perdido, carimbo torto e cliente esquecido. Ative o Fidelize em minutos.
               </p>
               <Button asChild size="lg" className="tear-cta-btn rounded-full px-8 font-bold" style={{ background: "#a78bfa", color: "#001010" }}>
-                <Link to="/auth">
-                  Criar minha conta <ArrowRight className="ml-1 h-4 w-4" />
-                </Link>
+                <a href="#precos">
+                  Quero assinar agora <ArrowRight className="ml-1 h-4 w-4" />
+                </a>
               </Button>
             </div>
           </div>
@@ -1209,9 +1209,9 @@ function Examples() {
         {/* CTA */}
         <div className="mx-auto mt-10 flex flex-col items-center gap-2 text-center">
           <Button asChild size="lg" className="rounded-full px-8 font-bold" style={{ background: "#a78bfa", color: "#001010" }}>
-            <Link to="/auth">
-              Criar minha conta <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
+            <a href="#precos">
+              Quero assinar agora <ArrowRight className="ml-1 h-4 w-4" />
+            </a>
           </Button>
           <p className="text-[11px] uppercase tracking-widest text-white/40">
             <Gift className="mr-1 inline h-3 w-3" style={{ color: "#a78bfa" }} /> A partir de R$ 29,90/mês · cancele quando quiser
@@ -1715,10 +1715,10 @@ function CTA() {
 
           <div className="flex flex-col gap-3">
             <Button asChild size="lg" className="h-14 rounded-none bg-[#a78bfa] text-background hover:bg-white font-bold uppercase tracking-widest text-sm justify-between shadow-[0_0_30px_rgba(167,139,250,0.25)]">
-              <Link to="/auth" search={{ mode: "signup" }}>
-                Criar minha conta
+              <a href="#precos">
+                Escolher meu plano
                 <ArrowRight className="h-5 w-5" />
-              </Link>
+              </a>
             </Button>
             <Button asChild size="lg" variant="outline" className="h-14 rounded-none border-primary/30 text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary font-semibold uppercase tracking-widest text-sm transition-colors">
               <a href="#precos">Ver planos</a>

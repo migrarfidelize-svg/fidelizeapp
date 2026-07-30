@@ -76,9 +76,9 @@ export function RoiCalculator() {
             </div>
 
             <Button asChild size="lg" className="mt-5 w-full rounded-full font-semibold">
-              <Link to="/auth">
-                Criar minha conta <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
+              <a href="#precos">
+                Escolher meu plano <ArrowRight className="ml-1 h-4 w-4" />
+              </a>
             </Button>
           </div>
         </div>
