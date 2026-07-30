@@ -1,5 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { mapAsaasStatus, mapAsaasBillingTypeToMethod } from "@/lib/asaas.functions";
+import {
+  authorizeAsaasWebhook,
+  buildSubscriptionPeriod,
+  decidePaymentTransition,
+  isReconcilableAsaasEvent,
+  parseAsaasExternalReference,
+} from "@/lib/asaas-webhook";
 
 /**
  * Webhook oficial do Asaas.
@@ -84,11 +91,10 @@ async function reconcileAsaasPayment(remotePayment: any) {
 
   let estId: string | null = existing?.establishment_id ?? null;
   let planSlug: string | null = existing?.plan_slug ?? null;
-  if (!estId || !planSlug) {
-    // externalReference: "est:<uuid>|plan:<slug>"
-    const ref = String(remotePayment.externalReference ?? "");
-    const m = ref.match(/est:([0-9a-f-]+)\|plan:([\w-]+)/i);
-    if (m) { estId = estId ?? m[1]; planSlug = planSlug ?? m[2]; }
+  const ref = parseAsaasExternalReference(remotePayment.externalReference);
+  if (ref) {
+    estId = estId ?? ref.establishmentId;
+    planSlug = planSlug ?? ref.planSlug;
   }
 
   if (existing) {
@@ -111,11 +117,18 @@ async function reconcileAsaasPayment(remotePayment: any) {
     } as never);
   }
 
-  if (newStatus === "approved") {
-    if (estId && planSlug) {
-      await activatePlanAsaas(estId, planSlug, paymentId);
+  const decision = decidePaymentTransition({
+    previousStatus: (existing as any)?.status ?? null,
+    newStatus,
+    establishmentId: estId,
+    planSlug,
+  });
+
+  {
+    if (decision.shouldActivate) {
+      await activatePlanAsaas(estId as string, planSlug as string, paymentId);
     }
-    if ((existing as any)?.status !== "approved") {
+    if (decision.shouldNotifySale) {
       const { notifyAdminsOfSale } = await import("@/lib/admin-sales-notify.server");
       await notifyAdminsOfSale({
         establishmentId: estId,
@@ -144,8 +157,7 @@ async function activatePlanAsaas(establishmentId: string, planSlug: string, prov
   const toTier = plan.tier as string;
   await supabaseAdmin.from("establishments").update({ plan: toTier as any }).eq("id", establishmentId);
 
-  const now = new Date();
-  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
+  const period = buildSubscriptionPeriod(new Date());
   const { data: existingSub } = await supabaseAdmin
     .from("subscriptions").select("id").eq("establishment_id", establishmentId).maybeSingle();
 
@@ -155,9 +167,9 @@ async function activatePlanAsaas(establishmentId: string, planSlug: string, prov
     status: "active",
     provider: "asaas",
     external_id: providerPaymentId,
-    current_period_start: now.toISOString(),
-    current_period_end: nextMonth.toISOString(),
-    next_billing_date: nextMonth.toISOString(),
+    current_period_start: period.start,
+    current_period_end: period.end,
+    next_billing_date: period.end,
     cancel_at_period_end: false,
   };
   if (existingSub) {
@@ -199,24 +211,23 @@ export const Route = createFileRoute("/api/public/webhooks/asaas")({
         };
 
         // Autenticação: se o admin configurou webhook_token, exige match exato.
-        if (expected) {
-          if (!providedToken || providedToken !== expected) {
-            await logAsaasWebhook({
-              event, payment_id: paymentId,
-              signature_valid: false, processed: false,
-              error: "invalid_asaas_token",
-              payload: body, headers: headersLog,
-              response_status: 401,
-              reason: "Header asaas-access-token ausente ou diferente do configurado no painel.",
-              mode: creds.mode,
-            });
-            return new Response("invalid token", { status: 401 });
-          }
+        const auth = authorizeAsaasWebhook({ expectedToken: expected, providedToken });
+        if (!auth.ok) {
+          await logAsaasWebhook({
+            event, payment_id: paymentId,
+            signature_valid: false, processed: false,
+            error: auth.error,
+            payload: body, headers: headersLog,
+            response_status: auth.status,
+            reason: auth.reason,
+            mode: creds.mode,
+          });
+          return new Response("invalid token", { status: auth.status });
         }
 
         try {
           let handled = true;
-          if (paymentId && event.startsWith("PAYMENT_")) {
+          if (isReconcilableAsaasEvent(event, paymentId)) {
             // Consulta autoritativa; se falhar (rate-limit, User-Agent, etc.),
             // usamos o próprio payload — o header asaas-access-token já
             // autenticou a origem quando webhook_token está configurado.
@@ -227,7 +238,7 @@ export const Route = createFileRoute("/api/public/webhooks/asaas")({
               remote = payment;
               await logAsaasWebhook({
                 event, payment_id: paymentId,
-                signature_valid: !!expected, processed: false,
+                signature_valid: auth.signatureValid, processed: false,
                 error: (fetchErr as Error)?.message ?? String(fetchErr),
                 payload: body, headers: headersLog,
                 response_status: 200,
@@ -242,7 +253,7 @@ export const Route = createFileRoute("/api/public/webhooks/asaas")({
 
           await logAsaasWebhook({
             event, payment_id: paymentId,
-            signature_valid: !!expected,
+            signature_valid: auth.signatureValid,
             processed: true,
             error: null,
             payload: body, headers: headersLog,
@@ -254,7 +265,7 @@ export const Route = createFileRoute("/api/public/webhooks/asaas")({
         } catch (e: any) {
           await logAsaasWebhook({
             event, payment_id: paymentId,
-            signature_valid: !!expected,
+            signature_valid: auth.signatureValid,
             processed: false,
             error: e?.message ?? String(e),
             payload: body, headers: headersLog,
