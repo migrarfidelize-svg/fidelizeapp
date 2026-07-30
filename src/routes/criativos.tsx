@@ -530,14 +530,32 @@ function CreativeThree() {
 
 /* ---------------- page ---------------- */
 
-function CriativosPage() {
+/**
+ * Os criativos têm tamanho fixo de 1080x1350 (formato de post).
+ * No mobile isso forçava scroll horizontal na página inteira; aqui a arte é
+ * reduzida proporcionalmente e o contêiner reserva exatamente a altura visível.
+ */
+function CreativeScaler({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#070510] py-16">
-      <div className="mx-auto flex w-max flex-col items-center gap-16">
-        <CreativeOne />
-        <CreativeTwo />
-        <CreativeThree />
+    <div className="w-full overflow-hidden">
+      <div className="mx-auto h-[380px] w-[275px] sm:h-[608px] sm:w-[486px] md:h-[810px] md:w-[648px] xl:h-[1350px] xl:w-[1080px]">
+        <div className="origin-top-left scale-[0.2547] sm:scale-[0.45] md:scale-[0.6] xl:scale-100">
+          {children}
+        </div>
       </div>
     </div>
   );
 }
+
+function CriativosPage() {
+  return (
+    <div className="min-h-dvh w-full overflow-x-hidden bg-[#070510] py-16">
+      <div className="mx-auto flex w-full max-w-full flex-col items-center gap-12 px-2 sm:gap-16">
+        <CreativeScaler><CreativeOne /></CreativeScaler>
+        <CreativeScaler><CreativeTwo /></CreativeScaler>
+        <CreativeScaler><CreativeThree /></CreativeScaler>
+      </div>
+    </div>
+  );
+}
+

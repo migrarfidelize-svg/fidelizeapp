@@ -320,7 +320,7 @@ function PreviewDock() {
     { id: "C", title: "Command Rail Pro", desc: "Molduras neon, LED cyan percorrendo o ativo, grupos em accordion. Denso e pro (Linear).", node: <DockC /> },
   ];
   return (
-    <div className="min-h-screen bg-[#050810] text-white">
+    <div className="min-h-dvh bg-[#050810] text-white">
       <div className="mx-auto max-w-[1400px] px-6 py-10">
         <header className="mb-8">
           <div className="text-[11px] font-medium uppercase tracking-[0.2em] text-violet-300/70">Preview · Sidebar Dock</div>

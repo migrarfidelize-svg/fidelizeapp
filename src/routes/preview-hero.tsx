@@ -141,7 +141,7 @@ function HeroPreview({ v }: { v: Variant }) {
 
 function PreviewHero() {
   return (
-    <main className="min-h-screen" style={{ background: "#03060c" }}>
+    <main className="min-h-dvh" style={{ background: "#03060c" }}>
       <div className="mx-auto max-w-[1400px] px-6 py-10 text-white">
         <header className="mb-8">
           <div className="text-[11px] font-medium uppercase tracking-[0.2em]" style={{ color: `${CYAN}b3` }}>

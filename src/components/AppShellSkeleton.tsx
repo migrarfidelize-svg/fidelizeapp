@@ -7,7 +7,7 @@ import { LogoMark } from "@/components/LogoMark";
  */
 export function AppShellSkeleton({ label = "Carregando seu painel…" }: { label?: string }) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       {/* Rail lateral (desktop) */}
       <aside className="fixed inset-y-0 left-0 hidden w-24 flex-col items-center gap-3 border-r border-border/60 bg-card/60 py-4 md:flex">
         <div className="grid h-11 w-11 place-items-center rounded-xl bg-primary/10">

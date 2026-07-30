@@ -233,7 +233,7 @@ function AdminLayout() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen dock-page-bg">
+      <div className="min-h-dvh dock-page-bg">
         {/* Desktop: sidebar padrão (ícone + nome) */}
         <aside className="hidden md:flex fixed inset-y-0 left-0 z-30 w-64 flex-col border-r border-border/60 bg-card/80 backdrop-blur-xl">
           <div className="flex h-14 items-center gap-2 border-b border-border/60 px-3">

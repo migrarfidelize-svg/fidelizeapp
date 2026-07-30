@@ -343,7 +343,7 @@ function PixForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, onDo
         setStatus(r.status);
         if (r.status === "approved") {
           toast.success("Pagamento confirmado! Plano ativado.");
-          qc.invalidateQueries();
+          qc.invalidateQueries({ queryKey: ["billing"] }); qc.invalidateQueries({ queryKey: ["dashboard"] }); qc.invalidateQueries({ queryKey: ["establishment"] }); qc.invalidateQueries({ queryKey: ["est-full"] }); qc.invalidateQueries({ queryKey: ["memberships"] });
           setTimeout(onDone, 1200);
         } else if (["rejected","cancelled","refunded"].includes(r.status)) {
           toast.error(`Pagamento ${r.status}. ${r.status_detail ?? ""}`);
@@ -528,7 +528,7 @@ function CardForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, onD
       try {
         const r: any = await statusFn({ data: { mp_payment_id: paymentId } });
         setStatus(r.status);
-        if (r.status === "approved") { toast.success("Pagamento aprovado! Plano ativado."); qc.invalidateQueries(); setTimeout(onDone, 1200); }
+        if (r.status === "approved") { toast.success("Pagamento aprovado! Plano ativado."); qc.invalidateQueries({ queryKey: ["billing"] }); qc.invalidateQueries({ queryKey: ["dashboard"] }); qc.invalidateQueries({ queryKey: ["establishment"] }); qc.invalidateQueries({ queryKey: ["est-full"] }); qc.invalidateQueries({ queryKey: ["memberships"] }); setTimeout(onDone, 1200); }
         else if (["rejected","cancelled"].includes(r.status)) toast.error(`Pagamento ${r.status}.`);
       } catch {}
     }, 3000);
@@ -579,7 +579,7 @@ function CardForm({ plan, establishmentId, payerEmailDefault, isSandboxLike, onD
       setStatusDetail(r.status_detail);
       if (r.status === "approved") {
         toast.success("Pagamento aprovado!");
-        qc.invalidateQueries();
+        qc.invalidateQueries({ queryKey: ["billing"] }); qc.invalidateQueries({ queryKey: ["dashboard"] }); qc.invalidateQueries({ queryKey: ["establishment"] }); qc.invalidateQueries({ queryKey: ["est-full"] }); qc.invalidateQueries({ queryKey: ["memberships"] });
         setTimeout(onDone, 1200);
       } else if (r.status === "in_process") {
         toast.info("Pagamento em análise. Aguardando confirmação…");

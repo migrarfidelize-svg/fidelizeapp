@@ -2194,7 +2194,7 @@ function ReviewQrPage() {
                     ? { width: `${dims.mm.w}mm`, height: `${dims.mm.h}mm` }
                     : {
                         aspectRatio: dims.aspect,
-                        height: "min(calc(100vh - 8rem), 92vh)",
+                        height: "min(calc(100dvh - 8rem), 92dvh)",
                         maxWidth: "calc(100vw - 3rem)",
                       }
                 }

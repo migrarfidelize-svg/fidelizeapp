@@ -5468,6 +5468,7 @@ export type Database = {
         Args: { _thresholds: Json; _visits: number }
         Returns: Database["public"]["Enums"]["customer_tier"]
       }
+      dashboard_summary: { Args: { _est: string }; Returns: Json }
       delete_my_account: { Args: never; Returns: undefined }
       get_establishment_plan: {
         Args: { _est: string }

@@ -37,7 +37,7 @@ function DownloadPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
+    <div className="min-h-dvh bg-slate-950 text-slate-100 flex items-center justify-center p-6">
       <div className="max-w-xl w-full bg-slate-900/60 border border-slate-800 rounded-2xl p-8 space-y-6">
         <div>
           <h1 className="text-2xl font-bold">🚀 Fidelize Migrator</h1>

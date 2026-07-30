@@ -633,7 +633,7 @@ function QRCodes() {
   if (!est) return <LoadingSkeleton variant="page" />;
 
   return (
-    <div className="qrstudio relative min-h-[calc(100vh-4rem)] -mx-4 -my-4 md:-mx-6 md:-my-6 bg-gradient-to-br from-[hsl(var(--background))] via-[hsl(var(--primary-soft)/0.4)] to-[hsl(var(--background))]">
+    <div className="qrstudio relative min-h-[calc(100dvh-4rem)] -mx-4 -my-4 md:-mx-6 md:-my-6 bg-gradient-to-br from-[hsl(var(--background))] via-[hsl(var(--primary-soft)/0.4)] to-[hsl(var(--background))]">
       {/* ==== TOP BAR ==== */}
       <div className="sticky top-0 z-30 backdrop-blur-xl bg-background/70 border-b border-border/50">
         <div className="flex items-center gap-3 px-4 md:px-6 py-3">
@@ -707,7 +707,7 @@ function QRCodes() {
             ref={previewWrapRef}
             className="relative overflow-hidden"
             style={{
-              height: "min(calc(100vh - 220px), 820px)",
+              height: "min(calc(100dvh - 220px), 820px)",
               backgroundImage:
                 "radial-gradient(circle at 1px 1px, hsl(var(--foreground) / 0.08) 1px, transparent 0)",
               backgroundSize: "22px 22px",
@@ -790,7 +790,7 @@ function QRCodes() {
         </div>
 
         {/* SIDE PANEL — CONTROLS */}
-        <div className="border-l border-border/50 bg-card/50 backdrop-blur-sm overflow-y-auto" style={{ maxHeight: "calc(100vh - 132px)" }}>
+        <div className="border-l border-border/50 bg-card/50 backdrop-blur-sm overflow-y-auto" style={{ maxHeight: "calc(100dvh - 132px)" }}>
           <div className="p-5">
             <Tabs defaultValue="content">
               <TabsList className="grid grid-cols-4 w-full bg-muted/40">
