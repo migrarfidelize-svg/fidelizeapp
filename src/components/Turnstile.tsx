@@ -40,7 +40,7 @@ function loadScript(): Promise<void> {
 export function Turnstile({
   siteKey,
   onToken,
-  theme = "dark",
+  theme = "auto",
 }: {
   siteKey: string;
   onToken: (token: string | null) => void;

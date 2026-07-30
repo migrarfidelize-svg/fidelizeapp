@@ -84,10 +84,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Transforme visitantes em clientes fiéis. Sem app, sem cartão de papel." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "theme-color", content: "#0a0f1c", media: "(prefers-color-scheme: dark)" },
-      { name: "theme-color", content: "#ffffff", media: "(prefers-color-scheme: light)" },
+      { name: "theme-color", content: "#ffffff" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
-      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
 
       { name: "apple-mobile-web-app-title", content: "Fidelize" },
       { name: "mobile-web-app-capable", content: "yes" },
@@ -197,6 +196,9 @@ function RootComponent() {
       const r = document.documentElement;
       r.classList.toggle("dark", t === "dark");
       r.style.colorScheme = t;
+      // Mantém a barra do navegador/PWA na cor do tema atual (claro por padrão).
+      const meta = document.querySelector('meta[name="theme-color"]:not([media])');
+      if (meta) meta.setAttribute("content", t === "dark" ? "#0a0f1c" : "#ffffff");
     };
 
     apply();

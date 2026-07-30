@@ -475,25 +475,25 @@ function AuthPage() {
 
 
   return (
-    <div className="auth-cinema relative min-h-dvh w-full overflow-hidden bg-[oklch(0.14_0.02_230)] px-6 py-4">
+    <div className="auth-cinema relative min-h-dvh w-full overflow-hidden bg-background px-6 py-4">
       {/* Overlay de transição — cobre a tela durante o redirect pós-login para eliminar qualquer flash de telas anteriores. */}
       {redirecting && (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-4 bg-[oklch(0.14_0.02_230)] animate-in fade-in duration-150">
-          <div className="pointer-events-none absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#a78bfa]/8 blur-[120px]" />
-          <Loader2 className="h-10 w-10 animate-spin text-[#a78bfa]" />
-          <div className="text-xs uppercase tracking-[0.3em] text-white/60">Carregando seu painel…</div>
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-4 bg-background animate-in fade-in duration-150">
+          <div className="pointer-events-none absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/8 blur-[120px]" />
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <div className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Carregando seu painel…</div>
         </div>
       )}
       {/* Ambient glows */}
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#a78bfa]/5 blur-[120px]" />
-      <div className="pointer-events-none absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-[oklch(0.78_0.19_330)]/10 blur-[100px]" />
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/5 blur-[120px]" />
+      <div className="pointer-events-none absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-accent/10 blur-[100px]" />
       <div className="pointer-events-none absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(#a78bfa 1px, transparent 1px), linear-gradient(90deg, #a78bfa 1px, transparent 1px)", backgroundSize: "100px 100px" }} />
 
 
       {/* Top bar */}
       <div className="relative z-10 mx-auto flex max-w-6xl items-center justify-between">
-        <Link to="/" className="text-white"><Logo className="text-white" /></Link>
-        <Link to="/" className="text-xs uppercase tracking-[0.2em] text-white/40 hover:text-[#a78bfa]">← Voltar</Link>
+        <Link to="/" className="text-foreground"><Logo className="text-foreground" /></Link>
+        <Link to="/" className="text-xs uppercase tracking-[0.2em] text-muted-foreground hover:text-primary">← Voltar</Link>
       </div>
 
       <div className="relative z-10 mx-auto grid min-h-[calc(100dvh-5rem)] max-w-6xl grid-cols-1 items-center gap-8 lg:gap-12 lg:grid-cols-2">
@@ -600,35 +600,35 @@ function AuthPage() {
           </div>
 
           <div className="max-w-md text-center lg:text-left">
-            <h1 className="font-display text-3xl font-bold leading-tight text-white">
-              Onde a lealdade vira <span className="text-[#a78bfa]">experiência.</span>
+            <h1 className="font-display text-3xl font-bold leading-tight text-foreground">
+              Onde a lealdade vira <span className="text-primary">experiência.</span>
             </h1>
-            <p className="mt-2 text-sm text-white/50">Cartão fidelidade digital, carimbos em tempo real e clientes que voltam sempre.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Cartão fidelidade digital, carimbos em tempo real e clientes que voltam sempre.</p>
           </div>
         </div>
 
 
         {/* Form panel */}
         <div className="mx-auto w-full max-w-md">
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 backdrop-blur-xl sm:p-6">
+          <div className="rounded-3xl border border-border bg-card/80 p-5 backdrop-blur-xl sm:p-6">
 
             {/* Sliding switch toggle */}
-            <div className="relative mb-4 grid grid-cols-2 rounded-full border border-white/10 bg-black/40 p-1">
+            <div className="relative mb-4 grid grid-cols-2 rounded-full border border-border bg-muted p-1">
               <span
-                className="pointer-events-none absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full bg-[#a78bfa] shadow-[0_0_24px_rgba(167,139,250,0.45)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                className="pointer-events-none absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full bg-primary shadow-[0_0_24px_rgba(167,139,250,0.45)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
                 style={{ transform: isSignup ? "translateX(100%)" : "translateX(0%)" }}
               />
               <Link
                 to="/auth"
                 search={{ ...search, mode: "signin" }}
-                className={"relative z-10 rounded-full py-1.5 text-center font-display text-sm font-semibold transition-colors duration-300 " + (isSignup ? "text-white/60" : "text-black")}
+                className={"relative z-10 rounded-full py-1.5 text-center font-display text-sm font-semibold transition-colors duration-300 " + (isSignup ? "text-muted-foreground" : "text-primary-foreground")}
               >
                 Entrar
               </Link>
               <Link
                 to="/auth"
                 search={{ ...search, mode: "signup" }}
-                className={"relative z-10 rounded-full py-1.5 text-center font-display text-sm font-semibold transition-colors duration-300 " + (isSignup ? "text-black" : "text-white/60")}
+                className={"relative z-10 rounded-full py-1.5 text-center font-display text-sm font-semibold transition-colors duration-300 " + (isSignup ? "text-primary-foreground" : "text-muted-foreground")}
               >
                 Criar conta
               </Link>
@@ -654,7 +654,7 @@ function AuthPage() {
               {/* Toggle Cliente / Estabelecimento — oculto quando o fluxo veio da carteira */}
               {search.source !== "wallet" && (
                 <div className="animate-fade-in">
-                  <div className="mb-1 ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">Sou</div>
+                  <div className="mb-1 ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Sou</div>
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
@@ -662,8 +662,8 @@ function AuthPage() {
                       className={
                         "flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-all " +
                         (role === "customer"
-                          ? "border-[#a78bfa] bg-[#a78bfa]/10 text-white shadow-[0_0_20px_-6px_rgba(167,139,250,0.6)]"
-                          : "border-white/10 bg-white/5 text-white/60 hover:text-white")
+                          ? "border-primary bg-primary/10 text-foreground shadow-[0_0_20px_-6px_rgba(167,139,250,0.6)]"
+                          : "border-border bg-muted/60 text-muted-foreground hover:text-foreground")
                       }
                     >
                       <User className="h-3.5 w-3.5" /> Cliente
@@ -674,15 +674,15 @@ function AuthPage() {
                       className={
                         "flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-all " +
                         (role === "establishment"
-                          ? "border-[#a78bfa] bg-[#a78bfa]/10 text-white shadow-[0_0_20px_-6px_rgba(167,139,250,0.6)]"
-                          : "border-white/10 bg-white/5 text-white/60 hover:text-white")
+                          ? "border-primary bg-primary/10 text-foreground shadow-[0_0_20px_-6px_rgba(167,139,250,0.6)]"
+                          : "border-border bg-muted/60 text-muted-foreground hover:text-foreground")
                       }
                     >
                       <Store className="h-3.5 w-3.5" /> Estabelecimento
                     </button>
                   </div>
                   {isSignup && (
-                    <p className="mt-1.5 ml-1 text-[10px] text-white/40">
+                    <p className="mt-1.5 ml-1 text-[10px] text-muted-foreground">
                       {role === "customer"
                         ? "Acumule carimbos e recompensas em qualquer estabelecimento Fidelize."
                         : "Crie seu programa de fidelidade digital para o seu negócio."}
@@ -691,8 +691,8 @@ function AuthPage() {
                 </div>
               )}
               {search.source === "wallet" && (
-                <div className="animate-fade-in rounded-xl border border-[#a78bfa]/25 bg-[#a78bfa]/5 px-3 py-2.5 text-[11px] text-white/70 flex items-center gap-2">
-                  <User className="h-3.5 w-3.5 text-[#a78bfa]" />
+                <div className="animate-fade-in rounded-xl border border-primary/25 bg-primary/5 px-3 py-2.5 text-[11px] text-muted-foreground flex items-center gap-2">
+                  <User className="h-3.5 w-3.5 text-primary" />
                   Acesso à carteira do cliente. Use seu WhatsApp para entrar.
                 </div>
               )}
@@ -700,14 +700,14 @@ function AuthPage() {
 
               {isSignup && (
                 <div className="animate-fade-in space-y-1">
-                  <label htmlFor="name" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">Seu nome</label>
+                  <label htmlFor="name" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Seu nome</label>
                   <input id="name" value={name} onChange={(e) => setName(e.target.value)} required minLength={2} className="auth-input" />
                 </div>
               )}
 
               {isEstablishmentSignup && (
                 <div className="animate-fade-in space-y-1">
-                  <label htmlFor="company" className="ml-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">
+                  <label htmlFor="company" className="ml-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
                     <Building2 className="h-3 w-3" /> Nome do negócio
                   </label>
                   <input
@@ -725,7 +725,7 @@ function AuthPage() {
 
               {isEstablishmentSignup && (
                 <div className="animate-fade-in space-y-1">
-                  <label htmlFor="segment" className="ml-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">
+                  <label htmlFor="segment" className="ml-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
                     <Store className="h-3 w-3" /> Categoria do negócio
                   </label>
                   <select
@@ -737,7 +737,7 @@ function AuthPage() {
                   >
                     <option value="" disabled>Selecione a categoria</option>
                     {DISCOVER_CATEGORIES.map((c) => (
-                      <option key={c.id} value={c.id} className="bg-[#12101c] text-white">
+                      <option key={c.id} value={c.id} className="bg-card text-foreground">
                         {c.emoji} {c.label}
                       </option>
                     ))}
@@ -751,10 +751,10 @@ function AuthPage() {
               {/* WhatsApp: obrigatório para cliente (sempre) e para estabelecimento no signup */}
               {(walletFlow || isEstablishmentSignup) && (
                 <div className="animate-fade-in space-y-1">
-                  <label htmlFor="whatsapp" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">WhatsApp</label>
+                  <label htmlFor="whatsapp" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">WhatsApp</label>
                   <input id="whatsapp" type="tel" inputMode="tel" autoComplete="tel" placeholder="(11) 91234-5678" value={whatsapp} onChange={(e) => setWhatsapp(formatWhatsapp(e.target.value))} required className="auth-input" />
                   {walletFlow && (
-                    <p className="ml-1 text-[10px] text-white/40">
+                    <p className="ml-1 text-[10px] text-muted-foreground">
                       {isSignup ? "Usaremos seu WhatsApp para você acessar sua carteira." : "Digite o mesmo WhatsApp usado no cadastro."}
                     </p>
                   )}
@@ -765,14 +765,14 @@ function AuthPage() {
               {!walletFlow && (
                 <>
                   <div className="space-y-1.5">
-                    <label htmlFor="email" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">E-mail</label>
+                    <label htmlFor="email" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">E-mail</label>
                     <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" placeholder="voce@empresa.com" className="auth-input" />
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <label htmlFor="password" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">Senha</label>
+                      <label htmlFor="password" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Senha</label>
                       {!isSignup && (
-                        <Link to="/auth/recuperar" className="text-[10px] uppercase tracking-widest text-[oklch(0.78_0.19_330)] hover:underline">Esqueci</Link>
+                        <Link to="/auth/recuperar" className="text-[10px] uppercase tracking-widest text-accent-foreground hover:underline">Esqueci</Link>
                       )}
                     </div>
                     <div className="relative">
@@ -781,7 +781,7 @@ function AuthPage() {
                         type="button"
                         onClick={() => setShowPw((v) => !v)}
                         aria-label={showPw ? "Ocultar senha" : "Mostrar senha"}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 transition-colors hover:text-white/80"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
                       >
                         {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
@@ -798,14 +798,14 @@ function AuthPage() {
                                   ? pwScore === 1
                                     ? "bg-amber-400/70"
                                     : pwScore === 2
-                                    ? "bg-[#a78bfa]"
+                                    ? "bg-primary"
                                     : "bg-emerald-400"
-                                  : "bg-white/10")
+                                  : "bg-muted")
                               }
                             />
                           ))}
                         </div>
-                        <p id="password-hint" className="ml-1 text-[10px] text-white/50">
+                        <p id="password-hint" className="ml-1 text-[10px] text-muted-foreground">
                           De 6 a 15 caracteres. {pwScore < 2 ? "Misture letras e números para deixar mais forte." : "Boa senha!"}
                         </p>
                       </>
@@ -813,12 +813,12 @@ function AuthPage() {
 
                   </div>
                   {!isSignup && (
-                    <label className="ml-1 flex cursor-pointer select-none items-center gap-2 text-[11px] text-white/70 transition-colors hover:text-white/90">
+                    <label className="ml-1 flex cursor-pointer select-none items-center gap-2 text-[11px] text-muted-foreground transition-colors hover:text-foreground">
                       <input
                         type="checkbox"
                         checked={keepSignedIn}
                         onChange={(e) => setKeepSignedInState(e.target.checked)}
-                        className="h-3.5 w-3.5 accent-[#a78bfa]"
+                        className="h-3.5 w-3.5 accent-[var(--primary)]"
                       />
                       <span>Manter-me conectado neste dispositivo</span>
                     </label>
@@ -828,12 +828,12 @@ function AuthPage() {
 
               {captchaRequired && (
                 <div className="mt-1">
-                  <Turnstile siteKey={captcha!.siteKey} onToken={setCaptchaToken} theme="dark" />
+                  <Turnstile siteKey={captcha!.siteKey} onToken={setCaptchaToken} theme="auto" />
                 </div>
               )}
 
 
-              <button type="submit" disabled={loading} className="auth-cta group mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-[#a78bfa] py-2.5 font-display text-sm font-bold uppercase tracking-widest text-black shadow-[0_0_30px_-4px_rgba(167,139,250,0.55)] transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60">
+              <button type="submit" disabled={loading} className="auth-cta group mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-2.5 font-display text-sm font-bold uppercase tracking-widest text-primary-foreground shadow-[0_0_30px_-4px_rgba(167,139,250,0.55)] transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60">
                 {loading ? (
                   "Aguarde…"
                 ) : (
@@ -845,17 +845,17 @@ function AuthPage() {
               </button>
             </form>
 
-            <div className="mt-3 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/30">
-              <Check className="h-3 w-3 text-[#a78bfa]" /> Criptografia ativa · SSL
+            <div className="mt-3 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+              <Check className="h-3 w-3 text-primary" /> Criptografia ativa · SSL
             </div>
 
-            <p className="mt-2 text-center text-[10px] leading-relaxed text-white/40">
+            <p className="mt-2 text-center text-[10px] leading-relaxed text-muted-foreground">
               Ao continuar você concorda com os{" "}
-              <a href="/termos" target="_blank" rel="noopener noreferrer" className="underline decoration-[#a78bfa]/40 underline-offset-2 hover:text-white/70">
+              <a href="/termos" target="_blank" rel="noopener noreferrer" className="underline decoration-primary/40 underline-offset-2 hover:text-foreground">
                 Termos de uso
               </a>{" "}
               e a{" "}
-              <a href="/privacidade" target="_blank" rel="noopener noreferrer" className="underline decoration-[#a78bfa]/40 underline-offset-2 hover:text-white/70">
+              <a href="/privacidade" target="_blank" rel="noopener noreferrer" className="underline decoration-primary/40 underline-offset-2 hover:text-foreground">
                 Política de privacidade
               </a>
               .
