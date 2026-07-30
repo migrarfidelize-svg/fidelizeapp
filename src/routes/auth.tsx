@@ -12,6 +12,9 @@ import { Coffee, Check, ArrowRight, Sparkles, Wifi, Store, User, Loader2, Eye, E
 export const ONBOARDING_PREFILL_KEY = "fidelize:onboarding-prefill";
 import { claimCustomerByToken, attachEstablishmentBySlug } from "@/lib/my-wallet.functions";
 import { DISCOVER_CATEGORIES } from "@/lib/discover-categories";
+import { getCaptchaConfig, verifyCaptcha } from "@/lib/captcha.functions";
+import { Turnstile, resetTurnstile } from "@/components/Turnstile";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const AUTH_SYNC_CHANNEL = "fidelize-auth-sync";
 
@@ -172,8 +175,41 @@ function AuthPage() {
     };
   }
 
+  /**
+   * Captcha (Cloudflare Turnstile) — exibido apenas no desktop.
+   * No mobile o fluxo segue liberado, conforme decisão de produto.
+   */
+  const isMobile = useIsMobile();
+  const [captcha, setCaptcha] = useState<{ enabled: boolean; siteKey: string } | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  useEffect(() => {
+    if (isMobile) return;
+    let alive = true;
+    getCaptchaConfig()
+      .then((c) => { if (alive) setCaptcha(c); })
+      .catch(() => { if (alive) setCaptcha({ enabled: false, siteKey: "" }); });
+    return () => { alive = false; };
+  }, [isMobile]);
+  const captchaRequired = !isMobile && !!captcha?.enabled;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (captchaRequired) {
+      if (!captchaToken) {
+        toast.error("Confirme o desafio de segurança para continuar.");
+        return;
+      }
+      const check = await verifyCaptcha({ data: { token: captchaToken } }).catch(() => null);
+      if (!check?.ok) {
+        toast.error("Não foi possível validar o desafio de segurança. Tente novamente.");
+        setCaptchaToken(null);
+        resetTurnstile();
+        return;
+      }
+      // Tokens do Turnstile são de uso único.
+      setCaptchaToken(null);
+      resetTurnstile();
+    }
     setLoading(true);
     try {
       if (isSignup) {
@@ -640,6 +676,12 @@ function AuthPage() {
                     </label>
                   )}
                 </>
+              )}
+
+              {captchaRequired && (
+                <div className="mt-1">
+                  <Turnstile siteKey={captcha!.siteKey} onToken={setCaptchaToken} theme="dark" />
+                </div>
               )}
 
 
