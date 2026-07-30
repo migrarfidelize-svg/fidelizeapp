@@ -4,6 +4,7 @@ import { PageHero } from "@/components/PageHero";
 import { Crown as HeroIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { getPlanIntent, clearPlanIntent } from "@/lib/plan-intent";
+import { trackCheckoutOpen, trackPlanFunnel } from "@/lib/plan-funnel";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
