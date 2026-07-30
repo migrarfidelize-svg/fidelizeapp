@@ -291,7 +291,10 @@ export const listArticlesAdmin = createServerFn({ method: "POST" })
       context.supabase.from("kb_categories").select("*").eq("establishment_id", data.establishment_id).order("sort_order"),
       context.supabase.from("kb_articles").select("id, title, slug, excerpt, body_html, tags, published, views, helpful_count, not_helpful_count, category_id, updated_at").eq("establishment_id", data.establishment_id).order("updated_at", { ascending: false }),
     ]);
-    return { categories: cats ?? [], articles: arts ?? [] };
+    // O HTML volta sanitizado também no painel (a pré-visualização renderiza cru).
+    const { sanitizeRichHtml } = await import("@/lib/sanitize-html");
+    const articles = (arts ?? []).map((a) => ({ ...a, body_html: sanitizeRichHtml(a.body_html) }));
+    return { categories: cats ?? [], articles };
   });
 
 export const saveArticle = createServerFn({ method: "POST" })
