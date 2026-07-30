@@ -337,7 +337,7 @@ function AuthPage() {
           await completeAuthRedirect("/onboarding", "SIGNED_UP");
         } else {
           if (walletFlow) setWalletHint(whatsapp);
-          const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
+          const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next, role });
           if (dest.toastKind === "error") toast.error(dest.toast ?? "Não foi possível vincular seu cartão.");
           else toast.success(dest.toast ?? "Conta criada!");
           await completeAuthRedirect(dest.to, "SIGNED_UP");
@@ -398,7 +398,7 @@ function AuthPage() {
 
         markAttempt(true);
         if (walletFlow) setWalletHint(whatsapp);
-        const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
+        const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next, role });
         if (dest.toastKind === "error") toast.error(dest.toast ?? "Não foi possível vincular seu cartão.");
         else toast.success(dest.toast ?? "Bem-vindo de volta!");
         await completeAuthRedirect(dest.to, "SIGNED_IN");
