@@ -8,7 +8,8 @@ import { trackPlanFunnel, rememberSelectedPlan } from "@/lib/plan-funnel";
 import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
 import { BrandMarquee } from "@/components/landing/BrandMarquee";
-import { DEFAULT_BRANDS } from "@/lib/landing-content";
+import { DEFAULT_BRANDS, type LandingBrandsContent, type LandingHeroContent } from "@/lib/landing-content";
+import type { PublicPlan } from "@/lib/landing-content.server";
 import { HeroAppPreview } from "@/components/landing/HeroAppPreview";
 import { EcosystemBento } from "@/components/landing/EcosystemBento";
 
