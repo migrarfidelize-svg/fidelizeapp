@@ -1,4 +1,5 @@
 import { RouteLoading } from "@/components/RouteLoading";
+import { PanelTransition } from "@/components/PanelTransition";
 import { createFileRoute, Link, Outlet, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";

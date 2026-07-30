@@ -30,6 +30,7 @@ import { PageGuideButton } from "@/components/merchant/PageGuideButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePermissions } from "@/hooks/usePermissions";
 import { RouteLoading } from "@/components/RouteLoading";
+import { PanelTransition } from "@/components/PanelTransition";
 import { ROUTE_PERMISSIONS } from "@/lib/permissions";
 
 const MERCHANT_TOUR_STEPS: TourStep[] = [
