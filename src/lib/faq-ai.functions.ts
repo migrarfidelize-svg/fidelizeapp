@@ -85,10 +85,17 @@ async function callLovableGateway(apiKey: string, messages: Array<{ role: string
 export const askFaqAI = createServerFn({ method: "POST" })
   .inputValidator((raw: unknown) => InputSchema.parse(raw))
   .handler(async ({ data }) => {
-    const geminiKey = process.env.GEMINI_API_KEY;
+    // Aceita aliases comuns para facilitar deploy próprio (VPS/Docker).
+    const geminiKey =
+      process.env.GEMINI_API_KEY ||
+      process.env.GOOGLE_API_KEY ||
+      process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     const lovableKey = process.env.LOVABLE_API_KEY;
 
     if (!geminiKey && !lovableKey) {
+      console.error(
+        "[Fidê] Nenhuma chave de IA configurada no servidor. Defina GEMINI_API_KEY (ou LOVABLE_API_KEY) nas variáveis de ambiente e reinicie o processo.",
+      );
       return { answer: "Assistente indisponível no momento. Fala com a gente em /ajuda 💛" };
     }
 
@@ -110,6 +117,10 @@ export const askFaqAI = createServerFn({ method: "POST" })
           };
           const answer = json.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
           if (answer) return { answer };
+        } else {
+          console.error(
+            `[Fidê] Gemini respondeu ${res.status}: ${(await res.text()).slice(0, 300)}`,
+          );
         }
         // fall through to Lovable fallback if available
       }
