@@ -433,7 +433,7 @@ function CreativeThree() {
             <p className="text-[16px] tracking-[0.22em] text-white/35 uppercase">
               Cartão de papel
             </p>
-            <ul className="mt-9 flex flex-1 flex-col justify-center space-y-7 text-[23px] leading-snug text-white/40">
+            <ul className="mt-9 flex flex-1 flex-col justify-center space-y-7 text-[21px] leading-snug text-white/40">
               {[
                 "Some na carteira do cliente",
                 "Sem dados de quem volta",
@@ -460,7 +460,7 @@ function CreativeThree() {
             <p className="text-[16px] tracking-[0.22em] text-violet-200 uppercase">
               Com o Fidelize
             </p>
-            <ul className="mt-9 flex flex-1 flex-col justify-center space-y-7 text-[23px] leading-snug text-white/85">
+            <ul className="mt-9 flex flex-1 flex-col justify-center space-y-7 text-[21px] leading-snug text-white/85">
               {[
                 "Cartão no celular, sempre à mão",
                 "Base de clientes com histórico",
