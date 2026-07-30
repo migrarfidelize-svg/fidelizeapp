@@ -571,7 +571,7 @@ function Onboarding() {
             >
               <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
               <Rocket className="mr-2 h-4 w-4" />
-              {loading ? "Criando…" : "Publicar minha empresa"}
+              {loading ? "Criando…" : "Criar empresa e ir para o pagamento"}
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
           </div>
