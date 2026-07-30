@@ -200,10 +200,28 @@ function AuthPage() {
   const formOpenedAt = useRef(Date.now());
   useEffect(() => { formOpenedAt.current = Date.now(); }, [mode, role]);
 
+  /** Identificador usado no rate limit (e-mail ou WhatsApp). */
+  function currentIdentifier() {
+    return walletFlow ? whatsapp.replace(/\D/g, "") : email.trim().toLowerCase();
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (honeypot.trim() !== "" || Date.now() - formOpenedAt.current < 1500) {
-      toast.error("Não foi possível validar o envio. Tente novamente.");
+
+    const action = isSignup ? ("signup" as const) : ("login" as const);
+    const identifier = currentIdentifier();
+
+    // Honeypot + tempo mínimo + rate limit por IP/identificador (validados no servidor).
+    const guard = await guardAuthAttempt({
+      data: {
+        identifier,
+        action,
+        honeypot,
+        elapsedMs: Date.now() - formOpenedAt.current,
+      },
+    }).catch(() => null);
+    if (guard && !guard.ok) {
+      toast.error(guard.message);
       return;
     }
 
@@ -224,7 +242,10 @@ function AuthPage() {
       resetTurnstile();
     }
     setLoading(true);
+    const markAttempt = (success: boolean) =>
+      void reportAuthAttempt({ data: { identifier, action, success } }).catch(() => null);
     try {
+
       if (isSignup) {
         const digits = whatsapp.replace(/\D/g, "");
         if (digits.length < 10) {
