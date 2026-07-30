@@ -4514,6 +4514,456 @@ export type Database = {
           },
         ]
       }
+      sponsored_ad_campaigns: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          category_id: string
+          changes_requested_reason: string | null
+          courtesy_reason: string | null
+          created_at: string
+          created_by: string | null
+          cta_label: string
+          currency_snapshot: string | null
+          description: string
+          destination_slug: string
+          destination_type: string
+          duration_days_snapshot: number | null
+          ends_at: string | null
+          establishment_id: string
+          id: string
+          image_path: string | null
+          image_source: string
+          is_courtesy: boolean
+          package_id: string | null
+          package_name_snapshot: string | null
+          pause_origin: string | null
+          pause_reason: string | null
+          paused_at: string | null
+          price_cents_snapshot: number | null
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
+          requested_start_at: string | null
+          settings_snapshot: Json | null
+          starts_at: string | null
+          status: string
+          submitted_at: string | null
+          terms_accepted_at: string | null
+          terms_accepted_by: string | null
+          terms_version: number | null
+          title: string
+          total_paused_seconds: number
+          tracking_token: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          category_id: string
+          changes_requested_reason?: string | null
+          courtesy_reason?: string | null
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string
+          currency_snapshot?: string | null
+          description?: string
+          destination_slug?: string
+          destination_type?: string
+          duration_days_snapshot?: number | null
+          ends_at?: string | null
+          establishment_id: string
+          id?: string
+          image_path?: string | null
+          image_source?: string
+          is_courtesy?: boolean
+          package_id?: string | null
+          package_name_snapshot?: string | null
+          pause_origin?: string | null
+          pause_reason?: string | null
+          paused_at?: string | null
+          price_cents_snapshot?: number | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
+          requested_start_at?: string | null
+          settings_snapshot?: Json | null
+          starts_at?: string | null
+          status?: string
+          submitted_at?: string | null
+          terms_accepted_at?: string | null
+          terms_accepted_by?: string | null
+          terms_version?: number | null
+          title?: string
+          total_paused_seconds?: number
+          tracking_token?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          category_id?: string
+          changes_requested_reason?: string | null
+          courtesy_reason?: string | null
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string
+          currency_snapshot?: string | null
+          description?: string
+          destination_slug?: string
+          destination_type?: string
+          duration_days_snapshot?: number | null
+          ends_at?: string | null
+          establishment_id?: string
+          id?: string
+          image_path?: string | null
+          image_source?: string
+          is_courtesy?: boolean
+          package_id?: string | null
+          package_name_snapshot?: string | null
+          pause_origin?: string | null
+          pause_reason?: string | null
+          paused_at?: string | null
+          price_cents_snapshot?: number | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
+          requested_start_at?: string | null
+          settings_snapshot?: Json | null
+          starts_at?: string | null
+          status?: string
+          submitted_at?: string | null
+          terms_accepted_at?: string | null
+          terms_accepted_by?: string | null
+          terms_version?: number | null
+          title?: string
+          total_paused_seconds?: number
+          tracking_token?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsored_ad_campaigns_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sponsored_ad_campaigns_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "sponsored_ad_packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sponsored_ad_daily_metrics: {
+        Row: {
+          campaign_id: string
+          id: string
+          metric_date: string
+          unique_clicks: number
+          unique_impressions: number
+          updated_at: string
+        }
+        Insert: {
+          campaign_id: string
+          id?: string
+          metric_date: string
+          unique_clicks?: number
+          unique_impressions?: number
+          updated_at?: string
+        }
+        Update: {
+          campaign_id?: string
+          id?: string
+          metric_date?: string
+          unique_clicks?: number
+          unique_impressions?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsored_ad_daily_metrics_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "sponsored_ad_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sponsored_ad_events: {
+        Row: {
+          campaign_id: string
+          category_id: string | null
+          created_at: string
+          dedupe_bucket: string
+          event_type: string
+          id: string
+          occurred_at: string
+          placement: string
+          session_hash: string
+          viewer_user_id: string | null
+        }
+        Insert: {
+          campaign_id: string
+          category_id?: string | null
+          created_at?: string
+          dedupe_bucket: string
+          event_type: string
+          id?: string
+          occurred_at?: string
+          placement?: string
+          session_hash: string
+          viewer_user_id?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          category_id?: string | null
+          created_at?: string
+          dedupe_bucket?: string
+          event_type?: string
+          id?: string
+          occurred_at?: string
+          placement?: string
+          session_hash?: string
+          viewer_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsored_ad_events_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "sponsored_ad_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sponsored_ad_orders: {
+        Row: {
+          amount_cents: number
+          campaign_id: string
+          created_at: string
+          currency: string
+          establishment_id: string
+          external_payment_id: string | null
+          gateway: string
+          gateway_status: string | null
+          id: string
+          idempotency_key: string
+          paid_at: string | null
+          payment_method: string
+          pix_code: string | null
+          pix_expires_at: string | null
+          pix_qr_code: string | null
+          refunded_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          campaign_id: string
+          created_at?: string
+          currency?: string
+          establishment_id: string
+          external_payment_id?: string | null
+          gateway: string
+          gateway_status?: string | null
+          id?: string
+          idempotency_key: string
+          paid_at?: string | null
+          payment_method?: string
+          pix_code?: string | null
+          pix_expires_at?: string | null
+          pix_qr_code?: string | null
+          refunded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          campaign_id?: string
+          created_at?: string
+          currency?: string
+          establishment_id?: string
+          external_payment_id?: string | null
+          gateway?: string
+          gateway_status?: string | null
+          id?: string
+          idempotency_key?: string
+          paid_at?: string | null
+          payment_method?: string
+          pix_code?: string | null
+          pix_expires_at?: string | null
+          pix_qr_code?: string | null
+          refunded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsored_ad_orders_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "sponsored_ad_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sponsored_ad_orders_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sponsored_ad_packages: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          currency: string
+          description: string | null
+          display_order: number
+          duration_days: number
+          id: string
+          is_active: boolean
+          name: string
+          price_cents: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          display_order?: number
+          duration_days: number
+          id?: string
+          is_active?: boolean
+          name: string
+          price_cents: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          display_order?: number
+          duration_days?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          price_cents?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      sponsored_ad_reviews: {
+        Row: {
+          action: string
+          admin_user_id: string | null
+          campaign_id: string
+          created_at: string
+          creative_snapshot: Json | null
+          from_status: string | null
+          id: string
+          note: string | null
+          reason: string | null
+          to_status: string | null
+        }
+        Insert: {
+          action: string
+          admin_user_id?: string | null
+          campaign_id: string
+          created_at?: string
+          creative_snapshot?: Json | null
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          reason?: string | null
+          to_status?: string | null
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string | null
+          campaign_id?: string
+          created_at?: string
+          creative_snapshot?: Json | null
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          reason?: string | null
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsored_ad_reviews_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "sponsored_ad_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sponsored_ad_settings: {
+        Row: {
+          advertiser_terms: string
+          advertiser_terms_version: number
+          allow_self_pause: boolean
+          allowed_categories: string[]
+          click_dedupe_minutes: number
+          default_gateway: string
+          id: boolean
+          impression_dedupe_minutes: number
+          max_ads_per_category: number
+          max_impressions_per_session_24h: number
+          pix_expiration_minutes: number
+          self_pause_extends_period: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          advertiser_terms?: string
+          advertiser_terms_version?: number
+          allow_self_pause?: boolean
+          allowed_categories?: string[]
+          click_dedupe_minutes?: number
+          default_gateway?: string
+          id?: boolean
+          impression_dedupe_minutes?: number
+          max_ads_per_category?: number
+          max_impressions_per_session_24h?: number
+          pix_expiration_minutes?: number
+          self_pause_extends_period?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          advertiser_terms?: string
+          advertiser_terms_version?: number
+          allow_self_pause?: boolean
+          allowed_categories?: string[]
+          click_dedupe_minutes?: number
+          default_gateway?: string
+          id?: boolean
+          impression_dedupe_minutes?: number
+          max_ads_per_category?: number
+          max_impressions_per_session_24h?: number
+          pix_expiration_minutes?: number
+          self_pause_extends_period?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       stamps: {
         Row: {
           added_by: string | null
