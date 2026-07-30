@@ -319,58 +319,8 @@ function Hero() {
       
       <div className="relative z-10 mx-auto max-w-6xl px-4 py-12 sm:py-16 md:py-24">
         <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(300px,420px)] lg:gap-14">
-          <div className="min-w-0 flex flex-col items-start text-left text-white">
-            <span
-              className="landing-hero-badge inline-flex max-w-full items-center gap-2 rounded-full px-3 py-1 text-[11px] font-medium sm:text-xs"
-              style={{ background: `${CYAN}14`, border: `1px solid ${CYAN}55`, color: CYAN }}
-            >
-              <Sparkles className="h-3 w-3 shrink-0" />
-              <span className="truncate">1 plataforma · 10 ferramentas de retenção</span>
-            </span>
-            <h1 className="mt-4 font-display text-[2rem] font-extrabold leading-[1.1] tracking-tight text-balance sm:mt-5 sm:text-5xl md:text-6xl pb-1">
-              Tudo que seu negócio{" "}
-              <span className="hidden sm:inline"><br /></span>
-              precisa para o{" "}
-              <span className="hidden sm:inline"><br /></span>
-              <span style={{ color: CYAN, textShadow: `0 0 40px ${CYAN}55` }}>cliente voltar</span>.
-            </h1>
+          <HeroCopy />
 
-            <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-white/70 sm:mt-5 sm:text-base md:text-lg">
-              Fidelidade digital, cardápio, catálogo, avaliações, QR Code, push e CRM — num só painel. Sem app, sem cartão de papel.
-            </p>
-            <div className="mt-7 flex w-full flex-col gap-3 sm:mt-8 sm:w-auto sm:flex-row sm:items-center">
-              <Button
-                asChild
-                size="lg"
-                className="w-full sm:w-auto font-bold hover:brightness-110 transition-all"
-                style={{ background: CYAN, color: OBSIDIAN, boxShadow: `0 0 30px ${CYAN}55` }}
-              >
-                <a href="#precos">
-                  Escolher meu plano <ArrowRight className="ml-1 h-4 w-4" />
-                </a>
-              </Button>
-
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="w-full sm:w-auto bg-transparent text-white border-white/20 hover:bg-white/10 hover:text-white"
-              >
-                <a href="#ecossistema">Ver como funciona</a>
-              </Button>
-            </div>
-            <div className="mt-6 flex w-full flex-wrap items-center gap-x-5 gap-y-2 text-xs text-white/60 sm:gap-x-6">
-              <span className="flex items-center gap-1.5">
-                <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> Sem cartão de crédito
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> Configure em 5 minutos
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> Planos a partir de {useFromPrice()}/mês
-              </span>
-            </div>
-          </div>
 
           <div className="-mx-2 flex scale-95 justify-center sm:mx-0 sm:scale-100 lg:justify-end">
             <HeroAppPreview content={useLandingData()?.hero} />
