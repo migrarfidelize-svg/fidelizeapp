@@ -81,7 +81,7 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   return (
-    <div className="landing-scope min-h-dvh bg-background text-foreground">
+    <div className="landing-scope min-h-dvh bg-background text-foreground pb-24 md:pb-0">
       <ScrollProgress />
       <SiteHeader />
       <main>
