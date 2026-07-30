@@ -114,8 +114,10 @@ function Onboarding() {
     logo_url: "" as string,
     campaign_name: "Cartão Fidelidade",
     stamps_required: 10,
-    reward_title: "",
+    // Padrão pronto: o cartão pode ser ajustado depois, no painel.
+    reward_title: "Brinde exclusivo",
     reward_description: "",
+
     stamp_icon: "coffee",
   });
 
@@ -220,13 +222,13 @@ function Onboarding() {
       toast.error("Selecione a categoria do seu negócio.");
       return;
     }
-    if (f.reward_title.trim().length < 2) {
-      toast.error("Descreva a recompensa da campanha.");
-      return;
-    }
+    // A configuração do cartão é opcional aqui: usamos um padrão e o lojista
+    // ajusta depois no painel. O caminho crítico é criar a empresa e pagar o plano.
+    const rewardTitle = f.reward_title.trim().length >= 2 ? f.reward_title.trim() : "Brinde exclusivo";
     setLoading(true);
     try {
-      await create({ data: { ...f, slug: cleanSlug } });
+      await create({ data: { ...f, reward_title: rewardTitle, slug: cleanSlug } });
+
       try { localStorage.removeItem("fidelize:onboarding-prefill"); } catch { /* ignore */ }
       qc.removeQueries({ queryKey: ["memberships"] });
       const fresh = await getEsts();
@@ -569,7 +571,7 @@ function Onboarding() {
             >
               <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
               <Rocket className="mr-2 h-4 w-4" />
-              {loading ? "Criando…" : "Publicar minha empresa"}
+              {loading ? "Criando…" : "Criar empresa e ir para o pagamento"}
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
           </div>
