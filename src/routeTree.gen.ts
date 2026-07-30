@@ -114,6 +114,7 @@ import { Route as ApiPublicTPlanRouteImport } from './routes/api/public/t/plan'
 import { Route as ApiPublicTEventRouteImport } from './routes/api/public/t/event'
 import { Route as ApiPublicMercadopagoPublicKeyRouteImport } from './routes/api/public/mercadopago/public-key'
 import { Route as ApiPublicHooksWalletSyncRouteImport } from './routes/api/public/hooks/wallet-sync'
+import { Route as ApiPublicHooksSponsoredAdsLifecycleRouteImport } from './routes/api/public/hooks/sponsored-ads-lifecycle'
 import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/api/public/hooks/process-email-queue'
 import { Route as ApiPublicHooksNotifyExpiringRewardsRouteImport } from './routes/api/public/hooks/notify-expiring-rewards'
 import { Route as ApiPublicHooksMercadopagoRetryRouteImport } from './routes/api/public/hooks/mercadopago-retry'
@@ -713,6 +714,12 @@ const ApiPublicHooksWalletSyncRoute =
     path: '/api/public/hooks/wallet-sync',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksSponsoredAdsLifecycleRoute =
+  ApiPublicHooksSponsoredAdsLifecycleRouteImport.update({
+    id: '/api/public/hooks/sponsored-ads-lifecycle',
+    path: '/api/public/hooks/sponsored-ads-lifecycle',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksProcessEmailQueueRoute =
   ApiPublicHooksProcessEmailQueueRouteImport.update({
     id: '/api/public/hooks/process-email-queue',
@@ -978,6 +985,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/notify-expiring-rewards': typeof ApiPublicHooksNotifyExpiringRewardsRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
+  '/api/public/hooks/sponsored-ads-lifecycle': typeof ApiPublicHooksSponsoredAdsLifecycleRoute
   '/api/public/hooks/wallet-sync': typeof ApiPublicHooksWalletSyncRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
   '/api/public/t/event': typeof ApiPublicTEventRoute
@@ -1105,6 +1113,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/notify-expiring-rewards': typeof ApiPublicHooksNotifyExpiringRewardsRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
+  '/api/public/hooks/sponsored-ads-lifecycle': typeof ApiPublicHooksSponsoredAdsLifecycleRoute
   '/api/public/hooks/wallet-sync': typeof ApiPublicHooksWalletSyncRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
   '/api/public/t/event': typeof ApiPublicTEventRoute
@@ -1239,6 +1248,7 @@ export interface FileRoutesById {
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/notify-expiring-rewards': typeof ApiPublicHooksNotifyExpiringRewardsRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
+  '/api/public/hooks/sponsored-ads-lifecycle': typeof ApiPublicHooksSponsoredAdsLifecycleRoute
   '/api/public/hooks/wallet-sync': typeof ApiPublicHooksWalletSyncRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
   '/api/public/t/event': typeof ApiPublicTEventRoute
@@ -1373,6 +1383,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/notify-expiring-rewards'
     | '/api/public/hooks/process-email-queue'
+    | '/api/public/hooks/sponsored-ads-lifecycle'
     | '/api/public/hooks/wallet-sync'
     | '/api/public/mercadopago/public-key'
     | '/api/public/t/event'
@@ -1500,6 +1511,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/notify-expiring-rewards'
     | '/api/public/hooks/process-email-queue'
+    | '/api/public/hooks/sponsored-ads-lifecycle'
     | '/api/public/hooks/wallet-sync'
     | '/api/public/mercadopago/public-key'
     | '/api/public/t/event'
@@ -1633,6 +1645,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/notify-expiring-rewards'
     | '/api/public/hooks/process-email-queue'
+    | '/api/public/hooks/sponsored-ads-lifecycle'
     | '/api/public/hooks/wallet-sync'
     | '/api/public/mercadopago/public-key'
     | '/api/public/t/event'
@@ -1697,6 +1710,7 @@ export interface RootRouteChildren {
   ApiPublicHooksMercadopagoRetryRoute: typeof ApiPublicHooksMercadopagoRetryRoute
   ApiPublicHooksNotifyExpiringRewardsRoute: typeof ApiPublicHooksNotifyExpiringRewardsRoute
   ApiPublicHooksProcessEmailQueueRoute: typeof ApiPublicHooksProcessEmailQueueRoute
+  ApiPublicHooksSponsoredAdsLifecycleRoute: typeof ApiPublicHooksSponsoredAdsLifecycleRoute
   ApiPublicHooksWalletSyncRoute: typeof ApiPublicHooksWalletSyncRoute
   ApiPublicMercadopagoPublicKeyRoute: typeof ApiPublicMercadopagoPublicKeyRoute
   ApiPublicTEventRoute: typeof ApiPublicTEventRoute
@@ -2449,6 +2463,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksWalletSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/sponsored-ads-lifecycle': {
+      id: '/api/public/hooks/sponsored-ads-lifecycle'
+      path: '/api/public/hooks/sponsored-ads-lifecycle'
+      fullPath: '/api/public/hooks/sponsored-ads-lifecycle'
+      preLoaderRoute: typeof ApiPublicHooksSponsoredAdsLifecycleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/process-email-queue': {
       id: '/api/public/hooks/process-email-queue'
       path: '/api/public/hooks/process-email-queue'
@@ -2936,6 +2957,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksNotifyExpiringRewardsRoute:
     ApiPublicHooksNotifyExpiringRewardsRoute,
   ApiPublicHooksProcessEmailQueueRoute: ApiPublicHooksProcessEmailQueueRoute,
+  ApiPublicHooksSponsoredAdsLifecycleRoute:
+    ApiPublicHooksSponsoredAdsLifecycleRoute,
   ApiPublicHooksWalletSyncRoute: ApiPublicHooksWalletSyncRoute,
   ApiPublicMercadopagoPublicKeyRoute: ApiPublicMercadopagoPublicKeyRoute,
   ApiPublicTEventRoute: ApiPublicTEventRoute,
