@@ -12,6 +12,9 @@ import { Coffee, Check, ArrowRight, Sparkles, Wifi, Store, User, Loader2, Eye, E
 export const ONBOARDING_PREFILL_KEY = "fidelize:onboarding-prefill";
 import { claimCustomerByToken, attachEstablishmentBySlug } from "@/lib/my-wallet.functions";
 import { DISCOVER_CATEGORIES } from "@/lib/discover-categories";
+import { getCaptchaConfig, verifyCaptcha } from "@/lib/captcha.functions";
+import { Turnstile, resetTurnstile } from "@/components/Turnstile";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const AUTH_SYNC_CHANNEL = "fidelize-auth-sync";
 
