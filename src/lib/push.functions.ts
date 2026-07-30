@@ -1545,7 +1545,7 @@ export const sendEstablishmentTestPush = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
+    await assertActiveSubscription(context.supabase, (data as any).establishmentId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // 1. Confirmar empresa
