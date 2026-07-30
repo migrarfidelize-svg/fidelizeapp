@@ -110,42 +110,74 @@ function KbManager() {
       </div>
 
 
-      <div className="rounded-2xl border bg-card overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
-            <tr>
-              <th className="text-left p-3">Título</th>
-              <th className="text-left p-3">Categoria</th>
-              <th className="text-left p-3">Views</th>
-              <th className="text-left p-3">Feedback</th>
-              <th className="text-left p-3">Status</th>
-              <th className="p-3"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {data?.articles.map(a => {
-              const cat = data.categories.find(c => c.id === a.category_id);
-              return (
-                <tr key={a.id} className="border-t">
-                  <td className="p-3 font-medium">{a.title}</td>
-                  <td className="p-3 text-sm text-muted-foreground">{cat?.name ?? "—"}</td>
-                  <td className="p-3 text-sm">{a.views}</td>
-                  <td className="p-3 text-sm text-muted-foreground">👍 {a.helpful_count} · 👎 {a.not_helpful_count}</td>
-                  <td className="p-3">{a.published ? <Badge>Publicado</Badge> : <Badge variant="secondary">Rascunho</Badge>}</td>
-                  <td className="p-3 text-right">
-                    <div className="flex justify-end gap-1">
-                      {a.published && <a href={`/suporte/${est.slug}/kb/${a.slug}`} target="_blank" rel="noreferrer"><Button size="icon" variant="ghost" aria-label="Ver artigo"><Eye className="h-4 w-4" /></Button></a>}
-                      <Button size="icon" variant="ghost" aria-label="Editar artigo" onClick={() => openEdit(a as Article, setEditing)}><Pencil className="h-4 w-4" /></Button>
-                      <Button size="icon" variant="ghost" aria-label="Excluir artigo" onClick={() => remove(a.id)}><Trash2 className="h-4 w-4" /></Button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-            {!data?.articles.length && <tr><td colSpan={6} className="p-8 text-center text-muted-foreground text-sm">Nenhum artigo ainda. Clique em <strong>Importar artigos Fidelize</strong> para trazer os artigos oficiais, ou crie o seu.</td></tr>}
-          </tbody>
-        </table>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {data?.articles.map((a) => {
+          const cat = data.categories.find((c) => c.id === a.category_id);
+          return (
+            <article
+              key={a.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => setPreview(a as Article)}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setPreview(a as Article); } }}
+              className="group text-left rounded-2xl border bg-card p-5 flex flex-col gap-3 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <Badge variant="outline">{cat?.name ?? "Sem categoria"}</Badge>
+                {a.published ? <Badge>Publicado</Badge> : <Badge variant="secondary">Rascunho</Badge>}
+              </div>
+              <div>
+                <h2 className="font-semibold leading-snug group-hover:text-primary transition-colors">{a.title}</h2>
+                <p className="text-sm text-muted-foreground mt-1 line-clamp-3">
+                  {a.excerpt || (a.body_html || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160) || "Sem resumo"}
+                </p>
+              </div>
+              <div className="mt-auto flex items-center justify-between pt-2 border-t">
+                <span className="text-xs text-muted-foreground">👁 {a.views} · 👍 {a.helpful_count} · 👎 {a.not_helpful_count}</span>
+                <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                  <Button size="icon" variant="ghost" aria-label="Visualizar artigo" onClick={() => setPreview(a as Article)}><Eye className="h-4 w-4" /></Button>
+                  <Button size="icon" variant="ghost" aria-label="Editar artigo" onClick={() => openEdit(a as Article, setEditing)}><Pencil className="h-4 w-4" /></Button>
+                  <Button size="icon" variant="ghost" aria-label="Excluir artigo" onClick={() => remove(a.id)}><Trash2 className="h-4 w-4" /></Button>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+        {!data?.articles.length && (
+          <div className="sm:col-span-2 xl:col-span-3 rounded-2xl border border-dashed p-10 text-center text-sm text-muted-foreground">
+            Nenhum artigo ainda. Clique em <strong>Importar artigos Fidelize</strong> para trazer os artigos oficiais, ou crie o seu.
+          </div>
+        )}
       </div>
+
+      <Dialog open={!!preview} onOpenChange={(o) => !o && setPreview(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>{preview?.title}</DialogTitle></DialogHeader>
+          {preview && (
+            <>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <Badge variant="outline">{data?.categories.find((c) => c.id === preview.category_id)?.name ?? "Sem categoria"}</Badge>
+                {preview.published ? <Badge>Publicado</Badge> : <Badge variant="secondary">Rascunho</Badge>}
+                <span>👁 {preview.views}</span>
+              </div>
+              {preview.excerpt && <p className="text-sm text-muted-foreground">{preview.excerpt}</p>}
+              <div
+                className="prose prose-sm dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: preview.body_html }}
+              />
+            </>
+          )}
+          <DialogFooter>
+            {preview?.published && (
+              <a href={`/suporte/${est.slug}/kb/${preview.slug}`} target="_blank" rel="noreferrer">
+                <Button variant="outline">Abrir página pública</Button>
+              </a>
+            )}
+            <Button onClick={() => { if (preview) { openEdit(preview, setEditing); setPreview(null); } }}>Editar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
