@@ -108,15 +108,19 @@ function SandboxCardTestGuide() {
 }
 
 export function PaymentDialog({
-  open, onOpenChange, plan, establishmentId, payerEmailDefault,
+  open, onOpenChange, plan, establishmentId, payerEmailDefault, onPaid,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   plan: PlanInfo | null;
   establishmentId: string;
   payerEmailDefault?: string;
+  /** Chamado quando o pagamento é concluído (destino pós-pagamento). */
+  onPaid?: () => void;
 }) {
+  const handlePaid = () => { onOpenChange(false); onPaid?.(); };
   const fmt = (n: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(n);
+
   const hintFn = useServerFn(getMercadoPagoAccountHint);
   const providersFn = useServerFn(getActivePaymentProviders);
   const { data: hint } = useQuery({
