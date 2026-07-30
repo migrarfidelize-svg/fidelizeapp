@@ -233,7 +233,7 @@ export const Route = createFileRoute("/api/public/webhooks/asaas")({
             // autenticou a origem quando webhook_token está configurado.
             let remote: any = null;
             try {
-              remote = await fetchAsaasPayment(paymentId);
+              remote = await fetchAsaasPayment(paymentId as string);
             } catch (fetchErr) {
               remote = payment;
               await logAsaasWebhook({
