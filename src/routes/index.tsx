@@ -197,19 +197,20 @@ function SiteHeader() {
               </nav>
               <div className="mt-6 flex flex-col gap-2 border-t border-border/60 pt-6">
                 {session ? (
-                  <Button asChild className="rounded-full" onClick={() => setMenuOpen(false)}>
+                  <Button asChild className="h-12 rounded-full" onClick={() => setMenuOpen(false)}>
                     <Link to="/app">Meu painel <ArrowRight className="ml-1 h-4 w-4" /></Link>
                   </Button>
                 ) : (
                   <>
-                    <Button asChild className="rounded-full" onClick={() => setMenuOpen(false)}>
-                      <Link to="/auth" search={{ mode: "signup" }}>Começar grátis</Link>
+                    <Button asChild className="h-12 rounded-full" onClick={() => setMenuOpen(false)}>
+                      <Link to="/auth" search={{ mode: "signup" }}>Testar grátis</Link>
                     </Button>
-                    <Button asChild variant="outline" className="rounded-full" onClick={() => setMenuOpen(false)}>
+                    <Button asChild variant="outline" className="h-12 rounded-full" onClick={() => setMenuOpen(false)}>
                       <Link to="/auth">Entrar</Link>
                     </Button>
                   </>
                 )}
+
                 <p className="pt-2 text-center text-xs text-muted-foreground">14 dias grátis · sem cartão</p>
               </div>
             </SheetContent>
@@ -1822,7 +1823,7 @@ function FaqChatSection() {
 }
 
 function FaqCannedPanel() {
-  const [selected, setSelected] = useState<number | null>(null);
+  const [selected, setSelected] = useState<number | null>(0);
   const activeAnswer = selected !== null ? FAQ_ITEMS[selected][1] : "";
   return (
     <div className="rounded-3xl border border-white/10 bg-card/40 backdrop-blur-xl p-5 md:p-6 shadow-2xl shadow-violet-500/5">
