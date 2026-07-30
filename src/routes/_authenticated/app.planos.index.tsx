@@ -134,7 +134,7 @@ function MerchantPlansPage() {
         : `Plano alterado para ${pending.name}.`
       );
       setPending(null);
-      qc.invalidateQueries();
+      qc.invalidateQueries({ queryKey: ["billing"] }); qc.invalidateQueries({ queryKey: ["dashboard"] }); qc.invalidateQueries({ queryKey: ["establishment"] });
     } catch (e: any) {
       toast.error(e.message ?? "Falha ao alterar plano.");
     } finally {

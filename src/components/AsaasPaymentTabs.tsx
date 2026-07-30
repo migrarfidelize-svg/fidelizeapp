@@ -101,7 +101,7 @@ function AsaasForm({
         },
       })) as ChargeResult;
       setResult(r);
-      qc.invalidateQueries();
+      qc.invalidateQueries({ queryKey: ["billing"] }); qc.invalidateQueries({ queryKey: ["dashboard"] }); qc.invalidateQueries({ queryKey: ["establishment"] });
       if (billingType === "CREDIT_CARD" && (r.status === "CONFIRMED" || r.status === "RECEIVED")) {
         toast.success("Pagamento aprovado! Plano ativado.");
         setTimeout(onDone, 1200);
