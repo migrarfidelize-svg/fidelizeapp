@@ -1470,7 +1470,7 @@ function PlansComparison() {
 
         {/* cabos conectores (desktop) */}
         <div aria-hidden className="pointer-events-none absolute inset-x-10 top-1/2 hidden -translate-y-1/2 md:flex">
-          {[0, 1, 2].map((i) => (
+          {COMPARE_PLANS.map((_, i) => (
             <div key={i} className="flex-1 px-2">
               <div
                 className={`h-px w-full rounded-full transition-all duration-500 ${
