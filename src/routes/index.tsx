@@ -1894,6 +1894,8 @@ function FaqCannedPanel() {
 
 function FaqAIPanel() {
   const ask = useServerFn(askFaqAI);
+  const checkStatus = useServerFn(getFaqAIStatus);
+  const [aiOnline, setAiOnline] = useState<boolean | null>(null);
   const [messages, setMessages] = useState<ChatMsg[]>([
     { role: "assistant", content: "Oi! Sou a Fidê 💛 Pergunta o que quiser sobre a Fidelize, tô aqui pra ajudar!" },
     { role: "user", content: "Meu cliente precisa baixar algum app?" },
@@ -1908,8 +1910,18 @@ function FaqAIPanel() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    let alive = true;
+    checkStatus({})
+      .then((s) => { if (alive) setAiOnline(Boolean(s?.online)); })
+      .catch(() => { if (alive) setAiOnline(false); });
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
+
 
   async function send() {
     const q = input.trim();
