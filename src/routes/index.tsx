@@ -259,6 +259,77 @@ function SiteHeader() {
 
 
 
+/** Bloco de textos e botões da hero — 100% editável em /hash/landing. */
+function HeroCopy() {
+  const data = useLandingData();
+  const copy = data?.hero?.copy ?? DEFAULT_HERO_COPY;
+  const price = useFromPrice();
+
+  return (
+    <div className="min-w-0 flex flex-col items-start text-left text-white">
+      {copy.badge ? (
+        <span
+          className="landing-hero-badge inline-flex max-w-full items-center gap-2 rounded-full px-3 py-1 text-[11px] font-medium sm:text-xs"
+          style={{ background: `${CYAN}14`, border: `1px solid ${CYAN}55`, color: CYAN }}
+        >
+          <Sparkles className="h-3 w-3 shrink-0" />
+          <span className="truncate">{copy.badge}</span>
+        </span>
+      ) : null}
+
+      <h1 className="mt-4 font-display text-[2rem] font-extrabold leading-[1.1] tracking-tight text-balance sm:mt-5 sm:text-5xl md:text-6xl pb-1">
+        {copy.titlePrefix}{" "}
+        {copy.titleHighlight ? (
+          <span style={{ color: CYAN, textShadow: `0 0 40px ${CYAN}55` }}>{copy.titleHighlight}</span>
+        ) : null}
+        .
+      </h1>
+
+      {copy.subtitle ? (
+        <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-white/70 sm:mt-5 sm:text-base md:text-lg">
+          {copy.subtitle}
+        </p>
+      ) : null}
+
+      <div className="mt-7 flex w-full flex-col gap-3 sm:mt-8 sm:w-auto sm:flex-row sm:items-center">
+        {copy.primaryCta.label ? (
+          <Button
+            asChild
+            size="lg"
+            className="w-full sm:w-auto font-bold hover:brightness-110 transition-all"
+            style={{ background: CYAN, color: OBSIDIAN, boxShadow: `0 0 30px ${CYAN}55` }}
+          >
+            <a href={copy.primaryCta.href || "#precos"}>
+              {copy.primaryCta.label} <ArrowRight className="ml-1 h-4 w-4" />
+            </a>
+          </Button>
+        ) : null}
+
+        {copy.secondaryCta.label ? (
+          <Button
+            asChild
+            size="lg"
+            variant="outline"
+            className="w-full sm:w-auto bg-transparent text-white border-white/20 hover:bg-white/10 hover:text-white"
+          >
+            <a href={copy.secondaryCta.href || "#ecossistema"}>{copy.secondaryCta.label}</a>
+          </Button>
+        ) : null}
+      </div>
+
+      {copy.bullets.length ? (
+        <div className="mt-6 flex w-full flex-wrap items-center gap-x-5 gap-y-2 text-xs text-white/60 sm:gap-x-6">
+          {copy.bullets.map((b, i) => (
+            <span key={i} className="flex items-center gap-1.5">
+              <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> {b.replace("{preco}", price)}
+            </span>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function Hero() {
   const CYAN = "#a78bfa";
   const OBSIDIAN = "#020617";
