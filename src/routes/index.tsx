@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { setPlanIntent } from "@/lib/plan-intent";
+
 import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
 import { BrandMarquee } from "@/components/landing/BrandMarquee";
@@ -1234,6 +1236,8 @@ type Plan = {
   cta: string;
   badge?: string;
   icon: LucideIcon;
+  /** slug do plano no banco — usado para abrir o checkout certo após o cadastro */
+  slug?: string;
 };
 
 
@@ -1241,11 +1245,12 @@ type Plan = {
 
 function Pricing() {
   const plans: Plan[] = [
-    { name: "Essencial", short: "Essencial", price: "R$ 29,90", numeric: 29.9, desc: "Para começar do jeito certo", tagline: "Ideal pra validar e já fidelizar desde o primeiro cliente.", features: ["Até 300 clientes", "Cartão fidelidade digital", "Notificações push", "Tag Display", "1 funcionário"], cta: "Assinar agora", icon: Sprout },
-    { name: "Profissional", short: "Pro", price: "R$ 59,90", numeric: 59.9, desc: "Para negócios em crescimento", tagline: "O favorito de quem quer escalar retenção com automações.", features: ["Até 1.000 clientes", "Cardápio virtual e catálogo digital", "5 funcionários", "Avaliações e relatórios completos"], cta: "Assinar agora", badge: "Mais popular", icon: Sparkles },
-    { name: "Premium", short: "Premium", price: "R$ 119,90", numeric: 119.9, desc: "Operação sem limites", tagline: "Recursos completos, equipe ilimitada e marca própria.", features: ["Clientes ilimitados", "Equipe ilimitada", "Carteira Apple/Google", "Integrações avançadas", "Sem marca Fidelize"], cta: "Assinar agora", icon: Building2 },
+    { name: "Essencial", short: "Essencial", price: "R$ 29,90", numeric: 29.9, slug: "essencial", desc: "Para começar do jeito certo", tagline: "Ideal pra validar e já fidelizar desde o primeiro cliente.", features: ["Até 300 clientes", "Cartão fidelidade digital", "Notificações push", "Tag Display", "1 funcionário"], cta: "Assinar agora", icon: Sprout },
+    { name: "Profissional", short: "Pro", price: "R$ 59,90", numeric: 59.9, slug: "profissional", desc: "Para negócios em crescimento", tagline: "O favorito de quem quer escalar retenção com automações.", features: ["Até 1.000 clientes", "Cardápio virtual e catálogo digital", "5 funcionários", "Avaliações e relatórios completos"], cta: "Assinar agora", badge: "Mais popular", icon: Sparkles },
+    { name: "Premium", short: "Premium", price: "R$ 119,90", numeric: 119.9, slug: "ilimitado", desc: "Operação sem limites", tagline: "Recursos completos, equipe ilimitada e marca própria.", features: ["Clientes ilimitados", "Equipe ilimitada", "Carteira Apple/Google", "Integrações avançadas", "Sem marca Fidelize"], cta: "Assinar agora", icon: Building2 },
     { name: "Empresarial", short: "Empresarial", price: "R$ 349,00", numeric: 349, desc: "Para redes e franquias", tagline: "Multi-unidades, suporte dedicado e onboarding assistido.", features: ["Tudo do Premium", "Múltiplas unidades", "Gestor de conta dedicado", "Onboarding assistido", "SLA prioritário"], cta: "Falar com vendas", icon: Building2 },
   ];
+
 
   const [activeIdx, setActiveIdx] = useState(1);
   
@@ -1319,8 +1324,15 @@ function Pricing() {
 
                 {/* CTA */}
                 <Button asChild size="lg" className="mt-10 w-full">
-                  <Link to="/auth" search={{ mode: "signup" }}>{active.cta}</Link>
+                  <Link
+                    to="/auth"
+                    search={active.slug ? { mode: "signup", plan: active.slug } : { mode: "signup" }}
+                    onClick={() => { if (active.slug) setPlanIntent(active.slug); }}
+                  >
+                    {active.cta}
+                  </Link>
                 </Button>
+
               </div>
             </div>
           </div>

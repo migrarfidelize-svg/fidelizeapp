@@ -2,7 +2,9 @@ import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
 import { Crown as HeroIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { getPlanIntent, clearPlanIntent } from "@/lib/plan-intent";
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
@@ -68,6 +70,22 @@ function MerchantPlansPage() {
       setPending({ slug: p.slug, name: p.name, tier: p.tier, price, kind });
     }
   }
+
+  // Abre automaticamente o checkout do plano escolhido na landing (uma única vez).
+  const intentHandled = useRef(false);
+  useEffect(() => {
+    if (intentHandled.current) return;
+    if (!plans?.length || !activeEst || !currentTier) return;
+    const slug = getPlanIntent();
+    if (!slug) return;
+    intentHandled.current = true;
+    clearPlanIntent();
+    const p = (plans as any[]).find((x) => x.slug === slug);
+    if (!p || p.tier === currentTier) return;
+    const price = Number(p.price_monthly ?? 0);
+    if (price > 0) setPayFor({ slug: p.slug, name: p.name, price_monthly: price, tier: p.tier });
+  }, [plans, activeEst, currentTier]);
+
 
   async function confirmChange() {
     if (!pending || !activeEst) return;

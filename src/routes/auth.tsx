@@ -2,6 +2,8 @@ import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-rout
 import { useEffect, useRef, useState } from "react";
 import { getWalletHint, setWalletHint, formatWalletHint, isStandaloneLaunch } from "@/lib/wallet-hint";
 import { getKeepSignedIn, setKeepSignedIn } from "@/lib/session-keeper";
+import { setPlanIntent } from "@/lib/plan-intent";
+
 
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,6 +40,8 @@ const searchSchema = z.object({
   est_slug: z.string().optional(),
   next: z.string().optional(),
   source: z.string().optional(),
+  plan: z.string().optional(),
+
 });
 
 async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: string }): Promise<{ to: string; toast?: string; toastKind?: "success" | "error" | "info" }> {
@@ -110,6 +114,11 @@ function AuthPage() {
   const search = Route.useSearch();
   const router = useRouter();
   const { mode } = search;
+  // Plano escolhido na landing: guarda para abrir o checkout certo após o cadastro/onboarding.
+  useEffect(() => {
+    if (search.plan) setPlanIntent(search.plan);
+  }, [search.plan]);
+
   const [loading, setLoading] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [email, setEmail] = useState("");
