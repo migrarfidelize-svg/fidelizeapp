@@ -154,8 +154,9 @@ function SiteHeader() {
             </Button>
           ) : (
             <>
-              <Button asChild variant="ghost" size="sm" className="rounded-full hidden sm:inline-flex"><Link to="/auth">Entrar</Link></Button>
-              <Button asChild size="sm" className="rounded-full"><Link to="/auth" search={{ mode: "signup" }}>Começar grátis</Link></Button>
+              <Button asChild variant="ghost" size="sm" className="h-10 rounded-full hidden sm:inline-flex"><Link to="/auth">Entrar</Link></Button>
+              <Button asChild size="sm" className="h-10 rounded-full px-4"><Link to="/auth" search={{ mode: "signup" }}>Testar grátis</Link></Button>
+
             </>
           )}
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
