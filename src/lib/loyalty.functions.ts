@@ -146,7 +146,6 @@ export const addStamp = createServerFn({ method: "POST" })
     pin: z.string().regex(/^\d{4,6}$/).optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
     const { supabase, userId } = context;
     const { data: card, error } = await supabase.from("loyalty_cards").select("*, campaigns(*)").eq("id", data.card_id).maybeSingle();
     if (error) throw new Error(error.message);

@@ -97,7 +97,6 @@ export const deletePromotion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
     const { data: p } = await context.supabase
       .from("promotions")
       .select("media")
