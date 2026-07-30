@@ -77,10 +77,12 @@ export const registerOrLoginCustomer = createServerFn({ method: "POST" })
         .single();
       if (e1) throw new Error(e1.message);
       customer = created;
+      const { consentContext } = await import("./consent.server");
       await supabaseAdmin.from("consents").insert({
         customer_id: customer.id,
         establishment_id: data.establishment_id,
         marketing_opt_in: data.marketing_opt_in,
+        ...consentContext("loyalty_join"),
       });
     }
 

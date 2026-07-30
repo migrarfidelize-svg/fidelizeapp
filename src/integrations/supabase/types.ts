@@ -489,7 +489,10 @@ export type Database = {
           id: string
           ip: string | null
           marketing_opt_in: boolean
+          privacy_version: string | null
+          source: string | null
           terms_version: string
+          user_agent: string | null
         }
         Insert: {
           accepted_at?: string
@@ -498,7 +501,10 @@ export type Database = {
           id?: string
           ip?: string | null
           marketing_opt_in?: boolean
+          privacy_version?: string | null
+          source?: string | null
           terms_version?: string
+          user_agent?: string | null
         }
         Update: {
           accepted_at?: string
@@ -507,7 +513,10 @@ export type Database = {
           id?: string
           ip?: string | null
           marketing_opt_in?: boolean
+          privacy_version?: string | null
+          source?: string | null
           terms_version?: string
+          user_agent?: string | null
         }
         Relationships: [
           {
@@ -1897,6 +1906,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      log_purge_runs: {
+        Row: {
+          details: Json
+          id: string
+          ran_at: string
+          total_deleted: number
+        }
+        Insert: {
+          details?: Json
+          id?: string
+          ran_at?: string
+          total_deleted?: number
+        }
+        Update: {
+          details?: Json
+          id?: string
+          ran_at?: string
+          total_deleted?: number
+        }
+        Relationships: []
+      }
+      log_retention_policies: {
+        Row: {
+          note: string | null
+          retention_days: number
+          table_name: string
+          timestamp_column: string
+          updated_at: string
+        }
+        Insert: {
+          note?: string | null
+          retention_days: number
+          table_name: string
+          timestamp_column?: string
+          updated_at?: string
+        }
+        Update: {
+          note?: string | null
+          retention_days?: number
+          table_name?: string
+          timestamp_column?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       loyalty_cards: {
         Row: {
@@ -5432,6 +5486,7 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["account_type"]
       }
+      purge_expired_logs: { Args: never; Returns: Json }
     }
     Enums: {
       account_type: "customer" | "establishment" | "super_admin"
