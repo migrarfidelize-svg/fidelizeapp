@@ -71,6 +71,7 @@ const NAV_GROUPS: NavGroup[] = [
     icon: Cog,
     items: [
       { to: "/hash/integracoes", label: "Integrações", icon: Plug },
+      { to: "/hash/pixel", label: "Monitor do Pixel", icon: Activity },
       { to: "/hash/liberacoes", label: "Liberações de recursos", icon: KeyRound },
       { to: "/hash/cardapio-jsonld", label: "JSON-LD do cardápio", icon: FileJson },
       { to: "/hash/auditoria", label: "Auditoria", icon: FileClock },
