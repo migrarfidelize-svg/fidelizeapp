@@ -186,7 +186,10 @@ function AuthPage() {
     if (isMobile) return;
     let alive = true;
     getCaptchaConfig()
-      .then((c) => { if (alive) setCaptcha(c); })
+      .then((c) => {
+        console.log("[auth] captcha config:", c, "isMobile:", isMobile);
+        if (alive) setCaptcha(c);
+      })
       .catch(() => { if (alive) setCaptcha({ enabled: false, siteKey: "" }); });
     return () => { alive = false; };
   }, [isMobile]);
