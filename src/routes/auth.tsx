@@ -110,6 +110,11 @@ function AuthPage() {
   const search = Route.useSearch();
   const router = useRouter();
   const { mode } = search;
+  // Plano escolhido na landing: guarda para abrir o checkout certo após o cadastro/onboarding.
+  useEffect(() => {
+    if (search.plan) setPlanIntent(search.plan);
+  }, [search.plan]);
+
   const [loading, setLoading] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [email, setEmail] = useState("");
