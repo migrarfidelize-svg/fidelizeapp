@@ -222,13 +222,13 @@ function Onboarding() {
       toast.error("Selecione a categoria do seu negócio.");
       return;
     }
-    if (f.reward_title.trim().length < 2) {
-      toast.error("Descreva a recompensa da campanha.");
-      return;
-    }
+    // A configuração do cartão é opcional aqui: usamos um padrão e o lojista
+    // ajusta depois no painel. O caminho crítico é criar a empresa e pagar o plano.
+    const rewardTitle = f.reward_title.trim().length >= 2 ? f.reward_title.trim() : "Brinde exclusivo";
     setLoading(true);
     try {
-      await create({ data: { ...f, slug: cleanSlug } });
+      await create({ data: { ...f, reward_title: rewardTitle, slug: cleanSlug } });
+
       try { localStorage.removeItem("fidelize:onboarding-prefill"); } catch { /* ignore */ }
       qc.removeQueries({ queryKey: ["memberships"] });
       const fresh = await getEsts();
