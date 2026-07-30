@@ -477,13 +477,7 @@ function AuthPage() {
   return (
     <div className="auth-cinema relative min-h-dvh w-full overflow-hidden bg-background px-6 py-4">
       {/* Overlay de transição — cobre a tela durante o redirect pós-login para eliminar qualquer flash de telas anteriores. */}
-      {redirecting && (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-4 bg-background animate-in fade-in duration-150">
-          <div className="pointer-events-none absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/8 blur-[120px]" />
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          <div className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Carregando seu painel…</div>
-        </div>
-      )}
+      {redirecting && <RouteLoading label="Aguarde, carregando seu painel…" />}
       {/* Ambient glows */}
       <div className="pointer-events-none absolute left-1/2 top-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/5 blur-[120px]" />
       <div className="pointer-events-none absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-accent/10 blur-[100px]" />
