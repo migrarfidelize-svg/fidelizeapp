@@ -196,6 +196,9 @@ function RootComponent() {
       const r = document.documentElement;
       r.classList.toggle("dark", t === "dark");
       r.style.colorScheme = t;
+      // Mantém a barra do navegador/PWA na cor do tema atual (claro por padrão).
+      const meta = document.querySelector('meta[name="theme-color"]:not([media])');
+      if (meta) meta.setAttribute("content", t === "dark" ? "#0a0f1c" : "#ffffff");
     };
 
     apply();
