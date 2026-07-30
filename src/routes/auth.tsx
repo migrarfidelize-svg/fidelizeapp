@@ -95,11 +95,28 @@ async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: 
     // Quem entrou pela aba "Estabelecimento" mas ainda não tem empresa vinculada
     // não pode cair na carteira do cliente — segue para criar/ativar a empresa.
     if (opts.role === "establishment") return { to: "/onboarding" };
+    // Sem pista na URL (ex.: voltar ao /auth sem parâmetros): usa o tipo de conta
+    // gravado no perfil para não jogar um lojista sem empresa na carteira.
+    if (!opts.role) {
+      try {
+        const { data: uinfo } = await supabase.auth.getUser();
+        const uid = uinfo.user?.id;
+        if (uid) {
+          const { data: prof } = await supabase
+            .from("profiles")
+            .select("account_type")
+            .eq("id", uid)
+            .maybeSingle();
+          if (prof?.account_type === "establishment") return { to: "/onboarding" };
+        }
+      } catch { /* segue para a carteira */ }
+    }
     return { to: "/carteira" };
   } catch {
     return { to: opts.role === "establishment" ? "/onboarding" : "/carteira" };
   }
 }
+
 
 
 export const Route = createFileRoute("/auth")({
