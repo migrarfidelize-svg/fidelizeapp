@@ -12,8 +12,10 @@ import {
   type CatalogProduct,
   type LandingBrandsContent,
   type LandingHeroContent,
+  type LandingHeroCopy,
   type MenuDish,
 } from "@/lib/landing-content";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -103,6 +105,8 @@ function LandingAdmin() {
     setBrands(data.brands);
   }, [data]);
 
+  const copy = hero.copy ?? DEFAULT_HERO.copy;
+  const patchCopy = (patch: Partial<LandingHeroCopy>) => setHero((h) => ({ ...h, copy: { ...(h.copy ?? DEFAULT_HERO.copy), ...patch } }));
   const patchDish = (i: number, patch: Partial<MenuDish>) =>
     setHero((h) => ({ ...h, menu: { ...h.menu, dishes: h.menu.dishes.map((d, k) => (k === i ? { ...d, ...patch } : d)) } }));
   const patchProduct = (i: number, patch: Partial<CatalogProduct>) =>
@@ -117,7 +121,12 @@ function LandingAdmin() {
     setSaving(true);
     try {
       await save({ data: { hero, brands } });
-      toast.success("Conteúdo da página inicial atualizado.");
+      // Avisa as abas abertas da landing para recarregarem na hora.
+      const channel = supabase.channel("landing-content");
+      await channel.subscribe();
+      await channel.send({ type: "broadcast", event: "updated", payload: { at: Date.now() } });
+      supabase.removeChannel(channel);
+      toast.success("Conteúdo atualizado. A página inicial já foi recarregada em tempo real.");
     } catch (e: any) {
       toast.error(e?.message ?? "Falha ao salvar.");
     } finally {
@@ -149,12 +158,103 @@ function LandingAdmin() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <Tabs defaultValue="cardapio" className="min-w-0">
+        <Tabs defaultValue="chamada" className="min-w-0">
           <TabsList>
+            <TabsTrigger value="chamada">Chamada</TabsTrigger>
             <TabsTrigger value="cardapio">Cardápio</TabsTrigger>
             <TabsTrigger value="catalogo">Catálogo</TabsTrigger>
             <TabsTrigger value="marcas">Marcas</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="chamada" className="mt-4 space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Chamada principal da hero</CardTitle>
+                <CardDescription>
+                  Selo, título, subtítulo e os dois botões que aparecem no topo da página inicial.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <div className="space-y-2">
+                  <Label className="text-xs">Selo (botão pequeno acima do título)</Label>
+                  <Input value={copy.badge} onChange={(e) => patchCopy({ badge: e.target.value })} />
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_220px]">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Frase de gatilho (início)</Label>
+                    <Input value={copy.titlePrefix} onChange={(e) => patchCopy({ titlePrefix: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Trecho destacado</Label>
+                    <Input value={copy.titleHighlight} onChange={(e) => patchCopy({ titleHighlight: e.target.value })} />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs">Subtítulo</Label>
+                  <Textarea rows={3} value={copy.subtitle} onChange={(e) => patchCopy({ subtitle: e.target.value })} />
+                </div>
+
+                <Separator />
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-3 rounded-xl border p-3">
+                    <span className="text-xs font-semibold text-muted-foreground">Botão principal</span>
+                    <Input
+                      value={copy.primaryCta.label}
+                      placeholder="Texto do botão"
+                      onChange={(e) => patchCopy({ primaryCta: { ...copy.primaryCta, label: e.target.value } })}
+                    />
+                    <Input
+                      value={copy.primaryCta.href}
+                      placeholder="#precos ou /auth"
+                      onChange={(e) => patchCopy({ primaryCta: { ...copy.primaryCta, href: e.target.value } })}
+                    />
+                  </div>
+                  <div className="space-y-3 rounded-xl border p-3">
+                    <span className="text-xs font-semibold text-muted-foreground">Botão secundário</span>
+                    <Input
+                      value={copy.secondaryCta.label}
+                      placeholder="Texto do botão"
+                      onChange={(e) => patchCopy({ secondaryCta: { ...copy.secondaryCta, label: e.target.value } })}
+                    />
+                    <Input
+                      value={copy.secondaryCta.href}
+                      placeholder="#ecossistema"
+                      onChange={(e) => patchCopy({ secondaryCta: { ...copy.secondaryCta, href: e.target.value } })}
+                    />
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-3">
+                  <Label className="text-xs">
+                    Selos abaixo dos botões — use <code>{"{preco}"}</code> para inserir o menor preço ativo
+                  </Label>
+                  {copy.bullets.map((b, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <Input
+                        value={b}
+                        onChange={(e) => patchCopy({ bullets: copy.bullets.map((x, k) => (k === i ? e.target.value : x)) })}
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => patchCopy({ bullets: copy.bullets.filter((_, k) => k !== i) })}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button variant="outline" onClick={() => patchCopy({ bullets: [...copy.bullets, "Novo selo"] })}>
+                    <Plus className="mr-2 h-4 w-4" /> Adicionar selo
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="cardapio" className="mt-4 space-y-4">
             <Card>
@@ -313,6 +413,23 @@ function LandingAdmin() {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-2">
+              <div className="mb-4 rounded-xl border bg-[#020617] p-4 text-left text-white">
+                {copy.badge ? (
+                  <span className="inline-flex rounded-full border border-[#a78bfa55] bg-[#a78bfa14] px-2 py-0.5 text-[10px] text-[#a78bfa]">
+                    {copy.badge}
+                  </span>
+                ) : null}
+                <p className="mt-2 font-display text-lg font-extrabold leading-tight">
+                  {copy.titlePrefix} <span className="text-[#a78bfa]">{copy.titleHighlight}</span>.
+                </p>
+                <p className="mt-1.5 text-[11px] leading-snug text-white/60">{copy.subtitle}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="rounded-md bg-[#a78bfa] px-2.5 py-1 text-[11px] font-bold text-[#020617]">
+                    {copy.primaryCta.label}
+                  </span>
+                  <span className="rounded-md border border-white/20 px-2.5 py-1 text-[11px]">{copy.secondaryCta.label}</span>
+                </div>
+              </div>
               <div className="scale-90 origin-top">
                 <HeroAppPreview content={hero} />
               </div>

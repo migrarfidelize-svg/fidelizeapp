@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +8,7 @@ import { trackPlanFunnel, rememberSelectedPlan } from "@/lib/plan-funnel";
 import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
 import { BrandMarquee } from "@/components/landing/BrandMarquee";
-import { DEFAULT_BRANDS, type LandingBrandsContent, type LandingHeroContent, type PublicPlan } from "@/lib/landing-content";
+import { DEFAULT_BRANDS, DEFAULT_HERO_COPY, type LandingBrandsContent, type LandingHeroContent, type PublicPlan } from "@/lib/landing-content";
 import { HeroAppPreview } from "@/components/landing/HeroAppPreview";
 import { EcosystemBento } from "@/components/landing/EcosystemBento";
 
@@ -113,9 +113,35 @@ function brl(v: number) {
   return `R$ ${v.toFixed(2).replace(".", ",")}`;
 }
 
+/** Atualiza a landing em tempo real quando o admin salva o conteúdo. */
+function LandingLiveSync() {
+  const router = useRouter();
+  useEffect(() => {
+    let cleanup = () => {};
+    let alive = true;
+    (async () => {
+      const { supabase } = await import("@/integrations/supabase/client");
+      if (!alive) return;
+      const channel = supabase
+        .channel("landing-content")
+        .on("broadcast", { event: "updated" }, () => router.invalidate())
+        .subscribe();
+      cleanup = () => {
+        supabase.removeChannel(channel);
+      };
+    })();
+    return () => {
+      alive = false;
+      cleanup();
+    };
+  }, [router]);
+  return null;
+}
+
 function Landing() {
   return (
     <div className="landing-scope min-h-dvh bg-background text-foreground pb-24 md:pb-0">
+      <LandingLiveSync />
       <ScrollProgress />
       <SiteHeader />
       <main>
@@ -259,9 +285,81 @@ function SiteHeader() {
 
 
 
+const CYAN = "#a78bfa";
+const OBSIDIAN = "#020617";
+
+/** Bloco de textos e botões da hero — 100% editável em /hash/landing. */
+function HeroCopy() {
+  const data = useLandingData();
+  const copy = data?.hero?.copy ?? DEFAULT_HERO_COPY;
+  const price = useFromPrice();
+
+  return (
+    <div className="min-w-0 flex flex-col items-start text-left text-white">
+      {copy.badge ? (
+        <span
+          className="landing-hero-badge inline-flex max-w-full items-center gap-2 rounded-full px-3 py-1 text-[11px] font-medium sm:text-xs"
+          style={{ background: `${CYAN}14`, border: `1px solid ${CYAN}55`, color: CYAN }}
+        >
+          <Sparkles className="h-3 w-3 shrink-0" />
+          <span className="truncate">{copy.badge}</span>
+        </span>
+      ) : null}
+
+      <h1 className="mt-4 font-display text-[2rem] font-extrabold leading-[1.1] tracking-tight text-balance sm:mt-5 sm:text-5xl md:text-6xl pb-1">
+        {copy.titlePrefix}{" "}
+        {copy.titleHighlight ? (
+          <span style={{ color: CYAN, textShadow: `0 0 40px ${CYAN}55` }}>{copy.titleHighlight}</span>
+        ) : null}
+        .
+      </h1>
+
+      {copy.subtitle ? (
+        <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-white/70 sm:mt-5 sm:text-base md:text-lg">
+          {copy.subtitle}
+        </p>
+      ) : null}
+
+      <div className="mt-7 flex w-full flex-col gap-3 sm:mt-8 sm:w-auto sm:flex-row sm:items-center">
+        {copy.primaryCta.label ? (
+          <Button
+            asChild
+            size="lg"
+            className="w-full sm:w-auto font-bold hover:brightness-110 transition-all"
+            style={{ background: CYAN, color: OBSIDIAN, boxShadow: `0 0 30px ${CYAN}55` }}
+          >
+            <a href={copy.primaryCta.href || "#precos"}>
+              {copy.primaryCta.label} <ArrowRight className="ml-1 h-4 w-4" />
+            </a>
+          </Button>
+        ) : null}
+
+        {copy.secondaryCta.label ? (
+          <Button
+            asChild
+            size="lg"
+            variant="outline"
+            className="w-full sm:w-auto bg-transparent text-white border-white/20 hover:bg-white/10 hover:text-white"
+          >
+            <a href={copy.secondaryCta.href || "#ecossistema"}>{copy.secondaryCta.label}</a>
+          </Button>
+        ) : null}
+      </div>
+
+      {copy.bullets.length ? (
+        <div className="mt-6 flex w-full flex-wrap items-center gap-x-5 gap-y-2 text-xs text-white/60 sm:gap-x-6">
+          {copy.bullets.map((b, i) => (
+            <span key={i} className="flex items-center gap-1.5">
+              <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> {b.replace("{preco}", price)}
+            </span>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function Hero() {
-  const CYAN = "#a78bfa";
-  const OBSIDIAN = "#020617";
   return (
     <section className="relative overflow-hidden" style={{ background: OBSIDIAN }}>
       <div aria-hidden className="hero-bg-aurora-circuit">
@@ -319,58 +417,8 @@ function Hero() {
       
       <div className="relative z-10 mx-auto max-w-6xl px-4 py-12 sm:py-16 md:py-24">
         <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(300px,420px)] lg:gap-14">
-          <div className="min-w-0 flex flex-col items-start text-left text-white">
-            <span
-              className="landing-hero-badge inline-flex max-w-full items-center gap-2 rounded-full px-3 py-1 text-[11px] font-medium sm:text-xs"
-              style={{ background: `${CYAN}14`, border: `1px solid ${CYAN}55`, color: CYAN }}
-            >
-              <Sparkles className="h-3 w-3 shrink-0" />
-              <span className="truncate">1 plataforma · 10 ferramentas de retenção</span>
-            </span>
-            <h1 className="mt-4 font-display text-[2rem] font-extrabold leading-[1.1] tracking-tight text-balance sm:mt-5 sm:text-5xl md:text-6xl pb-1">
-              Tudo que seu negócio{" "}
-              <span className="hidden sm:inline"><br /></span>
-              precisa para o{" "}
-              <span className="hidden sm:inline"><br /></span>
-              <span style={{ color: CYAN, textShadow: `0 0 40px ${CYAN}55` }}>cliente voltar</span>.
-            </h1>
+          <HeroCopy />
 
-            <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-white/70 sm:mt-5 sm:text-base md:text-lg">
-              Fidelidade digital, cardápio, catálogo, avaliações, QR Code, push e CRM — num só painel. Sem app, sem cartão de papel.
-            </p>
-            <div className="mt-7 flex w-full flex-col gap-3 sm:mt-8 sm:w-auto sm:flex-row sm:items-center">
-              <Button
-                asChild
-                size="lg"
-                className="w-full sm:w-auto font-bold hover:brightness-110 transition-all"
-                style={{ background: CYAN, color: OBSIDIAN, boxShadow: `0 0 30px ${CYAN}55` }}
-              >
-                <a href="#precos">
-                  Escolher meu plano <ArrowRight className="ml-1 h-4 w-4" />
-                </a>
-              </Button>
-
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="w-full sm:w-auto bg-transparent text-white border-white/20 hover:bg-white/10 hover:text-white"
-              >
-                <a href="#ecossistema">Ver como funciona</a>
-              </Button>
-            </div>
-            <div className="mt-6 flex w-full flex-wrap items-center gap-x-5 gap-y-2 text-xs text-white/60 sm:gap-x-6">
-              <span className="flex items-center gap-1.5">
-                <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> Sem cartão de crédito
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> Configure em 5 minutos
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> Planos a partir de {useFromPrice()}/mês
-              </span>
-            </div>
-          </div>
 
           <div className="-mx-2 flex scale-95 justify-center sm:mx-0 sm:scale-100 lg:justify-end">
             <HeroAppPreview content={useLandingData()?.hero} />
