@@ -16,11 +16,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plug, CheckCircle2, XCircle, Loader2, KeyRound, ExternalLink, Settings2,
   Copy, CopyCheck, RotateCcw, AlertTriangle, Clock, BookOpen, History, Webhook, Save,
-  Sparkles, CreditCard, Zap, Target,
+  Sparkles, CreditCard, Zap, Target, ShieldCheck,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { ProviderBrand, providerAccent } from "@/components/integrations/ProviderBrand";
 import { SectionBanner } from "@/components/integrations/SectionBanner";
+import { CaptchaPanel } from "@/components/integrations/CaptchaPanel";
 import { toast } from "sonner";
 import {
   listIntegrationCatalog,
@@ -121,6 +122,7 @@ function IntegrationsPage() {
           <TabsTrigger value="providers"><Zap className="h-4 w-4 mr-1" />Provedores</TabsTrigger>
           <TabsTrigger value="marketing"><Target className="h-4 w-4 mr-1" />Marketing &amp; Pixel</TabsTrigger>
           <TabsTrigger value="webhooks"><Webhook className="h-4 w-4 mr-1" />Webhooks</TabsTrigger>
+          <TabsTrigger value="captcha"><ShieldCheck className="h-4 w-4 mr-1" />Captcha</TabsTrigger>
         </TabsList>
 
         <TabsContent value="providers" className="mt-6 space-y-10">
@@ -175,6 +177,10 @@ function IntegrationsPage() {
 
         <TabsContent value="webhooks" className="mt-6">
           <WebhooksPanel data={webhooks.data ?? []} loading={webhooks.isLoading} />
+        </TabsContent>
+
+        <TabsContent value="captcha" className="mt-6">
+          <CaptchaPanel />
         </TabsContent>
       </Tabs>
     </div>
