@@ -117,31 +117,34 @@ function KbManager() {
           return (
             <article
               key={a.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => setPreview(a as Article)}
-              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setPreview(a as Article); } }}
-              className="group text-left rounded-2xl border bg-card p-5 flex flex-col gap-3 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="group text-left rounded-2xl border bg-card p-5 flex flex-col gap-3 transition-all hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/40"
             >
               <div className="flex items-start justify-between gap-2">
                 <Badge variant="outline">{cat?.name ?? "Sem categoria"}</Badge>
                 {a.published ? <Badge>Publicado</Badge> : <Badge variant="secondary">Rascunho</Badge>}
               </div>
-              <div>
+              <button
+                type="button"
+                onClick={() => setPreview(a as Article)}
+                className="text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
+              >
                 <h2 className="font-semibold leading-snug group-hover:text-primary transition-colors">{a.title}</h2>
                 <p className="text-sm text-muted-foreground mt-1 line-clamp-3">
                   {a.excerpt || (a.body_html || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160) || "Sem resumo"}
                 </p>
-              </div>
-              <div className="mt-auto flex items-center justify-between pt-2 border-t">
+              </button>
+              <Button type="button" variant="secondary" className="w-full h-11" onClick={() => setPreview(a as Article)}>
+                <Eye className="h-4 w-4 mr-2" />Ler artigo
+              </Button>
+              <div className="mt-auto flex items-center justify-between gap-2 pt-2 border-t">
                 <span className="text-xs text-muted-foreground">👁 {a.views} · 👍 {a.helpful_count} · 👎 {a.not_helpful_count}</span>
-                <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                  <Button size="icon" variant="ghost" aria-label="Visualizar artigo" onClick={() => setPreview(a as Article)}><Eye className="h-4 w-4" /></Button>
-                  <Button size="icon" variant="ghost" aria-label="Editar artigo" onClick={() => openEdit(a as Article, setEditing)}><Pencil className="h-4 w-4" /></Button>
-                  <Button size="icon" variant="ghost" aria-label="Excluir artigo" onClick={() => remove(a.id)}><Trash2 className="h-4 w-4" /></Button>
+                <div className="flex gap-1">
+                  <Button type="button" size="icon" variant="ghost" className="h-11 w-11" aria-label="Editar artigo" onClick={() => openEdit(a as Article, setEditing)}><Pencil className="h-4 w-4" /></Button>
+                  <Button type="button" size="icon" variant="ghost" className="h-11 w-11" aria-label="Excluir artigo" onClick={() => remove(a.id)}><Trash2 className="h-4 w-4" /></Button>
                 </div>
               </div>
             </article>
+
           );
         })}
         {!data?.articles.length && (
