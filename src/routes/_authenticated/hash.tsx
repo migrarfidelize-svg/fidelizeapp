@@ -1,4 +1,5 @@
 import { RouteLoading } from "@/components/RouteLoading";
+import { PanelTransition } from "@/components/PanelTransition";
 import { createFileRoute, Link, Outlet, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -341,8 +342,9 @@ function AdminLayout() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                className="px-4 py-5 md:px-6 md:py-7 max-w-[1400px] w-full mx-auto"
+                className="relative px-4 py-5 md:px-6 md:py-7 max-w-[1400px] w-full mx-auto"
               >
+                <PanelTransition />
                 <Outlet />
               </motion.div>
             </AnimatePresence>

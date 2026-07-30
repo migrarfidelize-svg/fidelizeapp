@@ -30,6 +30,7 @@ import { PageGuideButton } from "@/components/merchant/PageGuideButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePermissions } from "@/hooks/usePermissions";
 import { RouteLoading } from "@/components/RouteLoading";
+import { PanelTransition } from "@/components/PanelTransition";
 import { ROUTE_PERMISSIONS } from "@/lib/permissions";
 
 const MERCHANT_TOUR_STEPS: TourStep[] = [
@@ -688,8 +689,9 @@ function AppLayout() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                className="min-w-0 px-4 py-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:px-6 md:py-7 md:pb-7 max-w-[1400px] w-full mx-auto"
+                className="relative min-w-0 px-4 py-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:px-6 md:py-7 md:pb-7 max-w-[1400px] w-full mx-auto"
               >
+                <PanelTransition />
                 <Outlet />
               </motion.div>
             </AnimatePresence>
