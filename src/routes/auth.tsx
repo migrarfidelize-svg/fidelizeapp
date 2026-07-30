@@ -40,6 +40,8 @@ const searchSchema = z.object({
   est_slug: z.string().optional(),
   next: z.string().optional(),
   source: z.string().optional(),
+  plan: z.string().optional(),
+
 });
 
 async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: string }): Promise<{ to: string; toast?: string; toastKind?: "success" | "error" | "info" }> {
