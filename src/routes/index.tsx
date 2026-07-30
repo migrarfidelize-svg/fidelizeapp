@@ -259,6 +259,9 @@ function SiteHeader() {
 
 
 
+const CYAN = "#a78bfa";
+const OBSIDIAN = "#020617";
+
 /** Bloco de textos e botões da hero — 100% editável em /hash/landing. */
 function HeroCopy() {
   const data = useLandingData();
@@ -331,8 +334,6 @@ function HeroCopy() {
 }
 
 function Hero() {
-  const CYAN = "#a78bfa";
-  const OBSIDIAN = "#020617";
   return (
     <section className="relative overflow-hidden" style={{ background: OBSIDIAN }}>
       <div aria-hidden className="hero-bg-aurora-circuit">
