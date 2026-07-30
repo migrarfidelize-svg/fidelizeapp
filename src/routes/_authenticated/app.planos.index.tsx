@@ -272,7 +272,9 @@ function MerchantPlansPage() {
         onOpenChange={(o) => !o && setPayFor(null)}
         plan={payFor}
         establishmentId={activeEst?.id ?? ""}
+        onPaid={() => navigate({ to: "/app", search: { pagamento: "aprovado" } as any })}
       />
+
     </div>
   );
 }
