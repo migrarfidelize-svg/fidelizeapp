@@ -1,0 +1,2 @@
+ALTER TABLE public.integrations DROP CONSTRAINT integrations_category_check;
+ALTER TABLE public.integrations ADD CONSTRAINT integrations_category_check CHECK (category = ANY (ARRAY['ai','payments','email','sms','storage','marketing','analytics','other']::text[]));
