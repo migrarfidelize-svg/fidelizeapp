@@ -30,6 +30,14 @@ export type PublicPlan = {
 
 /** Conteúdo público da landing: mockup, marcas e preços dos planos (fonte: banco). */
 export const getLandingPublic = createServerFn({ method: "GET" }).handler(async () => {
+  try {
+    return await loadLandingPublic();
+  } catch {
+    return { hero: normalizeHero(null), brands: normalizeBrands(null), plans: [] as PublicPlan[] };
+  }
+});
+
+async function loadLandingPublic() {
   const supabase = publicClient();
   const [{ data: content }, { data: plans }] = await Promise.all([
     supabase.from("landing_content").select("key, data").in("key", ["hero", "brands"]),
@@ -47,7 +55,7 @@ export const getLandingPublic = createServerFn({ method: "GET" }).handler(async 
     brands: normalizeBrands(map.get("brands")),
     plans: (plans ?? []) as PublicPlan[],
   };
-});
+}
 
 async function assertAdmin(supabase: any, userId: string) {
   const { data } = await supabase.from("app_roles").select("id").eq("user_id", userId).eq("role", "super_admin").maybeSingle();
