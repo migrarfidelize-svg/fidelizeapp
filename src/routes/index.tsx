@@ -1367,18 +1367,18 @@ const COMPARE_PLANS = [
 ];
 
 const COMPARE_ROWS: { label: string; values: (boolean | string)[] }[] = [
-  { label: "Cartão Fidelidade Digital", values: [true, true, true, true] },
-  { label: "Avaliação de Atendimento", values: [true, true, true, true] },
-  { label: "Árvore de Links", values: [true, true, true, true] },
-  { label: "Cardápio Virtual", values: [false, false, true, true] },
-  { label: "Catálogo Digital", values: [false, false, true, true] },
+  { label: "Cartão Fidelidade Digital", values: [true, true, true] },
+  { label: "Avaliação de Atendimento", values: [true, true, true] },
+  { label: "Árvore de Links", values: [true, true, true] },
+  { label: "Cardápio Virtual", values: [false, true, true] },
+  { label: "Catálogo Digital", values: [false, true, true] },
 
-  { label: "Notificações Push", values: [false, true, true, true] },
-  { label: "Tag Display", values: [false, true, true, true] },
-  { label: "QR Codes Inteligentes", values: [true, true, true, true] },
-  { label: "Clientes cadastrados", values: ["Até 10", "Até 300", "Até 1.000", "Ilimitados"] },
-  { label: "Funcionários", values: ["1", "1", "5", "Ilimitados"] },
-  { label: "Remover marca Fidelize", values: [false, false, false, true] },
+  { label: "Notificações Push", values: [true, true, true] },
+  { label: "Tag Display", values: [true, true, true] },
+  { label: "QR Codes Inteligentes", values: [true, true, true] },
+  { label: "Clientes cadastrados", values: ["Até 300", "Até 1.000", "Ilimitados"] },
+  { label: "Funcionários", values: ["1", "5", "Ilimitados"] },
+  { label: "Remover marca Fidelize", values: [false, false, true] },
 ];
 
 
@@ -1397,21 +1397,20 @@ function CompareCell({ value }: { value: boolean | string }) {
 
 /** Destaques curtos por plano — usados nos nós do canvas. */
 const COMPARE_HIGHLIGHTS: string[][] = [
-  ["Até 10 clientes", "Cartão fidelidade digital", "QR Codes inteligentes"],
-  ["Até 300 clientes", "Notificações push", "Tag Display"],
-  ["Até 1.000 clientes", "Cardápio virtual", "5 funcionários"],
+  ["Até 300 clientes", "Cartão fidelidade digital", "Notificações push"],
+  ["Até 1.000 clientes", "Cardápio e catálogo", "5 funcionários"],
   ["Clientes ilimitados", "Sem marca Fidelize", "Equipe ilimitada"],
 ];
 
 function PlansComparison() {
-  const [active, setActive] = useState(2);
+  const [active, setActive] = useState(1);
   const [open, setOpen] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
 
   /** Centraliza o plano em destaque no carrossel ao montar (mobile). */
   useEffect(() => {
     const el = trackRef.current;
-    const card = el?.querySelectorAll<HTMLElement>("[data-plan-node]")[2];
+    const card = el?.querySelectorAll<HTMLElement>("[data-plan-node]")[1];
     if (el && card && el.scrollWidth > el.clientWidth) {
       el.scrollLeft = card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2;
     }
