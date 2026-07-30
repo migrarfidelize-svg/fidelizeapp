@@ -5960,6 +5960,25 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      get_sponsored_ads_for_discovery: {
+        Args: { _category: string; _limit?: number; _session_hash: string }
+        Returns: {
+          campaign_id: string
+          category_id: string
+          cta_label: string
+          description: string
+          destination_slug: string
+          destination_type: string
+          establishment_logo_url: string
+          establishment_name: string
+          establishment_primary_color: string
+          establishment_slug: string
+          image_path: string
+          image_source: string
+          title: string
+          tracking_token: string
+        }[]
+      }
       has_establishment_access: {
         Args: { _est: string; _user: string }
         Returns: boolean
@@ -6007,6 +6026,17 @@ export type Database = {
         Returns: Database["public"]["Enums"]["account_type"]
       }
       purge_expired_logs: { Args: never; Returns: Json }
+      register_sponsored_ad_event: {
+        Args: {
+          _event_type: string
+          _placement?: string
+          _session_hash: string
+          _token: string
+          _viewer_user_id?: string
+        }
+        Returns: Json
+      }
+      sponsored_ads_admin_overview: { Args: never; Returns: Json }
     }
     Enums: {
       account_type: "customer" | "establishment" | "super_admin"
