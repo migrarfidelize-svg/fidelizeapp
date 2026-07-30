@@ -88,6 +88,33 @@ async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: 
     }
   }
   if (opts.next && opts.next.startsWith("/")) return { to: opts.next };
+
+  /** Tipo de conta gravado no perfil (fonte de verdade quando ainda não há empresa). */
+  async function profileAccountType(): Promise<string | null> {
+    try {
+      const { data: uinfo } = await supabase.auth.getUser();
+      const uid = uinfo.user?.id;
+      if (!uid) return null;
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("account_type")
+        .eq("id", uid)
+        .maybeSingle();
+      return (prof?.account_type as string | undefined) ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Há intenção de plano guardada? Só lojista escolhe plano. */
+  function hasPlanIntent(): boolean {
+    try {
+      return !!localStorage.getItem("fidelize:plan-intent");
+    } catch {
+      return false;
+    }
+  }
+
   try {
     const { data } = await supabase.rpc("my_account_type");
     if (data === "super_admin") return { to: "/hash" };
@@ -95,27 +122,19 @@ async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: 
     // Quem entrou pela aba "Estabelecimento" mas ainda não tem empresa vinculada
     // não pode cair na carteira do cliente — segue para criar/ativar a empresa.
     if (opts.role === "establishment") return { to: "/onboarding" };
-    // Sem pista na URL (ex.: voltar ao /auth sem parâmetros): usa o tipo de conta
-    // gravado no perfil para não jogar um lojista sem empresa na carteira.
-    if (!opts.role) {
-      try {
-        const { data: uinfo } = await supabase.auth.getUser();
-        const uid = uinfo.user?.id;
-        if (uid) {
-          const { data: prof } = await supabase
-            .from("profiles")
-            .select("account_type")
-            .eq("id", uid)
-            .maybeSingle();
-          if (prof?.account_type === "establishment") return { to: "/onboarding" };
-        }
-      } catch { /* segue para a carteira */ }
+    // Sem pista na URL (refresh, PWA, retorno de e-mail): o perfil e a intenção
+    // de plano decidem. Um lojista sem empresa NUNCA pode cair na /carteira.
+    if ((await profileAccountType()) === "establishment" || hasPlanIntent()) {
+      return { to: "/onboarding" };
     }
     return { to: "/carteira" };
   } catch {
-    return { to: opts.role === "establishment" ? "/onboarding" : "/carteira" };
+    if (opts.role === "establishment") return { to: "/onboarding" };
+    if ((await profileAccountType()) === "establishment" || hasPlanIntent()) return { to: "/onboarding" };
+    return { to: "/carteira" };
   }
 }
+
 
 
 
@@ -339,7 +358,27 @@ function AuthPage() {
           }
         }
 
-        const uid = signUpData.user?.id ?? (await supabase.auth.getUser()).data.user?.id;
+        // Cadastro nunca fica "pendente de e-mail": se o projeto ainda devolver
+        // sessão nula (confirmação pendente), confirmamos no servidor e entramos.
+        let session = (await supabase.auth.getSession()).data.session;
+        if (!session) {
+          const direct = await supabase.auth.signInWithPassword(creds);
+          session = direct.data.session ?? null;
+          if (!session) {
+            try {
+              const { confirmEmailByAddress } = await import("@/lib/auth-confirm.functions");
+              const res = await confirmEmailByAddress({ data: { email: creds.email } });
+              if (res.ok) {
+                const retry = await supabase.auth.signInWithPassword(creds);
+                session = retry.data.session ?? null;
+              }
+            } catch { /* mostra o erro genérico abaixo */ }
+          }
+          if (!session) throw new Error("Conta criada, mas não conseguimos iniciar a sessão. Tente entrar novamente.");
+        }
+
+        const uid = session.user?.id ?? signUpData.user?.id;
+
         if (uid) {
           await supabase.from("profiles").upsert(
             { id: uid, full_name: name, phone: whatsapp, account_type: isEstablishmentSignup ? "establishment" : "customer" },
