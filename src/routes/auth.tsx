@@ -2,6 +2,8 @@ import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-rout
 import { useEffect, useRef, useState } from "react";
 import { getWalletHint, setWalletHint, formatWalletHint, isStandaloneLaunch } from "@/lib/wallet-hint";
 import { getKeepSignedIn, setKeepSignedIn } from "@/lib/session-keeper";
+import { setPlanIntent } from "@/lib/plan-intent";
+
 
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
