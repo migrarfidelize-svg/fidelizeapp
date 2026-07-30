@@ -181,10 +181,12 @@ export const attachEstablishmentBySlug = createServerFn({ method: "POST" })
         return data;
       },
       async createConsent(input) {
+        const { consentContext } = await import("./consent.server");
         await supabaseAdmin.from("consents").insert({
           customer_id: input.customerId,
           establishment_id: input.establishmentId,
           marketing_opt_in: false,
+          ...consentContext("wallet_signup"),
         });
       },
       async getFirstActiveCampaign(estId) {
