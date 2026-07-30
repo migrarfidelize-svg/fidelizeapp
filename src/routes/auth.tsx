@@ -362,6 +362,7 @@ function AuthPage() {
           }
         }
 
+        markAttempt(true);
         if (walletFlow) setWalletHint(whatsapp);
         const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
         if (dest.toastKind === "error") toast.error(dest.toast ?? "Não foi possível vincular seu cartão.");
@@ -370,11 +371,13 @@ function AuthPage() {
 
       }
     } catch (err) {
+      markAttempt(false);
       toast.error(err instanceof Error ? err.message : "Erro ao autenticar");
     } finally {
       setLoading(false);
     }
   }
+
 
   return (
     <div className="auth-cinema relative min-h-screen w-full overflow-hidden bg-[oklch(0.14_0.02_230)] px-6 py-4">
