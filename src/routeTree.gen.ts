@@ -38,6 +38,7 @@ import { Route as AvaliarSlugRouteImport } from './routes/avaliar.$slug'
 import { Route as AvaliacoesSlugRouteImport } from './routes/avaliacoes.$slug'
 import { Route as AuthRecuperarRouteImport } from './routes/auth.recuperar'
 import { Route as AuthNovaSenhaRouteImport } from './routes/auth.nova-senha'
+import { Route as ApiTestTurnstileRouteImport } from './routes/api/test-turnstile'
 import { Route as AuthenticatedLgpdRouteImport } from './routes/_authenticated/lgpd'
 import { Route as AuthenticatedHashRouteImport } from './routes/_authenticated/hash'
 import { Route as AuthenticatedCarteiraRouteImport } from './routes/_authenticated/carteira'
@@ -280,6 +281,11 @@ const AuthNovaSenhaRoute = AuthNovaSenhaRouteImport.update({
   id: '/nova-senha',
   path: '/nova-senha',
   getParentRoute: () => AuthRoute,
+} as any)
+const ApiTestTurnstileRoute = ApiTestTurnstileRouteImport.update({
+  id: '/api/test-turnstile',
+  path: '/api/test-turnstile',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedLgpdRoute = AuthenticatedLgpdRouteImport.update({
   id: '/lgpd',
@@ -860,6 +866,7 @@ export interface FileRoutesByFullPath {
   '/carteira': typeof AuthenticatedCarteiraRouteWithChildren
   '/hash': typeof AuthenticatedHashRouteWithChildren
   '/lgpd': typeof AuthenticatedLgpdRoute
+  '/api/test-turnstile': typeof ApiTestTurnstileRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
@@ -985,6 +992,7 @@ export interface FileRoutesByTo {
   '/termos': typeof TermosRoute
   '/videos': typeof VideosRoute
   '/lgpd': typeof AuthenticatedLgpdRoute
+  '/api/test-turnstile': typeof ApiTestTurnstileRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
@@ -1113,6 +1121,7 @@ export interface FileRoutesById {
   '/_authenticated/carteira': typeof AuthenticatedCarteiraRouteWithChildren
   '/_authenticated/hash': typeof AuthenticatedHashRouteWithChildren
   '/_authenticated/lgpd': typeof AuthenticatedLgpdRoute
+  '/api/test-turnstile': typeof ApiTestTurnstileRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
@@ -1243,6 +1252,7 @@ export interface FileRouteTypes {
     | '/carteira'
     | '/hash'
     | '/lgpd'
+    | '/api/test-turnstile'
     | '/auth/nova-senha'
     | '/auth/recuperar'
     | '/avaliacoes/$slug'
@@ -1368,6 +1378,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/videos'
     | '/lgpd'
+    | '/api/test-turnstile'
     | '/auth/nova-senha'
     | '/auth/recuperar'
     | '/avaliacoes/$slug'
@@ -1495,6 +1506,7 @@ export interface FileRouteTypes {
     | '/_authenticated/carteira'
     | '/_authenticated/hash'
     | '/_authenticated/lgpd'
+    | '/api/test-turnstile'
     | '/auth/nova-senha'
     | '/auth/recuperar'
     | '/avaliacoes/$slug'
@@ -1621,6 +1633,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermosRoute: typeof TermosRoute
   VideosRoute: typeof VideosRoute
+  ApiTestTurnstileRoute: typeof ApiTestTurnstileRoute
   AvaliacoesSlugRoute: typeof AvaliacoesSlugRoute
   AvaliarSlugRoute: typeof AvaliarSlugRoute
   CTokenRoute: typeof CTokenRoute
@@ -1864,6 +1877,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/nova-senha'
       preLoaderRoute: typeof AuthNovaSenhaRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/api/test-turnstile': {
+      id: '/api/test-turnstile'
+      path: '/api/test-turnstile'
+      fullPath: '/api/test-turnstile'
+      preLoaderRoute: typeof ApiTestTurnstileRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/lgpd': {
       id: '/_authenticated/lgpd'
@@ -2824,6 +2844,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermosRoute: TermosRoute,
   VideosRoute: VideosRoute,
+  ApiTestTurnstileRoute: ApiTestTurnstileRoute,
   AvaliacoesSlugRoute: AvaliacoesSlugRoute,
   AvaliarSlugRoute: AvaliarSlugRoute,
   CTokenRoute: CTokenRoute,
@@ -2869,13 +2890,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
