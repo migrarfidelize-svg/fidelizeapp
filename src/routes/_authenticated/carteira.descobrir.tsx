@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Compass, MapPin, Sparkles, ChevronRight, ShieldCheck, Tag, Search, ArrowLeft, X, RefreshCw, UtensilsCrossed, ShoppingBag } from "lucide-react";
 import { getDiscoveryEstablishments } from "@/lib/my-wallet.functions";
 import { WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
+import { SponsoredAdsRail } from "@/components/wallet/SponsoredAdsRail";
 import {
   DISCOVER_CATEGORIES,
   CATEGORY_BY_ID,
@@ -280,6 +281,10 @@ function DiscoverPage() {
                 </button>
               )}
             </div>
+
+            <SponsoredAdsRail
+              category={active && active !== "promo" && active !== "perto" && active !== "todos" ? active : null}
+            />
 
             {!showList ? (
               /* Passo 1 — o cliente escolhe onde quer navegar */
