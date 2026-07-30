@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
 import { MessageSquareWarning as HeroIcon } from "lucide-react";
@@ -285,7 +286,7 @@ function Moderation() {
       </Card>
 
       <div className="space-y-2">
-        {list.isLoading && <p className="text-sm text-muted-foreground">Carregando…</p>}
+        {list.isLoading && <RouteLoading label="Carregando…" fullscreen={false} className="min-h-[40vh]" />}
         {list.data?.items.length === 0 && <p className="text-sm text-muted-foreground py-8 text-center">Nenhuma avaliação encontrada.</p>}
         {list.data?.items.map((r: any) => (
           <Card key={r.id}>
@@ -533,7 +534,7 @@ function BlockedByPlan({ days }: { days: number }) {
           </div>
         </CardHeader>
         <CardContent>
-          {list.isLoading && <p className="text-sm text-muted-foreground">Carregando…</p>}
+          {list.isLoading && <RouteLoading label="Carregando…" fullscreen={false} className="min-h-[40vh]" />}
           {list.data && list.data.length === 0 && (
             <p className="text-sm text-muted-foreground">Nenhuma tentativa registrada para os filtros atuais.</p>
           )}

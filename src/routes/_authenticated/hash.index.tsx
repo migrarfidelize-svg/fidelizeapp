@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
 import { LayoutDashboard as HeroIcon } from "lucide-react";
@@ -26,7 +27,7 @@ const PLAN_LABEL: Record<string, string> = {
 function AdminOverview() {
   const getOverview = useServerFn(adminGetOverview);
   const { data } = useQuery({ queryKey: ["admin-overview"], queryFn: () => getOverview() });
-  if (!data) return <div className="text-muted-foreground">Carregando visão geral…</div>;
+  if (!data) return <RouteLoading label="Carregando visão geral…" fullscreen={false} className="min-h-[40vh]" />;
 
   const stats: Array<{
     label: string; value: string | number; icon: any; accent?: boolean; isText?: boolean;

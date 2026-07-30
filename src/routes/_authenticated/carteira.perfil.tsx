@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
@@ -107,7 +108,7 @@ function WalletProfile() {
   }
 
   if (loading)
-    return <div className="pt-10 text-center text-sm text-muted-foreground">Carregando…</div>;
+    return <RouteLoading label="Carregando…" fullscreen={false} className="min-h-[40vh]" />;
 
   return (
     <div className="space-y-5">

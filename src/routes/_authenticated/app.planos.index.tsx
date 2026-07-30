@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
 import { Crown as HeroIcon } from "lucide-react";
@@ -112,7 +113,7 @@ function MerchantPlansPage() {
 
       {/* Grid de planos — permite que o painel lateral escape para fora do grid sem clipping */}
       {isLoading ? (
-        <div className="grid place-items-center py-24"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+        <RouteLoading fullscreen={false} className="min-h-[40vh]" />
       ) : (
         <div className="grid gap-6 md:grid-cols-3 items-start pt-4 [overflow:visible]">
           {(plans ?? []).map((p: any, idx: number) => {

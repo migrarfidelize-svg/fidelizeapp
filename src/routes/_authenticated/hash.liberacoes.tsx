@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -252,7 +253,7 @@ function FeatureOverridesPage() {
       <Card>
         <CardHeader><CardTitle className="text-base">Liberações ativas</CardTitle></CardHeader>
         <CardContent className="space-y-3">
-          {isLoading && <p className="text-sm text-muted-foreground">Carregando…</p>}
+          {isLoading && <RouteLoading label="Carregando…" fullscreen={false} className="min-h-[40vh]" />}
           {!isLoading && !(rows ?? []).length && (
             <p className="text-sm text-muted-foreground">Nenhuma liberação manual cadastrada.</p>
           )}

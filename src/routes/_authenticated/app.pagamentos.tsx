@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
 import { CreditCard as HeroIcon } from "lucide-react";
@@ -99,7 +100,7 @@ function PaymentsPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="grid place-items-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+            <RouteLoading fullscreen={false} className="min-h-[40vh]" />
           ) : rows.length === 0 ? (
             <div className="grid place-items-center py-16 text-sm text-muted-foreground">Nenhum pagamento encontrado.</div>
           ) : (

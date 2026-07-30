@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
 import { UsersRound as HeroIcon } from "lucide-react";
@@ -678,7 +679,7 @@ function CustomerDrawer({
           <SheetDescription>Dados, cartões, histórico e consentimentos.</SheetDescription>
         </SheetHeader>
 
-        {isFetching && !customer && <div className="mt-8 text-center text-sm text-muted-foreground">Carregando…</div>}
+        {isFetching && !customer && <RouteLoading label="Carregando…" fullscreen={false} className="min-h-[40vh]" />}
 
         {customer && (
           <div className="mt-4 space-y-4">
