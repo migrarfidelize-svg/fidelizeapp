@@ -14,7 +14,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock, Wallet2,
   UsersRound, Settings, Mail, FileText, ListChecks, LifeBuoy, Package,
-  DollarSign, Wallet, Megaphone, Cog, BookOpen, Menu, Star, Plug, Rocket, FileJson, KeyRound, ChevronRight,
+  DollarSign, Wallet, Megaphone, Cog, BookOpen, Menu, Star, Plug, Rocket, FileJson, KeyRound, ChevronRight, Activity,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -71,6 +71,7 @@ const NAV_GROUPS: NavGroup[] = [
     icon: Cog,
     items: [
       { to: "/hash/integracoes", label: "Integrações", icon: Plug },
+      { to: "/hash/pixel", label: "Monitor do Pixel", icon: Activity },
       { to: "/hash/liberacoes", label: "Liberações de recursos", icon: KeyRound },
       { to: "/hash/cardapio-jsonld", label: "JSON-LD do cardápio", icon: FileJson },
       { to: "/hash/auditoria", label: "Auditoria", icon: FileClock },
