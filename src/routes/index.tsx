@@ -20,7 +20,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ArrowRight, Menu, QrCode, Smartphone, ShieldCheck, BarChart3, Sparkles, Coffee, Scissors, Pizza, ShoppingBag, Wrench, IceCream, Store, PawPrint, Check, X, Cake, Clock, UserPlus, Crown, Gift, MessageCircle, Bell, Mail, Sprout, Zap, Building2, Send, Bot, HelpCircle, ChevronDown, type LucideIcon } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { askFaqAI } from "@/lib/faq-ai.functions";
+import { askFaqAI, getFaqAIStatus } from "@/lib/faq-ai.functions";
 
 const SITE_URL = "https://warm-hug-genie.lovable.app";
 const PAGE_TITLE = "Fidelize — Cartão fidelidade digital para clientes fiéis";
@@ -1894,6 +1894,8 @@ function FaqCannedPanel() {
 
 function FaqAIPanel() {
   const ask = useServerFn(askFaqAI);
+  const checkStatus = useServerFn(getFaqAIStatus);
+  const [aiOnline, setAiOnline] = useState<boolean | null>(null);
   const [messages, setMessages] = useState<ChatMsg[]>([
     { role: "assistant", content: "Oi! Sou a Fidê 💛 Pergunta o que quiser sobre a Fidelize, tô aqui pra ajudar!" },
     { role: "user", content: "Meu cliente precisa baixar algum app?" },
@@ -1908,8 +1910,18 @@ function FaqAIPanel() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    let alive = true;
+    checkStatus({})
+      .then((s) => { if (alive) setAiOnline(Boolean(s?.online)); })
+      .catch(() => { if (alive) setAiOnline(false); });
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
+
 
   async function send() {
     const q = input.trim();
@@ -1951,14 +1963,29 @@ function FaqAIPanel() {
             <div className="grid h-10 w-10 place-items-center rounded-full bg-primary/20 border border-primary/50">
               <Bot className="h-5 w-5 text-primary" />
             </div>
-            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-background animate-pulse" />
+            <span
+              className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background ${
+                aiOnline === null
+                  ? "bg-muted-foreground/50"
+                  : aiOnline
+                    ? "bg-emerald-400 animate-pulse"
+                    : "bg-muted-foreground"
+              }`}
+            />
           </div>
           <div className="flex-1">
             <div className="text-sm font-semibold flex items-center gap-2">
               Fidê <span className="text-[10px] font-normal rounded bg-primary/20 text-primary px-1.5 py-0.5">IA</span>
             </div>
-            <div className="text-xs text-emerald-400">● online agora</div>
+            {aiOnline === null ? (
+              <div className="text-xs text-muted-foreground">● verificando conexão…</div>
+            ) : aiOnline ? (
+              <div className="text-xs text-emerald-400">● online agora</div>
+            ) : (
+              <div className="text-xs text-muted-foreground">● offline · IA não conectada</div>
+            )}
           </div>
+
           <div className="text-xs text-muted-foreground hidden sm:block">Não achou sua dúvida?</div>
         </div>
 
@@ -1982,18 +2009,24 @@ function FaqAIPanel() {
           </div>
         )}
 
+        {aiOnline === false && (
+          <div className="mb-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-600 dark:text-amber-300">
+            A Fidê está offline: nenhuma chave de IA válida configurada no servidor. Fale com a gente em <strong>/ajuda</strong> 💛
+          </div>
+        )}
+
         <div className="flex items-center gap-2 rounded-full border border-white/10 bg-background/60 pl-4 pr-1.5 py-1.5 focus-within:border-primary/50 transition">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") send(); }}
-            placeholder="Pergunte qualquer coisa…"
-            disabled={loading}
+            placeholder={aiOnline === false ? "Fidê offline no momento" : "Pergunte qualquer coisa…"}
+            disabled={loading || aiOnline === false}
             className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/60 disabled:opacity-50"
           />
           <button
             onClick={send}
-            disabled={loading || !input.trim()}
+            disabled={loading || !input.trim() || aiOnline === false}
             className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_0_15px_rgba(167,139,250,0.4)] hover:shadow-[0_0_20px_rgba(167,139,250,0.6)] disabled:opacity-40 disabled:shadow-none transition"
             aria-label="Enviar"
           >
@@ -2001,6 +2034,7 @@ function FaqAIPanel() {
           </button>
         </div>
         <div className="mt-2 text-[10px] text-center text-muted-foreground/70">Powered by IA · respostas podem conter imprecisões</div>
+
       </div>
     </div>
   );
