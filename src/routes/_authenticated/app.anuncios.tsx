@@ -560,165 +560,359 @@ function CampaignEditor({
   }
 
   const pkg = packages.find((p) => p.id === packageId);
+  const category = DISCOVER_CATEGORIES.find((c) => c.id === categoryId);
+
+  const [step, setStep] = useState(0);
+  const steps = [
+    { key: "pacote", label: "Pacote", hint: "Por quantos dias seu destaque fica no ar" },
+    { key: "criativo", label: "Criativo", hint: "O que o cliente lê no card" },
+    { key: "publico", label: "Público & destino", hint: "Onde aparece e para onde leva" },
+    { key: "revisao", label: "Revisão", hint: "Confira e salve" },
+  ];
+
+  const stepValid = [
+    !!packageId,
+    title.trim().length >= 3,
+    !!categoryId,
+    !!packageId && title.trim().length >= 3,
+  ];
+
+  const previewImage = imagePreview ?? establishment?.logo_url ?? null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-background/80 p-0 backdrop-blur-sm sm:items-center sm:p-6">
-      <div className="max-h-[92dvh] w-full max-w-2xl overflow-y-auto rounded-t-3xl border border-border/60 bg-card p-5 shadow-2xl sm:rounded-3xl">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-display text-lg font-bold">{campaign ? "Editar destaque" : "Novo destaque"}</h2>
-          <button onClick={onClose} className="text-sm text-muted-foreground hover:text-foreground">
-            Fechar
-          </button>
-        </div>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-background/80 p-0 backdrop-blur-md sm:items-center sm:p-6">
+      <div className="flex max-h-[94dvh] w-full max-w-5xl flex-col overflow-hidden rounded-t-3xl border border-primary/25 bg-card shadow-2xl sm:rounded-3xl">
+        {/* Cabeçalho premium */}
+        <div className="relative overflow-hidden border-b border-border/50 bg-gradient-to-br from-primary/12 via-transparent to-transparent px-5 py-4">
+          <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-primary/20 blur-3xl" />
+          <div className="relative flex items-start gap-3">
+            <div className="card-icon">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="font-display text-xl font-bold tracking-tight">
+                {campaign ? "Editar destaque" : "Novo destaque"}
+              </h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Em 4 passos rápidos seu estabelecimento aparece no topo da vitrine <strong>Descobrir</strong>.
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="rounded-xl border border-border/60 px-3 py-1.5 text-xs font-bold text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Fechar
+            </button>
+          </div>
 
-        <div className="space-y-4">
-          <div>
-            <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Pacote</label>
-            <div className="mt-1.5 grid gap-2 sm:grid-cols-3">
-              {packages.map((p) => (
+          {/* Stepper */}
+          <div className="relative mt-4 grid gap-2 sm:grid-cols-4">
+            {steps.map((s, i) => {
+              const done = i < step;
+              const active = i === step;
+              return (
                 <button
-                  key={p.id}
-                  onClick={() => setPackageId(p.id)}
-                  className={`rounded-xl border p-3 text-left transition-colors ${
-                    packageId === p.id ? "border-primary bg-primary/10" : "border-border/60 hover:border-primary/40"
+                  key={s.key}
+                  onClick={() => setStep(i)}
+                  className={`rounded-2xl border px-3 py-2 text-left transition-all ${
+                    active
+                      ? "border-primary bg-primary/10 shadow-sm"
+                      : done
+                        ? "border-primary/30 bg-primary/5"
+                        : "border-border/60 bg-background/40 hover:border-primary/30"
                   }`}
                 >
-                  <div className="text-xs font-bold">{p.name}</div>
-                  <div className="text-sm font-black">{formatCents(p.price_cents, p.currency)}</div>
-                  <div className="text-[11px] text-muted-foreground">{p.duration_days} dias</div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-black ${
+                        active || done ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {done ? "✓" : i + 1}
+                    </span>
+                    <span className="truncate text-xs font-bold">{s.label}</span>
+                  </div>
+                  <p className="mt-0.5 line-clamp-1 text-[10px] text-muted-foreground">{s.hint}</p>
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
+        </div>
 
-          <div>
-            <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Categoria</label>
-            <select
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className="mt-1.5 w-full rounded-xl border border-border/60 bg-background px-3 py-2 text-sm"
-            >
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.emoji} {c.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-              Título ({title.length}/{AD_TITLE_MAX})
-            </label>
-            <input
-              value={title}
-              maxLength={AD_TITLE_MAX}
-              onChange={(e) => setTitle(e.target.value)}
-              className="mt-1.5 w-full rounded-xl border border-border/60 bg-background px-3 py-2 text-sm"
-              placeholder="Ex.: Café artesanal com 1º carimbo em dobro"
-            />
-          </div>
-
-          <div>
-            <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-              Descrição ({description.length}/{AD_DESCRIPTION_MAX})
-            </label>
-            <textarea
-              value={description}
-              maxLength={AD_DESCRIPTION_MAX}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              className="mt-1.5 w-full rounded-xl border border-border/60 bg-background px-3 py-2 text-sm"
-              placeholder="Uma frase curta contando por que vale a visita."
-            />
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Botão</label>
-              <select
-                value={cta}
-                onChange={(e) => setCta(e.target.value as CtaLabel)}
-                className="mt-1.5 w-full rounded-xl border border-border/60 bg-background px-3 py-2 text-sm"
-              >
-                {CTA_LABELS.map((l) => (
-                  <option key={l} value={l}>
-                    {l}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Destino</label>
-              <select
-                value={destination}
-                onChange={(e) => setDestination(e.target.value as DestinationType)}
-                className="mt-1.5 w-full rounded-xl border border-border/60 bg-background px-3 py-2 text-sm"
-              >
-                {DESTINATION_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {DESTINATION_META[t].label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Imagem</label>
-            <div className="mt-1.5 flex items-center gap-3">
-              <div className="grid h-20 w-20 place-items-center overflow-hidden rounded-xl border border-border/60 bg-background">
-                {imagePreview ? (
-                  <img src={imagePreview} alt="" className="h-full w-full object-cover" />
-                ) : establishment?.logo_url ? (
-                  <img src={establishment.logo_url} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <Megaphone className="h-5 w-5 text-muted-foreground" />
-                )}
-              </div>
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border/60 px-3 py-2 text-xs font-bold hover:border-primary/40">
-                {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-                {uploading ? "Enviando…" : "Enviar imagem"}
-                <input
-                  type="file"
-                  accept={AD_IMAGE_MIME.join(",")}
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) void handleUpload(f);
-                  }}
+        <div className="grid flex-1 gap-0 overflow-y-auto lg:grid-cols-[1fr_320px]">
+          {/* Conteúdo da etapa */}
+          <div className="space-y-4 p-5">
+            {step === 0 && (
+              <div className="space-y-3">
+                <StepIntro
+                  title="Escolha por quanto tempo quer aparecer"
+                  text="Períodos maiores costumam render mais visitas porque o cliente vê o seu card em dias diferentes. Você só paga depois da aprovação, via PIX."
                 />
-              </label>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {packages.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => setPackageId(p.id)}
+                      className={`rounded-2xl border p-4 text-left transition-all ${
+                        packageId === p.id
+                          ? "border-primary bg-primary/10 shadow-sm"
+                          : "border-border/60 hover:border-primary/40"
+                      }`}
+                    >
+                      <div className="text-xs font-bold">{p.name}</div>
+                      <div className="metric-number mt-1 text-xl">{formatCents(p.price_cents, p.currency)}</div>
+                      <div className="mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                        <Clock className="h-3.5 w-3.5" /> {p.duration_days} dias no ar
+                      </div>
+                      {p.description && <p className="mt-2 text-[11px] text-muted-foreground">{p.description}</p>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {step === 1 && (
+              <div className="space-y-4">
+                <StepIntro
+                  title="Escreva o que convence em 3 segundos"
+                  text="O cliente decide olhando título, foto e uma frase. Fale de um benefício claro (brinde, desconto, novidade) em vez de descrever o negócio."
+                />
+                <div>
+                  <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                    Título ({title.length}/{AD_TITLE_MAX})
+                  </label>
+                  <input
+                    value={title}
+                    maxLength={AD_TITLE_MAX}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="mt-1.5 w-full rounded-xl border border-border/60 bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+                    placeholder="Ex.: Café artesanal com 1º carimbo em dobro"
+                  />
+                  <p className="mt-1 text-[11px] text-muted-foreground">Dica: comece pelo benefício, não pelo nome.</p>
+                </div>
+                <div>
+                  <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                    Descrição ({description.length}/{AD_DESCRIPTION_MAX})
+                  </label>
+                  <textarea
+                    value={description}
+                    maxLength={AD_DESCRIPTION_MAX}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={3}
+                    className="mt-1.5 w-full rounded-xl border border-border/60 bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+                    placeholder="Uma frase curta contando por que vale a visita."
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Imagem</label>
+                  <div className="mt-1.5 flex items-center gap-3">
+                    <div className="grid h-20 w-20 place-items-center overflow-hidden rounded-2xl border border-border/60 bg-background">
+                      {previewImage ? (
+                        <img src={previewImage} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <Megaphone className="h-5 w-5 text-muted-foreground" />
+                      )}
+                    </div>
+                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border/60 px-3 py-2 text-xs font-bold transition-colors hover:border-primary/40">
+                      {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                      {uploading ? "Enviando…" : "Enviar imagem"}
+                      <input
+                        type="file"
+                        accept={AD_IMAGE_MIME.join(",")}
+                        className="hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) void handleUpload(f);
+                        }}
+                      />
+                    </label>
+                  </div>
+                  <p className="mt-1.5 text-[11px] text-muted-foreground">
+                    Sem imagem própria usamos a logo do seu estabelecimento. JPG, PNG ou WebP até 3 MB — prefira foto
+                    horizontal, bem iluminada e sem textos pequenos.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="space-y-4">
+                <StepIntro
+                  title="Defina onde você aparece e o que acontece no clique"
+                  text="A categoria posiciona seu card na vitrine certa. O destino é sempre uma página do seu próprio estabelecimento."
+                />
+                <div>
+                  <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                    Categoria na vitrine
+                  </label>
+                  <select
+                    value={categoryId}
+                    onChange={(e) => setCategoryId(e.target.value)}
+                    className="mt-1.5 w-full rounded-xl border border-border/60 bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+                  >
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.emoji} {c.label}
+                      </option>
+                    ))}
+                  </select>
+                  {categoryId === suggestedCategory && (
+                    <p className="mt-1 text-[11px] text-muted-foreground">Sugerimos esta com base no seu perfil.</p>
+                  )}
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                      Texto do botão
+                    </label>
+                    <select
+                      value={cta}
+                      onChange={(e) => setCta(e.target.value as CtaLabel)}
+                      className="mt-1.5 w-full rounded-xl border border-border/60 bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+                    >
+                      {CTA_LABELS.map((l) => (
+                        <option key={l} value={l}>
+                          {l}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                      Destino do clique
+                    </label>
+                    <select
+                      value={destination}
+                      onChange={(e) => setDestination(e.target.value as DestinationType)}
+                      className="mt-1.5 w-full rounded-xl border border-border/60 bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+                    >
+                      {DESTINATION_TYPES.map((t) => (
+                        <option key={t} value={t}>
+                          {DESTINATION_META[t].label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="space-y-3">
+                <StepIntro
+                  title="Confira antes de enviar"
+                  text="Salve o criativo e depois use “Enviar para análise” no card da campanha. Após a aprovação você paga por PIX e o destaque entra no ar."
+                />
+                <dl className="divide-y divide-border/50 overflow-hidden rounded-2xl border border-border/60">
+                  <ReviewRow label="Pacote" value={pkg ? `${pkg.name} · ${pkg.duration_days} dias` : "—"} />
+                  <ReviewRow
+                    label="Investimento"
+                    value={pkg ? formatCents(pkg.price_cents, pkg.currency) : "—"}
+                  />
+                  <ReviewRow label="Categoria" value={category ? `${category.emoji} ${category.label}` : categoryId} />
+                  <ReviewRow label="Título" value={title || "—"} />
+                  <ReviewRow label="Botão" value={cta} />
+                  <ReviewRow label="Destino" value={DESTINATION_META[destination]?.label ?? destination} />
+                  <ReviewRow label="Imagem" value={imagePath ? "Imagem enviada" : "Logo do estabelecimento"} />
+                </dl>
+                <div className="rounded-2xl border border-border/60 bg-muted/30 p-3 text-[11px] text-muted-foreground">
+                  <div className="mb-1 flex items-center gap-1.5 font-bold text-foreground">
+                    <Info className="h-3.5 w-3.5" /> Como funciona
+                  </div>
+                  Análise da equipe Fidelize → pagamento por PIX → destaque na vitrine por {pkg?.duration_days ?? 7}{" "}
+                  dias, sempre identificado como “Patrocinado”.
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Prévia ao vivo */}
+          <aside className="border-t border-border/50 bg-background/40 p-5 lg:border-l lg:border-t-0">
+            <div className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+              Prévia na vitrine
             </div>
-            <p className="mt-1.5 text-[11px] text-muted-foreground">
-              Sem imagem própria usamos a logo do seu estabelecimento. JPG, PNG ou WebP até 3 MB.
+            <div className="mt-3 overflow-hidden rounded-2xl border border-primary/30 bg-card shadow-sm">
+              <div className="relative aspect-[16/9] bg-muted">
+                {previewImage ? (
+                  <img src={previewImage} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="grid h-full w-full place-items-center">
+                    <Megaphone className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                )}
+                <span className="absolute left-2 top-2 rounded-full bg-background/85 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground backdrop-blur">
+                  Patrocinado
+                </span>
+              </div>
+              <div className="p-3">
+                <div className="text-sm font-bold leading-tight">{title || "Título do seu destaque"}</div>
+                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                  {description || "Uma frase curta contando por que vale a visita."}
+                </p>
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-xl bg-primary px-3 py-1.5 text-[11px] font-bold text-primary-foreground">
+                  <MousePointerClick className="h-3 w-3" /> {cta}
+                </div>
+              </div>
+            </div>
+            <p className="mt-3 text-[11px] text-muted-foreground">
+              É assim que os clientes verão seu card em <strong>Descobrir</strong>, no topo da categoria escolhida.
             </p>
-          </div>
+          </aside>
+        </div>
 
-          <div className="rounded-xl border border-border/60 bg-muted/30 p-3 text-[11px] text-muted-foreground">
-            <div className="mb-1 flex items-center gap-1.5 font-bold text-foreground">
-              <Info className="h-3.5 w-3.5" /> Como funciona
-            </div>
-            O anúncio passa por análise da equipe Fidelize. Depois de aprovado você paga por PIX e o destaque entra na
-            vitrine por {pkg?.duration_days ?? 7} dias, sempre identificado como “Patrocinado”. O destino é sempre uma
-            página do seu próprio estabelecimento.
+        {/* Rodapé de navegação */}
+        <div className="flex items-center justify-between gap-2 border-t border-border/50 bg-card px-5 py-3">
+          <div className="text-[11px] text-muted-foreground">
+            Passo {step + 1} de {steps.length}
           </div>
-
-          <div className="flex items-center gap-2 pt-1">
-            <button
-              disabled={save.isPending || !packageId || !title.trim()}
-              onClick={() => save.mutate()}
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-50"
-            >
-              <ShieldCheck className="h-4 w-4" />
-              {save.isPending ? "Salvando…" : "Salvar criativo"}
-            </button>
-            <button onClick={onClose} className="rounded-xl border border-border/60 px-4 py-2.5 text-sm font-bold">
-              Cancelar
-            </button>
+          <div className="flex items-center gap-2">
+            {step > 0 && (
+              <button
+                onClick={() => setStep((s) => s - 1)}
+                className="rounded-xl border border-border/60 px-4 py-2.5 text-sm font-bold"
+              >
+                Voltar
+              </button>
+            )}
+            {step < steps.length - 1 ? (
+              <button
+                disabled={!stepValid[step]}
+                onClick={() => setStep((s) => s + 1)}
+                className="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-50"
+              >
+                Continuar
+              </button>
+            ) : (
+              <button
+                disabled={save.isPending || !packageId || !title.trim()}
+                onClick={() => save.mutate()}
+                className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-50"
+              >
+                <ShieldCheck className="h-4 w-4" />
+                {save.isPending ? "Salvando…" : "Salvar criativo"}
+              </button>
+            )}
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function StepIntro({ title, text }: { title: string; text: string }) {
+  return (
+    <div className="rounded-2xl border border-primary/25 bg-primary/5 p-3">
+      <div className="font-display text-sm font-bold">{title}</div>
+      <p className="mt-1 text-xs text-muted-foreground">{text}</p>
+    </div>
+  );
+}
+
+function ReviewRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-start justify-between gap-3 bg-card/40 px-3 py-2.5">
+      <dt className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">{label}</dt>
+      <dd className="max-w-[60%] text-right text-xs font-semibold">{value}</dd>
     </div>
   );
 }
