@@ -358,7 +358,27 @@ function AuthPage() {
           }
         }
 
-        const uid = signUpData.user?.id ?? (await supabase.auth.getUser()).data.user?.id;
+        // Cadastro nunca fica "pendente de e-mail": se o projeto ainda devolver
+        // sessão nula (confirmação pendente), confirmamos no servidor e entramos.
+        let session = (await supabase.auth.getSession()).data.session;
+        if (!session) {
+          const direct = await supabase.auth.signInWithPassword(creds);
+          session = direct.data.session ?? null;
+          if (!session) {
+            try {
+              const { confirmEmailByAddress } = await import("@/lib/auth-confirm.functions");
+              const res = await confirmEmailByAddress({ data: { email: creds.email } });
+              if (res.ok) {
+                const retry = await supabase.auth.signInWithPassword(creds);
+                session = retry.data.session ?? null;
+              }
+            } catch { /* mostra o erro genérico abaixo */ }
+          }
+          if (!session) throw new Error("Conta criada, mas não conseguimos iniciar a sessão. Tente entrar novamente.");
+        }
+
+        const uid = session.user?.id ?? signUpData.user?.id;
+
         if (uid) {
           await supabase.from("profiles").upsert(
             { id: uid, full_name: name, phone: whatsapp, account_type: isEstablishmentSignup ? "establishment" : "customer" },
