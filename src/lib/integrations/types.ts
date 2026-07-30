@@ -70,8 +70,14 @@ export async function timedFetch(
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   const start = Date.now();
+  // Alguns provedores (ex.: Asaas) recusam requisições sem User-Agent.
+  const headers = new Headers(rest.headers as HeadersInit | undefined);
+  if (!headers.has("user-agent")) {
+    headers.set("User-Agent", "Fidelize/1.0 (+https://fidelizeapp.lovable.app)");
+  }
   try {
-    const response = await fetch(input, { ...rest, signal: controller.signal });
+    const response = await fetch(input, { ...rest, headers, signal: controller.signal });
+
     const body = await response.text();
     return { response, body, latency_ms: Date.now() - start };
   } finally {
