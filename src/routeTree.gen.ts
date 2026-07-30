@@ -69,6 +69,7 @@ import { Route as AuthenticatedHashCardapioJsonldRouteImport } from './routes/_a
 import { Route as AuthenticatedHashAvaliacoesRouteImport } from './routes/_authenticated/hash.avaliacoes'
 import { Route as AuthenticatedHashAuditoriaRouteImport } from './routes/_authenticated/hash.auditoria'
 import { Route as AuthenticatedHashAssinaturasRouteImport } from './routes/_authenticated/hash.assinaturas'
+import { Route as AuthenticatedHashAnunciosRouteImport } from './routes/_authenticated/hash.anuncios'
 import { Route as AuthenticatedHashAlertasRouteImport } from './routes/_authenticated/hash.alertas'
 import { Route as AuthenticatedHashAjudaRouteImport } from './routes/_authenticated/hash.ajuda'
 import { Route as AuthenticatedCarteiraRetrospectivaRouteImport } from './routes/_authenticated/carteira.retrospectiva'
@@ -97,6 +98,7 @@ import { Route as AuthenticatedAppCatalogoRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppCarimbarRouteImport } from './routes/_authenticated/app.carimbar'
 import { Route as AuthenticatedAppCardapioRouteImport } from './routes/_authenticated/app.cardapio'
 import { Route as AuthenticatedAppCampanhasRouteImport } from './routes/_authenticated/app.campanhas'
+import { Route as AuthenticatedAppAnunciosRouteImport } from './routes/_authenticated/app.anuncios'
 import { Route as AuthenticatedAppAnalyticsRouteImport } from './routes/_authenticated/app.analytics'
 import { Route as AuthenticatedHashSuporteIndexRouteImport } from './routes/_authenticated/hash.suporte.index'
 import { Route as AuthenticatedHashPlanosIndexRouteImport } from './routes/_authenticated/hash.planos.index'
@@ -112,6 +114,7 @@ import { Route as ApiPublicTPlanRouteImport } from './routes/api/public/t/plan'
 import { Route as ApiPublicTEventRouteImport } from './routes/api/public/t/event'
 import { Route as ApiPublicMercadopagoPublicKeyRouteImport } from './routes/api/public/mercadopago/public-key'
 import { Route as ApiPublicHooksWalletSyncRouteImport } from './routes/api/public/hooks/wallet-sync'
+import { Route as ApiPublicHooksSponsoredAdsLifecycleRouteImport } from './routes/api/public/hooks/sponsored-ads-lifecycle'
 import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/api/public/hooks/process-email-queue'
 import { Route as ApiPublicHooksNotifyExpiringRewardsRouteImport } from './routes/api/public/hooks/notify-expiring-rewards'
 import { Route as ApiPublicHooksMercadopagoRetryRouteImport } from './routes/api/public/hooks/mercadopago-retry'
@@ -453,6 +456,12 @@ const AuthenticatedHashAssinaturasRoute =
     path: '/assinaturas',
     getParentRoute: () => AuthenticatedHashRoute,
   } as any)
+const AuthenticatedHashAnunciosRoute =
+  AuthenticatedHashAnunciosRouteImport.update({
+    id: '/anuncios',
+    path: '/anuncios',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
 const AuthenticatedHashAlertasRoute =
   AuthenticatedHashAlertasRouteImport.update({
     id: '/alertas',
@@ -613,6 +622,12 @@ const AuthenticatedAppCampanhasRoute =
     path: '/campanhas',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppAnunciosRoute =
+  AuthenticatedAppAnunciosRouteImport.update({
+    id: '/anuncios',
+    path: '/anuncios',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppAnalyticsRoute =
   AuthenticatedAppAnalyticsRouteImport.update({
     id: '/analytics',
@@ -697,6 +712,12 @@ const ApiPublicHooksWalletSyncRoute =
   ApiPublicHooksWalletSyncRouteImport.update({
     id: '/api/public/hooks/wallet-sync',
     path: '/api/public/hooks/wallet-sync',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksSponsoredAdsLifecycleRoute =
+  ApiPublicHooksSponsoredAdsLifecycleRouteImport.update({
+    id: '/api/public/hooks/sponsored-ads-lifecycle',
+    path: '/api/public/hooks/sponsored-ads-lifecycle',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicHooksProcessEmailQueueRoute =
@@ -890,6 +911,7 @@ export interface FileRoutesByFullPath {
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda/': typeof AjudaIndexRoute
   '/app/analytics': typeof AuthenticatedAppAnalyticsRoute
+  '/app/anuncios': typeof AuthenticatedAppAnunciosRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/cardapio': typeof AuthenticatedAppCardapioRouteWithChildren
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
@@ -918,6 +940,7 @@ export interface FileRoutesByFullPath {
   '/carteira/retrospectiva': typeof AuthenticatedCarteiraRetrospectivaRoute
   '/hash/ajuda': typeof AuthenticatedHashAjudaRoute
   '/hash/alertas': typeof AuthenticatedHashAlertasRoute
+  '/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
   '/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
   '/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
   '/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
@@ -962,6 +985,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/notify-expiring-rewards': typeof ApiPublicHooksNotifyExpiringRewardsRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
+  '/api/public/hooks/sponsored-ads-lifecycle': typeof ApiPublicHooksSponsoredAdsLifecycleRoute
   '/api/public/hooks/wallet-sync': typeof ApiPublicHooksWalletSyncRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
   '/api/public/t/event': typeof ApiPublicTEventRoute
@@ -1017,6 +1041,7 @@ export interface FileRoutesByTo {
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda': typeof AjudaIndexRoute
   '/app/analytics': typeof AuthenticatedAppAnalyticsRoute
+  '/app/anuncios': typeof AuthenticatedAppAnunciosRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
@@ -1043,6 +1068,7 @@ export interface FileRoutesByTo {
   '/carteira/retrospectiva': typeof AuthenticatedCarteiraRetrospectivaRoute
   '/hash/ajuda': typeof AuthenticatedHashAjudaRoute
   '/hash/alertas': typeof AuthenticatedHashAlertasRoute
+  '/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
   '/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
   '/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
   '/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
@@ -1087,6 +1113,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/notify-expiring-rewards': typeof ApiPublicHooksNotifyExpiringRewardsRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
+  '/api/public/hooks/sponsored-ads-lifecycle': typeof ApiPublicHooksSponsoredAdsLifecycleRoute
   '/api/public/hooks/wallet-sync': typeof ApiPublicHooksWalletSyncRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
   '/api/public/t/event': typeof ApiPublicTEventRoute
@@ -1147,6 +1174,7 @@ export interface FileRoutesById {
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda/': typeof AjudaIndexRoute
   '/_authenticated/app/analytics': typeof AuthenticatedAppAnalyticsRoute
+  '/_authenticated/app/anuncios': typeof AuthenticatedAppAnunciosRoute
   '/_authenticated/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/_authenticated/app/cardapio': typeof AuthenticatedAppCardapioRouteWithChildren
   '/_authenticated/app/carimbar': typeof AuthenticatedAppCarimbarRoute
@@ -1175,6 +1203,7 @@ export interface FileRoutesById {
   '/_authenticated/carteira/retrospectiva': typeof AuthenticatedCarteiraRetrospectivaRoute
   '/_authenticated/hash/ajuda': typeof AuthenticatedHashAjudaRoute
   '/_authenticated/hash/alertas': typeof AuthenticatedHashAlertasRoute
+  '/_authenticated/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
   '/_authenticated/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
   '/_authenticated/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
   '/_authenticated/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
@@ -1219,6 +1248,7 @@ export interface FileRoutesById {
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/notify-expiring-rewards': typeof ApiPublicHooksNotifyExpiringRewardsRoute
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
+  '/api/public/hooks/sponsored-ads-lifecycle': typeof ApiPublicHooksSponsoredAdsLifecycleRoute
   '/api/public/hooks/wallet-sync': typeof ApiPublicHooksWalletSyncRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
   '/api/public/t/event': typeof ApiPublicTEventRoute
@@ -1279,6 +1309,7 @@ export interface FileRouteTypes {
     | '/suporte/meus'
     | '/ajuda/'
     | '/app/analytics'
+    | '/app/anuncios'
     | '/app/campanhas'
     | '/app/cardapio'
     | '/app/carimbar'
@@ -1307,6 +1338,7 @@ export interface FileRouteTypes {
     | '/carteira/retrospectiva'
     | '/hash/ajuda'
     | '/hash/alertas'
+    | '/hash/anuncios'
     | '/hash/assinaturas'
     | '/hash/auditoria'
     | '/hash/avaliacoes'
@@ -1351,6 +1383,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/notify-expiring-rewards'
     | '/api/public/hooks/process-email-queue'
+    | '/api/public/hooks/sponsored-ads-lifecycle'
     | '/api/public/hooks/wallet-sync'
     | '/api/public/mercadopago/public-key'
     | '/api/public/t/event'
@@ -1406,6 +1439,7 @@ export interface FileRouteTypes {
     | '/suporte/meus'
     | '/ajuda'
     | '/app/analytics'
+    | '/app/anuncios'
     | '/app/campanhas'
     | '/app/carimbar'
     | '/app/clientes'
@@ -1432,6 +1466,7 @@ export interface FileRouteTypes {
     | '/carteira/retrospectiva'
     | '/hash/ajuda'
     | '/hash/alertas'
+    | '/hash/anuncios'
     | '/hash/assinaturas'
     | '/hash/auditoria'
     | '/hash/avaliacoes'
@@ -1476,6 +1511,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/notify-expiring-rewards'
     | '/api/public/hooks/process-email-queue'
+    | '/api/public/hooks/sponsored-ads-lifecycle'
     | '/api/public/hooks/wallet-sync'
     | '/api/public/mercadopago/public-key'
     | '/api/public/t/event'
@@ -1535,6 +1571,7 @@ export interface FileRouteTypes {
     | '/suporte/meus'
     | '/ajuda/'
     | '/_authenticated/app/analytics'
+    | '/_authenticated/app/anuncios'
     | '/_authenticated/app/campanhas'
     | '/_authenticated/app/cardapio'
     | '/_authenticated/app/carimbar'
@@ -1563,6 +1600,7 @@ export interface FileRouteTypes {
     | '/_authenticated/carteira/retrospectiva'
     | '/_authenticated/hash/ajuda'
     | '/_authenticated/hash/alertas'
+    | '/_authenticated/hash/anuncios'
     | '/_authenticated/hash/assinaturas'
     | '/_authenticated/hash/auditoria'
     | '/_authenticated/hash/avaliacoes'
@@ -1607,6 +1645,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/notify-expiring-rewards'
     | '/api/public/hooks/process-email-queue'
+    | '/api/public/hooks/sponsored-ads-lifecycle'
     | '/api/public/hooks/wallet-sync'
     | '/api/public/mercadopago/public-key'
     | '/api/public/t/event'
@@ -1671,6 +1710,7 @@ export interface RootRouteChildren {
   ApiPublicHooksMercadopagoRetryRoute: typeof ApiPublicHooksMercadopagoRetryRoute
   ApiPublicHooksNotifyExpiringRewardsRoute: typeof ApiPublicHooksNotifyExpiringRewardsRoute
   ApiPublicHooksProcessEmailQueueRoute: typeof ApiPublicHooksProcessEmailQueueRoute
+  ApiPublicHooksSponsoredAdsLifecycleRoute: typeof ApiPublicHooksSponsoredAdsLifecycleRoute
   ApiPublicHooksWalletSyncRoute: typeof ApiPublicHooksWalletSyncRoute
   ApiPublicMercadopagoPublicKeyRoute: typeof ApiPublicMercadopagoPublicKeyRoute
   ApiPublicTEventRoute: typeof ApiPublicTEventRoute
@@ -2108,6 +2148,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHashAssinaturasRouteImport
       parentRoute: typeof AuthenticatedHashRoute
     }
+    '/_authenticated/hash/anuncios': {
+      id: '/_authenticated/hash/anuncios'
+      path: '/anuncios'
+      fullPath: '/hash/anuncios'
+      preLoaderRoute: typeof AuthenticatedHashAnunciosRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
     '/_authenticated/hash/alertas': {
       id: '/_authenticated/hash/alertas'
       path: '/alertas'
@@ -2304,6 +2351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppCampanhasRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/anuncios': {
+      id: '/_authenticated/app/anuncios'
+      path: '/anuncios'
+      fullPath: '/app/anuncios'
+      preLoaderRoute: typeof AuthenticatedAppAnunciosRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/app/analytics': {
       id: '/_authenticated/app/analytics'
       path: '/analytics'
@@ -2407,6 +2461,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/wallet-sync'
       fullPath: '/api/public/hooks/wallet-sync'
       preLoaderRoute: typeof ApiPublicHooksWalletSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/sponsored-ads-lifecycle': {
+      id: '/api/public/hooks/sponsored-ads-lifecycle'
+      path: '/api/public/hooks/sponsored-ads-lifecycle'
+      fullPath: '/api/public/hooks/sponsored-ads-lifecycle'
+      preLoaderRoute: typeof ApiPublicHooksSponsoredAdsLifecycleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/process-email-queue': {
@@ -2641,6 +2702,7 @@ const AuthenticatedAppCatalogoRouteWithChildren =
 
 interface AuthenticatedAppRouteChildren {
   AuthenticatedAppAnalyticsRoute: typeof AuthenticatedAppAnalyticsRoute
+  AuthenticatedAppAnunciosRoute: typeof AuthenticatedAppAnunciosRoute
   AuthenticatedAppCampanhasRoute: typeof AuthenticatedAppCampanhasRoute
   AuthenticatedAppCardapioRoute: typeof AuthenticatedAppCardapioRouteWithChildren
   AuthenticatedAppCarimbarRoute: typeof AuthenticatedAppCarimbarRoute
@@ -2670,6 +2732,7 @@ interface AuthenticatedAppRouteChildren {
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppAnalyticsRoute: AuthenticatedAppAnalyticsRoute,
+  AuthenticatedAppAnunciosRoute: AuthenticatedAppAnunciosRoute,
   AuthenticatedAppCampanhasRoute: AuthenticatedAppCampanhasRoute,
   AuthenticatedAppCardapioRoute: AuthenticatedAppCardapioRouteWithChildren,
   AuthenticatedAppCarimbarRoute: AuthenticatedAppCarimbarRoute,
@@ -2750,6 +2813,7 @@ const AuthenticatedCarteiraRouteWithChildren =
 interface AuthenticatedHashRouteChildren {
   AuthenticatedHashAjudaRoute: typeof AuthenticatedHashAjudaRoute
   AuthenticatedHashAlertasRoute: typeof AuthenticatedHashAlertasRoute
+  AuthenticatedHashAnunciosRoute: typeof AuthenticatedHashAnunciosRoute
   AuthenticatedHashAssinaturasRoute: typeof AuthenticatedHashAssinaturasRoute
   AuthenticatedHashAuditoriaRoute: typeof AuthenticatedHashAuditoriaRoute
   AuthenticatedHashAvaliacoesRoute: typeof AuthenticatedHashAvaliacoesRoute
@@ -2778,6 +2842,7 @@ interface AuthenticatedHashRouteChildren {
 const AuthenticatedHashRouteChildren: AuthenticatedHashRouteChildren = {
   AuthenticatedHashAjudaRoute: AuthenticatedHashAjudaRoute,
   AuthenticatedHashAlertasRoute: AuthenticatedHashAlertasRoute,
+  AuthenticatedHashAnunciosRoute: AuthenticatedHashAnunciosRoute,
   AuthenticatedHashAssinaturasRoute: AuthenticatedHashAssinaturasRoute,
   AuthenticatedHashAuditoriaRoute: AuthenticatedHashAuditoriaRoute,
   AuthenticatedHashAvaliacoesRoute: AuthenticatedHashAvaliacoesRoute,
@@ -2892,6 +2957,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksNotifyExpiringRewardsRoute:
     ApiPublicHooksNotifyExpiringRewardsRoute,
   ApiPublicHooksProcessEmailQueueRoute: ApiPublicHooksProcessEmailQueueRoute,
+  ApiPublicHooksSponsoredAdsLifecycleRoute:
+    ApiPublicHooksSponsoredAdsLifecycleRoute,
   ApiPublicHooksWalletSyncRoute: ApiPublicHooksWalletSyncRoute,
   ApiPublicMercadopagoPublicKeyRoute: ApiPublicMercadopagoPublicKeyRoute,
   ApiPublicTEventRoute: ApiPublicTEventRoute,

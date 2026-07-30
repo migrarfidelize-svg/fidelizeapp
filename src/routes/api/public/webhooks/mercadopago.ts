@@ -72,12 +72,28 @@ async function processPaymentEvent(paymentId: string) {
 
   const mp = await fetchPaymentFromMP(paymentId, accessToken);
 
+  // Cobrança avulsa de anúncio patrocinado: fluxo próprio, não mexe em assinatura.
+  if (mp.metadata?.kind === "sponsored_ad") {
+    const status = mapMpStatusToPaymentStatus(mp.status);
+    const { settleAdOrderPaid } = await import("@/lib/sponsored-ads-payments.server");
+    if (status === "approved") {
+      await settleAdOrderPaid(String(mp.id), mp.status ?? "approved");
+    } else {
+      await supabaseAdmin
+        .from("sponsored_ad_orders")
+        .update({ gateway_status: mp.status ?? null, updated_at: new Date().toISOString() })
+        .eq("external_payment_id", String(mp.id));
+    }
+    return;
+  }
+
   // Localiza pagamento no banco (foi criado no ato do createPix/Card)
   const { data: pay } = await supabaseAdmin
     .from("payments")
     .select("id, establishment_id, plan_id, plan_slug, subscription_id, status")
     .eq("mp_payment_id", String(mp.id))
     .maybeSingle();
+
 
   const newStatus = mapMpStatusToPaymentStatus(mp.status);
   const approvedAt = newStatus === "approved" ? new Date().toISOString() : null;

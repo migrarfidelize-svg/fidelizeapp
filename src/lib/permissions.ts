@@ -15,6 +15,7 @@ export type PermissionAction =
   | "qr.manage"
   | "linktree.manage"
   | "menu.manage"
+  | "ads.manage"
   | "push.send"
   | "promotions.manage"
   | "messages.manage"
@@ -59,6 +60,9 @@ export const PERMISSION_CATALOG: PermissionEntry[] = [
   { action: "qr.manage",          group: "reputacao", label: "QR Codes",                 description: "Editar cartazes, banners e materiais de QR." },
   { action: "linktree.manage",    group: "reputacao", label: "Árvore de links",          description: "Editar página pública de links." },
   { action: "menu.manage",        group: "reputacao", label: "Cardápio Virtual",         description: "Criar e publicar o cardápio digital do restaurante." },
+
+  // Anúncios
+  { action: "ads.manage",         group: "marketing", label: "Anúncios em destaque",     description: "Criar e acompanhar campanhas patrocinadas na vitrine Descobrir." },
 
   // Comunicação
   { action: "push.send",          group: "comunicacao", label: "Notificações push",      description: "Disparar notificações para clientes." },
@@ -130,4 +134,5 @@ export const ROUTE_PERMISSIONS: Record<string, PermissionAction> = {
   "/app/equipe":       "team.manage",
   "/app/planos":       "billing.manage",
   "/app/pagamentos":   "billing.manage",
+  "/app/anuncios":     "ads.manage",
 };
