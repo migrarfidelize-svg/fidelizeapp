@@ -67,6 +67,13 @@ const MERCHANT_TOUR_STEPS_MOBILE: TourStep[] = [
 
 
 
+/** Rotas liberadas mesmo sem assinatura ativa (pagamento, perfil e suporte de cobrança). */
+const BILLING_EXEMPT = ["/app/planos", "/app/perfil", "/app/checkout", "/app/assinatura"];
+
+function isBillingExempt(pathname: string) {
+  return BILLING_EXEMPT.some((p) => pathname === p || pathname.startsWith(p + "/"));
+}
+
 export const Route = createFileRoute("/_authenticated/app")({
   beforeLoad: async ({ location }) => {
     // Block customer accounts from the merchant panel.
