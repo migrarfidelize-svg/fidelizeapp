@@ -77,7 +77,7 @@ export function RoiCalculator() {
 
             <Button asChild size="lg" className="mt-5 w-full rounded-full font-semibold">
               <Link to="/auth">
-                Começar grátis <ArrowRight className="ml-1 h-4 w-4" />
+                Criar minha conta <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
           </div>
