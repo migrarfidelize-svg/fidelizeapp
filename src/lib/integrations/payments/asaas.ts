@@ -19,8 +19,14 @@ export const asaasProvider: PaymentProvider = {
     const base = runtime.mode === "sandbox" ? "https://api-sandbox.asaas.com" : "https://api.asaas.com";
     try {
       const { response, body, latency_ms } = await timedFetch(`${base}/v3/myAccount`, {
-        headers: { access_token: token },
+        headers: {
+          access_token: token,
+          accept: "application/json",
+          // Asaas exige User-Agent no cabeçalho (erro user_agent_not_informed).
+          "User-Agent": "Fidelize/1.0 (+https://fidelizeapp.lovable.app)",
+        },
       });
+
       return {
         ok: response.ok,
         status: response.status,
