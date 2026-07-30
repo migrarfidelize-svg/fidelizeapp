@@ -261,6 +261,12 @@
 }
 
 
+/* Adia pintura/layout de seções longe do viewport sem tirá-las do HTML (SEO ok). */
+@utility defer-paint {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 720px;
+}
+
 @utility gradient-brand {
   background-image: linear-gradient(135deg, var(--color-primary), color-mix(in oklab, var(--color-primary) 55%, var(--color-accent)));
 }

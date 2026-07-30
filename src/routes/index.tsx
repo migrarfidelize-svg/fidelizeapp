@@ -1239,7 +1239,7 @@ function Pricing() {
   };
 
   return (
-    <section id="precos" className="relative py-16 md:py-20 overflow-hidden">
+    <section id="precos" className="defer-paint relative py-16 md:py-20 overflow-hidden">
       {/* ambient glow */}
       <div className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-[120px]" />
 
@@ -1644,7 +1644,7 @@ function FAQ() {
 
 function CTA() {
   return (
-    <section className="w-full flex items-center justify-center bg-background px-6 py-16 md:py-20">
+    <section className="defer-paint w-full flex items-center justify-center bg-background px-6 py-16 md:py-20">
       <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-0 items-stretch border-t border-primary/10 pt-10">
         {/* Left: message */}
         <div className="lg:col-span-7 pr-0 lg:pr-16 flex flex-col justify-between">
@@ -1775,7 +1775,7 @@ function ChatBubble({ msg, animate }: { msg: ChatMsg; animate: boolean }) {
 
 function FaqChatSection() {
   return (
-    <section id="faq" className="relative border-y border-white/5 bg-gradient-to-b from-background via-card/20 to-background py-16 md:py-20">
+    <section id="faq" className="defer-paint relative border-y border-white/5 bg-gradient-to-b from-background via-card/20 to-background py-16 md:py-20">
       <div className="mx-auto max-w-6xl px-4">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs uppercase tracking-wider text-primary">
