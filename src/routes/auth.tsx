@@ -107,7 +107,7 @@ export const Route = createFileRoute("/auth")({
   beforeLoad: async ({ search }) => {
     const { data } = await supabase.auth.getSession();
     if (data.session) {
-      const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
+      const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next, role: search.as });
       throw redirect({ to: dest.to });
     }
   },
