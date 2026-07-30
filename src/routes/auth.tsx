@@ -156,13 +156,25 @@ function AuthPage() {
   async function completeAuthRedirect(to: string, type: "SIGNED_IN" | "SIGNED_UP") {
     notifyAuthSync(type);
     // Garante que a sessão está hidratada antes do guard do /_authenticated rodar.
-    await supabase.auth.getSession();
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      // Sem sessão (ex.: confirmação de e-mail pendente) qualquer rota privada
+      // devolve o usuário para /auth — evitamos o overlay "Carregando seu painel…" infinito.
+      setRedirecting(false);
+      toast.info("Confirme seu e-mail para continuar e depois faça login.");
+      return;
+    }
     setRedirecting(true);
     // Invalida caches de rota (loaders/beforeLoad) para o próximo destino recomputar auth.
     try { await router.invalidate(); } catch {}
     // SPA navigation — sem reload de página inteira, evita o flash de telas anteriores.
     await router.navigate({ to, replace: true });
+    // Rede de segurança: se o guard nos devolveu para /auth, some com o overlay.
+    window.setTimeout(() => {
+      if (window.location.pathname.startsWith("/auth")) setRedirecting(false);
+    }, 2500);
   }
+
 
 
 
