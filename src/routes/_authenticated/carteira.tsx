@@ -81,15 +81,14 @@ function WalletLayout() {
   // Perfil vira obrigatório APENAS nas ações de valor (prêmios e cartão do estabelecimento).
   const profileRequired =
     pathname.startsWith("/carteira/premios") ||
-    /^\/carteira\/(?!premios|historico|descobrir|perfil|conquistas|mensagens|retrospectiva|e\/)[^/]+/.test(pathname);
+    /^\/carteira\/(?!premios|historico|descobrir|perfil|conquistas|mensagens|notificacoes|retrospectiva|e\/)[^/]+/.test(pathname);
 
-  // O modal informativo só aparece na home da carteira e na aba de perfil.
-  // Nas rotas informativas (histórico, descobrir, mensagens, conquistas,
-  // retrospectiva) ele NÃO é montado — evita virar "parede" a cada navegação.
-  const showProfileDialog =
-    profileRequired ||
-    pathname === "/carteira" ||
-    pathname.startsWith("/carteira/perfil");
+  // O modal informativo só aparece na home da carteira. Nas rotas
+  // informativas (histórico, descobrir, mensagens, notificações, conquistas,
+  // retrospectiva) e no próprio /perfil — onde os campos já estão na tela —
+  // ele NÃO é montado, evitando virar "parede" a cada navegação.
+  const showProfileDialog = profileRequired || pathname === "/carteira";
+
 
 
   // Piggyback no cache já hidratado pela home para descobrir os customer_ids.
