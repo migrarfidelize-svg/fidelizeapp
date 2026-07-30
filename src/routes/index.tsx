@@ -1435,7 +1435,7 @@ function Pricing() {
 
         {/* trust line */}
         <p className="mt-8 text-center text-xs uppercase tracking-[0.3em] text-muted-foreground">
-          A partir de R$ 29,90/mês · cancele quando quiser
+          A partir de {useFromPrice()}/mês · cancele quando quiser
         </p>
 
       </div>
@@ -1443,12 +1443,23 @@ function Pricing() {
   );
 }
 
-const COMPARE_PLANS = [
-  { name: "Essencial", price: "R$ 29,90", badge: null as string | null },
-  { name: "Profissional", price: "R$ 59,90", badge: "Mais vendido" },
-  { name: "Premium", price: "R$ 119,90", badge: null as string | null },
-  { name: "Empresarial", price: "R$ 349,00", badge: null as string | null },
+const COMPARE_PLANS_BASE = [
+  { name: "Essencial", slug: "essencial", price: "R$ 29,90", badge: null as string | null },
+  { name: "Profissional", slug: "profissional", price: "R$ 59,90", badge: "Mais vendido" },
+  { name: "Premium", slug: "ilimitado", price: "R$ 119,90", badge: null as string | null },
+  { name: "Empresarial", slug: "empresarial", price: "R$ 349,00", badge: null as string | null },
 ];
+
+/** Aplica os preços cadastrados no painel admin sobre a tabela comparativa. */
+function useComparePlans() {
+  const dbPlans = useLandingData()?.plans ?? [];
+  return COMPARE_PLANS_BASE.map((p) => {
+    const db = dbPlans.find((d) => d.slug === p.slug);
+    return db && db.price_monthly != null
+      ? { ...p, name: db.name || p.name, price: brl(Number(db.price_monthly)) }
+      : p;
+  });
+}
 
 const COMPARE_ROWS: { label: string; values: (boolean | string)[] }[] = [
   { label: "Cartão Fidelidade Digital", values: [true, true, true, true] },
@@ -1529,6 +1540,8 @@ function PlansComparison() {
       el.scrollTo({ left: card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2, behavior: "smooth" });
     }
   }
+
+  const COMPARE_PLANS = useComparePlans();
 
   return (
     <div className="mt-14">
