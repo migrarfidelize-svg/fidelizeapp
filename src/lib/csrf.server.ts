@@ -46,7 +46,10 @@ export function checkSameOrigin(): string | null {
     return "Cross-site request blocked";
   }
 
-  const selfHost = hostOf(request.url) ?? headers.get("host");
+  const selfHost =
+    headers.get("x-forwarded-host") ??
+    headers.get("host") ??
+    hostOf(request.url);
   const originHost = hostOf(headers.get("origin")) ?? hostOf(headers.get("referer"));
 
   // Non-browser callers (no Origin/Referer, no Sec-Fetch-Site) are left to
@@ -55,6 +58,9 @@ export function checkSameOrigin(): string | null {
 
   if (originHost === selfHost) return null;
   if (EXTRA_ALLOWED_HOSTS.has(originHost)) return null;
+  // Ambientes de preview/proxy da plataforma (o host interno é localhost).
+  if (/(^|\.)(lovable\.app|lovableproject\.com|lovable\.dev)$/.test(originHost)) return null;
+  if (/^localhost(:\d+)?$/.test(originHost)) return null;
 
   return "Cross-site request blocked";
 }

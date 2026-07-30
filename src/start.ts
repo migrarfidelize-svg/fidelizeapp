@@ -42,7 +42,7 @@ const csrfMiddleware = createMiddleware({ type: "function" }).server(async ({ ne
   const { checkSameOrigin } = await import("./lib/csrf.server");
   const blocked = checkSameOrigin();
   if (blocked) {
-    throw new Response(blocked, { status: 403 });
+    throw new Error(blocked);
   }
   return next();
 });
