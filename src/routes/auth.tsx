@@ -192,8 +192,21 @@ function AuthPage() {
   }, [isMobile]);
   const captchaRequired = !isMobile && !!captcha?.enabled;
 
+  /**
+   * Anti-bot simples: campo honeypot invisível + tempo mínimo de preenchimento.
+   * Automações genéricas preenchem todos os campos e enviam em milissegundos.
+   */
+  const [honeypot, setHoneypot] = useState("");
+  const formOpenedAt = useRef(Date.now());
+  useEffect(() => { formOpenedAt.current = Date.now(); }, [mode, role]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (honeypot.trim() !== "" || Date.now() - formOpenedAt.current < 1500) {
+      toast.error("Não foi possível validar o envio. Tente novamente.");
+      return;
+    }
+
     if (captchaRequired) {
       if (!captchaToken) {
         toast.error("Confirme o desafio de segurança para continuar.");
@@ -502,6 +515,21 @@ function AuthPage() {
             </div>
 
             <form onSubmit={handleSubmit} className={isSignup ? "space-y-2" : "space-y-3.5"}>
+
+              {/* Honeypot invisível: bots preenchem, humanos nunca veem. */}
+              <div aria-hidden className="pointer-events-none absolute -left-[9999px] top-0 h-0 w-0 overflow-hidden">
+                <label htmlFor="company-website">Não preencha este campo</label>
+                <input
+                  id="company-website"
+                  name="company_website"
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                />
+              </div>
+
 
               {/* Toggle Cliente / Estabelecimento — oculto quando o fluxo veio da carteira */}
               {search.source !== "wallet" && (
