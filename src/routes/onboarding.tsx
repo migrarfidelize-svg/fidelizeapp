@@ -114,8 +114,10 @@ function Onboarding() {
     logo_url: "" as string,
     campaign_name: "Cartão Fidelidade",
     stamps_required: 10,
-    reward_title: "",
+    // Padrão pronto: o cartão pode ser ajustado depois, no painel.
+    reward_title: "Brinde exclusivo",
     reward_description: "",
+
     stamp_icon: "coffee",
   });
 
