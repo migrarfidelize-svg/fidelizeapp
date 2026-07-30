@@ -310,11 +310,12 @@ function ReviewsNav({ est }: { est: { id: string; name: string; slug: string } }
               key={g.id}
               type="button"
               onClick={() => pickGroup(g.id)}
-              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+              className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
                 active
                   ? "bg-background text-primary shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               }`}
+
             >
               <Icon className="h-3.5 w-3.5" />
               {g.label}
