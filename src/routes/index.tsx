@@ -1218,15 +1218,14 @@ type Plan = {
 
 function Pricing() {
   const plans: Plan[] = [
-    { name: "Gratuito", short: "Grátis", price: "R$ 0", numeric: 0, desc: "Para começar a testar", tagline: "Ideal pra validar a ideia sem risco.", features: ["Até 100 clientes", "1 campanha ativa", "1 funcionário", "Relatórios básicos"], cta: "Começar grátis", icon: Sprout },
-    { name: "Inicial", short: "Inicial", price: "R$ 49", numeric: 49, desc: "Para o dia a dia", tagline: "Perfeito pra pequenos negócios que já vendem todo dia.", features: ["Até 1.000 clientes", "2 campanhas ativas", "3 funcionários", "Exportação de dados", "Suporte por e-mail"], cta: "Assinar agora", icon: Zap },
-    { name: "Profissional", short: "Pro", price: "R$ 129", numeric: 129, desc: "Para negócios em crescimento", tagline: "O favorito de quem quer escalar retenção com automações.", features: ["Até 10.000 clientes", "5 campanhas ativas", "10 funcionários", "Segmentação e relatórios avançados", "Sem marca Fidelize"], cta: "Assinar agora", badge: "Mais popular", icon: Sparkles },
-    { name: "Empresarial", short: "Corp", price: "R$ 349", numeric: 349, desc: "Para redes e franquias", tagline: "Multi-unidade, SLA e time de suporte dedicado.", features: ["Clientes ilimitados", "Multi-unidade", "Suporte prioritário 24/7", "Limites personalizados", "Gerente de contas"], cta: "Falar com vendas", icon: Building2 },
+    { name: "Essencial", short: "Essencial", price: "R$ 29,90", numeric: 29.9, desc: "Para começar do jeito certo", tagline: "Ideal pra validar e já fidelizar desde o primeiro cliente.", features: ["Até 300 clientes", "Cartão fidelidade digital", "Notificações push", "Tag Display", "1 funcionário"], cta: "Assinar agora", icon: Sprout },
+    { name: "Profissional", short: "Pro", price: "R$ 59,90", numeric: 59.9, desc: "Para negócios em crescimento", tagline: "O favorito de quem quer escalar retenção com automações.", features: ["Até 1.000 clientes", "Cardápio virtual e catálogo digital", "5 funcionários", "Avaliações e relatórios completos"], cta: "Assinar agora", badge: "Mais popular", icon: Sparkles },
+    { name: "Premium", short: "Premium", price: "R$ 119,90", numeric: 119.9, desc: "Operação sem limites", tagline: "Recursos completos, equipe ilimitada e marca própria.", features: ["Clientes ilimitados", "Equipe ilimitada", "Carteira Apple/Google", "Integrações avançadas", "Sem marca Fidelize"], cta: "Assinar agora", icon: Building2 },
   ];
 
-  const [activeIdx, setActiveIdx] = useState(2);
+  const [activeIdx, setActiveIdx] = useState(1);
   
-  const [prevIdx, setPrevIdx] = useState(2);
+  const [prevIdx, setPrevIdx] = useState(1);
   const [shockKey, setShockKey] = useState(0);
   const active = plans[activeIdx];
   const ActiveIcon = active.icon;
@@ -1362,25 +1361,24 @@ function Pricing() {
 }
 
 const COMPARE_PLANS = [
-  { name: "Gratuito", price: "R$ 0", badge: null as string | null },
   { name: "Essencial", price: "R$ 29,90", badge: null as string | null },
   { name: "Profissional", price: "R$ 59,90", badge: "Mais vendido" },
   { name: "Premium", price: "R$ 119,90", badge: null as string | null },
 ];
 
 const COMPARE_ROWS: { label: string; values: (boolean | string)[] }[] = [
-  { label: "Cartão Fidelidade Digital", values: [true, true, true, true] },
-  { label: "Avaliação de Atendimento", values: [true, true, true, true] },
-  { label: "Árvore de Links", values: [true, true, true, true] },
-  { label: "Cardápio Virtual", values: [false, false, true, true] },
-  { label: "Catálogo Digital", values: [false, false, true, true] },
+  { label: "Cartão Fidelidade Digital", values: [true, true, true] },
+  { label: "Avaliação de Atendimento", values: [true, true, true] },
+  { label: "Árvore de Links", values: [true, true, true] },
+  { label: "Cardápio Virtual", values: [false, true, true] },
+  { label: "Catálogo Digital", values: [false, true, true] },
 
-  { label: "Notificações Push", values: [false, true, true, true] },
-  { label: "Tag Display", values: [false, true, true, true] },
-  { label: "QR Codes Inteligentes", values: [true, true, true, true] },
-  { label: "Clientes cadastrados", values: ["Até 10", "Até 300", "Até 1.000", "Ilimitados"] },
-  { label: "Funcionários", values: ["1", "1", "5", "Ilimitados"] },
-  { label: "Remover marca Fidelize", values: [false, false, false, true] },
+  { label: "Notificações Push", values: [true, true, true] },
+  { label: "Tag Display", values: [true, true, true] },
+  { label: "QR Codes Inteligentes", values: [true, true, true] },
+  { label: "Clientes cadastrados", values: ["Até 300", "Até 1.000", "Ilimitados"] },
+  { label: "Funcionários", values: ["1", "5", "Ilimitados"] },
+  { label: "Remover marca Fidelize", values: [false, false, true] },
 ];
 
 
@@ -1399,21 +1397,20 @@ function CompareCell({ value }: { value: boolean | string }) {
 
 /** Destaques curtos por plano — usados nos nós do canvas. */
 const COMPARE_HIGHLIGHTS: string[][] = [
-  ["Até 10 clientes", "Cartão fidelidade digital", "QR Codes inteligentes"],
-  ["Até 300 clientes", "Notificações push", "Tag Display"],
-  ["Até 1.000 clientes", "Cardápio virtual", "5 funcionários"],
+  ["Até 300 clientes", "Cartão fidelidade digital", "Notificações push"],
+  ["Até 1.000 clientes", "Cardápio e catálogo", "5 funcionários"],
   ["Clientes ilimitados", "Sem marca Fidelize", "Equipe ilimitada"],
 ];
 
 function PlansComparison() {
-  const [active, setActive] = useState(2);
+  const [active, setActive] = useState(1);
   const [open, setOpen] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
 
   /** Centraliza o plano em destaque no carrossel ao montar (mobile). */
   useEffect(() => {
     const el = trackRef.current;
-    const card = el?.querySelectorAll<HTMLElement>("[data-plan-node]")[2];
+    const card = el?.querySelectorAll<HTMLElement>("[data-plan-node]")[1];
     if (el && card && el.scrollWidth > el.clientWidth) {
       el.scrollLeft = card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2;
     }
