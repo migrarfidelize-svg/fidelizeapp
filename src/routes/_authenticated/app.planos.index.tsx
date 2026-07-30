@@ -71,6 +71,22 @@ function MerchantPlansPage() {
     }
   }
 
+  // Abre automaticamente o checkout do plano escolhido na landing (uma única vez).
+  const intentHandled = useRef(false);
+  useEffect(() => {
+    if (intentHandled.current) return;
+    if (!plans?.length || !activeEst || !currentTier) return;
+    const slug = getPlanIntent();
+    if (!slug) return;
+    intentHandled.current = true;
+    clearPlanIntent();
+    const p = (plans as any[]).find((x) => x.slug === slug);
+    if (!p || p.tier === currentTier) return;
+    const price = Number(p.price_monthly ?? 0);
+    if (price > 0) setPayFor({ slug: p.slug, name: p.name, price_monthly: price, tier: p.tier });
+  }, [plans, activeEst, currentTier]);
+
+
   async function confirmChange() {
     if (!pending || !activeEst) return;
     setSaving(true);
