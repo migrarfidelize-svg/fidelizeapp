@@ -737,7 +737,7 @@ function AuthPage() {
                   >
                     <option value="" disabled>Selecione a categoria</option>
                     {DISCOVER_CATEGORIES.map((c) => (
-                      <option key={c.id} value={c.id} className="bg-[#12101c] text-foreground">
+                      <option key={c.id} value={c.id} className="bg-card text-foreground">
                         {c.emoji} {c.label}
                       </option>
                     ))}
@@ -828,7 +828,7 @@ function AuthPage() {
 
               {captchaRequired && (
                 <div className="mt-1">
-                  <Turnstile siteKey={captcha!.siteKey} onToken={setCaptchaToken} theme="dark" />
+                  <Turnstile siteKey={captcha!.siteKey} onToken={setCaptchaToken} theme="auto" />
                 </div>
               )}
 
