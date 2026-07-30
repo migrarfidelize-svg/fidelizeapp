@@ -578,7 +578,7 @@ function AppLayout() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen dock-page-bg">
+      <div className="min-h-dvh dock-page-bg">
         {/* Desktop: sidebar padrão (ícone + nome) */}
         <aside
           className={[

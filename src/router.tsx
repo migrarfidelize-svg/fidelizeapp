@@ -4,7 +4,19 @@ import { routeTree } from "./routeTree.gen";
 import { RouteLoading } from "./components/RouteLoading";
 
 export const getRouter = () => {
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        // Evita refetch a cada montagem/foco: o painel remontava tudo ao trocar de aba.
+        staleTime: 30_000,
+        gcTime: 5 * 60_000,
+        refetchOnWindowFocus: false,
+        refetchOnMount: true, // só refaz se estiver "stale" (>30s)
+        retry: 1,
+      },
+    },
+  });
+
 
   const router = createRouter({
     routeTree,

@@ -142,32 +142,48 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+  const lastUserId = useRef<string | null | undefined>(undefined);
   useEffect(() => {
     const bc = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel(AUTH_SYNC_CHANNEL) : null;
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+
+    // Só invalida o cache quando a IDENTIDADE muda de fato.
+    // Antes, qualquer renovação de token / heartbeat de sessão limpava todo o
+    // cache e fazia a interface inteira piscar.
+    const syncIdentity = (userId: string | null) => {
+      if (lastUserId.current === undefined) { lastUserId.current = userId; return false; }
+      if (lastUserId.current === userId) return false;
+      lastUserId.current = userId;
+      router.invalidate();
+      if (userId) queryClient.invalidateQueries();
+      return true;
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
-        router.invalidate();
-        if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
-        try { bc?.postMessage({ type: event, at: Date.now() }); } catch {}
+        const changed = syncIdentity(session?.user?.id ?? null);
+        if (changed) { try { bc?.postMessage({ type: event, at: Date.now() }); } catch { /* noop */ } }
       }
     });
+
+    const revalidateFromOtherTab = async () => {
+      const { data } = await supabase.auth.getSession();
+      syncIdentity(data.session?.user?.id ?? null);
+    };
+
     const onMsg = (ev: MessageEvent) => {
       const t = ev.data?.type;
-      if (t === "SIGNED_IN" || t === "SIGNED_OUT" || t === "USER_UPDATED") {
-        router.invalidate();
-        if (t !== "SIGNED_OUT") queryClient.invalidateQueries();
-      }
+      if (t === "SIGNED_IN" || t === "SIGNED_OUT" || t === "USER_UPDATED") void revalidateFromOtherTab();
     };
     const onStorage = (ev: StorageEvent) => {
       if (ev.key === "fidelize:last-auth-sync" || ev.key === "fidelize:last-manual-session-sync") {
-        router.invalidate();
-        queryClient.invalidateQueries();
+        void revalidateFromOtherTab();
       }
     };
     bc?.addEventListener("message", onMsg);
     window.addEventListener("storage", onStorage);
     return () => { subscription.unsubscribe(); bc?.removeEventListener("message", onMsg); bc?.close(); window.removeEventListener("storage", onStorage); };
   }, [router, queryClient]);
+
   useEffect(() => {
     const apply = () => {
       const forced = forcedThemeForPath(window.location.pathname);

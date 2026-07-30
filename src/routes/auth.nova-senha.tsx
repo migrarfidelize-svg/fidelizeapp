@@ -41,7 +41,7 @@ function NewPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen grid place-items-center bg-background p-4">
+    <div className="min-h-dvh grid place-items-center bg-background p-4">
       <div className="w-full max-w-md space-y-6">
         <div className="flex flex-col items-center gap-2"><Logo /><h1 className="text-xl font-semibold">Definir nova senha</h1></div>
         <form onSubmit={onSubmit} className="rounded-2xl border bg-card p-6 space-y-4">

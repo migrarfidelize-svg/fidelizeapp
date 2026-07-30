@@ -3161,3 +3161,68 @@ header[data-slot="site-header"],
     transition-property: color, background-color, border-color, opacity, transform !important;
   }
 }
+
+/* =========================================================
+   Mobile: alvos de toque e área segura (etapa de otimização)
+   ========================================================= */
+@media (max-width: 768px) and (pointer: coarse) {
+  /* Alvo mínimo de toque sem sobrepor elementos vizinhos. */
+  button,
+  a[role="button"],
+  [role="tab"],
+  [role="switch"],
+  summary {
+    touch-action: manipulation;
+    min-height: 44px;
+  }
+
+  /* Botões apenas com ícone também precisam de largura mínima. */
+  button.size-icon,
+  button[data-icon-only="true"],
+  button:has(> svg:only-child) {
+    min-width: 44px;
+  }
+
+  /* Exceções: elementos que devem manter o tamanho original. */
+  button[data-no-min-target="true"],
+  [role="tab"][data-no-min-target="true"] {
+    min-height: 0;
+    min-width: 0;
+  }
+
+  /* Campos de formulário: 16px evita o zoom automático do iOS. */
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1rem);
+  }
+
+  /* Nunca deixar texto abaixo do limite de legibilidade. */
+  .text-\[9px\],
+  .text-\[10px\],
+  .text-\[11px\] {
+    font-size: 12px !important;
+  }
+}
+
+/* Área segura para barras fixas, drawers e modais em tela cheia */
+.pb-safe { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
+.pt-safe { padding-top: max(0.75rem, env(safe-area-inset-top)); }
+.px-safe {
+  padding-left: max(0.75rem, env(safe-area-inset-left));
+  padding-right: max(0.75rem, env(safe-area-inset-right));
+}
+
+[data-vaul-drawer],
+[data-radix-dialog-content][data-fullscreen="true"] {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Evita que qualquer página empurre a viewport para o lado no mobile */
+@media (max-width: 768px) {
+  html,
+  body {
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
+  }
+}

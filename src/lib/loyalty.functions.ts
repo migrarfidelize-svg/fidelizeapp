@@ -826,67 +826,41 @@ export const getDashboardData = createServerFn({ method: "POST" })
     const est = data.establishment_id;
     const now = new Date();
     const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-    const prevMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
-    const prevMonthEnd = new Date(monthStart.getTime() - 1);
     const goalMonthKey = `${monthStart.getUTCFullYear()}-${String(monthStart.getUTCMonth() + 1).padStart(2, "0")}-01`;
 
-    const [
-      { count: customersCount },
-      { count: stampsCount },
-      { count: rewardsCount },
-      { count: redeemedCount },
-      { data: recentStamps },
-      { data: topCustomers },
-      { count: customersThisMonth },
-      { count: customersPrevMonth },
-      { count: stampsThisMonth },
-      { count: stampsPrevMonth },
-      { count: rewardsThisMonth },
-      { count: rewardsPrevMonth },
-      goalRes,
-    ] = await Promise.all([
-      supabase.from("customers").select("*", { count: "exact", head: true }).eq("establishment_id", est),
-      supabase.from("stamps").select("*", { count: "exact", head: true }).eq("establishment_id", est).is("reverted_at", null),
-      supabase.from("rewards").select("*", { count: "exact", head: true }).eq("establishment_id", est),
-      supabase.from("rewards").select("*", { count: "exact", head: true }).eq("establishment_id", est).not("redeemed_at", "is", null),
-      supabase.from("stamps").select("id, created_at").eq("establishment_id", est).is("reverted_at", null).gte("created_at", new Date(Date.now() - 30 * 86400_000).toISOString()),
-      supabase.from("customers").select("id, name, visits_count, last_visit_at").eq("establishment_id", est).order("visits_count", { ascending: false }).limit(5),
-      supabase.from("customers").select("*", { count: "exact", head: true }).eq("establishment_id", est).gte("created_at", monthStart.toISOString()),
-      supabase.from("customers").select("*", { count: "exact", head: true }).eq("establishment_id", est).gte("created_at", prevMonthStart.toISOString()).lte("created_at", prevMonthEnd.toISOString()),
-      supabase.from("stamps").select("*", { count: "exact", head: true }).eq("establishment_id", est).is("reverted_at", null).gte("created_at", monthStart.toISOString()),
-      supabase.from("stamps").select("*", { count: "exact", head: true }).eq("establishment_id", est).is("reverted_at", null).gte("created_at", prevMonthStart.toISOString()).lte("created_at", prevMonthEnd.toISOString()),
-      supabase.from("rewards").select("*", { count: "exact", head: true }).eq("establishment_id", est).not("redeemed_at", "is", null).gte("redeemed_at", monthStart.toISOString()),
-      supabase.from("rewards").select("*", { count: "exact", head: true }).eq("establishment_id", est).not("redeemed_at", "is", null).gte("redeemed_at", prevMonthStart.toISOString()).lte("redeemed_at", prevMonthEnd.toISOString()),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase as any).from("establishment_goals").select("*").eq("establishment_id", est).eq("month", goalMonthKey).maybeSingle(),
-    ]);
-    // Build 30-day series
+    // Uma única ida ao banco (antes eram 13 consultas em paralelo).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: raw, error } = await (supabase as any).rpc("dashboard_summary", { _est: est });
+    if (error) throw new Error(error.message);
+
+    const s = (raw ?? {}) as {
+      customersCount?: number; stampsCount?: number; rewardsCount?: number; redeemedCount?: number;
+      mom?: { customers?: { current?: number; previous?: number }; stamps?: { current?: number; previous?: number }; rewards?: { current?: number; previous?: number } };
+      topCustomers?: { id: string; name: string; visits_count: number; last_visit_at: string | null }[];
+      daily?: Record<string, number>;
+      goals?: { stamps_goal: number; customers_goal: number; rewards_goal: number; revenue_goal: number } | null;
+    };
+
+    const daily = s.daily ?? {};
     const days: { day: string; carimbos: number }[] = [];
-    const map = new Map<string, number>();
-    (recentStamps ?? []).forEach((s) => {
-      const d = new Date(s.created_at).toISOString().slice(0, 10);
-      map.set(d, (map.get(d) ?? 0) + 1);
-    });
     for (let i = 29; i >= 0; i--) {
       const d = new Date(Date.now() - i * 86400_000).toISOString().slice(0, 10);
-      days.push({ day: d.slice(5), carimbos: map.get(d) ?? 0 });
+      days.push({ day: d.slice(5), carimbos: daily[d] ?? 0 });
     }
-    const goals = (goalRes?.data as {
-      stamps_goal: number; customers_goal: number; rewards_goal: number; revenue_goal: number;
-    } | null) ?? { stamps_goal: 0, customers_goal: 0, rewards_goal: 0, revenue_goal: 0 };
+
     return {
-      customersCount: customersCount ?? 0,
-      stampsCount: stampsCount ?? 0,
-      rewardsCount: rewardsCount ?? 0,
-      redeemedCount: redeemedCount ?? 0,
+      customersCount: s.customersCount ?? 0,
+      stampsCount: s.stampsCount ?? 0,
+      rewardsCount: s.rewardsCount ?? 0,
+      redeemedCount: s.redeemedCount ?? 0,
       series: days,
-      topCustomers: topCustomers ?? [],
+      topCustomers: s.topCustomers ?? [],
       mom: {
-        customers: { current: customersThisMonth ?? 0, previous: customersPrevMonth ?? 0 },
-        stamps: { current: stampsThisMonth ?? 0, previous: stampsPrevMonth ?? 0 },
-        rewards: { current: rewardsThisMonth ?? 0, previous: rewardsPrevMonth ?? 0 },
+        customers: { current: s.mom?.customers?.current ?? 0, previous: s.mom?.customers?.previous ?? 0 },
+        stamps: { current: s.mom?.stamps?.current ?? 0, previous: s.mom?.stamps?.previous ?? 0 },
+        rewards: { current: s.mom?.rewards?.current ?? 0, previous: s.mom?.rewards?.previous ?? 0 },
       },
-      goals,
+      goals: s.goals ?? { stamps_goal: 0, customers_goal: 0, rewards_goal: 0, revenue_goal: 0 },
       goalMonth: goalMonthKey,
     };
   });

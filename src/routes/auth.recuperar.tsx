@@ -38,7 +38,7 @@ function RecoverPage() {
   }
 
   return (
-    <div className="min-h-screen grid place-items-center bg-background p-4">
+    <div className="min-h-dvh grid place-items-center bg-background p-4">
       <div className="w-full max-w-md space-y-6">
         <div className="flex flex-col items-center gap-2"><Logo /><h1 className="text-xl font-semibold">Recuperar senha</h1></div>
         {sent ? (
