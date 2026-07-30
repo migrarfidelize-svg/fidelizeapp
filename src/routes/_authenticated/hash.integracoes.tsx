@@ -21,6 +21,7 @@ import {
 import { motion } from "framer-motion";
 import { ProviderBrand, providerAccent } from "@/components/integrations/ProviderBrand";
 import { SectionBanner } from "@/components/integrations/SectionBanner";
+import { CaptchaPanel } from "@/components/integrations/CaptchaPanel";
 import { toast } from "sonner";
 import {
   listIntegrationCatalog,
