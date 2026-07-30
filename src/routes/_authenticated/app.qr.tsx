@@ -1901,7 +1901,7 @@ function ReviewQrPage() {
       </div>
 
       {/* Atalho flutuante (mobile): alterna entre editor e prévia sem rolagem manual */}
-      <div className="pointer-events-none fixed inset-x-0 bottom-4 z-40 flex justify-center px-4 lg:hidden">
+      <div className="pointer-events-none fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-40 flex justify-center px-4 md:bottom-4 lg:hidden">
         <button
           type="button"
           onClick={() => {
