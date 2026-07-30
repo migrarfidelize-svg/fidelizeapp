@@ -117,6 +117,10 @@ export const askFaqAI = createServerFn({ method: "POST" })
           };
           const answer = json.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
           if (answer) return { answer };
+        } else {
+          console.error(
+            `[Fidê] Gemini respondeu ${res.status}: ${(await res.text()).slice(0, 300)}`,
+          );
         }
         // fall through to Lovable fallback if available
       }
