@@ -99,9 +99,29 @@ function Landing() {
         <CTA />
       </main>
       <SiteFooter />
+      <MobileStickyCta />
+
     </div>
   );
 }
+
+function MobileStickyCta() {
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-violet-400/30 bg-background/90 px-4 pb-[env(safe-area-inset-bottom)] pt-3 backdrop-blur-xl md:hidden">
+      <div className="flex items-center gap-3 pb-3">
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-semibold leading-tight">A partir de R$ 29,90/mês</div>
+          <div className="text-[11px] text-muted-foreground">14 dias grátis · sem cartão</div>
+        </div>
+        <Button asChild className="h-12 shrink-0 rounded-full px-6 font-bold">
+          <Link to="/auth" search={{ mode: "signup" }}>Testar grátis</Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+
 
 const NAV_LINKS: Array<[string, string]> = [
   ["#ecossistema", "Recursos"],
@@ -168,9 +188,10 @@ function SiteHeader() {
                         history.replaceState(null, "", href);
                       }, 360);
                     }}
-                    className="rounded-xl border border-transparent px-4 py-3 text-base font-semibold text-foreground/90 transition-colors hover:border-violet-400/40 hover:bg-primary/10 hover:text-foreground"
+                    className="flex min-h-[48px] items-center rounded-xl border border-transparent px-4 py-3 text-base font-semibold text-foreground/90 transition-colors hover:border-violet-400/40 hover:bg-primary/10 hover:text-foreground active:bg-primary/15"
                   >
                     {label}
+
                   </a>
                 ))}
               </nav>
@@ -309,7 +330,7 @@ function Hero() {
                 <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> Configure em 5 minutos
               </span>
               <span className="flex items-center gap-1.5">
-                <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> Plano grátis para sempre
+                <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> 14 dias grátis · a partir de R$ 29,90/mês
               </span>
             </div>
           </div>
