@@ -3226,3 +3226,10 @@ header[data-slot="site-header"],
     overscroll-behavior-y: none;
   }
 }
+
+/* Barra de progresso das transições entre abas dos painéis (/app e /hash). */
+@keyframes panel-progress {
+  0%   { transform: translateX(-100%); }
+  50%  { transform: translateX(140%); }
+  100% { transform: translateX(340%); }
+}
