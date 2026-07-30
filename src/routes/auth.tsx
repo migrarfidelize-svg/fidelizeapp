@@ -13,6 +13,7 @@ export const ONBOARDING_PREFILL_KEY = "fidelize:onboarding-prefill";
 import { claimCustomerByToken, attachEstablishmentBySlug } from "@/lib/my-wallet.functions";
 import { DISCOVER_CATEGORIES } from "@/lib/discover-categories";
 import { getCaptchaConfig, verifyCaptcha } from "@/lib/captcha.functions";
+import { guardAuthAttempt, reportAuthAttempt } from "@/lib/auth-guard.functions";
 import { Turnstile, resetTurnstile } from "@/components/Turnstile";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -200,10 +201,28 @@ function AuthPage() {
   const formOpenedAt = useRef(Date.now());
   useEffect(() => { formOpenedAt.current = Date.now(); }, [mode, role]);
 
+  /** Identificador usado no rate limit (e-mail ou WhatsApp). */
+  function currentIdentifier() {
+    return walletFlow ? whatsapp.replace(/\D/g, "") : email.trim().toLowerCase();
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (honeypot.trim() !== "" || Date.now() - formOpenedAt.current < 1500) {
-      toast.error("Não foi possível validar o envio. Tente novamente.");
+
+    const action = isSignup ? ("signup" as const) : ("login" as const);
+    const identifier = currentIdentifier();
+
+    // Honeypot + tempo mínimo + rate limit por IP/identificador (validados no servidor).
+    const guard = await guardAuthAttempt({
+      data: {
+        identifier,
+        action,
+        honeypot,
+        elapsedMs: Date.now() - formOpenedAt.current,
+      },
+    }).catch(() => null);
+    if (guard && !guard.ok) {
+      toast.error(guard.message);
       return;
     }
 
@@ -224,7 +243,10 @@ function AuthPage() {
       resetTurnstile();
     }
     setLoading(true);
+    const markAttempt = (success: boolean) =>
+      void reportAuthAttempt({ data: { identifier, action, success } }).catch(() => null);
     try {
+
       if (isSignup) {
         const digits = whatsapp.replace(/\D/g, "");
         if (digits.length < 10) {
@@ -270,7 +292,9 @@ function AuthPage() {
             { onConflict: "id" },
           );
         }
+        markAttempt(true);
         if (isEstablishmentSignup) {
+
           try {
             localStorage.setItem(
               ONBOARDING_PREFILL_KEY,
@@ -340,6 +364,7 @@ function AuthPage() {
           }
         }
 
+        markAttempt(true);
         if (walletFlow) setWalletHint(whatsapp);
         const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
         if (dest.toastKind === "error") toast.error(dest.toast ?? "Não foi possível vincular seu cartão.");
@@ -348,11 +373,13 @@ function AuthPage() {
 
       }
     } catch (err) {
+      markAttempt(false);
       toast.error(err instanceof Error ? err.message : "Erro ao autenticar");
     } finally {
       setLoading(false);
     }
   }
+
 
   return (
     <div className="auth-cinema relative min-h-screen w-full overflow-hidden bg-[oklch(0.14_0.02_230)] px-6 py-4">

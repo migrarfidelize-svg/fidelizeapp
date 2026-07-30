@@ -363,6 +363,33 @@ export type Database = {
           },
         ]
       }
+      auth_attempts: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          identifier: string | null
+          ip: string | null
+          success: boolean
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          identifier?: string | null
+          ip?: string | null
+          success?: boolean
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          identifier?: string | null
+          ip?: string | null
+          success?: boolean
+        }
+        Relationships: []
+      }
       campaigns: {
         Row: {
           accent_color: string | null
