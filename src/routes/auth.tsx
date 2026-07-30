@@ -678,6 +678,12 @@ function AuthPage() {
                 </>
               )}
 
+              {captchaRequired && (
+                <div className="mt-1">
+                  <Turnstile siteKey={captcha!.siteKey} onToken={setCaptchaToken} theme="dark" />
+                </div>
+              )}
+
 
               <button type="submit" disabled={loading} className="auth-cta group mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-[#a78bfa] py-2.5 font-display text-sm font-bold uppercase tracking-widest text-black shadow-[0_0_30px_-4px_rgba(167,139,250,0.55)] transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60">
                 {loading ? (
