@@ -1,3 +1,4 @@
+import { assertActiveSubscription } from "@/lib/subscription-guard";
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
@@ -155,6 +156,7 @@ export const saveAdCampaign = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => upsertSchema.parse(d))
   .handler(async ({ data, context }) => {
+    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
     const { supabase, userId } = context;
     await assertAdsPermission(supabase, userId, data.establishment_id);
 
@@ -242,6 +244,7 @@ export const submitAdCampaign = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
+    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
     const { supabase, userId } = context;
     await assertAdsPermission(supabase, userId, data.establishment_id);
 
@@ -419,6 +422,7 @@ export const createAdPixOrder = createServerFn({ method: "POST" })
     z.object({ establishment_id: z.string().uuid(), campaign_id: z.string().uuid() }).parse(d),
   )
   .handler(async ({ data, context }) => {
+    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
     const { supabase, userId, claims } = context;
     await assertAdsPermission(supabase, userId, data.establishment_id);
 

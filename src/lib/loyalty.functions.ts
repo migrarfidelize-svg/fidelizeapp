@@ -1,3 +1,4 @@
+import { assertActiveSubscription } from "@/lib/subscription-guard";
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
@@ -145,6 +146,7 @@ export const addStamp = createServerFn({ method: "POST" })
     pin: z.string().regex(/^\d{4,6}$/).optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
+    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
     const { supabase, userId } = context;
     const { data: card, error } = await supabase.from("loyalty_cards").select("*, campaigns(*)").eq("id", data.card_id).maybeSingle();
     if (error) throw new Error(error.message);
@@ -468,6 +470,7 @@ export const createCustomerRow = createServerFn({ method: "POST" })
     ...customerInputSchema.shape,
   }).parse(d))
   .handler(async ({ data, context }) => {
+    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
     const { supabase } = context;
     // Plan limit check
     await enforceLimit(supabase, data.establishment_id, "customers", 1);
@@ -604,6 +607,7 @@ export const importCustomersCsv = createServerFn({ method: "POST" })
     campaign_id: z.string().uuid().optional().nullable(),
   }).parse(d))
   .handler(async ({ data, context }) => {
+    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
     const { supabase, userId } = context;
     const { assertFeature } = await import("./plans.functions");
     await assertFeature(supabase, data.establishment_id, "customer_import");
@@ -918,6 +922,7 @@ export const createCampaign = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ establishment_id: z.string().uuid() }).and(campaignInput).parse(d))
   .handler(async ({ data, context }) => {
+    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
     const { supabase, userId } = context;
     const { establishment_id, ...rest } = data;
     await enforceLimit(supabase, establishment_id, "campaigns", 1);
@@ -943,6 +948,7 @@ export const updateCampaign = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).and(campaignInput).parse(d))
   .handler(async ({ data, context }) => {
+    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
     const { supabase, userId } = context;
     const { id, ...rest } = data;
     const { data: cur } = await supabase.from("campaigns").select("establishment_id").eq("id", id).maybeSingle();
@@ -968,6 +974,7 @@ export const toggleCampaign = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid(), active: z.boolean() }).parse(d))
   .handler(async ({ data, context }) => {
+    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
     const { supabase, userId } = context;
     const { data: cur } = await supabase.from("campaigns").select("establishment_id").eq("id", data.id).maybeSingle();
     if (!cur) throw new Error("Campanha não encontrada");
