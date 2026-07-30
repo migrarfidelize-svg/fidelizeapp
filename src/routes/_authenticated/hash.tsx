@@ -50,6 +50,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/hash/financeiro", label: "Financeiro", icon: DollarSign },
       { to: "/hash/assinaturas", label: "Assinaturas", icon: CreditCard },
       { to: "/hash/planos", label: "Planos", icon: Package },
+      { to: "/hash/anuncios", label: "Anúncios patrocinados", icon: Megaphone },
       
     ],
   },

@@ -69,6 +69,7 @@ import { Route as AuthenticatedHashCardapioJsonldRouteImport } from './routes/_a
 import { Route as AuthenticatedHashAvaliacoesRouteImport } from './routes/_authenticated/hash.avaliacoes'
 import { Route as AuthenticatedHashAuditoriaRouteImport } from './routes/_authenticated/hash.auditoria'
 import { Route as AuthenticatedHashAssinaturasRouteImport } from './routes/_authenticated/hash.assinaturas'
+import { Route as AuthenticatedHashAnunciosRouteImport } from './routes/_authenticated/hash.anuncios'
 import { Route as AuthenticatedHashAlertasRouteImport } from './routes/_authenticated/hash.alertas'
 import { Route as AuthenticatedHashAjudaRouteImport } from './routes/_authenticated/hash.ajuda'
 import { Route as AuthenticatedCarteiraRetrospectivaRouteImport } from './routes/_authenticated/carteira.retrospectiva'
@@ -452,6 +453,12 @@ const AuthenticatedHashAssinaturasRoute =
   AuthenticatedHashAssinaturasRouteImport.update({
     id: '/assinaturas',
     path: '/assinaturas',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashAnunciosRoute =
+  AuthenticatedHashAnunciosRouteImport.update({
+    id: '/anuncios',
+    path: '/anuncios',
     getParentRoute: () => AuthenticatedHashRoute,
   } as any)
 const AuthenticatedHashAlertasRoute =
@@ -926,6 +933,7 @@ export interface FileRoutesByFullPath {
   '/carteira/retrospectiva': typeof AuthenticatedCarteiraRetrospectivaRoute
   '/hash/ajuda': typeof AuthenticatedHashAjudaRoute
   '/hash/alertas': typeof AuthenticatedHashAlertasRoute
+  '/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
   '/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
   '/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
   '/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
@@ -1052,6 +1060,7 @@ export interface FileRoutesByTo {
   '/carteira/retrospectiva': typeof AuthenticatedCarteiraRetrospectivaRoute
   '/hash/ajuda': typeof AuthenticatedHashAjudaRoute
   '/hash/alertas': typeof AuthenticatedHashAlertasRoute
+  '/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
   '/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
   '/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
   '/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
@@ -1185,6 +1194,7 @@ export interface FileRoutesById {
   '/_authenticated/carteira/retrospectiva': typeof AuthenticatedCarteiraRetrospectivaRoute
   '/_authenticated/hash/ajuda': typeof AuthenticatedHashAjudaRoute
   '/_authenticated/hash/alertas': typeof AuthenticatedHashAlertasRoute
+  '/_authenticated/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
   '/_authenticated/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
   '/_authenticated/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
   '/_authenticated/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
@@ -1318,6 +1328,7 @@ export interface FileRouteTypes {
     | '/carteira/retrospectiva'
     | '/hash/ajuda'
     | '/hash/alertas'
+    | '/hash/anuncios'
     | '/hash/assinaturas'
     | '/hash/auditoria'
     | '/hash/avaliacoes'
@@ -1444,6 +1455,7 @@ export interface FileRouteTypes {
     | '/carteira/retrospectiva'
     | '/hash/ajuda'
     | '/hash/alertas'
+    | '/hash/anuncios'
     | '/hash/assinaturas'
     | '/hash/auditoria'
     | '/hash/avaliacoes'
@@ -1576,6 +1588,7 @@ export interface FileRouteTypes {
     | '/_authenticated/carteira/retrospectiva'
     | '/_authenticated/hash/ajuda'
     | '/_authenticated/hash/alertas'
+    | '/_authenticated/hash/anuncios'
     | '/_authenticated/hash/assinaturas'
     | '/_authenticated/hash/auditoria'
     | '/_authenticated/hash/avaliacoes'
@@ -2119,6 +2132,13 @@ declare module '@tanstack/react-router' {
       path: '/assinaturas'
       fullPath: '/hash/assinaturas'
       preLoaderRoute: typeof AuthenticatedHashAssinaturasRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/anuncios': {
+      id: '/_authenticated/hash/anuncios'
+      path: '/anuncios'
+      fullPath: '/hash/anuncios'
+      preLoaderRoute: typeof AuthenticatedHashAnunciosRouteImport
       parentRoute: typeof AuthenticatedHashRoute
     }
     '/_authenticated/hash/alertas': {
@@ -2772,6 +2792,7 @@ const AuthenticatedCarteiraRouteWithChildren =
 interface AuthenticatedHashRouteChildren {
   AuthenticatedHashAjudaRoute: typeof AuthenticatedHashAjudaRoute
   AuthenticatedHashAlertasRoute: typeof AuthenticatedHashAlertasRoute
+  AuthenticatedHashAnunciosRoute: typeof AuthenticatedHashAnunciosRoute
   AuthenticatedHashAssinaturasRoute: typeof AuthenticatedHashAssinaturasRoute
   AuthenticatedHashAuditoriaRoute: typeof AuthenticatedHashAuditoriaRoute
   AuthenticatedHashAvaliacoesRoute: typeof AuthenticatedHashAvaliacoesRoute
@@ -2800,6 +2821,7 @@ interface AuthenticatedHashRouteChildren {
 const AuthenticatedHashRouteChildren: AuthenticatedHashRouteChildren = {
   AuthenticatedHashAjudaRoute: AuthenticatedHashAjudaRoute,
   AuthenticatedHashAlertasRoute: AuthenticatedHashAlertasRoute,
+  AuthenticatedHashAnunciosRoute: AuthenticatedHashAnunciosRoute,
   AuthenticatedHashAssinaturasRoute: AuthenticatedHashAssinaturasRoute,
   AuthenticatedHashAuditoriaRoute: AuthenticatedHashAuditoriaRoute,
   AuthenticatedHashAvaliacoesRoute: AuthenticatedHashAvaliacoesRoute,

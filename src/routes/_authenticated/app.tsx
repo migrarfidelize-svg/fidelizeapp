@@ -169,6 +169,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/app/notificacoes", label: "Notificações", icon: Bell },
       { to: "/app/promocoes", label: "Promoções", icon: Megaphone },
       { to: "/app/mensagens", label: "Mensagens", icon: MessageSquare },
+      { to: "/app/anuncios", label: "Anúncios em destaque", icon: Megaphone },
     ],
   },
 
