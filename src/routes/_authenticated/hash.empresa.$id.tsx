@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/hash/empresa/$id")({
   component: EmpresaDetail,
 });
 
-const PLAN_LABEL: Record<string, string> = { free: "Gratuito", starter: "Starter", pro: "Pro", enterprise: "Enterprise" };
+const PLAN_LABEL: Record<string, string> = { free: "Gratuito", starter: "Essencial", pro: "Profissional", enterprise: "Premium", business: "Empresarial" };
 const EVENT_LABEL: Record<string, string> = { upgrade: "Upgrade", downgrade: "Downgrade", cancel: "Cancelamento", reactivate: "Reativação", payment_failed: "Falha de pagamento", plan_change: "Mudança de plano" };
 const EVENT_STYLE: Record<string, string> = { upgrade: "bg-success/10 text-success", downgrade: "bg-warning/10 text-warning", cancel: "bg-destructive/10 text-destructive", reactivate: "bg-success/10 text-success", payment_failed: "bg-destructive/10 text-destructive", plan_change: "bg-primary-soft text-primary" };
 
@@ -133,7 +133,7 @@ function EmpresaDetail() {
                 <Select value={e.plan} onValueChange={(v) => changePlan.mutate(v as any)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {(["free","starter","pro","enterprise"] as const).map(p => <SelectItem key={p} value={p}>{PLAN_LABEL[p]}</SelectItem>)}
+                    {(["free","starter","pro","enterprise","business"] as const).map(p => <SelectItem key={p} value={p}>{PLAN_LABEL[p]}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>

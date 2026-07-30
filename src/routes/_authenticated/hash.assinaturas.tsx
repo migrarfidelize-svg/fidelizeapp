@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/hash/assinaturas")({
   component: AdminAssinaturas,
 });
 
-const PLAN_LABEL: Record<string, string> = { free: "Gratuito", starter: "Starter", pro: "Pro", enterprise: "Enterprise" };
+const PLAN_LABEL: Record<string, string> = { free: "Gratuito", starter: "Essencial", pro: "Profissional", enterprise: "Premium", business: "Empresarial" };
 
 function AdminAssinaturas() {
   const getOverview = useServerFn(adminGetOverview);

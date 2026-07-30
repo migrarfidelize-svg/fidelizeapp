@@ -34,7 +34,7 @@ function fmtBRL(v: number | null | undefined) {
 }
 function fmtLimit(v: number | null | undefined) { return v == null ? "Ilimitado" : v.toString(); }
 
-const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, enterprise: 3 };
+const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, enterprise: 3, business: 4 };
 const TIER_ICON: Record<string, any> = { free: Shield, starter: Zap, pro: Sparkles, enterprise: Crown };
 
 function MerchantPlansPage() {

@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_authenticated/hash/empresas")({
   component: AdminEmpresas,
 });
 
-const PLAN_LABEL: Record<string, string> = { free: "Gratuito", starter: "Starter", pro: "Pro", enterprise: "Enterprise" };
+const PLAN_LABEL: Record<string, string> = { free: "Gratuito", starter: "Essencial", pro: "Profissional", enterprise: "Premium", business: "Empresarial" };
 const PLAN_OPTIONS = ["free", "starter", "pro", "enterprise"] as const;
 
 function AdminEmpresas() {
