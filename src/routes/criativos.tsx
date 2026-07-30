@@ -280,35 +280,37 @@ function CreativeOne() {
           links — tudo em um só QR Code do seu negócio.
         </p>
 
-        <div className="relative mt-auto flex items-end justify-center">
-          <div className="relative">
-            <StampCard />
-            <FeatureChip
-              icon={UtensilsCrossed}
-              label="Cardápio digital"
-              sub="Fotos, preços e stories"
-              className="absolute -top-[150px] -left-[250px]"
-            />
-            <FeatureChip
-              icon={BellRing}
-              label="Notificação push"
-              sub="Traz o cliente de volta"
-              className="absolute -top-[120px] -right-[240px]"
-            />
-            <FeatureChip
-              icon={Star}
-              label="Avaliações"
-              sub="Reputação no automático"
-              className="absolute bottom-[70px] -left-[240px]"
-            />
-            <FeatureChip
-              icon={Link2}
-              label="Árvore de links"
-              sub="Sua bio profissional"
-              className="absolute bottom-[40px] -right-[235px]"
-            />
-          </div>
+        <div className="mt-auto flex justify-center">
+          <StampCard />
         </div>
+
+        <div className="mt-12 grid grid-cols-2 gap-5">
+          <FeatureChip
+            icon={UtensilsCrossed}
+            label="Cardápio digital"
+            sub="Fotos, preços e stories"
+            className="w-full"
+          />
+          <FeatureChip
+            icon={BellRing}
+            label="Notificação push"
+            sub="Traz o cliente de volta"
+            className="w-full"
+          />
+          <FeatureChip
+            icon={Star}
+            label="Avaliações"
+            sub="Reputação no automático"
+            className="w-full"
+          />
+          <FeatureChip
+            icon={Link2}
+            label="Árvore de links"
+            sub="Sua bio profissional"
+            className="w-full"
+          />
+        </div>
+
 
         <div className="mt-12 flex items-center justify-between border-t border-white/10 pt-7 text-[21px] text-white/55">
           <span>fidelizeapp.lovable.app</span>
