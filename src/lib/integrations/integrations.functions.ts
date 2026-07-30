@@ -104,7 +104,7 @@ export const listIntegrationHistory = createServerFn({ method: "POST" })
   });
 
 const UpsertInput = z.object({
-  category: z.enum(["ai", "payments"]),
+  category: z.enum(["ai", "payments", "marketing"]),
   provider: z.string().min(1),
   enabled: z.boolean().optional(),
   mode: z.enum(["sandbox", "production"]).nullable().optional(),
@@ -169,7 +169,7 @@ export const upsertIntegration = createServerFn({ method: "POST" })
   });
 
 const CredentialsInput = z.object({
-  category: z.enum(["ai", "payments"]),
+  category: z.enum(["ai", "payments", "marketing"]),
   provider: z.string(),
   // { field_name: value } — se value === "" mantém, se null remove.
   credentials: z.record(z.string(), z.union([z.string(), z.null()])),
@@ -230,7 +230,7 @@ export const saveIntegrationCredentials = createServerFn({ method: "POST" })
   });
 
 const ToggleInput = z.object({
-  category: z.enum(["ai", "payments"]),
+  category: z.enum(["ai", "payments", "marketing"]),
   provider: z.string(),
   enabled: z.boolean(),
 });
@@ -257,7 +257,7 @@ export const toggleIntegration = createServerFn({ method: "POST" })
   });
 
 const TestInput = z.object({
-  category: z.enum(["ai", "payments"]),
+  category: z.enum(["ai", "payments", "marketing"]),
   provider: z.string(),
 });
 export const testIntegration = createServerFn({ method: "POST" })
