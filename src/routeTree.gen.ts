@@ -17,6 +17,7 @@ import { Route as PreviewHeroRouteImport } from './routes/preview-hero'
 import { Route as PreviewDockRouteImport } from './routes/preview-dock'
 import { Route as PrecosRouteImport } from './routes/precos'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as CriativosRouteImport } from './routes/criativos'
 import { Route as BaixarMigratorRouteImport } from './routes/baixar-migrator'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -174,6 +175,11 @@ const PrecosRoute = PrecosRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CriativosRoute = CriativosRouteImport.update({
+  id: '/criativos',
+  path: '/criativos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BaixarMigratorRoute = BaixarMigratorRouteImport.update({
@@ -841,6 +847,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
   '/baixar-migrator': typeof BaixarMigratorRoute
+  '/criativos': typeof CriativosRoute
   '/onboarding': typeof OnboardingRoute
   '/precos': typeof PrecosRoute
   '/preview-dock': typeof PreviewDockRoute
@@ -968,6 +975,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
   '/baixar-migrator': typeof BaixarMigratorRoute
+  '/criativos': typeof CriativosRoute
   '/onboarding': typeof OnboardingRoute
   '/precos': typeof PrecosRoute
   '/preview-dock': typeof PreviewDockRoute
@@ -1092,6 +1100,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/baixar-migrator': typeof BaixarMigratorRoute
+  '/criativos': typeof CriativosRoute
   '/onboarding': typeof OnboardingRoute
   '/precos': typeof PrecosRoute
   '/preview-dock': typeof PreviewDockRoute
@@ -1221,6 +1230,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/baixar-migrator'
+    | '/criativos'
     | '/onboarding'
     | '/precos'
     | '/preview-dock'
@@ -1348,6 +1358,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/baixar-migrator'
+    | '/criativos'
     | '/onboarding'
     | '/precos'
     | '/preview-dock'
@@ -1471,6 +1482,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/baixar-migrator'
+    | '/criativos'
     | '/onboarding'
     | '/precos'
     | '/preview-dock'
@@ -1600,6 +1612,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   BaixarMigratorRoute: typeof BaixarMigratorRoute
+  CriativosRoute: typeof CriativosRoute
   OnboardingRoute: typeof OnboardingRoute
   PrecosRoute: typeof PrecosRoute
   PreviewDockRoute: typeof PreviewDockRoute
@@ -1703,6 +1716,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/criativos': {
+      id: '/criativos'
+      path: '/criativos'
+      fullPath: '/criativos'
+      preLoaderRoute: typeof CriativosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/baixar-migrator': {
@@ -2795,6 +2815,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   BaixarMigratorRoute: BaixarMigratorRoute,
+  CriativosRoute: CriativosRoute,
   OnboardingRoute: OnboardingRoute,
   PrecosRoute: PrecosRoute,
   PreviewDockRoute: PreviewDockRoute,
@@ -2848,3 +2869,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
