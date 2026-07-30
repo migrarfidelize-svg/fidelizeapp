@@ -3096,6 +3096,48 @@ export type Database = {
           },
         ]
       }
+      plan_funnel_events: {
+        Row: {
+          amount: number | null
+          created_at: string
+          id: string
+          meta: Json
+          plan_name: string | null
+          plan_slug: string | null
+          provider: string | null
+          session_id: string | null
+          source: string | null
+          stage: string
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          id?: string
+          meta?: Json
+          plan_name?: string | null
+          plan_slug?: string | null
+          provider?: string | null
+          session_id?: string | null
+          source?: string | null
+          stage: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          id?: string
+          meta?: Json
+          plan_name?: string | null
+          plan_slug?: string | null
+          provider?: string | null
+          session_id?: string | null
+          source?: string | null
+          stage?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       plans: {
         Row: {
           active_card_limit: number | null
@@ -5532,7 +5574,7 @@ export type Database = {
         | "ready"
         | "completed"
         | "cancelled"
-      plan_tier: "free" | "starter" | "pro" | "enterprise"
+      plan_tier: "free" | "starter" | "pro" | "enterprise" | "business"
       platform_role: "super_admin"
       public_review_action:
         | "apologize"
@@ -5724,7 +5766,7 @@ export const Constants = {
         "completed",
         "cancelled",
       ],
-      plan_tier: ["free", "starter", "pro", "enterprise"],
+      plan_tier: ["free", "starter", "pro", "enterprise", "business"],
       platform_role: ["super_admin"],
       public_review_action: [
         "apologize",
