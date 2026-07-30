@@ -4,6 +4,7 @@ import { PageHero } from "@/components/PageHero";
 import { Crown as HeroIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { getPlanIntent, clearPlanIntent } from "@/lib/plan-intent";
+import { trackCheckoutOpen, trackPlanFunnel } from "@/lib/plan-funnel";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -33,7 +34,7 @@ function fmtBRL(v: number | null | undefined) {
 }
 function fmtLimit(v: number | null | undefined) { return v == null ? "Ilimitado" : v.toString(); }
 
-const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, enterprise: 3 };
+const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, enterprise: 3, business: 4 };
 const TIER_ICON: Record<string, any> = { free: Shield, starter: Zap, pro: Sparkles, enterprise: Crown };
 
 function MerchantPlansPage() {
@@ -56,16 +57,39 @@ function MerchantPlansPage() {
   const [pending, setPending] = useState<null | { slug: string; name: string; tier: string; price: number; kind: "upgrade" | "downgrade" | "plan_change" }>(null);
   const [saving, setSaving] = useState(false);
   const [payFor, setPayFor] = useState<null | { slug: string; name: string; price_monthly: number; tier: string }>(null);
+  const [quoteFor, setQuoteFor] = useState<null | { slug: string; name: string; price: number }>(null);
+
+  const isSalesPlan = (p: any) =>
+    !!(p?.features && typeof p.features === "object" && (p.features.sales_contact || p.features.quote_flow));
+
+  function openQuote(p: any, source: string) {
+    const price = Number(p.price_monthly ?? 0);
+    setQuoteFor({ slug: p.slug, name: p.name, price });
+    trackPlanFunnel({
+      stage: "checkout_open",
+      plan_slug: p.slug,
+      plan_name: p.name,
+      amount: price,
+      source,
+      provider: "sales_quote",
+      meta: { quote_flow: true },
+    });
+  }
 
   function askChange(p: any) {
     if (!activeEst || !currentTier) return;
     if (p.tier === currentTier) return;
+    if (isSalesPlan(p)) {
+      openQuote(p, "app_planos");
+      return;
+    }
     const kind: "upgrade" | "downgrade" | "plan_change" =
       (PLAN_RANK[p.tier] ?? 0) > (PLAN_RANK[currentTier] ?? 0) ? "upgrade"
       : (PLAN_RANK[p.tier] ?? 0) < (PLAN_RANK[currentTier] ?? 0) ? "downgrade" : "plan_change";
     const price = Number(p.price_monthly ?? 0);
     if (price > 0 && kind !== "downgrade") {
       setPayFor({ slug: p.slug, name: p.name, price_monthly: price, tier: p.tier });
+      trackCheckoutOpen({ slug: p.slug, name: p.name, amount: price, source: "app_planos" });
     } else {
       setPending({ slug: p.slug, name: p.name, tier: p.tier, price, kind });
     }
@@ -81,9 +105,20 @@ function MerchantPlansPage() {
     intentHandled.current = true;
     clearPlanIntent();
     const p = (plans as any[]).find((x) => x.slug === slug);
-    if (!p || p.tier === currentTier) return;
+    if (!p) {
+      trackPlanFunnel({ stage: "checkout_mismatch", plan_slug: slug, source: "plan_intent", meta: { reason: "plan_not_found" } });
+      return;
+    }
+    if (p.tier === currentTier) return;
+    if (isSalesPlan(p)) {
+      openQuote(p, "plan_intent");
+      return;
+    }
     const price = Number(p.price_monthly ?? 0);
-    if (price > 0) setPayFor({ slug: p.slug, name: p.name, price_monthly: price, tier: p.tier });
+    if (price > 0) {
+      setPayFor({ slug: p.slug, name: p.name, price_monthly: price, tier: p.tier });
+      trackCheckoutOpen({ slug: p.slug, name: p.name, amount: price, source: "plan_intent" });
+    }
   }, [plans, activeEst, currentTier]);
 
 
@@ -186,6 +221,47 @@ function MerchantPlansPage() {
             <AlertDialogCancel disabled={saving}>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={confirmChange} disabled={saving}>
               {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Aplicando…</> : "Confirmar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!quoteFor} onOpenChange={(o) => !o && setQuoteFor(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 font-display">
+              <Crown className="h-5 w-5 text-primary" />
+              Orçamento {quoteFor?.name}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 text-sm">
+                <p>
+                  O plano <strong>{quoteFor?.name}</strong> ({fmtBRL(quoteFor?.price ?? 0)}/mês) é contratado com
+                  o time comercial: múltiplas unidades, onboarding assistido e SLA prioritário.
+                </p>
+                <p className="text-muted-foreground">
+                  Abra um chamado comercial e nosso time responde com a proposta e o link de pagamento.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Agora não</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                trackPlanFunnel({
+                  stage: "checkout_open",
+                  plan_slug: quoteFor?.slug ?? null,
+                  plan_name: quoteFor?.name ?? null,
+                  amount: quoteFor?.price ?? null,
+                  source: "quote_dialog",
+                  provider: "sales_quote",
+                  meta: { action: "open_ticket" },
+                });
+                window.location.href = "/app/fidelize?assunto=orcamento-empresarial";
+              }}
+            >
+              Falar com vendas
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

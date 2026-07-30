@@ -239,7 +239,7 @@ export const adminPlanFeatureImpact = createServerFn({ method: "POST" })
   });
 
 // ---------- Merchant: change plan (upgrade / downgrade) ----------
-const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, enterprise: 3 };
+const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, enterprise: 3, business: 4 };
 
 export const changeEstablishmentPlan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

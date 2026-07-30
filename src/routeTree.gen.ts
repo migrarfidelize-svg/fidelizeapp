@@ -108,6 +108,7 @@ import { Route as AuthenticatedAppAvaliacoesIndexRouteImport } from './routes/_a
 import { Route as SuporteSlugKbArticleRouteImport } from './routes/suporte.$slug.kb.$article'
 import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api/public/webhooks/mercadopago'
 import { Route as ApiPublicWebhooksAsaasRouteImport } from './routes/api/public/webhooks/asaas'
+import { Route as ApiPublicTPlanRouteImport } from './routes/api/public/t/plan'
 import { Route as ApiPublicTEventRouteImport } from './routes/api/public/t/event'
 import { Route as ApiPublicMercadopagoPublicKeyRouteImport } from './routes/api/public/mercadopago/public-key'
 import { Route as ApiPublicHooksWalletSyncRouteImport } from './routes/api/public/hooks/wallet-sync'
@@ -676,6 +677,11 @@ const ApiPublicWebhooksAsaasRoute = ApiPublicWebhooksAsaasRouteImport.update({
   path: '/api/public/webhooks/asaas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicTPlanRoute = ApiPublicTPlanRouteImport.update({
+  id: '/api/public/t/plan',
+  path: '/api/public/t/plan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicTEventRoute = ApiPublicTEventRouteImport.update({
   id: '/api/public/t/event',
   path: '/api/public/t/event',
@@ -959,6 +965,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/wallet-sync': typeof ApiPublicHooksWalletSyncRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
   '/api/public/t/event': typeof ApiPublicTEventRoute
+  '/api/public/t/plan': typeof ApiPublicTPlanRoute
   '/api/public/webhooks/asaas': typeof ApiPublicWebhooksAsaasRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
@@ -1083,6 +1090,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/wallet-sync': typeof ApiPublicHooksWalletSyncRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
   '/api/public/t/event': typeof ApiPublicTEventRoute
+  '/api/public/t/plan': typeof ApiPublicTPlanRoute
   '/api/public/webhooks/asaas': typeof ApiPublicWebhooksAsaasRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
@@ -1214,6 +1222,7 @@ export interface FileRoutesById {
   '/api/public/hooks/wallet-sync': typeof ApiPublicHooksWalletSyncRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
   '/api/public/t/event': typeof ApiPublicTEventRoute
+  '/api/public/t/plan': typeof ApiPublicTPlanRoute
   '/api/public/webhooks/asaas': typeof ApiPublicWebhooksAsaasRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
@@ -1345,6 +1354,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/wallet-sync'
     | '/api/public/mercadopago/public-key'
     | '/api/public/t/event'
+    | '/api/public/t/plan'
     | '/api/public/webhooks/asaas'
     | '/api/public/webhooks/mercadopago'
     | '/suporte/$slug/kb/$article'
@@ -1469,6 +1479,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/wallet-sync'
     | '/api/public/mercadopago/public-key'
     | '/api/public/t/event'
+    | '/api/public/t/plan'
     | '/api/public/webhooks/asaas'
     | '/api/public/webhooks/mercadopago'
     | '/suporte/$slug/kb/$article'
@@ -1599,6 +1610,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/wallet-sync'
     | '/api/public/mercadopago/public-key'
     | '/api/public/t/event'
+    | '/api/public/t/plan'
     | '/api/public/webhooks/asaas'
     | '/api/public/webhooks/mercadopago'
     | '/suporte/$slug/kb/$article'
@@ -1662,6 +1674,7 @@ export interface RootRouteChildren {
   ApiPublicHooksWalletSyncRoute: typeof ApiPublicHooksWalletSyncRoute
   ApiPublicMercadopagoPublicKeyRoute: typeof ApiPublicMercadopagoPublicKeyRoute
   ApiPublicTEventRoute: typeof ApiPublicTEventRoute
+  ApiPublicTPlanRoute: typeof ApiPublicTPlanRoute
   ApiPublicWebhooksAsaasRoute: typeof ApiPublicWebhooksAsaasRoute
   ApiPublicWebhooksMercadopagoRoute: typeof ApiPublicWebhooksMercadopagoRoute
   SuporteSlugKbArticleRoute: typeof SuporteSlugKbArticleRoute
@@ -2368,6 +2381,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksAsaasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/t/plan': {
+      id: '/api/public/t/plan'
+      path: '/api/public/t/plan'
+      fullPath: '/api/public/t/plan'
+      preLoaderRoute: typeof ApiPublicTPlanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/t/event': {
       id: '/api/public/t/event'
       path: '/api/public/t/event'
@@ -2875,6 +2895,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksWalletSyncRoute: ApiPublicHooksWalletSyncRoute,
   ApiPublicMercadopagoPublicKeyRoute: ApiPublicMercadopagoPublicKeyRoute,
   ApiPublicTEventRoute: ApiPublicTEventRoute,
+  ApiPublicTPlanRoute: ApiPublicTPlanRoute,
   ApiPublicWebhooksAsaasRoute: ApiPublicWebhooksAsaasRoute,
   ApiPublicWebhooksMercadopagoRoute: ApiPublicWebhooksMercadopagoRoute,
   SuporteSlugKbArticleRoute: SuporteSlugKbArticleRoute,

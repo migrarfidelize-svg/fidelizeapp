@@ -4,6 +4,7 @@ import { ScrollText as HeroIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { adminGetOverview } from "@/lib/admin.functions";
+import { adminPlanFunnelSummary } from "@/lib/plan-funnel.functions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
@@ -15,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/hash/assinaturas")({
   component: AdminAssinaturas,
 });
 
-const PLAN_LABEL: Record<string, string> = { free: "Gratuito", starter: "Starter", pro: "Pro", enterprise: "Enterprise" };
+const PLAN_LABEL: Record<string, string> = { free: "Gratuito", starter: "Essencial", pro: "Profissional", enterprise: "Premium", business: "Empresarial" };
 
 function AdminAssinaturas() {
   const getOverview = useServerFn(adminGetOverview);
@@ -88,6 +89,61 @@ function AdminAssinaturas() {
           </div>
         </CardContent>
       </Card>
+
+      <PlanFunnelCard />
     </div>
+  );
+}
+
+const STAGE_LABEL: Record<string, string> = {
+  landing_select: "Escolha na landing",
+  auth_intent: "Chegou no cadastro",
+  checkout_open: "Checkout aberto",
+  checkout_mismatch: "Divergências",
+};
+
+function PlanFunnelCard() {
+  const getFunnel = useServerFn(adminPlanFunnelSummary);
+  const { data } = useQuery({
+    queryKey: ["admin-plan-funnel", 7],
+    queryFn: () => getFunnel({ data: { days: 7 } }),
+  });
+
+  const byStage = data?.byStage ?? {};
+  const mismatches = data?.mismatches ?? [];
+
+  return (
+    <Card>
+      <CardContent className="p-6">
+        <h3 className="font-display font-semibold">Funil de planos (7 dias)</h3>
+        <p className="text-sm text-muted-foreground mt-1">
+          Compara o plano escolhido na landing com o plano que abriu no checkout.
+        </p>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-4">
+          {Object.keys(STAGE_LABEL).map((k) => (
+            <div key={k} className="rounded-xl border p-4">
+              <div className="text-xs uppercase tracking-wider text-muted-foreground">{STAGE_LABEL[k]}</div>
+              <div className={`mt-1 font-display text-2xl font-bold ${k === "checkout_mismatch" && (byStage[k] ?? 0) > 0 ? "text-destructive" : ""}`}>
+                {(byStage[k] ?? 0).toLocaleString("pt-BR")}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {mismatches.length > 0 && (
+          <div className="mt-5 space-y-2">
+            <div className="text-sm font-medium text-destructive">Últimas divergências</div>
+            {mismatches.slice(0, 10).map((m: any) => (
+              <div key={m.id} className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs">
+                <span className="text-muted-foreground">{new Date(m.created_at).toLocaleString("pt-BR")} · </span>
+                esperado <strong>{(m.meta as any)?.expected_slug ?? "—"}</strong> · abriu <strong>{m.plan_slug ?? "—"}</strong>
+                {m.source ? <span className="text-muted-foreground"> · {m.source}</span> : null}
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
