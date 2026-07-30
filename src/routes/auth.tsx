@@ -105,12 +105,15 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   ssr: false,
   beforeLoad: async ({ search }) => {
-    const { data } = await supabase.auth.getSession();
-    if (data.session) {
+    // Espera a auth assentar: se ainda estivermos reidratando a sessão, um
+    // redirecionamento prematuro faz o usuário oscilar entre /auth e a rota privada.
+    const session = await getSettledSession();
+    if (session?.user) {
       const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next, role: search.as });
       throw redirect({ to: dest.to });
     }
   },
+
   head: () => ({ meta: [{ title: "Entrar — Fidelize" }, { name: "robots", content: "noindex, nofollow" }] }),
   component: AuthPage,
 });
