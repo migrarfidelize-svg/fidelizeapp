@@ -1404,6 +1404,7 @@ const COMPARE_HIGHLIGHTS: string[][] = [
   ["Até 300 clientes", "Cartão fidelidade digital", "Notificações push"],
   ["Até 1.000 clientes", "Cardápio e catálogo", "5 funcionários"],
   ["Clientes ilimitados", "Sem marca Fidelize", "Equipe ilimitada"],
+  ["Múltiplas unidades", "Gestor dedicado", "SLA prioritário"],
 ];
 
 function PlansComparison() {
