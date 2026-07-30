@@ -59,7 +59,7 @@ export const saveLandingContent = createServerFn({ method: "POST" })
   .inputValidator((input: { hero?: LandingHeroContent; brands?: LandingBrandsContent }) => input)
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const rows: Array<{ key: string; data: unknown; updated_by: string }> = [];
+    const rows: Array<{ key: string; data: any; updated_by: string }> = [];
     if (data.hero) rows.push({ key: "hero", data: normalizeHero(data.hero), updated_by: context.userId });
     if (data.brands) rows.push({ key: "brands", data: normalizeBrands(data.brands), updated_by: context.userId });
     if (!rows.length) return { ok: true };
