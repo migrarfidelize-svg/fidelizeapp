@@ -132,25 +132,28 @@ export function GreetingVoice({ gender, scope }: Props) {
       sessionStorage.setItem(key, "1");
     };
 
-    // Alguns navegadores exigem gesto do usuário para tocar áudio.
-    // Tenta imediatamente; se falhar, aguarda 1º clique/tecla.
+    // Alguns navegadores bloqueiam áudio sem gesto do usuário.
+    // Tenta imediatamente e, em paralelo, arma um "retry" no 1º clique/tecla.
+    let spoke = false;
     const attempt = () => {
-      speakNow().catch(() => {});
+      speakNow()
+        .then(() => {
+          // considera falado somente se o motor realmente iniciou
+          setTimeout(() => {
+            spoke = window.speechSynthesis.speaking || window.speechSynthesis.pending || spoke;
+          }, 300);
+        })
+        .catch(() => {});
     };
     const armed = () => {
-      attempt();
+      if (!spoke) attempt();
       window.removeEventListener("pointerdown", armed);
       window.removeEventListener("keydown", armed);
     };
-    // Pequeno delay para dar tempo do DOM montar
     const t = setTimeout(() => {
-      // Se contexto já permitir, fala; caso contrário, arma listener.
-      try {
-        attempt();
-      } catch {
-        window.addEventListener("pointerdown", armed, { once: true });
-        window.addEventListener("keydown", armed, { once: true });
-      }
+      attempt();
+      window.addEventListener("pointerdown", armed, { once: true });
+      window.addEventListener("keydown", armed, { once: true });
     }, 400);
 
     return () => {
@@ -158,6 +161,7 @@ export function GreetingVoice({ gender, scope }: Props) {
       window.removeEventListener("pointerdown", armed);
       window.removeEventListener("keydown", armed);
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
