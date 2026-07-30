@@ -14,7 +14,20 @@ export type MenuDish = { name: string; desc: string; price: string; img: string 
 export type CatalogProduct = { name: string; price: string; img: string };
 export type BrandItem = { name: string; img?: string | null };
 
+/** Textos e botões do bloco principal da hero (lado esquerdo). */
+export type LandingHeroCopy = {
+  badge: string;
+  titlePrefix: string;
+  titleHighlight: string;
+  subtitle: string;
+  primaryCta: { label: string; href: string };
+  secondaryCta: { label: string; href: string };
+  /** Selos abaixo dos botões. Use {preco} para inserir o menor preço ativo. */
+  bullets: string[];
+};
+
 export type LandingHeroContent = {
+  copy: LandingHeroCopy;
   menu: { title: string; dishes: MenuDish[] };
   catalog: { title: string; products: CatalogProduct[] };
 };
@@ -25,7 +38,19 @@ export type LandingBrandsContent = {
   brands: BrandItem[];
 };
 
+export const DEFAULT_HERO_COPY: LandingHeroCopy = {
+  badge: "1 plataforma · 10 ferramentas de retenção",
+  titlePrefix: "Tudo que seu negócio precisa para o",
+  titleHighlight: "cliente voltar",
+  subtitle:
+    "Fidelidade digital, cardápio, catálogo, avaliações, QR Code, push e CRM — num só painel. Sem app, sem cartão de papel.",
+  primaryCta: { label: "Escolher meu plano", href: "#precos" },
+  secondaryCta: { label: "Ver como funciona", href: "#ecossistema" },
+  bullets: ["Sem cartão de crédito", "Configure em 5 minutos", "Planos a partir de {preco}/mês"],
+};
+
 export const DEFAULT_HERO: LandingHeroContent = {
+  copy: DEFAULT_HERO_COPY,
   menu: {
     title: "Cardápio em stories",
     dishes: [
@@ -66,7 +91,24 @@ export function normalizeHero(raw: unknown): LandingHeroContent {
   const dishes = Array.isArray(d.menu?.dishes) && d.menu!.dishes.length ? d.menu!.dishes : DEFAULT_HERO.menu.dishes;
   const products =
     Array.isArray(d.catalog?.products) && d.catalog!.products.length ? d.catalog!.products : DEFAULT_HERO.catalog.products;
+  const c = (d.copy ?? {}) as Partial<LandingHeroCopy>;
+  const copy: LandingHeroCopy = {
+    badge: c.badge ?? DEFAULT_HERO_COPY.badge,
+    titlePrefix: c.titlePrefix ?? DEFAULT_HERO_COPY.titlePrefix,
+    titleHighlight: c.titleHighlight ?? DEFAULT_HERO_COPY.titleHighlight,
+    subtitle: c.subtitle ?? DEFAULT_HERO_COPY.subtitle,
+    primaryCta: {
+      label: c.primaryCta?.label || DEFAULT_HERO_COPY.primaryCta.label,
+      href: c.primaryCta?.href || DEFAULT_HERO_COPY.primaryCta.href,
+    },
+    secondaryCta: {
+      label: c.secondaryCta?.label || DEFAULT_HERO_COPY.secondaryCta.label,
+      href: c.secondaryCta?.href || DEFAULT_HERO_COPY.secondaryCta.href,
+    },
+    bullets: Array.isArray(c.bullets) ? c.bullets.filter((b) => typeof b === "string") : DEFAULT_HERO_COPY.bullets,
+  };
   return {
+    copy,
     menu: { title: d.menu?.title || DEFAULT_HERO.menu.title, dishes },
     catalog: { title: d.catalog?.title || DEFAULT_HERO.catalog.title, products },
   };
