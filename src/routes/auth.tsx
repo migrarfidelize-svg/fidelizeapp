@@ -116,12 +116,14 @@ function AuthPage() {
   const router = useRouter();
   const { mode } = search;
   // Plano escolhido na landing: guarda para abrir o checkout certo após o cadastro/onboarding.
+  const trackedPlanRef = useRef<string | null>(null);
   useEffect(() => {
-    if (search.plan) {
-      setPlanIntent(search.plan);
-      rememberSelectedPlan(search.plan);
-      trackPlanFunnel({ stage: "auth_intent", plan_slug: search.plan, source: "auth" });
-    }
+    if (!search.plan) return;
+    setPlanIntent(search.plan);
+    rememberSelectedPlan(search.plan);
+    if (trackedPlanRef.current === search.plan) return;
+    trackedPlanRef.current = search.plan;
+    trackPlanFunnel({ stage: "auth_intent", plan_slug: search.plan, source: "auth" });
   }, [search.plan]);
 
   const [loading, setLoading] = useState(false);

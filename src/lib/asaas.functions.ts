@@ -117,10 +117,14 @@ export const createAsaasPayment = createServerFn({ method: "POST" })
 
     const { data: plan } = await supabase
       .from("plans")
-      .select("id, slug, tier, name, price_monthly, is_active, archived_at")
+      .select("id, slug, tier, name, price_monthly, is_active, archived_at, features")
       .eq("slug", data.planSlug)
       .maybeSingle();
     if (!plan || !plan.is_active || plan.archived_at) throw new Error("Plano indisponível.");
+    const planFeatures = (plan as any).features;
+    if (planFeatures && typeof planFeatures === "object" && (planFeatures.sales_contact || planFeatures.quote_flow)) {
+      throw new Error("Este plano é contratado com o time comercial. Fale com vendas para receber a proposta.");
+    }
 
     const { computeUpgradeCharge } = await import("@/lib/plan-proration.server");
     const quote = await computeUpgradeCharge(data.establishmentId, plan as never);

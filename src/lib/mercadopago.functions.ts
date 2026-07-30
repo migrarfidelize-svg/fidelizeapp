@@ -56,9 +56,13 @@ async function assertOwner(supabase: any, userId: string, establishmentId: strin
 
 async function getPlanOrThrow(supabase: any, slug: string) {
   const { data: plan } = await supabase.from("plans")
-    .select("id, slug, tier, name, price_monthly, is_active, archived_at")
+    .select("id, slug, tier, name, price_monthly, is_active, archived_at, features")
     .eq("slug", slug).maybeSingle();
   if (!plan || !plan.is_active || plan.archived_at) throw new Error("Plano indisponível.");
+  const f = (plan as any).features;
+  if (f && typeof f === "object" && (f.sales_contact || f.quote_flow)) {
+    throw new Error("Este plano é contratado com o time comercial. Fale com vendas para receber a proposta.");
+  }
   return plan;
 }
 
