@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { getSettledSession } from "@/lib/session-ready";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -14,14 +14,17 @@ export const Route = createFileRoute("/_authenticated")({
     const fromWallet = location.pathname === "/carteira" || location.pathname.startsWith("/carteira/");
     const authSearch = fromWallet ? ({ as: "customer" as const, source: "wallet" }) : undefined;
     try {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session?.user) throw redirect({ to: "/auth", search: authSearch });
-      return { user: data.session.user };
+      // Aguarda a auth terminar de inicializar antes de decidir: redirecionar
+      // durante a reidratação causa ping-pong /auth ↔ rota privada.
+      const session = await getSettledSession();
+      if (!session?.user) throw redirect({ to: "/auth", search: authSearch });
+      return { user: session.user };
     } catch (e) {
       if (e && typeof e === "object" && ("isRedirect" in e || "to" in e)) throw e;
       throw redirect({ to: "/auth", search: authSearch });
     }
   },
+
   component: () => <Outlet />,
 });
 
