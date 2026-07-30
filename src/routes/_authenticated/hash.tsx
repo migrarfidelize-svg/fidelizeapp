@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute, Link, Outlet, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -102,7 +103,7 @@ function AdminLayout() {
   }, [pathname]);
 
 
-  if (isLoading) return <div className="grid min-h-dvh place-items-center text-muted-foreground">Verificando permissões…</div>;
+  if (isLoading) return <RouteLoading label="Verificando permissões…" />;
 
   if (!data?.isAdmin) {
     return (
