@@ -94,8 +94,8 @@ export const metaPixelProvider: MarketingProvider = {
       return { ok: false, message: `Código de teste inválido: "${testCode}".` };
     }
 
-    // 1) Valida token + propriedade do Pixel lendo o dataset.
-    const endpoint = `https://graph.facebook.com/${version}/${pixelId}?fields=id,name,owner_business`;
+    // 1) Valida token + Pixel lendo o dataset (só id,name — owner_business exige permissão extra).
+    const endpoint = `https://graph.facebook.com/${version}/${pixelId}?fields=id,name`;
     let latency = 0;
     try {
       const { response, body, latency_ms } = await timedFetch(endpoint, {
@@ -105,17 +105,63 @@ export const metaPixelProvider: MarketingProvider = {
       });
       latency = latency_ms;
       const json = safeJson(body);
+
+      let pixelName = "sem nome";
+      let readOnly = false;
+
       if (!response.ok) {
         const err = json?.error ?? {};
+        const code = Number(err.code ?? 0);
+        const sub = Number(err.error_subcode ?? 0);
+        const permissionIssue = code === 100 || code === 200 || code === 10 || code === 278 || sub === 33;
+
+        // Tokens de Conversions API costumam poder ENVIAR eventos sem poder LER o dataset.
+        // Nesse caso validamos disparando um evento real em vez de falhar.
+        if (!permissionIssue) {
+          return {
+            ok: false,
+            status: response.status,
+            latency_ms,
+            message: `${err.type ?? "Erro"} (${err.code ?? response.status}): ${err.message ?? body.slice(0, 300)}`,
+            details: { endpoint, pixel_id: pixelId, api_version: version },
+          };
+        }
+
+        const probe = await sendTestEvent(version, pixelId, token, testCode || undefined);
+        if (!probe.ok) {
+          return {
+            ok: false,
+            status: probe.status ?? response.status,
+            latency_ms: latency_ms + probe.latency_ms,
+            message:
+              `${err.type ?? "Erro"} (${err.code ?? response.status}): ${err.message ?? "Missing Permission"} — ` +
+              `o envio de evento também falhou: ${probe.message}. ` +
+              `Gere o token em Events Manager → Configurações → Conversions API do MESMO conjunto de dados ${pixelId}, ` +
+              `com o usuário sendo administrador do Pixel.`,
+            details: { endpoint, pixel_id: pixelId, api_version: version, fallback: "capi_event" },
+          };
+        }
+
+        readOnly = true;
         return {
-          ok: false,
-          status: response.status,
-          latency_ms,
-          message: `${err.type ?? "Erro"} (${err.code ?? response.status}): ${err.message ?? body.slice(0, 300)}`,
-          details: { endpoint, pixel_id: pixelId, api_version: version },
+          ok: true,
+          status: probe.status,
+          latency_ms: latency_ms + probe.latency_ms,
+          message:
+            `Conexão validada pelo envio de evento (${probe.received} evento(s) aceitos)${testCode ? ` em ${testCode}` : ""}. ` +
+            `O token não tem permissão de leitura do dataset (#${err.code ?? 100}), mas envia eventos normalmente.`,
+          details: {
+            endpoint,
+            pixel_id: pixelId,
+            api_version: version,
+            validated_via: "conversions_api_event",
+            dataset_read: false,
+          },
         };
       }
-      const pixelName = String(json?.name ?? "sem nome");
+
+      pixelName = String(json?.name ?? "sem nome");
+      void readOnly;
 
       // 2) Opcional: dispara um PageView de teste na Conversions API.
       if (testCode) {
