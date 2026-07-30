@@ -113,9 +113,35 @@ function brl(v: number) {
   return `R$ ${v.toFixed(2).replace(".", ",")}`;
 }
 
+/** Atualiza a landing em tempo real quando o admin salva o conteúdo. */
+function LandingLiveSync() {
+  const router = useRouter();
+  useEffect(() => {
+    let cleanup = () => {};
+    let alive = true;
+    (async () => {
+      const { supabase } = await import("@/integrations/supabase/client");
+      if (!alive) return;
+      const channel = supabase
+        .channel("landing-content")
+        .on("broadcast", { event: "updated" }, () => router.invalidate())
+        .subscribe();
+      cleanup = () => {
+        supabase.removeChannel(channel);
+      };
+    })();
+    return () => {
+      alive = false;
+      cleanup();
+    };
+  }, [router]);
+  return null;
+}
+
 function Landing() {
   return (
     <div className="landing-scope min-h-dvh bg-background text-foreground pb-24 md:pb-0">
+      <LandingLiveSync />
       <ScrollProgress />
       <SiteHeader />
       <main>
