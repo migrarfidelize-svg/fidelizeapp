@@ -1,13 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 /**
- * Cron: send birthday retention pushes + emails.
- * Called daily by pg_cron via /api/public/cron/birthday
+ * Cron: send birthday retention pushes.
+ * Called daily by pg_cron via /api/public/cron/birthday (requer cabeçalho apikey).
  */
 export const Route = createFileRoute("/api/public/cron/birthday")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        const { authorizeCronRequest } = await import("@/lib/cron-auth.server");
+        const denied = authorizeCronRequest(request);
+        if (denied) return denied;
+
         try {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { sendPushToCustomer } = await import("@/lib/push.server");
@@ -27,7 +31,6 @@ export const Route = createFileRoute("/api/public/cron/birthday")({
             (c.birthdate as unknown as string | null)?.endsWith(suffix),
           );
 
-          const results: { customer_id: string; sent: number }[] = [];
           const establishments = new Set(matches.map((m) => m.establishment_id));
           const settingsByEst = new Map<string, { enabled: boolean; message: string }>();
           for (const eid of establishments) {
@@ -44,6 +47,8 @@ export const Route = createFileRoute("/api/public/cron/birthday")({
             });
           }
 
+          let processed = 0;
+          let sent = 0;
           for (const c of matches) {
             const s = settingsByEst.get(c.establishment_id);
             if (!s || !s.enabled) continue;
@@ -64,13 +69,17 @@ export const Route = createFileRoute("/api/public/cron/birthday")({
               status: r.sent > 0 ? "sent" : "skipped",
               payload: { sent: r.sent },
             });
-            results.push({ customer_id: c.id, sent: r.sent });
+            processed++;
+            sent += r.sent;
           }
 
-          return Response.json({ ok: true, processed: matches.length, results });
-        } catch (e) {
-          const msg = e instanceof Error ? e.message : "error";
-          return new Response(JSON.stringify({ ok: false, error: msg }), { status: 500 });
+          // Resposta agregada: nunca expor IDs ou nomes de clientes.
+          return Response.json({ ok: true, processed, sent });
+        } catch {
+          return new Response(JSON.stringify({ ok: false, error: "internal_error" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          });
         }
       },
     },
