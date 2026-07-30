@@ -26,7 +26,7 @@ import { getLandingPublic } from "@/lib/landing-content.functions";
 
 const SITE_URL = "https://warm-hug-genie.lovable.app";
 const PAGE_TITLE = "Fidelize — Cartão fidelidade digital para clientes fiéis";
-const PAGE_DESC = "Crie cartões fidelidade digitais com QR Code, painel de análise em tempo real e campanhas que fazem seus clientes voltarem sempre. Planos a partir de R$ 29,90/mês.";
+const PAGE_DESC = "Crie cartões fidelidade digitais com QR Code, painel de análise em tempo real e campanhas que fazem seus clientes voltarem sempre. Planos a partir de {useFromPrice()}/mês.";
 
 const FAQ_ITEMS: Array<[string, string]> = [
   ["Meu cliente precisa baixar um app?", "Não. Tudo funciona direto pelo navegador do celular. Ele escaneia o QR Code, informa nome e telefone e já sai com o cartão pronto."],
@@ -95,6 +95,13 @@ function useLandingData() {
   }
 }
 
+/** Menor preço ativo cadastrado no admin (fallback: R$ 29,90). */
+function useFromPrice() {
+  const plans = useLandingData()?.plans ?? [];
+  const prices = plans.map((p) => Number(p.price_monthly)).filter((n) => Number.isFinite(n) && n > 0);
+  return prices.length ? brl(Math.min(...prices)) : "R$ 29,90";
+}
+
 function brl(v: number) {
   return `R$ ${v.toFixed(2).replace(".", ",")}`;
 }
@@ -126,12 +133,13 @@ function Landing() {
 }
 
 function MobileStickyCta() {
+  const fromPrice = useFromPrice();
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-violet-400/30 bg-background/90 px-4 pb-[env(safe-area-inset-bottom)] pt-3 backdrop-blur-xl md:hidden">
       <div className="flex items-center gap-3 pb-3">
         <div className="min-w-0 flex-1">
-          <div className="text-sm font-semibold leading-tight">A partir de R$ 29,90/mês</div>
-          <div className="text-[11px] text-muted-foreground">A partir de R$ 29,90/mês · cancele quando quiser</div>
+          <div className="text-sm font-semibold leading-tight">A partir de {fromPrice}/mês</div>
+          <div className="text-[11px] text-muted-foreground">A partir de {fromPrice}/mês · cancele quando quiser</div>
         </div>
         <Button asChild className="h-12 shrink-0 rounded-full px-6 font-bold">
           <a href="#precos">Quero assinar</a>
@@ -232,7 +240,7 @@ function SiteHeader() {
                   </>
                 )}
 
-                <p className="pt-2 text-center text-xs text-muted-foreground">A partir de R$ 29,90/mês · cancele quando quiser</p>
+                <p className="pt-2 text-center text-xs text-muted-foreground">A partir de {useFromPrice()}/mês · cancele quando quiser</p>
               </div>
             </SheetContent>
           </Sheet>
@@ -352,7 +360,7 @@ function Hero() {
                 <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> Configure em 5 minutos
               </span>
               <span className="flex items-center gap-1.5">
-                <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> Planos a partir de R$ 29,90/mês
+                <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> Planos a partir de {useFromPrice()}/mês
               </span>
             </div>
           </div>
