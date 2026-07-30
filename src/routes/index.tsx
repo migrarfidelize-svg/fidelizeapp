@@ -86,10 +86,16 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
-/** Preço formatado a partir do banco; cai no padrão quando o plano não existe. */
-function useLandingData() {
+type LandingData = {
+  hero: LandingHeroContent;
+  brands: LandingBrandsContent;
+  plans: PublicPlan[];
+};
+
+/** Dados públicos da landing (mockup, marcas e planos) vindos do loader. */
+function useLandingData(): LandingData | undefined {
   try {
-    return Route.useLoaderData();
+    return Route.useLoaderData() as LandingData;
   } catch {
     return undefined;
   }
@@ -101,6 +107,7 @@ function useFromPrice() {
   const prices = plans.map((p) => Number(p.price_monthly)).filter((n) => Number.isFinite(n) && n > 0);
   return prices.length ? brl(Math.min(...prices)) : "R$ 29,90";
 }
+
 
 function brl(v: number) {
   return `R$ ${v.toFixed(2).replace(".", ",")}`;
