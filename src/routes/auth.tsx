@@ -45,7 +45,7 @@ const searchSchema = z.object({
 
 });
 
-async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: string }): Promise<{ to: string; toast?: string; toastKind?: "success" | "error" | "info" }> {
+async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: string; role?: "customer" | "establishment" }): Promise<{ to: string; toast?: string; toastKind?: "success" | "error" | "info" }> {
   // Vindo de um QR de estabelecimento (usuário já tinha conta ou acabou de criar).
   if (opts.est_slug) {
     try {
@@ -91,11 +91,15 @@ async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: 
     const { data } = await supabase.rpc("my_account_type");
     if (data === "super_admin") return { to: "/hash" };
     if (data === "establishment") return { to: "/app" };
+    // Quem entrou pela aba "Estabelecimento" mas ainda não tem empresa vinculada
+    // não pode cair na carteira do cliente — segue para criar/ativar a empresa.
+    if (opts.role === "establishment") return { to: "/onboarding" };
     return { to: "/carteira" };
   } catch {
-    return { to: "/carteira" };
+    return { to: opts.role === "establishment" ? "/onboarding" : "/carteira" };
   }
 }
+
 
 export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
@@ -103,7 +107,7 @@ export const Route = createFileRoute("/auth")({
   beforeLoad: async ({ search }) => {
     const { data } = await supabase.auth.getSession();
     if (data.session) {
-      const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
+      const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next, role: search.as });
       throw redirect({ to: dest.to });
     }
   },
@@ -333,7 +337,7 @@ function AuthPage() {
           await completeAuthRedirect("/onboarding", "SIGNED_UP");
         } else {
           if (walletFlow) setWalletHint(whatsapp);
-          const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
+          const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next, role });
           if (dest.toastKind === "error") toast.error(dest.toast ?? "Não foi possível vincular seu cartão.");
           else toast.success(dest.toast ?? "Conta criada!");
           await completeAuthRedirect(dest.to, "SIGNED_UP");
@@ -394,7 +398,7 @@ function AuthPage() {
 
         markAttempt(true);
         if (walletFlow) setWalletHint(whatsapp);
-        const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next });
+        const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next, role });
         if (dest.toastKind === "error") toast.error(dest.toast ?? "Não foi possível vincular seu cartão.");
         else toast.success(dest.toast ?? "Bem-vindo de volta!");
         await completeAuthRedirect(dest.to, "SIGNED_IN");
