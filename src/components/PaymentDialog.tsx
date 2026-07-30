@@ -108,15 +108,19 @@ function SandboxCardTestGuide() {
 }
 
 export function PaymentDialog({
-  open, onOpenChange, plan, establishmentId, payerEmailDefault,
+  open, onOpenChange, plan, establishmentId, payerEmailDefault, onPaid,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   plan: PlanInfo | null;
   establishmentId: string;
   payerEmailDefault?: string;
+  /** Chamado quando o pagamento é concluído (destino pós-pagamento). */
+  onPaid?: () => void;
 }) {
+  const handlePaid = () => { onOpenChange(false); onPaid?.(); };
   const fmt = (n: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(n);
+
   const hintFn = useServerFn(getMercadoPagoAccountHint);
   const providersFn = useServerFn(getActivePaymentProviders);
   const { data: hint } = useQuery({
@@ -280,13 +284,13 @@ export function PaymentDialog({
                       <TabsTrigger value="boleto" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-neutral-800"><FileText className="mr-2 h-4 w-4" />Boleto</TabsTrigger>
                     </TabsList>
                     <TabsContent value="pix" className="mt-5 focus-visible:outline-none">
-                      <PixForm plan={chargePlan!} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
+                      <PixForm plan={chargePlan!} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={handlePaid} />
                     </TabsContent>
                     <TabsContent value="card" className="mt-5 focus-visible:outline-none">
-                      <CardForm plan={chargePlan!} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
+                      <CardForm plan={chargePlan!} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={handlePaid} />
                     </TabsContent>
                     <TabsContent value="boleto" className="mt-5 focus-visible:outline-none">
-                      <BoletoForm plan={chargePlan!} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={() => onOpenChange(false)} />
+                      <BoletoForm plan={chargePlan!} establishmentId={establishmentId} payerEmailDefault={payerEmailDefault} isSandboxLike={isSandboxLike} onDone={handlePaid} />
                     </TabsContent>
                   </Tabs>
                 </div>
@@ -296,7 +300,7 @@ export function PaymentDialog({
                   establishmentId={establishmentId}
                   payerEmailDefault={payerEmailDefault}
                   isSandboxLike={asaasMode === "sandbox"}
-                  onDone={() => onOpenChange(false)}
+                  onDone={handlePaid}
                 />
               )}
 
