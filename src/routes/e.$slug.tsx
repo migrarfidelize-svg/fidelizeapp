@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useParams } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,7 +38,12 @@ const opts = (slug: string) =>
   });
 
 export const Route = createFileRoute("/e/$slug")({
-  loader: ({ context, params }) => context.queryClient.ensureQueryData(opts(params.slug)),
+  loader: async ({ context, params }) => {
+    const d = await context.queryClient.ensureQueryData(opts(params.slug));
+    // 404 real (evita soft-404 para os buscadores) quando o slug não existe.
+    if (!d?.establishment) throw notFound();
+    return d;
+  },
   head: ({ params, loaderData }) => {
     const est = loaderData?.establishment;
     const title = est ? `${est.name} — Promoções e fidelidade` : `Descobrir — Fidelize`;
