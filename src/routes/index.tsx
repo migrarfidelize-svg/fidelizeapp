@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { setPlanIntent } from "@/lib/plan-intent";
+
 import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
 import { BrandMarquee } from "@/components/landing/BrandMarquee";
