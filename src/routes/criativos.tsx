@@ -427,13 +427,13 @@ function CreativeThree() {
 
         <div className="mt-14 grid grid-cols-2 gap-8">
           <div
-            className="rounded-[28px] border border-white/8 p-8"
+            className="rounded-[28px] border border-white/8 p-10"
             style={{ background: "rgba(255,255,255,0.028)" }}
           >
             <p className="text-[16px] tracking-[0.22em] text-white/35 uppercase">
               Cartão de papel
             </p>
-            <ul className="mt-7 space-y-5 text-[22px] leading-snug text-white/40">
+            <ul className="mt-9 space-y-7 text-[23px] leading-snug text-white/40">
               {[
                 "Some na carteira do cliente",
                 "Sem dados de quem volta",
@@ -450,7 +450,7 @@ function CreativeThree() {
           </div>
 
           <div
-            className="rounded-[28px] border border-violet-300/25 p-8"
+            className="rounded-[28px] border border-violet-300/25 p-10"
             style={{
               background:
                 "linear-gradient(155deg, rgba(139,92,246,0.20), rgba(79,70,229,0.08))",
@@ -460,7 +460,7 @@ function CreativeThree() {
             <p className="text-[16px] tracking-[0.22em] text-violet-200 uppercase">
               Com o Fidelize
             </p>
-            <ul className="mt-7 space-y-5 text-[22px] leading-snug text-white/85">
+            <ul className="mt-9 space-y-7 text-[23px] leading-snug text-white/85">
               {[
                 "Cartão no celular, sempre à mão",
                 "Base de clientes com histórico",
@@ -480,7 +480,7 @@ function CreativeThree() {
           </div>
         </div>
 
-        <div className="mt-14 grid grid-cols-3 gap-5">
+        <div className="mt-12 grid grid-cols-3 gap-5">
           {[
             { k: "1 QR Code", v: "Fidelidade, cardápio, avaliação ou links" },
             { k: "9 módulos", v: "Na mesma assinatura, sem plugin extra" },
@@ -488,7 +488,7 @@ function CreativeThree() {
           ].map((s) => (
             <div
               key={s.k}
-              className="rounded-3xl border border-white/10 px-7 py-6"
+              className="rounded-3xl border border-white/10 px-7 py-9"
               style={{ background: "rgba(255,255,255,0.035)" }}
             >
               <p className="text-[30px] leading-none font-bold tracking-tight text-violet-200">
