@@ -177,6 +177,10 @@ function IntegrationsPage() {
         <TabsContent value="webhooks" className="mt-6">
           <WebhooksPanel data={webhooks.data ?? []} loading={webhooks.isLoading} />
         </TabsContent>
+
+        <TabsContent value="captcha" className="mt-6">
+          <CaptchaPanel />
+        </TabsContent>
       </Tabs>
     </div>
   );
