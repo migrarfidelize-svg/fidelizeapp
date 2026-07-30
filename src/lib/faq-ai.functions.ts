@@ -145,3 +145,37 @@ export const askFaqAI = createServerFn({ method: "POST" })
       return { answer: "Deu um probleminha aqui do meu lado. Tenta reformular a pergunta ou fala com a gente em /ajuda 💛" };
     }
   });
+
+/**
+ * Status real da Fidê: verifica se existe chave de IA configurada no servidor
+ * e (quando há chave Gemini) valida a credencial contra a API do Google.
+ * Usado na landing para mostrar "online" / "offline".
+ */
+export const getFaqAIStatus = createServerFn({ method: "GET" }).handler(async () => {
+  const geminiKey =
+    process.env.GEMINI_API_KEY ||
+    process.env.GOOGLE_API_KEY ||
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  const lovableKey = process.env.LOVABLE_API_KEY;
+
+  if (!geminiKey && !lovableKey) {
+    return { online: false, provider: null as null | "gemini" | "lovable", reason: "no-key" as const };
+  }
+
+  if (geminiKey) {
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models?key=${geminiKey}`,
+        { method: "GET" },
+      );
+      if (res.ok) return { online: true, provider: "gemini" as const, reason: null };
+      console.error(`[Fidê] Chave Gemini inválida (${res.status}).`);
+    } catch {
+      console.error("[Fidê] Falha de rede ao validar a chave Gemini.");
+    }
+  }
+
+  if (lovableKey) return { online: true, provider: "lovable" as const, reason: null };
+
+  return { online: false, provider: null, reason: "invalid-key" as const };
+});
