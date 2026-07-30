@@ -42,6 +42,7 @@ function KbManager() {
   const est = memberships?.[0]?.establishment as { id: string; slug: string; name: string } | undefined;
   const { data } = useQuery({ queryKey: ["kb-admin", est?.id], queryFn: () => listFn({ data: { establishment_id: est!.id } }), enabled: !!est });
   const [editing, setEditing] = useState<ArticleDraft | null>(null);
+  const [preview, setPreview] = useState<Article | null>(null);
   const [catOpen, setCatOpen] = useState(false);
   const [catName, setCatName] = useState("");
   const [importing, setImporting] = useState(false);
