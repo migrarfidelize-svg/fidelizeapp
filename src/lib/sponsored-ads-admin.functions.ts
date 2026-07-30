@@ -30,7 +30,7 @@ export const adminAdsOverview = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin.rpc("sponsored_ads_admin_overview");
     if (error) throw new Error(error.message);
-    return data as Record<string, unknown>;
+    return (data ?? {}) as never;
   });
 
 export const adminListAdCampaigns = createServerFn({ method: "POST" })
@@ -102,7 +102,7 @@ export const adminReviewAdCampaign = createServerFn({ method: "POST" })
 
     const from = campaign.status as AdStatus;
     const now = new Date();
-    const patch: Record<string, unknown> = { updated_by: userId, updated_at: now.toISOString() };
+    const patch: Record<string, any> = { updated_by: userId, updated_at: now.toISOString() };
     let to: AdStatus;
 
     switch (data.action) {
@@ -155,7 +155,7 @@ export const adminReviewAdCampaign = createServerFn({ method: "POST" })
     }
     patch.status = to;
 
-    const { error } = await supabaseAdmin.from("sponsored_ad_campaigns").update(patch).eq("id", data.campaign_id);
+    const { error } = await supabaseAdmin.from("sponsored_ad_campaigns").update(patch as never).eq("id", data.campaign_id);
     if (error) throw new Error(error.message);
 
     await supabaseAdmin.from("sponsored_ad_reviews").insert({
