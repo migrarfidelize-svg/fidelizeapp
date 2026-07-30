@@ -91,11 +91,15 @@ async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: 
     const { data } = await supabase.rpc("my_account_type");
     if (data === "super_admin") return { to: "/hash" };
     if (data === "establishment") return { to: "/app" };
+    // Quem entrou pela aba "Estabelecimento" mas ainda não tem empresa vinculada
+    // não pode cair na carteira do cliente — segue para criar/ativar a empresa.
+    if (opts.role === "establishment") return { to: "/onboarding" };
     return { to: "/carteira" };
   } catch {
-    return { to: "/carteira" };
+    return { to: opts.role === "establishment" ? "/onboarding" : "/carteira" };
   }
 }
+
 
 export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
