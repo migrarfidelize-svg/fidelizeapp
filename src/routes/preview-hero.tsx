@@ -48,7 +48,7 @@ const VARIANTS: Variant[] = [
       </>
     ),
     sub: "Fidelidade digital, cardápio, avaliações, QR Code, push e CRM — num só painel. Sem app, sem cartão de papel.",
-    cta: "Começar grátis",
+    cta: "Criar minha conta",
     checks: ["Sem cartão de crédito", "Configure em 5 minutos"],
   },
   {

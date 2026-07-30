@@ -21,7 +21,7 @@ import { askFaqAI } from "@/lib/faq-ai.functions";
 
 const SITE_URL = "https://warm-hug-genie.lovable.app";
 const PAGE_TITLE = "Fidelize — Cartão fidelidade digital para clientes fiéis";
-const PAGE_DESC = "Crie cartões fidelidade digitais com QR Code, painel de análise em tempo real e campanhas que fazem seus clientes voltarem sempre. Comece grátis hoje.";
+const PAGE_DESC = "Crie cartões fidelidade digitais com QR Code, painel de análise em tempo real e campanhas que fazem seus clientes voltarem sempre. Planos a partir de R$ 29,90/mês.";
 
 const FAQ_ITEMS: Array<[string, string]> = [
   ["Meu cliente precisa baixar um app?", "Não. Tudo funciona direto pelo navegador do celular. Ele escaneia o QR Code, informa nome e telefone e já sai com o cartão pronto."],
@@ -111,10 +111,10 @@ function MobileStickyCta() {
       <div className="flex items-center gap-3 pb-3">
         <div className="min-w-0 flex-1">
           <div className="text-sm font-semibold leading-tight">A partir de R$ 29,90/mês</div>
-          <div className="text-[11px] text-muted-foreground">14 dias grátis · sem cartão</div>
+          <div className="text-[11px] text-muted-foreground">A partir de R$ 29,90/mês · cancele quando quiser</div>
         </div>
         <Button asChild className="h-12 shrink-0 rounded-full px-6 font-bold">
-          <Link to="/auth" search={{ mode: "signup" }}>Testar grátis</Link>
+          <Link to="/auth" search={{ mode: "signup" }}>Criar minha conta</Link>
         </Button>
       </div>
     </div>
@@ -155,7 +155,7 @@ function SiteHeader() {
           ) : (
             <>
               <Button asChild variant="ghost" size="sm" className="h-10 rounded-full hidden sm:inline-flex"><Link to="/auth">Entrar</Link></Button>
-              <Button asChild size="sm" className="h-10 rounded-full px-4"><Link to="/auth" search={{ mode: "signup" }}>Testar grátis</Link></Button>
+              <Button asChild size="sm" className="h-10 rounded-full px-4"><Link to="/auth" search={{ mode: "signup" }}>Criar minha conta</Link></Button>
 
             </>
           )}
@@ -204,7 +204,7 @@ function SiteHeader() {
                 ) : (
                   <>
                     <Button asChild className="h-12 rounded-full" onClick={() => setMenuOpen(false)}>
-                      <Link to="/auth" search={{ mode: "signup" }}>Testar grátis</Link>
+                      <Link to="/auth" search={{ mode: "signup" }}>Criar minha conta</Link>
                     </Button>
                     <Button asChild variant="outline" className="h-12 rounded-full" onClick={() => setMenuOpen(false)}>
                       <Link to="/auth">Entrar</Link>
@@ -212,7 +212,7 @@ function SiteHeader() {
                   </>
                 )}
 
-                <p className="pt-2 text-center text-xs text-muted-foreground">14 dias grátis · sem cartão</p>
+                <p className="pt-2 text-center text-xs text-muted-foreground">A partir de R$ 29,90/mês · cancele quando quiser</p>
               </div>
             </SheetContent>
           </Sheet>
@@ -311,7 +311,7 @@ function Hero() {
                 style={{ background: CYAN, color: OBSIDIAN, boxShadow: `0 0 30px ${CYAN}55` }}
               >
                 <Link to="/auth" search={{ mode: "signup" }}>
-                  Começar grátis <ArrowRight className="ml-1 h-4 w-4" />
+                  Criar minha conta <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>
               </Button>
 
@@ -332,7 +332,7 @@ function Hero() {
                 <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> Configure em 5 minutos
               </span>
               <span className="flex items-center gap-1.5">
-                <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> 14 dias grátis · a partir de R$ 29,90/mês
+                <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> Planos a partir de R$ 29,90/mês
               </span>
             </div>
           </div>
@@ -898,7 +898,7 @@ function Comparison() {
               </p>
               <Button asChild size="lg" className="tear-cta-btn rounded-full px-8 font-bold" style={{ background: "#a78bfa", color: "#001010" }}>
                 <Link to="/auth">
-                  Começar grátis <ArrowRight className="ml-1 h-4 w-4" />
+                  Criar minha conta <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>
               </Button>
             </div>
@@ -1208,11 +1208,11 @@ function Examples() {
         <div className="mx-auto mt-10 flex flex-col items-center gap-2 text-center">
           <Button asChild size="lg" className="rounded-full px-8 font-bold" style={{ background: "#a78bfa", color: "#001010" }}>
             <Link to="/auth">
-              Começar grátis <ArrowRight className="ml-1 h-4 w-4" />
+              Criar minha conta <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </Button>
           <p className="text-[11px] uppercase tracking-widest text-white/40">
-            <Gift className="mr-1 inline h-3 w-3" style={{ color: "#a78bfa" }} /> 14 dias grátis · sem cartão
+            <Gift className="mr-1 inline h-3 w-3" style={{ color: "#a78bfa" }} /> A partir de R$ 29,90/mês · cancele quando quiser
           </p>
         </div>
       </div>
@@ -1376,7 +1376,7 @@ function Pricing() {
 
         {/* trust line */}
         <p className="mt-8 text-center text-xs uppercase tracking-[0.3em] text-muted-foreground">
-          14 dias grátis · sem cartão · cancele quando quiser
+          A partir de R$ 29,90/mês · cancele quando quiser
         </p>
 
       </div>
@@ -1704,7 +1704,7 @@ function CTA() {
           <div className="flex flex-col gap-3">
             <Button asChild size="lg" className="h-14 rounded-none bg-[#a78bfa] text-background hover:bg-white font-bold uppercase tracking-widest text-sm justify-between shadow-[0_0_30px_rgba(167,139,250,0.25)]">
               <Link to="/auth" search={{ mode: "signup" }}>
-                Começar grátis
+                Criar minha conta
                 <ArrowRight className="h-5 w-5" />
               </Link>
             </Button>
@@ -1719,7 +1719,7 @@ function CTA() {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-[#a78bfa]" />
             </span>
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
-              14 dias grátis · sem cartão · cancele quando quiser
+              A partir de R$ 29,90/mês · cancele quando quiser
             </span>
           </div>
         </div>
@@ -1915,7 +1915,7 @@ function FaqAIPanel() {
     }
   }
 
-  const suggestions = ["Como funciona o QR Code?", "Posso testar grátis?", "Como recompenso meus clientes?"];
+  const suggestions = ["Como funciona o QR Code?", "Quanto custa o plano?", "Como recompenso meus clientes?"];
 
   return (
     <div className="relative rounded-3xl border border-primary/30 bg-gradient-to-br from-card/60 to-background/40 backdrop-blur-xl p-5 md:p-6 shadow-2xl shadow-violet-500/10">

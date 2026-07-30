@@ -189,7 +189,7 @@ export function DiscoverMenuShowcase() {
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <Button asChild size="lg" className="group">
               <Link to="/auth">
-                Começar grátis
+                Criar minha conta
                 <ArrowRight className="ml-1.5 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </Button>
