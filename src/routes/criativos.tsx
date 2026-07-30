@@ -509,8 +509,9 @@ function CreativeThree() {
               "linear-gradient(150deg, rgba(255,255,255,0.09), rgba(255,255,255,0.02))",
           }}
         >
-          <p className="max-w-[640px] text-[27px] leading-snug font-medium">
-            Fidelidade, cardápio, avaliações e automação — na mesma assinatura.
+          <p className="max-w-[560px] text-[26px] leading-snug font-medium">
+            Fidelidade, cardápio, avaliações e automação na mesma assinatura.
+
           </p>
           <div
             className="rounded-2xl px-8 py-4 text-[24px] font-semibold"
