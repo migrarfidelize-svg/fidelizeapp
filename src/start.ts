@@ -38,6 +38,15 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
   }
 });
 
+const csrfMiddleware = createMiddleware({ type: "function" }).server(async ({ next }) => {
+  const { checkSameOrigin } = await import("./lib/csrf.server");
+  const blocked = checkSameOrigin();
+  if (blocked) {
+    throw new Response(blocked, { status: 403 });
+  }
+  return next();
+});
+
 const serverFnErrorCapture = createMiddleware({ type: "function" }).server(async ({ next }) => {
   try {
     return await next();
@@ -48,6 +57,7 @@ const serverFnErrorCapture = createMiddleware({ type: "function" }).server(async
 });
 
 export const startInstance = createStart(() => ({
-  functionMiddleware: [attachSupabaseAuth, serverFnErrorCapture],
+  functionMiddleware: [attachSupabaseAuth, csrfMiddleware, serverFnErrorCapture],
   requestMiddleware: [errorMiddleware],
 }));
+
