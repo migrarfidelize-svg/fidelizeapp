@@ -35,7 +35,7 @@ function AdminEmpresas() {
 
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"all" | "active" | "blocked">("all");
-  const [plan, setPlan_] = useState<"all" | "free" | "starter" | "pro" | "enterprise">("all");
+  const [plan, setPlan_] = useState<"all" | "free" | "starter" | "pro" | "enterprise" | "business">("all");
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin-ests", query, status, plan],
@@ -54,7 +54,7 @@ function AdminEmpresas() {
   });
 
   const changePlan = useMutation({
-    mutationFn: (v: { id: string; plan: "free" | "starter" | "pro" | "enterprise" }) => setPlan({ data: { establishment_id: v.id, plan: v.plan } }),
+    mutationFn: (v: { id: string; plan: "free" | "starter" | "pro" | "enterprise" | "business" }) => setPlan({ data: { establishment_id: v.id, plan: v.plan } }),
     onSuccess: () => { toast.success("Plano atualizado"); invalidate(); },
     onError: (e: any) => toast.error(e.message ?? "Falha"),
   });

@@ -231,8 +231,8 @@ function Onboarding() {
       qc.removeQueries({ queryKey: ["memberships"] });
       const fresh = await getEsts();
       qc.setQueryData(["memberships"], fresh);
-      toast.success("Empresa criada!");
-      navigate({ to: "/app" });
+      toast.success("Empresa criada! Agora escolha seu plano para ativar.");
+      navigate({ to: "/app/planos" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro");
     } finally {
