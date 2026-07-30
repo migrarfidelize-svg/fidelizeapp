@@ -13,6 +13,7 @@ export const ONBOARDING_PREFILL_KEY = "fidelize:onboarding-prefill";
 import { claimCustomerByToken, attachEstablishmentBySlug } from "@/lib/my-wallet.functions";
 import { DISCOVER_CATEGORIES } from "@/lib/discover-categories";
 import { getCaptchaConfig, verifyCaptcha } from "@/lib/captcha.functions";
+import { guardAuthAttempt, reportAuthAttempt } from "@/lib/auth-guard.functions";
 import { Turnstile, resetTurnstile } from "@/components/Turnstile";
 import { useIsMobile } from "@/hooks/use-mobile";
 
