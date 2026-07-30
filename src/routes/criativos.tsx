@@ -462,11 +462,11 @@ function CreativeThree() {
             </p>
             <ul className="mt-9 flex flex-1 flex-col justify-center space-y-7 text-[21px] leading-snug text-white/85">
               {[
-                "Cartão no celular, sempre à mão",
-                "Base de clientes com histórico",
-                "Carimbo validado por QR seguro",
-                "Push que traz o cliente de volta",
-                "Cardápio, catálogo e avaliações",
+                "Cartão sempre no celular",
+                "Base de clientes com CRM",
+                "Carimbo validado por QR",
+                "Push que traz o cliente",
+                "Cardápio e avaliações",
               ].map((t) => (
                 <li key={t} className="flex gap-4">
                   <Check
