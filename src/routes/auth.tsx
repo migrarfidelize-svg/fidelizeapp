@@ -2,6 +2,7 @@ import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-rout
 import { useEffect, useRef, useState } from "react";
 import { getWalletHint, setWalletHint, formatWalletHint, isStandaloneLaunch } from "@/lib/wallet-hint";
 import { getKeepSignedIn, setKeepSignedIn } from "@/lib/session-keeper";
+import { getSettledSession } from "@/lib/session-ready";
 import { setPlanIntent } from "@/lib/plan-intent";
 import { trackPlanFunnel, rememberSelectedPlan } from "@/lib/plan-funnel";
 
@@ -105,12 +106,15 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   ssr: false,
   beforeLoad: async ({ search }) => {
-    const { data } = await supabase.auth.getSession();
-    if (data.session) {
+    // Espera a auth assentar: se ainda estivermos reidratando a sessão, um
+    // redirecionamento prematuro faz o usuário oscilar entre /auth e a rota privada.
+    const session = await getSettledSession();
+    if (session?.user) {
       const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next, role: search.as });
       throw redirect({ to: dest.to });
     }
   },
+
   head: () => ({ meta: [{ title: "Entrar — Fidelize" }, { name: "robots", content: "noindex, nofollow" }] }),
   component: AuthPage,
 });
@@ -160,8 +164,9 @@ function AuthPage() {
   async function completeAuthRedirect(to: string, type: "SIGNED_IN" | "SIGNED_UP") {
     notifyAuthSync(type);
     // Garante que a sessão está hidratada antes do guard do /_authenticated rodar.
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) {
+    const session = await getSettledSession(2000);
+    if (!session) {
+
       // Sem sessão (ex.: confirmação de e-mail pendente) qualquer rota privada
       // devolve o usuário para /auth — evitamos o overlay "Carregando seu painel…" infinito.
       setRedirecting(false);
