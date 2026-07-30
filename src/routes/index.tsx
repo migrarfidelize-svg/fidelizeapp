@@ -1263,13 +1263,21 @@ type Plan = {
 
 
 function Pricing() {
-  const plans: Plan[] = [
+  const dbPlans = useLandingData()?.plans ?? [];
+  const basePlans: Plan[] = [
     { name: "Essencial", short: "Essencial", price: "R$ 29,90", numeric: 29.9, slug: "essencial", desc: "Para começar do jeito certo", tagline: "Ideal pra validar e já fidelizar desde o primeiro cliente.", features: ["Até 300 clientes", "Cartão fidelidade digital", "Notificações push", "Tag Display", "1 funcionário"], cta: "Assinar agora", icon: Sprout },
     { name: "Profissional", short: "Pro", price: "R$ 59,90", numeric: 59.9, slug: "profissional", desc: "Para negócios em crescimento", tagline: "O favorito de quem quer escalar retenção com automações.", features: ["Até 1.000 clientes", "Cardápio virtual e catálogo digital", "5 funcionários", "Avaliações e relatórios completos"], cta: "Assinar agora", badge: "Mais popular", icon: Sparkles },
     { name: "Premium", short: "Premium", price: "R$ 119,90", numeric: 119.9, slug: "ilimitado", desc: "Operação sem limites", tagline: "Recursos completos, equipe ilimitada e marca própria.", features: ["Clientes ilimitados", "Equipe ilimitada", "Carteira Apple/Google", "Integrações avançadas", "Sem marca Fidelize"], cta: "Assinar agora", icon: Building2 },
     { name: "Empresarial", short: "Empresarial", price: "R$ 349,00", numeric: 349, slug: "empresarial", desc: "Para redes e franquias", tagline: "Multi-unidades, suporte dedicado e onboarding assistido.", features: ["Tudo do Premium", "Múltiplas unidades", "Gestor de conta dedicado", "Onboarding assistido", "SLA prioritário"], cta: "Falar com vendas", icon: Building2 },
   ];
 
+
+  // Preço/nome vêm do painel admin (tabela de planos); o texto de marketing permanece local.
+  const plans: Plan[] = basePlans.map((p) => {
+    const db = dbPlans.find((d) => d.slug === p.slug);
+    if (!db || db.price_monthly == null) return p;
+    return { ...p, name: db.name || p.name, price: brl(Number(db.price_monthly)), numeric: Number(db.price_monthly) };
+  });
 
   const [activeIdx, setActiveIdx] = useState(1);
   
