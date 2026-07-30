@@ -1322,8 +1322,15 @@ function Pricing() {
 
                 {/* CTA */}
                 <Button asChild size="lg" className="mt-10 w-full">
-                  <Link to="/auth" search={{ mode: "signup" }}>{active.cta}</Link>
+                  <Link
+                    to="/auth"
+                    search={active.slug ? { mode: "signup", plan: active.slug } : { mode: "signup" }}
+                    onClick={() => { if (active.slug) setPlanIntent(active.slug); }}
+                  >
+                    {active.cta}
+                  </Link>
                 </Button>
+
               </div>
             </div>
           </div>
