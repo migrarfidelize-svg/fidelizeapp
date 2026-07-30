@@ -115,7 +115,7 @@ export const adminListEstablishments = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({
     query: z.string().trim().max(80).optional(),
     status: z.enum(["all", "active", "blocked"]).default("all"),
-    plan: z.enum(["all", "free", "starter", "pro", "enterprise"]).default("all"),
+    plan: z.enum(["all", "free", "starter", "pro", "enterprise", "business"]).default("all"),
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -174,7 +174,7 @@ export const adminSetEstablishmentPlan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
     establishment_id: z.string().uuid(),
-    plan: z.enum(["free", "starter", "pro", "enterprise"]),
+    plan: z.enum(["free", "starter", "pro", "enterprise", "business"]),
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
