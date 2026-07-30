@@ -292,7 +292,9 @@ function AuthPage() {
             { onConflict: "id" },
           );
         }
+        markAttempt(true);
         if (isEstablishmentSignup) {
+
           try {
             localStorage.setItem(
               ONBOARDING_PREFILL_KEY,
