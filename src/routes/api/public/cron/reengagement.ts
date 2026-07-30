@@ -2,12 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 
 /**
  * Cron: send re-engagement pushes to customers inactive for N days.
- * Called daily by pg_cron via /api/public/cron/reengagement
+ * Called daily by pg_cron via /api/public/cron/reengagement (requer cabeçalho apikey).
  */
 export const Route = createFileRoute("/api/public/cron/reengagement")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        const { authorizeCronRequest } = await import("@/lib/cron-auth.server");
+        const denied = authorizeCronRequest(request);
+        if (denied) return denied;
+
         try {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { sendPushToCustomer } = await import("@/lib/push.server");
@@ -26,7 +30,6 @@ export const Route = createFileRoute("/api/public/cron/reengagement")({
             cutoff.setUTCDate(cutoff.getUTCDate() - days);
             const cutoffIso = cutoff.toISOString();
 
-            // Fetch customers of the establishment whose last_visit is older than cutoff.
             const { data: customers } = await supabaseAdmin
               .from("customers")
               .select("id, name, last_visit_at")
@@ -36,7 +39,6 @@ export const Route = createFileRoute("/api/public/cron/reengagement")({
               .limit(500);
 
             for (const c of customers ?? []) {
-              // Skip if we already sent a reengagement in the last `days` days.
               const { data: recent } = await supabaseAdmin
                 .from("retention_dispatches")
                 .select("id")
@@ -69,9 +71,11 @@ export const Route = createFileRoute("/api/public/cron/reengagement")({
           }
 
           return Response.json({ ok: true, totalProcessed, totalSent });
-        } catch (e) {
-          const msg = e instanceof Error ? e.message : "error";
-          return new Response(JSON.stringify({ ok: false, error: msg }), { status: 500 });
+        } catch {
+          return new Response(JSON.stringify({ ok: false, error: "internal_error" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          });
         }
       },
     },
