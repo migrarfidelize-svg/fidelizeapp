@@ -83,7 +83,6 @@ function StatusPill({ status }: { status: AdStatus }) {
 
 function AdsPage() {
   const qc = useQueryClient();
-  const [establishmentId, setEstablishmentId] = useState<string | null>(null);
 
   // O layout /app já garante o vínculo; buscamos o estabelecimento ativo.
   const membership = useQuery({
@@ -98,12 +97,14 @@ function AdsPage() {
         .eq("active", true)
         .limit(1)
         .maybeSingle();
-      const id = data?.establishment_id ?? null;
-      setEstablishmentId(id);
-      return id;
+      return data?.establishment_id ?? null;
     },
     staleTime: 5 * 60_000,
   });
+
+  // Derivado do cache (nunca de estado local): ao voltar para a aba o queryFn
+  // pode não rodar de novo e o id precisa continuar disponível.
+  const establishmentId = membership.data ?? null;
 
   const workspaceFn = useServerFn(getAdsWorkspace);
   const workspace = useQuery({
@@ -112,7 +113,7 @@ function AdsPage() {
     enabled: !!establishmentId,
   });
 
-  if (membership.isLoading || workspace.isLoading) {
+  if (membership.isPending || (!!establishmentId && workspace.isPending)) {
     return <RouteLoading label="Carregando anúncios…" fullscreen={false} />;
   }
   if (workspace.error) {
@@ -123,8 +124,17 @@ function AdsPage() {
     );
   }
 
+  if (!establishmentId) {
+    return (
+      <div className="rounded-3xl border border-border/60 bg-card/40 p-6 text-sm text-muted-foreground">
+        Não encontramos um estabelecimento ativo vinculado à sua conta.
+      </div>
+    );
+  }
+
   const ws = workspace.data;
-  if (!ws || !establishmentId) return null;
+  if (!ws) return null;
+
 
   return (
     <AdsWorkspace
