@@ -56,13 +56,17 @@ export function Turnstile({
     loadScript()
       .then(() => {
         if (cancelled || !ref.current || !window.turnstile) return;
+        console.log("[turnstile] rendering with siteKey prefix:", siteKey.slice(0, 8), "length:", siteKey.length);
         widgetId.current = window.turnstile.render(ref.current, {
           sitekey: siteKey,
           theme,
           language: "pt-br",
           callback: (token: string) => cb.current(token),
           "expired-callback": () => cb.current(null),
-          "error-callback": () => cb.current(null),
+          "error-callback": (code: string) => {
+            console.error("[turnstile] error-callback code:", code);
+            cb.current(null);
+          },
         });
       })
       .catch(() => cb.current(null));
