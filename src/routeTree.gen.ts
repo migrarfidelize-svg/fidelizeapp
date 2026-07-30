@@ -57,6 +57,7 @@ import { Route as AuthenticatedHashPagamentosRouteImport } from './routes/_authe
 import { Route as AuthenticatedHashNotificacoesRouteImport } from './routes/_authenticated/hash.notificacoes'
 import { Route as AuthenticatedHashMigracaoRouteImport } from './routes/_authenticated/hash.migracao'
 import { Route as AuthenticatedHashLiberacoesRouteImport } from './routes/_authenticated/hash.liberacoes'
+import { Route as AuthenticatedHashLandingRouteImport } from './routes/_authenticated/hash.landing'
 import { Route as AuthenticatedHashIntegracoesRouteImport } from './routes/_authenticated/hash.integracoes'
 import { Route as AuthenticatedHashFinanceiroRouteImport } from './routes/_authenticated/hash.financeiro'
 import { Route as AuthenticatedHashEquipeRouteImport } from './routes/_authenticated/hash.equipe'
@@ -385,6 +386,12 @@ const AuthenticatedHashLiberacoesRoute =
   AuthenticatedHashLiberacoesRouteImport.update({
     id: '/liberacoes',
     path: '/liberacoes',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashLandingRoute =
+  AuthenticatedHashLandingRouteImport.update({
+    id: '/landing',
+    path: '/landing',
     getParentRoute: () => AuthenticatedHashRoute,
   } as any)
 const AuthenticatedHashIntegracoesRoute =
@@ -953,6 +960,7 @@ export interface FileRoutesByFullPath {
   '/hash/equipe': typeof AuthenticatedHashEquipeRoute
   '/hash/financeiro': typeof AuthenticatedHashFinanceiroRoute
   '/hash/integracoes': typeof AuthenticatedHashIntegracoesRoute
+  '/hash/landing': typeof AuthenticatedHashLandingRoute
   '/hash/liberacoes': typeof AuthenticatedHashLiberacoesRoute
   '/hash/migracao': typeof AuthenticatedHashMigracaoRoute
   '/hash/notificacoes': typeof AuthenticatedHashNotificacoesRoute
@@ -1081,6 +1089,7 @@ export interface FileRoutesByTo {
   '/hash/equipe': typeof AuthenticatedHashEquipeRoute
   '/hash/financeiro': typeof AuthenticatedHashFinanceiroRoute
   '/hash/integracoes': typeof AuthenticatedHashIntegracoesRoute
+  '/hash/landing': typeof AuthenticatedHashLandingRoute
   '/hash/liberacoes': typeof AuthenticatedHashLiberacoesRoute
   '/hash/migracao': typeof AuthenticatedHashMigracaoRoute
   '/hash/notificacoes': typeof AuthenticatedHashNotificacoesRoute
@@ -1216,6 +1225,7 @@ export interface FileRoutesById {
   '/_authenticated/hash/equipe': typeof AuthenticatedHashEquipeRoute
   '/_authenticated/hash/financeiro': typeof AuthenticatedHashFinanceiroRoute
   '/_authenticated/hash/integracoes': typeof AuthenticatedHashIntegracoesRoute
+  '/_authenticated/hash/landing': typeof AuthenticatedHashLandingRoute
   '/_authenticated/hash/liberacoes': typeof AuthenticatedHashLiberacoesRoute
   '/_authenticated/hash/migracao': typeof AuthenticatedHashMigracaoRoute
   '/_authenticated/hash/notificacoes': typeof AuthenticatedHashNotificacoesRoute
@@ -1351,6 +1361,7 @@ export interface FileRouteTypes {
     | '/hash/equipe'
     | '/hash/financeiro'
     | '/hash/integracoes'
+    | '/hash/landing'
     | '/hash/liberacoes'
     | '/hash/migracao'
     | '/hash/notificacoes'
@@ -1479,6 +1490,7 @@ export interface FileRouteTypes {
     | '/hash/equipe'
     | '/hash/financeiro'
     | '/hash/integracoes'
+    | '/hash/landing'
     | '/hash/liberacoes'
     | '/hash/migracao'
     | '/hash/notificacoes'
@@ -1613,6 +1625,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hash/equipe'
     | '/_authenticated/hash/financeiro'
     | '/_authenticated/hash/integracoes'
+    | '/_authenticated/hash/landing'
     | '/_authenticated/hash/liberacoes'
     | '/_authenticated/hash/migracao'
     | '/_authenticated/hash/notificacoes'
@@ -2062,6 +2075,13 @@ declare module '@tanstack/react-router' {
       path: '/liberacoes'
       fullPath: '/hash/liberacoes'
       preLoaderRoute: typeof AuthenticatedHashLiberacoesRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/landing': {
+      id: '/_authenticated/hash/landing'
+      path: '/landing'
+      fullPath: '/hash/landing'
+      preLoaderRoute: typeof AuthenticatedHashLandingRouteImport
       parentRoute: typeof AuthenticatedHashRoute
     }
     '/_authenticated/hash/integracoes': {
@@ -2826,6 +2846,7 @@ interface AuthenticatedHashRouteChildren {
   AuthenticatedHashEquipeRoute: typeof AuthenticatedHashEquipeRoute
   AuthenticatedHashFinanceiroRoute: typeof AuthenticatedHashFinanceiroRoute
   AuthenticatedHashIntegracoesRoute: typeof AuthenticatedHashIntegracoesRoute
+  AuthenticatedHashLandingRoute: typeof AuthenticatedHashLandingRoute
   AuthenticatedHashLiberacoesRoute: typeof AuthenticatedHashLiberacoesRoute
   AuthenticatedHashMigracaoRoute: typeof AuthenticatedHashMigracaoRoute
   AuthenticatedHashNotificacoesRoute: typeof AuthenticatedHashNotificacoesRoute
@@ -2855,6 +2876,7 @@ const AuthenticatedHashRouteChildren: AuthenticatedHashRouteChildren = {
   AuthenticatedHashEquipeRoute: AuthenticatedHashEquipeRoute,
   AuthenticatedHashFinanceiroRoute: AuthenticatedHashFinanceiroRoute,
   AuthenticatedHashIntegracoesRoute: AuthenticatedHashIntegracoesRoute,
+  AuthenticatedHashLandingRoute: AuthenticatedHashLandingRoute,
   AuthenticatedHashLiberacoesRoute: AuthenticatedHashLiberacoesRoute,
   AuthenticatedHashMigracaoRoute: AuthenticatedHashMigracaoRoute,
   AuthenticatedHashNotificacoesRoute: AuthenticatedHashNotificacoesRoute,
