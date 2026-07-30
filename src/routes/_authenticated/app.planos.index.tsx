@@ -1,5 +1,5 @@
 import { RouteLoading } from "@/components/RouteLoading";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
 import { Crown as HeroIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -43,6 +43,7 @@ function MerchantPlansPage() {
   const getEsts = useServerFn(getMyEstablishments);
   const getUsage = useServerFn(getMyPlanUsage);
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
   const activeEst = memberships?.[0]?.establishment as { id: string; plan?: string } | undefined;
   const { data: plans, isLoading } = useQuery({ queryKey: ["active-plans"], queryFn: () => list() });
