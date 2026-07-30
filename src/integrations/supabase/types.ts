@@ -2935,6 +2935,48 @@ export type Database = {
           },
         ]
       }
+      pixel_events: {
+        Row: {
+          capi_status: string | null
+          created_at: string
+          device: string | null
+          event_name: string
+          id: string
+          path: string | null
+          pixel_id: string | null
+          props: Json
+          referrer: string | null
+          session_hash: string | null
+          source: string
+        }
+        Insert: {
+          capi_status?: string | null
+          created_at?: string
+          device?: string | null
+          event_name: string
+          id?: string
+          path?: string | null
+          pixel_id?: string | null
+          props?: Json
+          referrer?: string | null
+          session_hash?: string | null
+          source?: string
+        }
+        Update: {
+          capi_status?: string | null
+          created_at?: string
+          device?: string | null
+          event_name?: string
+          id?: string
+          path?: string | null
+          pixel_id?: string | null
+          props?: Json
+          referrer?: string | null
+          session_hash?: string | null
+          source?: string
+        }
+        Relationships: []
+      }
       plan_features: {
         Row: {
           created_at: string
