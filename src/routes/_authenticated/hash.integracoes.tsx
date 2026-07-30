@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plug, CheckCircle2, XCircle, Loader2, KeyRound, ExternalLink, Settings2,
   Copy, CopyCheck, RotateCcw, AlertTriangle, Clock, BookOpen, History, Webhook, Save,
-  Sparkles, CreditCard, Zap,
+  Sparkles, CreditCard, Zap, Target,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { ProviderBrand, providerAccent } from "@/components/integrations/ProviderBrand";
@@ -78,14 +78,20 @@ function IntegrationsPage() {
   const grouped = useMemo(() => {
     const ai: CatalogMeta[] = [];
     const payments: CatalogMeta[] = [];
-    (catalog.data ?? []).forEach((m) => (m.category === "ai" ? ai.push(m) : payments.push(m)));
-    return { ai, payments };
+    const marketing: CatalogMeta[] = [];
+    (catalog.data ?? []).forEach((m) => {
+      if (m.category === "ai") ai.push(m);
+      else if (m.category === "marketing") marketing.push(m);
+      else payments.push(m);
+    });
+    return { ai, payments, marketing };
   }, [catalog.data]);
 
   const isLoading = catalog.isLoading || saved.isLoading;
 
   const aiConfigured = grouped.ai.filter((m) => byKey.get(`ai:${m.id}`)?.enabled).length;
   const payConfigured = grouped.payments.filter((m) => byKey.get(`payments:${m.id}`)?.enabled).length;
+  const mktConfigured = grouped.marketing.filter((m) => byKey.get(`marketing:${m.id}`)?.enabled).length;
   const webhooksActive = (webhooks.data ?? []).length;
 
   return (
@@ -105,6 +111,7 @@ function IntegrationsPage() {
         stats={[
           { label: "IA ativas", value: aiConfigured },
           { label: "Pagamentos", value: payConfigured },
+          { label: "Marketing", value: mktConfigured },
           { label: "Webhooks", value: webhooksActive },
         ]}
       />
@@ -112,6 +119,7 @@ function IntegrationsPage() {
       <Tabs defaultValue="providers" className="w-full">
         <TabsList>
           <TabsTrigger value="providers"><Zap className="h-4 w-4 mr-1" />Provedores</TabsTrigger>
+          <TabsTrigger value="marketing"><Target className="h-4 w-4 mr-1" />Marketing &amp; Pixel</TabsTrigger>
           <TabsTrigger value="webhooks"><Webhook className="h-4 w-4 mr-1" />Webhooks</TabsTrigger>
         </TabsList>
 
@@ -138,6 +146,31 @@ function IntegrationsPage() {
             />
             {isLoading ? <SkeletonGrid /> : <Grid metas={grouped.payments} byKey={byKey} onChanged={() => saved.refetch()} />}
           </section>
+        </TabsContent>
+
+        <TabsContent value="marketing" className="mt-6 space-y-5">
+          <SectionBanner
+            title="Marketing &amp; Rastreamento"
+            subtitle="Conecte o Pixel do Meta e a Conversions API para medir conversões do site público, montar públicos e otimizar campanhas no Facebook e Instagram."
+            icon={Target}
+            gradient="from-sky-500 via-blue-600 to-indigo-700"
+            accent="#0866ff"
+            stats={[{ label: "Canais", value: grouped.marketing.length }, { label: "Ativos", value: mktConfigured }]}
+          />
+          <Card className="border-amber-500/40 bg-amber-500/5">
+            <CardContent className="p-4 flex gap-3 text-sm">
+              <KeyRound className="h-4 w-4 mt-0.5 shrink-0 text-amber-600" />
+              <div className="space-y-1">
+                <p className="font-medium">As credenciais são inseridas apenas aqui, manualmente.</p>
+                <p className="text-muted-foreground">
+                  O token da Conversions API é gravado somente no backend e nunca retorna ao navegador — a tela mostra apenas os
+                  últimos dígitos. O Pixel ID é público por natureza e é validado (somente dígitos) antes de ir para o site.
+                  O Pixel nunca é carregado em páginas autenticadas.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+          {isLoading ? <SkeletonGrid /> : <Grid metas={grouped.marketing} byKey={byKey} onChanged={() => saved.refetch()} />}
         </TabsContent>
 
         <TabsContent value="webhooks" className="mt-6">
