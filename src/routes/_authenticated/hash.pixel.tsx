@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -197,7 +198,7 @@ function PixelMonitorPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <p className="text-sm text-muted-foreground">Carregando eventos…</p>
+            <RouteLoading label="Carregando eventos…" fullscreen={false} className="min-h-[40vh]" />
           ) : feed.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               Nenhum evento recebido ainda. Abra uma página pública (landing, cardápio, árvore de links) para gerar o primeiro PageView.

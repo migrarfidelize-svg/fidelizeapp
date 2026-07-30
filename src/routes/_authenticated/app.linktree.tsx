@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute } from "@tanstack/react-router";
 import { LogoPaletteSync } from "@/components/LogoPaletteSync";
 import { ConfigureQrButton } from "@/components/merchant/ConfigureQrButton";
@@ -356,7 +357,7 @@ function LinkTreeEditor() {
 
   const previewLinks = useMemo(() => links.filter((l) => l.enabled && l.url.trim()), [links]);
 
-  if (!est) return <div className="p-6 text-muted-foreground">Carregando…</div>;
+  if (!est) return <RouteLoading label="Carregando…" fullscreen={false} className="min-h-[40vh]" />;
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6 overflow-x-clip p-3 sm:p-4 md:p-8">

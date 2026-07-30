@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
 import { DollarSign as HeroIcon } from "lucide-react";
@@ -26,7 +27,7 @@ function AdminFinanceiro() {
   const getFin = useServerFn(adminGetFinancial);
   const { data, isLoading } = useQuery({ queryKey: ["admin-financial"], queryFn: () => getFin() });
 
-  if (isLoading || !data) return <div className="text-muted-foreground">Carregando dados financeiros…</div>;
+  if (isLoading || !data) return <RouteLoading label="Carregando dados financeiros…" fullscreen={false} className="min-h-[40vh]" />;
   const d = data;
 
   const maxMonthAbs = Math.max(1, ...d.months.map(m => Math.max(m.mrrNew, m.churn)));

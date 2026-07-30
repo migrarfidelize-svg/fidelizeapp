@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
 import { Banknote as HeroIcon } from "lucide-react";
@@ -136,7 +137,7 @@ function AdminPaymentsPage() {
   const fmt = (iso: string | null | undefined) =>
     iso ? new Date(iso).toLocaleString("pt-BR") : "—";
 
-  if (isLoading) return <div className="grid place-items-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+  if (isLoading) return <RouteLoading fullscreen={false} className="min-h-[40vh]" />;
 
   const creds = (data as any)?.credentials ?? { has_access_token: false, has_webhook_secret: false, has_public_key: false };
   const settingsUpdatedAt: string | null = (data as any)?.settings_updated_at ?? null;
@@ -446,7 +447,7 @@ function ValidateWebhookButton() {
             <DialogTitle>Handshake do webhook</DialogTitle>
             <DialogDescription>Tentativa de GET na URL pública para confirmar acessibilidade.</DialogDescription>
           </DialogHeader>
-          {loading && <div className="grid place-items-center py-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}
+          {loading && <RouteLoading fullscreen={false} className="min-h-[40vh]" />}
           {result && (
             <div className="space-y-3 text-sm">
               <div className="flex items-center gap-2">
@@ -542,7 +543,7 @@ function WebhookLogsCard() {
       </CardHeader>
       <CardContent className="p-0">
         {isLoading ? (
-          <div className="grid place-items-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+          <RouteLoading fullscreen={false} className="min-h-[40vh]" />
         ) : rows.length === 0 ? (
           <div className="grid place-items-center py-10 text-sm text-muted-foreground">Nenhuma entrega registrada ainda.</div>
         ) : (
@@ -1263,7 +1264,7 @@ function PaymentDetailDialog({ id, onClose }: { id: string | null; onClose: () =
           <DialogDescription>Histórico completo, status atual e dados do comprador.</DialogDescription>
         </DialogHeader>
         {isLoading || !p ? (
-          <div className="grid place-items-center py-10"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+          <RouteLoading fullscreen={false} className="min-h-[40vh]" />
         ) : (
           <ScrollArea className="max-h-[70vh] pr-3">
             <div className="space-y-5">

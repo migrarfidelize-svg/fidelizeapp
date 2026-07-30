@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
 import { Sparkles as HeroIcon } from "lucide-react";
@@ -201,7 +202,7 @@ function Page() {
   const est = memberships?.[0]?.establishment as { id: string; name: string; slug: string } | undefined;
   const { allowed, isLoading: featLoading } = useMyFeature(est?.id, "public_reviews");
 
-  if (!est) return <div className="p-8 text-muted-foreground">Carregando…</div>;
+  if (!est) return <RouteLoading label="Carregando…" fullscreen={false} className="min-h-[40vh]" />;
 
   if (!featLoading && !allowed) {
     return (
@@ -401,7 +402,7 @@ function Feed({ estId }: { estId: string }) {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+        <RouteLoading fullscreen={false} className="min-h-[40vh]" />
       ) : (rows ?? []).length === 0 ? (
         <div className="relative overflow-hidden rounded-2xl border border-dashed border-border/60 bg-gradient-to-b from-primary/[0.03] to-transparent py-16 px-8 text-center">
           <div className="pointer-events-none absolute inset-0 opacity-30">
@@ -626,7 +627,7 @@ function PublicFormTab({ estId, slug }: { estId: string; slug: string }) {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  if (!s) return <div className="p-6 text-muted-foreground">Carregando…</div>;
+  if (!s) return <RouteLoading label="Carregando…" fullscreen={false} className="min-h-[40vh]" />;
 
   return (
     <div className="space-y-4">
@@ -723,7 +724,7 @@ function PublicRatingsTab({ estId }: { estId: string }) {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  if (!data) return <div className="p-6 text-muted-foreground">Carregando…</div>;
+  if (!data) return <RouteLoading label="Carregando…" fullscreen={false} className="min-h-[40vh]" />;
 
   return (
     <div className="space-y-4">
@@ -936,7 +937,7 @@ function PublicInbox({ estId }: { estId: string }) {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+        <RouteLoading fullscreen={false} className="min-h-[40vh]" />
       ) : (
         <div className="space-y-3">
           {(rows ?? []).length === 0 && <Card><CardContent className="p-8 text-center text-muted-foreground">Nenhuma avaliação nesta seleção.</CardContent></Card>}
@@ -1060,7 +1061,7 @@ function LowRatingAlerts({ estId }: { estId: string }) {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+        <RouteLoading fullscreen={false} className="min-h-[40vh]" />
       ) : open.length === 0 && handled.length === 0 ? (
         <Card><CardContent className="p-8 text-center text-muted-foreground">Nenhuma avaliação com nota baixa. 🎉</CardContent></Card>
       ) : (
@@ -1147,7 +1148,7 @@ function InsightsTab({ estId }: { estId: string }) {
     queryFn: () => statsFn({ data: { establishmentId: estId, days: Number(days) } }),
   });
 
-  if (isLoading || !ins) return <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+  if (isLoading || !ins) return <RouteLoading fullscreen={false} className="min-h-[40vh]" />;
 
   const totalByRating = ins.byRatingOption.reduce((s, o) => s + o.count, 0) || 1;
 

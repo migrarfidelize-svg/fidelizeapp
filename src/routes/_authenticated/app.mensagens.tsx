@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -50,9 +51,7 @@ function MerchantMessagesPage() {
 
   if (!estId) {
     return (
-      <div className="pt-10 text-center text-sm text-muted-foreground">
-        Carregando estabelecimento…
-      </div>
+      <RouteLoading label="Carregando estabelecimento…" fullscreen={false} className="min-h-[40vh]" />
     );
   }
 

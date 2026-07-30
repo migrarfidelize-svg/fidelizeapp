@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
 import { HeartHandshake as HeroIcon } from "lucide-react";
@@ -124,9 +125,7 @@ function RetencaoPage() {
 
   if (!activeEst || !form) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
+      <RouteLoading fullscreen={false} className="min-h-[40vh]" />
     );
   }
 

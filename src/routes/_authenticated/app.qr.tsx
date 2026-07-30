@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { LogoPaletteSync } from "@/components/LogoPaletteSync";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -1053,7 +1054,7 @@ function ReviewQrPage() {
     toast.success("URL copiada — cole no app do seu NFC tag (NFC Tools, etc.)");
   }
 
-  if (!est) return <div className="p-8 text-muted-foreground">Carregando…</div>;
+  if (!est) return <RouteLoading label="Carregando…" fullscreen={false} className="min-h-[40vh]" />;
 
   if (!featLoading && !allowed) {
     return (

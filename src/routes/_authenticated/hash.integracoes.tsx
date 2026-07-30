@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
 import { Plug as HeroIcon } from "lucide-react";
@@ -591,7 +592,7 @@ function HistoryTab({ row }: { row?: IntegrationRow }) {
 
       <div>
         <h4 className="font-semibold mb-2">Alterações (auditoria)</h4>
-        {q.isLoading ? <p className="text-xs text-muted-foreground">Carregando...</p> :
+        {q.isLoading ? <RouteLoading label="Carregando…" fullscreen={false} className="min-h-[40vh]" /> :
           (q.data ?? []).length === 0 ? <p className="text-xs text-muted-foreground">Sem eventos.</p> :
             <ul className="space-y-1 text-xs max-h-64 overflow-y-auto">
               {(q.data ?? []).map((ev: any) => (

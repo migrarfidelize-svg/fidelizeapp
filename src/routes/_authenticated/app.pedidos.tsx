@@ -1,3 +1,4 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -151,7 +152,7 @@ function OrdersPage() {
       </div>
 
       {ordersQ.isLoading ? (
-        <p className="py-12 text-center text-sm text-muted-foreground">Carregando pedidos...</p>
+        <RouteLoading label="Carregando pedidos…" fullscreen={false} className="min-h-[40vh]" />
       ) : orders.length === 0 ? (
         <Card>
           <CardContent className="space-y-2 p-10 text-center">
