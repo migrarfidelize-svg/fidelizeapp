@@ -1372,23 +1372,23 @@
 }
 
 
-/* Auth cinematic input */
+/* Auth input — segue os tokens do tema (claro por padrão) */
 @utility auth-input {
   width: 100%;
   border-radius: 0.75rem;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(0,0,0,0.35);
+  border: 1px solid var(--border);
+  background: color-mix(in oklab, var(--card) 92%, transparent);
   padding: 0.5rem 0.85rem;
   font-size: 0.875rem;
-  color: #fff;
+  color: var(--foreground);
   font-family: var(--font-sans);
   outline: none;
   transition: border-color 200ms, box-shadow 200ms, background 200ms;
-  &::placeholder { color: rgba(255,255,255,0.22); }
+  &::placeholder { color: color-mix(in oklab, var(--muted-foreground) 70%, transparent); }
   &:focus {
-    border-color: rgba(167,139,250,0.55);
-    box-shadow: 0 0 0 3px rgba(167,139,250,0.15);
-    background: rgba(0,0,0,0.5);
+    border-color: color-mix(in oklab, var(--primary) 55%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 18%, transparent);
+    background: var(--card);
   }
 }
 
