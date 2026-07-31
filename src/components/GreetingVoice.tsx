@@ -5,7 +5,22 @@ type Props = {
   gender: "female" | "male";
   /** Cache key: toca no máximo uma vez por hora/sessão */
   scope: string;
+  /** Configuração da empresa (Aparência → voz de boas-vindas). Padrão: ligada. */
+  enabled?: boolean;
 };
+
+/** Preferência local por dispositivo (silenciar só neste aparelho). */
+export const GREETING_MUTE_KEY = "fidelize:greet:muted";
+export function isGreetingMutedLocally() {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem(GREETING_MUTE_KEY) === "1";
+}
+export function setGreetingMutedLocally(muted: boolean) {
+  if (typeof window === "undefined") return;
+  if (muted) localStorage.setItem(GREETING_MUTE_KEY, "1");
+  else localStorage.removeItem(GREETING_MUTE_KEY);
+}
+
 
 /** Gera saudação humanizada, variada e contextual (tempo + carisma). */
 function buildGreeting(gender: "female" | "male") {
