@@ -100,7 +100,7 @@ function Dashboard() {
 
   return (
     <div className="space-y-8">
-      <GreetingVoice gender="female" scope="merchant" />
+      <GreetingVoice gender="female" scope="merchant" enabled={voiceEnabled} />
 
       {/* Mobile: instalar app + ativar notificações (mesma experiência da Carteira) */}
       <div className="space-y-3 md:hidden">
