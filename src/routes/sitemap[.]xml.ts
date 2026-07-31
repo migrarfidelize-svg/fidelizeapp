@@ -1,7 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
 
-const BASE_URL = "https://fidelizeapp.lovable.app";
+import { getPublicAppUrl } from "@/lib/app-url";
+
+/** Origem canônica: host da requisição (VPS/domínio próprio) com fallback nas envs. */
+function resolveBaseUrl(request: Request): string {
+  try {
+    const u = new URL(request.url);
+    const host = request.headers.get("x-forwarded-host") ?? u.host;
+    const proto = request.headers.get("x-forwarded-proto") ?? (u.protocol === "http:" ? "http" : "https");
+    if (host && !/localhost|127\.0\.0\.1/i.test(host)) return `${proto}://${host}`;
+  } catch {}
+  return getPublicAppUrl();
+}
 
 interface SitemapEntry {
   path: string;
