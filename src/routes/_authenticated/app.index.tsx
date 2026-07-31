@@ -23,7 +23,7 @@ import { MerchantInstallCard } from "@/components/merchant/MerchantInstallCard";
 import { MerchantPushCard } from "@/components/merchant/MerchantPushCard";
 import { FirstStepsCard } from "@/components/merchant/FirstStepsCard";
 import { getEstablishmentCampaigns } from "@/lib/loyalty.functions";
-import { listTeam } from "@/lib/settings.functions";
+import { listTeam, getEstablishmentFull } from "@/lib/settings.functions";
 
 
 export const Route = createFileRoute("/_authenticated/app/")({
