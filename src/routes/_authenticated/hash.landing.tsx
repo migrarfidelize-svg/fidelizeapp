@@ -15,6 +15,7 @@ import {
   type LandingHeroCopy,
   type MenuDish,
 } from "@/lib/landing-content";
+import { DEFAULT_BRAND, type BrandIdentity } from "@/lib/brand";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -97,12 +98,14 @@ function LandingAdmin() {
 
   const [hero, setHero] = useState<LandingHeroContent>(DEFAULT_HERO);
   const [brands, setBrands] = useState<LandingBrandsContent>(DEFAULT_BRANDS);
+  const [brand, setBrand] = useState<BrandIdentity>(DEFAULT_BRAND);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!data) return;
     setHero(data.hero);
     setBrands(data.brands);
+    if ((data as any).brand) setBrand((data as any).brand);
   }, [data]);
 
   const copy = hero.copy ?? DEFAULT_HERO.copy;
@@ -120,7 +123,10 @@ function LandingAdmin() {
   async function onSave() {
     setSaving(true);
     try {
-      await save({ data: { hero, brands } });
+      await save({ data: { hero, brands, brand } });
+      try {
+        localStorage.removeItem("fidelize.brand.v1");
+      } catch { /* storage bloqueado */ }
       // Avisa as abas abertas da landing para recarregarem na hora.
       const channel = supabase.channel("landing-content");
       await channel.subscribe();
@@ -164,6 +170,7 @@ function LandingAdmin() {
             <TabsTrigger value="cardapio">Cardápio</TabsTrigger>
             <TabsTrigger value="catalogo">Catálogo</TabsTrigger>
             <TabsTrigger value="marcas">Marcas</TabsTrigger>
+            <TabsTrigger value="logo">Logo</TabsTrigger>
           </TabsList>
 
           <TabsContent value="chamada" className="mt-4 space-y-4">
@@ -399,6 +406,67 @@ function LandingAdmin() {
                 ))}
                 <Button variant="outline" onClick={() => setBrands((s) => ({ ...s, brands: [...s.brands, { name: "Nova marca" }] }))}>
                   <Plus className="mr-2 h-4 w-4" /> Adicionar marca
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="logo" className="mt-4 space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Logo da plataforma</CardTitle>
+                <CardDescription>
+                  Aplicada no menu (desktop e mobile), no topo das telas públicas e no login. Envie um arquivo ou cole uma URL
+                  https. Prefira PNG/SVG com fundo transparente.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <ImageField
+                  label="Logo horizontal — fundo claro"
+                  value={brand.logoUrl}
+                  onChange={(v) => setBrand((b) => ({ ...b, logoUrl: v }))}
+                />
+                <ImageField
+                  label="Logo horizontal — tema escuro (opcional)"
+                  value={brand.logoDarkUrl}
+                  onChange={(v) => setBrand((b) => ({ ...b, logoDarkUrl: v }))}
+                />
+                <ImageField
+                  label="Símbolo quadrado — menu colapsado (opcional)"
+                  value={brand.markUrl}
+                  onChange={(v) => setBrand((b) => ({ ...b, markUrl: v }))}
+                />
+                <div className="space-y-2">
+                  <Label className="text-xs">Texto alternativo</Label>
+                  <Input
+                    value={brand.alt}
+                    maxLength={60}
+                    onChange={(e) => setBrand((b) => ({ ...b, alt: e.target.value }))}
+                    placeholder="Fidelize"
+                  />
+                </div>
+
+                <Separator />
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-xl border bg-white p-4">
+                    <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-neutral-500">Fundo claro</p>
+                    <img src={brand.logoUrl} alt="" className="h-8 w-auto max-w-full object-contain object-left" />
+                  </div>
+                  <div className="rounded-xl border bg-[#0b0713] p-4">
+                    <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-white/40">Fundo escuro</p>
+                    <img src={brand.logoDarkUrl} alt="" className="h-8 w-auto max-w-full object-contain object-left" />
+                  </div>
+                  <div className="flex items-center gap-3 rounded-xl border p-4">
+                    <div className="grid h-9 w-9 place-items-center overflow-hidden rounded-xl bg-primary/10">
+                      <img src={brand.markUrl} alt="" className="h-full w-full object-contain p-0.5" />
+                    </div>
+                    <span className="text-xs text-muted-foreground">Menu colapsado</span>
+                  </div>
+                </div>
+
+                <Button variant="outline" size="sm" onClick={() => setBrand(DEFAULT_BRAND)}>
+                  Restaurar logo padrão
                 </Button>
               </CardContent>
             </Card>
