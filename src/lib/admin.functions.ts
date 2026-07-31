@@ -12,13 +12,14 @@ export const getAdminStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    const { data } = await supabase.rpc("is_super_admin", { _user: userId });
+    const { data, error } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (error) throw new Error(`Não foi possível verificar o acesso administrativo: ${error.message}`);
     // Bootstrap: allow claiming super_admin if none exists yet
     const { count } = await supabase
       .from("app_roles")
       .select("*", { count: "exact", head: true })
       .eq("role", "super_admin");
-    return { isAdmin: !!data, canBootstrap: (count ?? 0) === 0 };
+    return { isAdmin: data === true, canBootstrap: (count ?? 0) === 0, userId };
   });
 
 export const bootstrapSuperAdmin = createServerFn({ method: "POST" })

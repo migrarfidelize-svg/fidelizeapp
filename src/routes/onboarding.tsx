@@ -27,6 +27,7 @@ import { LogoCropper } from "@/components/LogoCropper";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { STAMP_ICON_OPTIONS, getStampIcon, stampIconLabel } from "@/lib/stampIcons";
 import { DISCOVER_CATEGORIES } from "@/lib/discover-categories";
+import { getAuthenticatedAccountAccess } from "@/lib/account-access.functions";
 
 export const Route = createFileRoute("/onboarding")({
   ssr: false,
@@ -34,13 +35,9 @@ export const Route = createFileRoute("/onboarding")({
     const { data } = await supabase.auth.getUser();
     if (!data.user) throw redirect({ to: "/auth" });
     try {
-      const { data: p } = await supabase
-        .from("profiles")
-        .select("account_type")
-        .eq("id", data.user.id)
-        .maybeSingle();
-      if (p?.account_type === "customer") throw redirect({ to: "/carteira" });
-      if (p?.account_type === "super_admin") throw redirect({ to: "/hash" });
+      const access = await getAuthenticatedAccountAccess();
+      if (access.isSuperAdmin || access.accountType === "super_admin") throw redirect({ to: "/hash" });
+      if (access.accountType === "customer") throw redirect({ to: "/carteira" });
     } catch (e) {
       if (e && typeof e === "object" && ("isRedirect" in e || "to" in e)) throw e;
     }

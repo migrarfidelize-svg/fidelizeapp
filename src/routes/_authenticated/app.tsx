@@ -32,6 +32,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { RouteLoading } from "@/components/RouteLoading";
 import { PanelTransition } from "@/components/PanelTransition";
 import { ROUTE_PERMISSIONS } from "@/lib/permissions";
+import { getAuthenticatedAccountAccess } from "@/lib/account-access.functions";
 
 const MERCHANT_TOUR_STEPS: TourStep[] = [
   { preview: "welcome", title: "Bem-vindo à Fidelize!", description: "Vamos dar um tour completo pelas áreas da plataforma. Leva cerca de 2 minutos e você já sai sabendo usar tudo." },
@@ -79,9 +80,9 @@ export const Route = createFileRoute("/_authenticated/app")({
     // Block customer accounts from the merchant panel.
     // `_authenticated` is ssr:false, so it's safe to use the browser client here.
     try {
-      const { data } = await supabase.rpc("my_account_type");
-      if (data === "customer") throw redirect({ to: "/carteira" });
-      if (data === "super_admin") throw redirect({ to: "/hash" });
+      const access = await getAuthenticatedAccountAccess();
+      if (access.isSuperAdmin || access.accountType === "super_admin") throw redirect({ to: "/hash" });
+      if (access.accountType === "customer") throw redirect({ to: "/carteira" });
     } catch (e) {
       if (e && typeof e === "object" && ("isRedirect" in e || "to" in e)) throw e;
       // Fail-open on transient RPC errors — layout still renders; auth gate protects.
