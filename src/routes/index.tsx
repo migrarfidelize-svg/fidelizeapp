@@ -363,7 +363,7 @@ function HeroCopy() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden" style={{ background: OBSIDIAN }}>
+    <section className="relative overflow-x-clip [overflow-y:clip]" style={{ background: OBSIDIAN }}>
       <div aria-hidden className="hero-bg-aurora-circuit">
         <span className="hero-bokeh" />
         <svg className="hero-pcb" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
