@@ -181,7 +181,7 @@ export function GreetingVoice({ gender, scope, enabled = true }: Props) {
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [enabled]);
 
   return null;
 }
