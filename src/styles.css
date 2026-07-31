@@ -3218,12 +3218,22 @@ header[data-slot="site-header"],
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* Evita que qualquer página empurre a viewport para o lado no mobile */
+/* Evita que qualquer página empurre a viewport para o lado no mobile.
+   Usamos `clip` (e não `hidden`) porque `overflow-x: hidden` transforma
+   html/body em contêineres de rolagem aninhados — no celular isso cria
+   "zonas mortas" onde o dedo não rola nada. `clip` recorta sem criar
+   scroller. Fallback `hidden` para navegadores antigos. */
 @media (max-width: 768px) {
   html,
   body {
     overflow-x: hidden;
+    overflow-x: clip;
     overscroll-behavior-y: none;
+  }
+  /* Seções decorativas que só recortam brilhos não devem virar scroller. */
+  section.overflow-hidden,
+  .landing-scope .overflow-hidden {
+    overflow: clip;
   }
 }
 
