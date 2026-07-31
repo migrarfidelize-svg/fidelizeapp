@@ -347,14 +347,16 @@ function HeroCopy() {
       </div>
 
       {copy.bullets.length ? (
-        <div className="mt-6 flex w-full flex-wrap items-center gap-x-5 gap-y-2 text-xs text-white/60 sm:gap-x-6">
+        <ul className="mt-6 grid w-full grid-cols-1 gap-y-2 text-[13px] text-white/60 sm:flex sm:flex-wrap sm:items-center sm:gap-x-6 sm:text-xs">
           {copy.bullets.map((b, i) => (
-            <span key={i} className="flex items-center gap-1.5">
-              <Check className="h-4 w-4 shrink-0" style={{ color: CYAN }} /> {b.replace("{preco}", price)}
-            </span>
+            <li key={i} className="flex min-w-0 items-start gap-2 sm:items-center">
+              <Check className="mt-[2px] h-4 w-4 shrink-0 sm:mt-0" style={{ color: CYAN }} />
+              <span className="min-w-0 leading-snug">{b.replace("{preco}", price)}</span>
+            </li>
           ))}
-        </div>
+        </ul>
       ) : null}
+
     </div>
   );
 }
