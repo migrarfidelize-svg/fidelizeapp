@@ -88,18 +88,26 @@ export const Route = createFileRoute("/_authenticated/app")({
     }
 
     // Subscription gate: contas sem plano pago só acessam planos/perfil.
+    // Fail-closed: em erro persistente do RPC mandamos para /app/planos.
     if (!isBillingExempt(location.pathname)) {
       try {
-        const { data, error } = await supabase.rpc("my_subscription_gate");
-        if (error) return; // fail-open apenas em erro de rede/RPC
-        const gate = (data ?? {}) as { has_establishment?: boolean; active?: boolean; super_admin?: boolean };
+        let res = await supabase.rpc("my_subscription_gate");
+        if (res.error) {
+          // uma segunda tentativa cobre falhas transitórias de rede
+          await new Promise((r) => setTimeout(r, 600));
+          res = await supabase.rpc("my_subscription_gate");
+        }
+        if (res.error) throw redirect({ to: "/app/planos", search: { gate: "erro" } as any });
+        const gate = (res.data ?? {}) as { has_establishment?: boolean; active?: boolean; super_admin?: boolean };
         if (gate.super_admin) return;
         if (!gate.has_establishment) throw redirect({ to: "/onboarding" });
         if (!gate.active) throw redirect({ to: "/app/planos" });
       } catch (e) {
         if (e && typeof e === "object" && ("isRedirect" in e || "to" in e)) throw e;
+        throw redirect({ to: "/app/planos", search: { gate: "erro" } as any });
       }
     }
+
   },
 
   component: AppLayout,
