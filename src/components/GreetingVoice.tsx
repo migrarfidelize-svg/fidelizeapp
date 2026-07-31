@@ -30,10 +30,15 @@ function buildGreeting(gender: "female" | "male") {
 
   const period = h < 5 ? "Boa madrugada" : h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite";
   const hourWord = h % 12 === 0 ? 12 : h % 12;
+  // Concordância: "é uma hora" / "são duas horas"
+  const verb = hourWord === 1 ? "é" : "são";
   const timePhrase =
     m === 0
-      ? `agora são ${hourWord} horas em ponto`
-      : `agora são ${hourWord} e ${m.toString().padStart(2, "0")}`;
+      ? `agora ${verb} exatamente ${hourWord} ${hourWord === 1 ? "hora" : "horas"}`
+      : m === 30
+        ? `agora ${verb} exatamente ${hourWord} e meia`
+        : `agora ${verb} exatamente ${hourWord} e ${m}`; // sem zero à esquerda: "dez e nove"
+
 
   const closers =
     gender === "female"
