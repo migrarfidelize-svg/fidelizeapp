@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VideosRouteImport } from './routes/videos'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as PreviewHeroRouteImport } from './routes/preview-hero'
 import { Route as PreviewDockRouteImport } from './routes/preview-dock'
@@ -156,6 +157,11 @@ const TermosRoute = TermosRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
@@ -893,6 +899,7 @@ export interface FileRoutesByFullPath {
   '/preview-dock': typeof PreviewDockRoute
   '/preview-hero': typeof PreviewHeroRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
   '/videos': typeof VideosRoute
@@ -1027,6 +1034,7 @@ export interface FileRoutesByTo {
   '/preview-dock': typeof PreviewDockRoute
   '/preview-hero': typeof PreviewHeroRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
   '/videos': typeof VideosRoute
@@ -1158,6 +1166,7 @@ export interface FileRoutesById {
   '/preview-dock': typeof PreviewDockRoute
   '/preview-hero': typeof PreviewHeroRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
   '/videos': typeof VideosRoute
@@ -1294,6 +1303,7 @@ export interface FileRouteTypes {
     | '/preview-dock'
     | '/preview-hero'
     | '/privacidade'
+    | '/robots.txt'
     | '/sitemap.xml'
     | '/termos'
     | '/videos'
@@ -1428,6 +1438,7 @@ export interface FileRouteTypes {
     | '/preview-dock'
     | '/preview-hero'
     | '/privacidade'
+    | '/robots.txt'
     | '/sitemap.xml'
     | '/termos'
     | '/videos'
@@ -1558,6 +1569,7 @@ export interface FileRouteTypes {
     | '/preview-dock'
     | '/preview-hero'
     | '/privacidade'
+    | '/robots.txt'
     | '/sitemap.xml'
     | '/termos'
     | '/videos'
@@ -1694,6 +1706,7 @@ export interface RootRouteChildren {
   PreviewDockRoute: typeof PreviewDockRoute
   PreviewHeroRoute: typeof PreviewHeroRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermosRoute: typeof TermosRoute
   VideosRoute: typeof VideosRoute
@@ -1760,6 +1773,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacidade': {
@@ -2948,6 +2968,7 @@ const rootRouteChildren: RootRouteChildren = {
   PreviewDockRoute: PreviewDockRoute,
   PreviewHeroRoute: PreviewHeroRoute,
   PrivacidadeRoute: PrivacidadeRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermosRoute: TermosRoute,
   VideosRoute: VideosRoute,
