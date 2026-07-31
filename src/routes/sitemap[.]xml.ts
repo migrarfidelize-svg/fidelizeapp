@@ -48,7 +48,8 @@ const escapeXml = (s: string) =>
 export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
-      GET: async () => {
+      GET: async ({ request }) => {
+        const BASE_URL = resolveBaseUrl(request);
         const entries: SitemapEntry[] = [...STATIC_ENTRIES];
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
