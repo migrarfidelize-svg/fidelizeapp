@@ -275,6 +275,14 @@ export const changeEstablishmentPlan = createServerFn({ method: "POST" })
     const kind: "upgrade" | "downgrade" | "plan_change" =
       toRank > fromRank ? "upgrade" : toRank < fromRank ? "downgrade" : "plan_change";
 
+    // 🔒 Regra de cobrança: esta função só aplica downgrades (ou mudanças para planos
+    // gratuitos). Qualquer plano pago só pode ser ativado pelo webhook do provedor
+    // depois do pagamento confirmado — senão qualquer dono poderia se auto-promover.
+    const price = Number(newPlan.price_monthly ?? 0);
+    if (price > 0 && kind !== "downgrade") {
+      throw new Error("Planos pagos são ativados apenas após a confirmação do pagamento. Use o checkout na página de planos.");
+    }
+
     // Snapshot feature availability BEFORE the change so we can detect unlocks after it.
     const reviewsBefore = await hasFeature(supabase, data.establishment_id, "public_reviews");
 
@@ -286,20 +294,24 @@ export const changeEstablishmentPlan = createServerFn({ method: "POST" })
     // 2) Upsert current subscription row (subscriptions table). RLS only exposes SELECT to members, so we use the admin client after ownership was verified above.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const now = new Date();
-    const periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
 
     const { data: existingSub } = await supabaseAdmin.from("subscriptions")
-      .select("id").eq("establishment_id", data.establishment_id).maybeSingle();
+      .select("id, provider, current_period_start, current_period_end").eq("establishment_id", data.establishment_id).maybeSingle();
+
+    // Downgrade nunca cria período pago novo: preserva a vigência atual.
+    const periodStart = existingSub?.current_period_start ?? now.toISOString();
+    const periodEnd = existingSub?.current_period_end ?? null;
+    const nextStatus = price > 0 ? "active" : "cancelled";
 
     if (existingSub) {
       await supabaseAdmin.from("subscriptions").update({
         plan_id: newPlan.id,
         tier: toTier as any,
-        status: "active",
-        provider: "manual",
-        current_period_start: now.toISOString(),
-        current_period_end: periodEnd.toISOString(),
-        cancel_at_period_end: false,
+        status: nextStatus,
+        provider: existingSub.provider ?? "manual",
+        current_period_start: periodStart,
+        current_period_end: periodEnd,
+        cancel_at_period_end: price === 0,
         metadata: { last_change_by: userId, last_change_kind: kind, last_change_at: now.toISOString() } as never,
       }).eq("id", existingSub.id);
     } else {
@@ -307,14 +319,15 @@ export const changeEstablishmentPlan = createServerFn({ method: "POST" })
         establishment_id: data.establishment_id,
         plan_id: newPlan.id,
         tier: toTier as any,
-        status: "active",
+        status: nextStatus,
         provider: "manual",
-        current_period_start: now.toISOString(),
-        current_period_end: periodEnd.toISOString(),
-        cancel_at_period_end: false,
+        current_period_start: periodStart,
+        current_period_end: periodEnd,
+        cancel_at_period_end: price === 0,
         metadata: { created_by: userId, created_kind: kind } as never,
       });
     }
+
 
     // 3) Enrich the subscription_events row the trigger just wrote (add human message + actor for audit clarity).
     // Trigger message is generic; we replace with an intent-rich one when possible.
