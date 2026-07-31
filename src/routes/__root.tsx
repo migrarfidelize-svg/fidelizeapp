@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { startSessionKeeper } from "../lib/session-keeper";
 import { Toaster } from "@/components/ui/sonner";
 import { MetaPixel } from "@/components/MetaPixel";
+import { ScrollLockGuard } from "@/components/ScrollLockGuard";
 import { toast } from "sonner";
 
 
