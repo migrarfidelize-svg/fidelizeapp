@@ -27,9 +27,8 @@ async function readSessionSnapshot(): Promise<SessionSnapshot> {
   const { data: { user } } = await supabase.auth.getUser();
   const lastSync = new Date();
   if (!user) return { env, role: "anônimo", email: null, isSignedIn: false, lastSync };
-  const { data: adminRow } = await supabase
-    .from("app_roles").select("role").eq("user_id", user.id).eq("role", "super_admin").maybeSingle();
-  if (adminRow) return { env, role: "admin", email: user.email ?? null, isSignedIn: true, lastSync };
+  const { data: accountType } = await supabase.rpc("my_account_type");
+  if (accountType === "super_admin") return { env, role: "admin", email: user.email ?? null, isSignedIn: true, lastSync };
   const { data: profile } = await supabase
     .from("profiles").select("account_type").eq("id", user.id).maybeSingle();
   return {

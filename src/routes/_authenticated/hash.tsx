@@ -91,7 +91,12 @@ function AdminLayout() {
   const navigate = useNavigate();
   const getStatus = useServerFn(getAdminStatus);
   const bootstrap = useServerFn(bootstrapSuperAdmin);
-  const { data, isLoading, refetch } = useQuery({ queryKey: ["admin-status"], queryFn: () => getStatus() });
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ["admin-status"],
+    queryFn: () => getStatus(),
+    staleTime: 0,
+    refetchOnMount: "always",
+  });
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openGroups, setOpenGroups] = useState<string[]>([]);

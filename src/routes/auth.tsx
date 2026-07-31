@@ -19,6 +19,7 @@ import { claimCustomerByToken, attachEstablishmentBySlug } from "@/lib/my-wallet
 import { DISCOVER_CATEGORIES } from "@/lib/discover-categories";
 import { getCaptchaConfig, verifyCaptcha } from "@/lib/captcha.functions";
 import { guardAuthAttempt, reportAuthAttempt } from "@/lib/auth-guard.functions";
+import { getAuthenticatedAccountAccess } from "@/lib/account-access.functions";
 import { Turnstile, resetTurnstile } from "@/components/Turnstile";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -117,9 +118,11 @@ async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: 
   }
 
   try {
-    const { data } = await supabase.rpc("my_account_type");
-    if (data === "super_admin") return { to: "/hash" };
-    if (data === "establishment") return { to: "/app" };
+    // Recarrega o papel no servidor após cada login. O UUID vem do bearer token
+    // validado, nunca do formulário, perfil ou cache do navegador.
+    const access = await getAuthenticatedAccountAccess();
+    if (access.isSuperAdmin || access.accountType === "super_admin") return { to: "/hash" };
+    if (access.accountType === "establishment") return { to: "/app" };
     // Quem entrou pela aba "Estabelecimento" mas ainda não tem empresa vinculada
     // não pode cair na carteira do cliente — segue para criar/ativar a empresa.
     if (opts.role === "establishment") return { to: "/onboarding" };
@@ -129,10 +132,13 @@ async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: 
       return { to: "/onboarding" };
     }
     return { to: "/carteira" };
-  } catch {
+  } catch (error) {
+    // Uma falha ao consultar autorização não pode reclassificar silenciosamente
+    // um administrador como cliente.
+    console.error("[auth] falha ao carregar papel após login", error);
     if (opts.role === "establishment") return { to: "/onboarding" };
     if ((await profileAccountType()) === "establishment" || hasPlanIntent()) return { to: "/onboarding" };
-    return { to: "/carteira" };
+    throw new Error("Não foi possível confirmar as permissões da conta. Tente entrar novamente.");
   }
 }
 
