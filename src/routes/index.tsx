@@ -363,7 +363,7 @@ function HeroCopy() {
 
 function Hero() {
   return (
-    <section className="relative overflow-x-clip [overflow-y:clip]" style={{ background: OBSIDIAN }}>
+    <section className="landing-hero relative" style={{ background: OBSIDIAN }}>
       <div aria-hidden className="hero-bg-aurora-circuit">
         <span className="hero-bokeh" />
         <svg className="hero-pcb" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
@@ -422,7 +422,7 @@ function Hero() {
           <HeroCopy />
 
 
-          <div className="-mx-2 flex scale-95 justify-center sm:mx-0 sm:scale-100 lg:justify-end">
+          <div className="landing-hero-preview -mx-2 flex scale-95 justify-center sm:mx-0 sm:scale-100 lg:justify-end">
             <HeroAppPreview content={useLandingData()?.hero} />
           </div>
         </div>

@@ -912,6 +912,27 @@
   pointer-events: none;
   background: radial-gradient(ellipse 100% 80% at 50% 40%, #071228 0%, #020617 70%);
 }
+
+/* A seção principal nunca pode virar um contêiner de scroll no iOS/WebView.
+   Somente o fundo decorativo acima faz o recorte visual. */
+.landing-hero {
+  touch-action: pan-y pinch-zoom;
+  overscroll-behavior-x: none;
+}
+
+@media (max-width: 768px) {
+  .landing-scope {
+    overflow-x: clip;
+    touch-action: pan-y pinch-zoom;
+  }
+
+  .landing-hero,
+  .landing-hero > div,
+  .landing-hero-preview,
+  .hero-phone {
+    touch-action: pan-y pinch-zoom;
+  }
+}
 /* Bokeh cyan/magenta borrado — luz se movendo */
 .hero-bg-aurora-circuit .hero-bokeh {
   position: absolute;
