@@ -29,16 +29,35 @@ function buildGreeting(gender: "female" | "male") {
   const m = now.getMinutes();
 
   const period = h < 5 ? "Boa madrugada" : h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite";
-  const hourWord = h % 12 === 0 ? 12 : h % 12;
-  // Concordância: "é uma hora" / "são duas horas"
-  const verb = hourWord === 1 ? "é" : "são";
-  const timePhrase =
-    m === 0
-      ? `agora ${verb} exatamente ${hourWord} ${hourWord === 1 ? "hora" : "horas"}`
-      : m === 30
-        ? `agora ${verb} exatamente ${hourWord} e meia`
-        : `agora ${verb} exatamente ${hourWord} e ${m}`; // sem zero à esquerda: "dez e nove"
 
+  let timePhrase: string;
+  if (h === 12) {
+    // Meio-dia com tratamento natural: "agora é meio dia e nove"
+    timePhrase =
+      m === 0
+        ? "agora é meio dia"
+        : m === 30
+          ? "agora é meio dia e meia"
+          : `agora é meio dia e ${m}`;
+  } else if (h === 0) {
+    // Meia-noite
+    timePhrase =
+      m === 0
+        ? "agora é meia-noite"
+        : m === 30
+          ? "agora é meia-noite e meia"
+          : `agora é meia-noite e ${m}`;
+  } else {
+    const hourWord = h % 12 === 0 ? 12 : h % 12;
+    // Concordância: "é uma hora" / "são duas horas"
+    const verb = hourWord === 1 ? "é" : "são";
+    timePhrase =
+      m === 0
+        ? `agora ${verb} exatamente ${hourWord} ${hourWord === 1 ? "hora" : "horas"}`
+        : m === 30
+          ? `agora ${verb} exatamente ${hourWord} e meia`
+          : `agora ${verb} exatamente ${hourWord} e ${m}`; // sem zero à esquerda: "dez e nove"
+  }
 
   const closers =
     gender === "female"
