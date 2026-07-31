@@ -265,6 +265,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <ScrollLockGuard />
       <Outlet />
       <MetaPixel />
       <Toaster richColors position="top-center" />
