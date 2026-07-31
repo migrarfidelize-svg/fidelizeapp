@@ -23,7 +23,7 @@ import { MerchantInstallCard } from "@/components/merchant/MerchantInstallCard";
 import { MerchantPushCard } from "@/components/merchant/MerchantPushCard";
 import { FirstStepsCard } from "@/components/merchant/FirstStepsCard";
 import { getEstablishmentCampaigns } from "@/lib/loyalty.functions";
-import { listTeam } from "@/lib/settings.functions";
+import { listTeam, getEstablishmentFull } from "@/lib/settings.functions";
 
 
 export const Route = createFileRoute("/_authenticated/app/")({
@@ -54,6 +54,15 @@ function Dashboard() {
     queryKey: ["dash-team", est?.id],
     queryFn: () => getTeam({ data: { establishment_id: est!.id } }),
   });
+
+  const getFull = useServerFn(getEstablishmentFull);
+  const { data: estFull } = useQuery({
+    enabled: !!est,
+    queryKey: ["est-full", est?.id],
+    queryFn: () => getFull({ data: { establishment_id: est!.id } }),
+  });
+  const voiceEnabled = ((estFull as any)?.settings?.appearance?.welcome_voice_enabled ?? true) === true;
+
 
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
@@ -91,7 +100,7 @@ function Dashboard() {
 
   return (
     <div className="space-y-8">
-      <GreetingVoice gender="female" scope="merchant" />
+      <GreetingVoice gender="female" scope="merchant" enabled={voiceEnabled} />
 
       {/* Mobile: instalar app + ativar notificações (mesma experiência da Carteira) */}
       <div className="space-y-3 md:hidden">

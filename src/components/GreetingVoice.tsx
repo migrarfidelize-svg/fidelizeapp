@@ -5,7 +5,22 @@ type Props = {
   gender: "female" | "male";
   /** Cache key: toca no máximo uma vez por hora/sessão */
   scope: string;
+  /** Configuração da empresa (Aparência → voz de boas-vindas). Padrão: ligada. */
+  enabled?: boolean;
 };
+
+/** Preferência local por dispositivo (silenciar só neste aparelho). */
+export const GREETING_MUTE_KEY = "fidelize:greet:muted";
+export function isGreetingMutedLocally() {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem(GREETING_MUTE_KEY) === "1";
+}
+export function setGreetingMutedLocally(muted: boolean) {
+  if (typeof window === "undefined") return;
+  if (muted) localStorage.setItem(GREETING_MUTE_KEY, "1");
+  else localStorage.removeItem(GREETING_MUTE_KEY);
+}
+
 
 /** Gera saudação humanizada, variada e contextual (tempo + carisma). */
 function buildGreeting(gender: "female" | "male") {
@@ -84,12 +99,15 @@ function pickBestVoice(voices: SpeechSynthesisVoice[], gender: "female" | "male"
   return pt.slice().sort((a, b) => score(b) - score(a))[0];
 }
 
-export function GreetingVoice({ gender, scope }: Props) {
+export function GreetingVoice({ gender, scope, enabled = true }: Props) {
   const playedRef = useRef(false);
 
   useEffect(() => {
+    if (!enabled) return;
     if (playedRef.current) return;
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    if (isGreetingMutedLocally()) return;
+
 
     const key = `fidelize:greet:${scope}:${new Date().toDateString()}:${new Date().getHours()}`;
     if (sessionStorage.getItem(key)) return;
@@ -163,7 +181,7 @@ export function GreetingVoice({ gender, scope }: Props) {
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [enabled]);
 
   return null;
 }
