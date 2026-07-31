@@ -181,13 +181,37 @@ export const adminSetEstablishmentPlan = createServerFn({ method: "POST" })
     await assertSuperAdmin(supabase, userId);
     const { error } = await supabase.from("establishments").update({ plan: data.plan }).eq("id", data.establishment_id);
     if (error) throw new Error(error.message);
+
+    // O acesso é decidido pela tabela de assinaturas (fonte única). Mudança manual
+    // do super admin = cortesia: cria/atualiza a assinatura correspondente.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const now = new Date();
+    const oneYear = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+    const { data: planRow } = await supabaseAdmin.from("plans")
+      .select("id").eq("tier", data.plan as any).order("is_active", { ascending: false }).limit(1).maybeSingle();
+    const { data: sub } = await supabaseAdmin.from("subscriptions")
+      .select("id").eq("establishment_id", data.establishment_id).maybeSingle();
+    const payload: Record<string, unknown> = {
+      plan_id: planRow?.id ?? null,
+      tier: data.plan as any,
+      status: data.plan === "free" ? "cancelled" : "active",
+      provider: "courtesy",
+      current_period_start: now.toISOString(),
+      current_period_end: data.plan === "free" ? null : oneYear.toISOString(),
+      cancel_at_period_end: data.plan === "free",
+      metadata: { courtesy: data.plan !== "free", set_by: userId, set_at: now.toISOString() } as never,
+    };
+    if (sub) await supabaseAdmin.from("subscriptions").update(payload as never).eq("id", sub.id);
+    else await supabaseAdmin.from("subscriptions").insert({ establishment_id: data.establishment_id, ...payload } as never);
+
     await supabase.from("audit_logs").insert({
       establishment_id: data.establishment_id, user_id: userId,
       action: "admin_change_plan", entity_type: "establishment", entity_id: data.establishment_id,
-      metadata: { plan: data.plan } as never,
+      metadata: { plan: data.plan, subscription_synced: true } as never,
     });
     return { ok: true };
   });
+
 
 export const adminDeleteEstablishment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
