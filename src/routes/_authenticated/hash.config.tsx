@@ -1012,7 +1012,29 @@ function AparenciaTab({ establishmentId, est, settings }: { establishmentId: str
             </Select>
           </div>
         </div>
+
+        <div className="space-y-2 rounded-lg border p-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-medium">Voz de boas-vindas no painel</div>
+              <div className="text-xs text-muted-foreground">Saudação falada ("Boa noite, chefe...") ao abrir o painel. Vale para toda a equipe.</div>
+            </div>
+            <Switch checked={ap.welcome_voice_enabled} onCheckedChange={v => setAp({ ...ap, welcome_voice_enabled: v })} />
+          </div>
+          <div className="flex items-center justify-between gap-3 border-t pt-2">
+            <div>
+              <div className="text-sm font-medium">Silenciar apenas neste dispositivo</div>
+              <div className="text-xs text-muted-foreground">Preferência local — não afeta os outros usuários.</div>
+            </div>
+            <Switch
+              checked={muteDevice}
+              onCheckedChange={v => { setMuteDevice(v); setGreetingMutedLocally(v); toast.success(v ? "Voz silenciada neste dispositivo" : "Voz reativada neste dispositivo"); }}
+            />
+          </div>
+        </div>
+
         <div className="flex justify-end"><Button onClick={onSave}>Salvar</Button></div>
+
       </CardContent>
     </Card>
   );
