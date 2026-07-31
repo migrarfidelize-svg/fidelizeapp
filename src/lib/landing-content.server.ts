@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { normalizeBrands, normalizeHero, type PublicPlan } from "@/lib/landing-content";
+import { DEFAULT_BRAND, normalizeBrand } from "@/lib/brand";
 
 function publicClient() {
   const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
@@ -20,7 +21,7 @@ export async function loadLandingPublic() {
   try {
     const supabase = publicClient();
     const [{ data: content }, { data: plans }] = await Promise.all([
-      supabase.from("landing_content").select("key, data").in("key", ["hero", "brands"]),
+      supabase.from("landing_content").select("key, data").in("key", ["hero", "brands", "brand"]),
       supabase
         .from("plans")
         .select("slug, name, price_monthly, description, display_order, is_featured, button_text")
@@ -32,14 +33,26 @@ export async function loadLandingPublic() {
     return {
       hero: normalizeHero(map.get("hero")),
       brands: normalizeBrands(map.get("brands")),
+      brand: normalizeBrand(map.get("brand")),
       plans: (plans ?? []) as PublicPlan[],
     };
   } catch {
-    return { hero: normalizeHero(null), brands: normalizeBrands(null), plans: [] as PublicPlan[] };
+    return { hero: normalizeHero(null), brands: normalizeBrands(null), brand: DEFAULT_BRAND, plans: [] as PublicPlan[] };
   }
 }
 
 export async function assertPlatformAdmin(supabase: any, userId: string) {
   const { data } = await supabase.from("app_roles").select("id").eq("user_id", userId).eq("role", "super_admin").maybeSingle();
   if (!data) throw new Error("Acesso restrito a administradores da plataforma.");
+}
+
+/** Somente a identidade visual — consulta enxuta usada pelo componente <Logo />. */
+export async function loadBrandIdentity() {
+  try {
+    const supabase = publicClient();
+    const { data } = await supabase.from("landing_content").select("data").eq("key", "brand").maybeSingle();
+    return normalizeBrand(data?.data ?? null);
+  } catch {
+    return DEFAULT_BRAND;
+  }
 }
