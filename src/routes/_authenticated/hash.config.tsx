@@ -40,6 +40,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { LoadingSkeleton } from "@/components/states";
+import { isGreetingMutedLocally, setGreetingMutedLocally } from "@/components/GreetingVoice";
+
 
 export const Route = createFileRoute("/_authenticated/hash/config")({
   head: () => ({ meta: [{ title: "Configurações — Fidelize" }] }),
