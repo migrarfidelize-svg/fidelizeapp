@@ -55,6 +55,15 @@ function Dashboard() {
     queryFn: () => getTeam({ data: { establishment_id: est!.id } }),
   });
 
+  const getFull = useServerFn(getEstablishmentFull);
+  const { data: estFull } = useQuery({
+    enabled: !!est,
+    queryKey: ["est-full", est?.id],
+    queryFn: () => getFull({ data: { establishment_id: est!.id } }),
+  });
+  const voiceEnabled = ((estFull as any)?.settings?.appearance?.welcome_voice_enabled ?? true) === true;
+
+
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 30_000);
