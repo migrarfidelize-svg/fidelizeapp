@@ -944,7 +944,11 @@ function AparenciaTab({ establishmentId, est, settings }: { establishmentId: str
     logo_shape: settings?.appearance?.logo_shape ?? "circle",
     stamp_icon: settings?.appearance?.stamp_icon ?? "star",
     font: settings?.appearance?.font ?? "inter",
+    welcome_voice_enabled: settings?.appearance?.welcome_voice_enabled ?? true,
   });
+  const [muteDevice, setMuteDevice] = useState(false);
+  useEffect(() => { setMuteDevice(isGreetingMutedLocally()); }, []);
+
 
   async function onSave() {
     try {
