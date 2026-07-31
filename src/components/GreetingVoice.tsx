@@ -99,12 +99,15 @@ function pickBestVoice(voices: SpeechSynthesisVoice[], gender: "female" | "male"
   return pt.slice().sort((a, b) => score(b) - score(a))[0];
 }
 
-export function GreetingVoice({ gender, scope }: Props) {
+export function GreetingVoice({ gender, scope, enabled = true }: Props) {
   const playedRef = useRef(false);
 
   useEffect(() => {
+    if (!enabled) return;
     if (playedRef.current) return;
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    if (isGreetingMutedLocally()) return;
+
 
     const key = `fidelize:greet:${scope}:${new Date().toDateString()}:${new Date().getHours()}`;
     if (sessionStorage.getItem(key)) return;
