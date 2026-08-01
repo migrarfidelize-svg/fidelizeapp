@@ -98,6 +98,8 @@ function ConfigInner({ establishmentId }: { establishmentId: string }) {
             <TabsTrigger value="privacidade"><Shield className="h-4 w-4 mr-1" />Privacidade</TabsTrigger>
             <TabsTrigger value="notificacoes"><Bell className="h-4 w-4 mr-1" />Notificações</TabsTrigger>
             <TabsTrigger value="aparencia"><Palette className="h-4 w-4 mr-1" />Aparência</TabsTrigger>
+            <TabsTrigger value="studio"><Mic className="h-4 w-4 mr-1" />Studio</TabsTrigger>
+
             <TabsTrigger value="plano"><Wrench className="h-4 w-4 mr-1" />Plano</TabsTrigger>
             <TabsTrigger value="auditoria"><ScrollText className="h-4 w-4 mr-1" />Auditoria</TabsTrigger>
             <TabsTrigger value="perigo"><AlertTriangle className="h-4 w-4 mr-1" />Perigo</TabsTrigger>

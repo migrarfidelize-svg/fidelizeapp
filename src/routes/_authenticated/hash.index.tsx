@@ -76,7 +76,7 @@ function AdminOverview() {
       </section>
 
       <GreetingVoice gender="male" scope="admin" />
-      <VoiceStudioCard scope="admin" />
+
 
       {/* KPI GRID */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
