@@ -164,12 +164,22 @@ export const getFaqAIStatus = createServerFn({ method: "GET" }).handler(async ()
 
   if (geminiKey) {
     try {
+      const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+      // Teste real de geração: chaves restritas podem falhar no ListModels e
+      // ainda assim funcionar para generateContent.
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models?key=${geminiKey}`,
-        { method: "GET" },
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ role: "user", parts: [{ text: "ping" }] }],
+            generationConfig: { maxOutputTokens: 8 },
+          }),
+        },
       );
-      if (res.ok) return { online: true, provider: "gemini" as const, reason: null };
-      console.error(`[Fidê] Chave Gemini inválida (${res.status}).`);
+      if (res.ok || res.status === 429) return { online: true, provider: "gemini" as const, reason: null };
+      console.error(`[Fidê] Gemini indisponível (${res.status}): ${(await res.text()).slice(0, 200)}`);
     } catch {
       console.error("[Fidê] Falha de rede ao validar a chave Gemini.");
     }

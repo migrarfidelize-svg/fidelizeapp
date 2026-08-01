@@ -121,6 +121,7 @@ import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/ap
 import { Route as ApiPublicHooksNotifyExpiringRewardsRouteImport } from './routes/api/public/hooks/notify-expiring-rewards'
 import { Route as ApiPublicHooksMercadopagoRetryRouteImport } from './routes/api/public/hooks/mercadopago-retry'
 import { Route as ApiPublicHooksDispatchScheduledPushRouteImport } from './routes/api/public/hooks/dispatch-scheduled-push'
+import { Route as ApiPublicDiagFideRouteImport } from './routes/api/public/diag/fide'
 import { Route as ApiPublicDiagEnvRouteImport } from './routes/api/public/diag/env'
 import { Route as ApiPublicCronReengagementRouteImport } from './routes/api/public/cron/reengagement'
 import { Route as ApiPublicCronBirthdayRouteImport } from './routes/api/public/cron/birthday'
@@ -758,6 +759,11 @@ const ApiPublicHooksDispatchScheduledPushRoute =
     path: '/api/public/hooks/dispatch-scheduled-push',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicDiagFideRoute = ApiPublicDiagFideRouteImport.update({
+  id: '/api/public/diag/fide',
+  path: '/api/public/diag/fide',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicDiagEnvRoute = ApiPublicDiagEnvRouteImport.update({
   id: '/api/public/diag/env',
   path: '/api/public/diag/env',
@@ -1003,6 +1009,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
   '/api/public/diag/env': typeof ApiPublicDiagEnvRoute
+  '/api/public/diag/fide': typeof ApiPublicDiagFideRoute
   '/api/public/hooks/dispatch-scheduled-push': typeof ApiPublicHooksDispatchScheduledPushRoute
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/notify-expiring-rewards': typeof ApiPublicHooksNotifyExpiringRewardsRoute
@@ -1134,6 +1141,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
   '/api/public/diag/env': typeof ApiPublicDiagEnvRoute
+  '/api/public/diag/fide': typeof ApiPublicDiagFideRoute
   '/api/public/hooks/dispatch-scheduled-push': typeof ApiPublicHooksDispatchScheduledPushRoute
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/notify-expiring-rewards': typeof ApiPublicHooksNotifyExpiringRewardsRoute
@@ -1272,6 +1280,7 @@ export interface FileRoutesById {
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
   '/api/public/diag/env': typeof ApiPublicDiagEnvRoute
+  '/api/public/diag/fide': typeof ApiPublicDiagFideRoute
   '/api/public/hooks/dispatch-scheduled-push': typeof ApiPublicHooksDispatchScheduledPushRoute
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/notify-expiring-rewards': typeof ApiPublicHooksNotifyExpiringRewardsRoute
@@ -1410,6 +1419,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
     | '/api/public/diag/env'
+    | '/api/public/diag/fide'
     | '/api/public/hooks/dispatch-scheduled-push'
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/notify-expiring-rewards'
@@ -1541,6 +1551,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
     | '/api/public/diag/env'
+    | '/api/public/diag/fide'
     | '/api/public/hooks/dispatch-scheduled-push'
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/notify-expiring-rewards'
@@ -1678,6 +1689,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
     | '/api/public/diag/env'
+    | '/api/public/diag/fide'
     | '/api/public/hooks/dispatch-scheduled-push'
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/notify-expiring-rewards'
@@ -1745,6 +1757,7 @@ export interface RootRouteChildren {
   ApiPublicCronBirthdayRoute: typeof ApiPublicCronBirthdayRoute
   ApiPublicCronReengagementRoute: typeof ApiPublicCronReengagementRoute
   ApiPublicDiagEnvRoute: typeof ApiPublicDiagEnvRoute
+  ApiPublicDiagFideRoute: typeof ApiPublicDiagFideRoute
   ApiPublicHooksDispatchScheduledPushRoute: typeof ApiPublicHooksDispatchScheduledPushRoute
   ApiPublicHooksMercadopagoRetryRoute: typeof ApiPublicHooksMercadopagoRetryRoute
   ApiPublicHooksNotifyExpiringRewardsRoute: typeof ApiPublicHooksNotifyExpiringRewardsRoute
@@ -2551,6 +2564,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksDispatchScheduledPushRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/diag/fide': {
+      id: '/api/public/diag/fide'
+      path: '/api/public/diag/fide'
+      fullPath: '/api/public/diag/fide'
+      preLoaderRoute: typeof ApiPublicDiagFideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/diag/env': {
       id: '/api/public/diag/env'
       path: '/api/public/diag/env'
@@ -3015,6 +3035,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronBirthdayRoute: ApiPublicCronBirthdayRoute,
   ApiPublicCronReengagementRoute: ApiPublicCronReengagementRoute,
   ApiPublicDiagEnvRoute: ApiPublicDiagEnvRoute,
+  ApiPublicDiagFideRoute: ApiPublicDiagFideRoute,
   ApiPublicHooksDispatchScheduledPushRoute:
     ApiPublicHooksDispatchScheduledPushRoute,
   ApiPublicHooksMercadopagoRetryRoute: ApiPublicHooksMercadopagoRetryRoute,
