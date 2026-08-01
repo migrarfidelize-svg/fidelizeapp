@@ -103,12 +103,14 @@ function Dashboard() {
     <div className="space-y-8">
       <GreetingVoice gender="female" scope="merchant" enabled={voiceEnabled} />
 
+      <VoiceStudioCard scope="merchant" />
+
       {/* Mobile: instalar app + ativar notificações (mesma experiência da Carteira) */}
       <div className="space-y-3 md:hidden">
-        <VoiceStudioCard scope="merchant" />
         <MerchantInstallCard />
         <MerchantPushCard />
       </div>
+
 
       <FirstStepsCard
         establishmentId={est.id}
