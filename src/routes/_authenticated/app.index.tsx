@@ -19,6 +19,7 @@ import { PageHero } from "@/components/PageHero";
 import { DashboardHeroVisual } from "@/components/DashboardHeroVisual";
 import { ErrorState, LoadingSkeleton } from "@/components/states";
 import { GreetingVoice } from "@/components/GreetingVoice";
+import { VoiceStudioCard } from "@/components/VoiceStudioCard";
 import { MerchantInstallCard } from "@/components/merchant/MerchantInstallCard";
 import { MerchantPushCard } from "@/components/merchant/MerchantPushCard";
 import { FirstStepsCard } from "@/components/merchant/FirstStepsCard";
@@ -104,6 +105,7 @@ function Dashboard() {
 
       {/* Mobile: instalar app + ativar notificações (mesma experiência da Carteira) */}
       <div className="space-y-3 md:hidden">
+        <VoiceStudioCard scope="merchant" />
         <MerchantInstallCard />
         <MerchantPushCard />
       </div>
