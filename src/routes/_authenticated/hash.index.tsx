@@ -2,7 +2,6 @@ import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
 import { GreetingVoice } from "@/components/GreetingVoice";
-import { VoiceStudioCard } from "@/components/VoiceStudioCard";
 import { LayoutDashboard as HeroIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
