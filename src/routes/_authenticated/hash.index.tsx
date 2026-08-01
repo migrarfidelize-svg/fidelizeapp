@@ -30,66 +30,104 @@ function AdminOverview() {
   const { data } = useQuery({ queryKey: ["admin-overview"], queryFn: () => getOverview() });
   if (!data) return <RouteLoading label="Carregando visão geral…" fullscreen={false} className="min-h-[40vh]" />;
 
-  const stats: Array<{
-    label: string; value: string | number; icon: any; accent?: boolean; isText?: boolean;
-  }> = [
-    { label: "Empresas", value: data.estTotal, icon: Building2 },
-    { label: "Ativas", value: data.estActive, icon: CheckCircle2, accent: true },
-    { label: "Bloqueadas", value: data.estBlocked, icon: Ban },
-    { label: "MRR", value: formatBRL(data.mrr), icon: DollarSign, accent: true, isText: true },
+  const secondary: Array<{ label: string; value: string | number; icon: any; accent?: boolean }> = [
     { label: "Clientes", value: data.customersTotal, icon: Users },
     { label: "Carimbos", value: data.stampsTotal, icon: Stamp, accent: true },
     { label: "Recompensas", value: data.rewardsTotal, icon: Gift },
     { label: "Resgatadas", value: data.rewardsRedeemed, icon: TrendingUp, accent: true },
   ];
 
+  const healthPct = data.estTotal ? Math.round((data.estActive / data.estTotal) * 100) : 0;
+  const spark = data.series.slice(-14);
+
   return (
     <div className="space-y-8">
       <PageHero
-
-
         icon={HeroIcon}
         eyebrow={"Super Admin · Global"}
         liveLabel={"Ao vivo"}
         title={"Visão global da plataforma"}
         subtitle={"Métricas consolidadas de empresas, receita e operação em tempo real."}
       />
-      {/* HERO */}
-      <section className="dash-hero p-6 sm:p-8">
-        <div className="relative flex flex-wrap items-end justify-between gap-6">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-primary/80">
-              <Shield className="h-3.5 w-3.5" /> Super Administração
-            </div>
-            <h1 className="mt-2 font-display text-3xl sm:text-4xl font-bold tracking-tight">
-              Visão consolidada
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Métricas em tempo real de toda a plataforma Fidelize.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-primary/80">
-            <Activity className="h-3.5 w-3.5 animate-pulse" /> Live
-          </div>
-        </div>
-      </section>
 
       <GreetingVoice gender="male" scope="admin" />
 
+      {/* EXECUTIVE BRIEF: receita + saúde */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <section className="dash-card dash-card-accent dash-rise lg:col-span-2 p-6 sm:p-8">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                <Activity className="h-3.5 w-3.5 animate-pulse text-primary" /> Receita recorrente
+              </div>
+              <div className="mt-3 metric-number text-4xl sm:text-5xl">{formatBRL(data.mrr)}</div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {data.estActive.toLocaleString("pt-BR")} empresas ativas gerando receita mensal.
+              </p>
+            </div>
+            <span className="card-icon card-icon-accent" aria-hidden><DollarSign /></span>
+          </div>
+          <div className="mt-6 h-24">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={spark} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
+                <defs>
+                  <linearGradient id="admSpark" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.45} />
+                    <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <Area type="monotone" dataKey="carimbos" stroke="var(--color-primary)" strokeWidth={2} fill="url(#admSpark)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
 
-      {/* KPI GRID */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((s, i) => (
+        <section className="dash-card dash-rise p-6">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="text-xs uppercase tracking-widest text-muted-foreground">Saúde</div>
+              <h3 className="font-display text-lg font-semibold">Base de empresas</h3>
+            </div>
+            <span className="card-icon" aria-hidden><Shield /></span>
+          </div>
+
+          <div className="mt-6 flex items-end gap-3">
+            <div className="metric-number text-4xl">{healthPct}%</div>
+            <div className="pb-1.5 text-xs text-muted-foreground">operando ativas</div>
+          </div>
+          <div className="mt-3 h-2 rounded-full bg-muted/40 overflow-hidden border border-primary/10">
+            <div className="h-full gradient-brand transition-all duration-700" style={{ width: `${healthPct}%` }} />
+          </div>
+
+          <div className="mt-6 grid grid-cols-3 gap-3 text-center">
+            {[
+              { l: "Total", v: data.estTotal, i: Building2 },
+              { l: "Ativas", v: data.estActive, i: CheckCircle2 },
+              { l: "Bloq.", v: data.estBlocked, i: Ban },
+            ].map((x) => (
+              <div key={x.l} className="rounded-xl border border-border/60 bg-muted/20 py-3">
+                <x.i className="mx-auto h-4 w-4 text-muted-foreground" />
+                <div className="mt-1 metric-number text-lg">{x.v.toLocaleString("pt-BR")}</div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{x.l}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      {/* KPI SECUNDÁRIOS */}
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        {secondary.map((s, i) => (
           <div
             key={s.label}
-            className={`dash-card dash-rise ${s.accent ? "dash-card-accent" : ""} p-5`}
+            className={`dash-card dash-rise ${s.accent ? "dash-card-accent" : ""} p-4 sm:p-5`}
             style={{ animationDelay: `${i * 60}ms`, ["--sweep" as any]: `${i * 45}deg` }}
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{s.label}</div>
-                <div className="mt-2 metric-number text-2xl sm:text-3xl">
-                  {s.isText ? s.value : (s.value as number).toLocaleString("pt-BR")}
+                <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{s.label}</div>
+                <div className="mt-2 metric-number text-xl sm:text-2xl">
+                  {s.value.toLocaleString("pt-BR")}
                 </div>
               </div>
               <span className={`card-icon ${s.accent ? "card-icon-accent" : ""}`} aria-hidden>
@@ -99,6 +137,7 @@ function AdminOverview() {
           </div>
         ))}
       </div>
+
 
       {/* CHART + PLAN DISTRIBUTION */}
       <div className="grid gap-6 lg:grid-cols-3">
