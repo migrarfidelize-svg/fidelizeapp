@@ -44,12 +44,31 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
+function preventStaleHtml(request: Request, response: Response): Response {
+  const acceptsHtml = request.headers.get("accept")?.includes("text/html") ?? false;
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!acceptsHtml || !contentType.includes("text/html")) return response;
+
+  const headers = new Headers(response.headers);
+  headers.set("cache-control", "no-store, no-cache, must-revalidate, max-age=0");
+  headers.set("pragma", "no-cache");
+  headers.set("expires", "0");
+  headers.set("surrogate-control", "no-store");
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      const normalized = await normalizeCatastrophicSsrResponse(response);
+      return preventStaleHtml(request, normalized);
     } catch (error) {
       console.error(error);
       return new Response(renderErrorPage(), {
