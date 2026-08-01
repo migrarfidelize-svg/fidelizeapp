@@ -121,6 +121,7 @@ import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/ap
 import { Route as ApiPublicHooksNotifyExpiringRewardsRouteImport } from './routes/api/public/hooks/notify-expiring-rewards'
 import { Route as ApiPublicHooksMercadopagoRetryRouteImport } from './routes/api/public/hooks/mercadopago-retry'
 import { Route as ApiPublicHooksDispatchScheduledPushRouteImport } from './routes/api/public/hooks/dispatch-scheduled-push'
+import { Route as ApiPublicDiagEnvRouteImport } from './routes/api/public/diag/env'
 import { Route as ApiPublicCronReengagementRouteImport } from './routes/api/public/cron/reengagement'
 import { Route as ApiPublicCronBirthdayRouteImport } from './routes/api/public/cron/birthday'
 import { Route as AuthenticatedHashSuporteIdRouteImport } from './routes/_authenticated/hash.suporte.$id'
@@ -757,6 +758,11 @@ const ApiPublicHooksDispatchScheduledPushRoute =
     path: '/api/public/hooks/dispatch-scheduled-push',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicDiagEnvRoute = ApiPublicDiagEnvRouteImport.update({
+  id: '/api/public/diag/env',
+  path: '/api/public/diag/env',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCronReengagementRoute =
   ApiPublicCronReengagementRouteImport.update({
     id: '/api/public/cron/reengagement',
@@ -996,6 +1002,7 @@ export interface FileRoutesByFullPath {
   '/hash/suporte/$id': typeof AuthenticatedHashSuporteIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
+  '/api/public/diag/env': typeof ApiPublicDiagEnvRoute
   '/api/public/hooks/dispatch-scheduled-push': typeof ApiPublicHooksDispatchScheduledPushRoute
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/notify-expiring-rewards': typeof ApiPublicHooksNotifyExpiringRewardsRoute
@@ -1126,6 +1133,7 @@ export interface FileRoutesByTo {
   '/hash/suporte/$id': typeof AuthenticatedHashSuporteIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
+  '/api/public/diag/env': typeof ApiPublicDiagEnvRoute
   '/api/public/hooks/dispatch-scheduled-push': typeof ApiPublicHooksDispatchScheduledPushRoute
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/notify-expiring-rewards': typeof ApiPublicHooksNotifyExpiringRewardsRoute
@@ -1263,6 +1271,7 @@ export interface FileRoutesById {
   '/_authenticated/hash/suporte/$id': typeof AuthenticatedHashSuporteIdRoute
   '/api/public/cron/birthday': typeof ApiPublicCronBirthdayRoute
   '/api/public/cron/reengagement': typeof ApiPublicCronReengagementRoute
+  '/api/public/diag/env': typeof ApiPublicDiagEnvRoute
   '/api/public/hooks/dispatch-scheduled-push': typeof ApiPublicHooksDispatchScheduledPushRoute
   '/api/public/hooks/mercadopago-retry': typeof ApiPublicHooksMercadopagoRetryRoute
   '/api/public/hooks/notify-expiring-rewards': typeof ApiPublicHooksNotifyExpiringRewardsRoute
@@ -1400,6 +1409,7 @@ export interface FileRouteTypes {
     | '/hash/suporte/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
+    | '/api/public/diag/env'
     | '/api/public/hooks/dispatch-scheduled-push'
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/notify-expiring-rewards'
@@ -1530,6 +1540,7 @@ export interface FileRouteTypes {
     | '/hash/suporte/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
+    | '/api/public/diag/env'
     | '/api/public/hooks/dispatch-scheduled-push'
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/notify-expiring-rewards'
@@ -1666,6 +1677,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hash/suporte/$id'
     | '/api/public/cron/birthday'
     | '/api/public/cron/reengagement'
+    | '/api/public/diag/env'
     | '/api/public/hooks/dispatch-scheduled-push'
     | '/api/public/hooks/mercadopago-retry'
     | '/api/public/hooks/notify-expiring-rewards'
@@ -1732,6 +1744,7 @@ export interface RootRouteChildren {
   SuporteSlugIndexRoute: typeof SuporteSlugIndexRoute
   ApiPublicCronBirthdayRoute: typeof ApiPublicCronBirthdayRoute
   ApiPublicCronReengagementRoute: typeof ApiPublicCronReengagementRoute
+  ApiPublicDiagEnvRoute: typeof ApiPublicDiagEnvRoute
   ApiPublicHooksDispatchScheduledPushRoute: typeof ApiPublicHooksDispatchScheduledPushRoute
   ApiPublicHooksMercadopagoRetryRoute: typeof ApiPublicHooksMercadopagoRetryRoute
   ApiPublicHooksNotifyExpiringRewardsRoute: typeof ApiPublicHooksNotifyExpiringRewardsRoute
@@ -2538,6 +2551,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksDispatchScheduledPushRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/diag/env': {
+      id: '/api/public/diag/env'
+      path: '/api/public/diag/env'
+      fullPath: '/api/public/diag/env'
+      preLoaderRoute: typeof ApiPublicDiagEnvRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/reengagement': {
       id: '/api/public/cron/reengagement'
       path: '/api/public/cron/reengagement'
@@ -2994,6 +3014,7 @@ const rootRouteChildren: RootRouteChildren = {
   SuporteSlugIndexRoute: SuporteSlugIndexRoute,
   ApiPublicCronBirthdayRoute: ApiPublicCronBirthdayRoute,
   ApiPublicCronReengagementRoute: ApiPublicCronReengagementRoute,
+  ApiPublicDiagEnvRoute: ApiPublicDiagEnvRoute,
   ApiPublicHooksDispatchScheduledPushRoute:
     ApiPublicHooksDispatchScheduledPushRoute,
   ApiPublicHooksMercadopagoRetryRoute: ApiPublicHooksMercadopagoRetryRoute,
@@ -3021,13 +3042,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
