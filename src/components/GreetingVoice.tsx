@@ -1,4 +1,6 @@
 import { useEffect, useRef } from "react";
+import { synthesizeGreeting } from "@/lib/tts.functions";
+import { loadVoicePrefs, type VoiceId, DEFAULT_STYLE } from "@/lib/voice-prefs";
 
 type Props = {
   /** "female" para painel do lojista, "male" para admin */
@@ -21,9 +23,8 @@ export function setGreetingMutedLocally(muted: boolean) {
   else localStorage.removeItem(GREETING_MUTE_KEY);
 }
 
-
 /** Gera saudação humanizada, variada e contextual (tempo + carisma). */
-function buildGreeting(gender: "female" | "male") {
+export function buildGreeting(gender: "female" | "male") {
   const now = new Date();
   const h = now.getHours();
   const m = now.getMinutes();
@@ -32,31 +33,20 @@ function buildGreeting(gender: "female" | "male") {
 
   let timePhrase: string;
   if (h === 12) {
-    // Meio-dia com tratamento natural: "agora é meio dia e nove"
     timePhrase =
-      m === 0
-        ? "agora é meio dia"
-        : m === 30
-          ? "agora é meio dia e meia"
-          : `agora é meio dia e ${m}`;
+      m === 0 ? "agora é meio dia" : m === 30 ? "agora é meio dia e meia" : `agora é meio dia e ${m}`;
   } else if (h === 0) {
-    // Meia-noite
     timePhrase =
-      m === 0
-        ? "agora é meia-noite"
-        : m === 30
-          ? "agora é meia-noite e meia"
-          : `agora é meia-noite e ${m}`;
+      m === 0 ? "agora é meia-noite" : m === 30 ? "agora é meia-noite e meia" : `agora é meia-noite e ${m}`;
   } else {
     const hourWord = h % 12 === 0 ? 12 : h % 12;
-    // Concordância: "é uma hora" / "são duas horas"
     const verb = hourWord === 1 ? "é" : "são";
     timePhrase =
       m === 0
         ? `agora ${verb} exatamente ${hourWord} ${hourWord === 1 ? "hora" : "horas"}`
         : m === 30
           ? `agora ${verb} exatamente ${hourWord} e meia`
-          : `agora ${verb} exatamente ${hourWord} e ${m}`; // sem zero à esquerda: "dez e nove"
+          : `agora ${verb} exatamente ${hourWord} e ${m}`;
   }
 
   const closers =
@@ -90,15 +80,8 @@ function loadVoices(): Promise<SpeechSynthesisVoice[]> {
   });
 }
 
-/**
- * Escolhe a MELHOR voz disponível no dispositivo — priorizando vozes
- * "neural"/"online"/"natural" que soam muito mais humanas.
- * Ranking (do melhor para o mais básico):
- *   1. Microsoft *Natural* / *Online* (Edge)      → altíssima qualidade
- *   2. Google português do Brasil                 → boa qualidade neural
- *   3. Luciana / Felipe / Joana (Apple)           → naturais no iOS/macOS
- *   4. Qualquer outra pt-BR                       → fallback
- */
+const FEMALE_VOICES: VoiceId[] = ["nova", "shimmer", "coral", "sage"];
+
 function pickBestVoice(voices: SpeechSynthesisVoice[], gender: "female" | "male") {
   const pt = voices.filter((v) => /^pt(-|_)?BR/i.test(v.lang) || v.lang.toLowerCase().startsWith("pt"));
   if (!pt.length) return null;
@@ -116,11 +99,87 @@ function pickBestVoice(voices: SpeechSynthesisVoice[], gender: "female" | "male"
     if (n.includes("apple") || /luciana|felipe|joana/.test(n)) s += 20;
     if (nameRe.test(v.name)) s += 50;
     if (/pt-br/i.test(v.lang)) s += 10;
-    if (!v.localService) s += 5; // vozes cloud costumam ser melhores
+    if (!v.localService) s += 5;
     return s;
   };
 
   return pt.slice().sort((a, b) => score(b) - score(a))[0];
+}
+
+/** Fallback: voz nativa do navegador. */
+async function speakWithBrowser(text: string, gender: "female" | "male") {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) return false;
+  try {
+    window.speechSynthesis.cancel();
+  } catch {}
+  const voices = await loadVoices();
+  const chosen = pickBestVoice(voices, gender);
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "pt-BR";
+  utter.volume = 0.95;
+  utter.rate = 0.98;
+  utter.pitch = gender === "female" ? 1.08 : 0.9;
+  if (chosen) utter.voice = chosen;
+
+  let killer: ReturnType<typeof setInterval> | null = null;
+  utter.onstart = () => {
+    killer = setInterval(() => {
+      if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+        window.speechSynthesis.resume();
+      }
+    }, 10000);
+  };
+  utter.onend = utter.onerror = () => {
+    if (killer) clearInterval(killer);
+  };
+  window.speechSynthesis.speak(utter);
+  return true;
+}
+
+let currentAudio: HTMLAudioElement | null = null;
+
+export function stopSpeaking() {
+  try {
+    currentAudio?.pause();
+    currentAudio = null;
+  } catch {}
+  try {
+    window.speechSynthesis?.cancel();
+  } catch {}
+}
+
+/**
+ * Fala um texto usando a voz natural (TTS no servidor). Se indisponível,
+ * cai para a voz nativa do navegador.
+ * Retorna "natural" | "browser" | "failed".
+ */
+export async function speakText(opts: {
+  text: string;
+  voice: VoiceId;
+  style?: string;
+}): Promise<"natural" | "browser" | "failed"> {
+  const gender: "female" | "male" = FEMALE_VOICES.includes(opts.voice) ? "female" : "male";
+  stopSpeaking();
+  try {
+    const res: any = await synthesizeGreeting({
+      data: {
+        text: opts.text.slice(0, 400),
+        voice: opts.voice,
+        instructions: opts.style || DEFAULT_STYLE,
+      },
+    });
+    if (res?.audio) {
+      const audio = new Audio(`data:${res.mime ?? "audio/mpeg"};base64,${res.audio}`);
+      currentAudio = audio;
+      await audio.play();
+      return "natural";
+    }
+  } catch {
+    // cai para o navegador
+  }
+  const ok = await speakWithBrowser(opts.text, gender);
+  return ok ? "browser" : "failed";
 }
 
 export function GreetingVoice({ gender, scope, enabled = true }: Props) {
@@ -129,61 +188,26 @@ export function GreetingVoice({ gender, scope, enabled = true }: Props) {
   useEffect(() => {
     if (!enabled) return;
     if (playedRef.current) return;
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    if (typeof window === "undefined") return;
     if (isGreetingMutedLocally()) return;
 
+    const prefs = loadVoicePrefs(scope);
+    if (!prefs.enabled) return;
 
     const key = `fidelize:greet:${scope}:${new Date().toDateString()}:${new Date().getHours()}`;
     if (sessionStorage.getItem(key)) return;
     playedRef.current = true;
 
-    const text = buildGreeting(gender);
+    const text = prefs.text.trim() || buildGreeting(gender);
 
-    const speakNow = async () => {
-      // cancela qualquer fala anterior travada (bug do Chrome)
-      try {
-        window.speechSynthesis.cancel();
-      } catch {}
-
-      const voices = await loadVoices();
-      const chosen = pickBestVoice(voices, gender);
-
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = "pt-BR";
-      utter.volume = 0.95;
-      // Ajustes para soar mais humano/carismático — evita robô plano.
-      utter.rate = 0.98;
-      utter.pitch = gender === "female" ? 1.08 : 0.9;
-      if (chosen) utter.voice = chosen;
-
-      // Chrome bug: fala > 15s corta. Truque: replay a cada 10s.
-      let killer: ReturnType<typeof setInterval> | null = null;
-      utter.onstart = () => {
-        killer = setInterval(() => {
-          if (window.speechSynthesis.speaking) {
-            window.speechSynthesis.pause();
-            window.speechSynthesis.resume();
-          }
-        }, 10000);
-      };
-      utter.onend = utter.onerror = () => {
-        if (killer) clearInterval(killer);
-      };
-
-      window.speechSynthesis.speak(utter);
-      sessionStorage.setItem(key, "1");
-    };
-
-    // Alguns navegadores bloqueiam áudio sem gesto do usuário.
-    // Tenta imediatamente e, em paralelo, arma um "retry" no 1º clique/tecla.
     let spoke = false;
     const attempt = () => {
-      speakNow()
-        .then(() => {
-          // considera falado somente se o motor realmente iniciou
-          setTimeout(() => {
-            spoke = window.speechSynthesis.speaking || window.speechSynthesis.pending || spoke;
-          }, 300);
+      speakText({ text, voice: prefs.voice, style: prefs.style })
+        .then((r) => {
+          if (r !== "failed") {
+            spoke = true;
+            sessionStorage.setItem(key, "1");
+          }
         })
         .catch(() => {});
     };
@@ -203,9 +227,8 @@ export function GreetingVoice({ gender, scope, enabled = true }: Props) {
       window.removeEventListener("pointerdown", armed);
       window.removeEventListener("keydown", armed);
     };
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled]);
+  }, [enabled, scope]);
 
   return null;
 }
