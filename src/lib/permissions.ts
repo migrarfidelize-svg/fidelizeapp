@@ -4,6 +4,7 @@
 
 export type PermissionAction =
   | "stamping.use"
+  | "inbox.use"
   | "customers.view"
   | "customers.edit"
   | "customers.import"
