@@ -73,8 +73,19 @@ export function CourierMiniMap({ pickup, dropoff, courier, route, className, wid
     : null;
 
   return (
-    <div className={"relative overflow-hidden rounded-2xl border border-border bg-muted/40 " + (className ?? "")}>
-      <svg viewBox={`0 0 ${W} ${H}`} className="h-full w-full" role="img" aria-label="Mapa da corrida">
+    <div
+      className={
+        (bare ? "relative overflow-hidden bg-muted/30 " : "relative overflow-hidden rounded-2xl border border-border bg-muted/40 ") +
+        (className ?? "")
+      }
+    >
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio={bare ? "xMidYMid slice" : "xMidYMid meet"}
+        className="h-full w-full"
+        role="img"
+        aria-label="Mapa da corrida"
+      >
         <defs>
           <pattern id="cm-grid" width="26" height="26" patternUnits="userSpaceOnUse">
             <path d="M26 0H0V26" fill="none" stroke="currentColor" strokeOpacity="0.12" strokeWidth="1" />
