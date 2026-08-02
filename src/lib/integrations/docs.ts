@@ -10,6 +10,30 @@ export type ProviderGuide = {
 };
 
 export const PROVIDER_GUIDES: Record<string, ProviderGuide> = {
+  // ---------- Mapas & Rotas ----------
+  google_maps: {
+    intro:
+      "Calcula o trajeto real por ruas entre a coleta e a entrega, respeitando sentido de via e trânsito, e desenha a rota no app do entregador.",
+    prerequisites: ["Conta Google Cloud com faturamento ativo", "Routes API e Geocoding API habilitadas"],
+    steps: [
+      { title: "Criar projeto", description: "Acesse o Google Cloud Console e crie (ou selecione) um projeto.", url: "https://console.cloud.google.com/projectcreate" },
+      { title: "Ativar faturamento", description: "Sem faturamento ativo o Google recusa todas as chamadas, mesmo dentro do nível gratuito.", url: "https://console.cloud.google.com/billing" },
+      { title: "Habilitar as APIs", description: "Em APIs e Serviços → Biblioteca, habilite Routes API e Geocoding API.", url: "https://console.cloud.google.com/apis/library" },
+      { title: "Criar a chave de servidor", description: "Credenciais → Criar credenciais → Chave de API.", url: "https://console.cloud.google.com/apis/credentials" },
+      { title: "Restringir corretamente", description: "Restrição de aplicativo: 'Nenhuma' ou 'Endereços IP'. NUNCA referenciadores HTTP — chamadas de servidor não enviam referer." },
+      { title: "Limitar as APIs da chave", description: "Em Restrições de API, selecione apenas Routes API e Geocoding API." },
+      { title: "Colar no painel", description: "Cole a chave no campo 'Chave de servidor' abaixo e clique em Salvar." },
+      { title: "Testar conexão", description: "Clique em Testar conexão: uma rota real de teste é calculada na Av. Paulista." },
+      { title: "Ativar", description: "Ligue a chave da integração para que o app do entregador passe a usar o trajeto real." },
+    ],
+    troubleshooting: [
+      { symptom: "API_KEY_HTTP_REFERRER_BLOCKED", fix: "A chave está restrita por referenciador HTTP. Troque para 'Nenhuma' ou 'Endereços IP'." },
+      { symptom: "API_KEY_SERVICE_BLOCKED / has not been used", fix: "Habilite a Routes API no projeto e inclua-a nas restrições de API da chave." },
+      { symptom: "403 sem detalhes", fix: "Verifique se o faturamento do projeto do Google Cloud está ativo." },
+      { symptom: "Mapa continua em linha reta", fix: "Confirme que a integração está ativada e que a entrega tem endereços/coordenadas válidos." },
+    ],
+  },
+
   // ---------- Pagamentos ----------
   mercadopago: {
     intro:
