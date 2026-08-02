@@ -9,7 +9,7 @@ import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
 import { BrandMarquee } from "@/components/landing/BrandMarquee";
 import { DEFAULT_BRANDS, DEFAULT_HERO_COPY, type LandingBrandsContent, type LandingHeroContent, type PublicPlan } from "@/lib/landing-content";
-import { HeroAppPreview } from "@/components/landing/HeroAppPreview";
+import { HeroEcosystem } from "@/components/landing/HeroEcosystem";
 import { EcosystemBento } from "@/components/landing/EcosystemBento";
 
 import { RoiCalculator } from "@/components/landing/RoiCalculator";
@@ -357,9 +357,27 @@ function HeroCopy() {
         </ul>
       ) : null}
 
+      <div className="mt-8 flex items-center gap-4">
+        <div className="flex -space-x-3">
+          {["bg-white/15", "bg-white/25", "bg-white/10"].map((c, i) => (
+            <span key={i} className={`h-9 w-9 rounded-full border-2 border-[#020617] ${c}`} />
+          ))}
+          <span
+            className="grid h-9 w-9 place-items-center rounded-full border-2 border-[#020617] text-[10px] font-bold"
+            style={{ background: CYAN, color: OBSIDIAN }}
+          >
+            +2k
+          </span>
+        </div>
+        <p className="text-xs text-white/50">
+          Mais de <span className="font-semibold text-white">2.000 lojistas</span> usando a Fidelize.
+        </p>
+      </div>
+
     </div>
   );
 }
+
 
 function Hero() {
   return (
@@ -418,13 +436,14 @@ function Hero() {
 
       
       <div className="relative z-10 mx-auto max-w-6xl px-4 py-12 sm:py-16 md:py-24">
-        <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(300px,420px)] lg:gap-14">
+        <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(320px,520px)] lg:gap-10">
           <HeroCopy />
 
 
-          <div className="landing-hero-preview -mx-2 flex scale-95 justify-center sm:mx-0 sm:scale-100 lg:justify-end">
-            <HeroAppPreview content={useLandingData()?.hero} />
+          <div className="landing-hero-preview -mx-2 flex justify-center sm:mx-0 lg:justify-end">
+            <HeroEcosystem />
           </div>
+
         </div>
       </div>
 
