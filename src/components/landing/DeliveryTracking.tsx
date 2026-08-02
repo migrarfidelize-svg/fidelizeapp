@@ -34,7 +34,7 @@ export function DeliveryTracking() {
         @keyframes fz-dash { to { stroke-dashoffset: 0 } }
         @keyframes fz-ride { to { offset-distance: 100% } }
         @keyframes fz-ping-soft { 0% { transform:scale(.6); opacity:.55 } 100% { transform:scale(2.1); opacity:0 } }
-        @keyframes fz-step { 0%,8% { opacity:.45 } 16%,30% { opacity:1 } 38%,100% { opacity:.45 } }
+        @keyframes fz-step { 0%,8% { opacity:.72 } 16%,30% { opacity:1 } 38%,100% { opacity:.72 } }
         .fz-route { stroke-dasharray: 620; stroke-dashoffset: 620; animation: fz-dash 6s ease-in-out infinite alternate; }
         .fz-rider { offset-path: path("${PATH}"); offset-rotate: 0deg; animation: fz-ride 6s ease-in-out infinite alternate; }
         .fz-ping { animation: fz-ping-soft 2.4s ease-out infinite; }
@@ -172,7 +172,7 @@ export function DeliveryTracking() {
                     <p.icon className="h-4 w-4" />
                   </span>
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-semibold text-card-foreground">{p.label}</div>
+                    <div className="text-sm font-semibold leading-snug text-card-foreground">{p.label}</div>
                     <div className="text-xs text-muted-foreground">{p.value}</div>
                   </div>
                 </div>
