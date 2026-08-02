@@ -357,9 +357,27 @@ function HeroCopy() {
         </ul>
       ) : null}
 
+      <div className="mt-8 flex items-center gap-4">
+        <div className="flex -space-x-3">
+          {["bg-white/15", "bg-white/25", "bg-white/10"].map((c, i) => (
+            <span key={i} className={`h-9 w-9 rounded-full border-2 border-[#020617] ${c}`} />
+          ))}
+          <span
+            className="grid h-9 w-9 place-items-center rounded-full border-2 border-[#020617] text-[10px] font-bold"
+            style={{ background: CYAN, color: OBSIDIAN }}
+          >
+            +2k
+          </span>
+        </div>
+        <p className="text-xs text-white/50">
+          Mais de <span className="font-semibold text-white">2.000 lojistas</span> usando a Fidelize.
+        </p>
+      </div>
+
     </div>
   );
 }
+
 
 function Hero() {
   return (
