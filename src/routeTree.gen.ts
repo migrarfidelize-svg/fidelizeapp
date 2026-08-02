@@ -54,9 +54,11 @@ import { Route as SuporteSlugNovoRouteImport } from './routes/suporte.$slug.novo
 import { Route as AjudaCategoryArticleRouteImport } from './routes/ajuda.$category.$article'
 import { Route as AuthenticatedHashWhatsappRouteImport } from './routes/_authenticated/hash.whatsapp'
 import { Route as AuthenticatedHashUsuariosRouteImport } from './routes/_authenticated/hash.usuarios'
+import { Route as AuthenticatedHashTaxasRouteImport } from './routes/_authenticated/hash.taxas'
 import { Route as AuthenticatedHashPixelRouteImport } from './routes/_authenticated/hash.pixel'
 import { Route as AuthenticatedHashPagamentosRouteImport } from './routes/_authenticated/hash.pagamentos'
 import { Route as AuthenticatedHashNotificacoesRouteImport } from './routes/_authenticated/hash.notificacoes'
+import { Route as AuthenticatedHashMotoboysRouteImport } from './routes/_authenticated/hash.motoboys'
 import { Route as AuthenticatedHashMigracaoRouteImport } from './routes/_authenticated/hash.migracao'
 import { Route as AuthenticatedHashLiberacoesRouteImport } from './routes/_authenticated/hash.liberacoes'
 import { Route as AuthenticatedHashLandingRouteImport } from './routes/_authenticated/hash.landing'
@@ -376,6 +378,11 @@ const AuthenticatedHashUsuariosRoute =
     path: '/usuarios',
     getParentRoute: () => AuthenticatedHashRoute,
   } as any)
+const AuthenticatedHashTaxasRoute = AuthenticatedHashTaxasRouteImport.update({
+  id: '/taxas',
+  path: '/taxas',
+  getParentRoute: () => AuthenticatedHashRoute,
+} as any)
 const AuthenticatedHashPixelRoute = AuthenticatedHashPixelRouteImport.update({
   id: '/pixel',
   path: '/pixel',
@@ -391,6 +398,12 @@ const AuthenticatedHashNotificacoesRoute =
   AuthenticatedHashNotificacoesRouteImport.update({
     id: '/notificacoes',
     path: '/notificacoes',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashMotoboysRoute =
+  AuthenticatedHashMotoboysRouteImport.update({
+    id: '/motoboys',
+    path: '/motoboys',
     getParentRoute: () => AuthenticatedHashRoute,
   } as any)
 const AuthenticatedHashMigracaoRoute =
@@ -1004,9 +1017,11 @@ export interface FileRoutesByFullPath {
   '/hash/landing': typeof AuthenticatedHashLandingRoute
   '/hash/liberacoes': typeof AuthenticatedHashLiberacoesRoute
   '/hash/migracao': typeof AuthenticatedHashMigracaoRoute
+  '/hash/motoboys': typeof AuthenticatedHashMotoboysRoute
   '/hash/notificacoes': typeof AuthenticatedHashNotificacoesRoute
   '/hash/pagamentos': typeof AuthenticatedHashPagamentosRoute
   '/hash/pixel': typeof AuthenticatedHashPixelRoute
+  '/hash/taxas': typeof AuthenticatedHashTaxasRoute
   '/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
   '/hash/whatsapp': typeof AuthenticatedHashWhatsappRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
@@ -1139,9 +1154,11 @@ export interface FileRoutesByTo {
   '/hash/landing': typeof AuthenticatedHashLandingRoute
   '/hash/liberacoes': typeof AuthenticatedHashLiberacoesRoute
   '/hash/migracao': typeof AuthenticatedHashMigracaoRoute
+  '/hash/motoboys': typeof AuthenticatedHashMotoboysRoute
   '/hash/notificacoes': typeof AuthenticatedHashNotificacoesRoute
   '/hash/pagamentos': typeof AuthenticatedHashPagamentosRoute
   '/hash/pixel': typeof AuthenticatedHashPixelRoute
+  '/hash/taxas': typeof AuthenticatedHashTaxasRoute
   '/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
   '/hash/whatsapp': typeof AuthenticatedHashWhatsappRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
@@ -1281,9 +1298,11 @@ export interface FileRoutesById {
   '/_authenticated/hash/landing': typeof AuthenticatedHashLandingRoute
   '/_authenticated/hash/liberacoes': typeof AuthenticatedHashLiberacoesRoute
   '/_authenticated/hash/migracao': typeof AuthenticatedHashMigracaoRoute
+  '/_authenticated/hash/motoboys': typeof AuthenticatedHashMotoboysRoute
   '/_authenticated/hash/notificacoes': typeof AuthenticatedHashNotificacoesRoute
   '/_authenticated/hash/pagamentos': typeof AuthenticatedHashPagamentosRoute
   '/_authenticated/hash/pixel': typeof AuthenticatedHashPixelRoute
+  '/_authenticated/hash/taxas': typeof AuthenticatedHashTaxasRoute
   '/_authenticated/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
   '/_authenticated/hash/whatsapp': typeof AuthenticatedHashWhatsappRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
@@ -1423,9 +1442,11 @@ export interface FileRouteTypes {
     | '/hash/landing'
     | '/hash/liberacoes'
     | '/hash/migracao'
+    | '/hash/motoboys'
     | '/hash/notificacoes'
     | '/hash/pagamentos'
     | '/hash/pixel'
+    | '/hash/taxas'
     | '/hash/usuarios'
     | '/hash/whatsapp'
     | '/ajuda/$category/$article'
@@ -1558,9 +1579,11 @@ export interface FileRouteTypes {
     | '/hash/landing'
     | '/hash/liberacoes'
     | '/hash/migracao'
+    | '/hash/motoboys'
     | '/hash/notificacoes'
     | '/hash/pagamentos'
     | '/hash/pixel'
+    | '/hash/taxas'
     | '/hash/usuarios'
     | '/hash/whatsapp'
     | '/ajuda/$category/$article'
@@ -1699,9 +1722,11 @@ export interface FileRouteTypes {
     | '/_authenticated/hash/landing'
     | '/_authenticated/hash/liberacoes'
     | '/_authenticated/hash/migracao'
+    | '/_authenticated/hash/motoboys'
     | '/_authenticated/hash/notificacoes'
     | '/_authenticated/hash/pagamentos'
     | '/_authenticated/hash/pixel'
+    | '/_authenticated/hash/taxas'
     | '/_authenticated/hash/usuarios'
     | '/_authenticated/hash/whatsapp'
     | '/ajuda/$category/$article'
@@ -2135,6 +2160,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHashUsuariosRouteImport
       parentRoute: typeof AuthenticatedHashRoute
     }
+    '/_authenticated/hash/taxas': {
+      id: '/_authenticated/hash/taxas'
+      path: '/taxas'
+      fullPath: '/hash/taxas'
+      preLoaderRoute: typeof AuthenticatedHashTaxasRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
     '/_authenticated/hash/pixel': {
       id: '/_authenticated/hash/pixel'
       path: '/pixel'
@@ -2154,6 +2186,13 @@ declare module '@tanstack/react-router' {
       path: '/notificacoes'
       fullPath: '/hash/notificacoes'
       preLoaderRoute: typeof AuthenticatedHashNotificacoesRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/motoboys': {
+      id: '/_authenticated/hash/motoboys'
+      path: '/motoboys'
+      fullPath: '/hash/motoboys'
+      preLoaderRoute: typeof AuthenticatedHashMotoboysRouteImport
       parentRoute: typeof AuthenticatedHashRoute
     }
     '/_authenticated/hash/migracao': {
@@ -2972,9 +3011,11 @@ interface AuthenticatedHashRouteChildren {
   AuthenticatedHashLandingRoute: typeof AuthenticatedHashLandingRoute
   AuthenticatedHashLiberacoesRoute: typeof AuthenticatedHashLiberacoesRoute
   AuthenticatedHashMigracaoRoute: typeof AuthenticatedHashMigracaoRoute
+  AuthenticatedHashMotoboysRoute: typeof AuthenticatedHashMotoboysRoute
   AuthenticatedHashNotificacoesRoute: typeof AuthenticatedHashNotificacoesRoute
   AuthenticatedHashPagamentosRoute: typeof AuthenticatedHashPagamentosRoute
   AuthenticatedHashPixelRoute: typeof AuthenticatedHashPixelRoute
+  AuthenticatedHashTaxasRoute: typeof AuthenticatedHashTaxasRoute
   AuthenticatedHashUsuariosRoute: typeof AuthenticatedHashUsuariosRoute
   AuthenticatedHashWhatsappRoute: typeof AuthenticatedHashWhatsappRoute
   AuthenticatedHashIndexRoute: typeof AuthenticatedHashIndexRoute
@@ -3003,9 +3044,11 @@ const AuthenticatedHashRouteChildren: AuthenticatedHashRouteChildren = {
   AuthenticatedHashLandingRoute: AuthenticatedHashLandingRoute,
   AuthenticatedHashLiberacoesRoute: AuthenticatedHashLiberacoesRoute,
   AuthenticatedHashMigracaoRoute: AuthenticatedHashMigracaoRoute,
+  AuthenticatedHashMotoboysRoute: AuthenticatedHashMotoboysRoute,
   AuthenticatedHashNotificacoesRoute: AuthenticatedHashNotificacoesRoute,
   AuthenticatedHashPagamentosRoute: AuthenticatedHashPagamentosRoute,
   AuthenticatedHashPixelRoute: AuthenticatedHashPixelRoute,
+  AuthenticatedHashTaxasRoute: AuthenticatedHashTaxasRoute,
   AuthenticatedHashUsuariosRoute: AuthenticatedHashUsuariosRoute,
   AuthenticatedHashWhatsappRoute: AuthenticatedHashWhatsappRoute,
   AuthenticatedHashIndexRoute: AuthenticatedHashIndexRoute,
