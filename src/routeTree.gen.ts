@@ -137,6 +137,7 @@ import { Route as AuthenticatedAppCardapioCategoriasRouteImport } from './routes
 import { Route as AuthenticatedAppCardapioAparenciaRouteImport } from './routes/_authenticated/app.cardapio.aparencia'
 import { Route as AuthenticatedAppAvaliacoesTemaRouteImport } from './routes/_authenticated/app.avaliacoes.tema'
 import { Route as AuthenticatedAppAvaliacoesQrRouteImport } from './routes/_authenticated/app.avaliacoes.qr'
+import { Route as ApiPublicWhatsappWebhookTokenRouteImport } from './routes/api/public/whatsapp/webhook.$token'
 import { Route as ApiPublicWalletV1LogRouteImport } from './routes/api/public/wallet/v1/log'
 import { Route as ApiPublicWalletAppleTokenRouteImport } from './routes/api/public/wallet.apple.$token'
 import { Route as ApiPublicRTCodeRouteImport } from './routes/api/public/r/t/$code'
@@ -852,6 +853,12 @@ const AuthenticatedAppAvaliacoesQrRoute =
     path: '/avaliacoes/qr',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const ApiPublicWhatsappWebhookTokenRoute =
+  ApiPublicWhatsappWebhookTokenRouteImport.update({
+    id: '/api/public/whatsapp/webhook/$token',
+    path: '/api/public/whatsapp/webhook/$token',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWalletV1LogRoute = ApiPublicWalletV1LogRouteImport.update({
   id: '/api/public/wallet/v1/log',
   path: '/api/public/wallet/v1/log',
@@ -1033,6 +1040,7 @@ export interface FileRoutesByFullPath {
   '/api/public/r/t/$code': typeof ApiPublicRTCodeRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
   '/api/public/wallet/v1/log': typeof ApiPublicWalletV1LogRoute
+  '/api/public/whatsapp/webhook/$token': typeof ApiPublicWhatsappWebhookTokenRoute
   '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
   '/api/public/wallet/v1/passes/$passTypeId/$serial': typeof ApiPublicWalletV1PassesPassTypeIdSerialRoute
   '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId': typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren
@@ -1165,6 +1173,7 @@ export interface FileRoutesByTo {
   '/api/public/r/t/$code': typeof ApiPublicRTCodeRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
   '/api/public/wallet/v1/log': typeof ApiPublicWalletV1LogRoute
+  '/api/public/whatsapp/webhook/$token': typeof ApiPublicWhatsappWebhookTokenRoute
   '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
   '/api/public/wallet/v1/passes/$passTypeId/$serial': typeof ApiPublicWalletV1PassesPassTypeIdSerialRoute
   '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId': typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren
@@ -1304,6 +1313,7 @@ export interface FileRoutesById {
   '/api/public/r/t/$code': typeof ApiPublicRTCodeRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
   '/api/public/wallet/v1/log': typeof ApiPublicWalletV1LogRoute
+  '/api/public/whatsapp/webhook/$token': typeof ApiPublicWhatsappWebhookTokenRoute
   '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
   '/api/public/wallet/v1/passes/$passTypeId/$serial': typeof ApiPublicWalletV1PassesPassTypeIdSerialRoute
   '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId': typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren
@@ -1443,6 +1453,7 @@ export interface FileRouteTypes {
     | '/api/public/r/t/$code'
     | '/api/public/wallet/apple/$token'
     | '/api/public/wallet/v1/log'
+    | '/api/public/whatsapp/webhook/$token'
     | '/api/public/r/qr/$slug/$dest'
     | '/api/public/wallet/v1/passes/$passTypeId/$serial'
     | '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId'
@@ -1575,6 +1586,7 @@ export interface FileRouteTypes {
     | '/api/public/r/t/$code'
     | '/api/public/wallet/apple/$token'
     | '/api/public/wallet/v1/log'
+    | '/api/public/whatsapp/webhook/$token'
     | '/api/public/r/qr/$slug/$dest'
     | '/api/public/wallet/v1/passes/$passTypeId/$serial'
     | '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId'
@@ -1713,6 +1725,7 @@ export interface FileRouteTypes {
     | '/api/public/r/t/$code'
     | '/api/public/wallet/apple/$token'
     | '/api/public/wallet/v1/log'
+    | '/api/public/whatsapp/webhook/$token'
     | '/api/public/r/qr/$slug/$dest'
     | '/api/public/wallet/v1/passes/$passTypeId/$serial'
     | '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId'
@@ -1773,6 +1786,7 @@ export interface RootRouteChildren {
   ApiPublicRTCodeRoute: typeof ApiPublicRTCodeRoute
   ApiPublicWalletAppleTokenRoute: typeof ApiPublicWalletAppleTokenRoute
   ApiPublicWalletV1LogRoute: typeof ApiPublicWalletV1LogRoute
+  ApiPublicWhatsappWebhookTokenRoute: typeof ApiPublicWhatsappWebhookTokenRoute
   ApiPublicRQrSlugDestRoute: typeof ApiPublicRQrSlugDestRoute
   ApiPublicWalletV1PassesPassTypeIdSerialRoute: typeof ApiPublicWalletV1PassesPassTypeIdSerialRoute
   ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRoute: typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren
@@ -2676,6 +2690,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAvaliacoesQrRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/api/public/whatsapp/webhook/$token': {
+      id: '/api/public/whatsapp/webhook/$token'
+      path: '/api/public/whatsapp/webhook/$token'
+      fullPath: '/api/public/whatsapp/webhook/$token'
+      preLoaderRoute: typeof ApiPublicWhatsappWebhookTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/wallet/v1/log': {
       id: '/api/public/wallet/v1/log'
       path: '/api/public/wallet/v1/log'
@@ -3054,6 +3075,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicRTCodeRoute: ApiPublicRTCodeRoute,
   ApiPublicWalletAppleTokenRoute: ApiPublicWalletAppleTokenRoute,
   ApiPublicWalletV1LogRoute: ApiPublicWalletV1LogRoute,
+  ApiPublicWhatsappWebhookTokenRoute: ApiPublicWhatsappWebhookTokenRoute,
   ApiPublicRQrSlugDestRoute: ApiPublicRQrSlugDestRoute,
   ApiPublicWalletV1PassesPassTypeIdSerialRoute:
     ApiPublicWalletV1PassesPassTypeIdSerialRoute,
