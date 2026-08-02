@@ -108,13 +108,21 @@ export function HeroEcosystem({ device }: { device?: LandingHeroDevice }) {
                     className="grid h-11 w-11 shrink-0 place-items-center rounded-full p-[2px]"
                     style={{ border: `2px solid ${i < 2 ? PURPLE : "rgba(0,0,0,0.10)"}` }}
                   >
-                    <span className="h-full w-full rounded-full bg-black/5" />
+                    <span
+                      className="grid h-full w-full place-items-center rounded-full"
+                      style={{ background: i < 2 ? PURPLE : "rgba(0,0,0,0.06)" }}
+                    >
+                      <Utensils
+                        className={`h-4 w-4 ${i < 2 ? "text-white" : "text-black/35"}`}
+                        strokeWidth={2.2}
+                      />
+                    </span>
                   </span>
                 ))}
               </div>
               <div className="mt-3 grid h-[190px] place-items-center rounded-2xl border border-black/5 bg-white shadow-sm">
-                <span className="grid h-12 w-12 place-items-center rounded-full text-white" style={{ background: PURPLE }}>
-                  <Play className="h-5 w-5 fill-current" />
+                <span className="grid h-12 w-12 place-items-center rounded-full shadow-lg" style={{ background: PURPLE }}>
+                  <Play className="h-5 w-5 fill-white text-white" />
                 </span>
               </div>
               <div className="mt-2 text-xs font-semibold text-[#1b1730]">{d.storyTitle}</div>
