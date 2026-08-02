@@ -11,6 +11,8 @@ import { BrandMarquee } from "@/components/landing/BrandMarquee";
 import { DEFAULT_BRANDS, DEFAULT_HERO_COPY, type LandingBrandsContent, type LandingHeroContent, type PublicPlan } from "@/lib/landing-content";
 import { HeroEcosystem } from "@/components/landing/HeroEcosystem";
 import { EcosystemBento } from "@/components/landing/EcosystemBento";
+import { DeliveryTracking } from "@/components/landing/DeliveryTracking";
+
 
 import { RoiCalculator } from "@/components/landing/RoiCalculator";
 
