@@ -314,12 +314,16 @@ export const listAvailableCouriers = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertEst(supabase, userId, data.establishment_id);
 
+    const cols =
+      "id, full_name, avatar_url, vehicle_type, vehicle_plate, city, rating_avg, rating_count, deliveries_count, level_code, is_online, last_seen_at, is_test";
+
     const cutoff = new Date(Date.now() - 5 * 60_000).toISOString();
     let q = (supabase as any)
       .from("couriers")
-      .select("id, full_name, avatar_url, vehicle_type, vehicle_plate, city, rating_avg, rating_count, deliveries_count, level_code, is_online, last_seen_at")
+      .select(cols)
       .eq("status", "approved")
       .eq("is_online", true)
+      .eq("is_test", false)
       .gte("last_seen_at", cutoff)
       .order("rating_avg", { ascending: false })
       .limit(50);
@@ -327,8 +331,18 @@ export const listAvailableCouriers = createServerFn({ method: "POST" })
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
 
-    return { couriers: rows ?? [], total: (rows ?? []).length, refreshed_at: new Date().toISOString() };
+    // Entregadores de teste ficam sempre disponíveis (qualquer cidade) para validação do mapa.
+    const { data: testRows } = await (supabase as any)
+      .from("couriers")
+      .select(cols)
+      .eq("status", "approved")
+      .eq("is_test", true)
+      .limit(5);
+
+    const couriers = [...(rows ?? []), ...(testRows ?? [])];
+    return { couriers, total: couriers.length, refreshed_at: new Date().toISOString() };
   });
+
 
 export const requestCourier = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -378,6 +392,26 @@ export const requestCourier = createServerFn({ method: "POST" })
       .eq("id", data.establishment_id)
       .maybeSingle();
 
+    const pickupAddress = est?.address ?? null;
+    const dropoffAddress = data.dropoff_address ?? order?.address ?? null;
+
+    // Geocodifica os endereços (quando o Google Maps estiver configurado) para o mapa em tempo real.
+    let pickup: { lat: number; lng: number } | null = null;
+    let dropoff: { lat: number; lng: number } | null = null;
+    try {
+      const { geocodeAddress } = await import("./maps.server");
+      const compose = (addr: string | null) =>
+        addr ? [addr, est?.city].filter(Boolean).join(", ") : null;
+      const [p, d] = await Promise.all([
+        compose(pickupAddress) ? geocodeAddress(compose(pickupAddress)!) : Promise.resolve(null),
+        compose(dropoffAddress) ? geocodeAddress(compose(dropoffAddress)!) : Promise.resolve(null),
+      ]);
+      pickup = p;
+      dropoff = d;
+    } catch {
+      /* mapas opcionais */
+    }
+
     const { data: created, error } = await (supabase as any)
       .from("deliveries")
       .insert({
@@ -388,8 +422,12 @@ export const requestCourier = createServerFn({ method: "POST" })
         customer_phone: order?.customer_phone ?? null,
         status: data.courier_id ? "assigned" : "pending",
         assigned_at: data.courier_id ? new Date().toISOString() : null,
-        pickup_address: est?.address ?? null,
-        dropoff_address: data.dropoff_address ?? order?.address ?? null,
+        pickup_address: pickupAddress,
+        dropoff_address: dropoffAddress,
+        pickup_lat: pickup?.lat ?? null,
+        pickup_lng: pickup?.lng ?? null,
+        dropoff_lat: dropoff?.lat ?? null,
+        dropoff_lng: dropoff?.lng ?? null,
         fee_cents: data.fee_cents,
         platform_fee_cents: platformFee,
         courier_net_cents: Math.max(data.fee_cents - platformFee, 0),
@@ -399,7 +437,33 @@ export const requestCourier = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw new Error(error.message);
 
+    // Entregador de teste "segue" o endereço atual: fica na coleta da entrega solicitada.
+    if (data.courier_id && created?.id) {
+      const { data: courier } = await (supabase as any)
+        .from("couriers")
+        .select("id, is_test")
+        .eq("id", data.courier_id)
+        .maybeSingle();
+      if (courier?.is_test) {
+        const now = new Date().toISOString();
+        await (supabase as any)
+          .from("couriers")
+          .update({ city: est?.city ?? null, is_online: true, last_seen_at: now, updated_at: now })
+          .eq("id", courier.id);
+        if (pickup) {
+          await (supabase as any).from("courier_locations").insert({
+            courier_id: courier.id,
+            delivery_id: created.id,
+            lat: pickup.lat,
+            lng: pickup.lng,
+            recorded_at: now,
+          });
+        }
+      }
+    }
+
     return { ok: true, delivery: created, platform_fee_cents: platformFee };
+
   });
 
 /** Entregas em andamento do estabelecimento (para o dock e o mapa). */
