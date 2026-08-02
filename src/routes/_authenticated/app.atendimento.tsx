@@ -21,6 +21,8 @@ import {
   Inbox, Clock, Zap, Trash2, Plus, PhoneOff,
 } from "lucide-react";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
+import { OrdersDock } from "@/components/atendimento/OrdersDock";
+
 import {
   getWhatsAppConnection, startWhatsAppPairing, refreshWhatsAppStatus, disconnectWhatsApp,
   listConversations, getConversation, sendConversationMessage, updateConversation,
@@ -116,6 +118,8 @@ function Inner({ establishmentId, qc }: { establishmentId: string; qc: ReturnTyp
 
   return (
     <div className="p-4 md:p-8 space-y-6">
+      <OrdersDock establishmentId={establishmentId} />
+
       <PageHero
         icon={MessageSquare}
         eyebrow="Atendimento"
@@ -127,6 +131,7 @@ function Inner({ establishmentId, qc }: { establishmentId: string; qc: ReturnTyp
           { label: "Resolvidos", value: stats.data?.resolved ?? 0, icon: CheckCheck },
         ]}
       />
+
 
       <Tabs defaultValue="inbox">
         <TabsList>

@@ -16,7 +16,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock, Wallet2,
   UsersRound, Settings, Mail, FileText, ListChecks, LifeBuoy, Package,
-  DollarSign, Wallet, Megaphone, Cog, BookOpen, Menu, Star, Plug, Sparkles, Rocket, FileJson, KeyRound, ChevronRight, Activity,
+  DollarSign, Wallet, Megaphone, Cog, BookOpen, Menu, Star, Plug, Sparkles, Rocket, FileJson, KeyRound, ChevronRight, Activity, Bike, Percent,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -52,9 +52,18 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/hash/assinaturas", label: "Assinaturas", icon: CreditCard },
       { to: "/hash/planos", label: "Planos", icon: Package },
       { to: "/hash/anuncios", label: "Anúncios patrocinados", icon: Megaphone },
-      
+      { to: "/hash/taxas", label: "Taxas", icon: Percent },
     ],
   },
+  {
+    key: "logistica",
+    label: "Logística",
+    icon: Bike,
+    items: [
+      { to: "/hash/motoboys", label: "Motoboys", icon: Bike },
+    ],
+  },
+
   {
     key: "comunicacao",
     label: "Comunicação",
