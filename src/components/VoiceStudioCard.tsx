@@ -22,7 +22,13 @@ export function VoiceStudioCard(_props: { scope?: Scope }) {
   const qc = useQueryClient();
   const load = useServerFn(getVoiceSettings);
   const persist = useServerFn(saveVoiceSettings);
-  const { data, isLoading } = useQuery({ queryKey: ["voice-settings"], queryFn: () => load() });
+  const { data, isLoading } = useQuery({
+    queryKey: ["voice-settings"],
+    queryFn: () => load(),
+    retry: false,
+    staleTime: 60_000,
+  });
+
 
   const [settings, setSettings] = useState<VoiceSettings>(DEFAULT_VOICE_SETTINGS);
   const [saving, setSaving] = useState(false);
