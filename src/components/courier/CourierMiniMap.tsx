@@ -7,6 +7,8 @@ interface Props {
   pickup?: Point | null;
   dropoff?: Point | null;
   courier?: Point | null;
+  /** Trajeto real por ruas (Google Routes API). Quando ausente, cai na linha reta. */
+  route?: { lat: number; lng: number }[] | null;
   className?: string;
 }
 
@@ -25,8 +27,9 @@ export function haversineKm(a: Point, b: Point) {
  * Mapa vetorial de custo zero: projeta os pontos disponíveis em um SVG,
  * sem depender de nenhuma API paga de mapas.
  */
-export function CourierMiniMap({ pickup, dropoff, courier, className }: Props) {
-  const pts = [pickup, dropoff, courier].filter(
+export function CourierMiniMap({ pickup, dropoff, courier, route, className }: Props) {
+  const line = route && route.length > 1 ? route : null;
+  const pts = [pickup, dropoff, courier, ...(line ?? [])].filter(
     (p): p is Required<Point> => !!p && p.lat != null && p.lng != null,
   ) as { lat: number; lng: number }[];
 
@@ -54,6 +57,14 @@ export function CourierMiniMap({ pickup, dropoff, courier, className }: Props) {
   const b = dropoff?.lat != null ? project({ lat: dropoff.lat, lng: dropoff.lng as number }) : null;
   const c = courier?.lat != null ? project({ lat: courier.lat, lng: courier.lng as number }) : null;
   const km = pickup && dropoff ? haversineKm(pickup, dropoff) : null;
+  const routePath = line
+    ? line
+        .map((p, i) => {
+          const q = project(p);
+          return `${i === 0 ? "M" : "L"}${q.x.toFixed(1)},${q.y.toFixed(1)}`;
+        })
+        .join(" ")
+    : null;
 
   return (
     <div className={"relative overflow-hidden rounded-2xl border border-border bg-muted/40 " + (className ?? "")}>
@@ -64,7 +75,18 @@ export function CourierMiniMap({ pickup, dropoff, courier, className }: Props) {
           </pattern>
         </defs>
         <rect width={W} height={H} fill="url(#cm-grid)" className="text-primary" />
-        {a && b && (
+        {routePath && (
+          <path
+            d={routePath}
+            fill="none"
+            stroke="currentColor"
+            className="text-primary"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        )}
+        {!routePath && a && b && (
           <path
             d={`M${a.x},${a.y} Q${(a.x + b.x) / 2},${Math.min(a.y, b.y) - 28} ${b.x},${b.y}`}
             fill="none"
@@ -98,6 +120,9 @@ export function CourierMiniMap({ pickup, dropoff, courier, className }: Props) {
       <div className="pointer-events-none absolute bottom-2 left-2 flex gap-2 text-[10px] font-semibold">
         <span className="rounded-full bg-background/80 px-2 py-0.5 text-primary">Coleta</span>
         <span className="rounded-full bg-background/80 px-2 py-0.5 text-accent">Entrega</span>
+        {routePath && (
+          <span className="rounded-full bg-primary/15 px-2 py-0.5 text-primary">rota real</span>
+        )}
         {km != null && (
           <span className="rounded-full bg-background/80 px-2 py-0.5 text-muted-foreground">
             {km.toFixed(1)} km
