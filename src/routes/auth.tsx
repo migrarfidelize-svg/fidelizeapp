@@ -48,7 +48,7 @@ const searchSchema = z.object({
 
 });
 
-async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: string; role?: "customer" | "establishment" }): Promise<{ to: string; toast?: string; toastKind?: "success" | "error" | "info" }> {
+async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: string; role?: "customer" | "establishment" | "courier" }): Promise<{ to: string; toast?: string; toastKind?: "success" | "error" | "info" }> {
   // Vindo de um QR de estabelecimento (usuário já tinha conta ou acabou de criar).
   if (opts.est_slug) {
     try {
