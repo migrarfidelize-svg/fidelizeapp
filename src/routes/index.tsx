@@ -440,6 +440,7 @@ function HeroCopy() {
 
 
 function Hero() {
+  const device = useLandingData()?.hero?.device;
   return (
     <section className="landing-hero relative" style={{ background: OBSIDIAN }}>
       <div aria-hidden className="hero-bg-aurora-circuit">
@@ -501,7 +502,7 @@ function Hero() {
 
 
           <div className="landing-hero-preview -mx-2 flex justify-center sm:mx-0 lg:justify-end">
-            <HeroEcosystem />
+            <HeroEcosystem device={device} />
           </div>
 
         </div>
