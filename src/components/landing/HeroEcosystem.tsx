@@ -81,10 +81,13 @@ export function HeroEcosystem({ device }: { device?: LandingHeroDevice }) {
                   {Array.from({ length: d.stamps }).map((_, i) => (
                     <span
                       key={i}
-                      className={`grid aspect-square place-items-center rounded-full ring-1 ring-white/40 ${i < d.stampsFilled ? "fz-stamp bg-white/25" : "bg-white/10"}`}
+                      className={`grid aspect-square place-items-center rounded-full ring-1 ring-white/50 ${i < d.stampsFilled ? "fz-stamp bg-white/30" : "bg-white/10"}`}
                       style={{ animationDelay: `${i * 0.28}s` }}
                     >
-                      <Stamp className="h-3 w-3 text-white sm:h-3.5 sm:w-3.5" />
+                      <Stamp
+                        className={`h-3 w-3 sm:h-3.5 sm:w-3.5 ${i < d.stampsFilled ? "text-white" : "text-white/55"}`}
+                        strokeWidth={2.2}
+                      />
                     </span>
                   ))}
                 </div>
