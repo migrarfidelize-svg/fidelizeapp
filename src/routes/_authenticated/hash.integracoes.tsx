@@ -17,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plug, CheckCircle2, XCircle, Loader2, KeyRound, ExternalLink, Settings2,
   Copy, CopyCheck, RotateCcw, AlertTriangle, Clock, BookOpen, History, Webhook, Save,
-  Sparkles, CreditCard, Zap, Target, ShieldCheck,
+  Sparkles, CreditCard, Zap, Target, ShieldCheck, Map as MapIcon,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { ProviderBrand, providerAccent } from "@/components/integrations/ProviderBrand";
@@ -81,12 +81,14 @@ function IntegrationsPage() {
     const ai: CatalogMeta[] = [];
     const payments: CatalogMeta[] = [];
     const marketing: CatalogMeta[] = [];
+    const maps: CatalogMeta[] = [];
     (catalog.data ?? []).forEach((m) => {
       if (m.category === "ai") ai.push(m);
       else if (m.category === "marketing") marketing.push(m);
+      else if (m.category === "other") maps.push(m);
       else payments.push(m);
     });
-    return { ai, payments, marketing };
+    return { ai, payments, marketing, maps };
   }, [catalog.data]);
 
   const isLoading = catalog.isLoading || saved.isLoading;
@@ -94,6 +96,7 @@ function IntegrationsPage() {
   const aiConfigured = grouped.ai.filter((m) => byKey.get(`ai:${m.id}`)?.enabled).length;
   const payConfigured = grouped.payments.filter((m) => byKey.get(`payments:${m.id}`)?.enabled).length;
   const mktConfigured = grouped.marketing.filter((m) => byKey.get(`marketing:${m.id}`)?.enabled).length;
+  const mapsConfigured = grouped.maps.filter((m) => byKey.get(`other:${m.id}`)?.enabled).length;
   const webhooksActive = (webhooks.data ?? []).length;
 
   return (
@@ -114,6 +117,7 @@ function IntegrationsPage() {
           { label: "IA ativas", value: aiConfigured },
           { label: "Pagamentos", value: payConfigured },
           { label: "Marketing", value: mktConfigured },
+          { label: "Mapas", value: mapsConfigured },
           { label: "Webhooks", value: webhooksActive },
         ]}
       />
@@ -122,6 +126,7 @@ function IntegrationsPage() {
         <TabsList>
           <TabsTrigger value="providers"><Zap className="h-4 w-4 mr-1" />Provedores</TabsTrigger>
           <TabsTrigger value="marketing"><Target className="h-4 w-4 mr-1" />Marketing &amp; Pixel</TabsTrigger>
+          <TabsTrigger value="maps"><MapIcon className="h-4 w-4 mr-1" />Mapas &amp; Rotas</TabsTrigger>
           <TabsTrigger value="webhooks"><Webhook className="h-4 w-4 mr-1" />Webhooks</TabsTrigger>
           <TabsTrigger value="captcha"><ShieldCheck className="h-4 w-4 mr-1" />Captcha</TabsTrigger>
         </TabsList>
@@ -174,6 +179,32 @@ function IntegrationsPage() {
             </CardContent>
           </Card>
           {isLoading ? <SkeletonGrid /> : <Grid metas={grouped.marketing} byKey={byKey} onChanged={() => saved.refetch()} />}
+        </TabsContent>
+
+        <TabsContent value="maps" className="mt-6 space-y-5">
+          <SectionBanner
+            title="Mapas &amp; Rotas"
+            subtitle="Conecte o Google Maps Platform para calcular o trajeto real por ruas — respeitando sentido de via e trânsito — no app do entregador e no acompanhamento do lojista."
+            icon={MapIcon}
+            gradient="from-emerald-500 via-green-600 to-teal-700"
+            accent="#0f9d58"
+            stats={[{ label: "Provedores", value: grouped.maps.length }, { label: "Ativos", value: mapsConfigured }]}
+          />
+          <Card className="border-amber-500/40 bg-amber-500/5">
+            <CardContent className="p-4 flex gap-3 text-sm">
+              <KeyRound className="h-4 w-4 mt-0.5 shrink-0 text-amber-600" />
+              <div className="space-y-1">
+                <p className="font-medium">A chave de servidor NÃO pode ter restrição por referenciador HTTP.</p>
+                <p className="text-muted-foreground">
+                  Chamadas de servidor não enviam <code>referer</code>. No Google Cloud, deixe a restrição da chave de
+                  servidor como &quot;Nenhuma&quot; ou &quot;Endereços IP&quot; e libere <strong>Routes API</strong> e{" "}
+                  <strong>Geocoding API</strong>. Sem a chave, o app continua funcionando com o mapa vetorial simples e
+                  o botão &quot;Abrir rota&quot; no Google Maps.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+          {isLoading ? <SkeletonGrid /> : <Grid metas={grouped.maps} byKey={byKey} onChanged={() => saved.refetch()} />}
         </TabsContent>
 
         <TabsContent value="webhooks" className="mt-6">
