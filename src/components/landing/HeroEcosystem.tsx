@@ -1,4 +1,4 @@
-import { Bell, BarChart3, MapPin, MessageCircle, QrCode, Star, Stamp, Play, ShoppingBag } from "lucide-react";
+import { Bell, BarChart3, MapPin, MessageCircle, QrCode, Star, Stamp, Play, ShoppingBag, Store, Utensils } from "lucide-react";
 
 /**
  * Painel visual da hero — "Ecossistema dinâmico".
@@ -57,7 +57,9 @@ export function HeroEcosystem({ device }: { device?: LandingHeroDevice }) {
 
           {/* topo do app */}
           <div className="flex shrink-0 items-center gap-2.5 px-4 pt-3">
-            <div className="h-9 w-9 rounded-xl" style={{ background: PURPLE }} />
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-white" style={{ background: PURPLE }}>
+              <Store className="h-[18px] w-[18px] text-white" strokeWidth={2.2} />
+            </span>
             <div className="min-w-0">
               <div className="truncate text-[10px] uppercase tracking-widest text-black/40">{d.eyebrow}</div>
               <div className="truncate text-sm font-semibold text-[#1b1730]">{d.storeName}</div>
@@ -79,10 +81,13 @@ export function HeroEcosystem({ device }: { device?: LandingHeroDevice }) {
                   {Array.from({ length: d.stamps }).map((_, i) => (
                     <span
                       key={i}
-                      className={`grid aspect-square place-items-center rounded-full ring-1 ring-white/40 ${i < d.stampsFilled ? "fz-stamp bg-white/25" : "bg-white/10"}`}
+                      className={`grid aspect-square place-items-center rounded-full ring-1 ring-white/50 ${i < d.stampsFilled ? "fz-stamp bg-white/30" : "bg-white/10"}`}
                       style={{ animationDelay: `${i * 0.28}s` }}
                     >
-                      <Stamp className="h-3 w-3 text-white sm:h-3.5 sm:w-3.5" />
+                      <Stamp
+                        className={`h-3 w-3 sm:h-3.5 sm:w-3.5 ${i < d.stampsFilled ? "text-white" : "text-white/55"}`}
+                        strokeWidth={2.2}
+                      />
                     </span>
                   ))}
                 </div>
@@ -103,13 +108,21 @@ export function HeroEcosystem({ device }: { device?: LandingHeroDevice }) {
                     className="grid h-11 w-11 shrink-0 place-items-center rounded-full p-[2px]"
                     style={{ border: `2px solid ${i < 2 ? PURPLE : "rgba(0,0,0,0.10)"}` }}
                   >
-                    <span className="h-full w-full rounded-full bg-black/5" />
+                    <span
+                      className="grid h-full w-full place-items-center rounded-full"
+                      style={{ background: i < 2 ? PURPLE : "rgba(0,0,0,0.06)" }}
+                    >
+                      <Utensils
+                        className={`h-4 w-4 ${i < 2 ? "text-white" : "text-black/35"}`}
+                        strokeWidth={2.2}
+                      />
+                    </span>
                   </span>
                 ))}
               </div>
               <div className="mt-3 grid h-[190px] place-items-center rounded-2xl border border-black/5 bg-white shadow-sm">
-                <span className="grid h-12 w-12 place-items-center rounded-full text-white" style={{ background: PURPLE }}>
-                  <Play className="h-5 w-5 fill-current" />
+                <span className="grid h-12 w-12 place-items-center rounded-full shadow-lg" style={{ background: PURPLE }}>
+                  <Play className="h-5 w-5 fill-white text-white" />
                 </span>
               </div>
               <div className="mt-2 text-xs font-semibold text-[#1b1730]">{d.storyTitle}</div>
@@ -119,8 +132,8 @@ export function HeroEcosystem({ device }: { device?: LandingHeroDevice }) {
             {/* 3 — catálogo */}
             <div className="fz-s3 absolute inset-x-4 top-0">
               <div className="flex items-center gap-2">
-                <span className="grid h-7 w-7 place-items-center rounded-lg text-white" style={{ background: PURPLE }}>
-                  <ShoppingBag className="h-4 w-4" />
+                <span className="grid h-7 w-7 place-items-center rounded-lg" style={{ background: PURPLE }}>
+                  <ShoppingBag className="h-4 w-4 text-white" strokeWidth={2.2} />
                 </span>
                 <span className="truncate text-xs font-semibold text-[#1b1730]">{d.catalogTitle}</span>
               </div>
