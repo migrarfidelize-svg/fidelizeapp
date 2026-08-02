@@ -150,10 +150,12 @@ function Landing() {
         
         <Segments />
         <EcosystemBento />
-        
+        <DeliveryTracking />
+
         <RoiCalculator />
         <Examples />
         <Pricing />
+
         
         <FAQ />
         <CTA />
