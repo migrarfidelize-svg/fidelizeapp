@@ -2,8 +2,9 @@ import type { IntegrationCategory, IntegrationProvider } from "./types";
 import { aiProviders } from "./ai";
 import { paymentProviders } from "./payments";
 import { marketingProviders } from "./marketing";
+import { mapsProviders } from "./maps";
 
-const ALL: IntegrationProvider[] = [...aiProviders, ...paymentProviders, ...marketingProviders];
+const ALL: IntegrationProvider[] = [...aiProviders, ...paymentProviders, ...marketingProviders, ...mapsProviders];
 
 export function listProviders(category?: IntegrationCategory): IntegrationProvider[] {
   return category ? ALL.filter((p) => p.meta.category === category) : ALL;

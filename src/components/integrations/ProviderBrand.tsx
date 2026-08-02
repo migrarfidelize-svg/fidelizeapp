@@ -13,6 +13,18 @@ const glyph = (paths: React.ReactNode) => (
 );
 
 const BRANDS: Record<string, BrandDef> = {
+  // ---------- Mapas ----------
+  google_maps: {
+    gradient: "from-emerald-400 via-green-600 to-teal-700",
+    ring: "#0f9d58",
+    glyph: glyph(
+      <>
+        <path d="M12 21s7-5.6 7-11a7 7 0 10-14 0c0 5.4 7 11 7 11z" stroke="white" strokeWidth="1.6" strokeLinejoin="round" />
+        <circle cx="12" cy="10" r="2.6" fill="white" />
+      </>,
+    ),
+  },
+
   // ---------- AI ----------
   openai: {
     gradient: "from-emerald-400 via-teal-500 to-violet-600",

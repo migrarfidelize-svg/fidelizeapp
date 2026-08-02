@@ -24,7 +24,7 @@ import {
   setCourierOnline,
   updateDeliveryProgress,
 } from "@/lib/courier-app.functions";
-import { CourierMiniMap } from "@/components/courier/CourierMiniMap";
+import { CourierRouteMap } from "@/components/courier/CourierRouteMap";
 
 export const Route = createFileRoute("/_authenticated/entregador/")({
   head: () => ({
@@ -204,8 +204,9 @@ function CourierHome() {
                   </div>
                   <span className="metric-number shrink-0 text-base text-primary">{money(d.courier_net_cents)}</span>
                 </div>
-                <CourierMiniMap
+                <CourierRouteMap
                   className="mt-3 h-40"
+                  deliveryId={d.id}
                   pickup={{ lat: d.pickup_lat, lng: d.pickup_lng }}
                   dropoff={{ lat: d.dropoff_lat, lng: d.dropoff_lng }}
                 />
