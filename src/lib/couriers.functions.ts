@@ -314,12 +314,16 @@ export const listAvailableCouriers = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertEst(supabase, userId, data.establishment_id);
 
+    const cols =
+      "id, full_name, avatar_url, vehicle_type, vehicle_plate, city, rating_avg, rating_count, deliveries_count, level_code, is_online, last_seen_at, is_test";
+
     const cutoff = new Date(Date.now() - 5 * 60_000).toISOString();
     let q = (supabase as any)
       .from("couriers")
-      .select("id, full_name, avatar_url, vehicle_type, vehicle_plate, city, rating_avg, rating_count, deliveries_count, level_code, is_online, last_seen_at")
+      .select(cols)
       .eq("status", "approved")
       .eq("is_online", true)
+      .eq("is_test", false)
       .gte("last_seen_at", cutoff)
       .order("rating_avg", { ascending: false })
       .limit(50);
@@ -327,8 +331,18 @@ export const listAvailableCouriers = createServerFn({ method: "POST" })
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
 
-    return { couriers: rows ?? [], total: (rows ?? []).length, refreshed_at: new Date().toISOString() };
+    // Entregadores de teste ficam sempre disponíveis (qualquer cidade) para validação do mapa.
+    const { data: testRows } = await (supabase as any)
+      .from("couriers")
+      .select(cols)
+      .eq("status", "approved")
+      .eq("is_test", true)
+      .limit(5);
+
+    const couriers = [...(rows ?? []), ...(testRows ?? [])];
+    return { couriers, total: couriers.length, refreshed_at: new Date().toISOString() };
   });
+
 
 export const requestCourier = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
