@@ -185,25 +185,69 @@ function MobileStickyCta() {
 
 
 const NAV_LINKS: Array<[string, string]> = [
-  ["#ecossistema", "Recursos"],
   ["#ecossistema", "Ecossistema"],
   ["#roi", "Retorno"],
   ["#precos", "Preços"],
   ["#faq", "Dúvidas"],
 ];
 
+const NAV_PRODUCTS: Array<[string, string, string]> = [
+  ["Fidelidade", "Cartão digital com carimbos e prêmios", "#ecossistema"],
+  ["Cardápio Story", "Menu visual em formato stories", "#ecossistema"],
+  ["Catálogo", "Vitrine de produtos e pedidos", "#ecossistema"],
+  ["Avaliações", "Prova social e nota no Google", "#ecossistema"],
+  ["QR Code", "Um código para tudo do seu balcão", "#ecossistema"],
+  ["Atendimento WhatsApp", "Central de conversas multiatendente", "#ecossistema"],
+  ["Entregadores", "Entrega própria ou da plataforma", "#ecossistema"],
+  ["CRM", "Base de clientes e campanhas", "#ecossistema"],
+];
+
 function SiteHeader() {
   const { data: session } = useQuery({ queryKey: ["session"], queryFn: async () => (await supabase.auth.getSession()).data.session });
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   return (
-    <header className="sticky top-4 z-40 px-4">
-      <div className="nav-dock mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 rounded-full border border-violet-400/60 bg-background/60 pl-5 pr-2 backdrop-blur-xl">
+    <header
+      className={`sticky top-0 z-40 w-full border-b transition-all duration-300 ${
+        scrolled
+          ? "border-violet-400/25 bg-background/90 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(88,28,235,0.35)]"
+          : "border-transparent bg-background/40 backdrop-blur-md"
+      }`}
+    >
+      <div
+        className={`mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 transition-all duration-300 sm:px-6 lg:px-8 ${
+          scrolled ? "h-14" : "h-16 sm:h-[72px]"
+        }`}
+      >
         <Link to="/" className="shrink-0"><Logo /></Link>
-        <nav className="hidden gap-7 md:flex text-sm text-muted-foreground">
+        <nav className="hidden items-center gap-7 md:flex text-sm text-muted-foreground">
+          <div className="group relative">
+            <button type="button" className="flex items-center gap-1.5 transition-colors hover:text-foreground">
+              Recursos
+              <ChevronDown className="h-4 w-4 opacity-60 transition-transform group-hover:rotate-180" />
+            </button>
+            <div className="invisible absolute left-1/2 top-full z-50 w-[560px] -translate-x-1/2 translate-y-2 pt-4 opacity-0 transition-all duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
+              <div className="grid grid-cols-2 gap-1 rounded-2xl border border-violet-400/25 bg-popover/95 p-3 shadow-2xl backdrop-blur-xl">
+                {NAV_PRODUCTS.map(([title, desc, href]) => (
+                  <a key={title} href={href} className="rounded-xl px-3 py-2.5 transition-colors hover:bg-primary/10">
+                    <p className="text-sm font-semibold text-foreground">{title}</p>
+                    <p className="text-xs text-muted-foreground">{desc}</p>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
           {NAV_LINKS.map(([href, label]) => (
             <a key={`${href}-${label}`} href={href} className="hover:text-foreground transition-colors">{label}</a>
           ))}
         </nav>
+
         <div className="flex items-center gap-2">
           {session ? (
             <Button
