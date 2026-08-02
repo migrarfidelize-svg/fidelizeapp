@@ -126,7 +126,14 @@ export function normalizeHero(raw: unknown): LandingHeroContent {
       href: c.secondaryCta?.href || DEFAULT_HERO_COPY.secondaryCta.href,
     },
     bullets: Array.isArray(c.bullets) ? c.bullets.filter((b) => typeof b === "string") : DEFAULT_HERO_COPY.bullets,
+    socialProof: {
+      enabled: c.socialProof?.enabled ?? DEFAULT_HERO_COPY.socialProof.enabled,
+      avatarLabel: c.socialProof?.avatarLabel ?? DEFAULT_HERO_COPY.socialProof.avatarLabel,
+      highlight: c.socialProof?.highlight ?? DEFAULT_HERO_COPY.socialProof.highlight,
+      text: c.socialProof?.text ?? DEFAULT_HERO_COPY.socialProof.text,
+    },
   };
+
   return {
     copy,
     menu: { title: d.menu?.title || DEFAULT_HERO.menu.title, dishes },
