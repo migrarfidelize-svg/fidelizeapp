@@ -125,6 +125,14 @@ export const createCatalogOrder = createServerFn({ method: "POST" })
       .insert(lines.map((l) => ({ ...l, order_id: order.id })));
     if (liErr) throw new Error(liErr.message);
 
+    // Avisa o lojista (WhatsApp + push) e confirma com o cliente — nunca lança.
+    try {
+      const { notifyOrderEvent } = await import("@/lib/orders-notify.server");
+      await notifyOrderEvent({ order_id: order.id as string, event: "created" });
+    } catch {
+      /* notificação é best-effort */
+    }
+
     return {
       order_id: order.id as string,
       order_number: order.order_number as number,
@@ -134,6 +142,7 @@ export const createCatalogOrder = createServerFn({ method: "POST" })
       establishment: { name: est.name, whatsapp: est.whatsapp, phone: est.phone },
     };
   });
+
 
 /** Lista de pedidos do estabelecimento (painel do lojista). */
 export const listMyOrders = createServerFn({ method: "GET" })
