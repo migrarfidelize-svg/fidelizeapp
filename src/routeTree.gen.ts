@@ -48,6 +48,7 @@ import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/ap
 import { Route as SuporteSlugIndexRouteImport } from './routes/suporte.$slug.index'
 import { Route as AjudaCategoryIndexRouteImport } from './routes/ajuda.$category.index'
 import { Route as AuthenticatedHashIndexRouteImport } from './routes/_authenticated/hash.index'
+import { Route as AuthenticatedEntregadorIndexRouteImport } from './routes/_authenticated/entregador.index'
 import { Route as AuthenticatedCarteiraIndexRouteImport } from './routes/_authenticated/carteira.index'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
 import { Route as SuporteChamadoIdRouteImport } from './routes/suporte.chamado.$id'
@@ -346,6 +347,12 @@ const AuthenticatedHashIndexRoute = AuthenticatedHashIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedHashRoute,
 } as any)
+const AuthenticatedEntregadorIndexRoute =
+  AuthenticatedEntregadorIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedEntregadorRoute,
+  } as any)
 const AuthenticatedCarteiraIndexRoute =
   AuthenticatedCarteiraIndexRouteImport.update({
     id: '/',
@@ -957,7 +964,7 @@ export interface FileRoutesByFullPath {
   '/videos': typeof VideosRoute
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/carteira': typeof AuthenticatedCarteiraRouteWithChildren
-  '/entregador': typeof AuthenticatedEntregadorRoute
+  '/entregador': typeof AuthenticatedEntregadorRouteWithChildren
   '/hash': typeof AuthenticatedHashRouteWithChildren
   '/lgpd': typeof AuthenticatedLgpdRoute
   '/api/test-turnstile': typeof ApiTestTurnstileRoute
@@ -1036,6 +1043,7 @@ export interface FileRoutesByFullPath {
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/app/': typeof AuthenticatedAppIndexRoute
   '/carteira/': typeof AuthenticatedCarteiraIndexRoute
+  '/entregador/': typeof AuthenticatedEntregadorIndexRoute
   '/hash/': typeof AuthenticatedHashIndexRoute
   '/ajuda/$category/': typeof AjudaCategoryIndexRoute
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
@@ -1098,7 +1106,6 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
   '/videos': typeof VideosRoute
-  '/entregador': typeof AuthenticatedEntregadorRoute
   '/lgpd': typeof AuthenticatedLgpdRoute
   '/api/test-turnstile': typeof ApiTestTurnstileRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
@@ -1174,6 +1181,7 @@ export interface FileRoutesByTo {
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/app': typeof AuthenticatedAppIndexRoute
   '/carteira': typeof AuthenticatedCarteiraIndexRoute
+  '/entregador': typeof AuthenticatedEntregadorIndexRoute
   '/hash': typeof AuthenticatedHashIndexRoute
   '/ajuda/$category': typeof AjudaCategoryIndexRoute
   '/suporte/$slug': typeof SuporteSlugIndexRoute
@@ -1240,7 +1248,7 @@ export interface FileRoutesById {
   '/videos': typeof VideosRoute
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/_authenticated/carteira': typeof AuthenticatedCarteiraRouteWithChildren
-  '/_authenticated/entregador': typeof AuthenticatedEntregadorRoute
+  '/_authenticated/entregador': typeof AuthenticatedEntregadorRouteWithChildren
   '/_authenticated/hash': typeof AuthenticatedHashRouteWithChildren
   '/_authenticated/lgpd': typeof AuthenticatedLgpdRoute
   '/api/test-turnstile': typeof ApiTestTurnstileRoute
@@ -1319,6 +1327,7 @@ export interface FileRoutesById {
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
   '/_authenticated/carteira/': typeof AuthenticatedCarteiraIndexRoute
+  '/_authenticated/entregador/': typeof AuthenticatedEntregadorIndexRoute
   '/_authenticated/hash/': typeof AuthenticatedHashIndexRoute
   '/ajuda/$category/': typeof AjudaCategoryIndexRoute
   '/suporte/$slug/': typeof SuporteSlugIndexRoute
@@ -1464,6 +1473,7 @@ export interface FileRouteTypes {
     | '/suporte/chamado/$id'
     | '/app/'
     | '/carteira/'
+    | '/entregador/'
     | '/hash/'
     | '/ajuda/$category/'
     | '/suporte/$slug/'
@@ -1526,7 +1536,6 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/termos'
     | '/videos'
-    | '/entregador'
     | '/lgpd'
     | '/api/test-turnstile'
     | '/auth/nova-senha'
@@ -1602,6 +1611,7 @@ export interface FileRouteTypes {
     | '/suporte/chamado/$id'
     | '/app'
     | '/carteira'
+    | '/entregador'
     | '/hash'
     | '/ajuda/$category'
     | '/suporte/$slug'
@@ -1746,6 +1756,7 @@ export interface FileRouteTypes {
     | '/suporte/chamado/$id'
     | '/_authenticated/app/'
     | '/_authenticated/carteira/'
+    | '/_authenticated/entregador/'
     | '/_authenticated/hash/'
     | '/ajuda/$category/'
     | '/suporte/$slug/'
@@ -2129,6 +2140,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/hash/'
       preLoaderRoute: typeof AuthenticatedHashIndexRouteImport
       parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/entregador/': {
+      id: '/_authenticated/entregador/'
+      path: '/'
+      fullPath: '/entregador/'
+      preLoaderRoute: typeof AuthenticatedEntregadorIndexRouteImport
+      parentRoute: typeof AuthenticatedEntregadorRoute
     }
     '/_authenticated/carteira/': {
       id: '/_authenticated/carteira/'
@@ -3011,6 +3029,20 @@ const AuthenticatedCarteiraRouteWithChildren =
     AuthenticatedCarteiraRouteChildren,
   )
 
+interface AuthenticatedEntregadorRouteChildren {
+  AuthenticatedEntregadorIndexRoute: typeof AuthenticatedEntregadorIndexRoute
+}
+
+const AuthenticatedEntregadorRouteChildren: AuthenticatedEntregadorRouteChildren =
+  {
+    AuthenticatedEntregadorIndexRoute: AuthenticatedEntregadorIndexRoute,
+  }
+
+const AuthenticatedEntregadorRouteWithChildren =
+  AuthenticatedEntregadorRoute._addFileChildren(
+    AuthenticatedEntregadorRouteChildren,
+  )
+
 interface AuthenticatedHashRouteChildren {
   AuthenticatedHashAjudaRoute: typeof AuthenticatedHashAjudaRoute
   AuthenticatedHashAlertasRoute: typeof AuthenticatedHashAlertasRoute
@@ -3083,7 +3115,7 @@ const AuthenticatedHashRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
   AuthenticatedCarteiraRoute: typeof AuthenticatedCarteiraRouteWithChildren
-  AuthenticatedEntregadorRoute: typeof AuthenticatedEntregadorRoute
+  AuthenticatedEntregadorRoute: typeof AuthenticatedEntregadorRouteWithChildren
   AuthenticatedHashRoute: typeof AuthenticatedHashRouteWithChildren
   AuthenticatedLgpdRoute: typeof AuthenticatedLgpdRoute
 }
@@ -3091,7 +3123,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
   AuthenticatedCarteiraRoute: AuthenticatedCarteiraRouteWithChildren,
-  AuthenticatedEntregadorRoute: AuthenticatedEntregadorRoute,
+  AuthenticatedEntregadorRoute: AuthenticatedEntregadorRouteWithChildren,
   AuthenticatedHashRoute: AuthenticatedHashRouteWithChildren,
   AuthenticatedLgpdRoute: AuthenticatedLgpdRoute,
 }
