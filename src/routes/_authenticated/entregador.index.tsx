@@ -24,7 +24,7 @@ import {
   setCourierOnline,
   updateDeliveryProgress,
 } from "@/lib/courier-app.functions";
-import { CourierMiniMap } from "@/components/courier/CourierMiniMap";
+import { CourierRouteMap } from "@/components/courier/CourierRouteMap";
 
 export const Route = createFileRoute("/_authenticated/entregador/")({
   head: () => ({
