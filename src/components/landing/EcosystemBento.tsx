@@ -267,7 +267,7 @@ export function EcosystemBento() {
             </span>
           </h2>
           <p className="mt-3 text-muted-foreground">
-            Dez ferramentas que conversam entre si — sem integrar nada, sem pagar dez assinaturas.
+            Treze ferramentas que conversam entre si — sem integrar nada, sem pagar treze assinaturas.
           </p>
         </div>
       </div>
