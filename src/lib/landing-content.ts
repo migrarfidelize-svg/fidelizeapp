@@ -14,6 +14,17 @@ export type MenuDish = { name: string; desc: string; price: string; img: string 
 export type CatalogProduct = { name: string; price: string; img: string };
 export type BrandItem = { name: string; img?: string | null };
 
+/** Prova social exibida abaixo dos selos da hero. */
+export type LandingSocialProof = {
+  enabled: boolean;
+  /** Texto do avatar final, ex.: "+2k" */
+  avatarLabel: string;
+  /** Trecho em destaque, ex.: "2.000 lojistas" */
+  highlight: string;
+  /** Texto completo — use {destaque} para posicionar o trecho em destaque. */
+  text: string;
+};
+
 /** Textos e botões do bloco principal da hero (lado esquerdo). */
 export type LandingHeroCopy = {
   badge: string;
@@ -24,7 +35,9 @@ export type LandingHeroCopy = {
   secondaryCta: { label: string; href: string };
   /** Selos abaixo dos botões. Use {preco} para inserir o menor preço ativo. */
   bullets: string[];
+  socialProof: LandingSocialProof;
 };
+
 
 export type LandingHeroContent = {
   copy: LandingHeroCopy;
@@ -47,7 +60,14 @@ export const DEFAULT_HERO_COPY: LandingHeroCopy = {
   primaryCta: { label: "Escolher meu plano", href: "#precos" },
   secondaryCta: { label: "Ver como funciona", href: "#ecossistema" },
   bullets: ["Sem cartão de crédito", "Configure em 5 minutos", "Planos a partir de {preco}/mês"],
+  socialProof: {
+    enabled: true,
+    avatarLabel: "+2k",
+    highlight: "2.000 lojistas",
+    text: "Mais de {destaque} usando a Fidelize.",
+  },
 };
+
 
 export const DEFAULT_HERO: LandingHeroContent = {
   copy: DEFAULT_HERO_COPY,
@@ -106,7 +126,14 @@ export function normalizeHero(raw: unknown): LandingHeroContent {
       href: c.secondaryCta?.href || DEFAULT_HERO_COPY.secondaryCta.href,
     },
     bullets: Array.isArray(c.bullets) ? c.bullets.filter((b) => typeof b === "string") : DEFAULT_HERO_COPY.bullets,
+    socialProof: {
+      enabled: c.socialProof?.enabled ?? DEFAULT_HERO_COPY.socialProof.enabled,
+      avatarLabel: c.socialProof?.avatarLabel ?? DEFAULT_HERO_COPY.socialProof.avatarLabel,
+      highlight: c.socialProof?.highlight ?? DEFAULT_HERO_COPY.socialProof.highlight,
+      text: c.socialProof?.text ?? DEFAULT_HERO_COPY.socialProof.text,
+    },
   };
+
   return {
     copy,
     menu: { title: d.menu?.title || DEFAULT_HERO.menu.title, dishes },

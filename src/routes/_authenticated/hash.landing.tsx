@@ -259,6 +259,40 @@ function LandingAdmin() {
                     <Plus className="mr-2 h-4 w-4" /> Adicionar selo
                   </Button>
                 </div>
+
+                <div className="space-y-3 rounded-xl border border-border/60 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <Label className="text-xs">
+                      Prova social — use <code>{"{destaque}"}</code> para posicionar o trecho em destaque
+                    </Label>
+                    <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <input
+                        type="checkbox"
+                        checked={copy.socialProof.enabled}
+                        onChange={(e) => patchCopy({ socialProof: { ...copy.socialProof, enabled: e.target.checked } })}
+                      />
+                      Exibir
+                    </label>
+                  </div>
+                  <Input
+                    value={copy.socialProof.text}
+                    placeholder="Mais de {destaque} usando a Fidelize."
+                    onChange={(e) => patchCopy({ socialProof: { ...copy.socialProof, text: e.target.value } })}
+                  />
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <Input
+                      value={copy.socialProof.highlight}
+                      placeholder="2.000 lojistas"
+                      onChange={(e) => patchCopy({ socialProof: { ...copy.socialProof, highlight: e.target.value } })}
+                    />
+                    <Input
+                      value={copy.socialProof.avatarLabel}
+                      placeholder="+2k"
+                      onChange={(e) => patchCopy({ socialProof: { ...copy.socialProof, avatarLabel: e.target.value } })}
+                    />
+                  </div>
+                </div>
+
               </CardContent>
             </Card>
           </TabsContent>
