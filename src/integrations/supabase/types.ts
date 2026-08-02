@@ -56,6 +56,24 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_area_locks: {
+        Row: {
+          area: string
+          pin: string
+          updated_at: string
+        }
+        Insert: {
+          area: string
+          pin: string
+          updated_at?: string
+        }
+        Update: {
+          area?: string
+          pin?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_analyses: {
         Row: {
           created_at: string
@@ -1009,6 +1027,425 @@ export type Database = {
         }
         Relationships: []
       }
+      courier_documents: {
+        Row: {
+          courier_id: string
+          created_at: string
+          doc_type: Database["public"]["Enums"]["courier_doc_type"]
+          file_name: string | null
+          id: string
+          mime_type: string | null
+          notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          size_bytes: number | null
+          status: string
+          storage_path: string
+          updated_at: string
+        }
+        Insert: {
+          courier_id: string
+          created_at?: string
+          doc_type: Database["public"]["Enums"]["courier_doc_type"]
+          file_name?: string | null
+          id?: string
+          mime_type?: string | null
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          size_bytes?: number | null
+          status?: string
+          storage_path: string
+          updated_at?: string
+        }
+        Update: {
+          courier_id?: string
+          created_at?: string
+          doc_type?: Database["public"]["Enums"]["courier_doc_type"]
+          file_name?: string | null
+          id?: string
+          mime_type?: string | null
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          size_bytes?: number | null
+          status?: string
+          storage_path?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courier_documents_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courier_levels: {
+        Row: {
+          code: string
+          color: string
+          created_at: string
+          id: string
+          is_active: boolean
+          min_deliveries: number
+          min_rating: number
+          name: string
+          perks: Json
+          raffle_eligible: boolean
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          color?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          min_deliveries?: number
+          min_rating?: number
+          name: string
+          perks?: Json
+          raffle_eligible?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          color?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          min_deliveries?: number
+          min_rating?: number
+          name?: string
+          perks?: Json
+          raffle_eligible?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      courier_locations: {
+        Row: {
+          accuracy_m: number | null
+          battery: number | null
+          courier_id: string
+          delivery_id: string | null
+          heading: number | null
+          id: string
+          lat: number
+          lng: number
+          recorded_at: string
+          speed_kmh: number | null
+        }
+        Insert: {
+          accuracy_m?: number | null
+          battery?: number | null
+          courier_id: string
+          delivery_id?: string | null
+          heading?: number | null
+          id?: string
+          lat: number
+          lng: number
+          recorded_at?: string
+          speed_kmh?: number | null
+        }
+        Update: {
+          accuracy_m?: number | null
+          battery?: number | null
+          courier_id?: string
+          delivery_id?: string | null
+          heading?: number | null
+          id?: string
+          lat?: number
+          lng?: number
+          recorded_at?: string
+          speed_kmh?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courier_locations_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courier_locations_delivery_id_fkey"
+            columns: ["delivery_id"]
+            isOneToOne: false
+            referencedRelation: "deliveries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courier_plans: {
+        Row: {
+          code: string
+          created_at: string
+          daily_limit_cents: number
+          description: string | null
+          fee_min_cents: number
+          fee_percent: number
+          free_withdrawals_month: number
+          id: string
+          is_active: boolean
+          name: string
+          price_cents: number
+          sort_order: number
+          updated_at: string
+          weekly_withdrawals: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          daily_limit_cents?: number
+          description?: string | null
+          fee_min_cents?: number
+          fee_percent?: number
+          free_withdrawals_month?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          price_cents?: number
+          sort_order?: number
+          updated_at?: string
+          weekly_withdrawals?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          daily_limit_cents?: number
+          description?: string | null
+          fee_min_cents?: number
+          fee_percent?: number
+          free_withdrawals_month?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          price_cents?: number
+          sort_order?: number
+          updated_at?: string
+          weekly_withdrawals?: number
+        }
+        Relationships: []
+      }
+      courier_reviews: {
+        Row: {
+          author_name: string | null
+          author_user_id: string | null
+          comment: string | null
+          courier_id: string
+          created_at: string
+          delivery_id: string | null
+          establishment_id: string | null
+          id: string
+          is_approved: boolean
+          rating: number
+          updated_at: string
+        }
+        Insert: {
+          author_name?: string | null
+          author_user_id?: string | null
+          comment?: string | null
+          courier_id: string
+          created_at?: string
+          delivery_id?: string | null
+          establishment_id?: string | null
+          id?: string
+          is_approved?: boolean
+          rating: number
+          updated_at?: string
+        }
+        Update: {
+          author_name?: string | null
+          author_user_id?: string | null
+          comment?: string | null
+          courier_id?: string
+          created_at?: string
+          delivery_id?: string | null
+          establishment_id?: string | null
+          id?: string
+          is_approved?: boolean
+          rating?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courier_reviews_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courier_reviews_delivery_id_fkey"
+            columns: ["delivery_id"]
+            isOneToOne: false
+            referencedRelation: "deliveries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courier_reviews_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courier_withdrawals: {
+        Row: {
+          amount_cents: number
+          courier_id: string
+          created_at: string
+          fee_cents: number
+          id: string
+          net_cents: number
+          notes: string | null
+          pix_key: string | null
+          processed_at: string | null
+          processed_by: string | null
+          status: Database["public"]["Enums"]["withdrawal_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          courier_id: string
+          created_at?: string
+          fee_cents?: number
+          id?: string
+          net_cents?: number
+          notes?: string | null
+          pix_key?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: Database["public"]["Enums"]["withdrawal_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          courier_id?: string
+          created_at?: string
+          fee_cents?: number
+          id?: string
+          net_cents?: number
+          notes?: string | null
+          pix_key?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: Database["public"]["Enums"]["withdrawal_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courier_withdrawals_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couriers: {
+        Row: {
+          avatar_url: string | null
+          balance_cents: number
+          bio: string | null
+          birth_date: string | null
+          city: string | null
+          cpf: string | null
+          created_at: string
+          deliveries_count: number
+          email: string | null
+          full_name: string
+          id: string
+          is_online: boolean
+          last_seen_at: string | null
+          level_code: string
+          phone: string | null
+          pix_key: string | null
+          plan_code: string
+          rating_avg: number
+          rating_count: number
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          state: string | null
+          status: Database["public"]["Enums"]["courier_status"]
+          updated_at: string
+          user_id: string
+          vehicle_model: string | null
+          vehicle_plate: string | null
+          vehicle_type: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          balance_cents?: number
+          bio?: string | null
+          birth_date?: string | null
+          city?: string | null
+          cpf?: string | null
+          created_at?: string
+          deliveries_count?: number
+          email?: string | null
+          full_name: string
+          id?: string
+          is_online?: boolean
+          last_seen_at?: string | null
+          level_code?: string
+          phone?: string | null
+          pix_key?: string | null
+          plan_code?: string
+          rating_avg?: number
+          rating_count?: number
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          state?: string | null
+          status?: Database["public"]["Enums"]["courier_status"]
+          updated_at?: string
+          user_id: string
+          vehicle_model?: string | null
+          vehicle_plate?: string | null
+          vehicle_type?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          balance_cents?: number
+          bio?: string | null
+          birth_date?: string | null
+          city?: string | null
+          cpf?: string | null
+          created_at?: string
+          deliveries_count?: number
+          email?: string | null
+          full_name?: string
+          id?: string
+          is_online?: boolean
+          last_seen_at?: string | null
+          level_code?: string
+          phone?: string | null
+          pix_key?: string | null
+          plan_code?: string
+          rating_avg?: number
+          rating_count?: number
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          state?: string | null
+          status?: Database["public"]["Enums"]["courier_status"]
+          updated_at?: string
+          user_id?: string
+          vehicle_model?: string | null
+          vehicle_plate?: string | null
+          vehicle_type?: string
+        }
+        Relationships: []
+      }
       customer_achievements: {
         Row: {
           achievement_code: string
@@ -1324,6 +1761,112 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deliveries: {
+        Row: {
+          accepted_at: string | null
+          assigned_at: string | null
+          cancelled_at: string | null
+          courier_id: string | null
+          courier_net_cents: number
+          created_at: string
+          customer_name: string | null
+          customer_phone: string | null
+          delivered_at: string | null
+          distance_m: number | null
+          dropoff_address: string | null
+          dropoff_lat: number | null
+          dropoff_lng: number | null
+          establishment_id: string
+          fee_cents: number
+          id: string
+          notes: string | null
+          order_id: string | null
+          picked_up_at: string | null
+          pickup_address: string | null
+          pickup_lat: number | null
+          pickup_lng: number | null
+          platform_fee_cents: number
+          status: Database["public"]["Enums"]["delivery_status"]
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          assigned_at?: string | null
+          cancelled_at?: string | null
+          courier_id?: string | null
+          courier_net_cents?: number
+          created_at?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          delivered_at?: string | null
+          distance_m?: number | null
+          dropoff_address?: string | null
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
+          establishment_id: string
+          fee_cents?: number
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          picked_up_at?: string | null
+          pickup_address?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          platform_fee_cents?: number
+          status?: Database["public"]["Enums"]["delivery_status"]
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          assigned_at?: string | null
+          cancelled_at?: string | null
+          courier_id?: string | null
+          courier_net_cents?: number
+          created_at?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          delivered_at?: string | null
+          distance_m?: number | null
+          dropoff_address?: string | null
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
+          establishment_id?: string
+          fee_cents?: number
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          picked_up_at?: string | null
+          pickup_address?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          platform_fee_cents?: number
+          status?: Database["public"]["Enums"]["delivery_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deliveries_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deliveries_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deliveries_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
@@ -3643,6 +4186,57 @@ export type Database = {
           tier?: Database["public"]["Enums"]["plan_tier"]
           trial_days?: number
           unit_limit?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      platform_fees: {
+        Row: {
+          applies_to: string
+          category: Database["public"]["Enums"]["fee_category"]
+          created_at: string
+          description: string | null
+          fixed_cents: number
+          id: string
+          is_active: boolean
+          key: string
+          label: string
+          max_cents: number | null
+          min_cents: number
+          percent: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          applies_to?: string
+          category?: Database["public"]["Enums"]["fee_category"]
+          created_at?: string
+          description?: string | null
+          fixed_cents?: number
+          id?: string
+          is_active?: boolean
+          key: string
+          label: string
+          max_cents?: number | null
+          min_cents?: number
+          percent?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          applies_to?: string
+          category?: Database["public"]["Enums"]["fee_category"]
+          created_at?: string
+          description?: string | null
+          fixed_cents?: number
+          id?: string
+          is_active?: boolean
+          key?: string
+          label?: string
+          max_cents?: number | null
+          min_cents?: number
+          percent?: number
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
@@ -6665,6 +7259,7 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["account_type"]
       }
+      my_courier_id: { Args: never; Returns: string }
       my_subscription_gate: { Args: never; Returns: Json }
       purge_expired_logs: { Args: never; Returns: Json }
       register_sponsored_ad_event: {
@@ -6682,7 +7277,30 @@ export type Database = {
     Enums: {
       account_type: "customer" | "establishment" | "super_admin"
       campaign_type: "stamps" | "points"
+      courier_doc_type:
+        | "cnh"
+        | "crlv"
+        | "selfie"
+        | "proof_address"
+        | "criminal_record"
+        | "other"
+      courier_status: "pending" | "approved" | "rejected" | "suspended"
       customer_tier: "bronze" | "prata" | "ouro" | "diamante"
+      delivery_status:
+        | "pending"
+        | "assigned"
+        | "accepted"
+        | "picked_up"
+        | "in_transit"
+        | "delivered"
+        | "cancelled"
+      fee_category:
+        | "delivery"
+        | "product_sale"
+        | "service"
+        | "withdrawal"
+        | "subscription"
+        | "other"
       helpdesk_role: "hd_admin" | "hd_agent"
       member_role: "owner" | "manager" | "staff"
       menu_default_view: "stories" | "list"
@@ -6744,6 +7362,7 @@ export type Database = {
       ticket_channel: "form" | "email" | "chat" | "agent"
       ticket_priority: "low" | "normal" | "high" | "urgent"
       ticket_status: "open" | "pending" | "on_hold" | "solved" | "closed"
+      withdrawal_status: "requested" | "processing" | "paid" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -6873,7 +7492,33 @@ export const Constants = {
     Enums: {
       account_type: ["customer", "establishment", "super_admin"],
       campaign_type: ["stamps", "points"],
+      courier_doc_type: [
+        "cnh",
+        "crlv",
+        "selfie",
+        "proof_address",
+        "criminal_record",
+        "other",
+      ],
+      courier_status: ["pending", "approved", "rejected", "suspended"],
       customer_tier: ["bronze", "prata", "ouro", "diamante"],
+      delivery_status: [
+        "pending",
+        "assigned",
+        "accepted",
+        "picked_up",
+        "in_transit",
+        "delivered",
+        "cancelled",
+      ],
+      fee_category: [
+        "delivery",
+        "product_sale",
+        "service",
+        "withdrawal",
+        "subscription",
+        "other",
+      ],
       helpdesk_role: ["hd_admin", "hd_agent"],
       member_role: ["owner", "manager", "staff"],
       menu_default_view: ["stories", "list"],
@@ -6941,6 +7586,7 @@ export const Constants = {
       ticket_channel: ["form", "email", "chat", "agent"],
       ticket_priority: ["low", "normal", "high", "urgent"],
       ticket_status: ["open", "pending", "on_hold", "solved", "closed"],
+      withdrawal_status: ["requested", "processing", "paid", "rejected"],
     },
   },
 } as const
