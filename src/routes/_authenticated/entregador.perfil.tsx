@@ -6,6 +6,7 @@ import { Award, LogOut, Star, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { changeCourierPlan, getCourierWallet, getMyCourier } from "@/lib/courier-app.functions";
+import { CourierInstallCard } from "@/components/courier/CourierInstallGate";
 
 export const Route = createFileRoute("/_authenticated/entregador/perfil")({
   head: () => ({
