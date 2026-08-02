@@ -52,7 +52,7 @@ export const Route = createFileRoute("/_authenticated/hash/config")({
 function ConfigPage() {
   const getEsts = useServerFn(getMyEstablishments);
   const getAdmin = useServerFn(getAdminStatus);
-  const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
+  const { data: memberships, isLoading: estLoading } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
   const { data: adminStatus, isLoading: adminLoading } = useQuery({ queryKey: ["admin-status"], queryFn: () => getAdmin() });
   const est = memberships?.[0]?.establishment as { id: string; name: string; slug: string } | undefined;
   if (adminLoading) return <div className="text-muted-foreground">Verificando permissões…</div>;
@@ -63,9 +63,34 @@ function ConfigPage() {
       <p className="mt-2 text-sm text-muted-foreground">Apenas administradores da plataforma podem acessar Configurações.</p>
     </div>
   );
-  if (!est) return <LoadingSkeleton variant="page" />;
+  if (estLoading) return <LoadingSkeleton variant="page" />;
+  // Super Admin sem empresa vinculada: as abas de empresa não se aplicam,
+  // mas o Studio de voz (config global da plataforma) precisa aparecer.
+  if (!est) return <ConfigPlatformOnly />;
   return <ConfigInner establishmentId={est.id} />;
 }
+
+function ConfigPlatformOnly() {
+  return (
+    <div className="space-y-6">
+      <PageHero
+        icon={HeroIcon}
+        eyebrow={"Super Admin · Configurações"}
+        title={"Configurações da plataforma"}
+        subtitle={"Voz do painel e parâmetros globais."}
+      />
+      <Tabs defaultValue="studio" className="space-y-4">
+        <div className="-mx-2 overflow-x-auto px-2">
+          <TabsList className="inline-flex flex-nowrap">
+            <TabsTrigger value="studio"><Mic className="mr-1 h-4 w-4" />Studio</TabsTrigger>
+          </TabsList>
+        </div>
+        <TabsContent value="studio"><VoiceStudioCard scope="admin" /></TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
 
 function ConfigInner({ establishmentId }: { establishmentId: string }) {
   const getFull = useServerFn(getEstablishmentFull);
