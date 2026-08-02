@@ -10,6 +10,11 @@ interface Props {
   /** Trajeto real por ruas (Google Routes API). Quando ausente, cai na linha reta. */
   route?: { lat: number; lng: number }[] | null;
   className?: string;
+  /** Proporção do canvas. Use retrato (ex.: 320x640) no modo mapa imersivo. */
+  width?: number;
+  height?: number;
+  /** Remove bordas/arredondamento para o mapa ocupar a tela toda. */
+  bare?: boolean;
 }
 
 const R = 6371;
@@ -27,15 +32,16 @@ export function haversineKm(a: Point, b: Point) {
  * Mapa vetorial de custo zero: projeta os pontos disponíveis em um SVG,
  * sem depender de nenhuma API paga de mapas.
  */
-export function CourierMiniMap({ pickup, dropoff, courier, route, className }: Props) {
+export function CourierMiniMap({ pickup, dropoff, courier, route, className, width, height, bare }: Props) {
   const line = route && route.length > 1 ? route : null;
   const pts = [pickup, dropoff, courier, ...(line ?? [])].filter(
     (p): p is Required<Point> => !!p && p.lat != null && p.lng != null,
   ) as { lat: number; lng: number }[];
 
-  const W = 320;
-  const H = 170;
+  const W = width ?? 320;
+  const H = height ?? 170;
   const pad = 26;
+
 
   let project = (_p: { lat: number; lng: number }) => ({ x: W / 2, y: H / 2 });
   if (pts.length > 0) {
@@ -67,8 +73,19 @@ export function CourierMiniMap({ pickup, dropoff, courier, route, className }: P
     : null;
 
   return (
-    <div className={"relative overflow-hidden rounded-2xl border border-border bg-muted/40 " + (className ?? "")}>
-      <svg viewBox={`0 0 ${W} ${H}`} className="h-full w-full" role="img" aria-label="Mapa da corrida">
+    <div
+      className={
+        (bare ? "relative overflow-hidden bg-muted/30 " : "relative overflow-hidden rounded-2xl border border-border bg-muted/40 ") +
+        (className ?? "")
+      }
+    >
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio={bare ? "xMidYMid slice" : "xMidYMid meet"}
+        className="h-full w-full"
+        role="img"
+        aria-label="Mapa da corrida"
+      >
         <defs>
           <pattern id="cm-grid" width="26" height="26" patternUnits="userSpaceOnUse">
             <path d="M26 0H0V26" fill="none" stroke="currentColor" strokeOpacity="0.12" strokeWidth="1" />

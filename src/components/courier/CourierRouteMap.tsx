@@ -9,6 +9,10 @@ interface Props {
   dropoff?: { lat?: number | null; lng?: number | null } | null;
   courier?: { lat?: number | null; lng?: number | null } | null;
   className?: string;
+  /** Modo imersivo: mapa sem bordas, retrato e sem legenda textual embaixo. */
+  bare?: boolean;
+  width?: number;
+  height?: number;
 }
 
 const fmtDur = (s: number) => (s < 60 ? "menos de 1 min" : `${Math.round(s / 60)} min`);
@@ -17,7 +21,16 @@ const fmtDur = (s: number) => (s < 60 ? "menos de 1 min" : `${Math.round(s / 60)
  * Mapa da corrida com o trajeto real por ruas quando o Google Maps está
  * configurado no painel. Sem chave, degrada para o mapa vetorial de custo zero.
  */
-export function CourierRouteMap({ deliveryId, pickup, dropoff, courier, className }: Props) {
+export function CourierRouteMap({
+  deliveryId,
+  pickup,
+  dropoff,
+  courier,
+  className,
+  bare,
+  width,
+  height,
+}: Props) {
   const { data, isLoading } = useQuery({
     queryKey: ["delivery-route", deliveryId],
     queryFn: () =>
@@ -34,15 +47,24 @@ export function CourierRouteMap({ deliveryId, pickup, dropoff, courier, classNam
 
   const route = data?.available ? data.points : null;
 
+  const map = (
+    <CourierMiniMap
+      className={className}
+      pickup={pickup}
+      dropoff={dropoff}
+      courier={courier}
+      route={route}
+      bare={bare}
+      width={width ?? (bare ? 360 : undefined)}
+      height={height ?? (bare ? 640 : undefined)}
+    />
+  );
+
+  if (bare) return map;
+
   return (
     <div className="space-y-1.5">
-      <CourierMiniMap
-        className={className}
-        pickup={pickup}
-        dropoff={dropoff}
-        courier={courier}
-        route={route}
-      />
+      {map}
       {isLoading && (
         <p className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
           <Loader2 className="h-3 w-3 animate-spin" /> Calculando o melhor trajeto pelas ruas…
