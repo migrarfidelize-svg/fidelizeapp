@@ -127,6 +127,8 @@ function CourierProfile() {
         })}
       </section>
 
+      <CourierInstallCard />
+
       <Button variant="outline" className="min-h-[48px] w-full" onClick={() => navigate({ to: "/entregador/cadastro" })}>
         <Award className="mr-2 h-4 w-4" /> Editar dados e documentos
       </Button>
