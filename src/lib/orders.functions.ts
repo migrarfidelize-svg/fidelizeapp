@@ -214,5 +214,13 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
       .update({ status: data.status })
       .eq("id", data.order_id);
     if (error) throw new Error(error.message);
+
+    try {
+      const { notifyOrderEvent } = await import("@/lib/orders-notify.server");
+      await notifyOrderEvent({ order_id: data.order_id, event: "status_changed" });
+    } catch {
+      /* best-effort */
+    }
     return { ok: true };
   });
+
