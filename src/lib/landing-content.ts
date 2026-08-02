@@ -39,8 +39,60 @@ export type LandingHeroCopy = {
 };
 
 
+/** Conteúdo do celular da hero (mockup mobile) — 100% editável no super admin. */
+export type LandingHeroDevice = {
+  /** Rótulo pequeno acima do nome (ex.: "Cliente") */
+  eyebrow: string;
+  /** Nome da loja exibido no topo do app */
+  storeName: string;
+  /** Tela 1 — cartão fidelidade */
+  cardTitle: string;
+  stamps: number;
+  stampsFilled: number;
+  cardFooter: string;
+  rewardLabel: string;
+  rewardValue: string;
+  /** Tela 2 — cardápio story */
+  storyTitle: string;
+  storySubtitle: string;
+  /** Tela 3 — catálogo */
+  catalogTitle: string;
+  /** Cartões flutuantes ao redor do celular */
+  crmTitle: string;
+  crmValue: string;
+  crmCaption: string;
+  chatTitle: string;
+  reviewsTitle: string;
+  reviewsCaption: string;
+  deliveryTitle: string;
+  deliveryCaption: string;
+};
+
+export const DEFAULT_HERO_DEVICE: LandingHeroDevice = {
+  eyebrow: "Cliente",
+  storeName: "Café da Serra",
+  cardTitle: "Cartão fidelidade",
+  stamps: 10,
+  stampsFilled: 8,
+  cardFooter: "Faltam 2 carimbos para o prêmio",
+  rewardLabel: "Próximo prêmio",
+  rewardValue: "Café grátis + cookie",
+  storyTitle: "Cardápio em stories",
+  storySubtitle: "Burger Trufado · R$ 38,90",
+  catalogTitle: "Catálogo digital",
+  crmTitle: "CRM",
+  crmValue: "+48%",
+  crmCaption: "retenção de clientes",
+  chatTitle: "Atendimento",
+  reviewsTitle: "Avaliações",
+  reviewsCaption: "4,9 de média no Google",
+  deliveryTitle: "Entrega ativa",
+  deliveryCaption: "Entregador a caminho",
+};
+
 export type LandingHeroContent = {
   copy: LandingHeroCopy;
+  device: LandingHeroDevice;
   menu: { title: string; dishes: MenuDish[] };
   catalog: { title: string; products: CatalogProduct[] };
 };
@@ -72,6 +124,7 @@ export const DEFAULT_HERO_COPY: LandingHeroCopy = {
 
 export const DEFAULT_HERO: LandingHeroContent = {
   copy: DEFAULT_HERO_COPY,
+  device: DEFAULT_HERO_DEVICE,
   menu: {
     title: "Cardápio em stories",
     dishes: [
@@ -135,8 +188,19 @@ export function normalizeHero(raw: unknown): LandingHeroContent {
     },
   };
 
+  const dev = (d.device ?? {}) as Partial<LandingHeroDevice>;
+  const device: LandingHeroDevice = { ...DEFAULT_HERO_DEVICE };
+  for (const k of Object.keys(DEFAULT_HERO_DEVICE) as (keyof LandingHeroDevice)[]) {
+    const v = dev[k];
+    if (typeof v === "number" && typeof DEFAULT_HERO_DEVICE[k] === "number") (device as any)[k] = v;
+    else if (typeof v === "string" && v.trim() && typeof DEFAULT_HERO_DEVICE[k] === "string") (device as any)[k] = v;
+  }
+  device.stamps = Math.min(20, Math.max(4, Math.round(device.stamps)));
+  device.stampsFilled = Math.min(device.stamps, Math.max(0, Math.round(device.stampsFilled)));
+
   return {
     copy,
+    device,
     menu: { title: d.menu?.title || DEFAULT_HERO.menu.title, dishes },
     catalog: { title: d.catalog?.title || DEFAULT_HERO.catalog.title, products },
   };
