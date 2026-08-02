@@ -668,41 +668,38 @@ function AuthPage() {
               </div>
 
 
-              {/* Toggle Cliente / Estabelecimento — oculto quando o fluxo veio da carteira */}
+              {/* Toggle Cliente / Estabelecimento / Entregador — oculto no fluxo da carteira */}
               {search.source !== "wallet" && (
                 <div className="animate-fade-in">
                   <div className="mb-1 ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Sou</div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setRole("customer")}
-                      className={
-                        "flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-all " +
-                        (role === "customer"
-                          ? "border-primary bg-primary/10 text-foreground shadow-[0_0_20px_-6px_rgba(167,139,250,0.6)]"
-                          : "border-border bg-muted/60 text-muted-foreground hover:text-foreground")
-                      }
-                    >
-                      <User className="h-3.5 w-3.5" /> Cliente
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setRole("establishment")}
-                      className={
-                        "flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-all " +
-                        (role === "establishment"
-                          ? "border-primary bg-primary/10 text-foreground shadow-[0_0_20px_-6px_rgba(167,139,250,0.6)]"
-                          : "border-border bg-muted/60 text-muted-foreground hover:text-foreground")
-                      }
-                    >
-                      <Store className="h-3.5 w-3.5" /> Estabelecimento
-                    </button>
+                  <div className="grid grid-cols-3 gap-2">
+                    {([
+                      { key: "customer" as const, label: "Cliente", Icon: User },
+                      { key: "establishment" as const, label: "Loja", Icon: Store },
+                      { key: "courier" as const, label: "Entregador", Icon: Bike },
+                    ]).map(({ key, label, Icon }) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setRole(key)}
+                        className={
+                          "flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border px-2 text-[11px] font-semibold transition-all " +
+                          (role === key
+                            ? "border-primary bg-primary/10 text-foreground shadow-[0_0_20px_-6px_rgba(167,139,250,0.6)]"
+                            : "border-border bg-muted/60 text-muted-foreground hover:text-foreground")
+                        }
+                      >
+                        <Icon className="h-3.5 w-3.5 shrink-0" /> {label}
+                      </button>
+                    ))}
                   </div>
                   {isSignup && (
                     <p className="mt-1.5 ml-1 text-[10px] text-muted-foreground">
                       {role === "customer"
                         ? "Acumule carimbos e recompensas em qualquer estabelecimento Fidelize."
-                        : "Crie seu programa de fidelidade digital para o seu negócio."}
+                        : role === "courier"
+                          ? "Faça entregas para os estabelecimentos Fidelize e receba por PIX."
+                          : "Crie seu programa de fidelidade digital para o seu negócio."}
                     </p>
                   )}
                 </div>
