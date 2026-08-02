@@ -12,7 +12,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
-import { Coffee, Check, ArrowRight, Sparkles, Wifi, Store, User, Loader2, Eye, EyeOff, Building2 } from "lucide-react";
+import { Coffee, Check, ArrowRight, Sparkles, Wifi, Store, User, Loader2, Eye, EyeOff, Building2, Bike } from "lucide-react";
 
 export const ONBOARDING_PREFILL_KEY = "fidelize:onboarding-prefill";
 import { claimCustomerByToken, attachEstablishmentBySlug } from "@/lib/my-wallet.functions";
@@ -39,7 +39,7 @@ function notifyAuthSync(type: "SIGNED_IN" | "SIGNED_UP") {
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup"]).default("signin"),
-  as: z.enum(["customer", "establishment"]).optional(),
+  as: z.enum(["customer", "establishment", "courier"]).optional(),
   claim: z.string().optional(),
   est_slug: z.string().optional(),
   next: z.string().optional(),
@@ -48,7 +48,7 @@ const searchSchema = z.object({
 
 });
 
-async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: string; role?: "customer" | "establishment" }): Promise<{ to: string; toast?: string; toastKind?: "success" | "error" | "info" }> {
+async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: string; role?: "customer" | "establishment" | "courier" }): Promise<{ to: string; toast?: string; toastKind?: "success" | "error" | "info" }> {
   // Vindo de um QR de estabelecimento (usuário já tinha conta ou acabou de criar).
   if (opts.est_slug) {
     try {
@@ -117,12 +117,28 @@ async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: 
     }
   }
 
+  /** Já existe um cadastro de entregador para este usuário? */
+  async function hasCourierProfile(): Promise<boolean> {
+    try {
+      const { data: uinfo } = await supabase.auth.getUser();
+      const uid = uinfo.user?.id;
+      if (!uid) return false;
+      const { data } = await supabase.from("couriers").select("id").eq("user_id", uid).maybeSingle();
+      return !!data;
+    } catch {
+      return false;
+    }
+  }
+
   try {
     // Recarrega o papel no servidor após cada login. O UUID vem do bearer token
     // validado, nunca do formulário, perfil ou cache do navegador.
     const access = await getAuthenticatedAccountAccess();
     if (access.isSuperAdmin || access.accountType === "super_admin") return { to: "/hash" };
     if (access.accountType === "establishment") return { to: "/app" };
+    // Entregador: quem escolheu a aba, ou quem já tem cadastro de motoboy.
+    if (opts.role === "courier") return { to: "/entregador" };
+    if (await hasCourierProfile()) return { to: "/entregador" };
     // Quem entrou pela aba "Estabelecimento" mas ainda não tem empresa vinculada
     // não pode cair na carteira do cliente — segue para criar/ativar a empresa.
     if (opts.role === "establishment") return { to: "/onboarding" };
@@ -200,7 +216,7 @@ function AuthPage() {
   // Sem claim/est_slug (cadastro vindo do site institucional) o padrão é "estabelecimento".
   // Fluxos de cliente final sempre chegam com `claim` ou `est_slug` (QR/scan) ou `as=customer`.
   // Se abriu como PWA instalado (source=pwa), assume "cliente".
-  const [role, setRole] = useState<"customer" | "establishment">(
+  const [role, setRole] = useState<"customer" | "establishment" | "courier">(
     search.as ?? (search.claim || search.est_slug || search.source === "pwa" ? "customer" : "establishment"),
   );
 
@@ -652,41 +668,38 @@ function AuthPage() {
               </div>
 
 
-              {/* Toggle Cliente / Estabelecimento — oculto quando o fluxo veio da carteira */}
+              {/* Toggle Cliente / Estabelecimento / Entregador — oculto no fluxo da carteira */}
               {search.source !== "wallet" && (
                 <div className="animate-fade-in">
                   <div className="mb-1 ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Sou</div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setRole("customer")}
-                      className={
-                        "flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-all " +
-                        (role === "customer"
-                          ? "border-primary bg-primary/10 text-foreground shadow-[0_0_20px_-6px_rgba(167,139,250,0.6)]"
-                          : "border-border bg-muted/60 text-muted-foreground hover:text-foreground")
-                      }
-                    >
-                      <User className="h-3.5 w-3.5" /> Cliente
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setRole("establishment")}
-                      className={
-                        "flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-all " +
-                        (role === "establishment"
-                          ? "border-primary bg-primary/10 text-foreground shadow-[0_0_20px_-6px_rgba(167,139,250,0.6)]"
-                          : "border-border bg-muted/60 text-muted-foreground hover:text-foreground")
-                      }
-                    >
-                      <Store className="h-3.5 w-3.5" /> Estabelecimento
-                    </button>
+                  <div className="grid grid-cols-3 gap-2">
+                    {([
+                      { key: "customer" as const, label: "Cliente", Icon: User },
+                      { key: "establishment" as const, label: "Loja", Icon: Store },
+                      { key: "courier" as const, label: "Entregador", Icon: Bike },
+                    ]).map(({ key, label, Icon }) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setRole(key)}
+                        className={
+                          "flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border px-2 text-[11px] font-semibold transition-all " +
+                          (role === key
+                            ? "border-primary bg-primary/10 text-foreground shadow-[0_0_20px_-6px_rgba(167,139,250,0.6)]"
+                            : "border-border bg-muted/60 text-muted-foreground hover:text-foreground")
+                        }
+                      >
+                        <Icon className="h-3.5 w-3.5 shrink-0" /> {label}
+                      </button>
+                    ))}
                   </div>
                   {isSignup && (
                     <p className="mt-1.5 ml-1 text-[10px] text-muted-foreground">
                       {role === "customer"
                         ? "Acumule carimbos e recompensas em qualquer estabelecimento Fidelize."
-                        : "Crie seu programa de fidelidade digital para o seu negócio."}
+                        : role === "courier"
+                          ? "Faça entregas para os estabelecimentos Fidelize e receba por PIX."
+                          : "Crie seu programa de fidelidade digital para o seu negócio."}
                     </p>
                   )}
                 </div>
