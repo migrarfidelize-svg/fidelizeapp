@@ -7151,6 +7151,7 @@ export type Database = {
         Args: { _thresholds: Json; _visits: number }
         Returns: Database["public"]["Enums"]["customer_tier"]
       }
+      courier_storage_owner: { Args: { _path: string }; Returns: string }
       dashboard_summary: { Args: { _est: string }; Returns: Json }
       delete_my_account: { Args: never; Returns: undefined }
       get_establishment_plan: {
