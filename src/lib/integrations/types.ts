@@ -1,7 +1,7 @@
 // Tipos base para todas as integrações (IA, pagamentos, e futuros).
 // Contrato mínimo para adicionar novos provedores via padrão Strategy.
 
-export type IntegrationCategory = "ai" | "payments" | "marketing";
+export type IntegrationCategory = "ai" | "payments" | "marketing" | "other";
 
 export type IntegrationFieldKind =
   | "text"
