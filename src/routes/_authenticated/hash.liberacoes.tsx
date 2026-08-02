@@ -74,6 +74,7 @@ const FEATURE_GROUPS: { group: string; items: { key: string; label: string }[] }
       { key: "email_notifications", label: "Notificações por e-mail" },
       { key: "email_marketing", label: "E-mail marketing" },
       { key: "whatsapp_notifications", label: "Notificações via WhatsApp" },
+      { key: "whatsapp_inbox", label: "Central de Atendimento (WhatsApp)" },
     ],
   },
   {
