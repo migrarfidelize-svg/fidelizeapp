@@ -60,7 +60,14 @@ export const DEFAULT_HERO_COPY: LandingHeroCopy = {
   primaryCta: { label: "Escolher meu plano", href: "#precos" },
   secondaryCta: { label: "Ver como funciona", href: "#ecossistema" },
   bullets: ["Sem cartão de crédito", "Configure em 5 minutos", "Planos a partir de {preco}/mês"],
+  socialProof: {
+    enabled: true,
+    avatarLabel: "+2k",
+    highlight: "2.000 lojistas",
+    text: "Mais de {destaque} usando a Fidelize.",
+  },
 };
+
 
 export const DEFAULT_HERO: LandingHeroContent = {
   copy: DEFAULT_HERO_COPY,
