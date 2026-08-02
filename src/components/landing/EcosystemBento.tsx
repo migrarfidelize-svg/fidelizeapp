@@ -166,6 +166,55 @@ const FEATURES: Feature[] = [
     ),
   },
   {
+    icon: MessageCircle,
+    title: "Central de atendimento",
+    sub: "WhatsApp da loja com fila, etiquetas e vários atendentes.",
+    tag: "Conversas",
+    visual: (
+      <div className="space-y-1.5">
+        <p className="w-4/5 rounded-lg rounded-bl-sm bg-muted p-2 text-[11px] text-muted-foreground">
+          “Oi, meu pedido já saiu?”
+        </p>
+        <p className="ml-auto w-4/5 rounded-lg rounded-br-sm bg-primary/12 p-2 text-[11px] text-primary">
+          Saiu agora — chega em 12 min 🛵
+        </p>
+      </div>
+    ),
+  },
+  {
+    icon: Bike,
+    title: "Entregas rastreadas",
+    sub: "Entregador da plataforma ou próprio, com rota ao vivo.",
+    tag: "Delivery",
+    visual: (
+      <div className="flex items-center gap-3">
+        <span className="card-icon grid h-11 w-11 place-items-center rounded-xl bg-primary/15 text-primary">
+          <Bike className="h-5 w-5" />
+        </span>
+        <div className="min-w-0 text-xs text-muted-foreground">
+          <div className="font-semibold text-foreground">2,4 km · 12 min</div>
+          rota real, sem contramão
+        </div>
+      </div>
+    ),
+  },
+  {
+    icon: ShoppingBag,
+    title: "Pedidos e pagamentos",
+    sub: "Pix, cartão ou pagar na entrega — com aviso automático.",
+    tag: "Vendas",
+    visual: (
+      <div className="space-y-1.5 text-[11px]">
+        {([["#2841 · Pix", "aprovado"], ["#2842 · Na entrega", "preparando"]] as const).map(([o, s]) => (
+          <div key={o} className="flex items-center justify-between gap-2 rounded-lg border border-border/60 bg-background/50 px-2 py-1.5">
+            <span className="truncate text-muted-foreground">{o}</span>
+            <span className="shrink-0 font-semibold text-primary">{s}</span>
+          </div>
+        ))}
+      </div>
+    ),
+  },
+  {
     icon: ShieldCheck,
     title: "Antifraude e auditoria",
     sub: "Todo carimbo tem autor, data e histórico rastreável.",
@@ -177,6 +226,7 @@ const FEATURES: Feature[] = [
     ),
   },
 ];
+
 
 function KineticCard({ feature }: { feature: Feature }) {
   const Icon = feature.icon;
