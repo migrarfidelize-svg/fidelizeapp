@@ -436,7 +436,7 @@ function Hero() {
 
       
       <div className="relative z-10 mx-auto max-w-6xl px-4 py-12 sm:py-16 md:py-24">
-        <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(300px,420px)] lg:gap-14">
+        <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(320px,520px)] lg:gap-10">
           <HeroCopy />
 
 
