@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.15"
   }
   public: {
     Tables: {
@@ -636,13 +636,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "customer_achievements_achievement_code_fkey"
-            columns: ["achievement_code"]
-            isOneToOne: false
-            referencedRelation: "achievements"
-            referencedColumns: ["code"]
-          },
           {
             foreignKeyName: "customer_achievements_establishment_id_fkey"
             columns: ["establishment_id"]
