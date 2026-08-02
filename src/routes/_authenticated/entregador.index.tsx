@@ -204,8 +204,9 @@ function CourierHome() {
                   </div>
                   <span className="metric-number shrink-0 text-base text-primary">{money(d.courier_net_cents)}</span>
                 </div>
-                <CourierMiniMap
+                <CourierRouteMap
                   className="mt-3 h-40"
+                  deliveryId={d.id}
                   pickup={{ lat: d.pickup_lat, lng: d.pickup_lng }}
                   dropoff={{ lat: d.dropoff_lat, lng: d.dropoff_lng }}
                 />
