@@ -52,6 +52,7 @@ import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticat
 import { Route as SuporteChamadoIdRouteImport } from './routes/suporte.chamado.$id'
 import { Route as SuporteSlugNovoRouteImport } from './routes/suporte.$slug.novo'
 import { Route as AjudaCategoryArticleRouteImport } from './routes/ajuda.$category.$article'
+import { Route as AuthenticatedHashWhatsappRouteImport } from './routes/_authenticated/hash.whatsapp'
 import { Route as AuthenticatedHashUsuariosRouteImport } from './routes/_authenticated/hash.usuarios'
 import { Route as AuthenticatedHashPixelRouteImport } from './routes/_authenticated/hash.pixel'
 import { Route as AuthenticatedHashPagamentosRouteImport } from './routes/_authenticated/hash.pagamentos'
@@ -100,6 +101,7 @@ import { Route as AuthenticatedAppCatalogoRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppCarimbarRouteImport } from './routes/_authenticated/app.carimbar'
 import { Route as AuthenticatedAppCardapioRouteImport } from './routes/_authenticated/app.cardapio'
 import { Route as AuthenticatedAppCampanhasRouteImport } from './routes/_authenticated/app.campanhas'
+import { Route as AuthenticatedAppAtendimentoRouteImport } from './routes/_authenticated/app.atendimento'
 import { Route as AuthenticatedAppAnunciosRouteImport } from './routes/_authenticated/app.anuncios'
 import { Route as AuthenticatedAppAnalyticsRouteImport } from './routes/_authenticated/app.analytics'
 import { Route as AuthenticatedHashSuporteIndexRouteImport } from './routes/_authenticated/hash.suporte.index'
@@ -137,6 +139,7 @@ import { Route as AuthenticatedAppCardapioCategoriasRouteImport } from './routes
 import { Route as AuthenticatedAppCardapioAparenciaRouteImport } from './routes/_authenticated/app.cardapio.aparencia'
 import { Route as AuthenticatedAppAvaliacoesTemaRouteImport } from './routes/_authenticated/app.avaliacoes.tema'
 import { Route as AuthenticatedAppAvaliacoesQrRouteImport } from './routes/_authenticated/app.avaliacoes.qr'
+import { Route as ApiPublicWhatsappWebhookTokenRouteImport } from './routes/api/public/whatsapp/webhook.$token'
 import { Route as ApiPublicWalletV1LogRouteImport } from './routes/api/public/wallet/v1/log'
 import { Route as ApiPublicWalletAppleTokenRouteImport } from './routes/api/public/wallet.apple.$token'
 import { Route as ApiPublicRTCodeRouteImport } from './routes/api/public/r/t/$code'
@@ -361,6 +364,12 @@ const AjudaCategoryArticleRoute = AjudaCategoryArticleRouteImport.update({
   path: '/ajuda/$category/$article',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedHashWhatsappRoute =
+  AuthenticatedHashWhatsappRouteImport.update({
+    id: '/whatsapp',
+    path: '/whatsapp',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
 const AuthenticatedHashUsuariosRoute =
   AuthenticatedHashUsuariosRouteImport.update({
     id: '/usuarios',
@@ -637,6 +646,12 @@ const AuthenticatedAppCampanhasRoute =
     path: '/campanhas',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppAtendimentoRoute =
+  AuthenticatedAppAtendimentoRouteImport.update({
+    id: '/atendimento',
+    path: '/atendimento',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppAnunciosRoute =
   AuthenticatedAppAnunciosRouteImport.update({
     id: '/anuncios',
@@ -852,6 +867,12 @@ const AuthenticatedAppAvaliacoesQrRoute =
     path: '/avaliacoes/qr',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const ApiPublicWhatsappWebhookTokenRoute =
+  ApiPublicWhatsappWebhookTokenRouteImport.update({
+    id: '/api/public/whatsapp/webhook/$token',
+    path: '/api/public/whatsapp/webhook/$token',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWalletV1LogRoute = ApiPublicWalletV1LogRouteImport.update({
   id: '/api/public/wallet/v1/log',
   path: '/api/public/wallet/v1/log',
@@ -938,6 +959,7 @@ export interface FileRoutesByFullPath {
   '/ajuda/': typeof AjudaIndexRoute
   '/app/analytics': typeof AuthenticatedAppAnalyticsRoute
   '/app/anuncios': typeof AuthenticatedAppAnunciosRoute
+  '/app/atendimento': typeof AuthenticatedAppAtendimentoRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/cardapio': typeof AuthenticatedAppCardapioRouteWithChildren
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
@@ -986,6 +1008,7 @@ export interface FileRoutesByFullPath {
   '/hash/pagamentos': typeof AuthenticatedHashPagamentosRoute
   '/hash/pixel': typeof AuthenticatedHashPixelRoute
   '/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
+  '/hash/whatsapp': typeof AuthenticatedHashWhatsappRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
@@ -1033,6 +1056,7 @@ export interface FileRoutesByFullPath {
   '/api/public/r/t/$code': typeof ApiPublicRTCodeRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
   '/api/public/wallet/v1/log': typeof ApiPublicWalletV1LogRoute
+  '/api/public/whatsapp/webhook/$token': typeof ApiPublicWhatsappWebhookTokenRoute
   '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
   '/api/public/wallet/v1/passes/$passTypeId/$serial': typeof ApiPublicWalletV1PassesPassTypeIdSerialRoute
   '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId': typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren
@@ -1072,6 +1096,7 @@ export interface FileRoutesByTo {
   '/ajuda': typeof AjudaIndexRoute
   '/app/analytics': typeof AuthenticatedAppAnalyticsRoute
   '/app/anuncios': typeof AuthenticatedAppAnunciosRoute
+  '/app/atendimento': typeof AuthenticatedAppAtendimentoRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
@@ -1118,6 +1143,7 @@ export interface FileRoutesByTo {
   '/hash/pagamentos': typeof AuthenticatedHashPagamentosRoute
   '/hash/pixel': typeof AuthenticatedHashPixelRoute
   '/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
+  '/hash/whatsapp': typeof AuthenticatedHashWhatsappRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
@@ -1165,6 +1191,7 @@ export interface FileRoutesByTo {
   '/api/public/r/t/$code': typeof ApiPublicRTCodeRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
   '/api/public/wallet/v1/log': typeof ApiPublicWalletV1LogRoute
+  '/api/public/whatsapp/webhook/$token': typeof ApiPublicWhatsappWebhookTokenRoute
   '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
   '/api/public/wallet/v1/passes/$passTypeId/$serial': typeof ApiPublicWalletV1PassesPassTypeIdSerialRoute
   '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId': typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren
@@ -1209,6 +1236,7 @@ export interface FileRoutesById {
   '/ajuda/': typeof AjudaIndexRoute
   '/_authenticated/app/analytics': typeof AuthenticatedAppAnalyticsRoute
   '/_authenticated/app/anuncios': typeof AuthenticatedAppAnunciosRoute
+  '/_authenticated/app/atendimento': typeof AuthenticatedAppAtendimentoRoute
   '/_authenticated/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/_authenticated/app/cardapio': typeof AuthenticatedAppCardapioRouteWithChildren
   '/_authenticated/app/carimbar': typeof AuthenticatedAppCarimbarRoute
@@ -1257,6 +1285,7 @@ export interface FileRoutesById {
   '/_authenticated/hash/pagamentos': typeof AuthenticatedHashPagamentosRoute
   '/_authenticated/hash/pixel': typeof AuthenticatedHashPixelRoute
   '/_authenticated/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
+  '/_authenticated/hash/whatsapp': typeof AuthenticatedHashWhatsappRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
@@ -1304,6 +1333,7 @@ export interface FileRoutesById {
   '/api/public/r/t/$code': typeof ApiPublicRTCodeRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
   '/api/public/wallet/v1/log': typeof ApiPublicWalletV1LogRoute
+  '/api/public/whatsapp/webhook/$token': typeof ApiPublicWhatsappWebhookTokenRoute
   '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
   '/api/public/wallet/v1/passes/$passTypeId/$serial': typeof ApiPublicWalletV1PassesPassTypeIdSerialRoute
   '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId': typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren
@@ -1348,6 +1378,7 @@ export interface FileRouteTypes {
     | '/ajuda/'
     | '/app/analytics'
     | '/app/anuncios'
+    | '/app/atendimento'
     | '/app/campanhas'
     | '/app/cardapio'
     | '/app/carimbar'
@@ -1396,6 +1427,7 @@ export interface FileRouteTypes {
     | '/hash/pagamentos'
     | '/hash/pixel'
     | '/hash/usuarios'
+    | '/hash/whatsapp'
     | '/ajuda/$category/$article'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
@@ -1443,6 +1475,7 @@ export interface FileRouteTypes {
     | '/api/public/r/t/$code'
     | '/api/public/wallet/apple/$token'
     | '/api/public/wallet/v1/log'
+    | '/api/public/whatsapp/webhook/$token'
     | '/api/public/r/qr/$slug/$dest'
     | '/api/public/wallet/v1/passes/$passTypeId/$serial'
     | '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId'
@@ -1482,6 +1515,7 @@ export interface FileRouteTypes {
     | '/ajuda'
     | '/app/analytics'
     | '/app/anuncios'
+    | '/app/atendimento'
     | '/app/campanhas'
     | '/app/carimbar'
     | '/app/clientes'
@@ -1528,6 +1562,7 @@ export interface FileRouteTypes {
     | '/hash/pagamentos'
     | '/hash/pixel'
     | '/hash/usuarios'
+    | '/hash/whatsapp'
     | '/ajuda/$category/$article'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
@@ -1575,6 +1610,7 @@ export interface FileRouteTypes {
     | '/api/public/r/t/$code'
     | '/api/public/wallet/apple/$token'
     | '/api/public/wallet/v1/log'
+    | '/api/public/whatsapp/webhook/$token'
     | '/api/public/r/qr/$slug/$dest'
     | '/api/public/wallet/v1/passes/$passTypeId/$serial'
     | '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId'
@@ -1618,6 +1654,7 @@ export interface FileRouteTypes {
     | '/ajuda/'
     | '/_authenticated/app/analytics'
     | '/_authenticated/app/anuncios'
+    | '/_authenticated/app/atendimento'
     | '/_authenticated/app/campanhas'
     | '/_authenticated/app/cardapio'
     | '/_authenticated/app/carimbar'
@@ -1666,6 +1703,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hash/pagamentos'
     | '/_authenticated/hash/pixel'
     | '/_authenticated/hash/usuarios'
+    | '/_authenticated/hash/whatsapp'
     | '/ajuda/$category/$article'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
@@ -1713,6 +1751,7 @@ export interface FileRouteTypes {
     | '/api/public/r/t/$code'
     | '/api/public/wallet/apple/$token'
     | '/api/public/wallet/v1/log'
+    | '/api/public/whatsapp/webhook/$token'
     | '/api/public/r/qr/$slug/$dest'
     | '/api/public/wallet/v1/passes/$passTypeId/$serial'
     | '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId'
@@ -1773,6 +1812,7 @@ export interface RootRouteChildren {
   ApiPublicRTCodeRoute: typeof ApiPublicRTCodeRoute
   ApiPublicWalletAppleTokenRoute: typeof ApiPublicWalletAppleTokenRoute
   ApiPublicWalletV1LogRoute: typeof ApiPublicWalletV1LogRoute
+  ApiPublicWhatsappWebhookTokenRoute: typeof ApiPublicWhatsappWebhookTokenRoute
   ApiPublicRQrSlugDestRoute: typeof ApiPublicRQrSlugDestRoute
   ApiPublicWalletV1PassesPassTypeIdSerialRoute: typeof ApiPublicWalletV1PassesPassTypeIdSerialRoute
   ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRoute: typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren
@@ -2080,6 +2120,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/ajuda/$category/$article'
       preLoaderRoute: typeof AjudaCategoryArticleRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/hash/whatsapp': {
+      id: '/_authenticated/hash/whatsapp'
+      path: '/whatsapp'
+      fullPath: '/hash/whatsapp'
+      preLoaderRoute: typeof AuthenticatedHashWhatsappRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
     }
     '/_authenticated/hash/usuarios': {
       id: '/_authenticated/hash/usuarios'
@@ -2417,6 +2464,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppCampanhasRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/atendimento': {
+      id: '/_authenticated/app/atendimento'
+      path: '/atendimento'
+      fullPath: '/app/atendimento'
+      preLoaderRoute: typeof AuthenticatedAppAtendimentoRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/app/anuncios': {
       id: '/_authenticated/app/anuncios'
       path: '/anuncios'
@@ -2676,6 +2730,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAvaliacoesQrRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/api/public/whatsapp/webhook/$token': {
+      id: '/api/public/whatsapp/webhook/$token'
+      path: '/api/public/whatsapp/webhook/$token'
+      fullPath: '/api/public/whatsapp/webhook/$token'
+      preLoaderRoute: typeof ApiPublicWhatsappWebhookTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/wallet/v1/log': {
       id: '/api/public/wallet/v1/log'
       path: '/api/public/wallet/v1/log'
@@ -2783,6 +2844,7 @@ const AuthenticatedAppCatalogoRouteWithChildren =
 interface AuthenticatedAppRouteChildren {
   AuthenticatedAppAnalyticsRoute: typeof AuthenticatedAppAnalyticsRoute
   AuthenticatedAppAnunciosRoute: typeof AuthenticatedAppAnunciosRoute
+  AuthenticatedAppAtendimentoRoute: typeof AuthenticatedAppAtendimentoRoute
   AuthenticatedAppCampanhasRoute: typeof AuthenticatedAppCampanhasRoute
   AuthenticatedAppCardapioRoute: typeof AuthenticatedAppCardapioRouteWithChildren
   AuthenticatedAppCarimbarRoute: typeof AuthenticatedAppCarimbarRoute
@@ -2813,6 +2875,7 @@ interface AuthenticatedAppRouteChildren {
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppAnalyticsRoute: AuthenticatedAppAnalyticsRoute,
   AuthenticatedAppAnunciosRoute: AuthenticatedAppAnunciosRoute,
+  AuthenticatedAppAtendimentoRoute: AuthenticatedAppAtendimentoRoute,
   AuthenticatedAppCampanhasRoute: AuthenticatedAppCampanhasRoute,
   AuthenticatedAppCardapioRoute: AuthenticatedAppCardapioRouteWithChildren,
   AuthenticatedAppCarimbarRoute: AuthenticatedAppCarimbarRoute,
@@ -2913,6 +2976,7 @@ interface AuthenticatedHashRouteChildren {
   AuthenticatedHashPagamentosRoute: typeof AuthenticatedHashPagamentosRoute
   AuthenticatedHashPixelRoute: typeof AuthenticatedHashPixelRoute
   AuthenticatedHashUsuariosRoute: typeof AuthenticatedHashUsuariosRoute
+  AuthenticatedHashWhatsappRoute: typeof AuthenticatedHashWhatsappRoute
   AuthenticatedHashIndexRoute: typeof AuthenticatedHashIndexRoute
   AuthenticatedHashEmpresaIdRoute: typeof AuthenticatedHashEmpresaIdRoute
   AuthenticatedHashSuporteIdRoute: typeof AuthenticatedHashSuporteIdRoute
@@ -2943,6 +3007,7 @@ const AuthenticatedHashRouteChildren: AuthenticatedHashRouteChildren = {
   AuthenticatedHashPagamentosRoute: AuthenticatedHashPagamentosRoute,
   AuthenticatedHashPixelRoute: AuthenticatedHashPixelRoute,
   AuthenticatedHashUsuariosRoute: AuthenticatedHashUsuariosRoute,
+  AuthenticatedHashWhatsappRoute: AuthenticatedHashWhatsappRoute,
   AuthenticatedHashIndexRoute: AuthenticatedHashIndexRoute,
   AuthenticatedHashEmpresaIdRoute: AuthenticatedHashEmpresaIdRoute,
   AuthenticatedHashSuporteIdRoute: AuthenticatedHashSuporteIdRoute,
@@ -3054,6 +3119,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicRTCodeRoute: ApiPublicRTCodeRoute,
   ApiPublicWalletAppleTokenRoute: ApiPublicWalletAppleTokenRoute,
   ApiPublicWalletV1LogRoute: ApiPublicWalletV1LogRoute,
+  ApiPublicWhatsappWebhookTokenRoute: ApiPublicWhatsappWebhookTokenRoute,
   ApiPublicRQrSlugDestRoute: ApiPublicRQrSlugDestRoute,
   ApiPublicWalletV1PassesPassTypeIdSerialRoute:
     ApiPublicWalletV1PassesPassTypeIdSerialRoute,
@@ -3063,13 +3129,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -4,6 +4,7 @@
 
 export type PermissionAction =
   | "stamping.use"
+  | "inbox.use"
   | "customers.view"
   | "customers.edit"
   | "customers.import"
@@ -47,6 +48,7 @@ export const PERMISSION_CATALOG: PermissionEntry[] = [
   { action: "customers.edit",     group: "operacao", label: "Editar clientes",           description: "Criar, editar e excluir clientes." },
   { action: "customers.import",   group: "operacao", label: "Importar CSV",              description: "Importar clientes em massa via planilha." },
   { action: "customers.export",   group: "operacao", label: "Exportar dados",            description: "Baixar relatórios e listas em CSV/PDF." },
+  { action: "inbox.use",          group: "operacao", label: "Central de Atendimento",    description: "Responder conversas de WhatsApp, assumir fila e conectar o número." },
 
   // Marketing
   { action: "campaigns.manage",   group: "marketing", label: "Campanhas",                description: "Criar e gerenciar campanhas de fidelidade." },
@@ -103,6 +105,7 @@ export function defaultPreset(role: MemberRole, action: PermissionAction): boole
   // staff
   return (
     action === "stamping.use" ||
+    action === "inbox.use" ||
     action === "customers.view" ||
     action === "customers.edit" ||
     action === "reviews.view" ||
@@ -117,6 +120,7 @@ export function defaultPreset(role: MemberRole, action: PermissionAction): boole
 // Rotas → ação que a controla (usado para filtrar o menu lateral).
 export const ROUTE_PERMISSIONS: Record<string, PermissionAction> = {
   "/app/carimbar":     "stamping.use",
+  "/app/atendimento":  "inbox.use",
   "/app/clientes":     "customers.view",
   "/app/campanhas":    "campaigns.manage",
   "/app/retencao":     "retention.manage",
