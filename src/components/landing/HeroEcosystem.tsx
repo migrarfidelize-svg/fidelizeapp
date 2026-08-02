@@ -57,7 +57,9 @@ export function HeroEcosystem({ device }: { device?: LandingHeroDevice }) {
 
           {/* topo do app */}
           <div className="flex shrink-0 items-center gap-2.5 px-4 pt-3">
-            <div className="h-9 w-9 rounded-xl" style={{ background: PURPLE }} />
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-white" style={{ background: PURPLE }}>
+              <Store className="h-[18px] w-[18px] text-white" strokeWidth={2.2} />
+            </span>
             <div className="min-w-0">
               <div className="truncate text-[10px] uppercase tracking-widest text-black/40">{d.eyebrow}</div>
               <div className="truncate text-sm font-semibold text-[#1b1730]">{d.storeName}</div>
