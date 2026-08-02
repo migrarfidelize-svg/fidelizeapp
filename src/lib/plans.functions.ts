@@ -411,6 +411,7 @@ const FEATURE_LABELS: Record<string, string> = {
   multi_units: "Múltiplas unidades",
   email_marketing: "E-mail marketing",
   whatsapp_notifications: "Notificações via WhatsApp",
+  whatsapp_inbox: "Central de Atendimento (WhatsApp)",
   public_reviews: "Avaliações públicas de atendimento (QR + página)",
 };
 
