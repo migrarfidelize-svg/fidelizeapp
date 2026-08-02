@@ -237,7 +237,7 @@ function CourierHome() {
           )}
         </button>
 
-        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 pb-4">
+        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 pb-16">
           {/* Resumo financeiro */}
           <div className="grid grid-cols-3 gap-2 text-center">
             <Link to="/entregador/carteira" className="rounded-2xl bg-muted/50 p-3">
