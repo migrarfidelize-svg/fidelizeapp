@@ -32,15 +32,16 @@ export function haversineKm(a: Point, b: Point) {
  * Mapa vetorial de custo zero: projeta os pontos disponíveis em um SVG,
  * sem depender de nenhuma API paga de mapas.
  */
-export function CourierMiniMap({ pickup, dropoff, courier, route, className }: Props) {
+export function CourierMiniMap({ pickup, dropoff, courier, route, className, width, height, bare }: Props) {
   const line = route && route.length > 1 ? route : null;
   const pts = [pickup, dropoff, courier, ...(line ?? [])].filter(
     (p): p is Required<Point> => !!p && p.lat != null && p.lng != null,
   ) as { lat: number; lng: number }[];
 
-  const W = 320;
-  const H = 170;
+  const W = width ?? 320;
+  const H = height ?? 170;
   const pad = 26;
+
 
   let project = (_p: { lat: number; lng: number }) => ({ x: W / 2, y: H / 2 });
   if (pts.length > 0) {
