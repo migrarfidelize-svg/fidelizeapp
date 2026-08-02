@@ -1,4 +1,4 @@
-import { BarChart3, Bell, LinkIcon, Megaphone, QrCode, ShieldCheck, ShoppingBag, Smartphone, Star, Users } from "lucide-react";
+import { BarChart3, Bell, Bike, LinkIcon, Megaphone, MessageCircle, QrCode, ShieldCheck, ShoppingBag, Smartphone, Star, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useInView } from "./use-in-view";
 
