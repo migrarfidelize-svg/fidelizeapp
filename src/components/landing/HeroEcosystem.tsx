@@ -7,9 +7,12 @@ import { Bell, BarChart3, MapPin, MessageCircle, QrCode, Star, Stamp, Play, Shop
  * funcionalidades: CRM, atendimento WhatsApp, avaliações, entregadores, QR e push.
  * Animações puramente CSS (SSR-safe, sem estado).
  */
+import { DEFAULT_HERO_DEVICE, type LandingHeroDevice } from "@/lib/landing-content";
+
 const PURPLE = "#7c5cd6";
 
-export function HeroEcosystem() {
+export function HeroEcosystem({ device }: { device?: LandingHeroDevice }) {
+  const d = device ?? DEFAULT_HERO_DEVICE;
   return (
     <div className="relative mx-auto flex w-full max-w-[560px] items-center justify-center px-2 pb-14 pt-20 sm:py-6 lg:px-16">
       <style>{`
@@ -56,8 +59,8 @@ export function HeroEcosystem() {
           <div className="flex shrink-0 items-center gap-2.5 px-4 pt-3">
             <div className="h-9 w-9 rounded-xl" style={{ background: PURPLE }} />
             <div className="min-w-0">
-              <div className="text-[10px] uppercase tracking-widest text-black/40">Cliente</div>
-              <div className="truncate text-sm font-semibold text-[#1b1730]">Café da Serra</div>
+              <div className="truncate text-[10px] uppercase tracking-widest text-black/40">{d.eyebrow}</div>
+              <div className="truncate text-sm font-semibold text-[#1b1730]">{d.storeName}</div>
             </div>
           </div>
 
@@ -71,23 +74,23 @@ export function HeroEcosystem() {
             {/* 1 — cartão fidelidade */}
             <div className="fz-s1 absolute inset-x-4 top-0">
               <div className="rounded-2xl p-4 text-white shadow-lg" style={{ background: "linear-gradient(140deg, #8b6ee6, #5b4bbf)" }}>
-                <div className="text-[10px] font-bold uppercase tracking-[0.18em] opacity-80">Cartão fidelidade</div>
+                <div className="text-[10px] font-bold uppercase tracking-[0.18em] opacity-80">{d.cardTitle}</div>
                 <div className="mt-3 grid grid-cols-5 gap-1.5">
-                  {Array.from({ length: 10 }).map((_, i) => (
+                  {Array.from({ length: d.stamps }).map((_, i) => (
                     <span
                       key={i}
-                      className="fz-stamp grid aspect-square place-items-center rounded-full bg-white/25 ring-1 ring-white/40"
+                      className={`grid aspect-square place-items-center rounded-full ring-1 ring-white/40 ${i < d.stampsFilled ? "fz-stamp bg-white/25" : "bg-white/10"}`}
                       style={{ animationDelay: `${i * 0.28}s` }}
                     >
                       <Stamp className="h-3 w-3 text-white sm:h-3.5 sm:w-3.5" />
                     </span>
                   ))}
                 </div>
-                <div className="mt-3 text-[11px] font-medium leading-snug">Faltam 2 carimbos para o prêmio</div>
+                <div className="mt-3 text-[11px] font-medium leading-snug">{d.cardFooter}</div>
               </div>
               <div className="mt-3 rounded-xl border border-black/5 bg-white p-3 shadow-sm">
-                <div className="text-[10px] font-semibold uppercase tracking-widest text-black/40">Próximo prêmio</div>
-                <div className="text-xs font-semibold text-[#1b1730]">Café grátis + cookie</div>
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-black/40">{d.rewardLabel}</div>
+                <div className="text-xs font-semibold text-[#1b1730]">{d.rewardValue}</div>
               </div>
             </div>
 
@@ -109,8 +112,8 @@ export function HeroEcosystem() {
                   <Play className="h-5 w-5 fill-current" />
                 </span>
               </div>
-              <div className="mt-2 text-xs font-semibold text-[#1b1730]">Cardápio em stories</div>
-              <div className="text-[10px] text-black/45">Burger Trufado · R$ 38,90</div>
+              <div className="mt-2 text-xs font-semibold text-[#1b1730]">{d.storyTitle}</div>
+              <div className="text-[10px] text-black/45">{d.storySubtitle}</div>
             </div>
 
             {/* 3 — catálogo */}
@@ -119,7 +122,7 @@ export function HeroEcosystem() {
                 <span className="grid h-7 w-7 place-items-center rounded-lg text-white" style={{ background: PURPLE }}>
                   <ShoppingBag className="h-4 w-4" />
                 </span>
-                <span className="text-xs font-semibold text-[#1b1730]">Catálogo digital</span>
+                <span className="truncate text-xs font-semibold text-[#1b1730]">{d.catalogTitle}</span>
               </div>
               <div className="mt-3 grid grid-cols-2 gap-2.5">
                 {[0, 1, 2, 3].map((i) => (
@@ -139,16 +142,16 @@ export function HeroEcosystem() {
       <FloatCard className="fz-float absolute -left-1 top-2 z-30 w-[8.5rem] sm:left-0 lg:w-40" delay="0.05s">
         <div className="mb-1.5 flex items-center gap-2">
           <Chip><BarChart3 className="h-4 w-4" /></Chip>
-          <span className="text-xs font-semibold">CRM</span>
+          <span className="truncate text-xs font-semibold">{d.crmTitle}</span>
         </div>
-        <div className="font-display text-xl font-extrabold text-primary lg:text-2xl">+48%</div>
-        <div className="text-[10px] text-muted-foreground">retenção de clientes</div>
+        <div className="font-display text-xl font-extrabold text-primary lg:text-2xl">{d.crmValue}</div>
+        <div className="text-[10px] leading-snug text-muted-foreground">{d.crmCaption}</div>
       </FloatCard>
 
       <FloatCard className="fz-float-d absolute -right-1 top-10 sm:top-6 z-30 w-[9rem] sm:right-0 lg:w-44" delay="0.15s">
         <div className="mb-2 flex items-center gap-2">
           <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Atendimento</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{d.chatTitle}</span>
         </div>
         <div className="flex items-start gap-2">
           <Chip><MessageCircle className="h-4 w-4" /></Chip>
@@ -165,15 +168,15 @@ export function HeroEcosystem() {
             <Star key={i} className="h-3 w-3 fill-current lg:h-3.5 lg:w-3.5" />
           ))}
         </div>
-        <div className="text-xs font-semibold">Avaliações</div>
-        <div className="text-[10px] text-muted-foreground">4,9 de média no Google</div>
+        <div className="truncate text-xs font-semibold">{d.reviewsTitle}</div>
+        <div className="text-[10px] leading-snug text-muted-foreground">{d.reviewsCaption}</div>
       </FloatCard>
 
       <FloatCard className="fz-float absolute bottom-2 -right-1 z-30 w-[9rem] sm:right-0 lg:bottom-4 lg:w-44" delay="0.35s">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Entrega ativa</div>
-            <div className="truncate text-xs font-semibold">Entregador a caminho</div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{d.deliveryTitle}</div>
+            <div className="truncate text-xs font-semibold">{d.deliveryCaption}</div>
           </div>
           <Chip><MapPin className="h-4 w-4" /></Chip>
         </div>
