@@ -137,7 +137,7 @@ export function CourierInstallGate({ open, onClose }: { open?: boolean; onClose?
             Siga os passos acima para adicionar o app à sua tela de início.
           </p>
         )}
-        <Button variant="ghost" className="min-h-[44px] w-full text-xs text-muted-foreground" onClick={dismiss}>
+        <Button variant="ghost" className="min-h-[44px] w-full text-xs text-muted-foreground" onClick={close}>
           Continuar no navegador
         </Button>
       </div>
