@@ -1481,6 +1481,69 @@ export type Database = {
           },
         ]
       }
+      customer_addresses: {
+        Row: {
+          city: string | null
+          complement: string | null
+          created_at: string
+          district: string | null
+          id: string
+          is_default: boolean
+          label: string
+          lat: number | null
+          lng: number | null
+          number: string | null
+          phone: string | null
+          recipient_name: string | null
+          reference: string | null
+          state: string | null
+          street: string
+          updated_at: string
+          user_id: string
+          zip_code: string | null
+        }
+        Insert: {
+          city?: string | null
+          complement?: string | null
+          created_at?: string
+          district?: string | null
+          id?: string
+          is_default?: boolean
+          label?: string
+          lat?: number | null
+          lng?: number | null
+          number?: string | null
+          phone?: string | null
+          recipient_name?: string | null
+          reference?: string | null
+          state?: string | null
+          street: string
+          updated_at?: string
+          user_id: string
+          zip_code?: string | null
+        }
+        Update: {
+          city?: string | null
+          complement?: string | null
+          created_at?: string
+          district?: string | null
+          id?: string
+          is_default?: boolean
+          label?: string
+          lat?: number | null
+          lng?: number | null
+          number?: string | null
+          phone?: string | null
+          recipient_name?: string | null
+          reference?: string | null
+          state?: string | null
+          street?: string
+          updated_at?: string
+          user_id?: string
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
       customer_reviews: {
         Row: {
           anonymous: boolean
@@ -1776,6 +1839,7 @@ export type Database = {
           customer_name: string | null
           customer_phone: string | null
           delivered_at: string | null
+          delivery_mode: string
           distance_m: number | null
           dropoff_address: string | null
           dropoff_lat: number | null
@@ -1785,6 +1849,8 @@ export type Database = {
           id: string
           notes: string | null
           order_id: string | null
+          own_courier_name: string | null
+          own_courier_phone: string | null
           picked_up_at: string | null
           pickup_address: string | null
           pickup_lat: number | null
@@ -1803,6 +1869,7 @@ export type Database = {
           customer_name?: string | null
           customer_phone?: string | null
           delivered_at?: string | null
+          delivery_mode?: string
           distance_m?: number | null
           dropoff_address?: string | null
           dropoff_lat?: number | null
@@ -1812,6 +1879,8 @@ export type Database = {
           id?: string
           notes?: string | null
           order_id?: string | null
+          own_courier_name?: string | null
+          own_courier_phone?: string | null
           picked_up_at?: string | null
           pickup_address?: string | null
           pickup_lat?: number | null
@@ -1830,6 +1899,7 @@ export type Database = {
           customer_name?: string | null
           customer_phone?: string | null
           delivered_at?: string | null
+          delivery_mode?: string
           distance_m?: number | null
           dropoff_address?: string | null
           dropoff_lat?: number | null
@@ -1839,6 +1909,8 @@ export type Database = {
           id?: string
           notes?: string | null
           order_id?: string | null
+          own_courier_name?: string | null
+          own_courier_phone?: string | null
           picked_up_at?: string | null
           pickup_address?: string | null
           pickup_lat?: number | null
