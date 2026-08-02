@@ -11,7 +11,7 @@ const PURPLE = "#7c5cd6";
 
 export function HeroEcosystem() {
   return (
-    <div className="relative mx-auto flex w-full max-w-[560px] items-center justify-center px-2 py-10 sm:py-4 lg:px-16">
+    <div className="relative mx-auto flex w-full max-w-[560px] items-center justify-center px-2 pb-14 pt-20 sm:py-6 lg:px-16">
       <style>{`
         @keyframes fz-float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-12px) } }
         @keyframes fz-spin-slow { to { transform: rotate(360deg) } }
@@ -136,7 +136,7 @@ export function HeroEcosystem() {
       </div>
 
       {/* módulos flutuantes — também no mobile, em escala menor */}
-      <FloatCard className="fz-float absolute -left-1 top-0 z-30 w-[8.5rem] sm:left-0 lg:w-40" delay="0.05s">
+      <FloatCard className="fz-float absolute -left-1 top-2 z-30 w-[8.5rem] sm:left-0 lg:w-40" delay="0.05s">
         <div className="mb-1.5 flex items-center gap-2">
           <Chip><BarChart3 className="h-4 w-4" /></Chip>
           <span className="text-xs font-semibold">CRM</span>
@@ -145,7 +145,7 @@ export function HeroEcosystem() {
         <div className="text-[10px] text-muted-foreground">retenção de clientes</div>
       </FloatCard>
 
-      <FloatCard className="fz-float-d absolute -right-1 top-6 z-30 w-[9rem] sm:right-0 lg:w-44" delay="0.15s">
+      <FloatCard className="fz-float-d absolute -right-1 top-10 sm:top-6 z-30 w-[9rem] sm:right-0 lg:w-44" delay="0.15s">
         <div className="mb-2 flex items-center gap-2">
           <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
           <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Atendimento</span>
