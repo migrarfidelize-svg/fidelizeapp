@@ -7,12 +7,13 @@ export const Route = createFileRoute("/_authenticated/entregador")({
   component: CourierLayout,
 });
 
-const NAV = [
+const NAV: { to: string; label: string; icon: typeof Home; exact?: boolean }[] = [
   { to: "/entregador", label: "Início", icon: Home, exact: true },
   { to: "/entregador/corridas", label: "Corridas", icon: ListChecks },
   { to: "/entregador/carteira", label: "Carteira", icon: Wallet },
   { to: "/entregador/perfil", label: "Perfil", icon: User },
-] as const;
+];
+
 
 function CourierLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });

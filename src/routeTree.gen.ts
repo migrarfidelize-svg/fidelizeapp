@@ -42,6 +42,7 @@ import { Route as AuthNovaSenhaRouteImport } from './routes/auth.nova-senha'
 import { Route as ApiTestTurnstileRouteImport } from './routes/api/test-turnstile'
 import { Route as AuthenticatedLgpdRouteImport } from './routes/_authenticated/lgpd'
 import { Route as AuthenticatedHashRouteImport } from './routes/_authenticated/hash'
+import { Route as AuthenticatedEntregadorRouteImport } from './routes/_authenticated/entregador'
 import { Route as AuthenticatedCarteiraRouteImport } from './routes/_authenticated/carteira'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as SuporteSlugIndexRouteImport } from './routes/suporte.$slug.index'
@@ -313,6 +314,11 @@ const AuthenticatedLgpdRoute = AuthenticatedLgpdRouteImport.update({
 const AuthenticatedHashRoute = AuthenticatedHashRouteImport.update({
   id: '/hash',
   path: '/hash',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedEntregadorRoute = AuthenticatedEntregadorRouteImport.update({
+  id: '/entregador',
+  path: '/entregador',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCarteiraRoute = AuthenticatedCarteiraRouteImport.update({
@@ -951,6 +957,7 @@ export interface FileRoutesByFullPath {
   '/videos': typeof VideosRoute
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/carteira': typeof AuthenticatedCarteiraRouteWithChildren
+  '/entregador': typeof AuthenticatedEntregadorRoute
   '/hash': typeof AuthenticatedHashRouteWithChildren
   '/lgpd': typeof AuthenticatedLgpdRoute
   '/api/test-turnstile': typeof ApiTestTurnstileRoute
@@ -1091,6 +1098,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
   '/videos': typeof VideosRoute
+  '/entregador': typeof AuthenticatedEntregadorRoute
   '/lgpd': typeof AuthenticatedLgpdRoute
   '/api/test-turnstile': typeof ApiTestTurnstileRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
@@ -1232,6 +1240,7 @@ export interface FileRoutesById {
   '/videos': typeof VideosRoute
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/_authenticated/carteira': typeof AuthenticatedCarteiraRouteWithChildren
+  '/_authenticated/entregador': typeof AuthenticatedEntregadorRoute
   '/_authenticated/hash': typeof AuthenticatedHashRouteWithChildren
   '/_authenticated/lgpd': typeof AuthenticatedLgpdRoute
   '/api/test-turnstile': typeof ApiTestTurnstileRoute
@@ -1376,6 +1385,7 @@ export interface FileRouteTypes {
     | '/videos'
     | '/app'
     | '/carteira'
+    | '/entregador'
     | '/hash'
     | '/lgpd'
     | '/api/test-turnstile'
@@ -1516,6 +1526,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/termos'
     | '/videos'
+    | '/entregador'
     | '/lgpd'
     | '/api/test-turnstile'
     | '/auth/nova-senha'
@@ -1656,6 +1667,7 @@ export interface FileRouteTypes {
     | '/videos'
     | '/_authenticated/app'
     | '/_authenticated/carteira'
+    | '/_authenticated/entregador'
     | '/_authenticated/hash'
     | '/_authenticated/lgpd'
     | '/api/test-turnstile'
@@ -2074,6 +2086,13 @@ declare module '@tanstack/react-router' {
       path: '/hash'
       fullPath: '/hash'
       preLoaderRoute: typeof AuthenticatedHashRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/entregador': {
+      id: '/_authenticated/entregador'
+      path: '/entregador'
+      fullPath: '/entregador'
+      preLoaderRoute: typeof AuthenticatedEntregadorRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/carteira': {
@@ -3064,6 +3083,7 @@ const AuthenticatedHashRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
   AuthenticatedCarteiraRoute: typeof AuthenticatedCarteiraRouteWithChildren
+  AuthenticatedEntregadorRoute: typeof AuthenticatedEntregadorRoute
   AuthenticatedHashRoute: typeof AuthenticatedHashRouteWithChildren
   AuthenticatedLgpdRoute: typeof AuthenticatedLgpdRoute
 }
@@ -3071,6 +3091,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
   AuthenticatedCarteiraRoute: AuthenticatedCarteiraRouteWithChildren,
+  AuthenticatedEntregadorRoute: AuthenticatedEntregadorRoute,
   AuthenticatedHashRoute: AuthenticatedHashRouteWithChildren,
   AuthenticatedLgpdRoute: AuthenticatedLgpdRoute,
 }
