@@ -1364,6 +1364,7 @@ export type Database = {
           full_name: string
           id: string
           is_online: boolean
+          is_test: boolean
           last_seen_at: string | null
           level_code: string
           phone: string | null
@@ -1395,6 +1396,7 @@ export type Database = {
           full_name: string
           id?: string
           is_online?: boolean
+          is_test?: boolean
           last_seen_at?: string | null
           level_code?: string
           phone?: string | null
@@ -1426,6 +1428,7 @@ export type Database = {
           full_name?: string
           id?: string
           is_online?: boolean
+          is_test?: boolean
           last_seen_at?: string | null
           level_code?: string
           phone?: string | null
