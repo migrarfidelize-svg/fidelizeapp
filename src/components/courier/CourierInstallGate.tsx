@@ -73,18 +73,25 @@ function Steps({ ios, android }: { ios: boolean; android: boolean }) {
  * Tela cheia de boas-vindas convidando o entregador a instalar o app nativo.
  * Aparece uma vez (até ser dispensada) e nunca quando já está instalado.
  */
-export function CourierInstallGate() {
+export function CourierInstallGate({ open, onClose }: { open?: boolean; onClose?: () => void } = {}) {
   const { state, canInstall, installApp, dismissed, dismiss } = useInstallState();
   const [busy, setBusy] = useState(false);
 
-  if (state.isInstalled || dismissed) return null;
+  if (state.isInstalled) return null;
+  if (dismissed && !open) return null;
+
+  function close() {
+    dismiss();
+    onClose?.();
+  }
 
   async function install() {
     setBusy(true);
     const r = await installApp();
     setBusy(false);
-    if (r.outcome === "accepted") dismiss();
+    if (r.outcome === "accepted") close();
   }
+
 
   return (
     <div className="fixed inset-0 z-[70] flex flex-col bg-background">
