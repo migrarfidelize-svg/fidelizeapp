@@ -117,12 +117,28 @@ async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: 
     }
   }
 
+  /** Já existe um cadastro de entregador para este usuário? */
+  async function hasCourierProfile(): Promise<boolean> {
+    try {
+      const { data: uinfo } = await supabase.auth.getUser();
+      const uid = uinfo.user?.id;
+      if (!uid) return false;
+      const { data } = await supabase.from("couriers").select("id").eq("user_id", uid).maybeSingle();
+      return !!data;
+    } catch {
+      return false;
+    }
+  }
+
   try {
     // Recarrega o papel no servidor após cada login. O UUID vem do bearer token
     // validado, nunca do formulário, perfil ou cache do navegador.
     const access = await getAuthenticatedAccountAccess();
     if (access.isSuperAdmin || access.accountType === "super_admin") return { to: "/hash" };
     if (access.accountType === "establishment") return { to: "/app" };
+    // Entregador: quem escolheu a aba, ou quem já tem cadastro de motoboy.
+    if (opts.role === "courier") return { to: "/entregador" };
+    if (await hasCourierProfile()) return { to: "/entregador" };
     // Quem entrou pela aba "Estabelecimento" mas ainda não tem empresa vinculada
     // não pode cair na carteira do cliente — segue para criar/ativar a empresa.
     if (opts.role === "establishment") return { to: "/onboarding" };
