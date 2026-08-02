@@ -9,7 +9,7 @@ import { Logo } from "@/components/Logo";
 import { StampCard } from "@/components/StampCard";
 import { BrandMarquee } from "@/components/landing/BrandMarquee";
 import { DEFAULT_BRANDS, DEFAULT_HERO_COPY, type LandingBrandsContent, type LandingHeroContent, type PublicPlan } from "@/lib/landing-content";
-import { HeroAppPreview } from "@/components/landing/HeroAppPreview";
+import { HeroEcosystem } from "@/components/landing/HeroEcosystem";
 import { EcosystemBento } from "@/components/landing/EcosystemBento";
 
 import { RoiCalculator } from "@/components/landing/RoiCalculator";
