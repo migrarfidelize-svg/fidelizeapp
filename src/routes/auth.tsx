@@ -39,7 +39,7 @@ function notifyAuthSync(type: "SIGNED_IN" | "SIGNED_UP") {
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup"]).default("signin"),
-  as: z.enum(["customer", "establishment"]).optional(),
+  as: z.enum(["customer", "establishment", "courier"]).optional(),
   claim: z.string().optional(),
   est_slug: z.string().optional(),
   next: z.string().optional(),
