@@ -107,23 +107,22 @@ export function DeliveryTracking() {
                 />
 
                 {/* origem */}
-                <circle cx="46" cy="232" r="9" className="fill-card" stroke="currentColor" strokeWidth="3" style={{ color: "var(--primary)" }} />
+                <circle cx="46" cy="232" r="9" className="fill-card stroke-primary" strokeWidth="3" />
                 {/* destino */}
                 <circle cx="424" cy="60" r="16" className="fz-ping fill-primary/30" style={{ transformOrigin: "424px 60px" }} />
                 <circle cx="424" cy="60" r="9" className="fill-primary" />
+
+                {/* moto percorrendo a rota (escala junto com o SVG) */}
+                <g>
+                  <animateMotion dur="6s" repeatCount="indefinite" keyPoints="0;1;0" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1" path={PATH} />
+                  <circle r="17" className="fill-primary/20" />
+                  <circle r="13" className="fill-primary" />
+                  <g transform="translate(-7,-7)" className="text-primary-foreground">
+                    <Bike width={14} height={14} stroke="currentColor" />
+                  </g>
+                </g>
               </svg>
 
-              {/* moto percorrendo a rota */}
-              <div className="pointer-events-none absolute inset-0">
-                <div className="relative h-full w-full" style={{ aspectRatio: "470 / 290" }}>
-                  <span
-                    className="fz-rider absolute left-0 top-0 grid h-8 w-8 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg ring-4 ring-primary/20"
-                    style={{ scale: "calc(1 / 1)" }}
-                  >
-                    <Bike className="h-4 w-4" />
-                  </span>
-                </div>
-              </div>
 
               {/* etiquetas */}
               <span className="absolute bottom-3 left-3 rounded-lg border border-border bg-card/95 px-2.5 py-1 text-[11px] font-semibold text-card-foreground shadow-sm">
