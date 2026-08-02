@@ -5919,6 +5919,157 @@ export type Database = {
           },
         ]
       }
+      whatsapp_connection_secrets: {
+        Row: {
+          connection_id: string
+          created_at: string
+          encrypted_instance_token: string | null
+          updated_at: string
+          webhook_token: string
+        }
+        Insert: {
+          connection_id: string
+          created_at?: string
+          encrypted_instance_token?: string | null
+          updated_at?: string
+          webhook_token?: string
+        }
+        Update: {
+          connection_id?: string
+          created_at?: string
+          encrypted_instance_token?: string | null
+          updated_at?: string
+          webhook_token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_connection_secrets_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: true
+            referencedRelation: "whatsapp_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_connections: {
+        Row: {
+          connected_at: string | null
+          connected_phone: string | null
+          connection_status: string
+          created_at: string
+          disconnected_at: string | null
+          establishment_id: string
+          external_instance_id: string | null
+          id: string
+          last_activity_at: string | null
+          last_checked_at: string | null
+          last_error: string | null
+          provider: string
+          qr_expires_at: string | null
+          qr_status: string | null
+          suspended: boolean
+          updated_at: string
+        }
+        Insert: {
+          connected_at?: string | null
+          connected_phone?: string | null
+          connection_status?: string
+          created_at?: string
+          disconnected_at?: string | null
+          establishment_id: string
+          external_instance_id?: string | null
+          id?: string
+          last_activity_at?: string | null
+          last_checked_at?: string | null
+          last_error?: string | null
+          provider?: string
+          qr_expires_at?: string | null
+          qr_status?: string | null
+          suspended?: boolean
+          updated_at?: string
+        }
+        Update: {
+          connected_at?: string | null
+          connected_phone?: string | null
+          connection_status?: string
+          created_at?: string
+          disconnected_at?: string | null
+          establishment_id?: string
+          external_instance_id?: string | null
+          id?: string
+          last_activity_at?: string | null
+          last_checked_at?: string | null
+          last_error?: string | null
+          provider?: string
+          qr_expires_at?: string | null
+          qr_status?: string | null
+          suspended?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_connections_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_providers: {
+        Row: {
+          base_url: string | null
+          created_at: string
+          display_name: string
+          encrypted_api_token: string | null
+          encrypted_webhook_secret: string | null
+          id: string
+          is_enabled: boolean
+          last_test_message: string | null
+          last_test_status: string | null
+          last_tested_at: string | null
+          mode: string
+          provider: string
+          settings: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          base_url?: string | null
+          created_at?: string
+          display_name?: string
+          encrypted_api_token?: string | null
+          encrypted_webhook_secret?: string | null
+          id?: string
+          is_enabled?: boolean
+          last_test_message?: string | null
+          last_test_status?: string | null
+          last_tested_at?: string | null
+          mode?: string
+          provider: string
+          settings?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          base_url?: string | null
+          created_at?: string
+          display_name?: string
+          encrypted_api_token?: string | null
+          encrypted_webhook_secret?: string | null
+          id?: string
+          is_enabled?: boolean
+          last_test_message?: string | null
+          last_test_status?: string | null
+          last_tested_at?: string | null
+          mode?: string
+          provider?: string
+          settings?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
