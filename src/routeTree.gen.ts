@@ -79,6 +79,7 @@ import { Route as AuthenticatedHashAssinaturasRouteImport } from './routes/_auth
 import { Route as AuthenticatedHashAnunciosRouteImport } from './routes/_authenticated/hash.anuncios'
 import { Route as AuthenticatedHashAlertasRouteImport } from './routes/_authenticated/hash.alertas'
 import { Route as AuthenticatedHashAjudaRouteImport } from './routes/_authenticated/hash.ajuda'
+import { Route as AuthenticatedEntregadorPerfilRouteImport } from './routes/_authenticated/entregador.perfil'
 import { Route as AuthenticatedEntregadorCorridasRouteImport } from './routes/_authenticated/entregador.corridas'
 import { Route as AuthenticatedEntregadorCarteiraRouteImport } from './routes/_authenticated/entregador.carteira'
 import { Route as AuthenticatedEntregadorCadastroRouteImport } from './routes/_authenticated/entregador.cadastro'
@@ -526,6 +527,12 @@ const AuthenticatedHashAjudaRoute = AuthenticatedHashAjudaRouteImport.update({
   path: '/ajuda',
   getParentRoute: () => AuthenticatedHashRoute,
 } as any)
+const AuthenticatedEntregadorPerfilRoute =
+  AuthenticatedEntregadorPerfilRouteImport.update({
+    id: '/perfil',
+    path: '/perfil',
+    getParentRoute: () => AuthenticatedEntregadorRoute,
+  } as any)
 const AuthenticatedEntregadorCorridasRoute =
   AuthenticatedEntregadorCorridasRouteImport.update({
     id: '/corridas',
@@ -1037,6 +1044,7 @@ export interface FileRoutesByFullPath {
   '/entregador/cadastro': typeof AuthenticatedEntregadorCadastroRoute
   '/entregador/carteira': typeof AuthenticatedEntregadorCarteiraRoute
   '/entregador/corridas': typeof AuthenticatedEntregadorCorridasRoute
+  '/entregador/perfil': typeof AuthenticatedEntregadorPerfilRoute
   '/hash/ajuda': typeof AuthenticatedHashAjudaRoute
   '/hash/alertas': typeof AuthenticatedHashAlertasRoute
   '/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
@@ -1178,6 +1186,7 @@ export interface FileRoutesByTo {
   '/entregador/cadastro': typeof AuthenticatedEntregadorCadastroRoute
   '/entregador/carteira': typeof AuthenticatedEntregadorCarteiraRoute
   '/entregador/corridas': typeof AuthenticatedEntregadorCorridasRoute
+  '/entregador/perfil': typeof AuthenticatedEntregadorPerfilRoute
   '/hash/ajuda': typeof AuthenticatedHashAjudaRoute
   '/hash/alertas': typeof AuthenticatedHashAlertasRoute
   '/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
@@ -1327,6 +1336,7 @@ export interface FileRoutesById {
   '/_authenticated/entregador/cadastro': typeof AuthenticatedEntregadorCadastroRoute
   '/_authenticated/entregador/carteira': typeof AuthenticatedEntregadorCarteiraRoute
   '/_authenticated/entregador/corridas': typeof AuthenticatedEntregadorCorridasRoute
+  '/_authenticated/entregador/perfil': typeof AuthenticatedEntregadorPerfilRoute
   '/_authenticated/hash/ajuda': typeof AuthenticatedHashAjudaRoute
   '/_authenticated/hash/alertas': typeof AuthenticatedHashAlertasRoute
   '/_authenticated/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
@@ -1476,6 +1486,7 @@ export interface FileRouteTypes {
     | '/entregador/cadastro'
     | '/entregador/carteira'
     | '/entregador/corridas'
+    | '/entregador/perfil'
     | '/hash/ajuda'
     | '/hash/alertas'
     | '/hash/anuncios'
@@ -1617,6 +1628,7 @@ export interface FileRouteTypes {
     | '/entregador/cadastro'
     | '/entregador/carteira'
     | '/entregador/corridas'
+    | '/entregador/perfil'
     | '/hash/ajuda'
     | '/hash/alertas'
     | '/hash/anuncios'
@@ -1765,6 +1777,7 @@ export interface FileRouteTypes {
     | '/_authenticated/entregador/cadastro'
     | '/_authenticated/entregador/carteira'
     | '/_authenticated/entregador/corridas'
+    | '/_authenticated/entregador/perfil'
     | '/_authenticated/hash/ajuda'
     | '/_authenticated/hash/alertas'
     | '/_authenticated/hash/anuncios'
@@ -2396,6 +2409,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/hash/ajuda'
       preLoaderRoute: typeof AuthenticatedHashAjudaRouteImport
       parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/entregador/perfil': {
+      id: '/_authenticated/entregador/perfil'
+      path: '/perfil'
+      fullPath: '/entregador/perfil'
+      preLoaderRoute: typeof AuthenticatedEntregadorPerfilRouteImport
+      parentRoute: typeof AuthenticatedEntregadorRoute
     }
     '/_authenticated/entregador/corridas': {
       id: '/_authenticated/entregador/corridas'
@@ -3093,6 +3113,7 @@ interface AuthenticatedEntregadorRouteChildren {
   AuthenticatedEntregadorCadastroRoute: typeof AuthenticatedEntregadorCadastroRoute
   AuthenticatedEntregadorCarteiraRoute: typeof AuthenticatedEntregadorCarteiraRoute
   AuthenticatedEntregadorCorridasRoute: typeof AuthenticatedEntregadorCorridasRoute
+  AuthenticatedEntregadorPerfilRoute: typeof AuthenticatedEntregadorPerfilRoute
   AuthenticatedEntregadorIndexRoute: typeof AuthenticatedEntregadorIndexRoute
 }
 
@@ -3101,6 +3122,7 @@ const AuthenticatedEntregadorRouteChildren: AuthenticatedEntregadorRouteChildren
     AuthenticatedEntregadorCadastroRoute: AuthenticatedEntregadorCadastroRoute,
     AuthenticatedEntregadorCarteiraRoute: AuthenticatedEntregadorCarteiraRoute,
     AuthenticatedEntregadorCorridasRoute: AuthenticatedEntregadorCorridasRoute,
+    AuthenticatedEntregadorPerfilRoute: AuthenticatedEntregadorPerfilRoute,
     AuthenticatedEntregadorIndexRoute: AuthenticatedEntregadorIndexRoute,
   }
 
