@@ -10,6 +10,11 @@ interface Props {
   /** Trajeto real por ruas (Google Routes API). Quando ausente, cai na linha reta. */
   route?: { lat: number; lng: number }[] | null;
   className?: string;
+  /** Proporção do canvas. Use retrato (ex.: 320x640) no modo mapa imersivo. */
+  width?: number;
+  height?: number;
+  /** Remove bordas/arredondamento para o mapa ocupar a tela toda. */
+  bare?: boolean;
 }
 
 const R = 6371;
