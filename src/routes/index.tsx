@@ -440,9 +440,10 @@ function Hero() {
           <HeroCopy />
 
 
-          <div className="landing-hero-preview -mx-2 flex scale-95 justify-center sm:mx-0 sm:scale-100 lg:justify-end">
-            <HeroAppPreview content={useLandingData()?.hero} />
+          <div className="landing-hero-preview -mx-2 flex justify-center sm:mx-0 lg:justify-end">
+            <HeroEcosystem />
           </div>
+
         </div>
       </div>
 
