@@ -11,6 +11,8 @@ import { BrandMarquee } from "@/components/landing/BrandMarquee";
 import { DEFAULT_BRANDS, DEFAULT_HERO_COPY, type LandingBrandsContent, type LandingHeroContent, type PublicPlan } from "@/lib/landing-content";
 import { HeroEcosystem } from "@/components/landing/HeroEcosystem";
 import { EcosystemBento } from "@/components/landing/EcosystemBento";
+import { DeliveryTracking } from "@/components/landing/DeliveryTracking";
+
 
 import { RoiCalculator } from "@/components/landing/RoiCalculator";
 
@@ -150,10 +152,12 @@ function Landing() {
         
         <Segments />
         <EcosystemBento />
-        
+        <DeliveryTracking />
+
         <RoiCalculator />
         <Examples />
         <Pricing />
+
         
         <FAQ />
         <CTA />
@@ -186,6 +190,7 @@ function MobileStickyCta() {
 
 const NAV_LINKS: Array<[string, string]> = [
   ["#ecossistema", "Ecossistema"],
+  ["#entregas", "Entregas"],
   ["#roi", "Retorno"],
   ["#precos", "Preços"],
   ["#faq", "Dúvidas"],
@@ -198,7 +203,8 @@ const NAV_PRODUCTS: Array<[string, string, string]> = [
   ["Avaliações", "Prova social e nota no Google", "#ecossistema"],
   ["QR Code", "Um código para tudo do seu balcão", "#ecossistema"],
   ["Atendimento WhatsApp", "Central de conversas multiatendente", "#ecossistema"],
-  ["Entregadores", "Entrega própria ou da plataforma", "#ecossistema"],
+  ["Entregas rastreadas", "Rota ao vivo, entrega própria ou da plataforma", "#entregas"],
+
   ["CRM", "Base de clientes e campanhas", "#ecossistema"],
 ];
 

@@ -52,14 +52,15 @@ export type LandingBrandsContent = {
 };
 
 export const DEFAULT_HERO_COPY: LandingHeroCopy = {
-  badge: "1 plataforma · 10 ferramentas de retenção",
-  titlePrefix: "Tudo que seu negócio precisa para o",
-  titleHighlight: "cliente voltar",
+  badge: "1 plataforma · 13 ferramentas de retenção",
+  titlePrefix: "Fidelize, venda e entregue no",
+  titleHighlight: "mesmo painel",
   subtitle:
-    "Fidelidade digital, cardápio, catálogo, avaliações, QR Code, push e CRM — num só painel. Sem app, sem cartão de papel.",
+    "Cartão fidelidade, cardápio, catálogo, pedidos, entregas rastreadas, WhatsApp, avaliações e CRM. Tudo conectado — sem app, sem cartão de papel, sem dez assinaturas.",
   primaryCta: { label: "Escolher meu plano", href: "#precos" },
-  secondaryCta: { label: "Ver como funciona", href: "#ecossistema" },
+  secondaryCta: { label: "Ver o ecossistema", href: "#ecossistema" },
   bullets: ["Sem cartão de crédito", "Configure em 5 minutos", "Planos a partir de {preco}/mês"],
+
   socialProof: {
     enabled: true,
     avatarLabel: "+2k",
