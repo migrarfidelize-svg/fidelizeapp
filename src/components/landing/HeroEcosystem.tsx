@@ -1,4 +1,4 @@
-import { Bell, BarChart3, MapPin, MessageCircle, QrCode, Star, Stamp, Play, ShoppingBag } from "lucide-react";
+import { Bell, BarChart3, MapPin, MessageCircle, QrCode, Star, Stamp, Play, ShoppingBag, Store, Utensils } from "lucide-react";
 
 /**
  * Painel visual da hero — "Ecossistema dinâmico".
