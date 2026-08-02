@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { synthesizeGreeting } from "@/lib/tts.functions";
-import { loadVoicePrefs, type VoiceId, DEFAULT_STYLE } from "@/lib/voice-prefs";
+import { loadVoicePrefs, saveVoicePrefs, type VoicePrefs, type VoiceId, DEFAULT_STYLE } from "@/lib/voice-prefs";
+import { getVoiceSettings } from "@/lib/landing-content.functions";
 
 type Props = {
   /** "female" para painel do lojista, "male" para admin */
@@ -191,17 +192,18 @@ export function GreetingVoice({ gender, scope, enabled = true }: Props) {
     if (typeof window === "undefined") return;
     if (isGreetingMutedLocally()) return;
 
-    const prefs = loadVoicePrefs(scope);
-    if (!prefs.enabled) return;
-
     const key = `fidelize:greet:${scope}:${new Date().toDateString()}:${new Date().getHours()}`;
     if (sessionStorage.getItem(key)) return;
     playedRef.current = true;
 
-    const text = prefs.text.trim() || buildGreeting(gender);
+    // Preferência global definida pelo Super Admin (com cache local como fallback offline).
+    let prefs: VoicePrefs = loadVoicePrefs(scope);
 
     let spoke = false;
+    let cancelled = false;
     const attempt = () => {
+      if (cancelled || !prefs.enabled) return;
+      const text = prefs.text.trim() || buildGreeting(gender);
       speakText({ text, voice: prefs.voice, style: prefs.style })
         .then((r) => {
           if (r !== "failed") {
@@ -216,14 +218,28 @@ export function GreetingVoice({ gender, scope, enabled = true }: Props) {
       window.removeEventListener("pointerdown", armed);
       window.removeEventListener("keydown", armed);
     };
-    const t = setTimeout(() => {
-      attempt();
-      window.addEventListener("pointerdown", armed, { once: true });
-      window.addEventListener("keydown", armed, { once: true });
-    }, 400);
+    let t: ReturnType<typeof setTimeout> | undefined;
+    (getVoiceSettings() as Promise<any>)
+      .then((remote) => {
+        const p = remote?.[scope === "admin" ? "admin" : "merchant"];
+        if (p) {
+          prefs = p as VoicePrefs;
+          saveVoicePrefs(scope, prefs);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (cancelled || !prefs.enabled) return;
+        t = setTimeout(() => {
+          attempt();
+          window.addEventListener("pointerdown", armed, { once: true });
+          window.addEventListener("keydown", armed, { once: true });
+        }, 400);
+      });
 
     return () => {
-      clearTimeout(t);
+      cancelled = true;
+      if (t) clearTimeout(t);
       window.removeEventListener("pointerdown", armed);
       window.removeEventListener("keydown", armed);
     };

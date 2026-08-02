@@ -13,6 +13,7 @@ import {
   type LandingBrandsContent,
   type LandingHeroContent,
   type LandingHeroCopy,
+  type LandingHeroDevice,
   type MenuDish,
 } from "@/lib/landing-content";
 import { DEFAULT_BRAND, type BrandIdentity } from "@/lib/brand";
@@ -91,6 +92,15 @@ function ImageField({ value, onChange, label }: { value?: string | null; onChang
   );
 }
 
+function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="space-y-2">
+      <Label className="text-xs">{label}</Label>
+      <Input value={value} onChange={(e) => onChange(e.target.value)} />
+    </div>
+  );
+}
+
 function LandingAdmin() {
   const load = useServerFn(getLandingPublic);
   const save = useServerFn(saveLandingContent);
@@ -109,6 +119,9 @@ function LandingAdmin() {
   }, [data]);
 
   const copy = hero.copy ?? DEFAULT_HERO.copy;
+  const device = hero.device ?? DEFAULT_HERO.device;
+  const patchDevice = (patch: Partial<LandingHeroDevice>) =>
+    setHero((h) => ({ ...h, device: { ...(h.device ?? DEFAULT_HERO.device), ...patch } }));
   const patchCopy = (patch: Partial<LandingHeroCopy>) => setHero((h) => ({ ...h, copy: { ...(h.copy ?? DEFAULT_HERO.copy), ...patch } }));
   const patchDish = (i: number, patch: Partial<MenuDish>) =>
     setHero((h) => ({ ...h, menu: { ...h.menu, dishes: h.menu.dishes.map((d, k) => (k === i ? { ...d, ...patch } : d)) } }));
@@ -150,14 +163,14 @@ function LandingAdmin() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-start">
         <div>
           <h1 className="font-display text-2xl font-bold">Página inicial</h1>
           <p className="text-sm text-muted-foreground">
             Controle o conteúdo do celular da hero e o carrossel de marcas. Os preços vêm automaticamente de Planos.
           </p>
         </div>
-        <Button onClick={onSave} disabled={saving}>
+        <Button onClick={onSave} disabled={saving} className="w-full sm:w-auto">
           {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
           Salvar alterações
         </Button>
@@ -165,13 +178,16 @@ function LandingAdmin() {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <Tabs defaultValue="chamada" className="min-w-0">
-          <TabsList>
+          <div className="-mx-1 overflow-x-auto px-1 pb-1">
+            <TabsList className="inline-flex w-max flex-nowrap">
             <TabsTrigger value="chamada">Chamada</TabsTrigger>
+            <TabsTrigger value="celular">Celular</TabsTrigger>
             <TabsTrigger value="cardapio">Cardápio</TabsTrigger>
             <TabsTrigger value="catalogo">Catálogo</TabsTrigger>
             <TabsTrigger value="marcas">Marcas</TabsTrigger>
             <TabsTrigger value="logo">Logo</TabsTrigger>
-          </TabsList>
+            </TabsList>
+          </div>
 
           <TabsContent value="chamada" className="mt-4 space-y-4">
             <Card>
@@ -293,6 +309,73 @@ function LandingAdmin() {
                   </div>
                 </div>
 
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="celular" className="mt-4 space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Celular da hero (mobile e desktop)</CardTitle>
+                <CardDescription>
+                  Todo o conteúdo exibido dentro do celular e nos cartões flutuantes ao redor dele.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field label="Rótulo superior" value={device.eyebrow} onChange={(v) => patchDevice({ eyebrow: v })} />
+                  <Field label="Nome da loja" value={device.storeName} onChange={(v) => patchDevice({ storeName: v })} />
+                </div>
+
+                <Separator />
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tela 1 · Cartão fidelidade</p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field label="Título do cartão" value={device.cardTitle} onChange={(v) => patchDevice({ cardTitle: v })} />
+                  <Field label="Frase do rodapé" value={device.cardFooter} onChange={(v) => patchDevice({ cardFooter: v })} />
+                  <div className="space-y-2">
+                    <Label className="text-xs">Total de carimbos (4 a 20)</Label>
+                    <Input
+                      type="number"
+                      min={4}
+                      max={20}
+                      value={device.stamps}
+                      onChange={(e) => patchDevice({ stamps: Number(e.target.value) || 10 })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Carimbos preenchidos</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={device.stamps}
+                      value={device.stampsFilled}
+                      onChange={(e) => patchDevice({ stampsFilled: Number(e.target.value) || 0 })}
+                    />
+                  </div>
+                  <Field label="Rótulo do prêmio" value={device.rewardLabel} onChange={(v) => patchDevice({ rewardLabel: v })} />
+                  <Field label="Prêmio" value={device.rewardValue} onChange={(v) => patchDevice({ rewardValue: v })} />
+                </div>
+
+                <Separator />
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Telas 2 e 3</p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field label="Título do story" value={device.storyTitle} onChange={(v) => patchDevice({ storyTitle: v })} />
+                  <Field label="Legenda do story" value={device.storySubtitle} onChange={(v) => patchDevice({ storySubtitle: v })} />
+                  <Field label="Título do catálogo" value={device.catalogTitle} onChange={(v) => patchDevice({ catalogTitle: v })} />
+                </div>
+
+                <Separator />
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Cartões flutuantes</p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field label="CRM · título" value={device.crmTitle} onChange={(v) => patchDevice({ crmTitle: v })} />
+                  <Field label="CRM · número" value={device.crmValue} onChange={(v) => patchDevice({ crmValue: v })} />
+                  <Field label="CRM · legenda" value={device.crmCaption} onChange={(v) => patchDevice({ crmCaption: v })} />
+                  <Field label="Atendimento · título" value={device.chatTitle} onChange={(v) => patchDevice({ chatTitle: v })} />
+                  <Field label="Avaliações · título" value={device.reviewsTitle} onChange={(v) => patchDevice({ reviewsTitle: v })} />
+                  <Field label="Avaliações · legenda" value={device.reviewsCaption} onChange={(v) => patchDevice({ reviewsCaption: v })} />
+                  <Field label="Entrega · título" value={device.deliveryTitle} onChange={(v) => patchDevice({ deliveryTitle: v })} />
+                  <Field label="Entrega · legenda" value={device.deliveryCaption} onChange={(v) => patchDevice({ deliveryCaption: v })} />
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -508,7 +591,7 @@ function LandingAdmin() {
         </Tabs>
 
         <div className="space-y-4">
-          <Card className="sticky top-4">
+          <Card className="lg:sticky lg:top-4">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-sm">
                 <Sparkles className="h-4 w-4 text-primary" /> Pré-visualização
