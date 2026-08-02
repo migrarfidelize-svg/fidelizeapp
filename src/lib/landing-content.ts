@@ -14,6 +14,17 @@ export type MenuDish = { name: string; desc: string; price: string; img: string 
 export type CatalogProduct = { name: string; price: string; img: string };
 export type BrandItem = { name: string; img?: string | null };
 
+/** Prova social exibida abaixo dos selos da hero. */
+export type LandingSocialProof = {
+  enabled: boolean;
+  /** Texto do avatar final, ex.: "+2k" */
+  avatarLabel: string;
+  /** Trecho em destaque, ex.: "2.000 lojistas" */
+  highlight: string;
+  /** Texto completo — use {destaque} para posicionar o trecho em destaque. */
+  text: string;
+};
+
 /** Textos e botões do bloco principal da hero (lado esquerdo). */
 export type LandingHeroCopy = {
   badge: string;
@@ -24,7 +35,9 @@ export type LandingHeroCopy = {
   secondaryCta: { label: string; href: string };
   /** Selos abaixo dos botões. Use {preco} para inserir o menor preço ativo. */
   bullets: string[];
+  socialProof: LandingSocialProof;
 };
+
 
 export type LandingHeroContent = {
   copy: LandingHeroCopy;
