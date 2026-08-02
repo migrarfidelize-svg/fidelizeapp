@@ -191,7 +191,7 @@ function PerfilTab({ establishmentId, est }: { establishmentId: string; est: any
         <Separator />
         {F("description", "Descrição pública", { area: true, placeholder: "Fale sobre sua empresa" })}
         {F("business_hours", "Horário de funcionamento", { area: true, placeholder: "Seg-Sex 08h-18h" })}
-        <div className="flex justify-end"><Button onClick={onSave} disabled={saving}>{saving ? "Salvando..." : "Salvar alterações"}</Button></div>
+        <div className="flex justify-stretch sm:justify-end"><Button className="w-full sm:w-auto" onClick={onSave} disabled={saving}>{saving ? "Salvando..." : "Salvar alterações"}</Button></div>
       </CardContent>
     </Card>
   );
@@ -232,7 +232,7 @@ function CartaoTab({ establishmentId, settings }: { establishmentId: string; set
         </div>
         <div className="space-y-1.5"><Label>Texto do verso do cartão</Label><Textarea rows={3} value={f.back_text} onChange={e => setF({ ...f, back_text: e.target.value })} /></div>
         <div className="space-y-1.5"><Label>Mensagem pós-resgate</Label><Textarea rows={2} value={f.post_reward_message} onChange={e => setF({ ...f, post_reward_message: e.target.value })} /></div>
-        <div className="flex justify-end"><Button onClick={onSave} disabled={saving}>{saving ? "Salvando..." : "Salvar"}</Button></div>
+        <div className="flex justify-stretch sm:justify-end"><Button className="w-full sm:w-auto" onClick={onSave} disabled={saving}>{saving ? "Salvando..." : "Salvar"}</Button></div>
       </CardContent>
     </Card>
   );
@@ -535,13 +535,13 @@ export function EquipeTab({ establishmentId }: { establishmentId: string }) {
               <CardTitle className="text-base">Membros da equipe</CardTitle>
               <CardDescription>Controle função, atividade e permissões de cada colaborador.</CardDescription>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="relative">
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+              <div className="relative w-full sm:w-auto">
                 <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nome ou e-mail" className="pl-8 w-[220px]" />
+                <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nome ou e-mail" className="pl-8 w-full sm:w-[220px]" />
               </div>
               <Select value={roleFilter} onValueChange={(v: any) => setRoleFilter(v)}>
-                <SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-full sm:w-[150px]"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas as funções</SelectItem>
                   <SelectItem value="owner">Proprietário</SelectItem>
@@ -550,7 +550,7 @@ export function EquipeTab({ establishmentId }: { establishmentId: string }) {
                 </SelectContent>
               </Select>
               <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
-                <SelectTrigger className="w-[130px]"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-full sm:w-[130px]"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
                   <SelectItem value="active">Ativos</SelectItem>
@@ -603,7 +603,7 @@ export function EquipeTab({ establishmentId }: { establishmentId: string }) {
                         onValueChange={(v: any) => onRoleChange(m.id, v)}
                         disabled={m.role === "owner"}
                       >
-                        <SelectTrigger className="w-[170px]">
+                        <SelectTrigger className="w-full sm:w-[170px]">
                           <span className="inline-flex items-center gap-2">
                             <span className={`grid h-5 w-5 place-items-center rounded-md ${meta.tone}`}>
                               <RoleIcon className="h-3 w-3" />
@@ -739,7 +739,7 @@ function SegurancaTab({ establishmentId, settings }: { establishmentId: string; 
           <div className="grid md:grid-cols-3 gap-3">
             <div className="space-y-1.5"><Label>Novo PIN (4-6 dígitos)</Label><Input inputMode="numeric" maxLength={6} value={pin} onChange={e => setPin_(e.target.value.replace(/\D/g,""))} /></div>
             <div className="space-y-1.5"><Label>Confirmar PIN</Label><Input inputMode="numeric" maxLength={6} value={pin2} onChange={e => setPin2(e.target.value.replace(/\D/g,""))} /></div>
-            <div className="flex items-end gap-2"><Button onClick={onSetPin}><KeyRound className="h-4 w-4 mr-1" />Definir meu PIN</Button><Button variant="ghost" onClick={onRemovePin}>Remover</Button></div>
+            <div className="flex flex-wrap items-end gap-2"><Button className="w-full sm:w-auto" onClick={onSetPin}><KeyRound className="h-4 w-4 mr-1" />Definir meu PIN</Button><Button variant="ghost" onClick={onRemovePin}>Remover</Button></div>
           </div>
         </CardContent>
       </Card>
@@ -750,7 +750,7 @@ function SegurancaTab({ establishmentId, settings }: { establishmentId: string; 
           <div className="grid md:grid-cols-3 gap-3">
             <div className="space-y-1.5"><Label>Nova senha</Label><Input type="password" value={pwd} onChange={e => setPwd(e.target.value)} /></div>
             <div className="space-y-1.5"><Label>Confirmar</Label><Input type="password" value={pwd2} onChange={e => setPwd2(e.target.value)} /></div>
-            <div className="flex items-end"><Button onClick={onChangePwd}>Alterar senha</Button></div>
+            <div className="flex items-end"><Button className="w-full sm:w-auto" onClick={onChangePwd}>Alterar senha</Button></div>
           </div>
         </CardContent>
       </Card>
@@ -817,7 +817,7 @@ function PrivacidadeTab({ establishmentId, settings }: { establishmentId: string
             <div className="space-y-1.5"><Label>Retenção (dias)</Label><Input type="number" min={30} value={f.retention_days} onChange={e => setF({ ...f, retention_days: Number(e.target.value) })} /></div>
             <div className="space-y-1.5"><Label>Texto da política de privacidade</Label><Textarea rows={5} value={f.policy_text} onChange={e => setF({ ...f, policy_text: e.target.value })} placeholder="Explique como usa e protege os dados dos clientes." /></div>
           </div>
-          <div className="flex justify-end"><Button onClick={onSavePolicy}>Salvar</Button></div>
+          <div className="flex justify-stretch sm:justify-end"><Button className="w-full sm:w-auto" onClick={onSavePolicy}>Salvar</Button></div>
         </CardContent>
       </Card>
 
