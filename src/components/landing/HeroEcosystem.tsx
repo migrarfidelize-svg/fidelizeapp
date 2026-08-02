@@ -132,8 +132,8 @@ export function HeroEcosystem({ device }: { device?: LandingHeroDevice }) {
             {/* 3 — catálogo */}
             <div className="fz-s3 absolute inset-x-4 top-0">
               <div className="flex items-center gap-2">
-                <span className="grid h-7 w-7 place-items-center rounded-lg text-white" style={{ background: PURPLE }}>
-                  <ShoppingBag className="h-4 w-4" />
+                <span className="grid h-7 w-7 place-items-center rounded-lg" style={{ background: PURPLE }}>
+                  <ShoppingBag className="h-4 w-4 text-white" strokeWidth={2.2} />
                 </span>
                 <span className="truncate text-xs font-semibold text-[#1b1730]">{d.catalogTitle}</span>
               </div>
