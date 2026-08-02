@@ -52,6 +52,7 @@ import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticat
 import { Route as SuporteChamadoIdRouteImport } from './routes/suporte.chamado.$id'
 import { Route as SuporteSlugNovoRouteImport } from './routes/suporte.$slug.novo'
 import { Route as AjudaCategoryArticleRouteImport } from './routes/ajuda.$category.$article'
+import { Route as AuthenticatedHashWhatsappRouteImport } from './routes/_authenticated/hash.whatsapp'
 import { Route as AuthenticatedHashUsuariosRouteImport } from './routes/_authenticated/hash.usuarios'
 import { Route as AuthenticatedHashPixelRouteImport } from './routes/_authenticated/hash.pixel'
 import { Route as AuthenticatedHashPagamentosRouteImport } from './routes/_authenticated/hash.pagamentos'
@@ -100,6 +101,7 @@ import { Route as AuthenticatedAppCatalogoRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppCarimbarRouteImport } from './routes/_authenticated/app.carimbar'
 import { Route as AuthenticatedAppCardapioRouteImport } from './routes/_authenticated/app.cardapio'
 import { Route as AuthenticatedAppCampanhasRouteImport } from './routes/_authenticated/app.campanhas'
+import { Route as AuthenticatedAppAtendimentoRouteImport } from './routes/_authenticated/app.atendimento'
 import { Route as AuthenticatedAppAnunciosRouteImport } from './routes/_authenticated/app.anuncios'
 import { Route as AuthenticatedAppAnalyticsRouteImport } from './routes/_authenticated/app.analytics'
 import { Route as AuthenticatedHashSuporteIndexRouteImport } from './routes/_authenticated/hash.suporte.index'
@@ -362,6 +364,12 @@ const AjudaCategoryArticleRoute = AjudaCategoryArticleRouteImport.update({
   path: '/ajuda/$category/$article',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedHashWhatsappRoute =
+  AuthenticatedHashWhatsappRouteImport.update({
+    id: '/whatsapp',
+    path: '/whatsapp',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
 const AuthenticatedHashUsuariosRoute =
   AuthenticatedHashUsuariosRouteImport.update({
     id: '/usuarios',
@@ -636,6 +644,12 @@ const AuthenticatedAppCampanhasRoute =
   AuthenticatedAppCampanhasRouteImport.update({
     id: '/campanhas',
     path: '/campanhas',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppAtendimentoRoute =
+  AuthenticatedAppAtendimentoRouteImport.update({
+    id: '/atendimento',
+    path: '/atendimento',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppAnunciosRoute =
@@ -945,6 +959,7 @@ export interface FileRoutesByFullPath {
   '/ajuda/': typeof AjudaIndexRoute
   '/app/analytics': typeof AuthenticatedAppAnalyticsRoute
   '/app/anuncios': typeof AuthenticatedAppAnunciosRoute
+  '/app/atendimento': typeof AuthenticatedAppAtendimentoRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/cardapio': typeof AuthenticatedAppCardapioRouteWithChildren
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
@@ -993,6 +1008,7 @@ export interface FileRoutesByFullPath {
   '/hash/pagamentos': typeof AuthenticatedHashPagamentosRoute
   '/hash/pixel': typeof AuthenticatedHashPixelRoute
   '/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
+  '/hash/whatsapp': typeof AuthenticatedHashWhatsappRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
@@ -1080,6 +1096,7 @@ export interface FileRoutesByTo {
   '/ajuda': typeof AjudaIndexRoute
   '/app/analytics': typeof AuthenticatedAppAnalyticsRoute
   '/app/anuncios': typeof AuthenticatedAppAnunciosRoute
+  '/app/atendimento': typeof AuthenticatedAppAtendimentoRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
@@ -1126,6 +1143,7 @@ export interface FileRoutesByTo {
   '/hash/pagamentos': typeof AuthenticatedHashPagamentosRoute
   '/hash/pixel': typeof AuthenticatedHashPixelRoute
   '/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
+  '/hash/whatsapp': typeof AuthenticatedHashWhatsappRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
@@ -1218,6 +1236,7 @@ export interface FileRoutesById {
   '/ajuda/': typeof AjudaIndexRoute
   '/_authenticated/app/analytics': typeof AuthenticatedAppAnalyticsRoute
   '/_authenticated/app/anuncios': typeof AuthenticatedAppAnunciosRoute
+  '/_authenticated/app/atendimento': typeof AuthenticatedAppAtendimentoRoute
   '/_authenticated/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/_authenticated/app/cardapio': typeof AuthenticatedAppCardapioRouteWithChildren
   '/_authenticated/app/carimbar': typeof AuthenticatedAppCarimbarRoute
@@ -1266,6 +1285,7 @@ export interface FileRoutesById {
   '/_authenticated/hash/pagamentos': typeof AuthenticatedHashPagamentosRoute
   '/_authenticated/hash/pixel': typeof AuthenticatedHashPixelRoute
   '/_authenticated/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
+  '/_authenticated/hash/whatsapp': typeof AuthenticatedHashWhatsappRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
@@ -1358,6 +1378,7 @@ export interface FileRouteTypes {
     | '/ajuda/'
     | '/app/analytics'
     | '/app/anuncios'
+    | '/app/atendimento'
     | '/app/campanhas'
     | '/app/cardapio'
     | '/app/carimbar'
@@ -1406,6 +1427,7 @@ export interface FileRouteTypes {
     | '/hash/pagamentos'
     | '/hash/pixel'
     | '/hash/usuarios'
+    | '/hash/whatsapp'
     | '/ajuda/$category/$article'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
@@ -1493,6 +1515,7 @@ export interface FileRouteTypes {
     | '/ajuda'
     | '/app/analytics'
     | '/app/anuncios'
+    | '/app/atendimento'
     | '/app/campanhas'
     | '/app/carimbar'
     | '/app/clientes'
@@ -1539,6 +1562,7 @@ export interface FileRouteTypes {
     | '/hash/pagamentos'
     | '/hash/pixel'
     | '/hash/usuarios'
+    | '/hash/whatsapp'
     | '/ajuda/$category/$article'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
@@ -1630,6 +1654,7 @@ export interface FileRouteTypes {
     | '/ajuda/'
     | '/_authenticated/app/analytics'
     | '/_authenticated/app/anuncios'
+    | '/_authenticated/app/atendimento'
     | '/_authenticated/app/campanhas'
     | '/_authenticated/app/cardapio'
     | '/_authenticated/app/carimbar'
@@ -1678,6 +1703,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hash/pagamentos'
     | '/_authenticated/hash/pixel'
     | '/_authenticated/hash/usuarios'
+    | '/_authenticated/hash/whatsapp'
     | '/ajuda/$category/$article'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
@@ -2095,6 +2121,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AjudaCategoryArticleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/hash/whatsapp': {
+      id: '/_authenticated/hash/whatsapp'
+      path: '/whatsapp'
+      fullPath: '/hash/whatsapp'
+      preLoaderRoute: typeof AuthenticatedHashWhatsappRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
     '/_authenticated/hash/usuarios': {
       id: '/_authenticated/hash/usuarios'
       path: '/usuarios'
@@ -2429,6 +2462,13 @@ declare module '@tanstack/react-router' {
       path: '/campanhas'
       fullPath: '/app/campanhas'
       preLoaderRoute: typeof AuthenticatedAppCampanhasRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/atendimento': {
+      id: '/_authenticated/app/atendimento'
+      path: '/atendimento'
+      fullPath: '/app/atendimento'
+      preLoaderRoute: typeof AuthenticatedAppAtendimentoRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/app/anuncios': {
@@ -2804,6 +2844,7 @@ const AuthenticatedAppCatalogoRouteWithChildren =
 interface AuthenticatedAppRouteChildren {
   AuthenticatedAppAnalyticsRoute: typeof AuthenticatedAppAnalyticsRoute
   AuthenticatedAppAnunciosRoute: typeof AuthenticatedAppAnunciosRoute
+  AuthenticatedAppAtendimentoRoute: typeof AuthenticatedAppAtendimentoRoute
   AuthenticatedAppCampanhasRoute: typeof AuthenticatedAppCampanhasRoute
   AuthenticatedAppCardapioRoute: typeof AuthenticatedAppCardapioRouteWithChildren
   AuthenticatedAppCarimbarRoute: typeof AuthenticatedAppCarimbarRoute
@@ -2834,6 +2875,7 @@ interface AuthenticatedAppRouteChildren {
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppAnalyticsRoute: AuthenticatedAppAnalyticsRoute,
   AuthenticatedAppAnunciosRoute: AuthenticatedAppAnunciosRoute,
+  AuthenticatedAppAtendimentoRoute: AuthenticatedAppAtendimentoRoute,
   AuthenticatedAppCampanhasRoute: AuthenticatedAppCampanhasRoute,
   AuthenticatedAppCardapioRoute: AuthenticatedAppCardapioRouteWithChildren,
   AuthenticatedAppCarimbarRoute: AuthenticatedAppCarimbarRoute,
@@ -2934,6 +2976,7 @@ interface AuthenticatedHashRouteChildren {
   AuthenticatedHashPagamentosRoute: typeof AuthenticatedHashPagamentosRoute
   AuthenticatedHashPixelRoute: typeof AuthenticatedHashPixelRoute
   AuthenticatedHashUsuariosRoute: typeof AuthenticatedHashUsuariosRoute
+  AuthenticatedHashWhatsappRoute: typeof AuthenticatedHashWhatsappRoute
   AuthenticatedHashIndexRoute: typeof AuthenticatedHashIndexRoute
   AuthenticatedHashEmpresaIdRoute: typeof AuthenticatedHashEmpresaIdRoute
   AuthenticatedHashSuporteIdRoute: typeof AuthenticatedHashSuporteIdRoute
@@ -2964,6 +3007,7 @@ const AuthenticatedHashRouteChildren: AuthenticatedHashRouteChildren = {
   AuthenticatedHashPagamentosRoute: AuthenticatedHashPagamentosRoute,
   AuthenticatedHashPixelRoute: AuthenticatedHashPixelRoute,
   AuthenticatedHashUsuariosRoute: AuthenticatedHashUsuariosRoute,
+  AuthenticatedHashWhatsappRoute: AuthenticatedHashWhatsappRoute,
   AuthenticatedHashIndexRoute: AuthenticatedHashIndexRoute,
   AuthenticatedHashEmpresaIdRoute: AuthenticatedHashEmpresaIdRoute,
   AuthenticatedHashSuporteIdRoute: AuthenticatedHashSuporteIdRoute,
