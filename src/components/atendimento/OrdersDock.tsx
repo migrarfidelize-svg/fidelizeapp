@@ -27,7 +27,11 @@ const STATUS: Record<string, { label: string; tone: string }> = {
 
 const brl = (cents: number) => (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-export function OrdersDock({ establishmentId }: { establishmentId: string }) {
+export function OrdersDock({
+  establishmentId,
+  variant = "dock",
+}: { establishmentId: string; variant?: "dock" | "board" }) {
+  const board = variant === "board";
   const qc = useQueryClient();
   const ordersFn = useServerFn(listMyOrders);
   const statusFn = useServerFn(updateOrderStatus);
@@ -81,8 +85,9 @@ export function OrdersDock({ establishmentId }: { establishmentId: string }) {
 
   const live = useMemo(() => {
     const list = (orders.data as any[]) ?? [];
-    return list.filter((o) => ["new", "confirmed", "preparing", "ready"].includes(o.status)).slice(0, 12);
-  }, [orders.data]);
+    const open = list.filter((o) => ["new", "confirmed", "preparing", "ready"].includes(o.status));
+    return board ? open : open.slice(0, 12);
+  }, [orders.data, board]);
 
   const deliveryByOrder = useMemo(() => {
     const m = new Map<string, any>();
@@ -94,11 +99,17 @@ export function OrdersDock({ establishmentId }: { establishmentId: string }) {
 
   return (
     <>
-      <div className="sticky top-0 z-30 -mx-4 mb-4 border-b bg-background/85 px-4 py-3 backdrop-blur-xl md:-mx-8 md:px-8">
+      <div
+        className={
+          board
+            ? "rounded-2xl border bg-card/40 p-4"
+            : "sticky top-0 z-30 -mx-4 mb-4 border-b bg-background/85 px-4 py-3 backdrop-blur-xl md:-mx-8 md:px-8"
+        }
+      >
         <div className="mb-2 flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-2 text-sm font-semibold">
             <ShoppingBag className="h-4 w-4 text-primary" />
-            Últimos pedidos
+            {board ? "Pedidos em aberto" : "Últimos pedidos"}
           </span>
           {pendingCount > 0 && (
             <Badge className="bg-primary/15 text-primary border-primary/30">{pendingCount} aguardando aprovação</Badge>
@@ -120,13 +131,16 @@ export function OrdersDock({ establishmentId }: { establishmentId: string }) {
         {live.length === 0 ? (
           <p className="py-2 text-xs text-muted-foreground">Nenhum pedido em aberto agora. Novos pedidos aparecem aqui automaticamente.</p>
         ) : (
-          <div className="flex gap-3 overflow-x-auto pb-1">
+          <div className={board ? "grid gap-3 sm:grid-cols-2 xl:grid-cols-3" : "flex gap-3 overflow-x-auto pb-1"}>
             {live.map((o) => {
               const st = STATUS[o.status] ?? STATUS.new;
               const dl = deliveryByOrder.get(o.id);
               const isDelivery = o.fulfillment === "delivery";
               return (
-                <div key={o.id} className="min-w-[260px] shrink-0 rounded-xl border bg-card p-3 shadow-sm">
+                <div
+                  key={o.id}
+                  className={`rounded-xl border bg-card p-3 shadow-sm ${board ? "" : "min-w-[260px] shrink-0"}`}
+                >
                   <div className="flex items-center justify-between gap-2">
                     <span className="truncate text-sm font-semibold">#{o.order_number} · {o.customer_name ?? "Cliente"}</span>
                     <Badge variant="outline" className={st.tone}>{st.label}</Badge>
