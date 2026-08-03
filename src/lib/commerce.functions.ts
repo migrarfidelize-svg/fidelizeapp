@@ -9,7 +9,8 @@ export const getStorefront = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1).max(80) }).parse(d))
   .handler(async ({ data, context }) => {
     const { loadStorefront } = await import("@/lib/commerce.server");
-    return loadStorefront(context.userId, data.slug);
+    return (await loadStorefront(context.userId, data.slug)) as any;
+
   });
 
 export const joinStore = createServerFn({ method: "POST" })
