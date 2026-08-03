@@ -128,6 +128,12 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    key: "atendimento",
+    icon: MessageSquare,
+    label: "Atendimento",
+    items: [{ to: "/app/atendimento", label: "Central de Atendimento", icon: MessageSquare }],
+  },
+  {
     key: "clientes",
     icon: Users,
     label: "Clientes",
