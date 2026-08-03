@@ -436,7 +436,7 @@ function ConnectionPanel({ establishmentId }: { establishmentId: string }) {
       else if (r.qrCode) setQr(r.qrCode);
       qc.invalidateQueries({ queryKey: ["wa-connection", establishmentId] });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Falha ao consultar."),
+    onError: () => { /* silencioso: também roda em segundo plano */ },
   });
 
   const status = (q.data as any)?.connection?.connection_status;
