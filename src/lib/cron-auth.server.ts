@@ -1,8 +1,8 @@
 /**
  * Autenticação das rotinas automáticas públicas (/api/public/cron/* e hooks).
  *
- * O chamador (pg_cron / monitor externo) precisa enviar a chave publicável do
- * backend no cabeçalho `apikey` (ou `Authorization: Bearer <chave>`).
+ * O chamador (pg_cron / monitor externo) precisa enviar CRON_SECRET no
+ * cabeçalho `apikey` (ou `Authorization: Bearer <secret>`).
  * Sem isso, o endpoint responde 401 e nada é executado.
  */
 export function authorizeCronRequest(request: Request): Response | null {
@@ -11,8 +11,7 @@ export function authorizeCronRequest(request: Request): Response | null {
     request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
     "";
 
-  const expected =
-    process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY ?? "";
+  const expected = process.env.CRON_SECRET ?? "";
 
   if (!expected) {
     return new Response(JSON.stringify({ ok: false, error: "not_configured" }), {
