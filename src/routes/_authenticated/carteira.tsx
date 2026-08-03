@@ -181,23 +181,24 @@ function WalletLayout() {
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         aria-label="Navegação principal da carteira"
       >
-        <div className="relative mx-auto grid max-w-3xl grid-cols-5 items-stretch">
+        <div className="relative mx-auto grid max-w-3xl grid-cols-5 items-end">
           {TABS.slice(0, 2).map((t) => (
             <NavItem key={t.to} tab={t} pathname={pathname} />
           ))}
 
-          {/* Slot central: FAB elevado */}
-          <div className="relative flex items-center justify-center">
+          {/* Slot central: FAB elevado (rótulo em fluxo normal, nunca cortado) */}
+          <div className="flex min-w-0 flex-col items-center justify-end gap-1 py-2.5">
             <button
               onClick={() => setQrOpen(true)}
-              className="group -mt-6 grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-[0_10px_30px_-8px_color-mix(in_oklab,var(--primary)_60%,transparent)] ring-4 ring-background transition-transform hover:scale-[1.04] active:scale-95"
+              className="group -mt-7 grid h-13 w-13 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-[0_10px_30px_-8px_color-mix(in_oklab,var(--primary)_60%,transparent)] ring-4 ring-background transition-transform hover:scale-[1.04] active:scale-95"
+              style={{ height: "3.25rem", width: "3.25rem" }}
               aria-label="Mostrar meu QR"
             >
               <QrCode className="h-6 w-6 transition-transform group-hover:rotate-3" />
-              <span className="pointer-events-none absolute -bottom-4 text-[9px] font-bold uppercase tracking-widest text-primary">
-                Meu QR
-              </span>
             </button>
+            <span className="pointer-events-none max-w-full truncate text-[10px] font-bold leading-none text-primary">
+              Meu QR
+            </span>
           </div>
 
           {TABS.slice(2, 4).map((t) => (
