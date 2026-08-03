@@ -125,19 +125,33 @@ export const refreshWhatsAppStatus = createServerFn({ method: "POST" })
 
     const { data: conn } = await (supabaseAdmin as any)
       .from("whatsapp_connections").select("*").eq("establishment_id", data.establishment_id).maybeSingle();
-    if (!conn) return { status: "disconnected" as const, connectedPhone: null };
+    if (!conn) return { status: "disconnected" as const, connectedPhone: null, qrCode: null };
 
     const { runtime, provider } = await loadProviderRuntime(conn.provider);
-    const state = await provider.getState(runtime, await loadInstanceRef(conn));
+    const ref = await loadInstanceRef(conn);
+    let state = await provider.getState(runtime, ref);
+
+    // Alguns provedores só devolvem o QR na chamada de conexão: refaz o pareamento
+    // enquanto não estiver conectado para o lojista sempre ver um QR válido.
+    if (state.status !== "connected" && !state.qrCode) {
+      try { state = await provider.connect(runtime, ref); } catch { /* mantém o estado atual */ }
+    }
 
     await (supabaseAdmin as any).from("whatsapp_connections").update({
       connection_status: state.status,
       connected_phone: state.connectedPhone ?? conn.connected_phone,
       connected_at: state.status === "connected" ? (conn.connected_at ?? new Date().toISOString()) : conn.connected_at,
+      qr_status: state.qrCode ? "ready" : null,
+      qr_expires_at: state.qrCode ? new Date(Date.now() + 60_000).toISOString() : null,
       last_checked_at: new Date().toISOString(),
     }).eq("id", conn.id);
 
-    return { status: state.status, connectedPhone: state.connectedPhone ?? conn.connected_phone };
+    return {
+      status: state.status,
+      connectedPhone: state.connectedPhone ?? conn.connected_phone,
+      qrCode: state.qrCode ?? null,
+    };
+
   });
 
 export const disconnectWhatsApp = createServerFn({ method: "POST" })
