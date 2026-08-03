@@ -17,6 +17,7 @@ import {
   Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock, Wallet2,
   UsersRound, Settings, Mail, FileText, ListChecks, LifeBuoy, Package,
   DollarSign, Wallet, Megaphone, Cog, BookOpen, Menu, Star, Plug, Sparkles, Rocket, FileJson, KeyRound, ChevronRight, Activity, Bike, Percent,
+  Compass,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
