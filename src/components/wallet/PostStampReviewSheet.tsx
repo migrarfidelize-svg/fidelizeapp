@@ -56,7 +56,8 @@ export function PostStampReviewSheet() {
       userId = data.user?.id ?? null;
       if (!userId) return;
       channel = supabase
-        .channel(`wallet-stamps-${userId}`)
+        // Sufixo único: reusar o mesmo nome reanexa callbacks num canal já inscrito.
+        .channel(`wallet-stamps-${userId}-${Math.random().toString(36).slice(2, 8)}`)
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "stamps" }, () => {
           refetch();
         })
