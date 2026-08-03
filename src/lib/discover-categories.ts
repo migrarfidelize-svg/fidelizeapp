@@ -132,3 +132,19 @@ export function categorizeEstablishment(e: {
   }
   return "outros";
 }
+
+/**
+ * Ícones premium (lucide) por categoria — usados no grid do Descobrir no lugar
+ * dos emojis. Mantemos o emoji para contextos de texto puro (chips do admin).
+ */
+export const CATEGORY_ICON_NAME: Record<DiscoverCategoryId, string> = {
+  alimentacao: "UtensilsCrossed",
+  beleza: "Scissors",
+  saude: "HeartPulse",
+  moda: "Shirt",
+  fitness: "Dumbbell",
+  pet: "PawPrint",
+  servicos: "Wrench",
+  lazer: "PartyPopper",
+  outros: "Sparkles",
+};
