@@ -27,7 +27,11 @@ const STATUS: Record<string, { label: string; tone: string }> = {
 
 const brl = (cents: number) => (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-export function OrdersDock({ establishmentId }: { establishmentId: string }) {
+export function OrdersDock({
+  establishmentId,
+  variant = "dock",
+}: { establishmentId: string; variant?: "dock" | "board" }) {
+  const board = variant === "board";
   const qc = useQueryClient();
   const ordersFn = useServerFn(listMyOrders);
   const statusFn = useServerFn(updateOrderStatus);
