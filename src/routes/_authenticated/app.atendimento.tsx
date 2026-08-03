@@ -119,8 +119,6 @@ function Inner({ establishmentId, qc }: { establishmentId: string; qc: ReturnTyp
 
   return (
     <div className="p-4 md:p-8 space-y-6">
-      <OrdersDock establishmentId={establishmentId} />
-
       <PageHero
         icon={MessageSquare}
         eyebrow="Atendimento"
@@ -134,13 +132,22 @@ function Inner({ establishmentId, qc }: { establishmentId: string; qc: ReturnTyp
       />
 
 
-      <Tabs defaultValue="inbox">
-        <TabsList className="flex-wrap">
-          <TabsTrigger value="inbox"><Inbox className="h-4 w-4 mr-1" />Caixa de entrada</TabsTrigger>
-          <TabsTrigger value="pedidos"><ShoppingBag className="h-4 w-4 mr-1" />Pedidos &amp; Entregas</TabsTrigger>
-          <TabsTrigger value="conexao"><Plug className="h-4 w-4 mr-1" />Conexão (QR)</TabsTrigger>
-          <TabsTrigger value="respostas"><Zap className="h-4 w-4 mr-1" />Respostas rápidas</TabsTrigger>
-        </TabsList>
+      <Tabs value={tab} onValueChange={setTab}>
+        {/* Dock superior fixo: as abas ficam sempre visíveis ao rolar a página. */}
+        <div className="sticky top-0 z-30 -mx-4 border-b bg-background/85 px-4 py-2 backdrop-blur-xl md:-mx-8 md:px-8">
+          <TabsList className="flex w-full gap-1 overflow-x-auto">
+            <TabsTrigger value="pedidos" className="shrink-0">
+              <ShoppingBag className="h-4 w-4 mr-1" />Pedidos &amp; Entregas
+            </TabsTrigger>
+            <TabsTrigger value="inbox" className="shrink-0"><Inbox className="h-4 w-4 mr-1" />Caixa de entrada</TabsTrigger>
+            <TabsTrigger value="conexao" className="shrink-0">
+              <Plug className="h-4 w-4 mr-1" />WhatsApp (QR)
+              {!connected && <span className="ml-1 h-2 w-2 rounded-full bg-amber-500" />}
+            </TabsTrigger>
+            <TabsTrigger value="respostas" className="shrink-0"><Zap className="h-4 w-4 mr-1" />Respostas rápidas</TabsTrigger>
+          </TabsList>
+        </div>
+
 
         <TabsContent value="pedidos" className="mt-6 space-y-3">
           <p className="text-sm text-muted-foreground">
