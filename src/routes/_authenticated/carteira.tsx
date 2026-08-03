@@ -222,14 +222,14 @@ function NavItem({ tab, pathname }: { tab: (typeof TABS)[number]; pathname: stri
     <Link
       to={tab.to}
       className={
-        "relative flex flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition-colors " +
+        "relative flex min-w-0 flex-col items-center gap-1 px-1 py-2.5 text-[10px] font-medium transition-colors " +
         (active ? "text-primary" : "text-muted-foreground hover:text-foreground")
       }
       aria-current={active ? "page" : undefined}
     >
       {active && <span className="absolute top-0 h-0.5 w-8 rounded-full bg-primary" aria-hidden />}
-      <Icon className={"h-5 w-5 " + (active ? "text-primary" : "")} />
-      <span className="leading-none">{tab.label}</span>
+      <Icon className={"h-5 w-5 shrink-0 " + (active ? "text-primary" : "")} />
+      <span className="max-w-full truncate leading-none">{tab.label}</span>
     </Link>
   );
 }
