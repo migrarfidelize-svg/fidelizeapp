@@ -433,10 +433,23 @@ function ConnectionPanel({ establishmentId }: { establishmentId: string }) {
     mutationFn: () => refreshFn({ data: { establishment_id: establishmentId } }),
     onSuccess: (r: any) => {
       if (r.status === "connected") { setQr(null); toast.success("Conectado."); }
+      else if (r.qrCode) setQr(r.qrCode);
       qc.invalidateQueries({ queryKey: ["wa-connection", establishmentId] });
     },
     onError: (e: any) => toast.error(e?.message ?? "Falha ao consultar."),
   });
+
+  const status = (q.data as any)?.connection?.connection_status;
+  const isConnected = status === "connected";
+
+  // Enquanto não estiver conectado, busca um QR novo a cada 20s (o QR expira rápido).
+  const refreshMutate = refresh.mutateAsync;
+  useEffect(() => {
+    if (isConnected || !(q.data as any)?.connection) return;
+    const id = setInterval(() => { refreshMutate().catch(() => {}); }, 20_000);
+    return () => clearInterval(id);
+  }, [isConnected, q.data, refreshMutate]);
+
 
   const disconnect = useMutation({
     mutationFn: () => discFn({ data: { establishment_id: establishmentId } }),
