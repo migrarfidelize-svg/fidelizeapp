@@ -81,7 +81,13 @@ export const Route = createFileRoute("/_authenticated/app")({
     // `_authenticated` is ssr:false, so it's safe to use the browser client here.
     try {
       const access = await getAuthenticatedAccountAccess();
-      if (access.isSuperAdmin || access.accountType === "super_admin") throw redirect({ to: "/hash" });
+      // Super admin tem acesso total: só mandamos para /hash quando ele abre a raiz /app.
+      // Em qualquer rota interna (atendimento, cardápio, etc.) ele navega livremente.
+      const isSuperAdmin = access.isSuperAdmin || access.accountType === "super_admin";
+      if (isSuperAdmin && (location.pathname === "/app" || location.pathname === "/app/")) {
+        throw redirect({ to: "/hash" });
+      }
+      if (!isSuperAdmin && access.accountType === "customer") throw redirect({ to: "/carteira" });
       if (access.accountType === "customer") throw redirect({ to: "/carteira" });
     } catch (e) {
       if (e && typeof e === "object" && ("isRedirect" in e || "to" in e)) throw e;
