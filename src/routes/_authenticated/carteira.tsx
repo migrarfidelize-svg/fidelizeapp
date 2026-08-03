@@ -135,17 +135,17 @@ function WalletLayout() {
   return (
     <div className="min-h-dvh bg-background pb-[calc(env(safe-area-inset-bottom)+5.5rem)]">
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/85 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-          <Link to="/carteira" className="flex items-center gap-2">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary/25 to-primary/5 text-primary">
+        <div className="mx-auto grid max-w-3xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2.5 sm:px-4 sm:py-3">
+          <Link to="/carteira" className="flex min-w-0 items-center gap-2">
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary/25 to-primary/5 text-primary">
               <Wallet className="h-5 w-5" />
             </div>
-            <div className="leading-tight">
-              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Minha</div>
-              <div className="font-display text-base font-bold">Carteira Fidelize</div>
+            <div className="min-w-0 leading-tight">
+              <div className="hidden text-xs uppercase tracking-[0.18em] text-muted-foreground sm:block">Minha</div>
+              <div className="truncate font-display text-sm font-bold sm:text-base">Carteira Fidelize</div>
             </div>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             <InboxBell pathname={pathname} />
             <ThemeToggle />
             <Link
@@ -181,23 +181,24 @@ function WalletLayout() {
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         aria-label="Navegação principal da carteira"
       >
-        <div className="relative mx-auto grid max-w-3xl grid-cols-5 items-stretch">
+        <div className="relative mx-auto grid max-w-3xl grid-cols-5 items-end">
           {TABS.slice(0, 2).map((t) => (
             <NavItem key={t.to} tab={t} pathname={pathname} />
           ))}
 
-          {/* Slot central: FAB elevado */}
-          <div className="relative flex items-center justify-center">
+          {/* Slot central: FAB elevado (rótulo em fluxo normal, nunca cortado) */}
+          <div className="flex min-w-0 flex-col items-center justify-end gap-1 py-2.5">
             <button
               onClick={() => setQrOpen(true)}
-              className="group -mt-6 grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-[0_10px_30px_-8px_color-mix(in_oklab,var(--primary)_60%,transparent)] ring-4 ring-background transition-transform hover:scale-[1.04] active:scale-95"
+              className="group -mt-7 grid h-13 w-13 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-[0_10px_30px_-8px_color-mix(in_oklab,var(--primary)_60%,transparent)] ring-4 ring-background transition-transform hover:scale-[1.04] active:scale-95"
+              style={{ height: "3.25rem", width: "3.25rem" }}
               aria-label="Mostrar meu QR"
             >
               <QrCode className="h-6 w-6 transition-transform group-hover:rotate-3" />
-              <span className="pointer-events-none absolute -bottom-4 text-[9px] font-bold uppercase tracking-widest text-primary">
-                Meu QR
-              </span>
             </button>
+            <span className="pointer-events-none max-w-full truncate text-[10px] font-bold leading-none text-primary">
+              Meu QR
+            </span>
           </div>
 
           {TABS.slice(2, 4).map((t) => (
@@ -221,14 +222,14 @@ function NavItem({ tab, pathname }: { tab: (typeof TABS)[number]; pathname: stri
     <Link
       to={tab.to}
       className={
-        "relative flex flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition-colors " +
+        "relative flex min-w-0 flex-col items-center gap-1 px-1 py-2.5 text-[10px] font-medium transition-colors " +
         (active ? "text-primary" : "text-muted-foreground hover:text-foreground")
       }
       aria-current={active ? "page" : undefined}
     >
       {active && <span className="absolute top-0 h-0.5 w-8 rounded-full bg-primary" aria-hidden />}
-      <Icon className={"h-5 w-5 " + (active ? "text-primary" : "")} />
-      <span className="leading-none">{tab.label}</span>
+      <Icon className={"h-5 w-5 shrink-0 " + (active ? "text-primary" : "")} />
+      <span className="max-w-full truncate leading-none">{tab.label}</span>
     </Link>
   );
 }
