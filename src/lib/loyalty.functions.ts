@@ -818,7 +818,17 @@ export const getMyEstablishments = createServerFn({ method: "GET" })
       .select("role, establishment:establishments(*)")
       .eq("user_id", userId).eq("active", true);
     if (error) throw new Error(error.message);
-    return data ?? [];
+    if ((data ?? []).length > 0) return data ?? [];
+
+    // Super admin sem vínculo: enxerga todos os estabelecimentos da plataforma,
+    // assim ele usa qualquer funcionalidade do painel sem precisar criar um negócio.
+    const { data: isSuper } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (isSuper === true) {
+      const { data: all } = await supabase.from("establishments")
+        .select("*").order("created_at", { ascending: true });
+      return (all ?? []).map((e: any) => ({ role: "owner" as const, establishment: e }));
+    }
+    return [];
   });
 
 export const getDashboardData = createServerFn({ method: "POST" })
