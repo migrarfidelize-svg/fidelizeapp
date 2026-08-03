@@ -135,17 +135,17 @@ function WalletLayout() {
   return (
     <div className="min-h-dvh bg-background pb-[calc(env(safe-area-inset-bottom)+5.5rem)]">
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/85 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-          <Link to="/carteira" className="flex items-center gap-2">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary/25 to-primary/5 text-primary">
+        <div className="mx-auto grid max-w-3xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2.5 sm:px-4 sm:py-3">
+          <Link to="/carteira" className="flex min-w-0 items-center gap-2">
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary/25 to-primary/5 text-primary">
               <Wallet className="h-5 w-5" />
             </div>
-            <div className="leading-tight">
-              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Minha</div>
-              <div className="font-display text-base font-bold">Carteira Fidelize</div>
+            <div className="min-w-0 leading-tight">
+              <div className="hidden text-xs uppercase tracking-[0.18em] text-muted-foreground sm:block">Minha</div>
+              <div className="truncate font-display text-sm font-bold sm:text-base">Carteira Fidelize</div>
             </div>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             <InboxBell pathname={pathname} />
             <ThemeToggle />
             <Link
