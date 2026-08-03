@@ -19,6 +19,7 @@ import { RouteLoading } from "@/components/RouteLoading";
 import {
   MessageSquare, Send, QrCode, Plug, RefreshCw, Loader2, UserPlus, CheckCheck,
   Inbox, Clock, Zap, Trash2, Plus, PhoneOff,
+  ShoppingBag,
 } from "lucide-react";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { OrdersDock } from "@/components/atendimento/OrdersDock";
