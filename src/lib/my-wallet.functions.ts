@@ -607,7 +607,7 @@ export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
     if (hasOrigin) {
       const pending = (data ?? [])
         .filter((e) => !coords.has(e.id) && (e.address || e.city))
-        .slice(0, 5);
+        .slice(0, 12);
       if (pending.length) {
         try {
           const [{ geocodeAddress }, { supabaseAdmin }] = await Promise.all([
