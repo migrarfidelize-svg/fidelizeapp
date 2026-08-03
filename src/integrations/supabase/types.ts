@@ -541,6 +541,86 @@ export type Database = {
           },
         ]
       }
+      cart_items: {
+        Row: {
+          cart_id: string
+          created_at: string
+          id: string
+          item_id: string
+          qty: number
+          updated_at: string
+          variant_label: string | null
+        }
+        Insert: {
+          cart_id: string
+          created_at?: string
+          id?: string
+          item_id: string
+          qty?: number
+          updated_at?: string
+          variant_label?: string | null
+        }
+        Update: {
+          cart_id?: string
+          created_at?: string
+          id?: string
+          item_id?: string
+          qty?: number
+          updated_at?: string
+          variant_label?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cart_items_cart_id_fkey"
+            columns: ["cart_id"]
+            isOneToOne: false
+            referencedRelation: "carts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cart_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      carts: {
+        Row: {
+          created_at: string
+          establishment_id: string
+          id: string
+          profile_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          establishment_id: string
+          id?: string
+          profile_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          establishment_id?: string
+          id?: string
+          profile_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carts_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       channel_events: {
         Row: {
           channel: string
@@ -1547,6 +1627,57 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_links: {
+        Row: {
+          consent_at: string
+          created_at: string
+          customer_id: string | null
+          establishment_id: string
+          id: string
+          joined_via: string
+          profile_id: string
+          status: Database["public"]["Enums"]["customer_link_status"]
+          updated_at: string
+        }
+        Insert: {
+          consent_at?: string
+          created_at?: string
+          customer_id?: string | null
+          establishment_id: string
+          id?: string
+          joined_via?: string
+          profile_id: string
+          status?: Database["public"]["Enums"]["customer_link_status"]
+          updated_at?: string
+        }
+        Update: {
+          consent_at?: string
+          created_at?: string
+          customer_id?: string | null
+          establishment_id?: string
+          id?: string
+          joined_via?: string
+          profile_id?: string
+          status?: Database["public"]["Enums"]["customer_link_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_links_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_links_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_reviews: {
         Row: {
           anonymous: boolean
@@ -2153,6 +2284,92 @@ export type Database = {
         }
         Relationships: []
       }
+      establishment_checkout_settings: {
+        Row: {
+          affiliate_discount_percent: number
+          card_on_delivery_enabled: boolean
+          card_online_enabled: boolean
+          cash_enabled: boolean
+          created_at: string
+          delivery_enabled: boolean
+          delivery_fee_flat: number
+          delivery_fee_per_km: number
+          delivery_radius_km: number
+          establishment_id: string
+          eta_minutes: number
+          gateway_fee_percent: number
+          minimum_order: number
+          paused: boolean
+          pay_on_delivery_enabled: boolean
+          pay_on_pickup_enabled: boolean
+          pickup_enabled: boolean
+          pix_on_delivery_enabled: boolean
+          pix_online_enabled: boolean
+          platform_fee_percent: number
+          release_days_card: number
+          release_days_pix: number
+          updated_at: string
+        }
+        Insert: {
+          affiliate_discount_percent?: number
+          card_on_delivery_enabled?: boolean
+          card_online_enabled?: boolean
+          cash_enabled?: boolean
+          created_at?: string
+          delivery_enabled?: boolean
+          delivery_fee_flat?: number
+          delivery_fee_per_km?: number
+          delivery_radius_km?: number
+          establishment_id: string
+          eta_minutes?: number
+          gateway_fee_percent?: number
+          minimum_order?: number
+          paused?: boolean
+          pay_on_delivery_enabled?: boolean
+          pay_on_pickup_enabled?: boolean
+          pickup_enabled?: boolean
+          pix_on_delivery_enabled?: boolean
+          pix_online_enabled?: boolean
+          platform_fee_percent?: number
+          release_days_card?: number
+          release_days_pix?: number
+          updated_at?: string
+        }
+        Update: {
+          affiliate_discount_percent?: number
+          card_on_delivery_enabled?: boolean
+          card_online_enabled?: boolean
+          cash_enabled?: boolean
+          created_at?: string
+          delivery_enabled?: boolean
+          delivery_fee_flat?: number
+          delivery_fee_per_km?: number
+          delivery_radius_km?: number
+          establishment_id?: string
+          eta_minutes?: number
+          gateway_fee_percent?: number
+          minimum_order?: number
+          paused?: boolean
+          pay_on_delivery_enabled?: boolean
+          pay_on_pickup_enabled?: boolean
+          pickup_enabled?: boolean
+          pix_on_delivery_enabled?: boolean
+          pix_online_enabled?: boolean
+          platform_fee_percent?: number
+          release_days_card?: number
+          release_days_pix?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "establishment_checkout_settings_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: true
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       establishment_feature_overrides: {
         Row: {
           created_at: string
@@ -2244,6 +2461,95 @@ export type Database = {
           },
         ]
       }
+      establishment_ledger_entries: {
+        Row: {
+          amount: number
+          available_at: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          description: string | null
+          direction: Database["public"]["Enums"]["ledger_direction"]
+          entry_type: Database["public"]["Enums"]["ledger_entry_type"]
+          establishment_id: string
+          id: string
+          idempotency_key: string | null
+          metadata: Json
+          order_id: string | null
+          payment_id: string | null
+          settles_to_platform: boolean
+          status: Database["public"]["Enums"]["ledger_status"]
+          withdrawal_id: string | null
+        }
+        Insert: {
+          amount: number
+          available_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          direction: Database["public"]["Enums"]["ledger_direction"]
+          entry_type: Database["public"]["Enums"]["ledger_entry_type"]
+          establishment_id: string
+          id?: string
+          idempotency_key?: string | null
+          metadata?: Json
+          order_id?: string | null
+          payment_id?: string | null
+          settles_to_platform?: boolean
+          status?: Database["public"]["Enums"]["ledger_status"]
+          withdrawal_id?: string | null
+        }
+        Update: {
+          amount?: number
+          available_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          direction?: Database["public"]["Enums"]["ledger_direction"]
+          entry_type?: Database["public"]["Enums"]["ledger_entry_type"]
+          establishment_id?: string
+          id?: string
+          idempotency_key?: string | null
+          metadata?: Json
+          order_id?: string | null
+          payment_id?: string | null
+          settles_to_platform?: boolean
+          status?: Database["public"]["Enums"]["ledger_status"]
+          withdrawal_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "establishment_ledger_entries_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "establishment_ledger_entries_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "establishment_ledger_entries_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "order_payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ledger_withdrawal_fk"
+            columns: ["withdrawal_id"]
+            isOneToOne: false
+            referencedRelation: "establishment_withdrawals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       establishment_members: {
         Row: {
           active: boolean
@@ -2291,6 +2597,59 @@ export type Database = {
           },
         ]
       }
+      establishment_payout_accounts: {
+        Row: {
+          created_at: string
+          establishment_id: string
+          holder_document: string
+          holder_name: string
+          id: string
+          last_changed_at: string
+          pix_key: string
+          pix_key_type: string
+          status: string
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          establishment_id: string
+          holder_document: string
+          holder_name: string
+          id?: string
+          last_changed_at?: string
+          pix_key: string
+          pix_key_type: string
+          status?: string
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          establishment_id?: string
+          holder_document?: string
+          holder_name?: string
+          id?: string
+          last_changed_at?: string
+          pix_key?: string
+          pix_key_type?: string
+          status?: string
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "establishment_payout_accounts_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       establishment_settings: {
         Row: {
           appearance: Json
@@ -2330,6 +2689,95 @@ export type Database = {
             foreignKeyName: "establishment_settings_establishment_id_fkey"
             columns: ["establishment_id"]
             isOneToOne: true
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      establishment_withdrawals: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          establishment_id: string
+          fee_amount: number
+          gross_amount: number
+          id: string
+          idempotency_key: string | null
+          net_amount: number
+          paid_at: string | null
+          paid_by: string | null
+          pix_key_snapshot: string
+          pix_key_type_snapshot: string
+          pix_recipient_name_snapshot: string
+          proof_file_path: string | null
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
+          requested_at: string
+          requested_by: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["est_withdrawal_status"]
+          transaction_reference: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          establishment_id: string
+          fee_amount?: number
+          gross_amount: number
+          id?: string
+          idempotency_key?: string | null
+          net_amount: number
+          paid_at?: string | null
+          paid_by?: string | null
+          pix_key_snapshot: string
+          pix_key_type_snapshot: string
+          pix_recipient_name_snapshot: string
+          proof_file_path?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
+          requested_at?: string
+          requested_by: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["est_withdrawal_status"]
+          transaction_reference?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          establishment_id?: string
+          fee_amount?: number
+          gross_amount?: number
+          id?: string
+          idempotency_key?: string | null
+          net_amount?: number
+          paid_at?: string | null
+          paid_by?: string | null
+          pix_key_snapshot?: string
+          pix_key_type_snapshot?: string
+          pix_recipient_name_snapshot?: string
+          proof_file_path?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
+          requested_at?: string
+          requested_by?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["est_withdrawal_status"]
+          transaction_reference?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "establishment_withdrawals_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
             referencedRelation: "establishments"
             referencedColumns: ["id"]
           },
@@ -3699,6 +4147,53 @@ export type Database = {
           },
         ]
       }
+      order_events: {
+        Row: {
+          actor_type: string
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json
+          new_status: string | null
+          order_id: string
+          previous_status: string | null
+          reason: string | null
+        }
+        Insert: {
+          actor_type?: string
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          new_status?: string | null
+          order_id: string
+          previous_status?: string | null
+          reason?: string | null
+        }
+        Update: {
+          actor_type?: string
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          new_status?: string | null
+          order_id?: string
+          previous_status?: string | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -3753,68 +4248,235 @@ export type Database = {
           },
         ]
       }
+      order_payments: {
+        Row: {
+          amount: number
+          cancelled_at: string | null
+          created_at: string
+          currency: string
+          customer_profile_id: string | null
+          establishment_id: string
+          expired_at: string | null
+          expires_at: string | null
+          external_reference: string | null
+          failed_at: string | null
+          id: string
+          idempotency_key: string | null
+          order_id: string
+          paid_at: string | null
+          payment_method: string
+          provider: string
+          provider_payment_id: string | null
+          qr_code: string | null
+          qr_code_base64: string | null
+          raw_status: string | null
+          refunded_at: string | null
+          status: Database["public"]["Enums"]["order_payment_status"]
+          ticket_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          cancelled_at?: string | null
+          created_at?: string
+          currency?: string
+          customer_profile_id?: string | null
+          establishment_id: string
+          expired_at?: string | null
+          expires_at?: string | null
+          external_reference?: string | null
+          failed_at?: string | null
+          id?: string
+          idempotency_key?: string | null
+          order_id: string
+          paid_at?: string | null
+          payment_method: string
+          provider: string
+          provider_payment_id?: string | null
+          qr_code?: string | null
+          qr_code_base64?: string | null
+          raw_status?: string | null
+          refunded_at?: string | null
+          status?: Database["public"]["Enums"]["order_payment_status"]
+          ticket_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          cancelled_at?: string | null
+          created_at?: string
+          currency?: string
+          customer_profile_id?: string | null
+          establishment_id?: string
+          expired_at?: string | null
+          expires_at?: string | null
+          external_reference?: string | null
+          failed_at?: string | null
+          id?: string
+          idempotency_key?: string | null
+          order_id?: string
+          paid_at?: string | null
+          payment_method?: string
+          provider?: string
+          provider_payment_id?: string | null
+          qr_code?: string | null
+          qr_code_base64?: string | null
+          raw_status?: string | null
+          refunded_at?: string | null
+          status?: Database["public"]["Enums"]["order_payment_status"]
+          ticket_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_payments_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           address: string | null
+          cancelled_at: string | null
+          completed_at: string | null
           created_at: string
           currency: string
+          customer_id: string | null
           customer_name: string
           customer_phone: string | null
+          customer_profile_id: string | null
+          delivery_address_id: string | null
+          delivery_fee: number
+          delivery_latitude: number | null
+          delivery_longitude: number | null
+          discount_total: number
           establishment_id: string
           fulfillment: Database["public"]["Enums"]["order_fulfillment"]
+          gateway_fee_total: number
           id: string
+          idempotency_key: string | null
           items_total: number
           kind: Database["public"]["Enums"]["showcase_kind"]
           menu_id: string | null
+          minimum_order_validated_at: string | null
+          net_to_establishment: number
           note: string | null
           order_number: number
+          paid_at: string | null
           payment_method: string | null
+          payment_status: Database["public"]["Enums"]["order_payment_status"]
+          platform_fee_total: number
+          refunded_total: number
+          settlement_mode: Database["public"]["Enums"]["order_settlement_mode"]
           source: string
+          stamp_granted_at: string | null
           status: Database["public"]["Enums"]["order_status"]
           total: number
           updated_at: string
         }
         Insert: {
           address?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
           created_at?: string
           currency?: string
+          customer_id?: string | null
           customer_name: string
           customer_phone?: string | null
+          customer_profile_id?: string | null
+          delivery_address_id?: string | null
+          delivery_fee?: number
+          delivery_latitude?: number | null
+          delivery_longitude?: number | null
+          discount_total?: number
           establishment_id: string
           fulfillment?: Database["public"]["Enums"]["order_fulfillment"]
+          gateway_fee_total?: number
           id?: string
+          idempotency_key?: string | null
           items_total?: number
           kind?: Database["public"]["Enums"]["showcase_kind"]
           menu_id?: string | null
+          minimum_order_validated_at?: string | null
+          net_to_establishment?: number
           note?: string | null
           order_number?: number
+          paid_at?: string | null
           payment_method?: string | null
+          payment_status?: Database["public"]["Enums"]["order_payment_status"]
+          platform_fee_total?: number
+          refunded_total?: number
+          settlement_mode?: Database["public"]["Enums"]["order_settlement_mode"]
           source?: string
+          stamp_granted_at?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           total?: number
           updated_at?: string
         }
         Update: {
           address?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
           created_at?: string
           currency?: string
+          customer_id?: string | null
           customer_name?: string
           customer_phone?: string | null
+          customer_profile_id?: string | null
+          delivery_address_id?: string | null
+          delivery_fee?: number
+          delivery_latitude?: number | null
+          delivery_longitude?: number | null
+          discount_total?: number
           establishment_id?: string
           fulfillment?: Database["public"]["Enums"]["order_fulfillment"]
+          gateway_fee_total?: number
           id?: string
+          idempotency_key?: string | null
           items_total?: number
           kind?: Database["public"]["Enums"]["showcase_kind"]
           menu_id?: string | null
+          minimum_order_validated_at?: string | null
+          net_to_establishment?: number
           note?: string | null
           order_number?: number
+          paid_at?: string | null
           payment_method?: string | null
+          payment_status?: Database["public"]["Enums"]["order_payment_status"]
+          platform_fee_total?: number
+          refunded_total?: number
+          settlement_mode?: Database["public"]["Enums"]["order_settlement_mode"]
           source?: string
+          stamp_granted_at?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           total?: number
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_delivery_address_id_fkey"
+            columns: ["delivery_address_id"]
+            isOneToOne: false
+            referencedRelation: "customer_addresses"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "orders_establishment_id_fkey"
             columns: ["establishment_id"]
@@ -6117,6 +6779,7 @@ export type Database = {
           cycle: number
           establishment_id: string
           id: string
+          order_id: string | null
           reverted_at: string | null
           reverted_by: string | null
         }
@@ -6127,6 +6790,7 @@ export type Database = {
           cycle: number
           establishment_id: string
           id?: string
+          order_id?: string | null
           reverted_at?: string | null
           reverted_by?: string | null
         }
@@ -6137,6 +6801,7 @@ export type Database = {
           cycle?: number
           establishment_id?: string
           id?: string
+          order_id?: string | null
           reverted_at?: string | null
           reverted_by?: string | null
         }
@@ -6153,6 +6818,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stamps_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
@@ -7248,6 +7920,50 @@ export type Database = {
           },
         ]
       }
+      withdrawal_events: {
+        Row: {
+          actor_role: string
+          actor_user_id: string | null
+          created_at: string
+          id: string
+          metadata: Json
+          new_status: string
+          previous_status: string | null
+          reason: string | null
+          withdrawal_id: string
+        }
+        Insert: {
+          actor_role?: string
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          new_status: string
+          previous_status?: string | null
+          reason?: string | null
+          withdrawal_id: string
+        }
+        Update: {
+          actor_role?: string
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          new_status?: string
+          previous_status?: string | null
+          reason?: string | null
+          withdrawal_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawal_events_withdrawal_id_fkey"
+            columns: ["withdrawal_id"]
+            isOneToOne: false
+            referencedRelation: "establishment_withdrawals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -7292,6 +8008,10 @@ export type Database = {
       courier_storage_owner: { Args: { _path: string }; Returns: string }
       dashboard_summary: { Args: { _est: string }; Returns: Json }
       delete_my_account: { Args: never; Returns: undefined }
+      get_establishment_financial_summary: {
+        Args: { _est: string }
+        Returns: Json
+      }
       get_establishment_plan: {
         Args: { _est: string }
         Returns: {
@@ -7411,6 +8131,11 @@ export type Database = {
         }
         Returns: Json
       }
+      release_due_ledger_entries: { Args: never; Returns: number }
+      request_establishment_withdrawal: {
+        Args: { _amount: number; _est: string; _idem?: string }
+        Returns: string
+      }
       sponsored_ads_admin_overview: { Args: never; Returns: Json }
     }
     Enums: {
@@ -7424,6 +8149,7 @@ export type Database = {
         | "criminal_record"
         | "other"
       courier_status: "pending" | "approved" | "rejected" | "suspended"
+      customer_link_status: "active" | "paused" | "removed"
       customer_tier: "bronze" | "prata" | "ouro" | "diamante"
       delivery_status:
         | "pending"
@@ -7433,6 +8159,14 @@ export type Database = {
         | "in_transit"
         | "delivered"
         | "cancelled"
+      est_withdrawal_status:
+        | "requested"
+        | "under_review"
+        | "approved"
+        | "payment_processing"
+        | "paid"
+        | "rejected"
+        | "cancelled"
       fee_category:
         | "delivery"
         | "product_sale"
@@ -7441,11 +8175,43 @@ export type Database = {
         | "subscription"
         | "other"
       helpdesk_role: "hd_admin" | "hd_agent"
+      ledger_direction: "credit" | "debit"
+      ledger_entry_type:
+        | "sale"
+        | "platform_fee"
+        | "gateway_fee"
+        | "delivery_fee"
+        | "refund"
+        | "partial_refund"
+        | "chargeback"
+        | "adjustment_credit"
+        | "adjustment_debit"
+        | "withdrawal_reserved"
+        | "withdrawal_paid"
+        | "withdrawal_reversed"
+        | "offline_sale_info"
+      ledger_status:
+        | "pending"
+        | "available"
+        | "reserved"
+        | "settled"
+        | "cancelled"
       member_role: "owner" | "manager" | "staff"
       menu_default_view: "stories" | "list"
       menu_media_kind: "image" | "video"
       menu_status: "draft" | "published" | "paused"
       order_fulfillment: "pickup" | "delivery"
+      order_payment_status:
+        | "unpaid"
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "expired"
+        | "cancelled"
+        | "partially_refunded"
+        | "refunded"
+        | "chargeback"
+      order_settlement_mode: "online_platform" | "on_delivery_direct"
       order_status:
         | "new"
         | "confirmed"
@@ -7453,6 +8219,7 @@ export type Database = {
         | "ready"
         | "completed"
         | "cancelled"
+        | "out_for_delivery"
       plan_tier: "free" | "starter" | "pro" | "enterprise" | "business"
       platform_role: "super_admin"
       public_review_action:
@@ -7640,6 +8407,7 @@ export const Constants = {
         "other",
       ],
       courier_status: ["pending", "approved", "rejected", "suspended"],
+      customer_link_status: ["active", "paused", "removed"],
       customer_tier: ["bronze", "prata", "ouro", "diamante"],
       delivery_status: [
         "pending",
@@ -7648,6 +8416,15 @@ export const Constants = {
         "picked_up",
         "in_transit",
         "delivered",
+        "cancelled",
+      ],
+      est_withdrawal_status: [
+        "requested",
+        "under_review",
+        "approved",
+        "payment_processing",
+        "paid",
+        "rejected",
         "cancelled",
       ],
       fee_category: [
@@ -7659,11 +8436,46 @@ export const Constants = {
         "other",
       ],
       helpdesk_role: ["hd_admin", "hd_agent"],
+      ledger_direction: ["credit", "debit"],
+      ledger_entry_type: [
+        "sale",
+        "platform_fee",
+        "gateway_fee",
+        "delivery_fee",
+        "refund",
+        "partial_refund",
+        "chargeback",
+        "adjustment_credit",
+        "adjustment_debit",
+        "withdrawal_reserved",
+        "withdrawal_paid",
+        "withdrawal_reversed",
+        "offline_sale_info",
+      ],
+      ledger_status: [
+        "pending",
+        "available",
+        "reserved",
+        "settled",
+        "cancelled",
+      ],
       member_role: ["owner", "manager", "staff"],
       menu_default_view: ["stories", "list"],
       menu_media_kind: ["image", "video"],
       menu_status: ["draft", "published", "paused"],
       order_fulfillment: ["pickup", "delivery"],
+      order_payment_status: [
+        "unpaid",
+        "pending",
+        "approved",
+        "rejected",
+        "expired",
+        "cancelled",
+        "partially_refunded",
+        "refunded",
+        "chargeback",
+      ],
+      order_settlement_mode: ["online_platform", "on_delivery_direct"],
       order_status: [
         "new",
         "confirmed",
@@ -7671,6 +8483,7 @@ export const Constants = {
         "ready",
         "completed",
         "cancelled",
+        "out_for_delivery",
       ],
       plan_tier: ["free", "starter", "pro", "enterprise", "business"],
       platform_role: ["super_admin"],
