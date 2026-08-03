@@ -146,21 +146,23 @@ export async function applyOrderPaymentStatus(params: {
       orderId: order.id,
       paymentId: pay.id,
       amount,
-      kind: params.status === "chargeback" ? "chargeback" : params.status,
+      kind:
+        params.status === "chargeback"
+          ? "chargeback"
+          : params.status === "partially_refunded"
+            ? "partial_refund"
+            : "refund",
     });
     await db
       .from("orders")
       .update({ payment_status: params.status, refunded_total: money(Number(order.refunded_total ?? 0) + amount) })
       .eq("id", order.id);
-    try {
-      const { notifySuperAdminsFinancialAlert } = await import("@/lib/finance-notify.server");
-      await notifySuperAdminsFinancialAlert({
-        title: params.status === "chargeback" ? "Chargeback recebido" : "Reembolso registrado",
-        body: `Pedido #${order.order_number} — R$ ${amount.toFixed(2)}`,
-      });
-    } catch {
-      /* best-effort */
-    }
+    await appendOrderEvent({
+      order_id: order.id,
+      event_type: params.status === "chargeback" ? "chargeback" : "refund",
+      reason: `R$ ${amount.toFixed(2)}`,
+    });
+
     return { handled: true as const, status: params.status };
   }
 
