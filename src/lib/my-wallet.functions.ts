@@ -521,13 +521,14 @@ export const getMyHistory = createServerFn({ method: "GET" })
 
 
 /**
- * Lista estabelecimentos ativos que o usuário ainda NÃO tem na carteira,
- * ordenados por atividade recente. Base do canal "Descobrir".
- * Sem coordenadas geo por ora — retornamos address/city para exibição.
+ * Lista estabelecimentos ativos para o canal "Descobrir".
+ * Quando o cliente envia lat/lng, filtramos por raio (km) usando as coordenadas
+ * do estabelecimento — geocodificadas sob demanda a partir do endereço.
  */
 export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((input: { lat?: number; lng?: number; radiusKm?: number } | undefined) => input ?? {})
+  .handler(async ({ data: input, context }) => {
     // Estabelecimentos onde o usuário já tem cartão/registro — não excluímos,
     // apenas marcamos como "já visitados" para o cliente ver novidades/promoções.
     const { data: mine } = await context.supabase
@@ -538,7 +539,9 @@ export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
 
     const { data, error } = await context.supabase
       .from("establishments")
-      .select("id, slug, name, logo_url, primary_color, address, city, description, segment, plan, created_at")
+      .select(
+        "id, slug, name, logo_url, primary_color, address, city, state, latitude, longitude, description, segment, plan, created_at",
+      )
       .eq("active", true)
       .order("created_at", { ascending: false })
       .limit(60);
@@ -590,21 +593,76 @@ export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
       return showcasesByEst.get(estId)?.has(kind) ?? false;
     }
 
-    return (data ?? []).map((e) => ({
-      id: e.id,
-      slug: e.slug,
-      name: e.name,
-      logo_url: e.logo_url,
-      primary_color: e.primary_color,
-      address: e.address,
-      city: e.city,
-      description: e.description,
-      segment: e.segment,
-      visited: visited.has(e.id),
-      has_promotion: promoted.has(e.id),
-      has_menu: showcaseEnabled(e.id, e.plan, "menu"),
-      has_catalog: showcaseEnabled(e.id, e.plan, "catalog"),
-    }));
+    // Geocodificação sob demanda: no máximo 5 endereços por requisição para
+    // não estourar cota. As coordenadas ficam salvas para as próximas buscas.
+    const coords = new Map<string, { lat: number; lng: number }>();
+    for (const e of data ?? []) {
+      if (typeof e.latitude === "number" && typeof e.longitude === "number") {
+        coords.set(e.id, { lat: e.latitude, lng: e.longitude });
+      }
+    }
+    const hasOrigin = Number.isFinite(input.lat) && Number.isFinite(input.lng);
+    if (hasOrigin) {
+      const pending = (data ?? [])
+        .filter((e) => !coords.has(e.id) && (e.address || e.city))
+        .slice(0, 5);
+      if (pending.length) {
+        try {
+          const [{ geocodeAddress }, { supabaseAdmin }] = await Promise.all([
+            import("@/lib/maps.server"),
+            import("@/integrations/supabase/client.server"),
+          ]);
+          for (const e of pending) {
+            const full = [e.address, e.city, e.state, "Brasil"].filter(Boolean).join(", ");
+            const point = await geocodeAddress(full);
+            if (!point) continue;
+            coords.set(e.id, point);
+            await supabaseAdmin
+              .from("establishments")
+              .update({ latitude: point.lat, longitude: point.lng, geocoded_at: new Date().toISOString() })
+              .eq("id", e.id);
+          }
+        } catch {
+          /* geocoding indisponível — seguimos com o fallback por cidade */
+        }
+      }
+    }
+
+    const { haversineKm } = await import("@/lib/discover");
+    const origin = hasOrigin ? { lat: Number(input.lat), lng: Number(input.lng) } : null;
+    const radiusKm = Number.isFinite(input.radiusKm) ? Number(input.radiusKm) : null;
+
+    const list = (data ?? []).map((e) => {
+      const point = coords.get(e.id) ?? null;
+      const distance_km = origin && point ? haversineKm(origin, point) : null;
+      return {
+        id: e.id,
+        slug: e.slug,
+        name: e.name,
+        logo_url: e.logo_url,
+        primary_color: e.primary_color,
+        address: e.address,
+        city: e.city,
+        state: e.state,
+        latitude: point?.lat ?? null,
+        longitude: point?.lng ?? null,
+        distance_km,
+        description: e.description,
+        segment: e.segment,
+        visited: visited.has(e.id),
+        has_promotion: promoted.has(e.id),
+        has_menu: showcaseEnabled(e.id, e.plan, "menu"),
+        has_catalog: showcaseEnabled(e.id, e.plan, "catalog"),
+      };
+    });
+
+    if (origin && radiusKm) {
+      const inRadius = list.filter((e) => e.distance_km != null && e.distance_km <= radiusKm);
+      // Só aplicamos o corte quando temos base geográfica suficiente; caso
+      // contrário devolvemos tudo para não deixar a tela vazia.
+      if (inRadius.length) return inRadius.sort((a, b) => (a.distance_km ?? 0) - (b.distance_km ?? 0));
+    }
+    return list;
   });
 
 /**
