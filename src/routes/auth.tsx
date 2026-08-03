@@ -315,65 +315,90 @@ function AuthPage() {
     return walletFlow ? whatsapp.replace(/\D/g, "") : email.trim().toLowerCase();
   }
 
+  /** Erro de limite de envio de e-mail do provedor de auth (não deve gerar retry). */
+  function isEmailRateLimit(err: unknown): boolean {
+    const e = err as { message?: string; status?: number; code?: string } | null;
+    const m = (e?.message ?? "").toLowerCase();
+    return (
+      e?.status === 429 ||
+      e?.code === "over_email_send_rate_limit" ||
+      m.includes("rate limit") ||
+      m.includes("too many requests")
+    );
+  }
+
+  function isAlreadyRegistered(err: unknown): boolean {
+    const m = ((err as { message?: string } | null)?.message ?? "").toLowerCase();
+    return m.includes("already") || m.includes("registered") || m.includes("exists");
+  }
+
+  /** Log de diagnóstico sem dados sensíveis (sem senha, sem token). */
+  function authLog(stage: string, detail?: Record<string, unknown>) {
+    const cid = `auth-${Date.now().toString(36)}`;
+    console.info(`[auth][${cid}] ${stage}`, detail ?? {});
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    // Trava síncrona antes de qualquer await: dois cliques só produzem 1 cadastro.
+    if (submittingRef.current || loading || cooldown > 0) return;
+    submittingRef.current = true;
+    setLoading(true);
+    setAuthNotice(null);
 
     const action = isSignup ? ("signup" as const) : ("login" as const);
     const identifier = currentIdentifier();
-
-    // Honeypot + tempo mínimo + rate limit por IP/identificador (validados no servidor).
-    const guard = await guardAuthAttempt({
-      data: {
-        identifier,
-        action,
-        honeypot,
-        elapsedMs: Date.now() - formOpenedAt.current,
-      },
-    }).catch(() => null);
-    if (guard && !guard.ok) {
-      toast.error(guard.message);
-      return;
-    }
-
-    if (captchaRequired) {
-      if (!captchaToken) {
-        toast.error("Confirme o desafio de segurança para continuar.");
-        return;
-      }
-      const check = await verifyCaptcha({ data: { token: captchaToken } }).catch(() => null);
-      if (!check?.ok) {
-        toast.error("Não foi possível validar o desafio de segurança. Tente novamente.");
-        setCaptchaToken(null);
-        resetTurnstile();
-        return;
-      }
-      // Tokens do Turnstile são de uso único.
-      setCaptchaToken(null);
-      resetTurnstile();
-    }
-    setLoading(true);
     const markAttempt = (success: boolean) =>
       void reportAuthAttempt({ data: { identifier, action, success } }).catch(() => null);
+
     try {
+      // Honeypot + tempo mínimo + rate limit por IP/identificador (validados no servidor).
+      const guard = await guardAuthAttempt({
+        data: {
+          identifier,
+          action,
+          honeypot,
+          elapsedMs: Date.now() - formOpenedAt.current,
+        },
+      }).catch(() => null);
+      if (guard && !guard.ok) {
+        toast.error(guard.message);
+        return;
+      }
+
+      if (captchaRequired) {
+        if (!captchaToken) {
+          toast.error("Confirme o desafio de segurança para continuar.");
+          return;
+        }
+        const check = await verifyCaptcha({ data: { token: captchaToken } }).catch(() => null);
+        if (!check?.ok) {
+          toast.error("Não foi possível validar o desafio de segurança. Tente novamente.");
+          setCaptchaToken(null);
+          resetTurnstile();
+          return;
+        }
+        // Tokens do Turnstile são de uso único.
+        setCaptchaToken(null);
+        resetTurnstile();
+      }
 
       if (isSignup) {
         const digits = whatsapp.replace(/\D/g, "");
         if (digits.length < 10) {
           toast.error("Informe um WhatsApp válido com DDD.");
-          setLoading(false);
           return;
         }
         if (isEstablishmentSignup && company.trim().length < 2) {
           toast.error("Informe o nome do seu negócio.");
-          setLoading(false);
           return;
         }
         if (isEstablishmentSignup && !segment) {
           toast.error("Selecione a categoria do seu negócio.");
-          setLoading(false);
           return;
         }
         const creds = walletFlow ? walletCredentials(digits) : { email, password };
+        authLog("signup:start", { role, walletFlow });
         const { data: signUpData, error } = await supabase.auth.signUp({
           email: creds.email,
           password: creds.password,
@@ -382,25 +407,55 @@ function AuthPage() {
             emailRedirectTo: window.location.origin + "/auth",
           },
         });
+
         if (error) {
-          const msg = (error.message || "").toLowerCase();
-          if (walletFlow && (msg.includes("already") || msg.includes("registered") || msg.includes("exists"))) {
-            const retry = await supabase.auth.signInWithPassword(creds);
-            if (retry.error) throw new Error("Este WhatsApp já tem cadastro. Toque em Entrar.");
-          } else if (msg.includes("already") || msg.includes("registered") || msg.includes("exists")) {
-            throw new Error("Já existe uma conta com este e-mail. Use “Entrar” ou recupere sua senha.");
+          // Cenário: limite de envio de e-mail. NUNCA repetir o cadastro.
+          if (isEmailRateLimit(error)) {
+            authLog("signup:rate_limited");
+            markAttempt(false);
+            setAuthNotice({ kind: "ratelimit", email: creds.email });
+            setCooldown(60);
+            return;
+          }
+          if (isAlreadyRegistered(error)) {
+            authLog("signup:already_registered");
+            // Carteira usa credencial sintética: tentamos entrar direto.
+            if (walletFlow) {
+              const retry = await supabase.auth.signInWithPassword(creds);
+              if (retry.error) {
+                setAuthNotice({ kind: "exists", email: creds.email });
+                return;
+              }
+            } else {
+              setAuthNotice({ kind: "exists", email: creds.email });
+              return;
+            }
           } else {
             throw error;
           }
         }
 
-        // Cadastro nunca fica "pendente de e-mail": se o projeto ainda devolver
-        // sessão nula (confirmação pendente), confirmamos no servidor e entramos.
+        // Supabase devolve user com `identities: []` quando o e-mail já existe
+        // e a confirmação está ativa (não é erro, mas também não é conta nova).
+        if (!error && signUpData?.user && (signUpData.user.identities?.length ?? 0) === 0 && !walletFlow) {
+          authLog("signup:existing_identity");
+          setAuthNotice({ kind: "exists", email: creds.email });
+          return;
+        }
+
+        // Cenário A: sessão já criada (confirmação de e-mail desativada).
         let session = (await supabase.auth.getSession()).data.session;
         if (!session) {
           const direct = await supabase.auth.signInWithPassword(creds);
           session = direct.data.session ?? null;
+          if (!session && isEmailRateLimit(direct.error)) {
+            setAuthNotice({ kind: "ratelimit", email: creds.email });
+            setCooldown(60);
+            return;
+          }
           if (!session) {
+            // Cenário B: confirmação de e-mail pendente. A conta EXISTE — não
+            // recriar. Tentamos autoconfirmar no servidor (exige service role).
             try {
               const { confirmEmailByAddress } = await import("@/lib/auth-confirm.functions");
               const res = await confirmEmailByAddress({ data: { email: creds.email } });
@@ -408,20 +463,32 @@ function AuthPage() {
                 const retry = await supabase.auth.signInWithPassword(creds);
                 session = retry.data.session ?? null;
               }
-            } catch { /* mostra o erro genérico abaixo */ }
+            } catch (confirmErr) {
+              authLog("signup:autoconfirm_unavailable", {
+                reason: confirmErr instanceof Error ? confirmErr.message.slice(0, 120) : "unknown",
+              });
+            }
           }
-          if (!session) throw new Error("Conta criada, mas não conseguimos iniciar a sessão. Tente entrar novamente.");
+          if (!session) {
+            authLog("signup:pending_confirmation");
+            markAttempt(true);
+            setAuthNotice({ kind: "confirm", email: creds.email });
+            return;
+          }
         }
 
-        const uid = session.user?.id ?? signUpData.user?.id;
+        const uid = session.user?.id ?? signUpData?.user?.id;
 
         if (uid) {
-          await supabase.from("profiles").upsert(
+          // O trigger handle_new_user já cria o profile; aqui só completamos os dados.
+          const { error: profErr } = await supabase.from("profiles").upsert(
             { id: uid, full_name: name, phone: whatsapp, account_type: isEstablishmentSignup ? "establishment" : "customer" },
             { onConflict: "id" },
           );
+          if (profErr) authLog("signup:profile_upsert_failed", { code: profErr.code });
         }
         markAttempt(true);
+        authLog("signup:success", { role });
         if (isEstablishmentSignup) {
 
           try {
@@ -446,7 +513,6 @@ function AuthPage() {
           const digits = whatsapp.replace(/\D/g, "");
           if (digits.length < 10) {
             toast.error("Informe seu WhatsApp com DDD.");
-            setLoading(false);
             return;
           }
           creds = walletCredentials(digits);
@@ -458,11 +524,19 @@ function AuthPage() {
           const msg = (error.message || "").toLowerCase();
           const code = (error as { code?: string }).code ?? "";
           if (msg.includes("not confirmed") || msg.includes("email not confirmed") || code === "email_not_confirmed") {
-            const { confirmEmailByAddress } = await import("@/lib/auth-confirm.functions");
-            const res = await confirmEmailByAddress({ data: { email: creds.email } });
-            if (res.ok) {
-              const retry = await supabase.auth.signInWithPassword(creds);
-              error = retry.error;
+            try {
+              const { confirmEmailByAddress } = await import("@/lib/auth-confirm.functions");
+              const res = await confirmEmailByAddress({ data: { email: creds.email } });
+              if (res.ok) {
+                const retry = await supabase.auth.signInWithPassword(creds);
+                error = retry.error;
+              }
+            } catch {
+              /* servidor sem service role: cai no aviso de confirmação abaixo */
+            }
+            if (error) {
+              setAuthNotice({ kind: "confirm", email: creds.email });
+              return;
             }
           }
           // Fluxo carteira: tenta localizar a conta pelo WhatsApp mesmo que o
@@ -482,6 +556,11 @@ function AuthPage() {
             }
           }
           if (error) {
+            if (isEmailRateLimit(error)) {
+              setAuthNotice({ kind: "ratelimit", email: creds.email });
+              setCooldown(60);
+              return;
+            }
             if (walletFlow && ((error.message || "").toLowerCase().includes("invalid"))) {
               // Cliente ainda não tem conta — leva direto ao cadastro mantendo o WhatsApp.
               toast.info("Não encontramos seu WhatsApp. Complete seu nome para criar sua conta.");
@@ -494,6 +573,7 @@ function AuthPage() {
         }
 
         markAttempt(true);
+        authLog("signin:success", { role });
         if (walletFlow) setWalletHint(whatsapp);
         const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next, role });
         if (dest.toastKind === "error") toast.error(dest.toast ?? "Não foi possível vincular seu cartão.");
@@ -503,11 +583,14 @@ function AuthPage() {
       }
     } catch (err) {
       markAttempt(false);
+      authLog("error", { message: err instanceof Error ? err.message.slice(0, 160) : "unknown" });
       toast.error(err instanceof Error ? err.message : "Erro ao autenticar");
     } finally {
+      submittingRef.current = false;
       setLoading(false);
     }
   }
+
 
 
   return (
