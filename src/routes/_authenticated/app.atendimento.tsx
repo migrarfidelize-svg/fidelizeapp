@@ -134,11 +134,20 @@ function Inner({ establishmentId, qc }: { establishmentId: string; qc: ReturnTyp
 
 
       <Tabs defaultValue="inbox">
-        <TabsList>
+        <TabsList className="flex-wrap">
           <TabsTrigger value="inbox"><Inbox className="h-4 w-4 mr-1" />Caixa de entrada</TabsTrigger>
-          <TabsTrigger value="conexao"><Plug className="h-4 w-4 mr-1" />Conexão</TabsTrigger>
+          <TabsTrigger value="pedidos"><ShoppingBag className="h-4 w-4 mr-1" />Pedidos &amp; Entregas</TabsTrigger>
+          <TabsTrigger value="conexao"><Plug className="h-4 w-4 mr-1" />Conexão (QR)</TabsTrigger>
           <TabsTrigger value="respostas"><Zap className="h-4 w-4 mr-1" />Respostas rápidas</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="pedidos" className="mt-6 space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Aprove ou recuse pedidos, acompanhe o preparo e envie para um entregador da plataforma sem sair do atendimento.
+          </p>
+          <OrdersDock establishmentId={establishmentId} variant="board" />
+        </TabsContent>
+
 
         <TabsContent value="inbox" className="mt-6">
           {!connected && (
