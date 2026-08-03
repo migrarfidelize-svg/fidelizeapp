@@ -85,8 +85,9 @@ export function OrdersDock({
 
   const live = useMemo(() => {
     const list = (orders.data as any[]) ?? [];
-    return list.filter((o) => ["new", "confirmed", "preparing", "ready"].includes(o.status)).slice(0, 12);
-  }, [orders.data]);
+    const open = list.filter((o) => ["new", "confirmed", "preparing", "ready"].includes(o.status));
+    return board ? open : open.slice(0, 12);
+  }, [orders.data, board]);
 
   const deliveryByOrder = useMemo(() => {
     const m = new Map<string, any>();
@@ -98,7 +99,13 @@ export function OrdersDock({
 
   return (
     <>
-      <div className="sticky top-0 z-30 -mx-4 mb-4 border-b bg-background/85 px-4 py-3 backdrop-blur-xl md:-mx-8 md:px-8">
+      <div
+        className={
+          board
+            ? "rounded-2xl border bg-card/40 p-4"
+            : "sticky top-0 z-30 -mx-4 mb-4 border-b bg-background/85 px-4 py-3 backdrop-blur-xl md:-mx-8 md:px-8"
+        }
+      >
         <div className="mb-2 flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-2 text-sm font-semibold">
             <ShoppingBag className="h-4 w-4 text-primary" />
