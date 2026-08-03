@@ -28,6 +28,7 @@ import { GuidedTour, type TourStep } from "@/components/GuidedTour";
 import { PageGuidePrompt } from "@/components/merchant/PageGuidePrompt";
 import { PageGuideButton } from "@/components/merchant/PageGuideButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { usePermissions } from "@/hooks/usePermissions";
 import { RouteLoading } from "@/components/RouteLoading";
 import { PanelTransition } from "@/components/PanelTransition";
@@ -713,6 +714,7 @@ function AppLayout() {
 
           {/* Main with page transition */}
           <main className="flex-1 min-w-0 relative">
+            <ErrorBoundary name="app">
             <AnimatePresence mode="wait">
               <motion.div
                 key={pathname}
@@ -726,6 +728,7 @@ function AppLayout() {
                 <Outlet />
               </motion.div>
             </AnimatePresence>
+            </ErrorBoundary>
           </main>
 
           {/* Barra inferior (mobile) — atalhos da operação diária */}

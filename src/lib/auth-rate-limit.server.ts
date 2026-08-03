@@ -59,7 +59,7 @@ export async function checkAuthRateLimit(params: {
     const since = new Date(Date.now() - RATE_LIMITS.windowMinutes * 60_000).toISOString();
 
     if (params.identifier) {
-      const { count } = await (supabaseAdmin as any)
+      const { count } = await supabaseAdmin
         .from("auth_attempts")
         .select("id", { count: "exact", head: true })
         .eq("identifier", params.identifier)
@@ -75,7 +75,7 @@ export async function checkAuthRateLimit(params: {
     }
 
     if (params.ip) {
-      const { count } = await (supabaseAdmin as any)
+      const { count } = await supabaseAdmin
         .from("auth_attempts")
         .select("id", { count: "exact", head: true })
         .eq("ip", params.ip)
@@ -102,7 +102,7 @@ export async function recordAuthAttempt(params: {
 }): Promise<void> {
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await (supabaseAdmin as any).from("auth_attempts").insert({
+    await supabaseAdmin.from("auth_attempts").insert({
       ip: params.ip,
       identifier: params.identifier,
       action: params.action,

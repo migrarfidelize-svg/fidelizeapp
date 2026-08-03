@@ -13,6 +13,7 @@ import { PostStampReviewSheet } from "@/components/wallet/PostStampReviewSheet";
 import { CompleteProfileDialog } from "@/components/wallet/CompleteProfileDialog";
 import { InboxBellBadge } from "@/components/wallet/InboxBellBadge";
 import { haptic } from "@/lib/haptics";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { setWalletHint } from "@/lib/wallet-hint";
 
 
@@ -172,7 +173,9 @@ function WalletLayout() {
       </header>
 
       <main className="mx-auto max-w-3xl px-4 pt-4">
+        <ErrorBoundary name="carteira">
         <Outlet />
+        </ErrorBoundary>
       </main>
 
       {/* Bottom nav com FAB central "Meu QR" */}
