@@ -527,7 +527,9 @@ export const getMyHistory = createServerFn({ method: "GET" })
  */
 export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { lat?: number; lng?: number; radiusKm?: number } | undefined) => input ?? {})
+  .inputValidator(
+    (input: { lat?: number; lng?: number; radiusKm?: number; city?: string | null } | undefined) => input ?? {},
+  )
   .handler(async ({ data: input, context }) => {
     // Estabelecimentos onde o usuário já tem cartão/registro — não excluímos,
     // apenas marcamos como "já visitados" para o cliente ver novidades/promoções.
@@ -605,7 +607,7 @@ export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
     if (hasOrigin) {
       const pending = (data ?? [])
         .filter((e) => !coords.has(e.id) && (e.address || e.city))
-        .slice(0, 5);
+        .slice(0, 12);
       if (pending.length) {
         try {
           const [{ geocodeAddress }, { supabaseAdmin }] = await Promise.all([
@@ -657,12 +659,20 @@ export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
     });
 
     if (origin && radiusKm) {
-      const inRadius = list.filter((e) => e.distance_km != null && e.distance_km <= radiusKm);
-      // Só aplicamos o corte quando temos base geográfica suficiente; caso
-      // contrário devolvemos tudo para não deixar a tela vazia.
-      if (inRadius.length) return inRadius.sort((a, b) => (a.distance_km ?? 0) - (b.distance_km ?? 0));
+      // Corte geográfico real: fora do raio não aparece. Estabelecimentos sem
+      // coordenada só entram quando a cidade informada pelo cliente bate.
+      const normCity = (s: string | null | undefined) =>
+        (s ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+      const cityNorm = normCity(input.city);
+      const inRadius = list.filter((e) => {
+        if (e.distance_km != null) return e.distance_km <= radiusKm;
+        return cityNorm ? normCity(e.city) === cityNorm : false;
+      });
+      return inRadius.sort((a, b) => (a.distance_km ?? 9999) - (b.distance_km ?? 9999));
     }
+
     return list;
+
   });
 
 /**

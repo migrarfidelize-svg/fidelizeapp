@@ -1,13 +1,62 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getDiscoverBanners } from "@/lib/discover.functions";
 import type { DiscoverBanner } from "@/lib/discover";
 
 /**
  * Carrossel de banners do Descobrir (estilo iFood).
- * Conteúdo 100% controlado pelo Super Admin em /hash/descobrir.
+ * Conteúdo controlado pelo Super Admin em /hash/descobrir. Enquanto nenhum
+ * banner estiver cadastrado, exibimos exemplos fictícios para o cliente já ver
+ * a vitrine funcionando.
  */
+const DEMO_BANNERS: DiscoverBanner[] = [
+  {
+    id: "demo-1",
+    title: "Cafés artesanais com 3x mais carimbos",
+    subtitle: "Somente esta semana nos parceiros da sua região",
+    image_url: null,
+    link_url: null,
+    bg_color: null,
+    text_color: null,
+    cta_label: "Ver parceiros",
+    active: true,
+    sort_order: 0,
+    starts_at: null,
+    ends_at: null,
+    city: null,
+  },
+  {
+    id: "demo-2",
+    title: "Complete 10 carimbos e ganhe um prêmio",
+    subtitle: "Colecione cartões digitais sem perder nenhum papelzinho",
+    image_url: null,
+    link_url: null,
+    bg_color: null,
+    text_color: null,
+    cta_label: "Como funciona",
+    active: true,
+    sort_order: 1,
+    starts_at: null,
+    ends_at: null,
+    city: null,
+  },
+  {
+    id: "demo-3",
+    title: "Novos parceiros perto de você",
+    subtitle: "Restaurantes, beleza e serviços entrando toda semana",
+    image_url: null,
+    link_url: null,
+    bg_color: null,
+    text_color: null,
+    cta_label: "Descobrir agora",
+    active: true,
+    sort_order: 2,
+    starts_at: null,
+    ends_at: null,
+    city: null,
+  },
+];
+
 export function DiscoverBanners({ city, intervalMs = 6000 }: { city?: string | null; intervalMs?: number }) {
   const { data } = useQuery({
     queryKey: ["discover-banners", city ?? ""],
@@ -16,7 +65,11 @@ export function DiscoverBanners({ city, intervalMs = 6000 }: { city?: string | n
     retry: false,
   });
 
-  const banners = useMemo(() => (data ?? []) as DiscoverBanner[], [data]);
+  const banners = useMemo(() => {
+    const rows = (data ?? []) as DiscoverBanner[];
+    return rows.length ? rows : DEMO_BANNERS;
+  }, [data]);
+
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -31,13 +84,11 @@ export function DiscoverBanners({ city, intervalMs = 6000 }: { city?: string | n
 
   if (!banners.length) return null;
 
-  const go = (dir: 1 | -1) => setIndex((i) => (i + dir + banners.length) % banners.length);
-
   return (
-    <div className="relative -mx-1">
-      <div className="overflow-hidden rounded-3xl">
+    <div className="space-y-3">
+      <div className="overflow-hidden rounded-[1.75rem]">
         <div
-          className="flex transition-transform duration-500 ease-out"
+          className="flex transition-transform duration-700 ease-out"
           style={{ transform: `translateX(-${index * 100}%)` }}
         >
           {banners.map((b) => (
@@ -47,52 +98,24 @@ export function DiscoverBanners({ city, intervalMs = 6000 }: { city?: string | n
       </div>
 
       {banners.length > 1 && (
-        <>
-          <button
-            onClick={() => go(-1)}
-            aria-label="Banner anterior"
-            className="absolute left-1 top-1/2 hidden -translate-y-1/2 rounded-full bg-background/70 p-1.5 text-foreground shadow-sm backdrop-blur transition-opacity hover:bg-background sm:block"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => go(1)}
-            aria-label="Próximo banner"
-            className="absolute right-1 top-1/2 hidden -translate-y-1/2 rounded-full bg-background/70 p-1.5 text-foreground shadow-sm backdrop-blur transition-opacity hover:bg-background sm:block"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-          <div className="mt-2 flex justify-center gap-1.5">
-            {banners.map((b, i) => (
-              <button
-                key={b.id}
-                onClick={() => setIndex(i)}
-                aria-label={`Ir para o banner ${i + 1}`}
-                className={`h-1.5 rounded-full transition-all ${
-                  i === index ? "w-5 bg-primary" : "w-1.5 bg-border"
-                }`}
-              />
-            ))}
-          </div>
-        </>
+        <div className="flex justify-center gap-1.5">
+          {banners.map((b, i) => (
+            <button
+              key={b.id}
+              onClick={() => setIndex(i)}
+              aria-label={`Ir para o banner ${i + 1}`}
+              className={`h-1.5 rounded-full transition-all ${i === index ? "w-6 bg-primary" : "w-1.5 bg-border"}`}
+            />
+          ))}
+        </div>
       )}
     </div>
   );
 }
 
 function BannerCard({ banner }: { banner: DiscoverBanner }) {
-  const style = {
-    background: banner.image_url
-      ? undefined
-      : banner.bg_color || "linear-gradient(120deg, hsl(var(--primary)/0.9), hsl(var(--accent)/0.85))",
-    color: banner.text_color || undefined,
-  } as const;
-
   const inner = (
-    <div
-      className="relative flex h-36 w-full shrink-0 basis-full items-end overflow-hidden rounded-3xl border border-border/50 sm:h-44"
-      style={style}
-    >
+    <div className="relative flex aspect-[16/8] w-full shrink-0 basis-full flex-col justify-between overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-primary to-accent p-6 text-primary-foreground shadow-xl shadow-primary/20">
       {banner.image_url && (
         <img
           src={banner.image_url}
@@ -101,26 +124,38 @@ function BannerCard({ banner }: { banner: DiscoverBanner }) {
           className="absolute inset-0 h-full w-full object-cover"
         />
       )}
-      <div className="relative z-10 w-full bg-gradient-to-t from-black/70 via-black/25 to-transparent p-4">
-        <div className="font-display text-base font-black text-white drop-shadow sm:text-lg">{banner.title}</div>
-        {banner.subtitle && <p className="text-xs text-white/85">{banner.subtitle}</p>}
-        {banner.cta_label && (
-          <span className="mt-2 inline-flex rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold text-black">
-            {banner.cta_label}
-          </span>
-        )}
+      {banner.image_url && <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />}
+
+      {/* Formas decorativas — vitrine iluminada */}
+      {!banner.image_url && (
+        <>
+          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/10" />
+          <div className="pointer-events-none absolute -bottom-10 right-4 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
+        </>
+      )}
+
+      <div className="relative z-10 space-y-1">
+        <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80">Destaque</span>
+        <h3 className="font-display text-xl font-extrabold leading-tight drop-shadow-sm">{banner.title}</h3>
+        {banner.subtitle && <p className="max-w-[85%] text-xs font-medium opacity-85">{banner.subtitle}</p>}
       </div>
+
+      {banner.cta_label && (
+        <span className="relative z-10 inline-flex w-fit items-center rounded-2xl border border-white/30 bg-white/20 px-5 py-2.5 text-[11px] font-black uppercase tracking-wider backdrop-blur-md">
+          {banner.cta_label}
+        </span>
+      )}
     </div>
   );
 
-  if (!banner.link_url) return <div className="w-full shrink-0 basis-full px-1">{inner}</div>;
+  if (!banner.link_url) return <div className="w-full shrink-0 basis-full">{inner}</div>;
   const external = /^https?:\/\//i.test(banner.link_url);
   return (
     <a
       href={banner.link_url}
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
-      className="w-full shrink-0 basis-full px-1"
+      className="w-full shrink-0 basis-full"
     >
       {inner}
     </a>
