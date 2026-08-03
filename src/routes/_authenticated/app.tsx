@@ -88,7 +88,7 @@ export const Route = createFileRoute("/_authenticated/app")({
         throw redirect({ to: "/hash" });
       }
       if (!isSuperAdmin && access.accountType === "customer") throw redirect({ to: "/carteira" });
-      if (access.accountType === "customer") throw redirect({ to: "/carteira" });
+      
     } catch (e) {
       if (e && typeof e === "object" && ("isRedirect" in e || "to" in e)) throw e;
       // Fail-open on transient RPC errors — layout still renders; auth gate protects.
