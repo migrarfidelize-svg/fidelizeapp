@@ -71,6 +71,7 @@ import { Route as AuthenticatedHashEmpresasRouteImport } from './routes/_authent
 import { Route as AuthenticatedHashEmailsRouteImport } from './routes/_authenticated/hash.emails'
 import { Route as AuthenticatedHashEmailTemplatesRouteImport } from './routes/_authenticated/hash.email-templates'
 import { Route as AuthenticatedHashEmailFilaRouteImport } from './routes/_authenticated/hash.email-fila'
+import { Route as AuthenticatedHashDescobrirRouteImport } from './routes/_authenticated/hash.descobrir'
 import { Route as AuthenticatedHashConfigRouteImport } from './routes/_authenticated/hash.config'
 import { Route as AuthenticatedHashCardapioJsonldRouteImport } from './routes/_authenticated/hash.cardapio-jsonld'
 import { Route as AuthenticatedHashAvaliacoesRouteImport } from './routes/_authenticated/hash.avaliacoes'
@@ -479,6 +480,12 @@ const AuthenticatedHashEmailFilaRoute =
   AuthenticatedHashEmailFilaRouteImport.update({
     id: '/email-fila',
     path: '/email-fila',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashDescobrirRoute =
+  AuthenticatedHashDescobrirRouteImport.update({
+    id: '/descobrir',
+    path: '/descobrir',
     getParentRoute: () => AuthenticatedHashRoute,
   } as any)
 const AuthenticatedHashConfigRoute = AuthenticatedHashConfigRouteImport.update({
@@ -1053,6 +1060,7 @@ export interface FileRoutesByFullPath {
   '/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
   '/hash/cardapio-jsonld': typeof AuthenticatedHashCardapioJsonldRoute
   '/hash/config': typeof AuthenticatedHashConfigRoute
+  '/hash/descobrir': typeof AuthenticatedHashDescobrirRoute
   '/hash/email-fila': typeof AuthenticatedHashEmailFilaRoute
   '/hash/email-templates': typeof AuthenticatedHashEmailTemplatesRoute
   '/hash/emails': typeof AuthenticatedHashEmailsRoute
@@ -1195,6 +1203,7 @@ export interface FileRoutesByTo {
   '/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
   '/hash/cardapio-jsonld': typeof AuthenticatedHashCardapioJsonldRoute
   '/hash/config': typeof AuthenticatedHashConfigRoute
+  '/hash/descobrir': typeof AuthenticatedHashDescobrirRoute
   '/hash/email-fila': typeof AuthenticatedHashEmailFilaRoute
   '/hash/email-templates': typeof AuthenticatedHashEmailTemplatesRoute
   '/hash/emails': typeof AuthenticatedHashEmailsRoute
@@ -1345,6 +1354,7 @@ export interface FileRoutesById {
   '/_authenticated/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
   '/_authenticated/hash/cardapio-jsonld': typeof AuthenticatedHashCardapioJsonldRoute
   '/_authenticated/hash/config': typeof AuthenticatedHashConfigRoute
+  '/_authenticated/hash/descobrir': typeof AuthenticatedHashDescobrirRoute
   '/_authenticated/hash/email-fila': typeof AuthenticatedHashEmailFilaRoute
   '/_authenticated/hash/email-templates': typeof AuthenticatedHashEmailTemplatesRoute
   '/_authenticated/hash/emails': typeof AuthenticatedHashEmailsRoute
@@ -1495,6 +1505,7 @@ export interface FileRouteTypes {
     | '/hash/avaliacoes'
     | '/hash/cardapio-jsonld'
     | '/hash/config'
+    | '/hash/descobrir'
     | '/hash/email-fila'
     | '/hash/email-templates'
     | '/hash/emails'
@@ -1637,6 +1648,7 @@ export interface FileRouteTypes {
     | '/hash/avaliacoes'
     | '/hash/cardapio-jsonld'
     | '/hash/config'
+    | '/hash/descobrir'
     | '/hash/email-fila'
     | '/hash/email-templates'
     | '/hash/emails'
@@ -1786,6 +1798,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hash/avaliacoes'
     | '/_authenticated/hash/cardapio-jsonld'
     | '/_authenticated/hash/config'
+    | '/_authenticated/hash/descobrir'
     | '/_authenticated/hash/email-fila'
     | '/_authenticated/hash/email-templates'
     | '/_authenticated/hash/emails'
@@ -2352,6 +2365,13 @@ declare module '@tanstack/react-router' {
       path: '/email-fila'
       fullPath: '/hash/email-fila'
       preLoaderRoute: typeof AuthenticatedHashEmailFilaRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/descobrir': {
+      id: '/_authenticated/hash/descobrir'
+      path: '/descobrir'
+      fullPath: '/hash/descobrir'
+      preLoaderRoute: typeof AuthenticatedHashDescobrirRouteImport
       parentRoute: typeof AuthenticatedHashRoute
     }
     '/_authenticated/hash/config': {
@@ -3140,6 +3160,7 @@ interface AuthenticatedHashRouteChildren {
   AuthenticatedHashAvaliacoesRoute: typeof AuthenticatedHashAvaliacoesRoute
   AuthenticatedHashCardapioJsonldRoute: typeof AuthenticatedHashCardapioJsonldRoute
   AuthenticatedHashConfigRoute: typeof AuthenticatedHashConfigRoute
+  AuthenticatedHashDescobrirRoute: typeof AuthenticatedHashDescobrirRoute
   AuthenticatedHashEmailFilaRoute: typeof AuthenticatedHashEmailFilaRoute
   AuthenticatedHashEmailTemplatesRoute: typeof AuthenticatedHashEmailTemplatesRoute
   AuthenticatedHashEmailsRoute: typeof AuthenticatedHashEmailsRoute
@@ -3173,6 +3194,7 @@ const AuthenticatedHashRouteChildren: AuthenticatedHashRouteChildren = {
   AuthenticatedHashAvaliacoesRoute: AuthenticatedHashAvaliacoesRoute,
   AuthenticatedHashCardapioJsonldRoute: AuthenticatedHashCardapioJsonldRoute,
   AuthenticatedHashConfigRoute: AuthenticatedHashConfigRoute,
+  AuthenticatedHashDescobrirRoute: AuthenticatedHashDescobrirRoute,
   AuthenticatedHashEmailFilaRoute: AuthenticatedHashEmailFilaRoute,
   AuthenticatedHashEmailTemplatesRoute: AuthenticatedHashEmailTemplatesRoute,
   AuthenticatedHashEmailsRoute: AuthenticatedHashEmailsRoute,
@@ -3313,13 +3335,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

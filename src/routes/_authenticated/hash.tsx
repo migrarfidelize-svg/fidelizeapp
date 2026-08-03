@@ -17,6 +17,7 @@ import {
   Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock, Wallet2,
   UsersRound, Settings, Mail, FileText, ListChecks, LifeBuoy, Package,
   DollarSign, Wallet, Megaphone, Cog, BookOpen, Menu, Star, Plug, Sparkles, Rocket, FileJson, KeyRound, ChevronRight, Activity, Bike, Percent,
+  Compass,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -83,6 +84,7 @@ const NAV_GROUPS: NavGroup[] = [
     icon: Cog,
     items: [
       { to: "/hash/landing", label: "Página inicial", icon: Sparkles },
+      { to: "/hash/descobrir", label: "Descobrir & Banners", icon: Compass },
       { to: "/hash/integracoes", label: "Integrações", icon: Plug },
       { to: "/hash/whatsapp", label: "WhatsApp & Atendimento", icon: Plug },
 

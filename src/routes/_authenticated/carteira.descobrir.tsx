@@ -1,11 +1,14 @@
 import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useSuspenseQuery, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Compass, MapPin, Sparkles, ChevronRight, ShieldCheck, Tag, Search, ArrowLeft, X, RefreshCw, UtensilsCrossed, ShoppingBag } from "lucide-react";
 import { getDiscoveryEstablishments } from "@/lib/my-wallet.functions";
 import { WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
 import { SponsoredAdsRail } from "@/components/wallet/SponsoredAdsRail";
+import { DiscoverBanners } from "@/components/wallet/DiscoverBanners";
+import { getDiscoverSettings } from "@/lib/discover.functions";
+import { DEFAULT_DISCOVER_SETTINGS, formatDistance } from "@/lib/discover";
 import {
   DISCOVER_CATEGORIES,
   CATEGORY_BY_ID,
@@ -17,13 +20,18 @@ import {
 // Lista aberta a todos os estabelecimentos ativos — sem distinção de plano.
 // Revalidamos sempre ao abrir para que parceiros recém-criados (tipicamente
 // no plano gratuito) apareçam na hora, sem depender de cache antigo.
-const opts = queryOptions({
-  queryKey: ["discovery-establishments"],
-  queryFn: () => getDiscoveryEstablishments(),
-  staleTime: 0,
-  refetchOnMount: "always",
-  refetchOnWindowFocus: true,
-});
+type GeoQuery = { lat?: number; lng?: number; radiusKm?: number };
+
+const buildOpts = (geo: GeoQuery) =>
+  queryOptions({
+    queryKey: ["discovery-establishments", geo.lat ?? null, geo.lng ?? null, geo.radiusKm ?? null],
+    queryFn: () => getDiscoveryEstablishments({ data: geo }),
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+  });
+
+const opts = buildOpts({});
 
 export const Route = createFileRoute("/_authenticated/carteira/descobrir")({
   ssr: false,
@@ -54,7 +62,7 @@ function normalizeCity(s: string | null | undefined) {
 
 function DiscoverPage() {
   const qc = useQueryClient();
-  const { data = [] } = useSuspenseQuery(opts);
+  const base = useSuspenseQuery(opts);
   const [geo, setGeo] = useState<GeoState>(() => {
     if (typeof window === "undefined") return "idle";
     return (localStorage.getItem("wallet:geo") as GeoState) || "idle";
@@ -63,9 +71,46 @@ function DiscoverPage() {
     if (typeof window === "undefined") return "";
     return localStorage.getItem("wallet:geo:city") || "";
   });
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = localStorage.getItem("wallet:geo:coords");
+      return raw ? (JSON.parse(raw) as { lat: number; lng: number }) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [radiusKm, setRadiusKm] = useState<number>(() => {
+    if (typeof window === "undefined") return 30;
+    return Number(localStorage.getItem("wallet:geo:radius")) || 30;
+  });
   const [locating, setLocating] = useState(false);
   const [active, setActive] = useState<DiscoverCategoryId | "promo" | "perto" | "todos" | null>(null);
   const [query, setQuery] = useState("");
+
+  const settingsQuery = useQuery({
+    queryKey: ["discover-settings"],
+    queryFn: () => getDiscoverSettings(),
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
+  const settings = settingsQuery.data ?? DEFAULT_DISCOVER_SETTINGS;
+
+  const hasGeo = !!coords;
+  const geoList = useQuery({
+    ...buildOpts(hasGeo ? { lat: coords!.lat, lng: coords!.lng, radiusKm } : {}),
+    enabled: hasGeo,
+  });
+  const data = (hasGeo ? geoList.data : base.data) ?? base.data ?? [];
+
+  useEffect(() => {
+    if (coords) localStorage.setItem("wallet:geo:coords", JSON.stringify(coords));
+  }, [coords]);
+
+  useEffect(() => {
+    localStorage.setItem("wallet:geo:radius", String(radiusKm));
+  }, [radiusKm]);
+
 
 
   useEffect(() => {
@@ -78,15 +123,16 @@ function DiscoverPage() {
     if (myCity) localStorage.setItem("wallet:geo:city", myCity);
   }, [myCity]);
 
-  // Se acabamos de conceder e ainda não temos cidade, tenta resolver.
+  // Se acabamos de conceder e ainda não temos cidade/coordenadas, resolvemos.
   useEffect(() => {
-    if (geo !== "granted" || myCity || typeof navigator === "undefined" || !navigator.geolocation) return;
+    if (geo !== "granted" || (myCity && coords) || typeof navigator === "undefined" || !navigator.geolocation) return;
     let cancelled = false;
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
           const { latitude, longitude } = pos.coords;
+          if (!cancelled) setCoords({ lat: latitude, lng: longitude });
           const res = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=10&accept-language=pt-BR`,
             { headers: { Accept: "application/json" } },
@@ -108,7 +154,7 @@ function DiscoverPage() {
     return () => {
       cancelled = true;
     };
-  }, [geo, myCity]);
+  }, [geo, myCity, coords]);
 
   function askGeo() {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
@@ -117,11 +163,15 @@ function DiscoverPage() {
     }
     setGeo("asking");
     navigator.geolocation.getCurrentPosition(
-      () => setGeo("granted"),
+      (pos) => {
+        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setGeo("granted");
+      },
       () => setGeo("denied"),
       { timeout: 8000 },
     );
   }
+
 
   // Ordenação: quando temos cidade do usuário, prioriza estabelecimentos na mesma cidade,
   // depois não-visitados, depois o resto. Sem cidade, mantém heurística "não visitados no topo".
@@ -241,16 +291,41 @@ function DiscoverPage() {
           </div>
         )}
 
+        {/* Banners promocionais — controlados pelo Super Admin */}
+        <DiscoverBanners city={myCity} intervalMs={settings.bannerIntervalMs} />
+
         {geo === "granted" && (
-          <p className="rounded-2xl border border-primary/30 bg-primary/5 px-3 py-2 text-xs text-primary">
-            <MapPin className="mr-1 inline h-3.5 w-3.5" />
-            {locating
-              ? "Detectando sua região…"
-              : myCity
-              ? `Ordenado por proximidade — priorizando ${myCity}.`
-              : "Localização ativa — priorizando novidades."}
-          </p>
+          <div className="space-y-2 rounded-2xl border border-primary/30 bg-primary/5 px-3 py-2.5">
+            <p className="text-xs text-primary">
+              <MapPin className="mr-1 inline h-3.5 w-3.5" />
+              {locating
+                ? "Detectando sua região…"
+                : coords
+                ? `Mostrando lugares num raio de ${radiusKm} km${myCity ? ` · ${myCity}` : ""}.`
+                : myCity
+                ? `Ordenado por proximidade — priorizando ${myCity}.`
+                : "Localização ativa — priorizando novidades."}
+            </p>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Raio</span>
+              {settings.radiusOptions.map((km) => (
+                <button
+                  key={km}
+                  onClick={() => setRadiusKm(km)}
+                  className={`rounded-full border px-2.5 py-1 text-[11px] font-bold transition-colors ${
+                    radiusKm === km
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border/60 bg-card/40 text-muted-foreground hover:border-primary/40"
+                  }`}
+                >
+                  {km} km
+                </button>
+              ))}
+            </div>
+          </div>
         )}
+
+
 
         {sorted.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-border/60 bg-card/30 p-8 text-center">
@@ -408,6 +483,7 @@ function DiscoverRow({
     address: string | null;
     city: string | null;
     description: string | null;
+    distance_km?: number | null;
     visited: boolean;
     has_promotion: boolean;
     has_menu: boolean;
@@ -416,7 +492,8 @@ function DiscoverRow({
   nearby?: boolean;
 }) {
   const brand = e.primary_color || "hsl(var(--primary))";
-  const location = [e.address, e.city].filter(Boolean).join(" · ");
+  const distance = formatDistance(e.distance_km);
+  const location = [distance, e.address, e.city].filter(Boolean).join(" · ");
   const hasShowcase = e.has_menu || e.has_catalog;
   return (
     <li className="group overflow-hidden rounded-2xl border border-border/60 bg-card/40 transition-all hover:border-primary/40 hover:bg-card/60">

@@ -1946,6 +1946,60 @@ export type Database = {
           },
         ]
       }
+      discover_banners: {
+        Row: {
+          active: boolean
+          bg_color: string | null
+          city: string | null
+          created_at: string
+          cta_label: string | null
+          ends_at: string | null
+          id: string
+          image_url: string | null
+          link_url: string | null
+          sort_order: number
+          starts_at: string | null
+          subtitle: string | null
+          text_color: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          bg_color?: string | null
+          city?: string | null
+          created_at?: string
+          cta_label?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          link_url?: string | null
+          sort_order?: number
+          starts_at?: string | null
+          subtitle?: string | null
+          text_color?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          bg_color?: string | null
+          city?: string | null
+          created_at?: string
+          cta_label?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          link_url?: string | null
+          sort_order?: number
+          starts_at?: string | null
+          subtitle?: string | null
+          text_color?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_logs: {
         Row: {
           actor_id: string | null
@@ -2299,10 +2353,13 @@ export type Database = {
           email: string | null
           external_links: Json
           facebook: string | null
+          geocoded_at: string | null
           google_maps_url: string | null
           id: string
           instagram: string | null
+          latitude: number | null
           logo_url: string | null
+          longitude: number | null
           name: string
           phone: string | null
           plan: Database["public"]["Enums"]["plan_tier"]
@@ -2336,10 +2393,13 @@ export type Database = {
           email?: string | null
           external_links?: Json
           facebook?: string | null
+          geocoded_at?: string | null
           google_maps_url?: string | null
           id?: string
           instagram?: string | null
+          latitude?: number | null
           logo_url?: string | null
+          longitude?: number | null
           name: string
           phone?: string | null
           plan?: Database["public"]["Enums"]["plan_tier"]
@@ -2373,10 +2433,13 @@ export type Database = {
           email?: string | null
           external_links?: Json
           facebook?: string | null
+          geocoded_at?: string | null
           google_maps_url?: string | null
           id?: string
           instagram?: string | null
+          latitude?: number | null
           logo_url?: string | null
+          longitude?: number | null
           name?: string
           phone?: string | null
           plan?: Database["public"]["Enums"]["plan_tier"]
