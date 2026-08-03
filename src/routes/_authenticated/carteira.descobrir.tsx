@@ -2,7 +2,30 @@ import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Compass, MapPin, Sparkles, ChevronRight, ShieldCheck, Tag, Search, ArrowLeft, X, RefreshCw, UtensilsCrossed, ShoppingBag } from "lucide-react";
+import {
+  Compass,
+  MapPin,
+  Sparkles,
+  ChevronRight,
+  ChevronDown,
+  ShieldCheck,
+  Tag,
+  Search,
+  ArrowLeft,
+  X,
+  RefreshCw,
+  UtensilsCrossed,
+  ShoppingBag,
+  Scissors,
+  HeartPulse,
+  Shirt,
+  Dumbbell,
+  PawPrint,
+  Wrench,
+  PartyPopper,
+  Navigation,
+  type LucideIcon,
+} from "lucide-react";
 import { getDiscoveryEstablishments } from "@/lib/my-wallet.functions";
 import { WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
 import { SponsoredAdsRail } from "@/components/wallet/SponsoredAdsRail";
@@ -12,19 +35,30 @@ import { DEFAULT_DISCOVER_SETTINGS, formatDistance } from "@/lib/discover";
 import {
   DISCOVER_CATEGORIES,
   CATEGORY_BY_ID,
+  CATEGORY_ICON_NAME,
   categorizeEstablishment,
   type DiscoverCategoryId,
 } from "@/lib/discover-categories";
 
-
 // Lista aberta a todos os estabelecimentos ativos — sem distinção de plano.
-// Revalidamos sempre ao abrir para que parceiros recém-criados (tipicamente
-// no plano gratuito) apareçam na hora, sem depender de cache antigo.
-type GeoQuery = { lat?: number; lng?: number; radiusKm?: number };
+// Revalidamos sempre ao abrir para que parceiros recém-criados apareçam na hora.
+type GeoQuery = { lat?: number; lng?: number; radiusKm?: number; city?: string | null };
+
+const ICONS: Record<string, LucideIcon> = {
+  UtensilsCrossed,
+  Scissors,
+  HeartPulse,
+  Shirt,
+  Dumbbell,
+  PawPrint,
+  Wrench,
+  PartyPopper,
+  Sparkles,
+};
 
 const buildOpts = (geo: GeoQuery) =>
   queryOptions({
-    queryKey: ["discovery-establishments", geo.lat ?? null, geo.lng ?? null, geo.radiusKm ?? null],
+    queryKey: ["discovery-establishments", geo.lat ?? null, geo.lng ?? null, geo.radiusKm ?? null, geo.city ?? null],
     queryFn: () => getDiscoveryEstablishments({ data: geo }),
     staleTime: 0,
     refetchOnMount: "always",
@@ -44,7 +78,6 @@ export const Route = createFileRoute("/_authenticated/carteira/descobrir")({
   }),
   component: DiscoverPage,
   pendingComponent: () => <RouteLoading label="Carregando estabelecimentos…" fullscreen={false} />,
-
   errorComponent: ({ error, reset }) => <WalletErrorState error={error} onRetry={reset} />,
 });
 
@@ -98,10 +131,10 @@ function DiscoverPage() {
 
   const hasGeo = !!coords;
   const geoList = useQuery({
-    ...buildOpts(hasGeo ? { lat: coords!.lat, lng: coords!.lng, radiusKm } : {}),
+    ...buildOpts(hasGeo ? { lat: coords!.lat, lng: coords!.lng, radiusKm, city: myCity || null } : {}),
     enabled: hasGeo,
   });
-  const data = (hasGeo ? geoList.data : base.data) ?? base.data ?? [];
+  const data = (hasGeo ? geoList.data ?? [] : base.data) ?? [];
 
   useEffect(() => {
     if (coords) localStorage.setItem("wallet:geo:coords", JSON.stringify(coords));
@@ -110,8 +143,6 @@ function DiscoverPage() {
   useEffect(() => {
     localStorage.setItem("wallet:geo:radius", String(radiusKm));
   }, [radiusKm]);
-
-
 
   useEffect(() => {
     if (geo === "granted" || geo === "denied" || geo === "unsupported") {
@@ -137,7 +168,9 @@ function DiscoverPage() {
             `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=10&accept-language=pt-BR`,
             { headers: { Accept: "application/json" } },
           );
-          const j = (await res.json()) as { address?: { city?: string; town?: string; village?: string; municipality?: string } };
+          const j = (await res.json()) as {
+            address?: { city?: string; town?: string; village?: string; municipality?: string };
+          };
           const city = j.address?.city || j.address?.town || j.address?.village || j.address?.municipality || "";
           if (!cancelled) setMyCity(city);
         } catch {
@@ -172,32 +205,31 @@ function DiscoverPage() {
     );
   }
 
-
-  // Ordenação: quando temos cidade do usuário, prioriza estabelecimentos na mesma cidade,
-  // depois não-visitados, depois o resto. Sem cidade, mantém heurística "não visitados no topo".
   const myCityNorm = normalizeCity(myCity);
   const sorted = useMemo(
     () =>
       [...data]
         .map((e) => ({ ...e, category: categorizeEstablishment(e) }))
         .sort((a, b) => {
-          // 1) Promoções ativas primeiro — o cliente vê ofertas antes de tudo.
+          // 1) Mais perto primeiro quando temos distância real.
+          if (a.distance_km != null && b.distance_km != null && a.distance_km !== b.distance_km) {
+            return a.distance_km - b.distance_km;
+          }
+          // 2) Promoções ativas.
           const aPromo = a.has_promotion ? 1 : 0;
           const bPromo = b.has_promotion ? 1 : 0;
           if (aPromo !== bPromo) return bPromo - aPromo;
-          // 2) Proximidade (mesma cidade) quando disponível.
+          // 3) Mesma cidade.
           if (myCityNorm) {
             const aMatch = normalizeCity(a.city) === myCityNorm ? 1 : 0;
             const bMatch = normalizeCity(b.city) === myCityNorm ? 1 : 0;
             if (aMatch !== bMatch) return bMatch - aMatch;
           }
-          // 3) Não visitados no topo.
           return Number(a.visited) - Number(b.visited);
         }),
     [data, myCityNorm],
   );
 
-  // Categorias disponíveis (só as que têm estabelecimentos), com contagem.
   const categories = useMemo(() => {
     const counts = new Map<DiscoverCategoryId, number>();
     for (const e of sorted) counts.set(e.category, (counts.get(e.category) ?? 0) + 1);
@@ -235,279 +267,297 @@ function DiscoverPage() {
       ? CATEGORY_BY_ID.get(active)?.label ?? "Todos"
       : "Todos os lugares";
 
+  const highlights = sorted.slice(0, 4);
 
   return (
     <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["discovery-establishments"] })}>
-      <div className="space-y-4">
-        <div className="pt-2">
-          <div className="flex items-center gap-2">
-            <Compass className="h-5 w-5 text-primary" />
-            <h1 className="font-display text-2xl font-bold tracking-tight">Descobrir</h1>
+      <div className="space-y-6 pb-4">
+        {/* Cabeçalho de localização */}
+        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 pt-2">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-primary">
+              <Compass className="h-3.5 w-3.5" /> Descobrir
+            </div>
             <button
-              onClick={() => qc.invalidateQueries({ queryKey: ["discovery-establishments"] })}
-              aria-label="Atualizar lista"
-              className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-card/40 px-3 py-1.5 text-[11px] font-bold text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+              onClick={() => (geo === "granted" ? undefined : askGeo())}
+              className="mt-0.5 flex min-w-0 items-center gap-1.5"
             >
-              <RefreshCw className="h-3.5 w-3.5" /> Atualizar
+              <MapPin className="h-4 w-4 shrink-0 text-primary" />
+              <span className="truncate font-display text-lg font-extrabold tracking-tight">
+                {locating ? "Detectando…" : myCity || (hasGeo ? "Sua região" : "Ativar localização")}
+              </span>
+              {geo !== "granted" && <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
             </button>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Outros lugares Fidelize esperando por você — colecione novos cartões e ganhe recompensas.
-          </p>
+          <button
+            onClick={() => qc.invalidateQueries({ queryKey: ["discovery-establishments"] })}
+            aria-label="Atualizar lista"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-border/60 bg-card/60 text-muted-foreground shadow-sm transition-colors hover:border-primary/40 hover:text-primary"
+          >
+            <RefreshCw className="h-4.5 w-4.5" />
+          </button>
+        </header>
+
+        {/* Seletor de raio — sempre visível */}
+        <div className="-mx-1 flex items-center gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <span className="shrink-0 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Raio</span>
+          {settings.radiusOptions.map((km) => (
+            <button
+              key={km}
+              onClick={() => {
+                setRadiusKm(km);
+                if (!hasGeo) askGeo();
+              }}
+              className={`shrink-0 rounded-xl px-4 py-2 text-xs font-bold transition-all active:scale-95 ${
+                radiusKm === km && hasGeo
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+                  : "border border-border/60 bg-card/60 text-muted-foreground hover:border-primary/40"
+              }`}
+            >
+              {km} km
+            </button>
+          ))}
         </div>
 
-        {geo !== "granted" && geo !== "denied" && geo !== "unsupported" && (
-          <div className="relative overflow-hidden rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/10 to-transparent p-4">
+        {geo !== "granted" && (
+          <div className="relative overflow-hidden rounded-[1.75rem] border border-primary/25 bg-gradient-to-br from-primary/12 via-accent/8 to-transparent p-5">
             <div className="flex items-start gap-3">
-              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/15 text-primary">
-                <MapPin className="h-5 w-5" />
+              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25">
+                <Navigation className="h-5 w-5" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="font-display text-sm font-bold">Ver o que está perto de você</div>
-                <p className="text-xs text-muted-foreground">
-                  Compartilhe sua localização para priorizar estabelecimentos próximos. Você pode revogar a qualquer momento.
+                <div className="font-display text-base font-extrabold tracking-tight">Só o que está perto de você</div>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Ative a localização para ver apenas estabelecimentos dentro do raio escolhido.
                 </p>
-                <div className="mt-3 flex items-center gap-2">
+                <div className="mt-3 flex items-center gap-3">
                   <button
                     onClick={askGeo}
                     disabled={geo === "asking"}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground shadow-sm transition-transform active:scale-95 disabled:opacity-60"
+                    className="inline-flex items-center gap-1.5 rounded-2xl bg-primary px-4 py-2.5 text-[11px] font-black uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/25 transition-transform active:scale-95 disabled:opacity-60"
                   >
                     <MapPin className="h-3.5 w-3.5" />
                     {geo === "asking" ? "Detectando…" : "Ativar localização"}
                   </button>
-                  <button
-                    onClick={() => setGeo("denied")}
-                    className="text-[11px] text-muted-foreground underline underline-offset-2"
-                  >
-                    Agora não
-                  </button>
+                  {geo !== "denied" && (
+                    <button
+                      onClick={() => setGeo("denied")}
+                      className="text-[11px] font-semibold text-muted-foreground underline underline-offset-2"
+                    >
+                      Agora não
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
-            <div className="mt-3 flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
-              <ShieldCheck className="h-3 w-3" /> Localização usada só para ordenar esta lista
+            <div className="mt-4 flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
+              <ShieldCheck className="h-3 w-3" /> Usada só para filtrar esta lista
             </div>
           </div>
         )}
 
-        {/* Banners promocionais — controlados pelo Super Admin */}
+        {/* Banners promocionais em slide */}
         <DiscoverBanners city={myCity} intervalMs={settings.bannerIntervalMs} />
 
-        {geo === "granted" && (
-          <div className="space-y-2 rounded-2xl border border-primary/30 bg-primary/5 px-3 py-2.5">
-            <p className="text-xs text-primary">
-              <MapPin className="mr-1 inline h-3.5 w-3.5" />
-              {locating
-                ? "Detectando sua região…"
-                : coords
-                ? `Mostrando lugares num raio de ${radiusKm} km${myCity ? ` · ${myCity}` : ""}.`
-                : myCity
-                ? `Ordenado por proximidade — priorizando ${myCity}.`
-                : "Localização ativa — priorizando novidades."}
-            </p>
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Raio</span>
-              {settings.radiusOptions.map((km) => (
-                <button
-                  key={km}
-                  onClick={() => setRadiusKm(km)}
-                  className={`rounded-full border px-2.5 py-1 text-[11px] font-bold transition-colors ${
-                    radiusKm === km
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border/60 bg-card/40 text-muted-foreground hover:border-primary/40"
-                  }`}
-                >
-                  {km} km
-                </button>
-              ))}
-            </div>
-          </div>
+        {hasGeo && (
+          <p className="flex items-center gap-1.5 text-xs text-primary">
+            <MapPin className="h-3.5 w-3.5 shrink-0" />
+            {locating
+              ? "Detectando sua região…"
+              : `Mostrando lugares num raio de ${radiusKm} km${myCity ? ` · ${myCity}` : ""}.`}
+          </p>
         )}
 
-
+        {/* Busca */}
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={query}
+            onChange={(ev) => setQuery(ev.target.value)}
+            placeholder="Encontrar benefícios, lojas, cidades…"
+            className="w-full rounded-2xl border border-border/60 bg-card/70 py-4 pl-12 pr-10 text-sm font-medium shadow-sm outline-none transition-all placeholder:text-muted-foreground/70 focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
+          />
+          {query && (
+            <button
+              onClick={() => setQuery("")}
+              aria-label="Limpar busca"
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-muted-foreground hover:bg-muted/60"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
 
         {sorted.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-border/60 bg-card/30 p-8 text-center">
+          <div className="rounded-[1.75rem] border border-dashed border-border/60 bg-card/40 p-8 text-center">
             <Sparkles className="mx-auto mb-2 h-6 w-6 text-primary" />
-            <div className="font-display text-sm font-bold">Nada por aqui ainda</div>
+            <div className="font-display text-base font-extrabold">Nada dentro de {radiusKm} km</div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Assim que novos estabelecimentos parceiros entrarem, eles aparecem aqui.
+              Aumente o raio de busca acima para encontrar parceiros um pouco mais distantes.
             </p>
           </div>
         ) : (
           <>
-            {/* Busca sempre disponível */}
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                value={query}
-                onChange={(ev) => setQuery(ev.target.value)}
-                placeholder="Buscar por nome, cidade ou tipo…"
-                className="w-full rounded-2xl border border-border/60 bg-card/40 py-2.5 pl-9 pr-9 text-sm outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-primary/50"
-              />
-              {query && (
-                <button
-                  onClick={() => setQuery("")}
-                  aria-label="Limpar busca"
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-muted/60"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
-
             <SponsoredAdsRail
               category={active && active !== "promo" && active !== "perto" && active !== "todos" ? active : null}
             />
 
             {!showList ? (
-              /* Passo 1 — o cliente escolhe onde quer navegar */
-              <div className="space-y-4">
-                <div className="flex flex-wrap gap-2">
-                  {promoCount > 0 && (
-                    <button
-                      onClick={() => setActive("promo")}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/50 bg-amber-500/10 px-3 py-1.5 text-xs font-bold text-amber-600 transition-transform active:scale-95 dark:text-amber-300"
-                    >
-                      <Tag className="h-3.5 w-3.5" /> Com promoção · {promoCount}
-                    </button>
-                  )}
-                  {nearbyCount > 0 && (
-                    <button
-                      onClick={() => setActive("perto")}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary transition-transform active:scale-95"
-                    >
-                      <MapPin className="h-3.5 w-3.5" /> Perto de você · {nearbyCount}
-                    </button>
-                  )}
+              <div className="space-y-8">
+                {/* Filtros inteligentes */}
+                <div className="flex gap-2.5">
+                  <button
+                    onClick={() => setActive("promo")}
+                    disabled={promoCount === 0}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-border/60 bg-card/70 py-3.5 text-xs font-bold shadow-sm transition-all active:scale-[0.97] disabled:opacity-40"
+                  >
+                    <Tag className="h-4 w-4 text-primary" /> Promoções · {promoCount}
+                  </button>
+                  <button
+                    onClick={() => setActive("perto")}
+                    disabled={nearbyCount === 0}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-border/60 bg-card/70 py-3.5 text-xs font-bold shadow-sm transition-all active:scale-[0.97] disabled:opacity-40"
+                  >
+                    <Navigation className="h-4 w-4 text-primary" /> Perto · {nearbyCount}
+                  </button>
                 </div>
 
-                <div>
-                  <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                    Escolha uma categoria
+                {/* Categorias com ícones premium */}
+                <section>
+                  <div className="mb-4 flex items-end justify-between">
+                    <h2 className="font-display text-lg font-extrabold tracking-tight">Categorias</h2>
+                    <button
+                      onClick={() => setActive("todos")}
+                      className="text-[10px] font-black uppercase tracking-widest text-primary"
+                    >
+                      Ver todas
+                    </button>
                   </div>
-                  <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
-                    {categories.map((c) => (
-                      <button
-                        key={c.id}
-                        onClick={() => setActive(c.id)}
-                        className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card/40 p-3 text-left transition-all hover:border-primary/40 hover:bg-card/60 active:scale-[0.98]"
-                      >
-                        <div className="pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full bg-primary/15 opacity-40 blur-2xl transition-opacity group-hover:opacity-70" />
-                        <div className="text-xl">{c.emoji}</div>
-                        <div className="mt-1.5 font-display text-sm font-bold">{c.label}</div>
-                        <div className="text-[11px] text-muted-foreground">
-                          {c.count} {c.count === 1 ? "lugar" : "lugares"}
-                        </div>
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-4 gap-4">
+                    {categories.map((c) => {
+                      const Icon = ICONS[CATEGORY_ICON_NAME[c.id]] ?? Sparkles;
+                      return (
+                        <button
+                          key={c.id}
+                          onClick={() => setActive(c.id)}
+                          className="group flex flex-col items-center gap-2"
+                        >
+                          <span className="grid h-16 w-16 place-items-center rounded-[1.25rem] border border-border/60 bg-card/70 text-primary shadow-sm transition-all group-hover:border-primary/40 group-active:scale-90">
+                            <Icon className="h-7 w-7" strokeWidth={1.6} />
+                          </span>
+                          <span className="text-center text-[11px] font-bold leading-tight text-muted-foreground">
+                            {c.label}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
-                </div>
+                </section>
+
+                {/* Destaques na região */}
+                <section className="space-y-4">
+                  <div className="flex items-end justify-between">
+                    <h2 className="font-display text-lg font-extrabold tracking-tight">Destaques na região</h2>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                      {sorted.length} locais
+                    </span>
+                  </div>
+                  {highlights.map((e) => (
+                    <DiscoverCard key={e.id} e={e} nearby={!!myCityNorm && normalizeCity(e.city) === myCityNorm} />
+                  ))}
+                </section>
 
                 <button
                   onClick={() => setActive("todos")}
-                  className="flex w-full items-center justify-between rounded-2xl border border-border/60 bg-card/30 px-4 py-3 text-sm font-semibold transition-colors hover:border-primary/40"
+                  className="flex w-full items-center justify-between rounded-2xl border border-border/60 bg-card/50 px-5 py-4 text-sm font-bold transition-colors hover:border-primary/40"
                 >
                   Ver todos os {sorted.length} estabelecimentos
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </button>
               </div>
             ) : (
-              /* Passo 2 — lista filtrada */
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between gap-2">
                   <button
                     onClick={() => {
                       setActive(null);
                       setQuery("");
                     }}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-card/40 px-3 py-1.5 text-xs font-bold transition-colors hover:border-primary/40"
+                    className="inline-flex items-center gap-1.5 rounded-2xl border border-border/60 bg-card/60 px-3.5 py-2 text-xs font-bold transition-colors hover:border-primary/40"
                   >
-                    <ArrowLeft className="h-3.5 w-3.5" /> Categorias
+                    <ArrowLeft className="h-3.5 w-3.5" /> Voltar
                   </button>
-                  <span className="truncate text-xs text-muted-foreground">
+                  <span className="truncate text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
                     {activeLabel} · {visible.length}
                   </span>
                 </div>
 
-                {/* Troca rápida entre categorias sem voltar */}
                 <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  {categories.map((c) => (
-                    <button
-                      key={c.id}
-                      onClick={() => setActive(c.id)}
-                      className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
-                        active === c.id
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border/60 bg-card/40 hover:border-primary/40"
-                      }`}
-                    >
-                      {c.emoji} {c.label}
-                    </button>
-                  ))}
+                  {categories.map((c) => {
+                    const Icon = ICONS[CATEGORY_ICON_NAME[c.id]] ?? Sparkles;
+                    return (
+                      <button
+                        key={c.id}
+                        onClick={() => setActive(c.id)}
+                        className={`inline-flex shrink-0 items-center gap-1.5 rounded-2xl px-4 py-2.5 text-xs font-bold transition-all ${
+                          active === c.id
+                            ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+                            : "border border-border/60 bg-card/60 text-muted-foreground hover:border-primary/40"
+                        }`}
+                      >
+                        <Icon className="h-3.5 w-3.5" /> {c.label}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {visible.length === 0 ? (
-                  <div className="rounded-3xl border border-dashed border-border/60 bg-card/30 p-8 text-center">
+                  <div className="rounded-[1.75rem] border border-dashed border-border/60 bg-card/40 p-8 text-center">
                     <Sparkles className="mx-auto mb-2 h-6 w-6 text-primary" />
-                    <div className="font-display text-sm font-bold">Nenhum resultado</div>
+                    <div className="font-display text-sm font-extrabold">Nenhum resultado</div>
                     <p className="mt-1 text-xs text-muted-foreground">Tente outra categoria ou busca.</p>
                   </div>
                 ) : (
-                  <ul className="space-y-2.5">
+                  <div className="space-y-4">
                     {visible.map((e) => (
-                      <DiscoverRow key={e.id} e={e} nearby={!!myCityNorm && normalizeCity(e.city) === myCityNorm} />
+                      <DiscoverCard key={e.id} e={e} nearby={!!myCityNorm && normalizeCity(e.city) === myCityNorm} />
                     ))}
-                  </ul>
+                  </div>
                 )}
               </div>
             )}
           </>
         )}
-
       </div>
     </WithOfflineFallback>
   );
 }
 
-function DiscoverRow({
-  e,
-  nearby,
-}: {
-  e: {
-    slug: string;
-    name: string;
-    logo_url: string | null;
-    primary_color: string;
-    address: string | null;
-    city: string | null;
-    description: string | null;
-    distance_km?: number | null;
-    visited: boolean;
-    has_promotion: boolean;
-    has_menu: boolean;
-    has_catalog: boolean;
-  };
-  nearby?: boolean;
-}) {
+type CardEstablishment = {
+  slug: string;
+  name: string;
+  logo_url: string | null;
+  primary_color: string;
+  address: string | null;
+  city: string | null;
+  description: string | null;
+  distance_km?: number | null;
+  visited: boolean;
+  has_promotion: boolean;
+  has_menu: boolean;
+  has_catalog: boolean;
+};
+
+function DiscoverCard({ e, nearby }: { e: CardEstablishment; nearby?: boolean }) {
   const brand = e.primary_color || "hsl(var(--primary))";
   const distance = formatDistance(e.distance_km);
-  const location = [distance, e.address, e.city].filter(Boolean).join(" · ");
-  const hasShowcase = e.has_menu || e.has_catalog;
+  const location = [e.address, e.city].filter(Boolean).join(" · ");
+
   return (
-    <li className="group overflow-hidden rounded-2xl border border-border/60 bg-card/40 transition-all hover:border-primary/40 hover:bg-card/60">
-      <Link
-        to="/carteira/e/$slug"
-        params={{ slug: e.slug }}
-        className="relative flex items-center gap-3 p-3"
-      >
+    <article className="overflow-hidden rounded-[1.75rem] border border-border/60 bg-card/70 p-5 shadow-sm transition-all hover:border-primary/40 active:scale-[0.99]">
+      <div className="flex gap-4">
         <div
-          className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full opacity-20 blur-2xl"
-          style={{ background: brand }}
-        />
-        <div
-          className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-xl border border-border/60 bg-background text-sm font-bold uppercase"
+          className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl border border-border/60 bg-background text-base font-black uppercase"
           style={{ color: brand }}
         >
           {e.logo_url ? (
@@ -517,65 +567,75 @@ function DiscoverRow({
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <div className="truncate font-display text-sm font-semibold">{e.name}</div>
-            {e.has_promotion && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/50 bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-300">
-                <Tag className="h-2.5 w-2.5" /> Promoção
-              </span>
-            )}
-            {nearby && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-primary">
-                Perto
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+            <h3 className="truncate font-display text-base font-extrabold tracking-tight">{e.name}</h3>
+            {distance && (
+              <span className="shrink-0 rounded-xl bg-primary/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-primary">
+                {distance}
               </span>
             )}
           </div>
           {location && (
-            <div className="mt-0.5 flex items-center gap-1 truncate text-[11px] text-muted-foreground">
+            <p className="mt-1 flex items-center gap-1 truncate text-[11px] font-semibold text-muted-foreground">
               <MapPin className="h-3 w-3 shrink-0" />
               <span className="truncate">{location}</span>
-            </div>
+            </p>
           )}
-          {e.description && (
-            <p className="mt-1 line-clamp-1 text-[11px] text-muted-foreground/80">{e.description}</p>
-          )}
+          <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+            {e.has_promotion && (
+              <span className="inline-flex items-center gap-1 rounded-lg bg-amber-500/15 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-300">
+                <Tag className="h-2.5 w-2.5" /> Promoção
+              </span>
+            )}
+            {nearby && (
+              <span className="inline-flex items-center gap-1 rounded-lg bg-accent/15 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-accent">
+                <Navigation className="h-2.5 w-2.5" /> Na sua cidade
+              </span>
+            )}
+            {!e.visited ? (
+              <span className="inline-flex items-center gap-1 rounded-lg bg-primary/12 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-primary">
+                <Sparkles className="h-2.5 w-2.5" /> Novo
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-lg bg-muted px-2 py-1 text-[9px] font-black uppercase tracking-wider text-muted-foreground">
+                Visitado
+              </span>
+            )}
+          </div>
         </div>
-        {e.visited ? (
-          <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/60 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-            Visitado
-          </span>
-        ) : (
-          <span
-            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-primary-foreground shadow-sm"
-            style={{ background: brand }}
-          >
-            <Sparkles className="h-3 w-3" /> Novo
-          </span>
-        )}
-        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-      </Link>
-      {hasShowcase && (
-        <div className="flex flex-wrap gap-2 border-t border-border/40 px-3 pb-3 pt-2">
+      </div>
+
+      <div className="mt-5 grid grid-cols-[minmax(0,1fr)_auto] gap-3">
+        <Link
+          to="/carteira/e/$slug"
+          params={{ slug: e.slug }}
+          className="grid place-items-center rounded-2xl bg-primary py-3.5 text-[11px] font-black uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/20 transition-transform active:scale-[0.97]"
+        >
+          Ver estabelecimento
+        </Link>
+        <div className="flex gap-2">
           {e.has_menu && (
             <Link
               to="/cardapio/$slug"
               params={{ slug: e.slug }}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 bg-background/60 px-3 py-1.5 text-xs font-semibold transition hover:border-primary/40 hover:text-primary"
+              aria-label="Ver cardápio"
+              className="grid h-full w-12 place-items-center rounded-2xl border border-border/60 bg-background/60 text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
             >
-              <UtensilsCrossed className="h-3.5 w-3.5" /> Ver cardápio
+              <UtensilsCrossed className="h-5 w-5" />
             </Link>
           )}
           {e.has_catalog && (
             <Link
               to="/catalogo/$slug"
               params={{ slug: e.slug }}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 bg-background/60 px-3 py-1.5 text-xs font-semibold transition hover:border-primary/40 hover:text-primary"
+              aria-label="Ver catálogo"
+              className="grid h-full w-12 place-items-center rounded-2xl border border-border/60 bg-background/60 text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
             >
-              <ShoppingBag className="h-3.5 w-3.5" /> Ver catálogo
+              <ShoppingBag className="h-5 w-5" />
             </Link>
           )}
         </div>
-      )}
-    </li>
+      </div>
+    </article>
   );
 }
