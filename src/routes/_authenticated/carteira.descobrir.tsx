@@ -483,6 +483,7 @@ function DiscoverRow({
     address: string | null;
     city: string | null;
     description: string | null;
+    distance_km?: number | null;
     visited: boolean;
     has_promotion: boolean;
     has_menu: boolean;
@@ -491,7 +492,8 @@ function DiscoverRow({
   nearby?: boolean;
 }) {
   const brand = e.primary_color || "hsl(var(--primary))";
-  const location = [e.address, e.city].filter(Boolean).join(" · ");
+  const distance = formatDistance(e.distance_km);
+  const location = [distance, e.address, e.city].filter(Boolean).join(" · ");
   const hasShowcase = e.has_menu || e.has_catalog;
   return (
     <li className="group overflow-hidden rounded-2xl border border-border/60 bg-card/40 transition-all hover:border-primary/40 hover:bg-card/60">
