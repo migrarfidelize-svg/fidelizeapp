@@ -943,9 +943,62 @@ function AuthPage() {
               )}
 
 
-              <button type="submit" disabled={loading} className="auth-cta group mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-2.5 font-display text-sm font-bold uppercase tracking-widest text-primary-foreground shadow-[0_0_30px_-4px_rgba(167,139,250,0.55)] transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60">
+              {authNotice && (
+                <div className="animate-fade-in space-y-2 rounded-xl border border-primary/30 bg-primary/5 p-3 text-[11px] leading-relaxed text-foreground">
+                  {authNotice.kind === "exists" && (
+                    <>
+                      <p className="font-semibold">Esta conta já existe.</p>
+                      <p className="text-muted-foreground">
+                        Não criamos um cadastro duplicado. Entre com sua senha ou recupere o acesso.
+                      </p>
+                    </>
+                  )}
+                  {authNotice.kind === "confirm" && (
+                    <>
+                      <p className="font-semibold">Conta criada! Falta confirmar seu e-mail.</p>
+                      <p className="text-muted-foreground">
+                        Enviamos um link para <span className="font-mono">{authNotice.email}</span>. Confirme e depois
+                        entre normalmente — não é preciso cadastrar de novo.
+                      </p>
+                    </>
+                  )}
+                  {authNotice.kind === "ratelimit" && (
+                    <>
+                      <p className="font-semibold">Limite de envio de e-mails atingido.</p>
+                      <p className="text-muted-foreground">
+                        Sua conta pode já ter sido criada. Aguarde {cooldown > 0 ? `${cooldown}s` : "um instante"} e
+                        tente entrar — não repita o cadastro para não consumir novas tentativas.
+                      </p>
+                    </>
+                  )}
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthNotice(null);
+                        void router.navigate({ to: "/auth", search: { ...search, mode: "signin" }, replace: true });
+                      }}
+                      className="rounded-lg bg-primary px-3 py-1.5 text-[11px] font-semibold text-primary-foreground"
+                    >
+                      Entrar
+                    </button>
+                    {!walletFlow && (
+                      <Link
+                        to="/auth/recuperar"
+                        className="rounded-lg border border-border px-3 py-1.5 text-[11px] font-semibold text-muted-foreground hover:text-foreground"
+                      >
+                        Recuperar senha
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <button type="submit" disabled={loading || cooldown > 0} className="auth-cta group mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-2.5 font-display text-sm font-bold uppercase tracking-widest text-primary-foreground shadow-[0_0_30px_-4px_rgba(167,139,250,0.55)] transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60">
                 {loading ? (
                   "Aguarde…"
+                ) : cooldown > 0 ? (
+                  `Aguarde ${cooldown}s`
                 ) : (
                   <>
                     {isSignup ? "Criar minha conta" : "Acessar painel"}
@@ -953,6 +1006,7 @@ function AuthPage() {
                   </>
                 )}
               </button>
+
             </form>
 
             <div className="mt-3 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
