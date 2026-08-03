@@ -94,7 +94,8 @@ export function AchievementUnlockListener() {
       userId = data.user?.id ?? null;
       if (!userId) return;
       channel = supabase
-        .channel(`ach-${userId}`)
+        // Sufixo único: reusar o mesmo nome reanexa callbacks num canal já inscrito.
+        .channel(`ach-${userId}-${Math.random().toString(36).slice(2, 8)}`)
         .on(
           "postgres_changes",
           {
