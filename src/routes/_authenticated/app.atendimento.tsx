@@ -61,7 +61,7 @@ function AtendimentoPage() {
   const qc = useQueryClient();
   const estFn = useServerFn(getMyEstablishments);
   const ests = useQuery({ queryKey: ["my-establishments"], queryFn: () => estFn() });
-  const establishmentId: string | undefined = (ests.data as any)?.[0]?.id;
+  const establishmentId: string | undefined = (ests.data as any)?.[0]?.establishment?.id ?? (ests.data as any)?.[0]?.id;
 
   if (ests.isLoading) return <RouteLoading />;
   if (!establishmentId) {
