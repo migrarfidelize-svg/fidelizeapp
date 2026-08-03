@@ -195,6 +195,19 @@ function AuthPage() {
 
   const [loading, setLoading] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
+  /** Trava síncrona: impede que 2 cliques rápidos disparem 2 signUp (causa real do rate limit). */
+  const submittingRef = useRef(false);
+  /** Aviso acionável (conta existente / confirmação de e-mail / limite de envio). */
+  const [authNotice, setAuthNotice] = useState<
+    { kind: "exists" | "confirm" | "ratelimit"; email?: string } | null
+  >(null);
+  const [cooldown, setCooldown] = useState(0);
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = window.setTimeout(() => setCooldown((s) => s - 1), 1000);
+    return () => window.clearTimeout(t);
+  }, [cooldown]);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
