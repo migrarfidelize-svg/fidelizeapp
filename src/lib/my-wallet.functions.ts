@@ -527,7 +527,9 @@ export const getMyHistory = createServerFn({ method: "GET" })
  */
 export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { lat?: number; lng?: number; radiusKm?: number } | undefined) => input ?? {})
+  .inputValidator(
+    (input: { lat?: number; lng?: number; radiusKm?: number; city?: string | null } | undefined) => input ?? {},
+  )
   .handler(async ({ data: input, context }) => {
     // Estabelecimentos onde o usuário já tem cartão/registro — não excluímos,
     // apenas marcamos como "já visitados" para o cliente ver novidades/promoções.
