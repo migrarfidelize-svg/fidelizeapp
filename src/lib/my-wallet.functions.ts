@@ -661,13 +661,16 @@ export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
     if (origin && radiusKm) {
       // Corte geográfico real: fora do raio não aparece. Estabelecimentos sem
       // coordenada só entram quando a cidade informada pelo cliente bate.
-      const cityNorm = normalizeCityValue(input.city);
+      const normCity = (s: string | null | undefined) =>
+        (s ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+      const cityNorm = normCity(input.city);
       const inRadius = list.filter((e) => {
         if (e.distance_km != null) return e.distance_km <= radiusKm;
-        return cityNorm ? normalizeCityValue(e.city) === cityNorm : false;
+        return cityNorm ? normCity(e.city) === cityNorm : false;
       });
       return inRadius.sort((a, b) => (a.distance_km ?? 9999) - (b.distance_km ?? 9999));
     }
+
     return list;
 
   });
