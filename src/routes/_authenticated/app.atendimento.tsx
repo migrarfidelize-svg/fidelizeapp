@@ -116,6 +116,8 @@ function Inner({ establishmentId, qc }: { establishmentId: string; qc: ReturnTyp
   }, [establishmentId, qc]);
 
   const connected = conn.data?.connection?.connection_status === "connected";
+  const [tab, setTab] = useState("pedidos");
+
 
   return (
     <div className="p-4 md:p-8 space-y-6">
