@@ -657,12 +657,17 @@ export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
     });
 
     if (origin && radiusKm) {
-      const inRadius = list.filter((e) => e.distance_km != null && e.distance_km <= radiusKm);
-      // Só aplicamos o corte quando temos base geográfica suficiente; caso
-      // contrário devolvemos tudo para não deixar a tela vazia.
-      if (inRadius.length) return inRadius.sort((a, b) => (a.distance_km ?? 0) - (b.distance_km ?? 0));
+      // Corte geográfico real: fora do raio não aparece. Estabelecimentos sem
+      // coordenada só entram quando a cidade informada pelo cliente bate.
+      const cityNorm = normalizeCityValue(input.city);
+      const inRadius = list.filter((e) => {
+        if (e.distance_km != null) return e.distance_km <= radiusKm;
+        return cityNorm ? normalizeCityValue(e.city) === cityNorm : false;
+      });
+      return inRadius.sort((a, b) => (a.distance_km ?? 9999) - (b.distance_km ?? 9999));
     }
     return list;
+
   });
 
 /**
