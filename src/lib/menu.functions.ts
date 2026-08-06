@@ -13,11 +13,15 @@ async function getPrivilegedClient() {
 const kindEnum = z.enum(["menu", "catalog"]);
 
 export const getPublicMenuBySlug = createServerFn({ method: "GET" })
-  .inputValidator((d: { slug: string; kind?: "menu" | "catalog" }) =>
-    z.object({ slug: z.string().min(1).max(80), kind: kindEnum.optional() }).parse(d))
+  .inputValidator((d: { slug: string; kind?: "menu" | "catalog" }) => {
+    console.log("[DEBUG] Input received:", d);
+    return z.object({ slug: z.string().min(1).max(80), kind: kindEnum.optional() }).parse(d);
+  })
   .handler(async ({ data }) => {
     const kind = data.kind ?? "menu";
     const s = await getPrivilegedClient();
+    
+    console.log(`[DEBUG] Fetching establishment for slug: ${data.slug}`);
     
     // 1. Buscar estabelecimento ATIVO
     const { data: est, error: estErr } = await s
@@ -26,33 +30,66 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
       .eq("slug", data.slug)
       .maybeSingle();
     
-    if (estErr) throw new Error("Erro ao buscar estabelecimento");
-    if (!est || !est.active) return null;
+    if (estErr) {
+      console.error("[DEBUG] Error fetching establishment:", estErr);
+      throw new Error("Erro ao buscar estabelecimento");
+    }
+    
+    if (!est) {
+      console.log("[DEBUG] No establishment found for slug:", data.slug);
+      return null;
+    }
+    
+    if (!est.active) {
+      console.log("[DEBUG] Establishment is not active:", est.id);
+      return null;
+    }
+
+    console.log(`[DEBUG] Establishment found: ${est.id}. Fetching ${kind} vitrine...`);
 
     // 2. Buscar a vitrine publicada do tipo específico (menu ou catalog)
-    // Filtro rígido por status=published e kind para evitar ambiguidade com rascunhos ou outros tipos
     const { data: menu, error: menuErr } = await s
       .from("restaurant_menus")
-      .select("*")
+      .select("id, establishment_id, kind, status, tagline, theme, hours, updated_at")
       .eq("establishment_id", est.id)
       .eq("kind", kind)
       .eq("status", "published")
       .maybeSingle();
 
-    if (menuErr) throw new Error("Erro ao buscar vitrine");
-    if (!menu) return { establishment: est, menu: null, categories: [], items: [] };
+    if (menuErr) {
+      console.error("[DEBUG] Error fetching menu:", menuErr);
+      throw new Error("Erro ao buscar vitrine");
+    }
+    
+    if (!menu) {
+      console.log(`[DEBUG] No published ${kind} found for establishment: ${est.id}`);
+      return { establishment: est, menu: null, categories: [], items: [] };
+    }
+
+    console.log(`[DEBUG] Published ${kind} found: ${menu.id}. Fetching categories and items...`);
 
     // 3. Buscar conteúdo da vitrine
-    const [{ data: cats }, { data: items }] = await Promise.all([
-      s.from("menu_categories").select("*").eq("menu_id", menu.id).eq("active", true).order("position", { ascending: true }),
-      s.from("menu_items").select("*").eq("menu_id", menu.id).eq("active", true).order("position", { ascending: true }),
+    const [catsRes, itemsRes] = await Promise.all([
+      s.from("menu_categories")
+       .select("id, menu_id, name, description, image_url, active, featured, position")
+       .eq("menu_id", menu.id)
+       .eq("active", true)
+       .order("position", { ascending: true }),
+      s.from("menu_items")
+       .select("id, menu_id, category_id, name, short_desc, long_desc, price, promo_price, currency, image_url, video_url, video_poster_url, prep_minutes, active, badges, ingredients, allergens, variants, sku, brand, stock_status, gallery")
+       .eq("menu_id", menu.id)
+       .eq("active", true)
+       .order("position", { ascending: true }),
     ]);
+
+    if (catsRes.error) console.error("[DEBUG] Error fetching categories:", catsRes.error);
+    if (itemsRes.error) console.error("[DEBUG] Error fetching items:", itemsRes.error);
 
     return { 
       establishment: est, 
       menu, 
-      categories: cats ?? [], 
-      items: items ?? [] 
+      categories: catsRes.data ?? [], 
+      items: itemsRes.data ?? [] 
     };
   });
 
