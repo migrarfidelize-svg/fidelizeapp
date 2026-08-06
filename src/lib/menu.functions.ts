@@ -44,18 +44,13 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
       throw new Error(`Erro de banco de dados: ${JSON.stringify(estErr)}`);
     }
     
-    if (estErr) {
-      console.error("[DEBUG] DB Error (Establishment):", estErr);
-      throw new Error(`Erro ao buscar estabelecimento: ${estErr.message}`);
-    }
-    
     if (!est) {
-      console.log(`[DEBUG] Establishment NOT FOUND for slug: "${slug}"`);
+      console.log(`[${timestamp}] Establishment NOT FOUND for slug: "${slug}"`);
       return null;
     }
     
     if (!est.active) {
-      console.log(`[DEBUG] Establishment ${est.id} is INACTIVE`);
+      console.log(`[${timestamp}] Establishment ${est.id} is INACTIVE`);
       return null;
     }
 
