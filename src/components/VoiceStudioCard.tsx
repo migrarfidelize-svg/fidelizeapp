@@ -156,14 +156,17 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
 
         <div className="lg:col-span-2 space-y-6">
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-6">
-              <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-              <TabsTrigger value="provider">Provedor</TabsTrigger>
-              <TabsTrigger value="texts">Textos</TabsTrigger>
-              <TabsTrigger value="eleven">ElevenLabs</TabsTrigger>
-              <TabsTrigger value="diag" className="hidden lg:flex">Diagnóstico</TabsTrigger>
-              <TabsTrigger value="history" className="hidden lg:flex">Histórico</TabsTrigger>
-            </TabsList>
+            <div className="overflow-x-auto -mx-1 px-1 mb-2">
+              <TabsList className="inline-flex min-w-full lg:grid lg:grid-cols-6 h-auto p-1 bg-muted/50">
+                <TabsTrigger value="overview" className="flex-1 py-2">Geral</TabsTrigger>
+                <TabsTrigger value="provider" className="flex-1 py-2">Provedor</TabsTrigger>
+                <TabsTrigger value="texts" className="flex-1 py-2">Textos</TabsTrigger>
+                <TabsTrigger value="eleven" className="flex-1 py-2">ElevenLabs</TabsTrigger>
+                <TabsTrigger value="diag" className="flex-1 py-2">Diagnóstico</TabsTrigger>
+                <TabsTrigger value="history" className="flex-1 py-2">Histórico</TabsTrigger>
+              </TabsList>
+            </div>
+
 
             <TabsContent value="overview" className="mt-4 space-y-4">
               <Card>
