@@ -228,7 +228,7 @@ function PublicMenuPage() {
     const el = catRefs.current[id];
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     const label =
-      id === "all" ? "category:all" : `category:${categories.find((c) => c.id === id)?.name ?? id}`;
+      id === "all" ? "category:all" : `category:${categories.find((c: any) => c.id === id)?.name ?? id}`;
     trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_id: id, ref_label: label });
   };
 
@@ -417,7 +417,7 @@ function PublicMenuPage() {
             >
               Tudo
             </button>
-            {categories.map((c) => (
+            {categories.map((c: any) => (
               <button
                 key={c.id}
                 onClick={() => scrollToCat(c.id)}
@@ -439,7 +439,7 @@ function PublicMenuPage() {
       <main className="max-w-3xl mx-auto px-4 sm:px-5 pb-32 pt-5 space-y-8 sm:space-y-10">
         {showCatPicker ? (
           <div className="grid grid-cols-2 gap-4">
-            {categories.map((c) => {
+            {categories.map((c: any) => {
               const count = (items as Item[]).filter((i) => i.category_id === c.id).length;
               if (count === 0) return null;
               const cover = (items as Item[]).find((i) => i.category_id === c.id && !!i.image_url)?.image_url || null;
@@ -493,7 +493,7 @@ function PublicMenuPage() {
             </button>
           </div>
         ) : null}
-        {!showCatPicker && categories.map((c) => {
+        {!showCatPicker && categories.map((c: any) => {
           const list = byCat.get(c.id) || [];
           if (list.length === 0 && (activeCat === c.id || q)) return null;
           if (list.length === 0) return null;
@@ -597,7 +597,7 @@ function PublicMenuPage() {
           items={stories.list}
           startIndex={stories.index}
           primary={primary}
-          catName={(id) => categories.find((c) => c.id === id)?.name ?? ""}
+          catName={(id) => (categories as any[]).find((c) => c.id === id)?.name ?? ""}
           onClose={() => setStories(null)}
           onDetails={(i) => { setStories(null); setOpen(i); }}
           onItemView={(i) =>

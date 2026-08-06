@@ -1,23 +1,13 @@
 import { assertActiveSubscription } from "@/lib/subscription-guard";
 import { createServerFn } from "@tanstack/react-start";
-import { createClient } from "@supabase/supabase-js";
+
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { Database } from "@/integrations/supabase/types";
 
-function publicClient() {
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
-  return createClient<Database>(process.env.SUPABASE_URL!, key, {
-    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
-    global: {
-      fetch: (input, init) => {
-        const h = new Headers(init?.headers);
-        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
-        h.set("apikey", key);
-        return fetch(input, { ...init, headers: h });
-      },
-    },
-  });
+
+async function getPrivilegedClient() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin;
 }
 
 const kindEnum = z.enum(["menu", "catalog"]);
@@ -27,7 +17,7 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
     z.object({ slug: z.string().min(1).max(80), kind: kindEnum.optional() }).parse(d))
   .handler(async ({ data }) => {
     const kind = data.kind ?? "menu";
-    const s = publicClient();
+    const s = await getPrivilegedClient();
     
     // 1. Buscar estabelecimento ATIVO
     const { data: est, error: estErr } = await s
