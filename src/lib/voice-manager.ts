@@ -4,6 +4,42 @@ import { synthesizeElevenLabs, testElevenLabsConnection, getElevenLabsVoices } f
 import { synthesizeGreeting } from "./tts.functions";
 import { loadVoicePrefs, type VoicePrefs } from "./voice-prefs";
 
+function loadNativeVoices(): Promise<SpeechSynthesisVoice[]> {
+  return new Promise((resolve) => {
+    const cur = window.speechSynthesis.getVoices();
+    if (cur.length) return resolve(cur);
+    const timer = setTimeout(() => resolve(window.speechSynthesis.getVoices()), 1500);
+    window.speechSynthesis.onvoiceschanged = () => {
+      clearTimeout(timer);
+      resolve(window.speechSynthesis.getVoices());
+    };
+  });
+}
+
+function pickBestNativeVoice(voices: SpeechSynthesisVoice[], providerVoice: string) {
+  const pt = voices.filter((v) => /^pt(-|_)?BR/i.test(v.lang) || v.lang.toLowerCase().startsWith("pt"));
+  if (!pt.length) return null;
+
+  const isFemale = ["nova", "shimmer", "coral", "sage"].includes(providerVoice);
+  const femaleNames = /(francisca|thalita|leticia|luciana|joana|helena|maria|ana|fernanda|female|mulher)/i;
+  const maleNames = /(antonio|daniel|felipe|ricardo|bruno|thiago|male|homem)/i;
+  const nameRe = isFemale ? femaleNames : maleNames;
+
+  const score = (v: SpeechSynthesisVoice) => {
+    let s = 0;
+    const n = v.name.toLowerCase();
+    if (/natural|neural|online|studio|premium|enhanced/.test(n)) s += 100;
+    if (n.includes("microsoft")) s += 40;
+    if (n.includes("google")) s += 30;
+    if (n.includes("apple") || /luciana|felipe|joana/.test(n)) s += 20;
+    if (nameRe.test(v.name)) s += 50;
+    if (/pt-br/i.test(v.lang)) s += 10;
+    return s;
+  };
+
+  return pt.slice().sort((a, b) => score(b) - score(a))[0];
+}
+
 /**
  * VoiceManager: Serviço centralizado de voz para o Fidelize.
  * Gerencia reprodução, provedores, fallbacks e auditoria.
@@ -92,11 +128,14 @@ class VoiceManager {
   private async playNative(text: string, prefs: VoicePrefs) {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     
+    const voices = await loadNativeVoices();
+    const chosen = pickBestNativeVoice(voices, prefs.voice);
     const utter = new SpeechSynthesisUtterance(text);
     utter.volume = prefs.volume;
     utter.rate = prefs.rate;
     utter.pitch = prefs.pitch;
     utter.lang = "pt-BR";
+    if (chosen) utter.voice = chosen;
     
     window.speechSynthesis.speak(utter);
   }
