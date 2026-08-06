@@ -472,6 +472,33 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
                               </SelectContent>
                             </Select>
                           </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <Label>Voz Padrão</Label>
+                              <Button 
+                                variant="link" 
+                                size="sm" 
+                                className="h-auto p-0 text-xs" 
+                                onClick={fetchElevenVoices}
+                                disabled={fetchingVoices || !elevenApiKey}
+                              >
+                                {fetchingVoices ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
+                                Sincronizar
+                              </Button>
+                            </div>
+                            <Select value={elevenVoiceId} onValueChange={setElevenVoiceId}>
+                              <SelectTrigger>
+                                <SelectValue placeholder={fetchingVoices ? "Carregando..." : "Escolha uma voz..."} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {elevenVoices.length > 0 ? elevenVoices.map((v: any) => (
+                                  <SelectItem key={v.voice_id} value={v.voice_id}>{v.name} ({v.category})</SelectItem>
+                                )) : (
+                                  <SelectItem value="21m0pOTjCwobq1Wnu3pd">Rachel (Padrão Fidelize)</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
                       </div>
 
@@ -525,9 +552,9 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Serviço ElevenLabs</span>
-                      <Badge variant="outline">Configurado</Badge>
+                      <Badge variant="outline">{integrationStatus === 'connected' ? 'Configurado' : 'Pendente'}</Badge>
                     </div>
-                    <Progress value={100} className="h-1" />
+                    <Progress value={integrationStatus === 'connected' ? 100 : 30} className="h-1" />
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
