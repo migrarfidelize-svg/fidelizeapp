@@ -53,7 +53,7 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
   const saveStudio = useServerFn(saveVoiceStudio);
   const getVoices = useServerFn(getElevenLabsVoices);
   const testConn = useServerFn(testElevenLabsConnection);
-  const doSpeak = useServerFn(speakGlobal);
+  
 
   useEffect(() => {
     if (establishmentId) {
@@ -461,7 +461,7 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
                   <Button size="sm" onClick={() => handleTest("welcome")} disabled={playing}>
                     {playing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => { stopSpeaking(); setPlaying(false); }}>
+                  <Button size="sm" variant="outline" onClick={() => { voiceManager.stop(); setPlaying(false); }}>
                     <Square className="h-4 w-4" />
                   </Button>
                 </div>
