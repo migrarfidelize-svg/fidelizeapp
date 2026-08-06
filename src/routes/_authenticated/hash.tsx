@@ -15,7 +15,7 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock, Wallet2,
-  UsersRound, Settings, Mail, FileText, ListChecks, LifeBuoy, Package,
+  UsersRound, Settings, Mail, FileText, ListChecks, LifeBuoy, Package, Mic,
   DollarSign, Wallet, Megaphone, Cog, BookOpen, Menu, Star, Plug, Sparkles, Rocket, FileJson, KeyRound, ChevronRight, Activity,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -81,6 +81,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/hash/cardapio-jsonld", label: "JSON-LD do cardápio", icon: FileJson },
       { to: "/hash/auditoria", label: "Auditoria", icon: FileClock },
       { to: "/hash/migracao", label: "Migração & Downloads", icon: Rocket },
+      { to: "/hash/studio", label: "Studio de Voz", icon: Mic },
       { to: "/hash/config", label: "Configurações", icon: Settings },
     ],
   },
