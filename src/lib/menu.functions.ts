@@ -24,31 +24,29 @@ const inputSchema = z.object({
 
 export const getPublicMenuBySlug = createServerFn({ method: "GET" })
   .validator((d: unknown) => {
-    // Normalização agressiva do input para TanStack Start v1
-    let payload = d;
+    // Para GET requests no TanStack Start, o input pode vir como um objeto de busca (search params)
+    // Se 'd' já tem 'slug', retornamos ele.
+    if (d && typeof d === 'object' && 'slug' in d) {
+      return inputSchema.parse(d);
+    }
+    
+    // Normalização para quando vem via { data: { slug } }
     if (d && typeof d === 'object' && 'data' in d) {
-      payload = (d as any).data;
-    }
-    
-    // Se for string, tratamos como o slug diretamente
-    if (typeof payload === 'string') {
-      payload = { slug: payload };
-    }
-    
-    // Fallback para quando o TanStack Router envia params diretamente no objeto raiz
-    if (payload && typeof payload === 'object' && !('slug' in payload) && (d as any).slug) {
-      payload = d;
+      const payload = (d as any).data;
+      if (typeof payload === 'string') return inputSchema.parse({ slug: payload });
+      return inputSchema.parse(payload);
     }
 
-    try {
-      return inputSchema.parse(payload);
-    } catch (err) {
-      console.error("[DEBUG] Validation failed for payload:", payload, err);
-      // Tentativa de recuperação desesperada se o slug estiver em algum lugar
-      const foundSlug = (d as any)?.slug || (d as any)?.params?.slug || (d as any)?.data?.slug;
-      if (foundSlug) return { slug: foundSlug, kind: "menu" as const };
-      throw err;
+    // Caso seja apenas a string do slug (chamada direta legada)
+    if (typeof d === 'string') {
+      return inputSchema.parse({ slug: d });
     }
+
+    // Se falhar tudo, tenta extrair de qualquer lugar
+    const foundSlug = (d as any)?.slug || (d as any)?.params?.slug || (d as any)?.data?.slug;
+    if (foundSlug) return { slug: foundSlug, kind: "menu" as const };
+
+    return inputSchema.parse(d);
   })
   .handler(async ({ data }) => {
     // Data aqui já deve ser o objeto validado { slug, kind }
