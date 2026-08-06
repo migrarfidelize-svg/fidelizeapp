@@ -1,9 +1,9 @@
 import { assertActiveSubscription } from "@/lib/subscription-guard";
 import { createServerFn } from "@tanstack/react-start";
-import { createClient } from "@supabase/supabase-js";
+
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { Database } from "@/integrations/supabase/types";
+
 
 async function getPrivilegedClient() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

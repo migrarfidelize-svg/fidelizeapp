@@ -153,13 +153,8 @@ function PublicCatalogPage() {
   const primary = theme.accent_color || T.bar || est?.primary_color || "#0F766E";
   const pageBg = menuBackgroundCss(theme, T, primary);
 
-  const items = (data?.items ?? []) as Product[];
-  const categories = (data?.categories ?? []) as {
-    id: string;
-    name: string;
-    description?: string | null;
-    image_url?: string | null;
-  }[];
+  const items = (data?.items ?? []) as any[];
+  const categories = (data?.categories ?? []) as any[];
 
   const brands = useMemo(
     () => Array.from(new Set(items.map((i) => (i.brand ?? "").trim()).filter(Boolean))).sort(),
