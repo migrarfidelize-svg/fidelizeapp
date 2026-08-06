@@ -1,5 +1,4 @@
 import { useBrand } from "@/lib/use-brand";
-import { useState, useEffect } from "react";
 
 /**
  * Logo horizontal da plataforma (menu desktop, cabeçalhos e telas públicas).
@@ -10,16 +9,10 @@ export function Logo({
   imgClassName = "",
 }: {
   className?: string;
-  /** Sobrescreve a altura padrão (h-12 no mobile / h-16 no desktop). */
+  /** Sobrescreve a altura padrão (h-10 no mobile / h-12 no desktop). */
   imgClassName?: string;
 }) {
   const brand = useBrand();
-  const [isLoaded, setIsLoaded] = useState(false);
-  
-  // Força exibição imediata se for SSR ou se a logo já estiver em cache
-  useEffect(() => {
-    setIsLoaded(true);
-  }, []);
 
   const base = `block w-auto max-w-full object-contain object-left shrink-0 transition-opacity duration-200 ${imgClassName || "h-10 sm:h-12"}`;
 

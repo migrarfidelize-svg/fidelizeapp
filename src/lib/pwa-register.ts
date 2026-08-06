@@ -50,8 +50,12 @@ async function clearPwaCaches() {
           key === "google-fonts"
         )
         .map((key) => caches.delete(key)),
-      await caches.delete("fidelize-brand-v1");
     );
+    // Explicitly purge brand caches to avoid old identity leaks
+    if ("caches" in window) {
+      await caches.delete("fidelize-brand-v1");
+      await caches.delete("fidelize-brand-v2");
+    }
   } catch { /* noop */ }
 }
 
