@@ -5,14 +5,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 
-async function getPrivilegedClient() {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  if (!supabaseAdmin) throw new Error("supabaseAdmin is undefined in server runtime");
-  
-  // No ambiente de desenvolvimento do Lovable, o service role key pode não estar disponível
-  // mas o admin client ainda é inicializado se as variáveis forem injetadas no handler.
-  return supabaseAdmin;
-}
+// Removida função getPrivilegedClient redundante para evitar problemas de escopo de importação dinâmico em handlers.
 
 const kindEnum = z.enum(["menu", "catalog"]);
 
@@ -24,28 +17,12 @@ const inputSchema = z.object({
 
 export const getPublicMenuBySlug = createServerFn({ method: "GET" })
   .validator((d: unknown) => {
-    // Normalização radical para TanStack Start v1 RPC (GET)
-    // O TanStack Start v1 envia parâmetros de consulta (query params) para o validador.
-    console.log("[DEBUG] Raw input to validator:", JSON.stringify(d));
+    // Para chamadas GET, o TanStack Start passa o input diretamente.
+    // Se for string (slug), normalizamos.
+    if (typeof d === 'string') return { slug: d, kind: "menu" as const };
     
-    let slug = "";
-    let kind: "menu" | "catalog" = "menu";
-
-    if (typeof d === 'string') {
-      slug = d;
-    } else if (d && typeof d === 'object') {
-      // Prioridade 1: Objeto direto { slug, kind } ou { data: { slug, kind } }
-      const source = ('data' in d) ? (d as any).data : d;
-      slug = source.slug || "";
-      kind = source.kind || "menu";
-    }
-
-    if (!slug) {
-      console.error("[DEBUG] Validation FAILED: No slug found in input", d);
-      throw new Error("Slug é obrigatório");
-    }
-
-    return { slug, kind };
+    // Se for objeto, validamos com Zod.
+    return inputSchema.parse(d);
   })
   .handler(async ({ data }) => {
     const { slug, kind } = data;
@@ -64,7 +41,7 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
 
     if (estErr) {
       console.error(`[${timestamp}] [getPublicMenuBySlug] DB Error (Establishment):`, estErr);
-      throw new Error(`Erro de banco de dados: ${estErr.message}`);
+      throw new Error(`Erro de banco de dados: ${JSON.stringify(estErr)}`);
     }
     
     if (estErr) {
