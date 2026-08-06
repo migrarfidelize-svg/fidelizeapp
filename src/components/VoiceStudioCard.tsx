@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
 import { 
   AudioLines, Play, Square, Save, Sparkles, Zap, Globe, Loader2, 
   CheckCircle2, AlertCircle, RefreshCw, Trash2, History, Activity, ShieldCheck

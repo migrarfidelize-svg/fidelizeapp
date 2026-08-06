@@ -158,7 +158,7 @@ export async function speakText(opts: {
   return ok ? "browser" : "failed";
 }
 
-async function speakWithBrowser(text: string, gender: "female" | "male", params?: { rate?: number; pitch?: number; volume?: number }) {
+export async function speakWithBrowser(text: string, gender: "female" | "male", params?: { rate?: number; pitch?: number; volume?: number }) {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return false;
   try {
     window.speechSynthesis.cancel();
