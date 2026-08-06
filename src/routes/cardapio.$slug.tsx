@@ -18,10 +18,19 @@ import { resolveMenuTheme, menuBackgroundCss, readableInk } from "@/lib/menu-the
 const opts = (slug: string) =>
   queryOptions({
     queryKey: ["public-menu", slug],
-    queryFn: () => getPublicMenuBySlug({ data: { slug } }),
-    // Vitrine pública: dados mudam raramente durante a sessão do cliente
-    staleTime: 5 * 60 * 1000,      // 5 min sem refetch
-    gcTime: 30 * 60 * 1000,        // mantém em memória por 30 min
+    queryFn: async () => {
+      console.log("[DEBUG CLIENT] Calling getPublicMenuBySlug for slug:", slug);
+      try {
+        const res = await getPublicMenuBySlug({ data: { slug } });
+        console.log("[DEBUG CLIENT] Response received:", res ? "Data present" : "Null");
+        return res;
+      } catch (err) {
+        console.error("[DEBUG CLIENT] Error calling server function:", err);
+        throw err;
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   });
