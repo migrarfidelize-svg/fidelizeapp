@@ -372,7 +372,7 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
                           Carregar vozes
                         </Button>
                       </div>
-                      <Select value={prefs.eleven_voice_id} onValueChange={v => update({ eleven_voice_id: v })}>
+                      <Select value={prefs.elevenVoiceId} onValueChange={v => update({ elevenVoiceId: v })}>
                         <SelectTrigger>
                           <SelectValue placeholder="Escolha uma voz..." />
                         </SelectTrigger>
