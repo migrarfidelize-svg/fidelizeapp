@@ -71,16 +71,16 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
       .maybeSingle();
 
     if (menuErr) {
-      console.error("[DEBUG] DB Error (Menu):", menuErr);
-      throw new Error(`Erro ao buscar vitrine: ${menuErr.message}`);
+      console.error(`[${timestamp}] [getPublicMenuBySlug] DB Error (Menu):`, menuErr);
+      throw new Error(`Erro ao buscar vitrine: ${JSON.stringify(menuErr)}`);
     }
     
     if (!menu) {
-      console.log(`[DEBUG] Published ${kind} NOT FOUND for establishment ${est.id}`);
+      console.log(`[${timestamp}] Published ${kind} NOT FOUND for establishment ${est.id}`);
       return { establishment: est, menu: null, categories: [], items: [] };
     }
 
-    console.log(`[DEBUG] Menu Found: ${menu.id}. Fetching content...`);
+    console.log(`[${timestamp}] Menu Found: ${menu.id}. Fetching content...`);
 
     // 3. Buscar categorias e itens
     const [catsRes, itemsRes] = await Promise.all([
@@ -96,8 +96,8 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
        .order("position", { ascending: true }),
     ]);
 
-    if (catsRes.error) console.error("[DEBUG] Error Categories:", catsRes.error);
-    if (itemsRes.error) console.error("[DEBUG] Error Items:", itemsRes.error);
+    if (catsRes.error) console.error(`[${timestamp}] Error Categories:`, catsRes.error);
+    if (itemsRes.error) console.error(`[${timestamp}] Error Items:`, itemsRes.error);
 
     return { 
       establishment: est, 
