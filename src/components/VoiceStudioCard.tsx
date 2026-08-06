@@ -105,7 +105,7 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
   async function fetchElevenVoices() {
     setFetchingVoices(true);
     try {
-      const list = await listVoicesFn({ apiKey: elevenApiKey.includes('...') ? undefined : elevenApiKey });
+      const list = await listVoicesFn({ data: { apiKey: elevenApiKey.includes('...') ? undefined : elevenApiKey } });
       setElevenVoices(list);
       toast.success(`${list.length} vozes carregadas.`);
     } catch (e: any) {
@@ -118,7 +118,7 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
   async function handleTestIntegration() {
     setTestingConnection(true);
     try {
-      const res = await testElevenConnFn({ apiKey: elevenApiKey.includes('...') ? undefined : elevenApiKey });
+      const res = await testElevenConnFn({ data: { apiKey: elevenApiKey.includes('...') ? undefined : elevenApiKey } });
       if (res.ok) {
         toast.success("Conexão validada com sucesso!");
         if (elevenVoices.length === 0) fetchElevenVoices();
@@ -140,12 +140,14 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
     setSaving(true);
     try {
       await saveElevenConfigFn({
-        apiKey: elevenApiKey.includes('...') ? undefined : elevenApiKey, // If masked, server keeps old
-        voiceId: elevenVoiceId,
-        modelId: elevenModelId,
-        voiceName: elevenVoices.find(v => v.voice_id === elevenVoiceId)?.name,
-        stability: prefs.stability,
-        similarity: prefs.similarity
+        data: {
+          apiKey: elevenApiKey.includes('...') ? undefined : elevenApiKey,
+          voiceId: elevenVoiceId,
+          modelId: elevenModelId,
+          voiceName: elevenVoices.find(v => v.voice_id === elevenVoiceId)?.name || "Voz Selecionada",
+          stability: prefs.stability,
+          similarity: prefs.similarity
+        }
       });
       setIntegrationStatus('connected');
       toast.success("Integração ElevenLabs salva como padrão do sistema!");
