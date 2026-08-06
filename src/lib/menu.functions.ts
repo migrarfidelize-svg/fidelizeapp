@@ -28,17 +28,24 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const { slug, kind } = data;
     const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] [getPublicMenuBySlug] START - Slug: "${slug}", Kind: "${kind}"`);
     
-    const { supabaseAdmin } = await import("../integrations/supabase/client.server");
-    
-    if (!supabaseAdmin) {
-      console.error(`[${timestamp}] [getPublicMenuBySlug] supabaseAdmin is missing`);
-      throw new Error("Erro de configuração do servidor");
+    // Fallback de infraestrutura: usa as envs diretamente se o Proxy do supabaseAdmin falhar no runtime local
+    const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    let s;
+    if (url && key) {
+      const { createClient } = await import('@supabase/supabase-js');
+      s = createClient(url, key, { auth: { persistSession: false } });
+    } else {
+      const { supabaseAdmin } = await import("../integrations/supabase/client.server");
+      s = supabaseAdmin;
     }
 
+    if (!s) throw new Error("Erro de infraestrutura (Supabase Admin)");
+
     // 1. Buscar estabelecimento ATIVO
-    const { data: est, error: estErr } = await supabaseAdmin
+    const { data: est, error: estErr } = await s
       .from("establishments")
       .select("id, name, slug, logo_url, cover_url, description, primary_color, accent_color, phone, whatsapp, instagram, address, active")
       .eq("slug", slug)
@@ -60,7 +67,7 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
     }
 
     // 2. Buscar a vitrine publicada
-    const { data: menu, error: menuErr } = await supabaseAdmin
+    const { data: menu, error: menuErr } = await s
       .from("restaurant_menus")
       .select("id, establishment_id, kind, status, tagline, theme, hours, updated_at")
       .eq("establishment_id", est.id)
@@ -74,18 +81,17 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
     }
     
     if (!menu) {
-      console.log(`[${timestamp}] Published ${kind} NOT FOUND for establishment ${est.id}`);
       return { establishment: est, menu: null, categories: [], items: [] };
     }
 
     // 3. Buscar categorias e itens
     const [catsRes, itemsRes] = await Promise.all([
-      supabaseAdmin.from("menu_categories")
+      s.from("menu_categories")
        .select("id, menu_id, name, description, image_url, active, featured, position")
        .eq("menu_id", menu.id)
        .eq("active", true)
        .order("position", { ascending: true }),
-      supabaseAdmin.from("menu_items")
+      s.from("menu_items")
        .select("id, menu_id, category_id, name, short_desc, long_desc, price, promo_price, currency, image_url, video_url, video_poster_url, prep_minutes, active, badges, ingredients, allergens, variants, sku, brand, stock_status, gallery")
        .eq("menu_id", menu.id)
        .eq("active", true)
