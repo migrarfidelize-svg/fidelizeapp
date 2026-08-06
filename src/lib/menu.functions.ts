@@ -15,7 +15,9 @@ const kindEnum = z.enum(["menu", "catalog"]);
 export const getPublicMenuBySlug = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => {
     // Normaliza input do TanStack Start v1
+    console.log("[DEBUG] Raw input d:", JSON.stringify(d, null, 2));
     const input = (d && typeof d === 'object' && 'data' in d) ? (d as any).data : d;
+    console.log("[DEBUG] Normalized input:", JSON.stringify(input, null, 2));
     return z.object({ 
       slug: z.string().min(1).max(80), 
       kind: kindEnum.optional().default("menu") 
