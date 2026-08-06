@@ -6,46 +6,27 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 
 async function getPrivilegedClient() {
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    console.error("[DEBUG] Missing env vars for supabaseAdmin in Server Function");
-    // Fallback para tentar importar se as variáveis não estiverem acessíveis via process.env no momento (embora devam estar no .handler)
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    return supabaseAdmin;
-  }
-
-  const { createClient } = await import('@supabase/supabase-js');
-  
-  // Função auxiliar para lidar com chaves opacas do Lovable/Supabase
-  const createSupabaseFetch = (key: string): typeof fetch => (input, init) => {
-    const headers = new Headers(init?.headers);
-    if (key.startsWith('sb_') && headers.get('Authorization') === `Bearer ${key}`) {
-      headers.delete('Authorization');
-    }
-    headers.set('apikey', key);
-    return fetch(input, { ...init, headers });
-  };
-
-  return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-    global: { fetch: createSupabaseFetch(SUPABASE_SERVICE_ROLE_KEY) },
-    auth: { persistSession: false }
-  });
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin;
 }
 
 const kindEnum = z.enum(["menu", "catalog"]);
 
 export const getPublicMenuBySlug = createServerFn({ method: "GET" })
-  .inputValidator((d: { slug: string; kind?: "menu" | "catalog" }) => {
-    console.log("[DEBUG] Input received:", d);
-    return z.object({ slug: z.string().min(1).max(80), kind: kindEnum.optional() }).parse(d);
+  .inputValidator((d: unknown) => {
+    // Normaliza input do TanStack Start v1
+    const input = (d && typeof d === 'object' && 'data' in d) ? (d as any).data : d;
+    return z.object({ 
+      slug: z.string().min(1).max(80), 
+      kind: kindEnum.optional().default("menu") 
+    }).parse(input);
   })
   .handler(async ({ data }) => {
-    const kind = data.kind ?? "menu";
-    const s = await getPrivilegedClient();
+    // Normaliza extração do dado validado
+    const slug = typeof data === 'string' ? data : (data as any).slug;
+    const kind = (data as any).kind ?? "menu";
     
-    console.log(`[DEBUG] Final parameters - Slug: ${slug}, Kind: ${kind}`);
+    console.log(`[DEBUG] Handling public request - Slug: ${slug}, Kind: ${kind}`);
     
     const s = await getPrivilegedClient();
     
@@ -62,7 +43,7 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
     }
     
     if (!est) {
-      console.log("[DEBUG] No establishment found for slug:", data.slug);
+      console.log("[DEBUG] No establishment found for slug:", slug);
       return null;
     }
     
