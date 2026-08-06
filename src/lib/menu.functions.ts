@@ -35,21 +35,30 @@ export const getPublicMenuBySlug = createServerFn({ method: "POST" })
       throw new Error("Erro de infraestrutura");
     }
 
-    const { data: result, error } = await supabase.rpc("get_public_catalogo_v1", {
+    // Chamada única para a RPC v2 endurecida
+    const { data: result, error } = await supabase.rpc("get_public_catalogo_v2", {
       p_slug: slug,
       p_kind: kind
     });
 
     if (error) {
-      console.error(`[${timestamp}] [getPublicMenuBySlug] RPC Error:`, JSON.stringify(error)); throw error;
-      throw new Error("Erro ao acessar dados da vitrine");
+      // Registro seguro no servidor, sem expor detalhes ao cliente
+      console.error(`[${timestamp}] [getPublicMenuBySlug] RPC Error:`, {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+      throw new Error("Erro interno ao carregar dados");
     }
     
+    // Retorno null significa estabelecimento inativo ou menu não publicado
     if (!result) {
       console.log(`[${timestamp}] Public content NOT FOUND for ${slug} (${kind})`);
       return null;
     }
 
+    // O DTO retornado pela RPC já está no formato correto
     const res = result as any;
     return {
       establishment: res.establishment,
