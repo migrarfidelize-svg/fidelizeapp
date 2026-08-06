@@ -6,8 +6,32 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 
 async function getPrivilegedClient() {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  return supabaseAdmin;
+  const SUPABASE_URL = process.env.SUPABASE_URL;
+  const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    console.error("[DEBUG] Missing env vars for supabaseAdmin in Server Function");
+    // Fallback para tentar importar se as variáveis não estiverem acessíveis via process.env no momento (embora devam estar no .handler)
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    return supabaseAdmin;
+  }
+
+  const { createClient } = await import('@supabase/supabase-js');
+  
+  // Função auxiliar para lidar com chaves opacas do Lovable/Supabase
+  const createSupabaseFetch = (key: string): typeof fetch => (input, init) => {
+    const headers = new Headers(init?.headers);
+    if (key.startsWith('sb_') && headers.get('Authorization') === `Bearer ${key}`) {
+      headers.delete('Authorization');
+    }
+    headers.set('apikey', key);
+    return fetch(input, { ...init, headers });
+  };
+
+  return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    global: { fetch: createSupabaseFetch(SUPABASE_SERVICE_ROLE_KEY) },
+    auth: { persistSession: false }
+  });
 }
 
 const kindEnum = z.enum(["menu", "catalog"]);
