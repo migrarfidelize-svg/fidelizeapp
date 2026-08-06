@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import { synthesizeGreeting } from "@/lib/tts.functions";
 import { loadVoicePrefs, type VoiceId, DEFAULT_STYLE } from "@/lib/voice-prefs";
+import { useServerFn } from "@tanstack/react-start";
+import { synthesizeElevenLabs } from "@/lib/elevenlabs.functions";
 
 type Props = {
   /** "female" para painel do lojista, "male" para admin */
