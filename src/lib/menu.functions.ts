@@ -17,38 +17,26 @@ const inputSchema = z.object({
 
 export const getPublicMenuBySlug = createServerFn({ method: "GET" })
   .validator((d: unknown) => {
-    // Para chamadas RPC GET no TanStack Start, o input d já é o payload
+    // Normalização agressiva para TanStack Start v1 RPC (GET)
+    // d pode vir como { slug, kind } se enviado via query params, ou { data: { slug, kind } }
     const raw = d as any;
-    const slug = raw?.slug || "";
-    const kind = (raw?.kind === "catalog" ? "catalog" : "menu") as "menu" | "catalog";
+    const slug = raw?.slug || raw?.data?.slug || "";
+    const kind = raw?.kind || raw?.data?.kind || "menu";
 
     if (!slug) throw new Error("Slug é obrigatório");
-    return { slug, kind };
+    return { slug, kind: (kind === "catalog" ? "catalog" : "menu") as "menu" | "catalog" };
   })
   .handler(async ({ data }) => {
     const { slug, kind } = data;
     const timestamp = new Date().toISOString();
     
-    // Fallback de infraestrutura: usa as envs diretamente se o Proxy do supabaseAdmin falhar no runtime local
-    const url = process.env.VITE_SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    // Importação direta do client admin (o Proxy em client.server.ts cuidará das envs)
+    const { supabaseAdmin } = await import("../integrations/supabase/client.server");
 
-    let s;
-    if (url && key) {
-       const { createClient } = await import('@supabase/supabase-js');
-       s = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
-    } else {
-       // Se as envs não estiverem lá (comum em dev local se não houver .env preenchido), tentamos o client normal
-       // Mas o client normal vai falhar por causa do RLS se não estiver logado.
-       // Para fins de teste local no sandbox Lovable, o Proxy DEVE funcionar.
-       const { supabaseAdmin } = await import("../integrations/supabase/client.server");
-       s = supabaseAdmin;
-    }
-
-    if (!s) throw new Error("Erro de infraestrutura (Supabase Admin)");
+    if (!supabaseAdmin) throw new Error("Erro de infraestrutura (Supabase Admin)");
 
     // 1. Buscar estabelecimento ATIVO
-    const { data: est, error: estErr } = await s
+    const { data: est, error: estErr } = await supabaseAdmin
       .from("establishments")
       .select("id, name, slug, logo_url, cover_url, description, primary_color, accent_color, phone, whatsapp, instagram, address, active")
       .eq("slug", slug)
