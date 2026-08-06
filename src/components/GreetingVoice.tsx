@@ -106,36 +106,6 @@ function pickBestVoice(voices: SpeechSynthesisVoice[], gender: "female" | "male"
   return pt.slice().sort((a, b) => score(b) - score(a))[0];
 }
 
-/** Fallback: voz nativa do navegador. */
-async function speakWithBrowser(text: string, gender: "female" | "male") {
-  if (typeof window === "undefined" || !("speechSynthesis" in window)) return false;
-  try {
-    window.speechSynthesis.cancel();
-  } catch {}
-  const voices = await loadVoices();
-  const chosen = pickBestVoice(voices, gender);
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = "pt-BR";
-  utter.volume = 0.95;
-  utter.rate = 0.98;
-  utter.pitch = gender === "female" ? 1.08 : 0.9;
-  if (chosen) utter.voice = chosen;
-
-  let killer: ReturnType<typeof setInterval> | null = null;
-  utter.onstart = () => {
-    killer = setInterval(() => {
-      if (window.speechSynthesis.speaking) {
-        window.speechSynthesis.pause();
-        window.speechSynthesis.resume();
-      }
-    }, 10000);
-  };
-  utter.onend = utter.onerror = () => {
-    if (killer) clearInterval(killer);
-  };
-  window.speechSynthesis.speak(utter);
-  return true;
-}
 
 let currentAudio: HTMLAudioElement | null = null;
 
