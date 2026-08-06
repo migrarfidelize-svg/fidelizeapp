@@ -20,23 +20,31 @@ const inputSchema = z.object({
 
 export const getPublicMenuBySlug = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => {
-    // Normalização agressiva do input
+    // Normalização agressiva do input para TanStack Start v1
     let payload = d;
     if (d && typeof d === 'object' && 'data' in d) {
       payload = (d as any).data;
     }
     
-    // Se ainda for string, tratamos como o slug
+    // Se for string, tratamos como o slug diretamente
     if (typeof payload === 'string') {
       payload = { slug: payload };
     }
     
-    // Fallback para quando o TanStack Router envia params diretamente
-    if (!payload && typeof d === 'object') {
+    // Fallback para quando o TanStack Router envia params diretamente no objeto raiz
+    if (payload && typeof payload === 'object' && !('slug' in payload) && (d as any).slug) {
       payload = d;
     }
 
-    return inputSchema.parse(payload);
+    try {
+      return inputSchema.parse(payload);
+    } catch (err) {
+      console.error("[DEBUG] Validation failed for payload:", payload, err);
+      // Tentativa de recuperação desesperada se o slug estiver em algum lugar
+      const foundSlug = (d as any)?.slug || (d as any)?.params?.slug || (d as any)?.data?.slug;
+      if (foundSlug) return { slug: foundSlug, kind: "menu" as const };
+      throw err;
+    }
   })
   .handler(async ({ data }) => {
     // Data aqui já deve ser o objeto validado { slug, kind }
@@ -44,7 +52,13 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
     
     console.log(`[DEBUG] RPC Handler Start - Slug: "${slug}", Kind: "${kind}"`);
     
-    const s = await getPrivilegedClient();
+    let s;
+    try {
+      s = await getPrivilegedClient();
+    } catch (err) {
+      console.error("[DEBUG] Failed to initialize privileged client:", err);
+      throw new Error("Erro de infraestrutura no servidor");
+    }
     
     // 1. Buscar estabelecimento ATIVO
     const { data: est, error: estErr } = await s
