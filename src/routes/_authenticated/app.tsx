@@ -138,12 +138,13 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-
-
-    key: "qrcodes",
-    icon: QrCode,
-    label: "QR Codes",
-    items: [{ to: "/app/qr", label: "QR Codes", icon: QrCode }],
+    key: "estudio",
+    icon: Mic,
+    label: "Studio de Voz",
+    items: [
+      { to: "/app/studio", label: "Studio de Voz", icon: Mic },
+      { to: "/app/qr", label: "QR Codes", icon: QrCode },
+    ],
   },
   {
     key: "fidelidade",
