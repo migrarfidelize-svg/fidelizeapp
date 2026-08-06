@@ -653,7 +653,7 @@ function AppLayout() {
         <div className={`flex flex-col min-w-0 transition-[padding] duration-200 ${collapsed ? "md:pl-[76px]" : "md:pl-64"}`}>
 
           {/* Top bar (desktop + mobile) */}
-          <header className="sticky top-0 z-20 flex items-center justify-between gap-3 h-14 px-4 md:px-6 border-b bg-card/70 backdrop-blur-xl">
+          <header className="sticky top-0 z-20 flex items-center justify-between gap-3 h-18 px-4 md:px-6 border-b bg-card/70 backdrop-blur-xl transition-[height] duration-200">
             <div className="flex items-center gap-3 min-w-0">
               {/* Mobile trigger */}
               <div className="md:hidden">
