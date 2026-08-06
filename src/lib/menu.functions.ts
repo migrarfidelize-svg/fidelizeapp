@@ -24,45 +24,36 @@ const inputSchema = z.object({
 
 export const getPublicMenuBySlug = createServerFn({ method: "GET" })
   .validator((d: unknown) => {
-    // Para GET requests no TanStack Start, o input pode vir como um objeto de busca (search params)
-    // Se 'd' já tem 'slug', retornamos ele.
-    if (d && typeof d === 'object' && 'slug' in d) {
-      return inputSchema.parse(d);
-    }
+    // Normalização radical para TanStack Start v1 RPC (GET)
+    // O TanStack Start v1 envia parâmetros de consulta (query params) para o validador.
+    console.log("[DEBUG] Raw input to validator:", JSON.stringify(d));
     
-    // Normalização para quando vem via { data: { slug } }
-    if (d && typeof d === 'object' && 'data' in d) {
-      const payload = (d as any).data;
-      if (typeof payload === 'string') return inputSchema.parse({ slug: payload });
-      return inputSchema.parse(payload);
-    }
+    let slug = "";
+    let kind: "menu" | "catalog" = "menu";
 
-    // Caso seja apenas a string do slug (chamada direta legada)
     if (typeof d === 'string') {
-      return inputSchema.parse({ slug: d });
+      slug = d;
+    } else if (d && typeof d === 'object') {
+      // Prioridade 1: Objeto direto { slug, kind } ou { data: { slug, kind } }
+      const source = ('data' in d) ? (d as any).data : d;
+      slug = source.slug || "";
+      kind = source.kind || "menu";
     }
 
-    // Se falhar tudo, tenta extrair de qualquer lugar
-    const foundSlug = (d as any)?.slug || (d as any)?.params?.slug || (d as any)?.data?.slug;
-    if (foundSlug) return { slug: foundSlug, kind: "menu" as const };
+    if (!slug) {
+      console.error("[DEBUG] Validation FAILED: No slug found in input", d);
+      throw new Error("Slug é obrigatório");
+    }
 
-    return inputSchema.parse(d);
+    return { slug, kind };
   })
   .handler(async ({ data }) => {
-    // Data aqui já deve ser o objeto validado { slug, kind }
-    const { slug, kind } = data as { slug: string, kind: "menu" | "catalog" };
-    
-    // Logging explícito para depuração em produção
+    const { slug, kind } = data;
     const timestamp = new Date().toISOString();
     console.log(`[${timestamp}] [getPublicMenuBySlug] START - Slug: "${slug}", Kind: "${kind}"`);
     
-    let s;
-    try {
-      s = await getPrivilegedClient();
-    } catch (err) {
-      console.error(`[${timestamp}] [getPublicMenuBySlug] Infrastructure Error:`, err);
-      throw new Error("Erro de infraestrutura no servidor. Verifique a conexão com o banco de dados.");
-    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const s = supabaseAdmin;
     
     // 1. Buscar estabelecimento ATIVO
     const { data: est, error: estErr } = await s
@@ -70,6 +61,11 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
       .select("id, name, slug, logo_url, cover_url, description, primary_color, accent_color, phone, whatsapp, instagram, address, active")
       .eq("slug", slug)
       .maybeSingle();
+
+    if (estErr) {
+      console.error(`[${timestamp}] [getPublicMenuBySlug] DB Error (Establishment):`, estErr);
+      throw new Error(`Erro de banco de dados: ${estErr.message}`);
+    }
     
     if (estErr) {
       console.error("[DEBUG] DB Error (Establishment):", estErr);
