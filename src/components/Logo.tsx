@@ -13,7 +13,7 @@ export function Logo({
   imgClassName?: string;
 }) {
   const brand = useBrand();
-  const base = `block w-auto max-w-full object-contain object-left shrink-0 ${imgClassName || "h-9 sm:h-11"}`;
+  const base = `block w-auto max-w-full object-contain object-left shrink-0 ${imgClassName || "h-12 sm:h-16"}`;
 
   return (
     <span className={`inline-flex min-w-0 items-center ${className}`}>

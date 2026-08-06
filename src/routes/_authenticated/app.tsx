@@ -628,7 +628,7 @@ function AppLayout() {
               </Link>
             ) : (
               <Link to="/app" aria-label="Fidelize" className="min-w-0 flex items-center">
-                <Logo className="py-2" />
+                <Logo className="py-0.5" />
               </Link>
             )}
             {!collapsed && (
@@ -663,13 +663,13 @@ function AppLayout() {
                   </SheetTrigger>
                   <SheetContent side="left" className="p-0 w-72 flex flex-col">
                     <VisuallyHidden><SheetTitle>Menu de navegação</SheetTitle></VisuallyHidden>
-                    <div className="p-4 border-b flex items-center h-18"><Logo className="py-1" /></div>
+                    <div className="p-4 border-b flex items-center h-18"><Logo className="py-0.5" /></div>
                     {renderNav(closeMobile, true)}
                     {renderFooter(closeMobile, true)}
                   </SheetContent>
                 </Sheet>
               </div>
-              <div className="md:hidden flex items-center h-full"><Logo className="py-2" /></div>
+              <div className="md:hidden flex items-center h-full"><Logo className="py-0.5" /></div>
 
               {/* Breadcrumb / page title (desktop) */}
               <div className="hidden md:flex items-center gap-2 min-w-0">
