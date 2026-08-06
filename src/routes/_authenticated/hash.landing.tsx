@@ -126,6 +126,7 @@ function LandingAdmin() {
       await save({ data: { hero, brands, brand } });
       try {
         localStorage.removeItem("fidelize.brand.v1");
+        localStorage.removeItem("fidelize.brand.v2");
       } catch { /* storage bloqueado */ }
       // Avisa as abas abertas da landing para recarregarem na hora.
       const channel = supabase.channel("landing-content");

@@ -19,7 +19,7 @@ export function LogoMark({ className = "", size = 36 }: { className?: string; si
         aria-hidden="true"
         className="h-full w-full object-contain p-0.5"
         loading="eager"
-        decoding="async"
+        decoding="sync"
       />
     </span>
   );

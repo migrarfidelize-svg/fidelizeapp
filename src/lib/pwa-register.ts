@@ -51,6 +51,11 @@ async function clearPwaCaches() {
         )
         .map((key) => caches.delete(key)),
     );
+    // Explicitly purge brand caches to avoid old identity leaks
+    if ("caches" in window) {
+      await caches.delete("fidelize-brand-v1");
+      await caches.delete("fidelize-brand-v2");
+    }
   } catch { /* noop */ }
 }
 
