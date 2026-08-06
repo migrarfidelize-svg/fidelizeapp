@@ -112,30 +112,15 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
   }
 
   async function handleTest(textType: string) {
-    const text = (prefs.texts as any)[textType];
-    if (!text) return toast.error("Texto vazio!");
-    
+  const handleTest = async (typeOrText: string) => {
     setPlaying(true);
     try {
-      const res = await doSpeak({
-        data: {
-          text,
-          provider: prefs.provider,
-          voice_id: prefs.elevenVoiceId,
-          model_id: prefs.elevenModelId,
-          fallback_enabled: prefs.fallback_enabled,
-          params: { rate: prefs.rate, volume: prefs.volume, stability: prefs.stability, similarity: prefs.similarity }
-        }
-      });
+      let text = typeOrText;
+      if (typeOrText === "welcome") text = prefs.texts?.welcome?.replace("{name}", "Carlos") || "Bem-vindo!";
+      if (typeOrText === "ready") text = prefs.texts?.ready || "Sistema pronto.";
+      if (typeOrText === "notify") text = prefs.texts?.notify || "Nova notificação.";
 
-      if (res.audio) {
-        const audio = new Audio(`data:${res.mime};base64,${res.audio}`);
-        await audio.play();
-        toast.success(`Reproduzindo via ${res.provider}`);
-      } else if (res.fallback === "native") {
-        await speakWithBrowser(text, scope === "admin" ? "male" : "female", { rate: prefs.rate, volume: prefs.volume });
-        toast.info("Usando fallback: Voz nativa");
-      }
+      await voiceManager.speak(text, prefs);
     } catch (e: any) {
       toast.error(e.message);
     } finally {
