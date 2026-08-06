@@ -28,18 +28,20 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const kind = data.kind ?? "menu";
     const s = publicClient();
-    const { data: est } = await s
+    
+    // 1. Buscar estabelecimento ATIVO
+    const { data: est, error: estErr } = await s
       .from("establishments")
-      .select("id, name, slug, logo_url, cover_url, description, primary_color, accent_color, phone, whatsapp, instagram, address")
+      .select("id, name, slug, logo_url, cover_url, description, primary_color, accent_color, phone, whatsapp, instagram, address, active")
       .eq("slug", data.slug)
-      .eq("active", true)
       .maybeSingle();
     
-    if (!est) return null;
+    if (estErr) throw new Error("Erro ao buscar estabelecimento");
+    if (!est || !est.active) return null;
 
-    // Ajuste global: Filtrar explicitamente por kind e status=published antes de maybeSingle
-    // para garantir que a coexistência de múltiplos registros (rascunhos, tipos diferentes) não quebre a consulta.
-    const { data: menu } = await s
+    // 2. Buscar a vitrine publicada do tipo específico (menu ou catalog)
+    // Filtro rígido por status=published e kind para evitar ambiguidade com rascunhos ou outros tipos
+    const { data: menu, error: menuErr } = await s
       .from("restaurant_menus")
       .select("*")
       .eq("establishment_id", est.id)
@@ -47,14 +49,21 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
       .eq("status", "published")
       .maybeSingle();
 
+    if (menuErr) throw new Error("Erro ao buscar vitrine");
     if (!menu) return { establishment: est, menu: null, categories: [], items: [] };
 
+    // 3. Buscar conteúdo da vitrine
     const [{ data: cats }, { data: items }] = await Promise.all([
       s.from("menu_categories").select("*").eq("menu_id", menu.id).eq("active", true).order("position", { ascending: true }),
       s.from("menu_items").select("*").eq("menu_id", menu.id).eq("active", true).order("position", { ascending: true }),
     ]);
 
-    return { establishment: est, menu, categories: cats ?? [], items: items ?? [] };
+    return { 
+      establishment: est, 
+      menu, 
+      categories: cats ?? [], 
+      items: items ?? [] 
+    };
   });
 
 
