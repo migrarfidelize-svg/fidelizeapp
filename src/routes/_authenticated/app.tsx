@@ -252,8 +252,9 @@ function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const [openGroups, setOpenGroups] = useState<string[]>([]);
-  const [swipeX, setSwipeX] = useState(0);
-  const [isSwiping, setIsSwiping] = useState(false);
+  const [hoverGroup, setHoverGroup] = useState<string | null>(null);
+  const [hoverPos, setHoverPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+
 
   // mantém a categoria da rota atual expandida
   useEffect(() => {
