@@ -3,6 +3,7 @@ import { z } from "zod";
 import { synthesizeElevenLabs, testElevenLabsConnection, getElevenLabsVoices } from "./elevenlabs.functions";
 import { synthesizeGreeting } from "./tts.functions";
 import { loadVoicePrefs, type VoicePrefs } from "./voice-prefs";
+import { getGlobalVoiceConfig, synthesizeGlobalEleven } from "./voice-system.functions";
 
 function loadNativeVoices(): Promise<SpeechSynthesisVoice[]> {
   return new Promise((resolve) => {

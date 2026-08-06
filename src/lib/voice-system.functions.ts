@@ -8,10 +8,10 @@ const SYSTEM_ID = '00000000-0000-0000-0000-000000000000';
  * A API Key é mantida no servidor; esta função retorna apenas se está configurada.
  */
 export const getGlobalVoiceConfig = createServerFn({ method: "GET" })
-  .handler(async ({ context }) => {
-    const { supabase } = context;
+  .handler(async () => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("establishment_settings")
       .select("security")
       .eq("establishment_id", SYSTEM_ID)
@@ -38,11 +38,11 @@ export const synthesizeGlobalEleven = createServerFn({ method: "POST" })
   .validator(z.object({
     text: z.string()
   }))
-  .handler(async ({ data, context }) => {
-    const { supabase } = context;
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     
     // 1. Get Global Config
-    const { data: settings } = await supabase
+    const { data: settings } = await supabaseAdmin
       .from("establishment_settings")
       .select("security")
       .eq("establishment_id", SYSTEM_ID)
