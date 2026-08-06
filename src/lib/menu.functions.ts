@@ -28,7 +28,7 @@ export const getPublicMenuBySlug = createServerFn({ method: "POST" })
     const { slug, kind } = data;
     const timestamp = new Date().toISOString();
 
-    // Importamos o cliente anônimo para acesso público seguro via RLS
+    // Importamos o cliente anônimo para acesso público via RPC segura
     const { supabase } = await import("../integrations/supabase/client");
 
     if (!supabase) {
@@ -36,65 +36,29 @@ export const getPublicMenuBySlug = createServerFn({ method: "POST" })
       throw new Error("Erro de infraestrutura");
     }
 
-    // 1. Buscar estabelecimento ATIVO
-    const { data: est, error: estErr } = await supabase
-      .from("establishments")
-      .select("id, name, slug, logo_url, cover_url, description, primary_color, accent_color, phone, whatsapp, instagram, address, active, updated_at")
-      .eq("slug", slug)
-      .eq("active", true)
-      .maybeSingle();
+    // Chamamos a RPC que encapsula toda a lógica de segurança e visibilidade
+    const { data: result, error } = await supabase.rpc("get_public_catalogo_v1", {
+      p_slug: slug,
+      p_kind: kind
+    });
 
-    if (estErr) {
-      console.error(`[${timestamp}] [getPublicMenuBySlug] DB Error (Establishment):`, JSON.stringify(estErr));
-      throw new Error("Erro ao acessar o banco de dados");
-    }
-    
-    if (!est) {
-      console.log(`[${timestamp}] Establishment NOT FOUND or INACTIVE for slug: "${slug}"`);
-      return null;
-    }
-
-    // 2. Buscar a vitrine publicada
-    const { data: menu, error: menuErr } = await supabase
-      .from("restaurant_menus")
-      .select("id, establishment_id, kind, status, tagline, theme, hours, updated_at")
-      .eq("establishment_id", est.id)
-      .eq("kind", kind)
-      .eq("status", "published")
-      .maybeSingle();
-
-    if (menuErr) {
-      console.error(`[${timestamp}] [getPublicMenuBySlug] DB Error (Menu):`, JSON.stringify(menuErr));
+    if (error) {
+      console.error(`[${timestamp}] [getPublicMenuBySlug] RPC Error:`, JSON.stringify(error));
       throw new Error("Erro ao acessar dados da vitrine");
     }
     
-    if (!menu) {
-      console.log(`[${timestamp}] Menu not published for ${kind} at ${est.slug}`);
-      return { establishment: est, menu: null, categories: [], items: [] };
+    if (!result) {
+      console.log(`[${timestamp}] Public content NOT FOUND for ${slug} (${kind})`);
+      return null;
     }
 
-    // 3. Buscar categorias e itens (RLS garante que só retornamos se o menu estiver publicado)
-    const [catsRes, itemsRes] = await Promise.all([
-      supabase.from("menu_categories")
-       .select("id, menu_id, name, description, image_url, active, featured, position")
-       .eq("menu_id", menu.id)
-       .eq("active", true)
-       .order("position", { ascending: true }),
-      supabase.from("menu_items")
-       .select("id, menu_id, category_id, name, short_desc, long_desc, price, promo_price, currency, image_url, video_url, video_poster_url, prep_minutes, active, badges, ingredients, allergens, variants, sku, brand, stock_status, gallery")
-       .eq("menu_id", menu.id)
-       .eq("active", true)
-       .order("position", { ascending: true }),
-    ]);
-
-    if (catsRes.error) console.error(`[${timestamp}] Error Categories:`, JSON.stringify(catsRes.error));
-    if (itemsRes.error) console.error(`[${timestamp}] Error Items:`, JSON.stringify(itemsRes.error));
-
-    return { 
-      establishment: est, 
-      menu, 
-      categories: catsRes.data ?? [], 
-      items: itemsRes.data ?? [] 
+    // Normalização do retorno da RPC para o formato esperado pelo frontend
+    // A RPC retorna nulo ou um objeto com as chaves: establishment, menu, categories, items
+    return {
+      establishment: result.establishment,
+      menu: result.menu,
+      categories: result.categories ?? [],
+      items: result.items ?? []
     };
   });
 
