@@ -23,7 +23,7 @@ const inputSchema = z.object({
 });
 
 export const getPublicMenuBySlug = createServerFn({ method: "GET" })
-  .inputValidator((d: unknown) => {
+  .validator((d: unknown) => {
     // Normalização agressiva do input para TanStack Start v1
     let payload = d;
     if (d && typeof d === 'object' && 'data' in d) {
