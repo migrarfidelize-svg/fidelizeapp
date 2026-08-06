@@ -19,7 +19,7 @@ export function AppShellSkeleton({ label = "Carregando seu painel…" }: { label
       </aside>
 
       <div className="flex min-w-0 flex-col md:pl-24">
-        <header className="flex h-14 items-center gap-3 border-b border-border/60 bg-card/70 px-4 md:px-6">
+        <header className="flex h-18 items-center gap-3 border-b border-border/60 bg-card/70 px-4 md:px-6">
           <div className="h-9 w-9 animate-pulse rounded-lg bg-muted/50 md:hidden" />
           <div className="h-4 w-40 animate-pulse rounded bg-muted/50" />
         </header>
