@@ -45,13 +45,15 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
     const kind = data.kind ?? "menu";
     const s = await getPrivilegedClient();
     
-    console.log(`[DEBUG] Fetching establishment for slug: ${data.slug}`);
+    console.log(`[DEBUG] Final parameters - Slug: ${slug}, Kind: ${kind}`);
+    
+    const s = await getPrivilegedClient();
     
     // 1. Buscar estabelecimento ATIVO
     const { data: est, error: estErr } = await s
       .from("establishments")
       .select("id, name, slug, logo_url, cover_url, description, primary_color, accent_color, phone, whatsapp, instagram, address, active")
-      .eq("slug", data.slug)
+      .eq("slug", slug)
       .maybeSingle();
     
     if (estErr) {
