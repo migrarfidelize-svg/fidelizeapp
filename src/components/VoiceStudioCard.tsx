@@ -33,8 +33,7 @@ import {
   getElevenLabsVoices, 
   testElevenLabsConnection 
 } from "@/lib/elevenlabs.functions";
-import { speakGlobal } from "@/lib/tts-global.functions";
-import { stopSpeaking, speakWithBrowser } from "@/components/GreetingVoice";
+import { voiceManager } from "@/lib/voice-manager";
 
 type Props = {
   scope: "merchant" | "admin";
