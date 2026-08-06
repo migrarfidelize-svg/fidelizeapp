@@ -417,7 +417,7 @@ function PublicMenuPage() {
             >
               Tudo
             </button>
-            {categories.map((c) => (
+            {categories.map((c: any) => (
               <button
                 key={c.id}
                 onClick={() => scrollToCat(c.id)}
