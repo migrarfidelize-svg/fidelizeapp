@@ -80,10 +80,10 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
   }
 
   const update = (patch: Partial<VoicePrefs>) => setPrefs(prev => ({ ...prev, ...patch }));
-  const updateParam = (k: string, v: number) => setPrefs(prev => ({ ...prev, [k]: v }));
-  const updateText = (k: string, v: string) => setPrefs(prev => ({ 
+  const updateParam = (k: keyof VoicePrefs, v: number) => setPrefs(prev => ({ ...prev, [k]: v }));
+  const updateText = (k: keyof VoicePrefs["texts"], v: string) => setPrefs(prev => ({ 
     ...prev, 
-    texts: { ...prev.texts, [k]: v } as any 
+    texts: { ...prev.texts, [k]: v }
   }));
 
   async function onSave() {
