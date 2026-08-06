@@ -198,7 +198,7 @@ function SiteHeader() {
   return (
     <header className="sticky top-4 z-40 px-4">
       <div className="nav-dock mx-auto flex h-18 max-w-5xl items-center justify-between gap-3 rounded-full border border-violet-400/60 bg-background/60 pl-6 pr-3 backdrop-blur-xl">
-        <Link to="/" className="shrink-0 flex items-center"><Logo className="scale-125 origin-left py-1" /></Link>
+        <Link to="/" className="shrink-0 flex items-center h-full"><Logo className="py-2" /></Link>
         <nav className="hidden gap-7 md:flex text-sm text-muted-foreground">
           {NAV_LINKS.map(([href, label]) => (
             <a key={`${href}-${label}`} href={href} className="hover:text-foreground transition-colors">{label}</a>
