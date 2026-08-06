@@ -25,6 +25,7 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
       slug = d;
     } else if (d && typeof d === "object") {
       const raw = (d as any);
+      // No TanStack Start v1, o input de uma chamada GET costuma vir direto ou em .data
       slug = raw.slug || raw.data?.slug || raw.params?.slug || "";
       const k = raw.kind || raw.data?.kind || raw.params?.kind;
       if (k === "catalog") kind = "catalog";
@@ -34,23 +35,28 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
     return { slug, kind };
   })
   .handler(async ({ data }) => {
-    const { slug, kind } = data as { slug: string; kind: "menu" | "catalog" };
+    const { slug, kind } = data;
     const timestamp = new Date().toISOString();
     console.log(`[${timestamp}] [getPublicMenuBySlug] START - Slug: "${slug}", Kind: "${kind}"`);
     
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const s = supabaseAdmin;
+    // Importação dinâmica absoluta para garantir que o bundler não se perca
+    const { supabaseAdmin } = await import("../integrations/supabase/client.server");
     
+    if (!supabaseAdmin) {
+      console.error(`[${timestamp}] [getPublicMenuBySlug] supabaseAdmin is missing`);
+      throw new Error("Erro de configuração do servidor");
+    }
+
     // 1. Buscar estabelecimento ATIVO
-    const { data: est, error: estErr } = await s
+    const { data: est, error: estErr } = await supabaseAdmin
       .from("establishments")
       .select("id, name, slug, logo_url, cover_url, description, primary_color, accent_color, phone, whatsapp, instagram, address, active")
       .eq("slug", slug)
       .maybeSingle();
 
     if (estErr) {
-      console.error(`[${timestamp}] [getPublicMenuBySlug] DB Error (Establishment):`, estErr);
-      throw new Error(`Erro de banco de dados: ${JSON.stringify(estErr)}`);
+      console.error(`[${timestamp}] [getPublicMenuBySlug] DB Error (Establishment):`, JSON.stringify(estErr));
+      throw new Error("Erro ao acessar o banco de dados");
     }
     
     if (!est) {
@@ -66,7 +72,7 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
     console.log(`[DEBUG] Establishment Found: ${est.id}. Searching published ${kind}...`);
 
     // 2. Buscar a vitrine publicada
-    const { data: menu, error: menuErr } = await s
+    const { data: menu, error: menuErr } = await supabaseAdmin
       .from("restaurant_menus")
       .select("id, establishment_id, kind, status, tagline, theme, hours, updated_at")
       .eq("establishment_id", est.id)
@@ -75,8 +81,8 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
       .maybeSingle();
 
     if (menuErr) {
-      console.error(`[${timestamp}] [getPublicMenuBySlug] DB Error (Menu):`, menuErr);
-      throw new Error(`Erro ao buscar vitrine: ${JSON.stringify(menuErr)}`);
+      console.error(`[${timestamp}] [getPublicMenuBySlug] DB Error (Menu):`, JSON.stringify(menuErr));
+      throw new Error("Erro ao acessar dados da vitrine");
     }
     
     if (!menu) {
@@ -84,24 +90,22 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
       return { establishment: est, menu: null, categories: [], items: [] };
     }
 
-    console.log(`[${timestamp}] Menu Found: ${menu.id}. Fetching content...`);
-
     // 3. Buscar categorias e itens
     const [catsRes, itemsRes] = await Promise.all([
-      s.from("menu_categories")
+      supabaseAdmin.from("menu_categories")
        .select("id, menu_id, name, description, image_url, active, featured, position")
        .eq("menu_id", menu.id)
        .eq("active", true)
        .order("position", { ascending: true }),
-      s.from("menu_items")
+      supabaseAdmin.from("menu_items")
        .select("id, menu_id, category_id, name, short_desc, long_desc, price, promo_price, currency, image_url, video_url, video_poster_url, prep_minutes, active, badges, ingredients, allergens, variants, sku, brand, stock_status, gallery")
        .eq("menu_id", menu.id)
        .eq("active", true)
        .order("position", { ascending: true }),
     ]);
 
-    if (catsRes.error) console.error(`[${timestamp}] Error Categories:`, catsRes.error);
-    if (itemsRes.error) console.error(`[${timestamp}] Error Items:`, itemsRes.error);
+    if (catsRes.error) console.error(`[${timestamp}] Error Categories:`, JSON.stringify(catsRes.error));
+    if (itemsRes.error) console.error(`[${timestamp}] Error Items:`, JSON.stringify(itemsRes.error));
 
     return { 
       establishment: est, 
