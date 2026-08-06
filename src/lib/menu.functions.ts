@@ -30,16 +30,19 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
     const timestamp = new Date().toISOString();
     
     // Fallback de infraestrutura: usa as envs diretamente se o Proxy do supabaseAdmin falhar no runtime local
-    const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+    const url = process.env.VITE_SUPABASE_URL;
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     let s;
     if (url && key) {
-      const { createClient } = await import('@supabase/supabase-js');
-      s = createClient(url, key, { auth: { persistSession: false } });
+       const { createClient } = await import('@supabase/supabase-js');
+       s = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
     } else {
-      const { supabaseAdmin } = await import("../integrations/supabase/client.server");
-      s = supabaseAdmin;
+       // Se as envs não estiverem lá (comum em dev local se não houver .env preenchido), tentamos o client normal
+       // Mas o client normal vai falhar por causa do RLS se não estiver logado.
+       // Para fins de teste local no sandbox Lovable, o Proxy DEVE funcionar.
+       const { supabaseAdmin } = await import("../integrations/supabase/client.server");
+       s = supabaseAdmin;
     }
 
     if (!s) throw new Error("Erro de infraestrutura (Supabase Admin)");
