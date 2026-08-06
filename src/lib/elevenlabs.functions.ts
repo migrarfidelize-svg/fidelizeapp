@@ -10,12 +10,12 @@ const ttsSchema = z.object({
 });
 
 export const synthesizeElevenLabs = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => ttsSchema.parse(d))
+  .validator((d: unknown) => ttsSchema.parse(d))
   .handler(async ({ data }) => {
     const apiKey = process.env.ELEVENLABS_API_KEY;
     if (!apiKey) throw new Error("ELEVENLABS_API_KEY não configurada no servidor.");
 
-    const voiceId = data.voice_id || "21m0pOTjCwobq1Wnu3pd"; // Rachel default
+    const voiceId = data.voice_id || "21m0pOTjCwobq1Wnu3pd";
     const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
 
     const response = await fetch(url, {
@@ -46,6 +46,20 @@ export const synthesizeElevenLabs = createServerFn({ method: "POST" })
       audio: base64,
       mime: "audio/mpeg",
     };
+  });
+
+export const getElevenLabsVoices = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const apiKey = process.env.ELEVENLABS_API_KEY;
+    if (!apiKey) throw new Error("API Key não configurada.");
+
+    const res = await fetch("https://api.elevenlabs.io/v1/voices", {
+      headers: { "xi-api-key": apiKey },
+    });
+
+    if (!res.ok) throw new Error("Falha ao buscar vozes da ElevenLabs.");
+    const data = await res.json();
+    return data.voices;
   });
 
 export const testElevenLabsConnection = createServerFn({ method: "GET" })
