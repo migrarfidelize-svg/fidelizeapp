@@ -294,15 +294,20 @@ function HeroCopy() {
   const copy = data?.hero?.copy ?? DEFAULT_HERO_COPY;
   const price = useFromPrice();
 
+  // Caso o usuário prefira uma mensagem personalizada sobre a logo da hero
+  const badgeText = copy.badge === "language selector" 
+    ? "a logo da hero não está sendo carrega a mesma enviada no super admin."
+    : copy.badge;
+
   return (
     <div className="min-w-0 flex flex-col items-start text-left text-white">
-      {copy.badge ? (
+      {badgeText ? (
         <span
           className="landing-hero-badge inline-flex max-w-full items-center gap-2 rounded-full px-3 py-1 text-[11px] font-medium sm:text-xs"
           style={{ background: `${CYAN}14`, border: `1px solid ${CYAN}55`, color: CYAN }}
         >
           <Sparkles className="h-3 w-3 shrink-0" />
-          <span className="truncate">{copy.badge}</span>
+          <span className="truncate">{badgeText}</span>
         </span>
       ) : null}
 
