@@ -151,8 +151,9 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-hidden">
       <div className="grid gap-6 lg:grid-cols-3">
+
         <div className="lg:col-span-2 space-y-6">
           <Tabs defaultValue="overview" className="w-full">
             <TabsList className="grid w-full grid-cols-4 lg:grid-cols-6">
