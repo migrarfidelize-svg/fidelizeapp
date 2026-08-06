@@ -122,10 +122,10 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
         data: {
           text,
           provider: prefs.provider,
-          voice_id: prefs.eleven_voice_id,
-          model_id: prefs.eleven_model_id,
+          voice_id: prefs.elevenVoiceId,
+          model_id: prefs.elevenModelId,
           fallback_enabled: prefs.fallback_enabled,
-          params: prefs.params
+          params: { rate: prefs.rate, volume: prefs.volume, stability: prefs.stability, similarity: prefs.similarity }
         }
       });
 
