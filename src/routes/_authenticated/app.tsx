@@ -663,7 +663,7 @@ function AppLayout() {
                   </SheetTrigger>
                   <SheetContent side="left" className="p-0 w-72 flex flex-col">
                     <VisuallyHidden><SheetTitle>Menu de navegação</SheetTitle></VisuallyHidden>
-                    <div className="p-4 border-b"><Logo /></div>
+                    <div className="p-4 border-b flex items-center h-18"><Logo className="scale-125 origin-left" /></div>
                     {renderNav(closeMobile, true)}
                     {renderFooter(closeMobile, true)}
                   </SheetContent>
