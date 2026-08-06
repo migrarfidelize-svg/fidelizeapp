@@ -273,15 +273,15 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <div className="flex justify-between">
-                          <span className="text-xs">Velocidade ({prefs.params.rate}x)</span>
+                          <span className="text-xs">Velocidade ({prefs.rate}x)</span>
                         </div>
-                        <Slider value={[prefs.params.rate]} min={0.5} max={2} step={0.1} onValueChange={([v]) => updateParam("rate", v)} />
+                        <Slider value={[prefs.rate]} min={0.5} max={2} step={0.1} onValueChange={([v]) => updateParam("rate", v)} />
                       </div>
                       <div className="space-y-2">
                         <div className="flex justify-between">
-                          <span className="text-xs">Volume ({Math.round(prefs.params.volume * 100)}%)</span>
+                          <span className="text-xs">Volume ({Math.round(prefs.volume * 100)}%)</span>
                         </div>
-                        <Slider value={[prefs.params.volume]} min={0} max={1} step={0.1} onValueChange={([v]) => updateParam("volume", v)} />
+                        <Slider value={[prefs.volume]} min={0} max={1} step={0.1} onValueChange={([v]) => updateParam("volume", v)} />
                       </div>
                     </div>
                   </div>
