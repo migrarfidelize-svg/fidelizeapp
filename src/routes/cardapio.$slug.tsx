@@ -6,6 +6,7 @@ import {
   X, Search, Flame, Leaf, Wheat, Beef, Fish, Milk, Egg, Nut, Play,
   ArrowLeft, Pause, Volume2, VolumeX, List, Heart, Share2,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 import { getPublicMenuBySlug } from "@/lib/menu.functions";
 
@@ -113,12 +114,16 @@ export const Route = createFileRoute("/cardapio/$slug")({
   component: PublicMenuPage,
   notFoundComponent: () => (
     <div className="min-h-dvh grid place-items-center p-6 text-center" style={{ background: "#FBF7F0", color: "#17130E" }}>
-      <div>
+      <div className="max-w-md">
         <h1 style={{ fontFamily: "Outfit, sans-serif" }} className="text-3xl font-bold">
           Cardápio indisponível
         </h1>
-        <p className="mt-2 opacity-70">Este restaurante ainda não publicou seu cardápio.</p>
-        <Link to="/" className="mt-6 inline-block underline">Voltar</Link>
+        <p className="mt-4 text-lg opacity-70 whitespace-pre-wrap">
+          Este restaurante ainda não publicou seu cardápio.
+        </p>
+        <Button asChild className="mt-8 px-8 py-6 rounded-2xl text-lg font-bold shadow-xl transition-transform hover:scale-105 active:scale-95" style={{ background: "#17130E", color: "#FBF7F0" }}>
+          <Link to="/">Voltar</Link>
+        </Button>
       </div>
     </div>
   ),
@@ -176,11 +181,14 @@ function PublicMenuPage() {
   if (!data || !data.menu) {
     return (
       <div className="min-h-dvh grid place-items-center p-6 text-center" style={{ background: "#FBF7F0", color: "#17130E" }}>
-        <div>
-          <h1 style={{ fontFamily: "Outfit, sans-serif" }} className="text-3xl font-bold">Em breve</h1>
-          <p className="mt-2 opacity-70">
-            {data?.establishment.name ?? "Este restaurante"} ainda está preparando o cardápio digital.
+        <div className="max-w-md">
+          <h1 style={{ fontFamily: "Outfit, sans-serif" }} className="text-3xl font-bold">Cardápio indisponível</h1>
+          <p className="mt-4 text-lg opacity-70 whitespace-pre-wrap">
+            Este restaurante ainda não publicou seu cardápio.
           </p>
+          <Button asChild className="mt-8 px-8 py-6 rounded-2xl text-lg font-bold shadow-xl transition-transform hover:scale-105 active:scale-95" style={{ background: "#17130E", color: "#FBF7F0" }}>
+            <Link to="/">Voltar</Link>
+          </Button>
         </div>
       </div>
     );

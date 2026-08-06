@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { MapPin, Phone, Instagram, MessageCircle, Search, ShoppingBag, X, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 import { getPublicMenuBySlug } from "@/lib/menu.functions";
 import { trackChannelEvent, useChannelPageView } from "@/lib/tracking";
@@ -85,10 +86,14 @@ export const Route = createFileRoute("/catalogo/$slug")({
   component: PublicCatalogPage,
   notFoundComponent: () => (
     <div className="min-h-dvh grid place-items-center p-6 text-center" style={{ background: "#FBF7F0", color: "#17130E" }}>
-      <div>
+      <div className="max-w-md">
         <h1 style={{ fontFamily: "Outfit, sans-serif" }} className="text-3xl font-bold">Catálogo indisponível</h1>
-        <p className="mt-2 opacity-70">Esta loja ainda não publicou seu catálogo.</p>
-        <Link to="/" className="mt-6 inline-block underline">Voltar</Link>
+        <p className="mt-4 text-lg opacity-70 whitespace-pre-wrap">
+          Esta loja ainda não publicou seu catálogo.
+        </p>
+        <Button asChild className="mt-8 px-8 py-6 rounded-2xl text-lg font-bold shadow-xl transition-transform hover:scale-105 active:scale-95" style={{ background: "#17130E", color: "#FBF7F0" }}>
+          <Link to="/">Voltar</Link>
+        </Button>
       </div>
     </div>
   ),
