@@ -17,7 +17,6 @@ const inputSchema = z.object({
 
 export const getPublicMenuBySlug = createServerFn({ method: "POST" })
   .validator((d: unknown) => {
-    // Normalização completa para TanStack Start v1 RPC (POST)
     const raw = d as any;
     const slug = raw?.slug || raw?.data?.slug || "";
     const kind = raw?.kind || raw?.data?.kind || "menu";
@@ -28,30 +27,21 @@ export const getPublicMenuBySlug = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { slug, kind } = data;
     const timestamp = new Date().toISOString();
-    
-    // Fallback agressivo para o client anon se a service_role não estiver presente.
-    // Isso garante que a página não dê 500 em ambientes de desenvolvimento/preview
-    // onde a SERVICE_ROLE_KEY não é injetada por padrão.
-    const { supabaseAdmin } = await import("../integrations/supabase/client.server");
+
+    // Importamos o cliente anônimo para acesso público seguro via RLS
     const { supabase } = await import("../integrations/supabase/client");
 
-    // Tentamos admin (sem RLS), mas se falhar por falta de env, usamos o public client.
-    let s: any;
-    try {
-      s = supabaseAdmin;
-      // Força um teste de acesso para ver se o proxy resolveu
-      if (!process.env.SUPABASE_SERVICE_ROLE_KEY) throw new Error("no-key");
-    } catch {
-      s = supabase;
+    if (!supabase) {
+      console.error(`[${timestamp}] Critical: Supabase client initialization failed`);
+      throw new Error("Erro de infraestrutura");
     }
 
-    if (!s) throw new Error("Erro de infraestrutura (Supabase client)");
-
     // 1. Buscar estabelecimento ATIVO
-    const { data: est, error: estErr } = await s
+    const { data: est, error: estErr } = await supabase
       .from("establishments")
-      .select("id, name, slug, logo_url, cover_url, description, primary_color, accent_color, phone, whatsapp, instagram, address, active")
+      .select("id, name, slug, logo_url, cover_url, description, primary_color, accent_color, phone, whatsapp, instagram, address, active, updated_at")
       .eq("slug", slug)
+      .eq("active", true)
       .maybeSingle();
 
     if (estErr) {
@@ -60,17 +50,12 @@ export const getPublicMenuBySlug = createServerFn({ method: "POST" })
     }
     
     if (!est) {
-      console.log(`[${timestamp}] Establishment NOT FOUND for slug: "${slug}"`);
-      return null;
-    }
-    
-    if (!est.active) {
-      console.log(`[${timestamp}] Establishment ${est.id} is INACTIVE`);
+      console.log(`[${timestamp}] Establishment NOT FOUND or INACTIVE for slug: "${slug}"`);
       return null;
     }
 
     // 2. Buscar a vitrine publicada
-    const { data: menu, error: menuErr } = await s
+    const { data: menu, error: menuErr } = await supabase
       .from("restaurant_menus")
       .select("id, establishment_id, kind, status, tagline, theme, hours, updated_at")
       .eq("establishment_id", est.id)
@@ -84,17 +69,18 @@ export const getPublicMenuBySlug = createServerFn({ method: "POST" })
     }
     
     if (!menu) {
+      console.log(`[${timestamp}] Menu not published for ${kind} at ${est.slug}`);
       return { establishment: est, menu: null, categories: [], items: [] };
     }
 
-    // 3. Buscar categorias e itens
+    // 3. Buscar categorias e itens (RLS garante que só retornamos se o menu estiver publicado)
     const [catsRes, itemsRes] = await Promise.all([
-      s.from("menu_categories")
+      supabase.from("menu_categories")
        .select("id, menu_id, name, description, image_url, active, featured, position")
        .eq("menu_id", menu.id)
        .eq("active", true)
        .order("position", { ascending: true }),
-      s.from("menu_items")
+      supabase.from("menu_items")
        .select("id, menu_id, category_id, name, short_desc, long_desc, price, promo_price, currency, image_url, video_url, video_poster_url, prep_minutes, active, badges, ingredients, allergens, variants, sku, brand, stock_status, gallery")
        .eq("menu_id", menu.id)
        .eq("active", true)
