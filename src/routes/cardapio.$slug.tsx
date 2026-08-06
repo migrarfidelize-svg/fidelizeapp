@@ -597,7 +597,7 @@ function PublicMenuPage() {
           items={stories.list}
           startIndex={stories.index}
           primary={primary}
-          catName={(id) => categories.find((c) => c.id === id)?.name ?? ""}
+          catName={(id) => (categories as any[]).find((c) => c.id === id)?.name ?? ""}
           onClose={() => setStories(null)}
           onDetails={(i) => { setStories(null); setOpen(i); }}
           onItemView={(i) =>
