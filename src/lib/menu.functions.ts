@@ -41,7 +41,7 @@ export const getPublicMenuBySlug = createServerFn({ method: "POST" })
     });
 
     if (error) {
-      console.error(`[${timestamp}] [getPublicMenuBySlug] RPC Error:`, JSON.stringify(error));
+      console.error(`[${timestamp}] [getPublicMenuBySlug] RPC Error:`, JSON.stringify(error)); throw error;
       throw new Error("Erro ao acessar dados da vitrine");
     }
     
