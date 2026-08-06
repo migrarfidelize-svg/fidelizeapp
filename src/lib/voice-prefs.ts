@@ -53,6 +53,13 @@ export function defaultVoicePrefs(scope: string): VoicePrefs {
     volume: 1.0,
     stability: 0.5,
     similarity: 0.75,
+    fallback_enabled: true,
+    texts: {
+      welcome: "Olá, bem-vindo ao nosso estabelecimento!",
+      call: "Atenção cliente {{nome}}, seu pedido está pronto.",
+      ready: "Pedido número {{numero}} concluído.",
+      notify: "Nova notificação recebida."
+    }
   };
 }
 
