@@ -120,6 +120,15 @@ type NavGroup = { key: string; label: string; icon: any; items: NavItem[] };
 
 const NAV_GROUPS: NavGroup[] = [
   {
+    key: "operacao",
+    icon: Stamp,
+    label: "Operação",
+    items: [
+      { to: "/app/carimbar", label: "Carimbar", icon: Stamp },
+      { to: "/app/qr", label: "QR Codes", icon: QrCode },
+    ],
+  },
+  {
     key: "visao",
     icon: LayoutDashboard,
     label: "Visão geral",
@@ -142,16 +151,14 @@ const NAV_GROUPS: NavGroup[] = [
     icon: Mic,
     label: "Studio",
     items: [
-      { to: "/app/studio", label: "Studio de Voz", icon: Mic },
       { to: "/app/qr", label: "QR Codes", icon: QrCode },
     ],
   },
   {
     key: "fidelidade",
-    icon: Stamp,
-    label: "Cartão fidelidade",
+    icon: Sparkles,
+    label: "Fidelidade",
     items: [
-      { to: "/app/carimbar", label: "Carimbar", icon: Stamp },
       { to: "/app/campanhas", label: "Campanhas de fidelidade", icon: Sparkles },
       { to: "/app/wallet", label: "Carteira digital", icon: Wallet },
     ],
