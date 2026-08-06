@@ -12,23 +12,33 @@ async function getPrivilegedClient() {
 
 const kindEnum = z.enum(["menu", "catalog"]);
 
+// Schema simplificado para aceitar diferentes formas de input do TanStack
+const inputSchema = z.object({
+  slug: z.string().min(1).max(80),
+  kind: kindEnum.optional().default("menu")
+});
+
 export const getPublicMenuBySlug = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => {
-    // Normaliza input do TanStack Start v1
-    console.log("[DEBUG] Raw input d:", JSON.stringify(d, null, 2));
-    const input = (d && typeof d === 'object' && 'data' in d) ? (d as any).data : d;
-    console.log("[DEBUG] Normalized input:", JSON.stringify(input, null, 2));
-    return z.object({ 
-      slug: z.string().min(1).max(80), 
-      kind: kindEnum.optional().default("menu") 
-    }).parse(input);
+    // Normalização agressiva do input
+    let payload = d;
+    if (d && typeof d === 'object' && 'data' in d) {
+      payload = (d as any).data;
+    }
+    
+    // Se ainda for string, tratamos como o slug
+    if (typeof payload === 'string') {
+      payload = { slug: payload };
+    }
+    
+    console.log("[DEBUG] Final Payload for validation:", JSON.stringify(payload));
+    return inputSchema.parse(payload);
   })
   .handler(async ({ data }) => {
-    // Normaliza extração do dado validado
-    const slug = typeof data === 'string' ? data : (data as any).slug;
-    const kind = (data as any).kind ?? "menu";
+    // Data aqui já deve ser o objeto validado { slug, kind }
+    const { slug, kind } = data as { slug: string, kind: "menu" | "catalog" };
     
-    console.log(`[DEBUG] Handling public request - Slug: ${slug}, Kind: ${kind}`);
+    console.log(`[DEBUG] RPC Handler Start - Slug: "${slug}", Kind: "${kind}"`);
     
     const s = await getPrivilegedClient();
     
@@ -40,23 +50,23 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
       .maybeSingle();
     
     if (estErr) {
-      console.error("[DEBUG] Error fetching establishment:", estErr);
-      throw new Error("Erro ao buscar estabelecimento");
+      console.error("[DEBUG] DB Error (Establishment):", estErr);
+      throw new Error(`Erro ao buscar estabelecimento: ${estErr.message}`);
     }
     
     if (!est) {
-      console.log("[DEBUG] No establishment found for slug:", slug);
+      console.log(`[DEBUG] Establishment NOT FOUND for slug: "${slug}"`);
       return null;
     }
     
     if (!est.active) {
-      console.log("[DEBUG] Establishment is not active:", est.id);
+      console.log(`[DEBUG] Establishment ${est.id} is INACTIVE`);
       return null;
     }
 
-    console.log(`[DEBUG] Establishment found: ${est.id}. Fetching ${kind} vitrine...`);
+    console.log(`[DEBUG] Establishment Found: ${est.id}. Searching published ${kind}...`);
 
-    // 2. Buscar a vitrine publicada do tipo específico (menu ou catalog)
+    // 2. Buscar a vitrine publicada
     const { data: menu, error: menuErr } = await s
       .from("restaurant_menus")
       .select("id, establishment_id, kind, status, tagline, theme, hours, updated_at")
@@ -66,18 +76,18 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
       .maybeSingle();
 
     if (menuErr) {
-      console.error("[DEBUG] Error fetching menu:", menuErr);
-      throw new Error("Erro ao buscar vitrine");
+      console.error("[DEBUG] DB Error (Menu):", menuErr);
+      throw new Error(`Erro ao buscar vitrine: ${menuErr.message}`);
     }
     
     if (!menu) {
-      console.log(`[DEBUG] No published ${kind} found for establishment: ${est.id}`);
+      console.log(`[DEBUG] Published ${kind} NOT FOUND for establishment ${est.id}`);
       return { establishment: est, menu: null, categories: [], items: [] };
     }
 
-    console.log(`[DEBUG] Published ${kind} found: ${menu.id}. Fetching categories and items...`);
+    console.log(`[DEBUG] Menu Found: ${menu.id}. Fetching content...`);
 
-    // 3. Buscar conteúdo da vitrine
+    // 3. Buscar categorias e itens
     const [catsRes, itemsRes] = await Promise.all([
       s.from("menu_categories")
        .select("id, menu_id, name, description, image_url, active, featured, position")
@@ -91,8 +101,8 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
        .order("position", { ascending: true }),
     ]);
 
-    if (catsRes.error) console.error("[DEBUG] Error fetching categories:", catsRes.error);
-    if (itemsRes.error) console.error("[DEBUG] Error fetching items:", itemsRes.error);
+    if (catsRes.error) console.error("[DEBUG] Error Categories:", catsRes.error);
+    if (itemsRes.error) console.error("[DEBUG] Error Items:", itemsRes.error);
 
     return { 
       establishment: est, 
