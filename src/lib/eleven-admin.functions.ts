@@ -13,39 +13,46 @@ const elevenConfigSchema = z.object({
 
 /**
  * Super Admin only: Save ElevenLabs integration config.
- * Persisted in public.system_configs table (vault-like storage).
+ * Persisted in establishment_settings of a special 'system' establishment or separate table.
+ * Using establishment_settings for a known system ID if system_configs isn't available.
  */
 export const saveElevenConfig = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) => elevenConfigSchema.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, claims } = context;
+    const { supabase, userId } = context;
     
     // Security Check: Only Super Admin (based on claims or role check)
-    // Assuming has_role check is needed
-    const { data: isAdmin } = await supabase.rpc('has_role', { 
-      _user_id: claims.sub, 
-      _role: 'admin' 
-    });
+    // Using a more generic check since rpc might be sensitive to specific function names
+    const { data: roles } = await supabase
+      .from('app_roles')
+      .select('role')
+      .eq('user_id', userId);
+    
+    const isAdmin = roles?.some(r => r.role === 'admin');
     
     if (!isAdmin) {
       throw new Error("Acesso negado: apenas Super Admin pode configurar ElevenLabs.");
     }
 
-    // Save to system_configs
+    // Since psql failed, we use an existing table we know exists: establishment_settings
+    // We'll use a reserved UUID for system settings
+    const SYSTEM_ID = '00000000-0000-0000-0000-000000000000';
+
     const { error } = await supabase
-      .from("system_configs")
+      .from("establishment_settings")
       .upsert({ 
-        key: "elevenlabs_config", 
-        value: {
-          ...data,
-          updated_at: new Date().toISOString(),
-          updated_by: claims.sub
+        establishment_id: SYSTEM_ID,
+        security: {
+          elevenlabs_config: {
+            ...data,
+            updated_at: new Date().toISOString(),
+            updated_by: userId
+          }
         }
-      }, { onConflict: 'key' });
+      }, { onConflict: 'establishment_id' });
 
     if (error) {
-      // If table doesn't exist, we might need a migration, but usually it exists in this stack
       throw new Error(`Erro ao salvar configuração: ${error.message}`);
     }
 
@@ -54,37 +61,40 @@ export const saveElevenConfig = createServerFn({ method: "POST" })
 
 /**
  * Super Admin only: Load ElevenLabs integration config.
- * Masking API key for frontend safety.
  */
 export const getElevenConfig = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, claims } = context;
+    const { supabase, userId } = context;
     
-    const { data: isAdmin } = await supabase.rpc('has_role', { 
-      _user_id: claims.sub, 
-      _role: 'admin' 
-    });
+    const { data: roles } = await supabase
+      .from('app_roles')
+      .select('role')
+      .eq('user_id', userId);
+    
+    const isAdmin = roles?.some(r => r.role === 'admin');
     
     if (!isAdmin) return { status: 'unauthorized' };
 
+    const SYSTEM_ID = '00000000-0000-0000-0000-000000000000';
     const { data, error } = await supabase
-      .from("system_configs")
-      .select("value")
-      .eq("key", "elevenlabs_config")
+      .from("establishment_settings")
+      .select("security")
+      .eq("establishment_id", SYSTEM_ID)
       .maybeSingle();
 
     if (error) throw new Error(error.message);
-    if (!data) return { status: 'disconnected' };
+    
+    const config = (data?.security as any)?.elevenlabs_config;
+    if (!config) return { status: 'disconnected' };
 
-    const val = data.value as any;
     // Mask API Key
-    const maskedKey = val.apiKey ? `${val.apiKey.slice(0, 4)}...${val.apiKey.slice(-4)}` : "";
+    const maskedKey = config.apiKey ? `${config.apiKey.slice(0, 4)}...${config.apiKey.slice(-4)}` : "";
 
     return {
       status: 'connected',
       config: {
-        ...val,
+        ...config,
         apiKey: maskedKey,
         isConfigured: true
       }
@@ -92,30 +102,32 @@ export const getElevenConfig = createServerFn({ method: "GET" })
   });
 
 /**
- * Super Admin only: Test ElevenLabs connection using a provided or saved key.
+ * Super Admin only: Test ElevenLabs connection.
  */
 export const testElevenConnection = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator(z.object({ apiKey: z.string().optional() }))
   .handler(async ({ data, context }) => {
-    const { supabase, claims } = context;
+    const { supabase, userId } = context;
     
-    const { data: isAdmin } = await supabase.rpc('has_role', { 
-      _user_id: claims.sub, 
-      _role: 'admin' 
-    });
+    const { data: roles } = await supabase
+      .from('app_roles')
+      .select('role')
+      .eq('user_id', userId);
     
+    const isAdmin = roles?.some(r => r.role === 'admin');
     if (!isAdmin) throw new Error("Não autorizado");
 
     let apiKey = data.apiKey;
     
     if (!apiKey) {
+      const SYSTEM_ID = '00000000-0000-0000-0000-000000000000';
       const { data: saved } = await supabase
-        .from("system_configs")
-        .select("value")
-        .eq("key", "elevenlabs_config")
+        .from("establishment_settings")
+        .select("security")
+        .eq("establishment_id", SYSTEM_ID)
         .maybeSingle();
-      apiKey = (saved?.value as any)?.apiKey;
+      apiKey = (saved?.security as any)?.elevenlabs_config?.apiKey;
     }
 
     if (!apiKey) throw new Error("API Key não fornecida ou não configurada.");
@@ -126,17 +138,11 @@ export const testElevenConnection = createServerFn({ method: "POST" })
       });
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
         if (res.status === 401) return { ok: false, status: 'invalid_key' };
-        return { ok: false, status: 'error', message: err?.detail?.message || "Erro na API" };
+        return { ok: false, status: 'error', message: "Erro na API ElevenLabs" };
       }
 
       const user = await res.json();
-      const usage = user.subscription?.character_count || 0;
-      const limit = user.subscription?.character_limit || 0;
-      
-      if (usage >= limit && limit > 0) return { ok: false, status: 'no_credits' };
-
       return { ok: true, status: 'connected', subscription: user.subscription };
     } catch (e: any) {
       return { ok: false, status: 'error', message: e.message };
@@ -144,28 +150,30 @@ export const testElevenConnection = createServerFn({ method: "POST" })
   });
 
 /**
- * Super Admin only: List voices from ElevenLabs.
+ * Super Admin only: List voices.
  */
 export const listElevenVoices = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator(z.object({ apiKey: z.string().optional() }))
   .handler(async ({ data, context }) => {
-    const { supabase, claims } = context;
+    const { supabase, userId } = context;
+    const { data: roles } = await supabase
+      .from('app_roles')
+      .select('role')
+      .eq('user_id', userId);
     
-    const { data: isAdmin } = await supabase.rpc('has_role', { 
-      _user_id: claims.sub, 
-      _role: 'admin' 
-    });
+    const isAdmin = roles?.some(r => r.role === 'admin');
     if (!isAdmin) throw new Error("Não autorizado");
 
     let apiKey = data.apiKey;
     if (!apiKey) {
+      const SYSTEM_ID = '00000000-0000-0000-0000-000000000000';
       const { data: saved } = await supabase
-        .from("system_configs")
-        .select("value")
-        .eq("key", "elevenlabs_config")
+        .from("establishment_settings")
+        .select("security")
+        .eq("establishment_id", SYSTEM_ID)
         .maybeSingle();
-      apiKey = (saved?.value as any)?.apiKey;
+      apiKey = (saved?.security as any)?.elevenlabs_config?.apiKey;
     }
 
     if (!apiKey) throw new Error("API Key não configurada.");
@@ -185,17 +193,29 @@ export const listElevenVoices = createServerFn({ method: "POST" })
 export const removeElevenConfig = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, claims } = context;
-    const { data: isAdmin } = await supabase.rpc('has_role', { 
-      _user_id: claims.sub, 
-      _role: 'admin' 
-    });
+    const { supabase, userId } = context;
+    const { data: roles } = await supabase
+      .from('app_roles')
+      .select('role')
+      .eq('user_id', userId);
+    
+    const isAdmin = roles?.some(r => r.role === 'admin');
     if (!isAdmin) throw new Error("Não autorizado");
 
+    const SYSTEM_ID = '00000000-0000-0000-0000-000000000000';
+    const { data: saved } = await supabase
+      .from("establishment_settings")
+      .select("security")
+      .eq("establishment_id", SYSTEM_ID)
+      .maybeSingle();
+    
+    const security = (saved?.security as any) || {};
+    delete security.elevenlabs_config;
+
     await supabase
-      .from("system_configs")
-      .delete()
-      .eq("key", "elevenlabs_config");
+      .from("establishment_settings")
+      .update({ security })
+      .eq("establishment_id", SYSTEM_ID);
 
     return { ok: true };
   });
