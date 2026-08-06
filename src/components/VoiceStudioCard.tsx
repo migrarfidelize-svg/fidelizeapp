@@ -134,7 +134,7 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
         await audio.play();
         toast.success(`Reproduzindo via ${res.provider}`);
       } else if (res.fallback === "native") {
-        await speakWithBrowser(text, scope === "admin" ? "male" : "female", prefs.params);
+        await speakWithBrowser(text, scope === "admin" ? "male" : "female", { rate: prefs.rate, volume: prefs.volume });
         toast.info("Usando fallback: Voz nativa");
       }
     } catch (e: any) {
