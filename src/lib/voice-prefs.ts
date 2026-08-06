@@ -27,8 +27,8 @@ export type VoicePrefs = {
   volume: number;
   stability: number;
   similarity: number;
-  fallback_enabled?: boolean;
-  texts?: {
+  fallback_enabled: boolean;
+  texts: {
     welcome: string;
     call: string;
     ready: string;
