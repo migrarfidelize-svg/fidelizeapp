@@ -43,7 +43,7 @@ export const Route = createFileRoute("/cartao/$slug")({
           : `Você já tinha cartão em ${r.name}. Bem-vindo de volta!`;
         sessionStorage.setItem("wallet:flash", JSON.stringify({ kind: "success", msg }));
       } catch { /* ignore */ }
-      throw redirect({ to: `/carteira/${r.slug}` });
+      throw redirect({ to: `/carteira/${r.slug}` as any });
     } catch (e) {
       // redirect() lança — deixa passar.
       if (e && typeof e === "object" && "to" in (e as object)) throw e;
