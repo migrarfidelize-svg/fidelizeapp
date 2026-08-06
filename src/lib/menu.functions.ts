@@ -31,7 +31,11 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
       payload = { slug: payload };
     }
     
-    console.log("[DEBUG] Final Payload for validation:", JSON.stringify(payload));
+    // Fallback para quando o TanStack Router envia params diretamente
+    if (!payload && typeof d === 'object') {
+      payload = d;
+    }
+
     return inputSchema.parse(payload);
   })
   .handler(async ({ data }) => {
