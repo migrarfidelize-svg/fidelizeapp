@@ -188,6 +188,7 @@ async function speakWithBrowser(text: string, gender: "female" | "male", params?
 
 export function GreetingVoice({ gender, scope, enabled = true }: Props) {
   const playedRef = useRef(false);
+  const synthEleven = useServerFn(synthesizeElevenLabs);
 
   useEffect(() => {
     if (!enabled) return;
@@ -205,15 +206,45 @@ export function GreetingVoice({ gender, scope, enabled = true }: Props) {
     const text = prefs.text.trim() || buildGreeting(gender);
 
     let spoke = false;
-    const attempt = () => {
-      speakText({ text, voice: prefs.voice, style: prefs.style })
-        .then((r) => {
+    const attempt = async () => {
+      try {
+        if (prefs.provider === "elevenlabs") {
+          const res = await synthEleven({
+            data: {
+              text,
+              voice_id: prefs.elevenVoiceId,
+              model_id: prefs.elevenModelId,
+              stability: prefs.stability,
+              similarity_boost: prefs.similarity,
+            }
+          });
+          if (res.audio) {
+            const audio = new Audio(`data:${res.mime};base64,${res.audio}`);
+            await audio.play();
+            spoke = true;
+          }
+        } else {
+          const r = await speakText({ 
+            text, 
+            voice: prefs.voice, 
+            style: prefs.style,
+            rate: prefs.rate,
+            pitch: prefs.pitch,
+            volume: prefs.volume
+          });
+          if (r !== "failed") spoke = true;
+        }
+        if (spoke) sessionStorage.setItem(key, "1");
+      } catch (err) {
+        // Fallback para speakText se for elevenlabs e falhar
+        if (prefs.provider === "elevenlabs") {
+          const r = await speakText({ text, voice: prefs.voice });
           if (r !== "failed") {
             spoke = true;
             sessionStorage.setItem(key, "1");
           }
-        })
-        .catch(() => {});
+        }
+      }
     };
     const armed = () => {
       if (!spoke) attempt();
