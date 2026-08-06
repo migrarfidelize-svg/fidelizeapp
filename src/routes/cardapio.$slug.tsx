@@ -439,7 +439,7 @@ function PublicMenuPage() {
       <main className="max-w-3xl mx-auto px-4 sm:px-5 pb-32 pt-5 space-y-8 sm:space-y-10">
         {showCatPicker ? (
           <div className="grid grid-cols-2 gap-4">
-            {categories.map((c) => {
+            {categories.map((c: any) => {
               const count = (items as Item[]).filter((i) => i.category_id === c.id).length;
               if (count === 0) return null;
               const cover = (items as Item[]).find((i) => i.category_id === c.id && !!i.image_url)?.image_url || null;
