@@ -56,6 +56,24 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_area_locks: {
+        Row: {
+          area: string
+          pin: string
+          updated_at: string
+        }
+        Insert: {
+          area: string
+          pin: string
+          updated_at?: string
+        }
+        Update: {
+          area?: string
+          pin?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_analyses: {
         Row: {
           created_at: string
@@ -390,6 +408,74 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_jobs: {
+        Row: {
+          attempts: number
+          completed_at: string | null
+          created_at: string
+          establishment_id: string | null
+          id: string
+          idempotency_key: string | null
+          job_type: string
+          last_error: string | null
+          locked_at: string | null
+          locked_by: string | null
+          max_attempts: number
+          payload: Json
+          priority: number
+          result: Json | null
+          run_after: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          completed_at?: string | null
+          created_at?: string
+          establishment_id?: string | null
+          id?: string
+          idempotency_key?: string | null
+          job_type: string
+          last_error?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          max_attempts?: number
+          payload?: Json
+          priority?: number
+          result?: Json | null
+          run_after?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          completed_at?: string | null
+          created_at?: string
+          establishment_id?: string | null
+          id?: string
+          idempotency_key?: string | null
+          job_type?: string
+          last_error?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          max_attempts?: number
+          payload?: Json
+          priority?: number
+          result?: Json | null
+          run_after?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_jobs_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaigns: {
         Row: {
           accent_color: string | null
@@ -562,6 +648,337 @@ export type Database = {
           },
         ]
       }
+      conversation_assignments: {
+        Row: {
+          assigned_by: string | null
+          assigned_to: string | null
+          conversation_id: string
+          created_at: string
+          establishment_id: string
+          id: string
+          reason: string | null
+          released_at: string | null
+        }
+        Insert: {
+          assigned_by?: string | null
+          assigned_to?: string | null
+          conversation_id: string
+          created_at?: string
+          establishment_id: string
+          id?: string
+          reason?: string | null
+          released_at?: string | null
+        }
+        Update: {
+          assigned_by?: string | null
+          assigned_to?: string | null
+          conversation_id?: string
+          created_at?: string
+          establishment_id?: string
+          id?: string
+          reason?: string | null
+          released_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_assignments_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_assignments_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_events: {
+        Row: {
+          actor_user_id: string | null
+          conversation_id: string
+          created_at: string
+          description: string | null
+          establishment_id: string
+          event_type: string
+          id: string
+          payload: Json
+          title: string | null
+        }
+        Insert: {
+          actor_user_id?: string | null
+          conversation_id: string
+          created_at?: string
+          description?: string | null
+          establishment_id: string
+          event_type: string
+          id?: string
+          payload?: Json
+          title?: string | null
+        }
+        Update: {
+          actor_user_id?: string | null
+          conversation_id?: string
+          created_at?: string
+          description?: string | null
+          establishment_id?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_events_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_events_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_messages: {
+        Row: {
+          body: string | null
+          conversation_id: string
+          created_at: string
+          direction: string
+          error_message: string | null
+          establishment_id: string
+          external_message_id: string | null
+          id: string
+          media_mime: string | null
+          media_name: string | null
+          media_url: string | null
+          message_type: string
+          metadata: Json
+          sender_type: string
+          sender_user_id: string | null
+          sent_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          conversation_id: string
+          created_at?: string
+          direction: string
+          error_message?: string | null
+          establishment_id: string
+          external_message_id?: string | null
+          id?: string
+          media_mime?: string | null
+          media_name?: string | null
+          media_url?: string | null
+          message_type?: string
+          metadata?: Json
+          sender_type?: string
+          sender_user_id?: string | null
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          conversation_id?: string
+          created_at?: string
+          direction?: string
+          error_message?: string | null
+          establishment_id?: string
+          external_message_id?: string | null
+          id?: string
+          media_mime?: string | null
+          media_name?: string | null
+          media_url?: string | null
+          message_type?: string
+          metadata?: Json
+          sender_type?: string
+          sender_user_id?: string | null
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_messages_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_templates: {
+        Row: {
+          body: string
+          created_at: string
+          establishment_id: string
+          id: string
+          is_active: boolean
+          shortcut: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          establishment_id: string
+          id?: string
+          is_active?: boolean
+          shortcut?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          establishment_id?: string
+          id?: string
+          is_active?: boolean
+          shortcut?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_templates_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          assigned_to: string | null
+          channel: string
+          connection_id: string | null
+          contact_avatar_url: string | null
+          contact_name: string | null
+          contact_phone: string
+          created_at: string
+          customer_id: string | null
+          department: string | null
+          establishment_id: string
+          external_chat_id: string | null
+          finished_at: string | null
+          id: string
+          last_inbound_at: string | null
+          last_message_at: string | null
+          last_message_preview: string | null
+          last_outbound_at: string | null
+          metadata: Json
+          order_id: string | null
+          priority: number
+          reopened_at: string | null
+          status: string
+          tags: string[]
+          unread_count: number
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          channel?: string
+          connection_id?: string | null
+          contact_avatar_url?: string | null
+          contact_name?: string | null
+          contact_phone: string
+          created_at?: string
+          customer_id?: string | null
+          department?: string | null
+          establishment_id: string
+          external_chat_id?: string | null
+          finished_at?: string | null
+          id?: string
+          last_inbound_at?: string | null
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          last_outbound_at?: string | null
+          metadata?: Json
+          order_id?: string | null
+          priority?: number
+          reopened_at?: string | null
+          status?: string
+          tags?: string[]
+          unread_count?: number
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          channel?: string
+          connection_id?: string | null
+          contact_avatar_url?: string | null
+          contact_name?: string | null
+          contact_phone?: string
+          created_at?: string
+          customer_id?: string | null
+          department?: string | null
+          establishment_id?: string
+          external_chat_id?: string | null
+          finished_at?: string | null
+          id?: string
+          last_inbound_at?: string | null
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          last_outbound_at?: string | null
+          metadata?: Json
+          order_id?: string | null
+          priority?: number
+          reopened_at?: string | null
+          status?: string
+          tags?: string[]
+          unread_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "whatsapp_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coupons: {
         Row: {
           active: boolean
@@ -610,6 +1027,428 @@ export type Database = {
         }
         Relationships: []
       }
+      courier_documents: {
+        Row: {
+          courier_id: string
+          created_at: string
+          doc_type: Database["public"]["Enums"]["courier_doc_type"]
+          file_name: string | null
+          id: string
+          mime_type: string | null
+          notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          size_bytes: number | null
+          status: string
+          storage_path: string
+          updated_at: string
+        }
+        Insert: {
+          courier_id: string
+          created_at?: string
+          doc_type: Database["public"]["Enums"]["courier_doc_type"]
+          file_name?: string | null
+          id?: string
+          mime_type?: string | null
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          size_bytes?: number | null
+          status?: string
+          storage_path: string
+          updated_at?: string
+        }
+        Update: {
+          courier_id?: string
+          created_at?: string
+          doc_type?: Database["public"]["Enums"]["courier_doc_type"]
+          file_name?: string | null
+          id?: string
+          mime_type?: string | null
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          size_bytes?: number | null
+          status?: string
+          storage_path?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courier_documents_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courier_levels: {
+        Row: {
+          code: string
+          color: string
+          created_at: string
+          id: string
+          is_active: boolean
+          min_deliveries: number
+          min_rating: number
+          name: string
+          perks: Json
+          raffle_eligible: boolean
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          color?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          min_deliveries?: number
+          min_rating?: number
+          name: string
+          perks?: Json
+          raffle_eligible?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          color?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          min_deliveries?: number
+          min_rating?: number
+          name?: string
+          perks?: Json
+          raffle_eligible?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      courier_locations: {
+        Row: {
+          accuracy_m: number | null
+          battery: number | null
+          courier_id: string
+          delivery_id: string | null
+          heading: number | null
+          id: string
+          lat: number
+          lng: number
+          recorded_at: string
+          speed_kmh: number | null
+        }
+        Insert: {
+          accuracy_m?: number | null
+          battery?: number | null
+          courier_id: string
+          delivery_id?: string | null
+          heading?: number | null
+          id?: string
+          lat: number
+          lng: number
+          recorded_at?: string
+          speed_kmh?: number | null
+        }
+        Update: {
+          accuracy_m?: number | null
+          battery?: number | null
+          courier_id?: string
+          delivery_id?: string | null
+          heading?: number | null
+          id?: string
+          lat?: number
+          lng?: number
+          recorded_at?: string
+          speed_kmh?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courier_locations_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courier_locations_delivery_id_fkey"
+            columns: ["delivery_id"]
+            isOneToOne: false
+            referencedRelation: "deliveries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courier_plans: {
+        Row: {
+          code: string
+          created_at: string
+          daily_limit_cents: number
+          description: string | null
+          fee_min_cents: number
+          fee_percent: number
+          free_withdrawals_month: number
+          id: string
+          is_active: boolean
+          name: string
+          price_cents: number
+          sort_order: number
+          updated_at: string
+          weekly_withdrawals: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          daily_limit_cents?: number
+          description?: string | null
+          fee_min_cents?: number
+          fee_percent?: number
+          free_withdrawals_month?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          price_cents?: number
+          sort_order?: number
+          updated_at?: string
+          weekly_withdrawals?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          daily_limit_cents?: number
+          description?: string | null
+          fee_min_cents?: number
+          fee_percent?: number
+          free_withdrawals_month?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          price_cents?: number
+          sort_order?: number
+          updated_at?: string
+          weekly_withdrawals?: number
+        }
+        Relationships: []
+      }
+      courier_reviews: {
+        Row: {
+          author_name: string | null
+          author_user_id: string | null
+          comment: string | null
+          courier_id: string
+          created_at: string
+          delivery_id: string | null
+          establishment_id: string | null
+          id: string
+          is_approved: boolean
+          rating: number
+          updated_at: string
+        }
+        Insert: {
+          author_name?: string | null
+          author_user_id?: string | null
+          comment?: string | null
+          courier_id: string
+          created_at?: string
+          delivery_id?: string | null
+          establishment_id?: string | null
+          id?: string
+          is_approved?: boolean
+          rating: number
+          updated_at?: string
+        }
+        Update: {
+          author_name?: string | null
+          author_user_id?: string | null
+          comment?: string | null
+          courier_id?: string
+          created_at?: string
+          delivery_id?: string | null
+          establishment_id?: string | null
+          id?: string
+          is_approved?: boolean
+          rating?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courier_reviews_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courier_reviews_delivery_id_fkey"
+            columns: ["delivery_id"]
+            isOneToOne: false
+            referencedRelation: "deliveries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courier_reviews_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courier_withdrawals: {
+        Row: {
+          amount_cents: number
+          courier_id: string
+          created_at: string
+          fee_cents: number
+          id: string
+          net_cents: number
+          notes: string | null
+          pix_key: string | null
+          processed_at: string | null
+          processed_by: string | null
+          status: Database["public"]["Enums"]["withdrawal_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          courier_id: string
+          created_at?: string
+          fee_cents?: number
+          id?: string
+          net_cents?: number
+          notes?: string | null
+          pix_key?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: Database["public"]["Enums"]["withdrawal_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          courier_id?: string
+          created_at?: string
+          fee_cents?: number
+          id?: string
+          net_cents?: number
+          notes?: string | null
+          pix_key?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: Database["public"]["Enums"]["withdrawal_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courier_withdrawals_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couriers: {
+        Row: {
+          avatar_url: string | null
+          balance_cents: number
+          bio: string | null
+          birth_date: string | null
+          city: string | null
+          cpf: string | null
+          created_at: string
+          deliveries_count: number
+          email: string | null
+          full_name: string
+          id: string
+          is_online: boolean
+          is_test: boolean
+          last_seen_at: string | null
+          level_code: string
+          phone: string | null
+          pix_key: string | null
+          plan_code: string
+          rating_avg: number
+          rating_count: number
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          state: string | null
+          status: Database["public"]["Enums"]["courier_status"]
+          updated_at: string
+          user_id: string
+          vehicle_model: string | null
+          vehicle_plate: string | null
+          vehicle_type: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          balance_cents?: number
+          bio?: string | null
+          birth_date?: string | null
+          city?: string | null
+          cpf?: string | null
+          created_at?: string
+          deliveries_count?: number
+          email?: string | null
+          full_name: string
+          id?: string
+          is_online?: boolean
+          is_test?: boolean
+          last_seen_at?: string | null
+          level_code?: string
+          phone?: string | null
+          pix_key?: string | null
+          plan_code?: string
+          rating_avg?: number
+          rating_count?: number
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          state?: string | null
+          status?: Database["public"]["Enums"]["courier_status"]
+          updated_at?: string
+          user_id: string
+          vehicle_model?: string | null
+          vehicle_plate?: string | null
+          vehicle_type?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          balance_cents?: number
+          bio?: string | null
+          birth_date?: string | null
+          city?: string | null
+          cpf?: string | null
+          created_at?: string
+          deliveries_count?: number
+          email?: string | null
+          full_name?: string
+          id?: string
+          is_online?: boolean
+          is_test?: boolean
+          last_seen_at?: string | null
+          level_code?: string
+          phone?: string | null
+          pix_key?: string | null
+          plan_code?: string
+          rating_avg?: number
+          rating_count?: number
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          state?: string | null
+          status?: Database["public"]["Enums"]["courier_status"]
+          updated_at?: string
+          user_id?: string
+          vehicle_model?: string | null
+          vehicle_plate?: string | null
+          vehicle_type?: string
+        }
+        Relationships: []
+      }
       customer_achievements: {
         Row: {
           achievement_code: string
@@ -644,6 +1483,69 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      customer_addresses: {
+        Row: {
+          city: string | null
+          complement: string | null
+          created_at: string
+          district: string | null
+          id: string
+          is_default: boolean
+          label: string
+          lat: number | null
+          lng: number | null
+          number: string | null
+          phone: string | null
+          recipient_name: string | null
+          reference: string | null
+          state: string | null
+          street: string
+          updated_at: string
+          user_id: string
+          zip_code: string | null
+        }
+        Insert: {
+          city?: string | null
+          complement?: string | null
+          created_at?: string
+          district?: string | null
+          id?: string
+          is_default?: boolean
+          label?: string
+          lat?: number | null
+          lng?: number | null
+          number?: string | null
+          phone?: string | null
+          recipient_name?: string | null
+          reference?: string | null
+          state?: string | null
+          street: string
+          updated_at?: string
+          user_id: string
+          zip_code?: string | null
+        }
+        Update: {
+          city?: string | null
+          complement?: string | null
+          created_at?: string
+          district?: string | null
+          id?: string
+          is_default?: boolean
+          label?: string
+          lat?: number | null
+          lng?: number | null
+          number?: string | null
+          phone?: string | null
+          recipient_name?: string | null
+          reference?: string | null
+          state?: string | null
+          street?: string
+          updated_at?: string
+          user_id?: string
+          zip_code?: string | null
+        }
+        Relationships: []
       }
       customer_reviews: {
         Row: {
@@ -928,6 +1830,175 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      deliveries: {
+        Row: {
+          accepted_at: string | null
+          assigned_at: string | null
+          cancelled_at: string | null
+          courier_id: string | null
+          courier_net_cents: number
+          created_at: string
+          customer_name: string | null
+          customer_phone: string | null
+          delivered_at: string | null
+          delivery_mode: string
+          distance_m: number | null
+          dropoff_address: string | null
+          dropoff_lat: number | null
+          dropoff_lng: number | null
+          establishment_id: string
+          fee_cents: number
+          id: string
+          notes: string | null
+          order_id: string | null
+          own_courier_name: string | null
+          own_courier_phone: string | null
+          picked_up_at: string | null
+          pickup_address: string | null
+          pickup_lat: number | null
+          pickup_lng: number | null
+          platform_fee_cents: number
+          status: Database["public"]["Enums"]["delivery_status"]
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          assigned_at?: string | null
+          cancelled_at?: string | null
+          courier_id?: string | null
+          courier_net_cents?: number
+          created_at?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          delivered_at?: string | null
+          delivery_mode?: string
+          distance_m?: number | null
+          dropoff_address?: string | null
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
+          establishment_id: string
+          fee_cents?: number
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          own_courier_name?: string | null
+          own_courier_phone?: string | null
+          picked_up_at?: string | null
+          pickup_address?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          platform_fee_cents?: number
+          status?: Database["public"]["Enums"]["delivery_status"]
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          assigned_at?: string | null
+          cancelled_at?: string | null
+          courier_id?: string | null
+          courier_net_cents?: number
+          created_at?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          delivered_at?: string | null
+          delivery_mode?: string
+          distance_m?: number | null
+          dropoff_address?: string | null
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
+          establishment_id?: string
+          fee_cents?: number
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          own_courier_name?: string | null
+          own_courier_phone?: string | null
+          picked_up_at?: string | null
+          pickup_address?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          platform_fee_cents?: number
+          status?: Database["public"]["Enums"]["delivery_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deliveries_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deliveries_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deliveries_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      discover_banners: {
+        Row: {
+          active: boolean
+          bg_color: string | null
+          city: string | null
+          created_at: string
+          cta_label: string | null
+          ends_at: string | null
+          id: string
+          image_url: string | null
+          link_url: string | null
+          sort_order: number
+          starts_at: string | null
+          subtitle: string | null
+          text_color: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          bg_color?: string | null
+          city?: string | null
+          created_at?: string
+          cta_label?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          link_url?: string | null
+          sort_order?: number
+          starts_at?: string | null
+          subtitle?: string | null
+          text_color?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          bg_color?: string | null
+          city?: string | null
+          created_at?: string
+          cta_label?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          link_url?: string | null
+          sort_order?: number
+          starts_at?: string | null
+          subtitle?: string | null
+          text_color?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       email_logs: {
         Row: {
@@ -1282,10 +2353,13 @@ export type Database = {
           email: string | null
           external_links: Json
           facebook: string | null
+          geocoded_at: string | null
           google_maps_url: string | null
           id: string
           instagram: string | null
+          latitude: number | null
           logo_url: string | null
+          longitude: number | null
           name: string
           phone: string | null
           plan: Database["public"]["Enums"]["plan_tier"]
@@ -1319,10 +2393,13 @@ export type Database = {
           email?: string | null
           external_links?: Json
           facebook?: string | null
+          geocoded_at?: string | null
           google_maps_url?: string | null
           id?: string
           instagram?: string | null
+          latitude?: number | null
           logo_url?: string | null
+          longitude?: number | null
           name: string
           phone?: string | null
           plan?: Database["public"]["Enums"]["plan_tier"]
@@ -1356,10 +2433,13 @@ export type Database = {
           email?: string | null
           external_links?: Json
           facebook?: string | null
+          geocoded_at?: string | null
           google_maps_url?: string | null
           id?: string
           instagram?: string | null
+          latitude?: number | null
           logo_url?: string | null
+          longitude?: number | null
           name?: string
           phone?: string | null
           plan?: Database["public"]["Enums"]["plan_tier"]
@@ -3244,6 +4324,57 @@ export type Database = {
           tier?: Database["public"]["Enums"]["plan_tier"]
           trial_days?: number
           unit_limit?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      platform_fees: {
+        Row: {
+          applies_to: string
+          category: Database["public"]["Enums"]["fee_category"]
+          created_at: string
+          description: string | null
+          fixed_cents: number
+          id: string
+          is_active: boolean
+          key: string
+          label: string
+          max_cents: number | null
+          min_cents: number
+          percent: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          applies_to?: string
+          category?: Database["public"]["Enums"]["fee_category"]
+          created_at?: string
+          description?: string | null
+          fixed_cents?: number
+          id?: string
+          is_active?: boolean
+          key: string
+          label: string
+          max_cents?: number | null
+          min_cents?: number
+          percent?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          applies_to?: string
+          category?: Database["public"]["Enums"]["fee_category"]
+          created_at?: string
+          description?: string | null
+          fixed_cents?: number
+          id?: string
+          is_active?: boolean
+          key?: string
+          label?: string
+          max_cents?: number | null
+          min_cents?: number
+          percent?: number
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
@@ -5919,6 +7050,204 @@ export type Database = {
           },
         ]
       }
+      whatsapp_connection_secrets: {
+        Row: {
+          connection_id: string
+          created_at: string
+          encrypted_instance_token: string | null
+          updated_at: string
+          webhook_token: string
+        }
+        Insert: {
+          connection_id: string
+          created_at?: string
+          encrypted_instance_token?: string | null
+          updated_at?: string
+          webhook_token?: string
+        }
+        Update: {
+          connection_id?: string
+          created_at?: string
+          encrypted_instance_token?: string | null
+          updated_at?: string
+          webhook_token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_connection_secrets_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: true
+            referencedRelation: "whatsapp_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_connections: {
+        Row: {
+          connected_at: string | null
+          connected_phone: string | null
+          connection_status: string
+          created_at: string
+          disconnected_at: string | null
+          establishment_id: string
+          external_instance_id: string | null
+          id: string
+          last_activity_at: string | null
+          last_checked_at: string | null
+          last_error: string | null
+          provider: string
+          qr_expires_at: string | null
+          qr_status: string | null
+          suspended: boolean
+          updated_at: string
+        }
+        Insert: {
+          connected_at?: string | null
+          connected_phone?: string | null
+          connection_status?: string
+          created_at?: string
+          disconnected_at?: string | null
+          establishment_id: string
+          external_instance_id?: string | null
+          id?: string
+          last_activity_at?: string | null
+          last_checked_at?: string | null
+          last_error?: string | null
+          provider?: string
+          qr_expires_at?: string | null
+          qr_status?: string | null
+          suspended?: boolean
+          updated_at?: string
+        }
+        Update: {
+          connected_at?: string | null
+          connected_phone?: string | null
+          connection_status?: string
+          created_at?: string
+          disconnected_at?: string | null
+          establishment_id?: string
+          external_instance_id?: string | null
+          id?: string
+          last_activity_at?: string | null
+          last_checked_at?: string | null
+          last_error?: string | null
+          provider?: string
+          qr_expires_at?: string | null
+          qr_status?: string | null
+          suspended?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_connections_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_providers: {
+        Row: {
+          base_url: string | null
+          created_at: string
+          display_name: string
+          encrypted_api_token: string | null
+          encrypted_webhook_secret: string | null
+          id: string
+          is_enabled: boolean
+          last_test_message: string | null
+          last_test_status: string | null
+          last_tested_at: string | null
+          mode: string
+          provider: string
+          settings: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          base_url?: string | null
+          created_at?: string
+          display_name?: string
+          encrypted_api_token?: string | null
+          encrypted_webhook_secret?: string | null
+          id?: string
+          is_enabled?: boolean
+          last_test_message?: string | null
+          last_test_status?: string | null
+          last_tested_at?: string | null
+          mode?: string
+          provider: string
+          settings?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          base_url?: string | null
+          created_at?: string
+          display_name?: string
+          encrypted_api_token?: string | null
+          encrypted_webhook_secret?: string | null
+          id?: string
+          is_enabled?: boolean
+          last_test_message?: string | null
+          last_test_status?: string | null
+          last_tested_at?: string | null
+          mode?: string
+          provider?: string
+          settings?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      whatsapp_webhook_events: {
+        Row: {
+          created_at: string
+          dedupe_key: string | null
+          error_message: string | null
+          establishment_id: string | null
+          event_type: string | null
+          external_instance_id: string | null
+          id: string
+          payload: Json
+          processed_at: string | null
+          provider: string
+        }
+        Insert: {
+          created_at?: string
+          dedupe_key?: string | null
+          error_message?: string | null
+          establishment_id?: string | null
+          event_type?: string | null
+          external_instance_id?: string | null
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          provider?: string
+        }
+        Update: {
+          created_at?: string
+          dedupe_key?: string | null
+          error_message?: string | null
+          establishment_id?: string | null
+          event_type?: string | null
+          external_instance_id?: string | null
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          provider?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_webhook_events_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -5928,10 +7257,39 @@ export type Database = {
         Args: { _user_id: string }
         Returns: number
       }
+      claim_automation_jobs: {
+        Args: { _limit?: number; _worker: string }
+        Returns: {
+          attempts: number
+          completed_at: string | null
+          created_at: string
+          establishment_id: string | null
+          id: string
+          idempotency_key: string | null
+          job_type: string
+          last_error: string | null
+          locked_at: string | null
+          locked_by: string | null
+          max_attempts: number
+          payload: Json
+          priority: number
+          result: Json | null
+          run_after: string
+          status: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "automation_jobs"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       compute_tier: {
         Args: { _thresholds: Json; _visits: number }
         Returns: Database["public"]["Enums"]["customer_tier"]
       }
+      courier_storage_owner: { Args: { _path: string }; Returns: string }
       dashboard_summary: { Args: { _est: string }; Returns: Json }
       delete_my_account: { Args: never; Returns: undefined }
       get_establishment_plan: {
@@ -6040,6 +7398,7 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["account_type"]
       }
+      my_courier_id: { Args: never; Returns: string }
       my_subscription_gate: { Args: never; Returns: Json }
       purge_expired_logs: { Args: never; Returns: Json }
       register_sponsored_ad_event: {
@@ -6057,7 +7416,30 @@ export type Database = {
     Enums: {
       account_type: "customer" | "establishment" | "super_admin"
       campaign_type: "stamps" | "points"
+      courier_doc_type:
+        | "cnh"
+        | "crlv"
+        | "selfie"
+        | "proof_address"
+        | "criminal_record"
+        | "other"
+      courier_status: "pending" | "approved" | "rejected" | "suspended"
       customer_tier: "bronze" | "prata" | "ouro" | "diamante"
+      delivery_status:
+        | "pending"
+        | "assigned"
+        | "accepted"
+        | "picked_up"
+        | "in_transit"
+        | "delivered"
+        | "cancelled"
+      fee_category:
+        | "delivery"
+        | "product_sale"
+        | "service"
+        | "withdrawal"
+        | "subscription"
+        | "other"
       helpdesk_role: "hd_admin" | "hd_agent"
       member_role: "owner" | "manager" | "staff"
       menu_default_view: "stories" | "list"
@@ -6071,6 +7453,7 @@ export type Database = {
         | "ready"
         | "completed"
         | "cancelled"
+        | "out_for_delivery"
       plan_tier: "free" | "starter" | "pro" | "enterprise" | "business"
       platform_role: "super_admin"
       public_review_action:
@@ -6119,6 +7502,7 @@ export type Database = {
       ticket_channel: "form" | "email" | "chat" | "agent"
       ticket_priority: "low" | "normal" | "high" | "urgent"
       ticket_status: "open" | "pending" | "on_hold" | "solved" | "closed"
+      withdrawal_status: "requested" | "processing" | "paid" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -6248,7 +7632,33 @@ export const Constants = {
     Enums: {
       account_type: ["customer", "establishment", "super_admin"],
       campaign_type: ["stamps", "points"],
+      courier_doc_type: [
+        "cnh",
+        "crlv",
+        "selfie",
+        "proof_address",
+        "criminal_record",
+        "other",
+      ],
+      courier_status: ["pending", "approved", "rejected", "suspended"],
       customer_tier: ["bronze", "prata", "ouro", "diamante"],
+      delivery_status: [
+        "pending",
+        "assigned",
+        "accepted",
+        "picked_up",
+        "in_transit",
+        "delivered",
+        "cancelled",
+      ],
+      fee_category: [
+        "delivery",
+        "product_sale",
+        "service",
+        "withdrawal",
+        "subscription",
+        "other",
+      ],
       helpdesk_role: ["hd_admin", "hd_agent"],
       member_role: ["owner", "manager", "staff"],
       menu_default_view: ["stories", "list"],
@@ -6262,6 +7672,7 @@ export const Constants = {
         "ready",
         "completed",
         "cancelled",
+        "out_for_delivery",
       ],
       plan_tier: ["free", "starter", "pro", "enterprise", "business"],
       platform_role: ["super_admin"],
@@ -6316,6 +7727,7 @@ export const Constants = {
       ticket_channel: ["form", "email", "chat", "agent"],
       ticket_priority: ["low", "normal", "high", "urgent"],
       ticket_status: ["open", "pending", "on_hold", "solved", "closed"],
+      withdrawal_status: ["requested", "processing", "paid", "rejected"],
     },
   },
 } as const
