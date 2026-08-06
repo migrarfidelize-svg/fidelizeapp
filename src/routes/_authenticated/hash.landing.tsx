@@ -451,11 +451,11 @@ function LandingAdmin() {
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="rounded-xl border bg-white p-4">
                     <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-neutral-500">Fundo claro</p>
-                    <img src={brand.logoUrl} alt="" className="h-8 w-auto max-w-full object-contain object-left" />
+                    <img src={brand.logoUrl} alt="" className="h-14 w-auto max-w-full object-contain object-left" />
                   </div>
                   <div className="rounded-xl border bg-[#0b0713] p-4">
                     <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-white/40">Fundo escuro</p>
-                    <img src={brand.logoDarkUrl} alt="" className="h-8 w-auto max-w-full object-contain object-left" />
+                    <img src={brand.logoDarkUrl} alt="" className="h-14 w-auto max-w-full object-contain object-left" />
                   </div>
                   <div className="flex items-center gap-3 rounded-xl border p-4">
                     <div className="grid h-9 w-9 place-items-center overflow-hidden rounded-xl bg-primary/10">
