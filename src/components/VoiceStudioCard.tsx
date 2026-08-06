@@ -111,7 +111,6 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
     }
   }
 
-  async function handleTest(textType: string) {
   const handleTest = async (typeOrText: string) => {
     setPlaying(true);
     try {
@@ -126,7 +125,7 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
     } finally {
       setPlaying(false);
     }
-  }
+  };
 
   if (loading) return (
     <div className="flex items-center justify-center p-12">
