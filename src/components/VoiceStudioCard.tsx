@@ -388,12 +388,12 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
 
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-xs">Estabilidade ({prefs.params.stability})</Label>
-                        <Slider value={[prefs.params.stability]} min={0} max={1} step={0.05} onValueChange={([v]) => updateParam("stability", v)} />
+                        <Label className="text-xs">Estabilidade ({prefs.stability})</Label>
+                        <Slider value={[prefs.stability]} min={0} max={1} step={0.05} onValueChange={([v]) => updateParam("stability", v)} />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-xs">Similaridade ({prefs.params.similarity})</Label>
-                        <Slider value={[prefs.params.similarity]} min={0} max={1} step={0.05} onValueChange={([v]) => updateParam("similarity", v)} />
+                        <Label className="text-xs">Similaridade ({prefs.similarity})</Label>
+                        <Slider value={[prefs.similarity]} min={0} max={1} step={0.05} onValueChange={([v]) => updateParam("similarity", v)} />
                       </div>
                     </div>
                   </div>
