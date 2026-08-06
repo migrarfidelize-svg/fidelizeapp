@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,14 +11,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { 
   AudioLines, Play, Square, Save, Sparkles, Zap, Globe, Loader2, 
-  CheckCircle2, AlertCircle, RefreshCw, Trash2, History, Activity, ShieldCheck
+  CheckCircle2, AlertCircle, RefreshCw, Trash2, History, Activity, ShieldCheck,
+  Eye, EyeOff, Key, Database, Mic2
 } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { 
-  getElevenLabsVoices, 
-  testElevenLabsConnection 
-} from "@/lib/elevenlabs.functions";
+  getElevenConfig,
+  saveElevenConfig,
+  testElevenConnection,
+  listElevenVoices,
+  removeElevenConfig,
+  generateElevenTestAudio
+} from "@/lib/eleven-admin.functions";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { 
