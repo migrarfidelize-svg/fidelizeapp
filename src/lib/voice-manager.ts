@@ -90,7 +90,7 @@ class VoiceManager {
     this.stop();
 
     try {
-      if (prefs.provider === "elevenlabs") {
+      if (prefs.provider === "elevenlabs" || (prefs.provider === "auto" && this.isElevenLabsGlobalActive)) {
         await this.playElevenLabs(text, prefs);
         return;
       }
@@ -112,10 +112,8 @@ class VoiceManager {
 
   private async playElevenLabs(text: string, prefs: VoicePrefs) {
     try {
-      // 1. Tentar síntese global (se configurada e no modo auto/elevenlabs)
-      const globalConfig = await getGlobalVoiceConfig();
-      
-      if (globalConfig.isConfigured) {
+      // 1. Tentar síntese global (se configurada)
+      if (this.isElevenLabsGlobalActive) {
         const res: any = await synthesizeGlobalEleven({
           data: { text }
         });
@@ -125,7 +123,7 @@ class VoiceManager {
         }
       }
 
-      // 2. Fallback para síntese legada (individual) se a global não existir
+      // 2. Fallback para síntese legada (individual) se a global não estiver disponível
       const res: any = await synthesizeElevenLabs({
         data: {
           text,
