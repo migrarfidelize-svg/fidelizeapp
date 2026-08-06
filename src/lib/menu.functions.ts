@@ -15,10 +15,9 @@ const inputSchema = z.object({
   kind: kindEnum.optional().default("menu")
 });
 
-export const getPublicMenuBySlug = createServerFn({ method: "GET" })
+export const getPublicMenuBySlug = createServerFn({ method: "POST" })
   .validator((d: unknown) => {
-    // Normalização agressiva para TanStack Start v1 RPC (GET)
-    // d pode vir como { slug, kind } se enviado via query params, ou { data: { slug, kind } }
+    // Normalização completa para TanStack Start v1 RPC (POST)
     const raw = d as any;
     const slug = raw?.slug || raw?.data?.slug || "";
     const kind = raw?.kind || raw?.data?.kind || "menu";
