@@ -8,6 +8,9 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 async function getPrivilegedClient() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   if (!supabaseAdmin) throw new Error("supabaseAdmin is undefined in server runtime");
+  
+  // No ambiente de desenvolvimento do Lovable, o service role key pode não estar disponível
+  // mas o admin client ainda é inicializado se as variáveis forem injetadas no handler.
   return supabaseAdmin;
 }
 
@@ -51,14 +54,16 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
     // Data aqui já deve ser o objeto validado { slug, kind }
     const { slug, kind } = data as { slug: string, kind: "menu" | "catalog" };
     
-    console.log(`[DEBUG] RPC Handler Start - Slug: "${slug}", Kind: "${kind}"`);
+    // Logging explícito para depuração em produção
+    const timestamp = new Date().toISOString();
+    console.log(`[${timestamp}] [getPublicMenuBySlug] START - Slug: "${slug}", Kind: "${kind}"`);
     
     let s;
     try {
       s = await getPrivilegedClient();
     } catch (err) {
-      console.error("[DEBUG] Failed to initialize privileged client:", err);
-      throw new Error("Erro de infraestrutura no servidor");
+      console.error(`[${timestamp}] [getPublicMenuBySlug] Infrastructure Error:`, err);
+      throw new Error("Erro de infraestrutura no servidor. Verifique a conexão com o banco de dados.");
     }
     
     // 1. Buscar estabelecimento ATIVO
