@@ -48,10 +48,21 @@ function pickBestNativeVoice(voices: SpeechSynthesisVoice[], providerVoice: stri
 class VoiceManager {
   private currentAudio: HTMLAudioElement | null = null;
   private isMuted: boolean = false;
+  private isElevenLabsGlobalActive: boolean = false;
 
   constructor() {
     if (typeof window !== "undefined") {
       this.isMuted = localStorage.getItem("fidelize:voice:muted") === "1";
+      this.checkGlobalConfig();
+    }
+  }
+
+  async checkGlobalConfig() {
+    try {
+      const config = await getGlobalVoiceConfig();
+      this.isElevenLabsGlobalActive = config.isConfigured;
+    } catch (e) {
+      console.warn("Falha ao verificar config global de voz", e);
     }
   }
 
