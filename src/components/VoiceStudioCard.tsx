@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,14 +11,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { 
   AudioLines, Play, Square, Save, Sparkles, Zap, Globe, Loader2, 
-  CheckCircle2, AlertCircle, RefreshCw, Trash2, History, Activity, ShieldCheck
+  CheckCircle2, AlertCircle, RefreshCw, Trash2, History, Activity, ShieldCheck,
+  Eye, EyeOff, Key, Database, Mic2
 } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { 
-  getElevenLabsVoices, 
-  testElevenLabsConnection 
-} from "@/lib/elevenlabs.functions";
+  getElevenConfig,
+  saveElevenConfig,
+  testElevenConnection,
+  listElevenVoices,
+  removeElevenConfig,
+  generateElevenTestAudio
+} from "@/lib/eleven-admin.functions";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { 
@@ -36,17 +41,46 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [playing, setPlaying] = useState(false);
-  const [fetchingVoices, setFetchingVoices] = useState(false);
-  const [voices, setVoices] = useState<any[]>([]);
   
+  // Local ElevenLabs UI State
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [elevenApiKey, setElevenApiKey] = useState("");
+  const [elevenVoiceId, setElevenVoiceId] = useState("");
+  const [elevenModelId, setElevenModelId] = useState("eleven_multilingual_v2");
+  const [elevenVoices, setElevenVoices] = useState<any[]>([]);
+  const [fetchingVoices, setFetchingVoices] = useState(false);
+  const [integrationStatus, setIntegrationStatus] = useState<'disconnected' | 'connected' | 'unauthorized'>('disconnected');
+  const [testingConnection, setTestingConnection] = useState(false);
+
   const [prefs, setPrefs] = useState<VoicePrefs>(() => defaultVoicePrefs("admin"));
 
-  const getVoices = useServerFn(getElevenLabsVoices);
-  const testConn = useServerFn(testElevenLabsConnection);
+  // Server Functions
+  const getElevenConfigFn = useServerFn(getElevenConfig);
+  const saveElevenConfigFn = useServerFn(saveElevenConfig);
+  const testElevenConnFn = useServerFn(testElevenConnection);
+  const listVoicesFn = useServerFn(listElevenVoices);
+  const removeElevenFn = useServerFn(removeElevenConfig);
+  const generateTestAudioFn = useServerFn(generateElevenTestAudio);
 
   useEffect(() => {
-    setPrefs(loadVoicePrefs());
-    setLoading(false);
+    async function init() {
+      setPrefs(loadVoicePrefs());
+      try {
+        const configRes = await getElevenConfigFn();
+        if (configRes.status === 'connected' && configRes.config) {
+          setIntegrationStatus('connected');
+          setElevenApiKey(configRes.config.apiKey);
+          setElevenVoiceId(configRes.config.voiceId);
+          setElevenModelId(configRes.config.modelId || "eleven_multilingual_v2");
+        } else if (configRes.status === 'unauthorized') {
+          setIntegrationStatus('unauthorized');
+        }
+      } catch (e) {
+        console.error("Erro ao carregar ElevenLabs config", e);
+      }
+      setLoading(false);
+    }
+    init();
   }, []);
 
   const update = (patch: Partial<VoicePrefs>) => setPrefs(prev => ({ ...prev, ...patch }));
@@ -71,13 +105,56 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
   async function fetchElevenVoices() {
     setFetchingVoices(true);
     try {
-      const list = await getVoices();
-      setVoices(list);
+      const list = await listVoicesFn({ data: { apiKey: elevenApiKey.includes('...') ? undefined : elevenApiKey } });
+      setElevenVoices(list);
       toast.success(`${list.length} vozes carregadas.`);
+    } catch (e: any) {
+      toast.error("Falha ao buscar vozes. Verifique sua API Key.");
+    } finally {
+      setFetchingVoices(false);
+    }
+  }
+
+  async function handleTestIntegration() {
+    setTestingConnection(true);
+    try {
+      const res = await testElevenConnFn({ data: { apiKey: elevenApiKey.includes('...') ? undefined : elevenApiKey } });
+      if (res.ok) {
+        toast.success("Conexão validada com sucesso!");
+        if (elevenVoices.length === 0) fetchElevenVoices();
+      } else {
+        toast.error(res.message || "Falha na validação.");
+      }
     } catch (e: any) {
       toast.error(e.message);
     } finally {
-      setFetchingVoices(false);
+      setTestingConnection(false);
+    }
+  }
+
+  async function handleSaveIntegration() {
+    if (!elevenApiKey || !elevenVoiceId) {
+      toast.error("Preencha a API Key e selecione uma voz.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await saveElevenConfigFn({
+        data: {
+          apiKey: elevenApiKey.includes('...') ? undefined : elevenApiKey,
+          voiceId: elevenVoiceId,
+          modelId: elevenModelId,
+          voiceName: elevenVoices.find(v => v.voice_id === elevenVoiceId)?.name || "Voz Selecionada",
+          stability: prefs.stability,
+          similarity: prefs.similarity
+        }
+      });
+      setIntegrationStatus('connected');
+      toast.success("Integração ElevenLabs salva como padrão do sistema!");
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -308,55 +385,155 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
             <TabsContent value="eleven" className="mt-4 space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Configuração ElevenLabs</CardTitle>
-                  <CardDescription>A API Key deve ser definida no servidor (.env).</CardDescription>
+                  <CardTitle className="flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-primary" />
+                    Integração ElevenLabs
+                  </CardTitle>
+                  <CardDescription>
+                    Configure a integração global para vozes neurais de alta fidelidade em todo o ecossistema Fidelize.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="flex items-center gap-4">
-                    <Badge variant="outline" className="py-2 px-4 gap-2">
-                      <ShieldCheck className="h-4 w-4 text-emerald-500" /> API KEY: PROTEGIDA NO SERVIDOR
-                    </Badge>
-                    <Button variant="outline" size="sm" onClick={async () => {
-                      const res = await testConn();
-                      if (res.ok) toast.success("Conexão validada!");
-                      else toast.error(res.message);
-                    }}>Testar Conexão</Button>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label>Selecione a Voz</Label>
-                        <Button variant="link" size="sm" className="h-auto p-0" onClick={fetchElevenVoices} disabled={fetchingVoices}>
-                          {fetchingVoices ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
-                          Carregar vozes
-                        </Button>
-                      </div>
-                      <Select value={prefs.elevenVoiceId} onValueChange={v => update({ elevenVoiceId: v })}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Escolha uma voz..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {voices.length > 0 ? voices.map((v: any) => (
-                            <SelectItem key={v.voice_id} value={v.voice_id}>{v.name} ({v.category})</SelectItem>
-                          )) : (
-                            <SelectItem value="21m0pOTjCwobq1Wnu3pd">Rachel (Padrão)</SelectItem>
-                          )}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-xs">Estabilidade ({prefs.stability})</Label>
-                        <Slider value={[prefs.stability]} min={0} max={1} step={0.05} onValueChange={([v]) => updateParam("stability", v)} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-xs">Similaridade ({prefs.similarity})</Label>
-                        <Slider value={[prefs.similarity]} min={0} max={1} step={0.05} onValueChange={([v]) => updateParam("similarity", v)} />
+                  {integrationStatus === 'unauthorized' ? (
+                    <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-xl flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-semibold text-destructive">Acesso Restrito</p>
+                        <p className="text-sm text-muted-foreground">Você não tem permissão para gerenciar as chaves de API globais do sistema.</p>
                       </div>
                     </div>
-                  </div>
+                  ) : (
+                    <>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label className="flex items-center gap-2">
+                            <Key className="h-4 w-4" /> ElevenLabs API Key
+                          </Label>
+                          <div className="relative">
+                            <Input 
+                              type={showApiKey ? "text" : "password"}
+                              value={elevenApiKey}
+                              onChange={e => setElevenApiKey(e.target.value)}
+                              placeholder="Insira sua xi-api-key"
+                              className="pr-10"
+                            />
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="absolute right-0 top-0 h-full w-10 hover:bg-transparent"
+                              onClick={() => setShowApiKey(!showApiKey)}
+                            >
+                              {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">
+                            Sua chave é armazenada de forma segura e nunca é exposta totalmente no frontend.
+                          </p>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Modelo de IA</Label>
+                            <Select value={elevenModelId} onValueChange={setElevenModelId}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione o modelo" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="eleven_multilingual_v2">Multilingual v2 (Melhor)</SelectItem>
+                                <SelectItem value="eleven_turbo_v2">Turbo v2 (Mais Rápido)</SelectItem>
+                                <SelectItem value="eleven_monolingual_v1">Monolingual v1</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <Label>Voz Padrão</Label>
+                              <Button 
+                                variant="link" 
+                                size="sm" 
+                                className="h-auto p-0 text-xs" 
+                                onClick={fetchElevenVoices}
+                                disabled={fetchingVoices || !elevenApiKey}
+                              >
+                                {fetchingVoices ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
+                                Sincronizar
+                              </Button>
+                            </div>
+                            <Select value={elevenVoiceId} onValueChange={setElevenVoiceId}>
+                              <SelectTrigger>
+                                <SelectValue placeholder={fetchingVoices ? "Carregando..." : "Escolha uma voz..."} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {elevenVoices.length > 0 ? elevenVoices.map((v: any) => (
+                                  <SelectItem key={v.voice_id} value={v.voice_id}>{v.name} ({v.category})</SelectItem>
+                                )) : (
+                                  <SelectItem value="21m0pOTjCwobq1Wnu3pd">Rachel (Padrão Fidelize)</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <Label>Voz Padrão</Label>
+                              <Button 
+                                variant="link" 
+                                size="sm" 
+                                className="h-auto p-0 text-xs" 
+                                onClick={fetchElevenVoices}
+                                disabled={fetchingVoices || !elevenApiKey}
+                              >
+                                {fetchingVoices ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
+                                Sincronizar
+                              </Button>
+                            </div>
+                            <Select value={elevenVoiceId} onValueChange={setElevenVoiceId}>
+                              <SelectTrigger>
+                                <SelectValue placeholder={fetchingVoices ? "Carregando..." : "Escolha uma voz..."} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {elevenVoices.length > 0 ? elevenVoices.map((v: any) => (
+                                  <SelectItem key={v.voice_id} value={v.voice_id}>{v.name} ({v.category})</SelectItem>
+                                )) : (
+                                  <SelectItem value="21m0pOTjCwobq1Wnu3pd">Rachel (Padrão Fidelize)</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-4 bg-muted/30 rounded-xl border space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Activity className="h-4 w-4 text-primary" />
+                            <span className="text-sm font-medium">Status da Integração</span>
+                          </div>
+                          <Badge variant={integrationStatus === 'connected' ? 'default' : 'secondary'} className={integrationStatus === 'connected' ? 'bg-emerald-500 hover:bg-emerald-600' : ''}>
+                            {integrationStatus === 'connected' ? 'Conectado' : 'Aguardando Configuração'}
+                          </Badge>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            className="flex-1" 
+                            onClick={handleTestIntegration}
+                            disabled={testingConnection || !elevenApiKey}
+                          >
+                            {testingConnection ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Database className="h-4 w-4 mr-2" />}
+                            Testar Conexão
+                          </Button>
+                          <Button 
+                            className="flex-1" 
+                            onClick={handleSaveIntegration}
+                            disabled={saving || !elevenApiKey}
+                          >
+                            {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                            Salvar Globalmente
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -375,9 +552,9 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Serviço ElevenLabs</span>
-                      <Badge variant="outline">Configurado</Badge>
+                      <Badge variant="outline">{integrationStatus === 'connected' ? 'Configurado' : 'Pendente'}</Badge>
                     </div>
-                    <Progress value={100} className="h-1" />
+                    <Progress value={integrationStatus === 'connected' ? 100 : 30} className="h-1" />
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">

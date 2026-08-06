@@ -3,6 +3,7 @@ import { z } from "zod";
 import { synthesizeElevenLabs, testElevenLabsConnection, getElevenLabsVoices } from "./elevenlabs.functions";
 import { synthesizeGreeting } from "./tts.functions";
 import { loadVoicePrefs, type VoicePrefs } from "./voice-prefs";
+import { getGlobalVoiceConfig, synthesizeGlobalEleven } from "./voice-system.functions";
 
 function loadNativeVoices(): Promise<SpeechSynthesisVoice[]> {
   return new Promise((resolve) => {
@@ -47,10 +48,21 @@ function pickBestNativeVoice(voices: SpeechSynthesisVoice[], providerVoice: stri
 class VoiceManager {
   private currentAudio: HTMLAudioElement | null = null;
   private isMuted: boolean = false;
+  private isElevenLabsGlobalActive: boolean = false;
 
   constructor() {
     if (typeof window !== "undefined") {
       this.isMuted = localStorage.getItem("fidelize:voice:muted") === "1";
+      this.checkGlobalConfig();
+    }
+  }
+
+  async checkGlobalConfig() {
+    try {
+      const config = await getGlobalVoiceConfig();
+      this.isElevenLabsGlobalActive = config.isConfigured;
+    } catch (e) {
+      console.warn("Falha ao verificar config global de voz", e);
     }
   }
 
@@ -78,7 +90,7 @@ class VoiceManager {
     this.stop();
 
     try {
-      if (prefs.provider === "elevenlabs") {
+      if (prefs.provider === "elevenlabs" || (prefs.provider === "auto" && this.isElevenLabsGlobalActive)) {
         await this.playElevenLabs(text, prefs);
         return;
       }
@@ -99,17 +111,34 @@ class VoiceManager {
   }
 
   private async playElevenLabs(text: string, prefs: VoicePrefs) {
-    const res: any = await synthesizeElevenLabs({
-      data: {
-        text,
-        voice_id: prefs.elevenVoiceId,
-        model_id: prefs.elevenModelId,
-        stability: prefs.stability,
-        similarity_boost: prefs.similarity,
+    try {
+      // 1. Tentar síntese global (se configurada)
+      if (this.isElevenLabsGlobalActive) {
+        const res: any = await synthesizeGlobalEleven({
+          data: { text }
+        });
+        if (res.audio) {
+          await this.playBase64(res.audio, res.mime, prefs.volume);
+          return;
+        }
       }
-    });
-    if (res.audio) {
-      await this.playBase64(res.audio, res.mime, prefs.volume);
+
+      // 2. Fallback para síntese legada (individual) se a global não estiver disponível
+      const res: any = await synthesizeElevenLabs({
+        data: {
+          text,
+          voice_id: prefs.elevenVoiceId,
+          model_id: prefs.elevenModelId,
+          stability: prefs.stability,
+          similarity_boost: prefs.similarity,
+        }
+      });
+      if (res.audio) {
+        await this.playBase64(res.audio, res.mime, prefs.volume);
+      }
+    } catch (err) {
+      console.warn("ElevenLabs Error, falling back to next provider...", err);
+      throw err;
     }
   }
 
