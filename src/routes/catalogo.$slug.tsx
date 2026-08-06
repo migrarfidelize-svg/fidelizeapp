@@ -87,7 +87,7 @@ export const Route = createFileRoute("/catalogo/$slug")({
     <div className="min-h-dvh grid place-items-center p-6 text-center" style={{ background: "#FBF7F0", color: "#17130E" }}>
       <div>
         <h1 style={{ fontFamily: "Outfit, sans-serif" }} className="text-3xl font-bold">Catálogo indisponível</h1>
-        <p className="mt-2 opacity-70">Esta loja ainda não publicou seu catálogo.</p>
+        <p className="mt-2 opacity-70 whitespace-pre-wrap">Esta loja ainda não publicou seu catálogo.</p>
         <Link to="/" className="mt-6 inline-block underline">Voltar</Link>
       </div>
     </div>

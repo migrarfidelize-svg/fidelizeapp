@@ -117,7 +117,7 @@ export const Route = createFileRoute("/cardapio/$slug")({
         <h1 style={{ fontFamily: "Outfit, sans-serif" }} className="text-3xl font-bold">
           Cardápio indisponível
         </h1>
-        <p className="mt-2 opacity-70">Este restaurante ainda não publicou seu cardápio.</p>
+        <p className="mt-2 opacity-70 whitespace-pre-wrap">Este restaurante ainda não publicou seu cardápio.</p>
         <Link to="/" className="mt-6 inline-block underline">Voltar</Link>
       </div>
     </div>
