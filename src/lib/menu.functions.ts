@@ -24,17 +24,17 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
     if (typeof d === "string") {
       slug = d;
     } else if (d && typeof d === "object") {
-      // O TanStack Router v1 envia params/search de várias formas
       const raw = (d as any);
       slug = raw.slug || raw.data?.slug || raw.params?.slug || "";
-      kind = raw.kind || raw.data?.kind || raw.params?.kind || "menu";
+      const k = raw.kind || raw.data?.kind || raw.params?.kind;
+      if (k === "catalog") kind = "catalog";
     }
 
     if (!slug) throw new Error("Slug é obrigatório");
-    return { slug, kind: kind === "catalog" ? "catalog" : "menu" };
+    return { slug, kind };
   })
   .handler(async ({ data }) => {
-    const { slug, kind } = data;
+    const { slug, kind } = data as { slug: string; kind: "menu" | "catalog" };
     const timestamp = new Date().toISOString();
     console.log(`[${timestamp}] [getPublicMenuBySlug] START - Slug: "${slug}", Kind: "${kind}"`);
     
