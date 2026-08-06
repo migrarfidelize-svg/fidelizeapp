@@ -19,9 +19,8 @@ const opts = (slug: string) =>
   queryOptions({
     queryKey: ["public-menu", slug],
     queryFn: async () => {
-      // Usamos params diretos para evitar problemas de serialização do TanStack Start v1
-      // O inputValidator no servidor está preparado para receber este formato { slug }
-      return getPublicMenuBySlug({ data: { slug } });
+      // Usamos a string direta do slug como input.
+      return getPublicMenuBySlug({ data: slug });
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
