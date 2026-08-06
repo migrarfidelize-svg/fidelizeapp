@@ -17,7 +17,7 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
     z.object({ slug: z.string().min(1).max(80), kind: kindEnum.optional() }).parse(d))
   .handler(async ({ data }) => {
     const kind = data.kind ?? "menu";
-    const s = publicClient();
+    const s = await getPrivilegedClient();
     
     // 1. Buscar estabelecimento ATIVO
     const { data: est, error: estErr } = await s
