@@ -40,21 +40,7 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
   const [fetchingVoices, setFetchingVoices] = useState(false);
   const [voices, setVoices] = useState<any[]>([]);
   
-  const [prefs, setPrefs] = useState({
-    enabled: true,
-    provider: "auto" as "native" | "elevenlabs" | "auto",
-    fallback_enabled: true,
-    voice_id: "onyx",
-    eleven_voice_id: "21m0pOTjCwobq1Wnu3pd",
-    eleven_model_id: "eleven_multilingual_v2",
-    texts: { 
-      welcome: "Olá, bem-vindo ao nosso estabelecimento!", 
-      call: "Atenção cliente {{nome}}, seu pedido está pronto.", 
-      ready: "Pedido número {{numero}} concluído.", 
-      notify: "Nova notificação recebida." 
-    },
-    params: { rate: 1, volume: 1, stability: 0.5, similarity: 0.75 }
-  });
+  const [prefs, setPrefs] = useState<VoicePrefs>(() => defaultVoicePrefs(scope));
 
   const getStudio = useServerFn(getVoiceStudio);
   const saveStudio = useServerFn(saveVoiceStudio);
@@ -65,8 +51,11 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
   useEffect(() => {
     if (establishmentId) {
       loadData();
+    } else {
+      setPrefs(loadVoicePrefs(scope));
+      setLoading(false);
     }
-  }, [establishmentId]);
+  }, [establishmentId, scope]);
 
   async function loadData() {
     try {
@@ -76,15 +65,18 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
         setPrefs(prev => ({ ...prev, ...res.prefs }));
       }
     } catch (e) {
-      console.error(e);
+      setPrefs(loadVoicePrefs(scope));
     } finally {
       setLoading(false);
     }
   }
 
-  const update = (patch: any) => setPrefs(prev => ({ ...prev, ...patch }));
-  const updateParam = (k: string, v: number) => setPrefs(prev => ({ ...prev, params: { ...prev.params, [k]: v } }));
-  const updateText = (k: string, v: string) => setPrefs(prev => ({ ...prev, texts: { ...prev.texts, [k]: v } }));
+  const update = (patch: Partial<VoicePrefs>) => setPrefs(prev => ({ ...prev, ...patch }));
+  const updateParam = (k: string, v: number) => setPrefs(prev => ({ ...prev, [k]: v }));
+  const updateText = (k: string, v: string) => setPrefs(prev => ({ 
+    ...prev, 
+    texts: { ...prev.texts, [k]: v } as any 
+  }));
 
   async function onSave() {
     if (!establishmentId) return;
