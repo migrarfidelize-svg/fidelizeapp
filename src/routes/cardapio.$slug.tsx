@@ -19,15 +19,9 @@ const opts = (slug: string) =>
   queryOptions({
     queryKey: ["public-menu", slug],
     queryFn: async () => {
-      console.log("[DEBUG CLIENT] Calling getPublicMenuBySlug for slug:", slug);
-      try {
-        const res = await getPublicMenuBySlug({ data: { slug } });
-        console.log("[DEBUG CLIENT] Response received:", res ? "Data present" : "Null");
-        return res;
-      } catch (err) {
-        console.error("[DEBUG CLIENT] Error calling server function:", err);
-        throw err;
-      }
+      // Usamos params diretos para evitar problemas de serialização do TanStack Start v1
+      // O inputValidator no servidor está preparado para receber este formato { slug }
+      return getPublicMenuBySlug({ data: { slug } });
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,

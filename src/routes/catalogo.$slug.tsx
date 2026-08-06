@@ -18,15 +18,7 @@ const opts = (slug: string) =>
   queryOptions({
     queryKey: ["public-catalog", slug],
     queryFn: async () => {
-      console.log("[DEBUG CLIENT] Calling getPublicMenuBySlug for catalog slug:", slug);
-      try {
-        const res = await getPublicMenuBySlug({ data: { slug, kind: "catalog" } });
-        console.log("[DEBUG CLIENT] Catalog response received:", res ? "Data present" : "Null");
-        return res;
-      } catch (err) {
-        console.error("[DEBUG CLIENT] Catalog error calling server function:", err);
-        throw err;
-      }
+      return getPublicMenuBySlug({ data: { slug, kind: "catalog" } });
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
