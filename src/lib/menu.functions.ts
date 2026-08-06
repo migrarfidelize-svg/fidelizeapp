@@ -17,12 +17,20 @@ const inputSchema = z.object({
 
 export const getPublicMenuBySlug = createServerFn({ method: "GET" })
   .validator((d: unknown) => {
-    const raw = (d as any);
-    const slug = raw?.slug || raw?.data?.slug || "";
-    const kind = raw?.kind || raw?.data?.kind || "menu";
+    // Normalização completa para TanStack Start RPC GET
+    let slug = "";
+    let kind: "menu" | "catalog" = "menu";
+
+    if (typeof d === "string") {
+      slug = d;
+    } else if (d && typeof d === "object") {
+      const raw = d as any;
+      slug = raw.slug || raw.data?.slug || "";
+      if (raw.kind === "catalog" || raw.data?.kind === "catalog") kind = "catalog";
+    }
 
     if (!slug) throw new Error("Slug é obrigatório");
-    return { slug, kind: (kind === "catalog" ? "catalog" : "menu") as "menu" | "catalog" };
+    return { slug, kind };
   })
   .handler(async ({ data }) => {
     const { slug, kind } = data;

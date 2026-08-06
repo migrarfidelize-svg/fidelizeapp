@@ -18,10 +18,7 @@ import { resolveMenuTheme, menuBackgroundCss, readableInk } from "@/lib/menu-the
 const opts = (slug: string) =>
   queryOptions({
     queryKey: ["public-menu", slug],
-    queryFn: async () => {
-      // Chamada simplificada para RPC GET
-      return getPublicMenuBySlug({ data: { slug } });
-    },
+    queryFn: () => getPublicMenuBySlug({ data: { slug } }),
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
