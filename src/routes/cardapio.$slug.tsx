@@ -19,8 +19,8 @@ const opts = (slug: string) =>
   queryOptions({
     queryKey: ["public-menu", slug],
     queryFn: async () => {
-      // Usamos a string direta do slug como input.
-      return getPublicMenuBySlug({ data: slug });
+      // Chamada simplificada para RPC GET
+      return getPublicMenuBySlug({ data: { slug } });
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
