@@ -627,8 +627,8 @@ function AppLayout() {
                 <LogoMark size={20} className="text-primary" />
               </Link>
             ) : (
-              <Link to="/app" aria-label="Fidelize" className="min-w-0">
-                <Logo />
+              <Link to="/app" aria-label="Fidelize" className="min-w-0 flex items-center">
+                <Logo className="scale-125 origin-left" />
               </Link>
             )}
             {!collapsed && (
