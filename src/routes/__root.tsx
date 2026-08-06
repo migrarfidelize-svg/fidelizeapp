@@ -105,6 +105,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" },
+      { rel: "preload", as: "image", href: "https://i.imgur.com/PHNbTAi.png" },
+      { rel: "preload", as: "image", href: "https://i.imgur.com/iiN56vY.png" },
     ],
   }),
   shellComponent: RootShell,

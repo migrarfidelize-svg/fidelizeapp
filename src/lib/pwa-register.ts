@@ -50,6 +50,7 @@ async function clearPwaCaches() {
           key === "google-fonts"
         )
         .map((key) => caches.delete(key)),
+      await caches.delete("fidelize-brand-v1");
     );
   } catch { /* noop */ }
 }

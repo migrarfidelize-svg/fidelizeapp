@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getBrandIdentity } from "@/lib/landing-content.functions";
@@ -24,34 +24,20 @@ if (typeof window !== "undefined") {
  */
 export function useBrand(): BrandIdentity {
   const load = useServerFn(getBrandIdentity);
-  const [cached, setCached] = useState<BrandIdentity | null>(memoryCache);
 
-  useEffect(() => {
-    if (memoryCache) return;
-    try {
-      const raw = localStorage.getItem(BRAND_CACHE_KEY);
-      if (raw) {
-        const brand = normalizeBrand(JSON.parse(raw));
-        memoryCache = brand;
-        setCached(brand);
-      }
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
+  // Use useQuery for background updates but rely on memoryCache/localStorage for immediate render
   const { data } = useQuery({
     queryKey: ["brand-identity"],
     queryFn: () => load(),
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     retry: 1,
-    // Se já temos algo em cache (memória ou local), não precisamos travar a UI
-    placeholderData: memoryCache || undefined,
+    placeholderData: memoryCache || DEFAULT_BRAND,
   });
 
   useEffect(() => {
     if (!data) return;
+    if (JSON.stringify(data) === JSON.stringify(memoryCache)) return;
     memoryCache = data;
     try {
       localStorage.setItem(BRAND_CACHE_KEY, JSON.stringify(data));
@@ -60,5 +46,5 @@ export function useBrand(): BrandIdentity {
     }
   }, [data]);
 
-  return data ?? cached ?? DEFAULT_BRAND;
+  return data ?? memoryCache ?? DEFAULT_BRAND;
 }

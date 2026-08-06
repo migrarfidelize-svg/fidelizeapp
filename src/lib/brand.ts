@@ -18,8 +18,8 @@ export type BrandIdentity = {
 };
 
 export const DEFAULT_BRAND: BrandIdentity = {
-  logoUrl: logoLight.url,
-  logoDarkUrl: logoDark.url,
+  logoUrl: "https://i.imgur.com/PHNbTAi.png",
+  logoDarkUrl: "https://i.imgur.com/iiN56vY.png",
   markUrl: logoMark.url,
   alt: "Fidelize",
 };
@@ -54,4 +54,4 @@ export function normalizeBrand(raw: unknown): BrandIdentity {
   };
 }
 
-export const BRAND_CACHE_KEY = "fidelize.brand.v1";
+export const BRAND_CACHE_KEY = "fidelize.brand.v2";
