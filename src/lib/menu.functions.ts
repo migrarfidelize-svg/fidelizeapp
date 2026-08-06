@@ -17,13 +17,12 @@ const inputSchema = z.object({
 
 export const getPublicMenuBySlug = createServerFn({ method: "GET" })
   .validator((d: unknown) => {
-    // Para GET requests no TanStack Start v1, o input costuma vir no objeto raiz (query params)
     const raw = (d as any);
     const slug = raw?.slug || raw?.data?.slug || "";
     const kind = raw?.kind || raw?.data?.kind || "menu";
 
     if (!slug) throw new Error("Slug é obrigatório");
-    return { slug, kind: kind === "catalog" ? "catalog" : "menu" };
+    return { slug, kind: (kind === "catalog" ? "catalog" : "menu") as "menu" | "catalog" };
   })
   .handler(async ({ data }) => {
     const { slug, kind } = data;
