@@ -669,7 +669,7 @@ function AppLayout() {
                   </SheetContent>
                 </Sheet>
               </div>
-              <div className="md:hidden"><Logo /></div>
+              <div className="md:hidden flex items-center h-full"><Logo className="scale-125 origin-left" /></div>
 
               {/* Breadcrumb / page title (desktop) */}
               <div className="hidden md:flex items-center gap-2 min-w-0">
