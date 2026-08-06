@@ -621,14 +621,14 @@ function AppLayout() {
           ].join(" ")}
           data-tour="sidebar-logo"
         >
-          <div className={`flex h-14 items-center border-b border-border/60 ${collapsed ? "justify-center px-2" : "justify-between px-3"}`}>
+          <div className={`flex h-18 items-center border-b border-border/60 transition-[height] duration-200 ${collapsed ? "justify-center px-2" : "justify-between px-3"}`}>
             {collapsed ? (
               <Link to="/app" aria-label="Fidelize" className="grid h-9 w-9 place-items-center rounded-xl bg-primary/10">
                 <LogoMark size={20} className="text-primary" />
               </Link>
             ) : (
-              <Link to="/app" aria-label="Fidelize" className="min-w-0">
-                <Logo />
+              <Link to="/app" aria-label="Fidelize" className="min-w-0 flex items-center">
+                <Logo className="scale-125 origin-left" />
               </Link>
             )}
             {!collapsed && (
@@ -650,10 +650,10 @@ function AppLayout() {
           {renderFooter()}
         </aside>
 
-        <div className={`flex flex-col min-w-0 transition-[padding] duration-200 ${collapsed ? "md:pl-[76px]" : "md:pl-64"}`}>
+        <div className={`flex flex-col min-w-0 transition-all duration-300 ease-in-out ${collapsed ? "md:pl-[76px]" : "md:pl-64"}`}>
 
           {/* Top bar (desktop + mobile) */}
-          <header className="sticky top-0 z-20 flex items-center justify-between gap-3 h-14 px-4 md:px-6 border-b bg-card/70 backdrop-blur-xl">
+          <header className="sticky top-0 z-20 flex items-center justify-between gap-3 h-18 px-4 md:px-6 border-b bg-card/70 backdrop-blur-xl transition-[height] duration-200">
             <div className="flex items-center gap-3 min-w-0">
               {/* Mobile trigger */}
               <div className="md:hidden">
@@ -663,13 +663,13 @@ function AppLayout() {
                   </SheetTrigger>
                   <SheetContent side="left" className="p-0 w-72 flex flex-col">
                     <VisuallyHidden><SheetTitle>Menu de navegação</SheetTitle></VisuallyHidden>
-                    <div className="p-4 border-b"><Logo /></div>
+                    <div className="p-4 border-b flex items-center h-18"><Logo className="scale-125 origin-left" /></div>
                     {renderNav(closeMobile, true)}
                     {renderFooter(closeMobile, true)}
                   </SheetContent>
                 </Sheet>
               </div>
-              <div className="md:hidden"><Logo /></div>
+              <div className="md:hidden flex items-center h-full"><Logo className="scale-125 origin-left" /></div>
 
               {/* Breadcrumb / page title (desktop) */}
               <div className="hidden md:flex items-center gap-2 min-w-0">
