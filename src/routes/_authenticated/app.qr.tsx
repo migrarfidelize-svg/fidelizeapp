@@ -65,7 +65,7 @@ function rootDomain(host: string): string {
   return parts.length <= 2 ? host.toLowerCase() : parts.slice(-2).join(".");
 }
 
-type QrDest = "reviews" | "linktree" | "landing" | "menu";
+type QrDest = "reviews" | "linktree" | "landing" | "menu" | "catalog";
 type CopyPreset = {
   title: string;
   subtitle: string;
@@ -101,6 +101,13 @@ const COPY_PRESETS: Record<QrDest, CopyPreset> = {
     ctaNearQR: "Aponte a câmera para abrir",
     ctaFooter: "Escaneie para ver tudo",
     primaryLabel: "Nossos links",
+  },
+  catalog: {
+    title: "Nosso catálogo digital",
+    subtitle: "Confira nossos produtos, coleções e novidades em tempo real.",
+    ctaNearQR: "Aponte a câmera para ver o catálogo",
+    ctaFooter: "Escaneie para abrir o catálogo",
+    primaryLabel: "Ver catálogo",
   },
 };
 
