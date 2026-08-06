@@ -228,7 +228,7 @@ function PublicMenuPage() {
     const el = catRefs.current[id];
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     const label =
-      id === "all" ? "category:all" : `category:${categories.find((c) => c.id === id)?.name ?? id}`;
+      id === "all" ? "category:all" : `category:${categories.find((c: any) => c.id === id)?.name ?? id}`;
     trackChannelEvent({ slug, channel: "menu", event_type: "link_click", ref_id: id, ref_label: label });
   };
 
