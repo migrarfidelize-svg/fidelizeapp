@@ -631,7 +631,7 @@ function ReviewQrPage() {
   }
 
   async function saveCurrentDesign() {
-    const name = designName.trim() || buildDefaultDesignName(qrDest, cloudDesigns, designs);
+    const name = designName.trim() || buildDefaultDesignName(qrDest as any, cloudDesigns, designs);
     const payload = {
       template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale,
       title, subtitle, ctaNearQR, ctaFooter,
@@ -2065,7 +2065,7 @@ function ReviewQrPage() {
                   onClick={async () => {
                     const preset = presetDialog.preset;
                     try {
-                      const name = buildDefaultDesignName(qrDest, cloudDesigns, designs);
+                      const name = buildDefaultDesignName(qrDest as any, cloudDesigns, designs);
                       setDesignName(name);
                       await saveCurrentDesignRef.current?.();
                     } finally {
