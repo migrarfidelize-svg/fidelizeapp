@@ -28,7 +28,6 @@ export const getPublicMenuBySlug = createServerFn({ method: "POST" })
     const { slug, kind } = data;
     const timestamp = new Date().toISOString();
 
-    // Importamos o cliente anônimo para acesso público via RPC segura
     const { supabase } = await import("../integrations/supabase/client");
 
     if (!supabase) {
@@ -36,7 +35,6 @@ export const getPublicMenuBySlug = createServerFn({ method: "POST" })
       throw new Error("Erro de infraestrutura");
     }
 
-    // Chamamos a RPC que encapsula toda a lógica de segurança e visibilidade
     const { data: result, error } = await supabase.rpc("get_public_catalogo_v1", {
       p_slug: slug,
       p_kind: kind
@@ -52,13 +50,12 @@ export const getPublicMenuBySlug = createServerFn({ method: "POST" })
       return null;
     }
 
-    // Normalização do retorno da RPC para o formato esperado pelo frontend
-    // A RPC retorna nulo ou um objeto com as chaves: establishment, menu, categories, items
+    const res = result as any;
     return {
-      establishment: result.establishment,
-      menu: result.menu,
-      categories: result.categories ?? [],
-      items: result.items ?? []
+      establishment: res.establishment,
+      menu: res.menu,
+      categories: res.categories ?? [],
+      items: res.items ?? []
     };
   });
 
