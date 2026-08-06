@@ -14,7 +14,7 @@ import { Logo } from "@/components/Logo";
 import { LogoMark } from "@/components/LogoMark";
 import { Button } from "@/components/ui/button";
 import {
-  LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, ChevronRight, UsersRound, Shield,
+  LayoutDashboard, Users, Stamp, QrCode, LogOut, Sparkles, ChevronDown, ChevronRight, UsersRound, Shield, Mic,
   LifeBuoy, BookOpen, Package, Receipt, HeartHandshake, Bell, Star, Menu,
   PanelLeftClose, PanelLeftOpen, Compass, Megaphone, UserCircle2, MessageSquare, BarChart3,
   Link2, UtensilsCrossed, ShoppingBag, FolderTree, LayoutList, Wallet, CreditCard,
@@ -138,12 +138,13 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-
-
-    key: "qrcodes",
-    icon: QrCode,
-    label: "QR Codes",
-    items: [{ to: "/app/qr", label: "QR Codes", icon: QrCode }],
+    key: "estudio",
+    icon: Mic,
+    label: "Studio",
+    items: [
+      { to: "/app/studio", label: "Studio de Voz", icon: Mic },
+      { to: "/app/qr", label: "QR Codes", icon: QrCode },
+    ],
   },
   {
     key: "fidelidade",
@@ -253,6 +254,8 @@ function AppLayout() {
   const [openGroups, setOpenGroups] = useState<string[]>([]);
   const [hoverGroup, setHoverGroup] = useState<string | null>(null);
   const [hoverPos, setHoverPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+
+
   // mantém a categoria da rota atual expandida
   useEffect(() => {
     const g = NAV_GROUPS.find((grp) => grp.items.some((n) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))));
@@ -550,7 +553,7 @@ function AppLayout() {
                       exit={{ opacity: 0, x: -8 }}
                       transition={{ duration: 0.15 }}
                       style={{ position: "fixed", top: hoverPos.top, left: hoverPos.left }}
-                      className="z-50 w-60 max-h-[70vh] overflow-y-auto rounded-2xl border border-border/60 bg-popover/95 p-2 shadow-xl backdrop-blur-xl"
+                      className="z-[100] w-60 max-h-[70vh] overflow-y-auto rounded-2xl border border-border/60 bg-popover/95 p-2 shadow-xl backdrop-blur-xl"
                     >
                       <div className="px-2 pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
                         {g.label}

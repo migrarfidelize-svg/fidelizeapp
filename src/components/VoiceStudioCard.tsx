@@ -33,8 +33,7 @@ import {
   getElevenLabsVoices, 
   testElevenLabsConnection 
 } from "@/lib/elevenlabs.functions";
-import { speakGlobal } from "@/lib/tts-global.functions";
-import { stopSpeaking, speakWithBrowser } from "@/components/GreetingVoice";
+import { voiceManager } from "@/lib/voice-manager";
 
 type Props = {
   scope: "merchant" | "admin";
@@ -54,7 +53,7 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
   const saveStudio = useServerFn(saveVoiceStudio);
   const getVoices = useServerFn(getElevenLabsVoices);
   const testConn = useServerFn(testElevenLabsConnection);
-  const doSpeak = useServerFn(speakGlobal);
+  
 
   useEffect(() => {
     if (establishmentId) {
@@ -112,37 +111,21 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
     }
   }
 
-  async function handleTest(textType: string) {
-    const text = (prefs.texts as any)[textType];
-    if (!text) return toast.error("Texto vazio!");
-    
+  const handleTest = async (typeOrText: string) => {
     setPlaying(true);
     try {
-      const res = await doSpeak({
-        data: {
-          text,
-          provider: prefs.provider,
-          voice_id: prefs.elevenVoiceId,
-          model_id: prefs.elevenModelId,
-          fallback_enabled: prefs.fallback_enabled,
-          params: { rate: prefs.rate, volume: prefs.volume, stability: prefs.stability, similarity: prefs.similarity }
-        }
-      });
+      let text = typeOrText;
+      if (typeOrText === "welcome") text = prefs.texts?.welcome?.replace("{name}", "Carlos") || "Bem-vindo!";
+      if (typeOrText === "ready") text = prefs.texts?.ready || "Sistema pronto.";
+      if (typeOrText === "notify") text = prefs.texts?.notify || "Nova notificação.";
 
-      if (res.audio) {
-        const audio = new Audio(`data:${res.mime};base64,${res.audio}`);
-        await audio.play();
-        toast.success(`Reproduzindo via ${res.provider}`);
-      } else if (res.fallback === "native") {
-        await speakWithBrowser(text, scope === "admin" ? "male" : "female", { rate: prefs.rate, volume: prefs.volume });
-        toast.info("Usando fallback: Voz nativa");
-      }
+      await voiceManager.speak(text, prefs);
     } catch (e: any) {
       toast.error(e.message);
     } finally {
       setPlaying(false);
     }
-  }
+  };
 
   if (loading) return (
     <div className="flex items-center justify-center p-12">
@@ -151,18 +134,22 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-hidden">
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-6">
-              <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-              <TabsTrigger value="provider">Provedor</TabsTrigger>
-              <TabsTrigger value="texts">Textos</TabsTrigger>
-              <TabsTrigger value="eleven">ElevenLabs</TabsTrigger>
-              <TabsTrigger value="diag" className="hidden lg:flex">Diagnóstico</TabsTrigger>
-              <TabsTrigger value="history" className="hidden lg:flex">Histórico</TabsTrigger>
-            </TabsList>
+            <div className="overflow-x-auto -mx-1 px-1 mb-2">
+              <TabsList className="inline-flex min-w-full lg:grid lg:grid-cols-6 h-auto p-1 bg-muted/50">
+                <TabsTrigger value="overview" className="flex-1 py-2">Geral</TabsTrigger>
+                <TabsTrigger value="provider" className="flex-1 py-2">Provedor</TabsTrigger>
+                <TabsTrigger value="texts" className="flex-1 py-2">Textos</TabsTrigger>
+                <TabsTrigger value="eleven" className="flex-1 py-2">ElevenLabs</TabsTrigger>
+                <TabsTrigger value="diag" className="flex-1 py-2">Diagnóstico</TabsTrigger>
+                <TabsTrigger value="history" className="flex-1 py-2">Histórico</TabsTrigger>
+              </TabsList>
+            </div>
+
+
 
             <TabsContent value="overview" className="mt-4 space-y-4">
               <Card>
@@ -458,7 +445,7 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
                   <Button size="sm" onClick={() => handleTest("welcome")} disabled={playing}>
                     {playing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => { stopSpeaking(); setPlaying(false); }}>
+                  <Button size="sm" variant="outline" onClick={() => { voiceManager.stop(); setPlaying(false); }}>
                     <Square className="h-4 w-4" />
                   </Button>
                 </div>

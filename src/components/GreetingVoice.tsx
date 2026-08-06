@@ -188,83 +188,41 @@ export async function speakWithBrowser(text: string, gender: "female" | "male", 
   return true;
 }
 
-export function GreetingVoice({ gender, scope, enabled = true }: Props) {
+export function GreetingVoice({ scope, enabled = true }: { scope: string; enabled?: boolean }) {
   const playedRef = useRef(false);
-  const synthEleven = useServerFn(synthesizeElevenLabs);
 
   useEffect(() => {
     if (!enabled) return;
     if (playedRef.current) return;
-    if (typeof window === "undefined") return;
-    if (isGreetingMutedLocally()) return;
+    
+    const check = async () => {
+      const prefs = loadVoicePrefs(scope);
+      if (!prefs.enabled) return;
 
-    const prefs = loadVoicePrefs(scope);
-    if (!prefs.enabled) return;
-
-    const key = `fidelize:greet:${scope}:${new Date().toDateString()}:${new Date().getHours()}`;
-    if (sessionStorage.getItem(key)) return;
-    playedRef.current = true;
-
-    const text = prefs.text.trim() || buildGreeting(gender);
-
-    let spoke = false;
-    const attempt = async () => {
-      try {
-        if (prefs.provider === "elevenlabs") {
-          const res = await synthEleven({
-            data: {
-              text,
-              voice_id: prefs.elevenVoiceId,
-              model_id: prefs.elevenModelId,
-              stability: prefs.stability,
-              similarity_boost: prefs.similarity,
-            }
-          });
-          if (res.audio) {
-            const audio = new Audio(`data:${res.mime};base64,${res.audio}`);
-            await audio.play();
-            spoke = true;
-          }
-        } else {
-          const r = await speakText({ 
-            text, 
-            voice: prefs.voice, 
-            style: prefs.style,
-            rate: prefs.rate,
-            pitch: prefs.pitch,
-            volume: prefs.volume
-          });
-          if (r !== "failed") spoke = true;
-        }
-        if (spoke) sessionStorage.setItem(key, "1");
-      } catch (err) {
-        // Fallback para speakText se for elevenlabs e falhar
-        if (prefs.provider === "elevenlabs") {
-          const r = await speakText({ text, voice: prefs.voice });
-          if (r !== "failed") {
-            spoke = true;
-            sessionStorage.setItem(key, "1");
-          }
-        }
-      }
+      const key = `fidelize:voice:greeted:${scope}:${new Date().toDateString()}:${new Date().getHours()}`;
+      if (sessionStorage.getItem(key)) return;
+      
+      playedRef.current = true;
+      const { voiceManager } = await import("@/lib/voice-manager");
+      
+      const text = prefs.texts.welcome;
+      await voiceManager.speak(text, prefs);
+      sessionStorage.setItem(key, "1");
     };
+
     const armed = () => {
-      if (!spoke) attempt();
+      check();
       window.removeEventListener("pointerdown", armed);
       window.removeEventListener("keydown", armed);
     };
-    const t = setTimeout(() => {
-      attempt();
-      window.addEventListener("pointerdown", armed, { once: true });
-      window.addEventListener("keydown", armed, { once: true });
-    }, 400);
+
+    window.addEventListener("pointerdown", armed, { once: true });
+    window.addEventListener("keydown", armed, { once: true });
 
     return () => {
-      clearTimeout(t);
       window.removeEventListener("pointerdown", armed);
       window.removeEventListener("keydown", armed);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, scope]);
 
   return null;

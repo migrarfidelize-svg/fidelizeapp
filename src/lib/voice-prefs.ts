@@ -20,7 +20,6 @@ export type VoicePrefs = {
   voice: VoiceId; 
   elevenVoiceId: string; 
   elevenModelId: string;
-  text: string;
   style: string;
   rate: number;
   pitch: number;
@@ -28,11 +27,14 @@ export type VoicePrefs = {
   stability: number;
   similarity: number;
   fallback_enabled: boolean;
+  can_merchant_edit: boolean; // Novo: controle do Super Admin
   texts: {
     welcome: string;
+    dashboard: string;
     call: string;
     ready: string;
     notify: string;
+    custom: string;
   };
 };
 
@@ -44,9 +46,8 @@ export function defaultVoicePrefs(scope: string): VoicePrefs {
     enabled: true,
     provider: "native",
     voice: scope === "admin" ? "onyx" : "nova",
-    elevenVoiceId: "21m0pOTjCwobq1Wnu3pd", // Rachel
+    elevenVoiceId: "21m0pOTjCwobq1Wnu3pd",
     elevenModelId: "eleven_multilingual_v2",
-    text: "",
     style: DEFAULT_STYLE,
     rate: 1.0,
     pitch: 1.0,
@@ -54,11 +55,14 @@ export function defaultVoicePrefs(scope: string): VoicePrefs {
     stability: 0.5,
     similarity: 0.75,
     fallback_enabled: true,
+    can_merchant_edit: true,
     texts: {
       welcome: "Olá, bem-vindo ao nosso estabelecimento!",
+      dashboard: "Painel do lojista iniciado. Boas vendas!",
       call: "Atenção cliente {{nome}}, seu pedido está pronto.",
       ready: "Pedido número {{numero}} concluído.",
-      notify: "Nova notificação recebida."
+      notify: "Nova notificação recebida.",
+      custom: "Esta é uma mensagem personalizada.",
     }
   };
 }

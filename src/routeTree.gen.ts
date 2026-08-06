@@ -83,6 +83,7 @@ import { Route as AuthenticatedCarteiraDescobrirRouteImport } from './routes/_au
 import { Route as AuthenticatedCarteiraConquistasRouteImport } from './routes/_authenticated/carteira.conquistas'
 import { Route as AuthenticatedCarteiraSlugRouteImport } from './routes/_authenticated/carteira.$slug'
 import { Route as AuthenticatedAppWalletRouteImport } from './routes/_authenticated/app.wallet'
+import { Route as AuthenticatedAppStudioRouteImport } from './routes/_authenticated/app.studio'
 import { Route as AuthenticatedAppRetencaoRouteImport } from './routes/_authenticated/app.retencao'
 import { Route as AuthenticatedAppQrcodesRouteImport } from './routes/_authenticated/app.qrcodes'
 import { Route as AuthenticatedAppQrRouteImport } from './routes/_authenticated/app.qr'
@@ -541,6 +542,11 @@ const AuthenticatedAppWalletRoute = AuthenticatedAppWalletRouteImport.update({
   path: '/wallet',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppStudioRoute = AuthenticatedAppStudioRouteImport.update({
+  id: '/studio',
+  path: '/studio',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAppRetencaoRoute =
   AuthenticatedAppRetencaoRouteImport.update({
     id: '/retencao',
@@ -955,6 +961,7 @@ export interface FileRoutesByFullPath {
   '/app/qr': typeof AuthenticatedAppQrRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/retencao': typeof AuthenticatedAppRetencaoRoute
+  '/app/studio': typeof AuthenticatedAppStudioRoute
   '/app/wallet': typeof AuthenticatedAppWalletRoute
   '/carteira/$slug': typeof AuthenticatedCarteiraSlugRouteWithChildren
   '/carteira/conquistas': typeof AuthenticatedCarteiraConquistasRoute
@@ -1087,6 +1094,7 @@ export interface FileRoutesByTo {
   '/app/qr': typeof AuthenticatedAppQrRoute
   '/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/app/retencao': typeof AuthenticatedAppRetencaoRoute
+  '/app/studio': typeof AuthenticatedAppStudioRoute
   '/app/wallet': typeof AuthenticatedAppWalletRoute
   '/carteira/$slug': typeof AuthenticatedCarteiraSlugRouteWithChildren
   '/carteira/conquistas': typeof AuthenticatedCarteiraConquistasRoute
@@ -1226,6 +1234,7 @@ export interface FileRoutesById {
   '/_authenticated/app/qr': typeof AuthenticatedAppQrRoute
   '/_authenticated/app/qrcodes': typeof AuthenticatedAppQrcodesRoute
   '/_authenticated/app/retencao': typeof AuthenticatedAppRetencaoRoute
+  '/_authenticated/app/studio': typeof AuthenticatedAppStudioRoute
   '/_authenticated/app/wallet': typeof AuthenticatedAppWalletRoute
   '/_authenticated/carteira/$slug': typeof AuthenticatedCarteiraSlugRouteWithChildren
   '/_authenticated/carteira/conquistas': typeof AuthenticatedCarteiraConquistasRoute
@@ -1365,6 +1374,7 @@ export interface FileRouteTypes {
     | '/app/qr'
     | '/app/qrcodes'
     | '/app/retencao'
+    | '/app/studio'
     | '/app/wallet'
     | '/carteira/$slug'
     | '/carteira/conquistas'
@@ -1497,6 +1507,7 @@ export interface FileRouteTypes {
     | '/app/qr'
     | '/app/qrcodes'
     | '/app/retencao'
+    | '/app/studio'
     | '/app/wallet'
     | '/carteira/$slug'
     | '/carteira/conquistas'
@@ -1635,6 +1646,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/qr'
     | '/_authenticated/app/qrcodes'
     | '/_authenticated/app/retencao'
+    | '/_authenticated/app/studio'
     | '/_authenticated/app/wallet'
     | '/_authenticated/carteira/$slug'
     | '/_authenticated/carteira/conquistas'
@@ -2298,6 +2310,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppWalletRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/studio': {
+      id: '/_authenticated/app/studio'
+      path: '/studio'
+      fullPath: '/app/studio'
+      preLoaderRoute: typeof AuthenticatedAppStudioRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/app/retencao': {
       id: '/_authenticated/app/retencao'
       path: '/retencao'
@@ -2800,6 +2819,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppQrRoute: typeof AuthenticatedAppQrRoute
   AuthenticatedAppQrcodesRoute: typeof AuthenticatedAppQrcodesRoute
   AuthenticatedAppRetencaoRoute: typeof AuthenticatedAppRetencaoRoute
+  AuthenticatedAppStudioRoute: typeof AuthenticatedAppStudioRoute
   AuthenticatedAppWalletRoute: typeof AuthenticatedAppWalletRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
   AuthenticatedAppAvaliacoesQrRoute: typeof AuthenticatedAppAvaliacoesQrRoute
@@ -2830,6 +2850,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppQrRoute: AuthenticatedAppQrRoute,
   AuthenticatedAppQrcodesRoute: AuthenticatedAppQrcodesRoute,
   AuthenticatedAppRetencaoRoute: AuthenticatedAppRetencaoRoute,
+  AuthenticatedAppStudioRoute: AuthenticatedAppStudioRoute,
   AuthenticatedAppWalletRoute: AuthenticatedAppWalletRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
   AuthenticatedAppAvaliacoesQrRoute: AuthenticatedAppAvaliacoesQrRoute,
