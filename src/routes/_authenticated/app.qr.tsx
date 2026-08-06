@@ -503,6 +503,7 @@ function ReviewQrPage() {
       landing: "Cartão Fidelidade",
       linktree: "Árvore de Links",
       menu: "Cardápio digital",
+      catalog: "Catálogo digital",
     };
     function onChanged(e: Event) {
       const detail = (e as CustomEvent).detail as { from: QrDest; to: QrDest; establishmentId: string };
