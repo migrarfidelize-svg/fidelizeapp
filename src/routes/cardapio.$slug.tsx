@@ -6,6 +6,7 @@ import {
   X, Search, Flame, Leaf, Wheat, Beef, Fish, Milk, Egg, Nut, Play,
   ArrowLeft, Pause, Volume2, VolumeX, List, Heart, Share2,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 import { getPublicMenuBySlug } from "@/lib/menu.functions";
 
