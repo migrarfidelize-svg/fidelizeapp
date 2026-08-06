@@ -119,7 +119,7 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
       if (typeOrText === "ready") text = prefs.texts?.ready || "Sistema pronto.";
       if (typeOrText === "notify") text = prefs.texts?.notify || "Nova notificação.";
 
-      await voiceManager.speak(text, prefs);
+      await voiceManager.speak(text);
     } catch (e: any) {
       toast.error(e.message);
     } finally {

@@ -206,7 +206,7 @@ export function GreetingVoice({ enabled = true }: { enabled?: boolean }) {
       const { voiceManager } = await import("@/lib/voice-manager");
       
       const text = prefs.texts.welcome;
-      await voiceManager.speak(text, prefs);
+      await voiceManager.speak(text);
       sessionStorage.setItem(key, "1");
     };
 
