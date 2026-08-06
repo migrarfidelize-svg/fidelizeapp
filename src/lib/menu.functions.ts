@@ -17,12 +17,21 @@ const inputSchema = z.object({
 
 export const getPublicMenuBySlug = createServerFn({ method: "GET" })
   .validator((d: unknown) => {
-    // Para chamadas GET, o TanStack Start passa o input diretamente.
-    // Se for string (slug), normalizamos.
-    if (typeof d === 'string') return { slug: d, kind: "menu" as const };
-    
-    // Se for objeto, validamos com Zod.
-    return inputSchema.parse(d);
+    // Normalização agressiva para garantir que o slug seja capturado
+    let slug = "";
+    let kind: "menu" | "catalog" = "menu";
+
+    if (typeof d === "string") {
+      slug = d;
+    } else if (d && typeof d === "object") {
+      // O TanStack Router v1 envia params/search de várias formas
+      const raw = (d as any);
+      slug = raw.slug || raw.data?.slug || raw.params?.slug || "";
+      kind = raw.kind || raw.data?.kind || raw.params?.kind || "menu";
+    }
+
+    if (!slug) throw new Error("Slug é obrigatório");
+    return { slug, kind: kind === "catalog" ? "catalog" : "menu" };
   })
   .handler(async ({ data }) => {
     const { slug, kind } = data;
