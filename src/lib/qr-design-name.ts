@@ -3,13 +3,14 @@
  * Extracted from app.avaliacoes.qr.tsx so it can be unit-tested in isolation.
  */
 
-export type QrDest = "reviews" | "landing" | "linktree" | "menu";
+export type QrDest = "reviews" | "landing" | "linktree" | "menu" | "catalog";
 
 export const QR_DEST_LABEL: Record<QrDest, string> = {
   reviews: "Avaliação",
   landing: "Cartão Fidelidade",
   linktree: "Árvore de Links",
   menu: "Cardápio digital",
+  catalog: "Catálogo digital",
 };
 
 export function buildDefaultDesignName(

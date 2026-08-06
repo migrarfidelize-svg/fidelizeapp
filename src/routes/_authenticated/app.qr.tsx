@@ -65,7 +65,7 @@ function rootDomain(host: string): string {
   return parts.length <= 2 ? host.toLowerCase() : parts.slice(-2).join(".");
 }
 
-type QrDest = "reviews" | "linktree" | "landing" | "menu";
+type QrDest = "reviews" | "linktree" | "landing" | "menu" | "catalog";
 type CopyPreset = {
   title: string;
   subtitle: string;
@@ -101,6 +101,13 @@ const COPY_PRESETS: Record<QrDest, CopyPreset> = {
     ctaNearQR: "Aponte a câmera para abrir",
     ctaFooter: "Escaneie para ver tudo",
     primaryLabel: "Nossos links",
+  },
+  catalog: {
+    title: "Nosso catálogo digital",
+    subtitle: "Confira nossos produtos, coleções e novidades em tempo real.",
+    ctaNearQR: "Aponte a câmera para ver o catálogo",
+    ctaFooter: "Escaneie para abrir o catálogo",
+    primaryLabel: "Ver catálogo",
   },
 };
 
@@ -496,6 +503,7 @@ function ReviewQrPage() {
       landing: "Cartão Fidelidade",
       linktree: "Árvore de Links",
       menu: "Cardápio digital",
+      catalog: "Catálogo digital",
     };
     function onChanged(e: Event) {
       const detail = (e as CustomEvent).detail as { from: QrDest; to: QrDest; establishmentId: string };
@@ -623,7 +631,7 @@ function ReviewQrPage() {
   }
 
   async function saveCurrentDesign() {
-    const name = designName.trim() || buildDefaultDesignName(qrDest, cloudDesigns, designs);
+    const name = designName.trim() || buildDefaultDesignName(qrDest as any, cloudDesigns, designs);
     const payload = {
       template, format, destination, googleUrl, showGoogleLogo, nfcMode, contentScale,
       title, subtitle, ctaNearQR, ctaFooter,
@@ -2057,7 +2065,7 @@ function ReviewQrPage() {
                   onClick={async () => {
                     const preset = presetDialog.preset;
                     try {
-                      const name = buildDefaultDesignName(qrDest, cloudDesigns, designs);
+                      const name = buildDefaultDesignName(qrDest as any, cloudDesigns, designs);
                       setDesignName(name);
                       await saveCurrentDesignRef.current?.();
                     } finally {
