@@ -553,7 +553,7 @@ function AppLayout() {
                       exit={{ opacity: 0, x: -8 }}
                       transition={{ duration: 0.15 }}
                       style={{ position: "fixed", top: hoverPos.top, left: hoverPos.left }}
-                      className="z-50 w-60 max-h-[70vh] overflow-y-auto rounded-2xl border border-border/60 bg-popover/95 p-2 shadow-xl backdrop-blur-xl"
+                      className="z-[100] w-60 max-h-[70vh] overflow-y-auto rounded-2xl border border-border/60 bg-popover/95 p-2 shadow-xl backdrop-blur-xl"
                     >
                       <div className="px-2 pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
                         {g.label}
