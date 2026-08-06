@@ -252,8 +252,9 @@ function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const [openGroups, setOpenGroups] = useState<string[]>([]);
-  const [hoverGroup, setHoverGroup] = useState<string | null>(null);
-  const [hoverPos, setHoverPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const [swipeX, setSwipeX] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+
   // mantém a categoria da rota atual expandida
   useEffect(() => {
     const g = NAV_GROUPS.find((grp) => grp.items.some((n) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))));

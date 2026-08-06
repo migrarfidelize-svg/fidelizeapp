@@ -11,7 +11,6 @@ import { loadVoicePrefs, type VoicePrefs } from "./voice-prefs";
 class VoiceManager {
   private currentAudio: HTMLAudioElement | null = null;
   private isMuted: boolean = false;
-  private audioCache: Map<string, string> = new Map();
 
   constructor() {
     if (typeof window !== "undefined") {
@@ -41,9 +40,8 @@ class VoiceManager {
     if (!prefs.enabled || this.isMuted || !text) return;
     this.stop();
 
-    // 1. Tentar Provedor Escolhido (ou ElevenLabs se ElevenLabs)
     try {
-      if (prefs.provider === "elevenlabs" || (prefs.provider === "auto" && prefs.elevenVoiceId)) {
+      if (prefs.provider === "elevenlabs") {
         await this.playElevenLabs(text, prefs);
         return;
       }
@@ -53,7 +51,7 @@ class VoiceManager {
         return;
       }
       
-      // Default: AI/Native fallback logic
+      // Default: AI/Native fallback logic (auto)
       await this.playNatural(text, prefs);
     } catch (err) {
       console.error("VoiceManager Error:", err);
@@ -100,7 +98,6 @@ class VoiceManager {
     utter.pitch = prefs.pitch;
     utter.lang = "pt-BR";
     
-    // Simplificado: pickBestVoice logic movida para cá ou importada
     window.speechSynthesis.speak(utter);
   }
 

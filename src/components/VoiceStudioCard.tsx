@@ -153,7 +153,6 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
   return (
     <div className="space-y-6 overflow-hidden">
       <div className="grid gap-6 lg:grid-cols-3">
-
         <div className="lg:col-span-2 space-y-6">
           <Tabs defaultValue="overview" className="w-full">
             <div className="overflow-x-auto -mx-1 px-1 mb-2">
@@ -166,6 +165,7 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
                 <TabsTrigger value="history" className="flex-1 py-2">Histórico</TabsTrigger>
               </TabsList>
             </div>
+
 
 
             <TabsContent value="overview" className="mt-4 space-y-4">
