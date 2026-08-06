@@ -114,7 +114,7 @@ function ConfigInner({ establishmentId }: { establishmentId: string }) {
         <TabsContent value="privacidade"><PrivacidadeTab establishmentId={establishmentId} settings={data.settings as any} /></TabsContent>
         <TabsContent value="notificacoes"><NotificacoesTab establishmentId={establishmentId} settings={data.settings as any} /></TabsContent>
         <TabsContent value="aparencia"><AparenciaTab establishmentId={establishmentId} est={data.establishment as any} settings={data.settings as any} /></TabsContent>
-        <TabsContent value="studio"><VoiceStudioCard scope="admin" /></TabsContent>
+        <TabsContent value="studio"><VoiceStudioCard scope="admin" establishmentId={establishmentId} /></TabsContent>
         <TabsContent value="plano"><PlanoTab subscription={data.subscription as any} est={data.establishment as any} /></TabsContent>
         <TabsContent value="auditoria"><AuditoriaTab establishmentId={establishmentId} /></TabsContent>
         <TabsContent value="perigo"><PerigoTab establishmentId={establishmentId} est={data.establishment as any} /></TabsContent>
