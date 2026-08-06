@@ -34,7 +34,11 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
       .eq("slug", data.slug)
       .eq("active", true)
       .maybeSingle();
+    
     if (!est) return null;
+
+    // Ajuste global: Filtrar explicitamente por kind e status=published antes de maybeSingle
+    // para garantir que a coexistência de múltiplos registros (rascunhos, tipos diferentes) não quebre a consulta.
     const { data: menu } = await s
       .from("restaurant_menus")
       .select("*")
@@ -42,11 +46,14 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
       .eq("kind", kind)
       .eq("status", "published")
       .maybeSingle();
+
     if (!menu) return { establishment: est, menu: null, categories: [], items: [] };
+
     const [{ data: cats }, { data: items }] = await Promise.all([
       s.from("menu_categories").select("*").eq("menu_id", menu.id).eq("active", true).order("position", { ascending: true }),
       s.from("menu_items").select("*").eq("menu_id", menu.id).eq("active", true).order("position", { ascending: true }),
     ]);
+
     return { establishment: est, menu, categories: cats ?? [], items: items ?? [] };
   });
 
