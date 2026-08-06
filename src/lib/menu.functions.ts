@@ -7,6 +7,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 async function getPrivilegedClient() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  if (!supabaseAdmin) throw new Error("supabaseAdmin is undefined in server runtime");
   return supabaseAdmin;
 }
 
