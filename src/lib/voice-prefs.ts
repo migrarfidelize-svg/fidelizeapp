@@ -16,9 +16,9 @@ export type VoiceId = (typeof VOICE_OPTIONS)[number]["id"];
 
 export type VoicePrefs = {
   enabled: boolean;
-  provider: "native" | "elevenlabs";
-  voice: VoiceId; // Para nativo
-  elevenVoiceId: string; // Para ElevenLabs
+  provider: "native" | "elevenlabs" | "auto";
+  voice: VoiceId; 
+  elevenVoiceId: string; 
   elevenModelId: string;
   text: string;
   style: string;
@@ -27,6 +27,13 @@ export type VoicePrefs = {
   volume: number;
   stability: number;
   similarity: number;
+  fallback_enabled?: boolean;
+  texts?: {
+    welcome: string;
+    call: string;
+    ready: string;
+    notify: string;
+  };
 };
 
 export const DEFAULT_STYLE =
