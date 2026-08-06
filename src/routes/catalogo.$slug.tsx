@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { MapPin, Phone, Instagram, MessageCircle, Search, ShoppingBag, X, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 import { getPublicMenuBySlug } from "@/lib/menu.functions";
 import { trackChannelEvent, useChannelPageView } from "@/lib/tracking";
