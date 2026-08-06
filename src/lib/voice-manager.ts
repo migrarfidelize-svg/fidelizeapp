@@ -72,7 +72,8 @@ class VoiceManager {
     }
   }
 
-  async speak(text: string, prefs: VoicePrefs) {
+  async speak(text: string) {
+    const prefs = loadVoicePrefs();
     if (!prefs.enabled || this.isMuted || !text) return;
     this.stop();
 

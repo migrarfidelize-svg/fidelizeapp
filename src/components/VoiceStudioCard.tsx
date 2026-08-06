@@ -59,7 +59,7 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
     if (establishmentId) {
       loadData();
     } else {
-      setPrefs(loadVoicePrefs(scope));
+      setPrefs(loadVoicePrefs());
       setLoading(false);
     }
   }, [establishmentId, scope]);
@@ -72,7 +72,7 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
         setPrefs(prev => ({ ...prev, ...res.prefs }));
       }
     } catch (e) {
-      setPrefs(loadVoicePrefs(scope));
+      setPrefs(loadVoicePrefs());
     } finally {
       setLoading(false);
     }
@@ -89,7 +89,7 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
     if (!establishmentId) return;
     setSaving(true);
     try {
-      await saveStudio({ data: { establishment_id: establishmentId, prefs } });
+      saveVoicePrefs(prefs);
       toast.success("Configurações do Studio salvas!");
     } catch (e: any) {
       toast.error(e.message);
@@ -163,7 +163,10 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
                       <p className="font-medium">Status do Studio</p>
                       <p className="text-xs text-muted-foreground">Ative ou desative todas as locuções.</p>
                     </div>
-                    <Switch checked={prefs.enabled} onCheckedChange={v => update({ enabled: v })} />
+                    <Switch checked={prefs.enabled} onCheckedChange={v => {
+                      update({ enabled: v });
+                      if (scope === 'admin') saveVoicePrefs({ ...prefs, enabled: v });
+                    }} />
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
