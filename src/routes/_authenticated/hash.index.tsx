@@ -50,7 +50,7 @@ function AdminOverview() {
         subtitle={"Métricas consolidadas de empresas, receita e operação em tempo real."}
       />
 
-      <GreetingVoice scope="admin" />
+      <GreetingVoice />
 
       {/* EXECUTIVE BRIEF: receita + saúde */}
       <div className="grid gap-6 lg:grid-cols-3">

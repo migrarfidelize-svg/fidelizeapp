@@ -101,7 +101,7 @@ function Dashboard() {
 
   return (
     <div className="space-y-8">
-      <GreetingVoice scope="merchant" enabled={voiceEnabled} />
+      <GreetingVoice enabled={voiceEnabled} />
 
 
 

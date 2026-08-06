@@ -27,7 +27,6 @@ export type VoicePrefs = {
   stability: number;
   similarity: number;
   fallback_enabled: boolean;
-  can_merchant_edit: boolean; // Novo: controle do Super Admin
   texts: {
     welcome: string;
     dashboard: string;
@@ -55,7 +54,6 @@ export function defaultVoicePrefs(scope: string): VoicePrefs {
     stability: 0.5,
     similarity: 0.75,
     fallback_enabled: true,
-    can_merchant_edit: true,
     texts: {
       welcome: "Olá, bem-vindo ao nosso estabelecimento!",
       dashboard: "Painel do lojista iniciado. Boas vendas!",
@@ -67,13 +65,13 @@ export function defaultVoicePrefs(scope: string): VoicePrefs {
   };
 }
 
-const key = (scope: string) => `fidelize:voice:prefs:${scope}`;
+const key = () => `fidelize:voice:prefs:global`;
 
-export function loadVoicePrefs(scope: string): VoicePrefs {
-  const base = defaultVoicePrefs(scope);
+export function loadVoicePrefs(): VoicePrefs {
+  const base = defaultVoicePrefs("admin");
   if (typeof window === "undefined") return base;
   try {
-    const raw = localStorage.getItem(key(scope));
+    const raw = localStorage.getItem(key());
     if (!raw) return base;
     return { ...base, ...(JSON.parse(raw) as Partial<VoicePrefs>) };
   } catch {
@@ -81,8 +79,8 @@ export function loadVoicePrefs(scope: string): VoicePrefs {
   }
 }
 
-export function saveVoicePrefs(scope: string, prefs: VoicePrefs) {
+export function saveVoicePrefs(prefs: VoicePrefs) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(key(scope), JSON.stringify(prefs));
-  window.dispatchEvent(new CustomEvent("fidelize:voice-prefs", { detail: { scope } }));
+  localStorage.setItem(key(), JSON.stringify(prefs));
+  window.dispatchEvent(new CustomEvent("fidelize:voice-prefs", { detail: { scope: "admin" } }));
 }

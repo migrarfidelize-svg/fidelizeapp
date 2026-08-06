@@ -15,6 +15,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
+import { 
+  getElevenLabsVoices, 
+  testElevenLabsConnection 
+} from "@/lib/elevenlabs.functions";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { 
@@ -25,58 +29,25 @@ import {
   type VoicePrefs,
   type VoiceId,
 } from "@/lib/voice-prefs";
-import { 
-  getVoiceStudio, 
-  saveVoiceStudio 
-} from "@/lib/voice-studio.functions";
-import { 
-  getElevenLabsVoices, 
-  testElevenLabsConnection 
-} from "@/lib/elevenlabs.functions";
 import { voiceManager } from "@/lib/voice-manager";
 
-type Props = {
-  scope: "merchant" | "admin";
-  establishmentId?: string;
-};
 
-export function VoiceStudioCard({ scope, establishmentId }: Props) {
+export function VoiceStudioCard({ scope }: { scope: "admin" }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [fetchingVoices, setFetchingVoices] = useState(false);
   const [voices, setVoices] = useState<any[]>([]);
   
-  const [prefs, setPrefs] = useState<VoicePrefs>(() => defaultVoicePrefs(scope));
+  const [prefs, setPrefs] = useState<VoicePrefs>(() => defaultVoicePrefs("admin"));
 
-  const getStudio = useServerFn(getVoiceStudio);
-  const saveStudio = useServerFn(saveVoiceStudio);
   const getVoices = useServerFn(getElevenLabsVoices);
   const testConn = useServerFn(testElevenLabsConnection);
-  
 
   useEffect(() => {
-    if (establishmentId) {
-      loadData();
-    } else {
-      setPrefs(loadVoicePrefs(scope));
-      setLoading(false);
-    }
-  }, [establishmentId, scope]);
-
-  async function loadData() {
-    try {
-      setLoading(true);
-      const res = await getStudio({ data: { establishment_id: establishmentId! } });
-      if (res.prefs) {
-        setPrefs(prev => ({ ...prev, ...res.prefs }));
-      }
-    } catch (e) {
-      setPrefs(loadVoicePrefs(scope));
-    } finally {
-      setLoading(false);
-    }
-  }
+    setPrefs(loadVoicePrefs());
+    setLoading(false);
+  }, []);
 
   const update = (patch: Partial<VoicePrefs>) => setPrefs(prev => ({ ...prev, ...patch }));
   const updateParam = (k: keyof VoicePrefs, v: number) => setPrefs(prev => ({ ...prev, [k]: v }));
@@ -86,11 +57,10 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
   }));
 
   async function onSave() {
-    if (!establishmentId) return;
     setSaving(true);
     try {
-      await saveStudio({ data: { establishment_id: establishmentId, prefs } });
-      toast.success("Configurações do Studio salvas!");
+      saveVoicePrefs(prefs);
+      toast.success("Configurações globais do Studio salvas!");
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -119,7 +89,7 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
       if (typeOrText === "ready") text = prefs.texts?.ready || "Sistema pronto.";
       if (typeOrText === "notify") text = prefs.texts?.notify || "Nova notificação.";
 
-      await voiceManager.speak(text, prefs);
+      await voiceManager.speak(text);
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -163,7 +133,10 @@ export function VoiceStudioCard({ scope, establishmentId }: Props) {
                       <p className="font-medium">Status do Studio</p>
                       <p className="text-xs text-muted-foreground">Ative ou desative todas as locuções.</p>
                     </div>
-                    <Switch checked={prefs.enabled} onCheckedChange={v => update({ enabled: v })} />
+                    <Switch checked={prefs.enabled} onCheckedChange={v => {
+                      update({ enabled: v });
+                      if (scope === 'admin') saveVoicePrefs({ ...prefs, enabled: v });
+                    }} />
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

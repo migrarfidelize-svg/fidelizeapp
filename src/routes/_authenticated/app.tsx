@@ -129,6 +129,15 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    key: "operacao",
+    icon: Stamp,
+    label: "Operação",
+    items: [
+      { to: "/app/carimbar", label: "Carimbar", icon: Stamp },
+      { to: "/app/qr", label: "QR Codes", icon: QrCode },
+    ],
+  },
+  {
     key: "clientes",
     icon: Users,
     label: "Clientes",
@@ -138,20 +147,10 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    key: "estudio",
-    icon: Mic,
-    label: "Studio",
-    items: [
-      { to: "/app/studio", label: "Studio de Voz", icon: Mic },
-      { to: "/app/qr", label: "QR Codes", icon: QrCode },
-    ],
-  },
-  {
     key: "fidelidade",
-    icon: Stamp,
-    label: "Cartão fidelidade",
+    icon: Sparkles,
+    label: "Fidelidade",
     items: [
-      { to: "/app/carimbar", label: "Carimbar", icon: Stamp },
       { to: "/app/campanhas", label: "Campanhas de fidelidade", icon: Sparkles },
       { to: "/app/wallet", label: "Carteira digital", icon: Wallet },
     ],

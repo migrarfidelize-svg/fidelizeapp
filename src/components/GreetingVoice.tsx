@@ -188,7 +188,7 @@ export async function speakWithBrowser(text: string, gender: "female" | "male", 
   return true;
 }
 
-export function GreetingVoice({ scope, enabled = true }: { scope: string; enabled?: boolean }) {
+export function GreetingVoice({ enabled = true }: { enabled?: boolean }) {
   const playedRef = useRef(false);
 
   useEffect(() => {
@@ -196,17 +196,17 @@ export function GreetingVoice({ scope, enabled = true }: { scope: string; enable
     if (playedRef.current) return;
     
     const check = async () => {
-      const prefs = loadVoicePrefs(scope);
+      const prefs = loadVoicePrefs();
       if (!prefs.enabled) return;
 
-      const key = `fidelize:voice:greeted:${scope}:${new Date().toDateString()}:${new Date().getHours()}`;
+      const key = `fidelize:voice:greeted:global:${new Date().toDateString()}:${new Date().getHours()}`;
       if (sessionStorage.getItem(key)) return;
       
       playedRef.current = true;
       const { voiceManager } = await import("@/lib/voice-manager");
       
       const text = prefs.texts.welcome;
-      await voiceManager.speak(text, prefs);
+      await voiceManager.speak(text);
       sessionStorage.setItem(key, "1");
     };
 
@@ -223,7 +223,7 @@ export function GreetingVoice({ scope, enabled = true }: { scope: string; enable
       window.removeEventListener("pointerdown", armed);
       window.removeEventListener("keydown", armed);
     };
-  }, [enabled, scope]);
+  }, [enabled]);
 
   return null;
 }
