@@ -493,7 +493,7 @@ function PublicMenuPage() {
             </button>
           </div>
         ) : null}
-        {!showCatPicker && categories.map((c) => {
+        {!showCatPicker && categories.map((c: any) => {
           const list = byCat.get(c.id) || [];
           if (list.length === 0 && (activeCat === c.id || q)) return null;
           if (list.length === 0) return null;
