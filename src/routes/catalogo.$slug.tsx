@@ -17,7 +17,9 @@ import { ProductDetail } from "@/components/showcase/ProductDetail";
 const opts = (slug: string) =>
   queryOptions({
     queryKey: ["public-catalog", slug],
-    queryFn: () => getPublicMenuBySlug({ data: { slug, kind: "catalog" } }),
+    queryFn: async () => {
+      return getPublicMenuBySlug({ data: { slug, kind: "catalog" } });
+    },
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,

@@ -5,54 +5,110 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 
-async function getPrivilegedClient() {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  return supabaseAdmin;
-}
+// Removida função getPrivilegedClient redundante para evitar problemas de escopo de importação dinâmico em handlers.
 
 const kindEnum = z.enum(["menu", "catalog"]);
 
-export const getPublicMenuBySlug = createServerFn({ method: "GET" })
-  .inputValidator((d: { slug: string; kind?: "menu" | "catalog" }) =>
-    z.object({ slug: z.string().min(1).max(80), kind: kindEnum.optional() }).parse(d))
+// Schema simplificado para aceitar diferentes formas de input do TanStack
+const inputSchema = z.object({
+  slug: z.string().min(1).max(80),
+  kind: kindEnum.optional().default("menu")
+});
+
+export const getPublicMenuBySlug = createServerFn({ method: "POST" })
+  .validator((d: unknown) => {
+    // Normalização completa para TanStack Start v1 RPC (POST)
+    const raw = d as any;
+    const slug = raw?.slug || raw?.data?.slug || "";
+    const kind = raw?.kind || raw?.data?.kind || "menu";
+
+    if (!slug) throw new Error("Slug é obrigatório");
+    return { slug, kind: (kind === "catalog" ? "catalog" : "menu") as "menu" | "catalog" };
+  })
   .handler(async ({ data }) => {
-    const kind = data.kind ?? "menu";
-    const s = await getPrivilegedClient();
+    const { slug, kind } = data;
+    const timestamp = new Date().toISOString();
     
+    // Fallback agressivo para o client anon se a service_role não estiver presente.
+    // Isso garante que a página não dê 500 em ambientes de desenvolvimento/preview
+    // onde a SERVICE_ROLE_KEY não é injetada por padrão.
+    const { supabaseAdmin } = await import("../integrations/supabase/client.server");
+    const { supabase } = await import("../integrations/supabase/client");
+
+    // Tentamos admin (sem RLS), mas se falhar por falta de env, usamos o public client.
+    let s: any;
+    try {
+      s = supabaseAdmin;
+      // Força um teste de acesso para ver se o proxy resolveu
+      if (!process.env.SUPABASE_SERVICE_ROLE_KEY) throw new Error("no-key");
+    } catch {
+      s = supabase;
+    }
+
+    if (!s) throw new Error("Erro de infraestrutura (Supabase client)");
+
     // 1. Buscar estabelecimento ATIVO
     const { data: est, error: estErr } = await s
       .from("establishments")
       .select("id, name, slug, logo_url, cover_url, description, primary_color, accent_color, phone, whatsapp, instagram, address, active")
-      .eq("slug", data.slug)
+      .eq("slug", slug)
       .maybeSingle();
-    
-    if (estErr) throw new Error("Erro ao buscar estabelecimento");
-    if (!est || !est.active) return null;
 
-    // 2. Buscar a vitrine publicada do tipo específico (menu ou catalog)
-    // Filtro rígido por status=published e kind para evitar ambiguidade com rascunhos ou outros tipos
+    if (estErr) {
+      console.error(`[${timestamp}] [getPublicMenuBySlug] DB Error (Establishment):`, JSON.stringify(estErr));
+      throw new Error("Erro ao acessar o banco de dados");
+    }
+    
+    if (!est) {
+      console.log(`[${timestamp}] Establishment NOT FOUND for slug: "${slug}"`);
+      return null;
+    }
+    
+    if (!est.active) {
+      console.log(`[${timestamp}] Establishment ${est.id} is INACTIVE`);
+      return null;
+    }
+
+    // 2. Buscar a vitrine publicada
     const { data: menu, error: menuErr } = await s
       .from("restaurant_menus")
-      .select("*")
+      .select("id, establishment_id, kind, status, tagline, theme, hours, updated_at")
       .eq("establishment_id", est.id)
       .eq("kind", kind)
       .eq("status", "published")
       .maybeSingle();
 
-    if (menuErr) throw new Error("Erro ao buscar vitrine");
-    if (!menu) return { establishment: est, menu: null, categories: [], items: [] };
+    if (menuErr) {
+      console.error(`[${timestamp}] [getPublicMenuBySlug] DB Error (Menu):`, JSON.stringify(menuErr));
+      throw new Error("Erro ao acessar dados da vitrine");
+    }
+    
+    if (!menu) {
+      return { establishment: est, menu: null, categories: [], items: [] };
+    }
 
-    // 3. Buscar conteúdo da vitrine
-    const [{ data: cats }, { data: items }] = await Promise.all([
-      s.from("menu_categories").select("*").eq("menu_id", menu.id).eq("active", true).order("position", { ascending: true }),
-      s.from("menu_items").select("*").eq("menu_id", menu.id).eq("active", true).order("position", { ascending: true }),
+    // 3. Buscar categorias e itens
+    const [catsRes, itemsRes] = await Promise.all([
+      s.from("menu_categories")
+       .select("id, menu_id, name, description, image_url, active, featured, position")
+       .eq("menu_id", menu.id)
+       .eq("active", true)
+       .order("position", { ascending: true }),
+      s.from("menu_items")
+       .select("id, menu_id, category_id, name, short_desc, long_desc, price, promo_price, currency, image_url, video_url, video_poster_url, prep_minutes, active, badges, ingredients, allergens, variants, sku, brand, stock_status, gallery")
+       .eq("menu_id", menu.id)
+       .eq("active", true)
+       .order("position", { ascending: true }),
     ]);
+
+    if (catsRes.error) console.error(`[${timestamp}] Error Categories:`, JSON.stringify(catsRes.error));
+    if (itemsRes.error) console.error(`[${timestamp}] Error Items:`, JSON.stringify(itemsRes.error));
 
     return { 
       establishment: est, 
       menu, 
-      categories: cats ?? [], 
-      items: items ?? [] 
+      categories: catsRes.data ?? [], 
+      items: itemsRes.data ?? [] 
     };
   });
 
