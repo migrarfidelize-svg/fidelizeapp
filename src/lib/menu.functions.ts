@@ -72,7 +72,7 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
     console.log(`[DEBUG] Establishment Found: ${est.id}. Searching published ${kind}...`);
 
     // 2. Buscar a vitrine publicada
-    const { data: menu, error: menuErr } = await supabaseAdmin
+    const { data: menu, error: menuErr } = await s
       .from("restaurant_menus")
       .select("id, establishment_id, kind, status, tagline, theme, hours, updated_at")
       .eq("establishment_id", est.id)
@@ -92,12 +92,12 @@ export const getPublicMenuBySlug = createServerFn({ method: "GET" })
 
     // 3. Buscar categorias e itens
     const [catsRes, itemsRes] = await Promise.all([
-      supabaseAdmin.from("menu_categories")
+      s.from("menu_categories")
        .select("id, menu_id, name, description, image_url, active, featured, position")
        .eq("menu_id", menu.id)
        .eq("active", true)
        .order("position", { ascending: true }),
-      supabaseAdmin.from("menu_items")
+      s.from("menu_items")
        .select("id, menu_id, category_id, name, short_desc, long_desc, price, promo_price, currency, image_url, video_url, video_poster_url, prep_minutes, active, badges, ingredients, allergens, variants, sku, brand, stock_status, gallery")
        .eq("menu_id", menu.id)
        .eq("active", true)
