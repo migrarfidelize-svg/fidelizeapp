@@ -41,17 +41,46 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [playing, setPlaying] = useState(false);
-  const [fetchingVoices, setFetchingVoices] = useState(false);
-  const [voices, setVoices] = useState<any[]>([]);
   
+  // Local ElevenLabs UI State
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [elevenApiKey, setElevenApiKey] = useState("");
+  const [elevenVoiceId, setElevenVoiceId] = useState("");
+  const [elevenModelId, setElevenModelId] = useState("eleven_multilingual_v2");
+  const [elevenVoices, setElevenVoices] = useState<any[]>([]);
+  const [fetchingVoices, setFetchingVoices] = useState(false);
+  const [integrationStatus, setIntegrationStatus] = useState<'disconnected' | 'connected' | 'unauthorized'>('disconnected');
+  const [testingConnection, setTestingConnection] = useState(false);
+
   const [prefs, setPrefs] = useState<VoicePrefs>(() => defaultVoicePrefs("admin"));
 
-  const getVoices = useServerFn(getElevenLabsVoices);
-  const testConn = useServerFn(testElevenLabsConnection);
+  // Server Functions
+  const getElevenConfigFn = useServerFn(getElevenConfig);
+  const saveElevenConfigFn = useServerFn(saveElevenConfig);
+  const testElevenConnFn = useServerFn(testElevenConnection);
+  const listVoicesFn = useServerFn(listElevenVoices);
+  const removeElevenFn = useServerFn(removeElevenConfig);
+  const generateTestAudioFn = useServerFn(generateElevenTestAudio);
 
   useEffect(() => {
-    setPrefs(loadVoicePrefs());
-    setLoading(false);
+    async function init() {
+      setPrefs(loadVoicePrefs());
+      try {
+        const configRes = await getElevenConfigFn();
+        if (configRes.status === 'connected' && configRes.config) {
+          setIntegrationStatus('connected');
+          setElevenApiKey(configRes.config.apiKey);
+          setElevenVoiceId(configRes.config.voiceId);
+          setElevenModelId(configRes.config.modelId || "eleven_multilingual_v2");
+        } else if (configRes.status === 'unauthorized') {
+          setIntegrationStatus('unauthorized');
+        }
+      } catch (e) {
+        console.error("Erro ao carregar ElevenLabs config", e);
+      }
+      setLoading(false);
+    }
+    init();
   }, []);
 
   const update = (patch: Partial<VoicePrefs>) => setPrefs(prev => ({ ...prev, ...patch }));
@@ -76,13 +105,54 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
   async function fetchElevenVoices() {
     setFetchingVoices(true);
     try {
-      const list = await getVoices();
-      setVoices(list);
+      const list = await listVoicesFn({ apiKey: elevenApiKey.includes('...') ? undefined : elevenApiKey });
+      setElevenVoices(list);
       toast.success(`${list.length} vozes carregadas.`);
+    } catch (e: any) {
+      toast.error("Falha ao buscar vozes. Verifique sua API Key.");
+    } finally {
+      setFetchingVoices(false);
+    }
+  }
+
+  async function handleTestIntegration() {
+    setTestingConnection(true);
+    try {
+      const res = await testElevenConnFn({ apiKey: elevenApiKey.includes('...') ? undefined : elevenApiKey });
+      if (res.ok) {
+        toast.success("Conexão validada com sucesso!");
+        if (elevenVoices.length === 0) fetchElevenVoices();
+      } else {
+        toast.error(res.message || "Falha na validação.");
+      }
     } catch (e: any) {
       toast.error(e.message);
     } finally {
-      setFetchingVoices(false);
+      setTestingConnection(false);
+    }
+  }
+
+  async function handleSaveIntegration() {
+    if (!elevenApiKey || !elevenVoiceId) {
+      toast.error("Preencha a API Key e selecione uma voz.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await saveElevenConfigFn({
+        apiKey: elevenApiKey.includes('...') ? undefined : elevenApiKey, // If masked, server keeps old
+        voiceId: elevenVoiceId,
+        modelId: elevenModelId,
+        voiceName: elevenVoices.find(v => v.voice_id === elevenVoiceId)?.name,
+        stability: prefs.stability,
+        similarity: prefs.similarity
+      });
+      setIntegrationStatus('connected');
+      toast.success("Integração ElevenLabs salva como padrão do sistema!");
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setSaving(false);
     }
   }
 
