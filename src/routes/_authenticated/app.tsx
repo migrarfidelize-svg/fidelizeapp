@@ -140,7 +140,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     key: "estudio",
     icon: Mic,
-    label: "Studio de Voz",
+    label: "Studio",
     items: [
       { to: "/app/studio", label: "Studio de Voz", icon: Mic },
       { to: "/app/qr", label: "QR Codes", icon: QrCode },
