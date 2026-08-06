@@ -621,7 +621,7 @@ function AppLayout() {
           ].join(" ")}
           data-tour="sidebar-logo"
         >
-          <div className={`flex h-14 items-center border-b border-border/60 ${collapsed ? "justify-center px-2" : "justify-between px-3"}`}>
+          <div className={`flex h-18 items-center border-b border-border/60 transition-[height] duration-200 ${collapsed ? "justify-center px-2" : "justify-between px-3"}`}>
             {collapsed ? (
               <Link to="/app" aria-label="Fidelize" className="grid h-9 w-9 place-items-center rounded-xl bg-primary/10">
                 <LogoMark size={20} className="text-primary" />
