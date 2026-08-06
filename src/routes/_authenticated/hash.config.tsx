@@ -99,7 +99,7 @@ function ConfigInner({ establishmentId }: { establishmentId: string }) {
             <TabsTrigger value="privacidade"><Shield className="h-4 w-4 mr-1" />Privacidade</TabsTrigger>
             <TabsTrigger value="notificacoes"><Bell className="h-4 w-4 mr-1" />Notificações</TabsTrigger>
             <TabsTrigger value="aparencia"><Palette className="h-4 w-4 mr-1" />Aparência</TabsTrigger>
-            <TabsTrigger value="studio"><Mic className="h-4 w-4 mr-1" />Studio de Voz</TabsTrigger>
+            
 
             <TabsTrigger value="plano"><Wrench className="h-4 w-4 mr-1" />Plano</TabsTrigger>
             <TabsTrigger value="auditoria"><ScrollText className="h-4 w-4 mr-1" />Auditoria</TabsTrigger>
@@ -114,7 +114,7 @@ function ConfigInner({ establishmentId }: { establishmentId: string }) {
         <TabsContent value="privacidade"><PrivacidadeTab establishmentId={establishmentId} settings={data.settings as any} /></TabsContent>
         <TabsContent value="notificacoes"><NotificacoesTab establishmentId={establishmentId} settings={data.settings as any} /></TabsContent>
         <TabsContent value="aparencia"><AparenciaTab establishmentId={establishmentId} est={data.establishment as any} settings={data.settings as any} /></TabsContent>
-        <TabsContent value="studio"><VoiceStudioCard scope="admin" /></TabsContent>
+        
         <TabsContent value="plano"><PlanoTab subscription={data.subscription as any} est={data.establishment as any} /></TabsContent>
         <TabsContent value="auditoria"><AuditoriaTab establishmentId={establishmentId} /></TabsContent>
         <TabsContent value="perigo"><PerigoTab establishmentId={establishmentId} est={data.establishment as any} /></TabsContent>
