@@ -29,13 +29,26 @@ export const getPublicMenuBySlug = createServerFn({ method: "POST" })
     const { slug, kind } = data;
     const timestamp = new Date().toISOString();
     
-    // Importação direta do client admin (o Proxy em client.server.ts cuidará das envs)
+    // Fallback agressivo para o client anon se a service_role não estiver presente.
+    // Isso garante que a página não dê 500 em ambientes de desenvolvimento/preview
+    // onde a SERVICE_ROLE_KEY não é injetada por padrão.
     const { supabaseAdmin } = await import("../integrations/supabase/client.server");
+    const { supabase } = await import("../integrations/supabase/client");
 
-    if (!supabaseAdmin) throw new Error("Erro de infraestrutura (Supabase Admin)");
+    // Tentamos admin (sem RLS), mas se falhar por falta de env, usamos o public client.
+    let s: any;
+    try {
+      s = supabaseAdmin;
+      // Força um teste de acesso para ver se o proxy resolveu
+      if (!process.env.SUPABASE_SERVICE_ROLE_KEY) throw new Error("no-key");
+    } catch {
+      s = supabase;
+    }
+
+    if (!s) throw new Error("Erro de infraestrutura (Supabase client)");
 
     // 1. Buscar estabelecimento ATIVO
-    const { data: est, error: estErr } = await supabaseAdmin
+    const { data: est, error: estErr } = await s
       .from("establishments")
       .select("id, name, slug, logo_url, cover_url, description, primary_color, accent_color, phone, whatsapp, instagram, address, active")
       .eq("slug", slug)
