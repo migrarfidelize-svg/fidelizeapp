@@ -129,6 +129,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ai_analyses_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       ai_findings_state: {
@@ -190,6 +197,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ai_findings_state_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       ai_usage: {
@@ -236,6 +250,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_usage_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -290,6 +311,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "api_keys_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -347,6 +375,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "app_engagement_events_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -419,6 +454,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_logs_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -523,6 +565,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "automation_jobs_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       campaigns: {
@@ -595,6 +644,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "campaigns_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       channel_events: {
@@ -653,6 +709,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channel_events_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -716,6 +779,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "consents_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       conversation_assignments: {
@@ -769,6 +839,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_assignments_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -827,6 +904,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_events_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -914,6 +998,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "conversation_messages_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       conversation_templates: {
@@ -960,6 +1051,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_templates_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -1073,6 +1171,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
           {
@@ -1407,6 +1512,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "courier_reviews_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       courier_withdrawals: {
@@ -1599,6 +1711,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_achievements_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -1794,6 +1913,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "customer_reviews_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "customer_reviews_merchant_reply_by_fkey"
             columns: ["merchant_reply_by"]
             isOneToOne: false
@@ -1899,6 +2025,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "customers_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "customers_referred_by_fkey"
             columns: ["referred_by"]
             isOneToOne: false
@@ -1967,6 +2100,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "data_requests_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -2082,6 +2222,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deliveries_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
           {
@@ -2349,6 +2496,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "establishment_feature_overrides_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       establishment_goals: {
@@ -2401,6 +2555,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "establishment_goals_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -2457,6 +2618,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "establishment_members_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       establishment_settings: {
@@ -2506,6 +2674,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: true
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "establishment_settings_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: true
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -2677,6 +2852,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feature_gate_events_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -2883,6 +3065,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "helpdesk_members_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       integrations: {
@@ -3019,6 +3208,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "kb_articles_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       kb_categories: {
@@ -3068,6 +3264,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kb_categories_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -3236,6 +3439,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "link_tree_pages_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: true
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       log_purge_runs: {
@@ -3343,6 +3553,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "loyalty_cards_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       member_permissions: {
@@ -3380,6 +3597,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_permissions_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
           {
@@ -3456,10 +3680,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "menu_categories_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "menu_categories_menu_id_fkey"
             columns: ["menu_id"]
             isOneToOne: false
             referencedRelation: "restaurant_menus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_categories_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_restaurant_menus_v2"
             referencedColumns: ["id"]
           },
           {
@@ -3503,6 +3741,13 @@ export type Database = {
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "view_menu_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_item_favorites_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_menu_items_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -3569,6 +3814,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "menu_item_media_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "menu_item_media_item_id_fkey"
             columns: ["item_id"]
             isOneToOne: false
@@ -3580,6 +3832,13 @@ export type Database = {
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "view_menu_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_item_media_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_menu_items_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -3718,6 +3977,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "menu_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_menu_categories_v2"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "menu_items_establishment_id_fkey"
             columns: ["establishment_id"]
             isOneToOne: false
@@ -3732,10 +3998,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "menu_items_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "menu_items_menu_id_fkey"
             columns: ["menu_id"]
             isOneToOne: false
             referencedRelation: "restaurant_menus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_items_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_restaurant_menus_v2"
             referencedColumns: ["id"]
           },
           {
@@ -3794,10 +4074,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "menu_publish_events_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "menu_publish_events_menu_id_fkey"
             columns: ["menu_id"]
             isOneToOne: false
             referencedRelation: "restaurant_menus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_publish_events_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_restaurant_menus_v2"
             referencedColumns: ["id"]
           },
           {
@@ -3859,10 +4153,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "menu_qr_designs_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "menu_qr_designs_menu_id_fkey"
             columns: ["menu_id"]
             isOneToOne: false
             referencedRelation: "restaurant_menus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_qr_designs_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_restaurant_menus_v2"
             referencedColumns: ["id"]
           },
           {
@@ -3962,6 +4270,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "merchant_messages_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "merchant_messages_push_log_id_fkey"
             columns: ["push_log_id"]
             isOneToOne: false
@@ -4019,6 +4334,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "notification_templates_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       order_items: {
@@ -4071,6 +4393,13 @@ export type Database = {
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "view_menu_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_menu_items_v2"
             referencedColumns: ["id"]
           },
           {
@@ -4159,10 +4488,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "orders_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "orders_menu_id_fkey"
             columns: ["menu_id"]
             isOneToOne: false
             referencedRelation: "restaurant_menus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_restaurant_menus_v2"
             referencedColumns: ["id"]
           },
           {
@@ -4287,6 +4630,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_provider_credentials_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -4449,6 +4799,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
           {
@@ -4785,6 +5142,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "poster_designs_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       print_orders: {
@@ -4858,6 +5222,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "print_orders_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -4974,6 +5345,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "promotions_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       push_events: {
@@ -5048,6 +5426,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "push_events_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "push_events_subscription_id_fkey"
             columns: ["subscription_id"]
             isOneToOne: false
@@ -5116,6 +5501,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_logs_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
           {
@@ -5210,6 +5602,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "push_subscriptions_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       qr_scans: {
@@ -5250,6 +5649,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qr_scans_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -5304,6 +5710,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qr_tags_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -5381,6 +5794,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "restaurant_menus_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       retention_dispatches: {
@@ -5439,6 +5859,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "retention_dispatches_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       retention_events: {
@@ -5492,6 +5919,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "retention_events_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -5555,6 +5989,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: true
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "retention_settings_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: true
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -5740,6 +6181,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "review_forms_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: true
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       review_questions: {
@@ -5903,6 +6351,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "review_settings_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: true
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       reviews: {
@@ -5996,6 +6451,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "reviews_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "reviews_stamp_id_fkey"
             columns: ["stamp_id"]
             isOneToOne: false
@@ -6070,6 +6532,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "rewards_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       scheduled_pushes: {
@@ -6131,6 +6600,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_pushes_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -6278,6 +6754,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sponsored_ad_campaigns_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
           {
@@ -6452,6 +6935,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sponsored_ad_orders_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -6652,6 +7142,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "stamps_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       subscription_events: {
@@ -6707,6 +7204,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_events_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -6791,6 +7295,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: true
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: true
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
           {
@@ -6993,6 +7504,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "support_tickets_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       system_email_settings: {
@@ -7083,6 +7601,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "team_invites_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       ticket_messages: {
@@ -7169,6 +7694,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ticket_quick_replies_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       tickets: {
@@ -7253,6 +7785,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "tickets_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_notifications: {
@@ -7321,6 +7860,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_notifications_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
           {
@@ -7442,6 +7988,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "wallet_passes_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       wallet_settings: {
@@ -7518,6 +8071,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: true
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_settings_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: true
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -7613,6 +8173,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "webhooks_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -7717,6 +8284,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_connections_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -7827,6 +8401,13 @@ export type Database = {
             referencedRelation: "view_establishments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "whatsapp_webhook_events_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
@@ -7911,10 +8492,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "menu_categories_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "menu_categories_menu_id_fkey"
             columns: ["menu_id"]
             isOneToOne: false
             referencedRelation: "restaurant_menus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_categories_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_restaurant_menus_v2"
             referencedColumns: ["id"]
           },
           {
@@ -7969,6 +8564,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "menu_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_menu_categories_v2"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "menu_items_establishment_id_fkey"
             columns: ["establishment_id"]
             isOneToOne: false
@@ -7983,6 +8585,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "menu_items_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "menu_items_menu_id_fkey"
             columns: ["menu_id"]
             isOneToOne: false
@@ -7993,7 +8602,305 @@ export type Database = {
             foreignKeyName: "menu_items_menu_id_fkey"
             columns: ["menu_id"]
             isOneToOne: false
+            referencedRelation: "view_public_restaurant_menus_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_items_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
             referencedRelation: "view_restaurant_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      view_public_establishments_v2: {
+        Row: {
+          accent_color: string | null
+          active: boolean | null
+          address: string | null
+          business_hours: string | null
+          city: string | null
+          cover_url: string | null
+          description: string | null
+          id: string | null
+          instagram: string | null
+          logo_url: string | null
+          name: string | null
+          primary_color: string | null
+          segment: string | null
+          slug: string | null
+          state: string | null
+          theme: string | null
+          timezone: string | null
+          updated_at: string | null
+          website: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          accent_color?: string | null
+          active?: boolean | null
+          address?: string | null
+          business_hours?: string | null
+          city?: string | null
+          cover_url?: string | null
+          description?: string | null
+          id?: string | null
+          instagram?: string | null
+          logo_url?: string | null
+          name?: string | null
+          primary_color?: string | null
+          segment?: string | null
+          slug?: string | null
+          state?: string | null
+          theme?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+          website?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          accent_color?: string | null
+          active?: boolean | null
+          address?: string | null
+          business_hours?: string | null
+          city?: string | null
+          cover_url?: string | null
+          description?: string | null
+          id?: string | null
+          instagram?: string | null
+          logo_url?: string | null
+          name?: string | null
+          primary_color?: string | null
+          segment?: string | null
+          slug?: string | null
+          state?: string | null
+          theme?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+          website?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      view_public_menu_categories_v2: {
+        Row: {
+          active: boolean | null
+          available_days: number[] | null
+          available_end: string | null
+          available_start: string | null
+          created_at: string | null
+          description: string | null
+          establishment_id: string | null
+          featured: boolean | null
+          id: string | null
+          image_url: string | null
+          menu_id: string | null
+          name: string | null
+          position: number | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_categories_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_categories_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_categories_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_categories_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "restaurant_menus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_categories_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_restaurant_menus_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_categories_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "view_restaurant_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      view_public_menu_items_v2: {
+        Row: {
+          active: boolean | null
+          badges: Json | null
+          category_id: string | null
+          created_at: string | null
+          currency: string | null
+          establishment_id: string | null
+          gallery: Json | null
+          id: string | null
+          image_url: string | null
+          long_desc: string | null
+          menu_id: string | null
+          name: string | null
+          position: number | null
+          prep_minutes: number | null
+          price: number | null
+          promo_price: number | null
+          short_desc: string | null
+          stock_status: string | null
+          updated_at: string | null
+          video_poster_url: string | null
+          video_url: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "menu_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "view_menu_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_menu_categories_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_items_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_items_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_items_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_items_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "restaurant_menus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_items_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_restaurant_menus_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_items_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "view_restaurant_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      view_public_restaurant_menus_v2: {
+        Row: {
+          closed_message: string | null
+          cover_url: string | null
+          display_name: string | null
+          establishment_id: string | null
+          hours: Json | null
+          id: string | null
+          kind: Database["public"]["Enums"]["showcase_kind"] | null
+          logo_url: string | null
+          published_at: string | null
+          status: Database["public"]["Enums"]["menu_status"] | null
+          tagline: string | null
+          theme: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          closed_message?: string | null
+          cover_url?: string | null
+          display_name?: string | null
+          establishment_id?: string | null
+          hours?: Json | null
+          id?: string | null
+          kind?: Database["public"]["Enums"]["showcase_kind"] | null
+          logo_url?: string | null
+          published_at?: string | null
+          status?: Database["public"]["Enums"]["menu_status"] | null
+          tagline?: string | null
+          theme?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          closed_message?: string | null
+          cover_url?: string | null
+          display_name?: string | null
+          establishment_id?: string | null
+          hours?: Json | null
+          id?: string | null
+          kind?: Database["public"]["Enums"]["showcase_kind"] | null
+          logo_url?: string | null
+          published_at?: string | null
+          status?: Database["public"]["Enums"]["menu_status"] | null
+          tagline?: string | null
+          theme?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurant_menus_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurant_menus_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurant_menus_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -8051,6 +8958,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurant_menus_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -8137,6 +9051,10 @@ export type Database = {
         }
       }
       get_public_catalogo_v1: {
+        Args: { p_kind: string; p_slug: string }
+        Returns: Json
+      }
+      get_public_catalogo_v2: {
         Args: { p_kind: string; p_slug: string }
         Returns: Json
       }
