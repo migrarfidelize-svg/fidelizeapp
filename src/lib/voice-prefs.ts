@@ -16,11 +16,17 @@ export type VoiceId = (typeof VOICE_OPTIONS)[number]["id"];
 
 export type VoicePrefs = {
   enabled: boolean;
-  voice: VoiceId;
-  /** Texto personalizado. Vazio = saudação automática (hora + carisma). */
+  provider: "native" | "elevenlabs";
+  voice: VoiceId; // Para nativo
+  elevenVoiceId: string; // Para ElevenLabs
+  elevenModelId: string;
   text: string;
-  /** Instruções de estilo enviadas ao motor de voz natural. */
   style: string;
+  rate: number;
+  pitch: number;
+  volume: number;
+  stability: number;
+  similarity: number;
 };
 
 export const DEFAULT_STYLE =
@@ -29,9 +35,17 @@ export const DEFAULT_STYLE =
 export function defaultVoicePrefs(scope: string): VoicePrefs {
   return {
     enabled: true,
+    provider: "native",
     voice: scope === "admin" ? "onyx" : "nova",
+    elevenVoiceId: "21m0pOTjCwobq1Wnu3pd", // Rachel
+    elevenModelId: "eleven_multilingual_v2",
     text: "",
     style: DEFAULT_STYLE,
+    rate: 1.0,
+    pitch: 1.0,
+    volume: 1.0,
+    stability: 0.5,
+    similarity: 0.75,
   };
 }
 

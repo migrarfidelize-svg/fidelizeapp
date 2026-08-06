@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import { synthesizeGreeting } from "@/lib/tts.functions";
 import { loadVoicePrefs, type VoiceId, DEFAULT_STYLE } from "@/lib/voice-prefs";
+import { useServerFn } from "@tanstack/react-start";
+import { synthesizeElevenLabs } from "@/lib/elevenlabs.functions";
 
 type Props = {
   /** "female" para painel do lojista, "male" para admin */
@@ -106,36 +108,6 @@ function pickBestVoice(voices: SpeechSynthesisVoice[], gender: "female" | "male"
   return pt.slice().sort((a, b) => score(b) - score(a))[0];
 }
 
-/** Fallback: voz nativa do navegador. */
-async function speakWithBrowser(text: string, gender: "female" | "male") {
-  if (typeof window === "undefined" || !("speechSynthesis" in window)) return false;
-  try {
-    window.speechSynthesis.cancel();
-  } catch {}
-  const voices = await loadVoices();
-  const chosen = pickBestVoice(voices, gender);
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = "pt-BR";
-  utter.volume = 0.95;
-  utter.rate = 0.98;
-  utter.pitch = gender === "female" ? 1.08 : 0.9;
-  if (chosen) utter.voice = chosen;
-
-  let killer: ReturnType<typeof setInterval> | null = null;
-  utter.onstart = () => {
-    killer = setInterval(() => {
-      if (window.speechSynthesis.speaking) {
-        window.speechSynthesis.pause();
-        window.speechSynthesis.resume();
-      }
-    }, 10000);
-  };
-  utter.onend = utter.onerror = () => {
-    if (killer) clearInterval(killer);
-  };
-  window.speechSynthesis.speak(utter);
-  return true;
-}
 
 let currentAudio: HTMLAudioElement | null = null;
 
@@ -158,13 +130,16 @@ export async function speakText(opts: {
   text: string;
   voice: VoiceId;
   style?: string;
+  rate?: number;
+  pitch?: number;
+  volume?: number;
 }): Promise<"natural" | "browser" | "failed"> {
   const gender: "female" | "male" = FEMALE_VOICES.includes(opts.voice) ? "female" : "male";
   stopSpeaking();
   try {
     const res: any = await synthesizeGreeting({
       data: {
-        text: opts.text.slice(0, 400),
+        text: opts.text.slice(0, 1000),
         voice: opts.voice,
         instructions: opts.style || DEFAULT_STYLE,
       },
@@ -172,18 +147,50 @@ export async function speakText(opts: {
     if (res?.audio) {
       const audio = new Audio(`data:${res.mime ?? "audio/mpeg"};base64,${res.audio}`);
       currentAudio = audio;
+      audio.volume = opts.volume ?? 1.0;
       await audio.play();
       return "natural";
     }
   } catch {
     // cai para o navegador
   }
-  const ok = await speakWithBrowser(opts.text, gender);
+  const ok = await speakWithBrowser(opts.text, gender, { rate: opts.rate, pitch: opts.pitch, volume: opts.volume });
   return ok ? "browser" : "failed";
+}
+
+async function speakWithBrowser(text: string, gender: "female" | "male", params?: { rate?: number; pitch?: number; volume?: number }) {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) return false;
+  try {
+    window.speechSynthesis.cancel();
+  } catch {}
+  const voices = await loadVoices();
+  const chosen = pickBestVoice(voices, gender);
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "pt-BR";
+  utter.volume = params?.volume ?? 0.95;
+  utter.rate = params?.rate ?? 0.98;
+  utter.pitch = params?.pitch ?? (gender === "female" ? 1.08 : 0.9);
+  if (chosen) utter.voice = chosen;
+
+  let killer: ReturnType<typeof setInterval> | null = null;
+  utter.onstart = () => {
+    killer = setInterval(() => {
+      if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+        window.speechSynthesis.resume();
+      }
+    }, 10000);
+  };
+  utter.onend = utter.onerror = () => {
+    if (killer) clearInterval(killer);
+  };
+  window.speechSynthesis.speak(utter);
+  return true;
 }
 
 export function GreetingVoice({ gender, scope, enabled = true }: Props) {
   const playedRef = useRef(false);
+  const synthEleven = useServerFn(synthesizeElevenLabs);
 
   useEffect(() => {
     if (!enabled) return;
@@ -201,15 +208,45 @@ export function GreetingVoice({ gender, scope, enabled = true }: Props) {
     const text = prefs.text.trim() || buildGreeting(gender);
 
     let spoke = false;
-    const attempt = () => {
-      speakText({ text, voice: prefs.voice, style: prefs.style })
-        .then((r) => {
+    const attempt = async () => {
+      try {
+        if (prefs.provider === "elevenlabs") {
+          const res = await synthEleven({
+            data: {
+              text,
+              voice_id: prefs.elevenVoiceId,
+              model_id: prefs.elevenModelId,
+              stability: prefs.stability,
+              similarity_boost: prefs.similarity,
+            }
+          });
+          if (res.audio) {
+            const audio = new Audio(`data:${res.mime};base64,${res.audio}`);
+            await audio.play();
+            spoke = true;
+          }
+        } else {
+          const r = await speakText({ 
+            text, 
+            voice: prefs.voice, 
+            style: prefs.style,
+            rate: prefs.rate,
+            pitch: prefs.pitch,
+            volume: prefs.volume
+          });
+          if (r !== "failed") spoke = true;
+        }
+        if (spoke) sessionStorage.setItem(key, "1");
+      } catch (err) {
+        // Fallback para speakText se for elevenlabs e falhar
+        if (prefs.provider === "elevenlabs") {
+          const r = await speakText({ text, voice: prefs.voice });
           if (r !== "failed") {
             spoke = true;
             sessionStorage.setItem(key, "1");
           }
-        })
-        .catch(() => {});
+        }
+      }
     };
     const armed = () => {
       if (!spoke) attempt();

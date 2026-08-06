@@ -18,13 +18,33 @@ export const synthesizeGreeting = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const openaiKey = process.env.OPENAI_API_KEY;
     const lovableKey = process.env.LOVABLE_API_KEY;
+    const elevenKey = process.env.ELEVENLABS_API_KEY;
 
     const defaultInstructions =
       data.instructions ??
       "Fale em português brasileiro, tom suave, charmoso, acolhedor, ritmo calmo e íntimo, quase sussurrado, com carisma.";
 
-    // 1) OpenAI direto
+    // 1) ElevenLabs (se configurado explicitamente via API Key no servidor)
+    if (elevenKey) {
+      try {
+        const { synthesizeElevenLabs } = await import("./elevenlabs.functions");
+        // Tentamos mapear as vozes da OpenAI para ElevenLabs se possível, 
+        // ou usamos a Rachel (21m0pOTjCwobq1Wnu3pd) como padrão estável.
+        const res = await synthesizeElevenLabs({
+          data: {
+            text: data.text,
+            voice_id: "21m0pOTjCwobq1Wnu3pd", 
+          }
+        });
+        if (res.audio) return res;
+      } catch (e) {
+        // Fallback para os outros
+      }
+    }
+
+    // 2) OpenAI direto
     if (openaiKey) {
+      // ... (mantém lógica atual da OpenAI)
       try {
         const res = await fetch("https://api.openai.com/v1/audio/speech", {
           method: "POST",
@@ -45,11 +65,11 @@ export const synthesizeGreeting = createServerFn({ method: "POST" })
           return { audio: Buffer.from(buf).toString("base64"), mime: "audio/mpeg" };
         }
       } catch {
-        // continua para o próximo provedor
+        // continua
       }
     }
 
-    // 2) Lovable Gateway (fallback)
+    // 3) Lovable Gateway (fallback)
     if (lovableKey) {
       try {
         const res = await fetch("https://ai.gateway.lovable.dev/v1/audio/speech", {
@@ -75,6 +95,5 @@ export const synthesizeGreeting = createServerFn({ method: "POST" })
       }
     }
 
-    // 3) Web Speech API no cliente (fallback universal, 100% independente)
     return { audio: null, mime: null, fallback: "web-speech" as const, text: data.text };
   });
