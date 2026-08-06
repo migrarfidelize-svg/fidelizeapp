@@ -18,6 +18,14 @@ import { useServerFn } from "@tanstack/react-start";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { 
+  VOICE_OPTIONS,
+  loadVoicePrefs,
+  saveVoicePrefs,
+  defaultVoicePrefs,
+  type VoicePrefs,
+  type VoiceId,
+} from "@/lib/voice-prefs";
+import { 
   getVoiceStudio, 
   saveVoiceStudio 
 } from "@/lib/voice-studio.functions";
