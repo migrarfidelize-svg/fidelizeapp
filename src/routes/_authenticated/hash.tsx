@@ -29,6 +29,7 @@ type NavItem = { to: string; label: string; icon: any; exact?: boolean };
 type NavGroup = { key: string; label: string; icon: any; items: NavItem[] };
 
 const OVERVIEW: NavItem = { to: "/hash", label: "Visão geral", icon: LayoutDashboard, exact: true };
+const ATENDIMENTO: NavItem = { to: "/hash/atendimento", label: "Atendimento", icon: MessageSquare };
 
 const NAV_GROUPS: NavGroup[] = [
   {
@@ -142,7 +143,7 @@ function AdminLayout() {
   }
 
   const isItemActive = (n: NavItem) => (n.exact ? pathname === n.to : pathname.startsWith(n.to));
-  const allItems: NavItem[] = [OVERVIEW, ...NAV_GROUPS.flatMap((g) => g.items)];
+  const allItems: NavItem[] = [OVERVIEW, ATENDIMENTO, ...NAV_GROUPS.flatMap((g) => g.items)];
   const activeNav = allItems.find(isItemActive) ?? OVERVIEW;
 
   const closeMobile = () => setMobileOpen(false);
@@ -165,6 +166,7 @@ function AdminLayout() {
   const renderNav = (onNavigate?: () => void, forceExpanded = false) => (
     <nav className="nav-dense flex flex-1 flex-col gap-[var(--nav-gap)] overflow-y-auto overflow-x-visible px-2.5 py-[var(--nav-py)]">
       {renderNavItem(OVERVIEW, onNavigate)}
+      {renderNavItem(ATENDIMENTO, onNavigate)}
       {NAV_GROUPS.map((g) => {
         const GroupIcon = g.icon;
         const groupActive = g.items.some(isItemActive);
