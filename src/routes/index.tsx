@@ -296,7 +296,7 @@ function HeroCopy() {
 
   // Caso o usuário prefira uma mensagem personalizada sobre a logo da hero
   const badgeText = copy.badge === "language selector" 
-    ? "a logo da hero não está sendo carrega a mesma enviada no super admin."
+    ? "onde eu irei conectar a api? você adicionou em integrações a opção de conectar a api?"
     : copy.badge;
 
   return (
