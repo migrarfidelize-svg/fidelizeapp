@@ -234,10 +234,28 @@ function StackedCard({
                 style={{ color: brand }}
               >
                 {est.logo_url ? (
-                  <img src={est.logo_url} alt={est.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                  <img 
+                    src={est.logo_url} 
+                    alt={est.name} 
+                    loading="lazy" 
+                    decoding="async" 
+                    className="h-full w-full object-cover" 
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                      // Força fallback via CSS ou DOM se falhar
+                      const parent = (e.target as HTMLElement).parentElement;
+                      if (parent) {
+                        const fb = document.createElement('div');
+                        fb.className = "w-full h-full flex items-center justify-center";
+                        fb.innerText = est.name.slice(0, 2).toUpperCase();
+                        parent.appendChild(fb);
+                      }
+                    }}
+                  />
                 ) : (
-                  est.name.slice(0, 2)
+                  est.name.slice(0, 2).toUpperCase()
                 )}
+
               </div>
               <div className="min-w-0">
                 <h3 className="truncate font-display text-base font-bold leading-tight text-foreground">

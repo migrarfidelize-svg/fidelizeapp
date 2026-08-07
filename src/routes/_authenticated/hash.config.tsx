@@ -43,6 +43,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { LoadingSkeleton } from "@/components/states";
 import { isGreetingMutedLocally, setGreetingMutedLocally } from "@/components/GreetingVoice";
+import { LogoUpload } from "@/components/LogoUpload";
+
 
 
 export const Route = createFileRoute("/_authenticated/hash/config")({
@@ -992,8 +994,19 @@ function AparenciaTab({ establishmentId, est, settings }: { establishmentId: str
           <div className="space-y-1.5"><Label>Cor de destaque</Label>
             <div className="flex gap-2"><Input type="color" value={accent} onChange={e => setAccent(e.target.value)} className="w-16 h-10 p-1" /><Input value={accent} onChange={e => setAccent(e.target.value)} /></div>
           </div>
-          <div className="space-y-1.5"><Label>URL do logo</Label><Input value={logo} onChange={e => setLogo(e.target.value)} placeholder="https://..." /></div>
-          <div className="space-y-1.5"><Label>URL da capa</Label><Input value={cover} onChange={e => setCover(e.target.value)} placeholder="https://..." /></div>
+          <div className="space-y-1.5 md:col-span-2">
+            <Label>Logo do estabelecimento</Label>
+            <LogoUpload 
+              establishmentId={establishmentId}
+              currentLogoUrl={logo}
+              onSuccess={(url) => setLogo(url || "")}
+            />
+          </div>
+          <div className="space-y-1.5 md:col-span-2">
+            <Label>URL da capa</Label>
+            <Input value={cover} onChange={e => setCover(e.target.value)} placeholder="https://..." />
+          </div>
+
           <div className="space-y-1.5"><Label>Formato do logo</Label>
             <Select value={ap.logo_shape} onValueChange={v => setAp({ ...ap, logo_shape: v })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
