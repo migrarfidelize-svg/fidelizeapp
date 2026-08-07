@@ -188,16 +188,16 @@ function DiscoverPage() {
 
   return (
     <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["discovery-establishments"] })}>
-      <div className="px-4 pb-8 space-y-6">
+      <div className="px-4 pb-8 space-y-6 xl:px-8 xl:py-10">
         {/* Header Superior Premium */}
-        <div className="pt-6">
+        <div className="pt-6 xl:pt-0">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-sm">
-              <Compass className="h-6 w-6" />
+            <div className="flex h-10 w-10 xl:h-14 xl:w-14 items-center justify-center rounded-2xl xl:rounded-3xl bg-primary/10 text-primary shadow-sm">
+              <Compass className="h-6 w-6 xl:h-8 xl:w-8" />
             </div>
             <div>
-              <h1 className="font-display text-2xl font-black tracking-tighter text-neutral-900 dark:text-white">Descobrir</h1>
-              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground/70">
+              <h1 className="font-display text-2xl xl:text-4xl font-black tracking-tighter text-neutral-900 dark:text-white">Descobrir</h1>
+              <p className="text-[11px] xl:text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground/70">
                 Novas experiências próximas a você
               </p>
             </div>
