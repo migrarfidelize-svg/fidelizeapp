@@ -149,6 +149,8 @@ const upsertSchema = z.object({
   destination_slug: z.string().trim().min(1).max(120),
   image_path: z.string().max(500).nullable().optional(),
   image_source: z.enum(["upload", "logo", "none"]).default("logo"),
+  display_model: z.enum(["premium_banner", "sponsored_feed", "carousel"]).default("premium_banner"),
+
   requested_start_at: z.string().datetime({ offset: true }).nullable().optional(),
 });
 
@@ -196,6 +198,8 @@ export const saveAdCampaign = createServerFn({ method: "POST" })
       destination_slug: data.destination_slug,
       image_path: data.image_path ?? null,
       image_source: data.image_source,
+      display_model: data.display_model,
+
       requested_start_at: data.requested_start_at ?? null,
       updated_by: userId,
     };

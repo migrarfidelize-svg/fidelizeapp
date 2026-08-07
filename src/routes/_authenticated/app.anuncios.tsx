@@ -179,8 +179,9 @@ function AdsWorkspace({
             <h1 className="font-display text-2xl font-bold tracking-tight">Anúncios em destaque</h1>
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
               Apareça no topo da vitrine <strong>Descobrir</strong> da carteira, marcado como “Patrocinado”, para
-              clientes que ainda não conhecem seu estabelecimento. Você escolhe o período, envia o criativo, nossa
-              equipe aprova e o pagamento é por PIX.
+              clientes que ainda não conhecem seu estabelecimento. Escolha o <strong>Modelo de exibição</strong> ideal
+              para seu criativo, envie o conteúdo e o pagamento é via PIX.
+
             </p>
           </div>
           <button
@@ -515,7 +516,9 @@ function CampaignEditor({
   );
   const [imagePath, setImagePath] = useState<string | null>(campaign?.image_path ?? null);
   const [imagePreview, setImagePreview] = useState<string | null>(campaign?.image_url ?? null);
+  const [displayModel, setDisplayModel] = useState<any>(campaign?.display_model ?? "premium_banner");
   const [uploading, setUploading] = useState(false);
+
 
   const uploadPathFn = useServerFn(getAdCreativeUploadPath);
   const saveFn = useServerFn(saveAdCampaign);
@@ -535,7 +538,9 @@ function CampaignEditor({
           destination_slug: establishment?.slug ?? "",
           image_path: imagePath,
           image_source: imagePath ? "upload" : "logo",
+          display_model: displayModel,
         },
+
       }),
     onSuccess: () => {
       toast.success("Criativo salvo.");
@@ -575,6 +580,7 @@ function CampaignEditor({
   const [step, setStep] = useState(0);
   const steps = [
     { key: "pacote", label: "Pacote", hint: "Por quantos dias seu destaque fica no ar" },
+    { key: "modelo", label: "Modelo", hint: "Como o anúncio será exibido" },
     { key: "criativo", label: "Criativo", hint: "O que o cliente lê no card" },
     { key: "publico", label: "Público & destino", hint: "Onde aparece e para onde leva" },
     { key: "revisao", label: "Revisão", hint: "Confira e salve" },
@@ -582,10 +588,12 @@ function CampaignEditor({
 
   const stepValid = [
     !!packageId,
+    !!displayModel,
     title.trim().length >= 3,
     !!categoryId,
     !!packageId && title.trim().length >= 3,
   ];
+
 
   const previewImage = imagePreview ?? establishment?.logo_url ?? null;
 
@@ -623,7 +631,11 @@ function CampaignEditor({
               return (
                 <button
                   key={s.key}
-                  onClick={() => setStep(i)}
+                  onClick={() => {
+                    // Only allow direct navigation to steps that are valid or already visited
+                    if (i <= step || stepValid[i - 1]) setStep(i);
+                  }}
+
                   className={`rounded-2xl border px-3 py-2 text-left transition-all ${
                     active
                       ? "border-primary bg-primary/10 shadow-sm"
@@ -682,6 +694,61 @@ function CampaignEditor({
             )}
 
             {step === 1 && (
+              <div className="space-y-4">
+                <StepIntro
+                  title="Selecione o modelo de exibição"
+                  text="Escolha como sua marca será apresentada na vitrine Descobrir. Cada modelo tem um impacto e comportamento diferente."
+                />
+                <div className="grid gap-4 sm:grid-cols-3">
+                  {(["premium_banner", "sponsored_feed", "carousel"] as const).map((m) => {
+                    const meta = (
+                      (
+                        {
+                          premium_banner: {
+                            l: "Premium Banner",
+                            d: "Banner de maior impacto",
+                            a: "21:9",
+                            r: "1260x540px",
+                          },
+                          sponsored_feed: { l: "Sponsored Feed", d: "Integrado ao feed", a: "21:9", r: "1260x540px" },
+                          carousel: { l: "Carousel", d: "Destaques em carrossel", a: "1:1", r: "600x600px" },
+                        } as any
+                      )[m]
+                    );
+                    return (
+                      <button
+                        key={m}
+                        onClick={() => setDisplayModel(m)}
+                        className={`group relative flex flex-col rounded-2xl border p-4 text-left transition-all ${
+                          displayModel === m
+                            ? "border-primary bg-primary/10 shadow-sm"
+                            : "border-border/60 hover:border-primary/40"
+                        }`}
+                      >
+                        <div className="font-display text-sm font-bold">{meta.l}</div>
+                        <p className="mt-1 text-[10px] text-muted-foreground">{meta.d}</p>
+                        <div className="mt-3 space-y-1">
+                          <div className="flex justify-between text-[9px] uppercase tracking-widest text-muted-foreground">
+                            <span>Ratio: {meta.a}</span>
+                          </div>
+                          <div className="flex justify-between text-[9px] uppercase tracking-widest text-muted-foreground">
+                            <span>Res: {meta.r}</span>
+                          </div>
+                        </div>
+                        {displayModel === m && (
+                          <div className="absolute right-3 top-3 rounded-full bg-primary p-0.5">
+                            <CheckCircle2 className="h-3 w-3 text-primary-foreground" />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {step === 2 && (
+
               <div className="space-y-4">
                 <StepIntro
                   title="Escreva o que convence em 3 segundos"
@@ -745,7 +812,8 @@ function CampaignEditor({
               </div>
             )}
 
-            {step === 2 && (
+            {step === 3 && (
+
               <div className="space-y-4">
                 <StepIntro
                   title="Defina onde você aparece e o que acontece no clique"
@@ -807,7 +875,8 @@ function CampaignEditor({
               </div>
             )}
 
-            {step === 3 && (
+            {step === 4 && (
+
               <div className="space-y-3">
                 <StepIntro
                   title="Confira antes de enviar"
@@ -820,10 +889,21 @@ function CampaignEditor({
                     value={pkg ? formatCents(pkg.price_cents, pkg.currency) : "—"}
                   />
                   <ReviewRow label="Categoria" value={category ? `${category.emoji} ${category.label}` : categoryId} />
+                  <ReviewRow
+                    label="Modelo"
+                    value={
+                      {
+                        premium_banner: "Premium Banner",
+                        sponsored_feed: "Sponsored Feed",
+                        carousel: "Carousel",
+                      }[displayModel as string] || displayModel
+                    }
+                  />
                   <ReviewRow label="Título" value={title || "—"} />
                   <ReviewRow label="Botão" value={cta} />
                   <ReviewRow label="Destino" value={DESTINATION_META[destination]?.label ?? destination} />
                   <ReviewRow label="Imagem" value={imagePath ? "Imagem enviada" : "Logo do estabelecimento"} />
+
                 </dl>
                 <div className="rounded-2xl border border-border/60 bg-muted/30 p-3 text-[11px] text-muted-foreground">
                   <div className="mb-1 flex items-center gap-1.5 font-bold text-foreground">
@@ -842,7 +922,9 @@ function CampaignEditor({
               Prévia na vitrine
             </div>
             <div className="mt-3 overflow-hidden rounded-2xl border border-primary/30 bg-card shadow-sm">
-              <div className="relative aspect-[16/9] bg-muted">
+              <div
+                className={`relative bg-muted ${displayModel === "carousel" ? "aspect-square" : "aspect-[21/9]"}`}
+              >
                 {previewImage ? (
                   <img src={previewImage} alt="" className="h-full w-full object-cover" />
                 ) : (
@@ -850,6 +932,43 @@ function CampaignEditor({
                     <Megaphone className="h-6 w-6 text-muted-foreground" />
                   </div>
                 )}
+                {displayModel === "premium_banner" && (
+                  <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4">
+                    <div className="inline-flex items-center gap-1 rounded-full bg-primary/90 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-white">
+                      <Sparkles className="h-2.5 w-2.5" /> Patrocinado
+                    </div>
+                    <h4 className="mt-1 line-clamp-1 font-display text-xs font-bold text-white">{title}</h4>
+                    <p className="line-clamp-1 text-[9px] text-white/80">{description}</p>
+                  </div>
+                )}
+                {displayModel === "carousel" && (
+                  <div className="absolute right-2 top-2">
+                    <div className="inline-flex items-center gap-1 rounded-full bg-primary/90 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-white">
+                      Patrocinado
+                    </div>
+                  </div>
+                )}
+              </div>
+              {displayModel !== "premium_banner" && (
+                <div className="p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-primary">
+                      {displayModel === "sponsored_feed" && (
+                        <>
+                          <Sparkles className="h-2.5 w-2.5" /> Patrocinado
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <h4 className="mt-0.5 line-clamp-1 font-display text-sm font-bold">{title}</h4>
+                  <p className="line-clamp-2 text-[10px] text-muted-foreground">{description}</p>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-[9px] font-bold text-primary italic">{cta}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
                 <span className="absolute left-2 top-2 rounded-full bg-background/85 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground backdrop-blur">
                   Patrocinado
                 </span>
