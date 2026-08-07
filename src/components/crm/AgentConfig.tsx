@@ -74,7 +74,7 @@ export function AgentConfig() {
          </Card>
 
          <Card className="dash-card">
-            <CardHeader><CardTitle className="text-sm flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> Handoff (Bot -> Humano)</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-sm flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> Handoff (Bot -&gt; Humano)</CardTitle></CardHeader>
             <CardContent className="space-y-4">
                <div className="space-y-2">
                   <Label>Palavras de Transferência (CSV)</Label>
