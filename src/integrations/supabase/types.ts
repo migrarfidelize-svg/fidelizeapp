@@ -492,6 +492,39 @@ export type Database = {
         }
         Relationships: []
       }
+      auth_otps: {
+        Row: {
+          attempts: number
+          code_hash: string
+          created_at: string
+          expires_at: string
+          id: string
+          identifier: string
+          metadata: Json
+          used: boolean
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          identifier: string
+          metadata?: Json
+          used?: boolean
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          identifier?: string
+          metadata?: Json
+          used?: boolean
+        }
+        Relationships: []
+      }
       automation_jobs: {
         Row: {
           attempts: number
