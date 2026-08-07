@@ -19,7 +19,10 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
+import { CheckCircle2, Info, Loader2, MousePointerClick, QrCode, ShieldCheck, Sparkles, Upload, Megaphone, Clock, Eye, Play, Pause, ChevronDown, ArrowRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+
 import { RouteLoading } from "@/components/RouteLoading";
 import {
   getAdsWorkspace,
