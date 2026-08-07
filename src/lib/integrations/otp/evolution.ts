@@ -96,7 +96,8 @@ export const evolutionOtp: WhatsAppOTPProvider = {
       });
 
       if (response.ok) {
-        return { ok: true, message: "Mensagem enviada." };
+        const resBody = JSON.parse(body);
+        return { ok: true, message: "Mensagem enviada.", providerMessageId: resBody?.key?.id };
       }
 
       return { ok: false, message: `Erro no envio (${response.status}): ${body}` };
@@ -114,7 +115,8 @@ export const evolutionOtp: WhatsAppOTPProvider = {
     return {
       remoteMessageId: body.data?.key?.id,
       fromPhone: body.data?.key?.remoteJid?.split("@")[0],
-      text
+      text,
+      messageType: msg?.conversation ? "text" : "other"
     };
   }
 };
