@@ -98,7 +98,9 @@ function IntegrationsPage() {
   const aiConfigured = grouped.ai.filter((m) => byKey.get(`ai:${m.id}`)?.enabled).length;
   const payConfigured = grouped.payments.filter((m) => byKey.get(`payments:${m.id}`)?.enabled).length;
   const mktConfigured = grouped.marketing.filter((m) => byKey.get(`marketing:${m.id}`)?.enabled).length;
+  const otpConfigured = grouped.otp.filter((m) => byKey.get(`otp:${m.id}`)?.enabled).length;
   const webhooksActive = (webhooks.data ?? []).length;
+
 
   return (
     <div className="p-4 md:p-8 space-y-8">
