@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
-  Building2, Mic, Palette, Shield, Bell, Users, ScrollText, AlertTriangle, Lock, CreditCard, Wrench, Copy, RefreshCcw, Trash2, Download, KeyRound, Search, Mail, ShieldCheck, UserCheck, UserX, Send, Clock, MoreHorizontal, UserPlus, CheckCircle2, PauseCircle, Crown, Briefcase, UserCog,
+  Building2, Mic, Palette, Shield, Bell, Users, ScrollText, AlertTriangle, Lock, CreditCard, Wrench, Copy, RefreshCcw, Trash2, Download, KeyRound, Search, Mail, ShieldCheck, UserCheck, UserX, Send, Clock, MoreHorizontal, UserPlus, CheckCircle2, PauseCircle, Crown, Briefcase, UserCog, Zap, MessageCircle,
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
@@ -1041,6 +1041,43 @@ function AparenciaTab({ establishmentId, est, settings }: { establishmentId: str
 
       </CardContent>
     </Card>
+  );
+}
+
+// ============================================================
+// INTEGRAÇÕES
+// ============================================================
+function IntegracoesTab() {
+  const getAdmin = useServerFn(getAdminStatus);
+  const { data: adminStatus } = useQuery({ queryKey: ["admin-status"], queryFn: () => getAdmin() });
+
+  if (!adminStatus?.isAdmin) return null;
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Zap className="h-5 w-5 text-primary" />
+            <CardTitle>Integração ElevenLabs</CardTitle>
+          </div>
+          <CardDescription>Configure a inteligência de voz neural global para todo o sistema.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <VoiceStudioCard scope="admin" />
+        </CardContent>
+      </Card>
+
+      <Card className="opacity-60 grayscale cursor-not-allowed">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <MessageCircle className="h-5 w-5" />
+            <CardTitle>WhatsApp API (Em breve)</CardTitle>
+          </div>
+          <CardDescription>Integração oficial para envio de notificações e campanhas.</CardDescription>
+        </CardHeader>
+      </Card>
+    </div>
   );
 }
 
