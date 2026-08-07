@@ -15,7 +15,7 @@ import {
   exportEstablishmentData,
 } from "@/lib/settings.functions";
 import { getAdminStatus } from "@/lib/admin.functions";
-import { VoiceStudioCard } from "@/components/VoiceStudioCard";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,7 @@ import {
 import { toast } from "sonner";
 import {
   Building2, Mic, Palette, Shield, Bell, Users, ScrollText, AlertTriangle, Lock, CreditCard, Wrench, Copy, RefreshCcw, Trash2, Download, KeyRound, Search, Mail, ShieldCheck, UserCheck, UserX, Send, Clock, MoreHorizontal, UserPlus, CheckCircle2, PauseCircle, Crown, Briefcase, UserCog, Zap, MessageCircle,
+
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
@@ -100,7 +101,7 @@ function ConfigInner({ establishmentId }: { establishmentId: string }) {
             <TabsTrigger value="notificacoes"><Bell className="h-4 w-4 mr-1" />Notificações</TabsTrigger>
             <TabsTrigger value="aparencia"><Palette className="h-4 w-4 mr-1" />Aparência</TabsTrigger>
             
-            <TabsTrigger value="integrações"><Zap className="h-4 w-4 mr-1" />Integrações</TabsTrigger>
+            
             <TabsTrigger value="plano"><Wrench className="h-4 w-4 mr-1" />Plano</TabsTrigger>
             <TabsTrigger value="auditoria"><ScrollText className="h-4 w-4 mr-1" />Auditoria</TabsTrigger>
             <TabsTrigger value="perigo"><AlertTriangle className="h-4 w-4 mr-1" />Perigo</TabsTrigger>
@@ -114,7 +115,7 @@ function ConfigInner({ establishmentId }: { establishmentId: string }) {
         <TabsContent value="privacidade"><PrivacidadeTab establishmentId={establishmentId} settings={data.settings as any} /></TabsContent>
         <TabsContent value="notificacoes"><NotificacoesTab establishmentId={establishmentId} settings={data.settings as any} /></TabsContent>
         <TabsContent value="aparencia"><AparenciaTab establishmentId={establishmentId} est={data.establishment as any} settings={data.settings as any} /></TabsContent>
-        <TabsContent value="integrações"><IntegracoesTab /></TabsContent>
+        
         <TabsContent value="plano"><PlanoTab subscription={data.subscription as any} est={data.establishment as any} /></TabsContent>
         <TabsContent value="auditoria"><AuditoriaTab establishmentId={establishmentId} /></TabsContent>
         <TabsContent value="perigo"><PerigoTab establishmentId={establishmentId} est={data.establishment as any} /></TabsContent>
