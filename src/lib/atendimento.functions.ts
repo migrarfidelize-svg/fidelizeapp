@@ -594,7 +594,14 @@ export const saveCRMTemplate = createServerFn({ method: "POST" })
 
     const { error } = await supabaseAdmin
       .from("crm_templates")
-      .upsert(data);
+      .upsert({
+        id: data.id || undefined,
+        name: data.name,
+        body: data.content,
+        category: data.category,
+        is_active: data.is_active
+      });
+
 
     if (error) throw error;
     return { ok: true };
