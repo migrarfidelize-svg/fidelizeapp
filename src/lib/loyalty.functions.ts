@@ -801,13 +801,9 @@ export const createEstablishment = createServerFn({ method: "POST" })
       throw new Error("Não foi possível criar a empresa. Tente novamente em instantes.");
     }
     await supabase.from("establishment_members").insert({ establishment_id: est.id, user_id: userId, role: "owner" });
-    const { data: camp, error: ce } = await supabase.from("campaigns").insert({
-      establishment_id: est.id, name: data.campaign_name, stamps_required: data.stamps_required,
-      reward_title: data.reward_title, reward_description: data.reward_description,
-      stamp_icon: data.stamp_icon,
-    }).select("id").single();
-    if (ce) throw new Error(ce.message);
-    return { establishment_id: est.id, slug: est.slug, campaign_id: camp.id };
+    // A campanha NÃO é criada no ato do onboarding para evitar violação de RLS (requires active subscription).
+    // Ela será criada automaticamente ou manualmente APÓS o primeiro pagamento ser confirmado e a assinatura ficar ativa.
+    return { establishment_id: est.id, slug: est.slug };
   });
 
 export const getMyEstablishments = createServerFn({ method: "GET" })
