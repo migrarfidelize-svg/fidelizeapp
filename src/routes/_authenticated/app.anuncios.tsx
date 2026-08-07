@@ -1205,3 +1205,20 @@ function ReviewRow({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+function VisibilityToggle({ label, active, onChange }: { label: string; active: boolean; onChange: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onChange}
+      className={cn(
+        "flex items-center justify-between gap-2 rounded-xl border p-2 text-[10px] font-bold transition-all",
+        active ? "border-primary bg-primary/10 text-primary" : "border-border/60 bg-muted/20 text-muted-foreground"
+      )}
+    >
+      <span className="truncate">{label}</span>
+      <div className={cn("h-3 w-3 rounded-full border border-current", active && "bg-current shadow-[0_0_8px_currentColor]")} />
+    </button>
+  );
+}
+
