@@ -68,20 +68,24 @@ export const requestOTP = createServerFn({ method: "POST" })
 
     // 3. Generate OTP with HMAC
     const { code, hash } = generateOTP(identifier);
-    const expiresAt = new Date(Date.now() + 10 * 60_000).toISOString(); // 10 minutes
-
-    // 3b. Fetch Custom Template from system_settings
-    const { data: configRow } = await supabaseAdmin
+    // 3b. Fetch Custom Template and Configs from system_settings
+    const { data: settings } = await supabaseAdmin
       .from("system_settings")
-      .select("value")
-      .eq("namespace", "otp")
-      .eq("key", "template")
-      .maybeSingle();
+      .select("*")
+      .eq("namespace", "otp");
     
-    const template = (configRow?.value as any)?.text || "Afidelize\n\nSeu código de acesso é {{code}}.\n\nEle expira em {{minutes}} minutos.\n\nNão compartilhe este código.";
+    const configMap = (settings || []).reduce((acc: any, row) => {
+      acc[row.key] = row.value;
+      return acc;
+    }, {});
+
+    const validityMinutes = configMap.validity_minutes || 10;
+    const expiresAt = new Date(Date.now() + validityMinutes * 60_000).toISOString();
+
+    const template = (configMap.template as any)?.text || "Afidelize\n\nSeu código de acesso é {{code}}.\n\nEle expira em {{minutes}} minutos.\n\nNão compartilhe este código.";
     const message = template
       .replace(/{{code}}/g, code)
-      .replace(/{{minutes}}/g, "10")
+      .replace(/{{minutes}}/g, validityMinutes.toString())
       .replace(/{{brand}}/g, "Afidelize");
 
 
