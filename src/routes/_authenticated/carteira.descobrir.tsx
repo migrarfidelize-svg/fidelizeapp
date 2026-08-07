@@ -396,7 +396,7 @@ function DiscoverPage() {
                     </button>
                   </div>
                 ) : (
-                  <ul className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                  <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {visible.map((e) => (
                       <DiscoverRow key={e.id} e={e} nearby={!!myCityNorm && normalizeCity(e.city) === myCityNorm} />
                     ))}
