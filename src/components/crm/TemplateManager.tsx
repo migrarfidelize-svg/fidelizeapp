@@ -128,10 +128,17 @@ export function TemplateManager() {
                                         defaultValue={editingTemplate?.category || "general"}
                                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                     >
-                                        <option value="general">Geral</option>
+                                        <option value="welcome">Boas-vindas (Geral)</option>
                                         <option value="support">Suporte</option>
                                         <option value="sales">Vendas</option>
                                         <option value="marketing">Marketing</option>
+                                        <option value="transfer">Transferência</option>
+                                        <option value="off_hours">Fora de Horário</option>
+                                        <option value="closing">Finalização</option>
+                                        <option value="followup">Retorno</option>
+                                        <option value="finance">Financeiro</option>
+                                        <option value="otp">OTP</option>
+                                        <option value="custom">Personalizado</option>
                                     </select>
                                 </div>
                             </div>
