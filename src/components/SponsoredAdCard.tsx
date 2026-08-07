@@ -237,32 +237,47 @@ export function SponsoredAdCard({ data, model, className, initialExpanded = fals
       )}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >
-      {/* 1. IMAGEM ABSOLUTA (FULL BLEED) */}
+      {/* 1. MÍDIA ABSOLUTA (FULL BLEED) */}
       <motion.div 
         layout
         className="absolute inset-0 z-0 overflow-hidden"
       >
-        <motion.img 
-          layout
-          src={data.imageUrl} 
-          alt={data.title} 
-          animate={{ 
-            scale: isExpanded ? 1.05 : 1,
-            filter: isExpanded ? "brightness(0.7) blur(2px)" : "brightness(0.6)"
-          }}
-          className="w-full h-full object-cover" 
-        />
+        {data.videoUrl ? (
+          <video
+            src={data.videoUrl}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover"
+            poster={data.imageUrl}
+          />
+        ) : (
+          <motion.img 
+            layout
+            src={data.imageUrl} 
+            alt={data.title} 
+            animate={{ 
+              scale: isExpanded ? 1.05 : 1,
+              filter: isExpanded ? "brightness(0.7) blur(2px)" : "brightness(0.6)"
+            }}
+            className="w-full h-full object-cover" 
+          />
+        )}
         
         {/* 2. GRADIENTE PRETO OBRIGATÓRIO (DINÂMICO PELO TEMA) */}
-        <motion.div 
-          layout
-          className={cn(
-            "absolute inset-0 bg-gradient-to-t z-10",
-            styles.gradient,
-            isExpanded ? "opacity-100" : "opacity-90"
-          )} 
-        />
+        {!data.fullBleedMode && (
+          <motion.div 
+            layout
+            className={cn(
+              "absolute inset-0 bg-gradient-to-t z-10",
+              styles.gradient,
+              isExpanded ? "opacity-100" : "opacity-90"
+            )} 
+          />
+        )}
       </motion.div>
+
 
       {/* 3. CONTEÚDO EM FLUXO NORMAL */}
       <div className={cn("relative z-20 w-full flex flex-col gap-4", cardConfig.padding)}>
