@@ -4,7 +4,8 @@ import { getCRMContacts, saveCRMContact, deleteCRMContact } from "@/lib/atendime
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, User, Trash2, Tag, Search, MoreHorizontal, Phone, Mail, Archive, UserPlus, Send, Loader2, X } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Plus, User, Trash2, Tag, Search, MoreHorizontal, Phone, Mail, Archive, UserPlus, Send, Loader2, Edit3 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
