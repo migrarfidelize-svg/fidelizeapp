@@ -70,6 +70,9 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
           .from("crm_conversations")
           .select("id")
           .eq("customer_phone", fromPhone)
+          .neq("status", "closed")
+          .order("created_at", { ascending: false })
+          .limit(1)
           .maybeSingle();
           
         if (!conversation) {
