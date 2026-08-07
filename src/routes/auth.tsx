@@ -121,16 +121,22 @@ async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: 
     // Recarrega o papel no servidor após cada login. O UUID vem do bearer token
     // validado, nunca do formulário, perfil ou cache do navegador.
     const access = await getAuthenticatedAccountAccess();
+    
+    // Prioridade 1: Super Admin
     if (access.isSuperAdmin || access.accountType === "super_admin") return { to: "/hash" };
+    
+    // Prioridade 2: Estabelecimento (com empresa já vinculada ou vindo da aba estabelecimento)
     if (access.accountType === "establishment") return { to: "/app" };
-    // Quem entrou pela aba "Estabelecimento" mas ainda não tem empresa vinculada
-    // não pode cair na carteira do cliente — segue para criar/ativar a empresa.
     if (opts.role === "establishment") return { to: "/onboarding" };
-    // Sem pista na URL (refresh, PWA, retorno de e-mail): o perfil e a intenção
-    // de plano decidem. Um lojista sem empresa NUNCA pode cair na /carteira.
-    if ((await profileAccountType()) === "establishment" || hasPlanIntent()) {
+    
+    // Prioridade 3: Casos de transição (perfil marcado ou intenção de plano)
+    // Mas se o usuário explicitamente veio como cliente (ou PWA), a carteira deve vencer.
+    const pType = await profileAccountType();
+    if (opts.role !== "customer" && (pType === "establishment" || hasPlanIntent())) {
       return { to: "/onboarding" };
     }
+
+    // Padrão: Carteira do Cliente
     return { to: "/carteira" };
   } catch (error) {
     // Uma falha ao consultar autorização não pode reclassificar silenciosamente
