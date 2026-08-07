@@ -1062,62 +1062,46 @@ function CampaignEditor({
             )}
           </div>
 
-          {/* Prévia ao vivo */}
-          <aside className="border-t border-border/50 bg-background/40 p-5 lg:border-l lg:border-t-0">
-            <div className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-              Prévia na vitrine
-            </div>
-            <div className="mt-3 overflow-hidden rounded-2xl border border-primary/30 bg-card shadow-sm">
-              <div
-                className={`relative bg-muted ${displayModel === "carousel" ? "aspect-square" : "aspect-[21/9]"}`}
-              >
-                {previewImage ? (
-                  <img src={previewImage} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <div className="grid h-full w-full place-items-center">
-                    <Megaphone className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                )}
-                {displayModel === "premium_banner" && (
-                  <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4">
-                    <div className="inline-flex items-center gap-1 rounded-full bg-primary/90 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-white">
-                      <Sparkles className="h-2.5 w-2.5" /> Patrocinado
-                    </div>
-                    <h4 className="mt-1 line-clamp-1 font-display text-xs font-bold text-white">{title}</h4>
-                    <p className="line-clamp-1 text-[9px] text-white/80">{description}</p>
-                  </div>
-                )}
-                {displayModel === "carousel" && (
-                  <div className="absolute right-2 top-2">
-                    <div className="inline-flex items-center gap-1 rounded-full bg-primary/90 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-white">
-                      Patrocinado
-                    </div>
-                  </div>
-                )}
-              </div>
-              {displayModel !== "premium_banner" && (
-                <div className="p-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-primary">
-                      {displayModel === "sponsored_feed" && (
-                        <>
-                          <Sparkles className="h-2.5 w-2.5" /> Patrocinado
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <h4 className="mt-0.5 line-clamp-1 font-display text-sm font-bold">{title}</h4>
-                  <p className="line-clamp-2 text-[10px] text-muted-foreground">{description}</p>
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-[9px] font-bold text-primary italic">{cta}</span>
+          {/* Sidebar de Preview */}
+          <aside className="border-t border-border/50 bg-muted/20 p-5 lg:border-l lg:border-t-0 lg:w-[360px]">
+            <div className="sticky top-0 space-y-4">
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                Preview em tempo real
+              </h3>
+              
+              <div className="space-y-6">
+                <div className="flex flex-col items-center">
+                  <span className="text-[9px] font-bold uppercase tracking-tighter opacity-40 mb-2">Formato: {displayModel}</span>
+                  <div className="scale-[0.85] sm:scale-90 origin-top">
+                    <SponsoredAdCard data={previewData} model={displayModel} className="shadow-2xl" />
                   </div>
                 </div>
-              )}
+
+                <div className="rounded-2xl border border-border/60 bg-background/60 p-4">
+                  <h4 className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-3">Checklist de Impacto</h4>
+                  <ul className="space-y-2 text-[10px] text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <div className={`h-1.5 w-1.5 rounded-full transition-colors ${title.length >= 10 ? 'bg-emerald-500' : 'bg-muted'}`} />
+                      Título atrativo e claro
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className={`h-1.5 w-1.5 rounded-full transition-colors ${previewImage ? 'bg-emerald-500' : 'bg-muted'}`} />
+                      Imagem Full Bleed impactante
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className={`h-1.5 w-1.5 rounded-full transition-colors ${fidelizePrice || benefitText ? 'bg-emerald-500' : 'bg-muted'}`} />
+                      Benefício Fidelize destacado
+                    </li>
+                  </ul>
+                </div>
+
+                <p className="text-[10px] text-center text-muted-foreground italic">
+                  O visual final pode variar levemente dependendo do dispositivo do cliente.
+                </p>
+              </div>
             </div>
-            <p className="mt-3 text-[11px] text-muted-foreground">
-              É assim que os clientes verão seu card em <strong>Descobrir</strong>, no topo da categoria escolhida.
-            </p>
           </aside>
+
 
         </div>
 
