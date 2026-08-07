@@ -35,7 +35,8 @@ export const saveElevenConfig = createServerFn({ method: "POST" })
       throw new Error("Acesso negado: apenas Super Administradores podem configurar a ElevenLabs.");
     }
 
-    const { error } = await (supabase as any)
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await (supabaseAdmin as any)
       .from("system_settings")
       .upsert({ 
         namespace: 'voice',
@@ -73,7 +74,8 @@ export const getElevenConfig = createServerFn({ method: "GET" })
     const isSuperAdmin = roles?.some(r => r.role === 'super_admin');
     if (!isSuperAdmin) return { status: 'unauthorized' };
 
-    const { data, error } = await (supabase as any)
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await (supabaseAdmin as any)
       .from("system_settings")
       .select("value, enabled")
       .eq("namespace", "voice")
@@ -118,9 +120,10 @@ export const testElevenConnection = createServerFn({ method: "POST" })
 
     let apiKey = data.apiKey?.trim();
     
-    // Se não enviou apiKey no teste, tenta carregar a salva
+    // Se não enviou apiKey no teste, tenta carregar a salva usando supabaseAdmin
     if (!apiKey) {
-      const { data: saved } = await (supabase as any)
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: saved } = await (supabaseAdmin as any)
         .from("system_settings")
         .select("value")
         .eq("namespace", "voice")
@@ -175,7 +178,8 @@ export const listElevenVoices = createServerFn({ method: "POST" })
 
     let apiKey = data.apiKey?.trim();
     if (!apiKey) {
-      const { data: saved } = await (supabase as any)
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: saved } = await (supabaseAdmin as any)
         .from("system_settings")
         .select("value")
         .eq("namespace", "voice")
@@ -210,7 +214,8 @@ export const removeElevenConfig = createServerFn({ method: "POST" })
     const isSuperAdmin = roles?.some(r => r.role === 'super_admin');
     if (!isSuperAdmin) throw new Error("Não autorizado");
 
-    const { error } = await (supabase as any)
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await (supabaseAdmin as any)
       .from("system_settings")
       .delete()
       .eq("namespace", "voice")
