@@ -24,7 +24,7 @@ const MOCK_ADS_V2: SponsoredAdData[] = [
     fidelizePrice: 3490,
     discountValue: 30,
     imageUrl: "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?q=80&w=800&auto=format&fit=crop",
-    theme: "dark",
+    theme: "premium_dark",
     ctaLabel: "Aproveitar oferta"
   },
   { 
@@ -36,7 +36,7 @@ const MOCK_ADS_V2: SponsoredAdData[] = [
     fidelizePrice: 5990,
     discountValue: 25,
     imageUrl: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=800&auto=format&fit=crop",
-    theme: "dark",
+    theme: "premium_dark",
     ctaLabel: "Agendar agora"
   },
   { 
@@ -48,7 +48,7 @@ const MOCK_ADS_V2: SponsoredAdData[] = [
     fidelizePrice: 1790,
     discountValue: 28,
     imageUrl: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=800&auto=format&fit=crop",
-    theme: "light",
+    theme: "premium_light",
     ctaLabel: "Ver detalhes"
   }
 ];
