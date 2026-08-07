@@ -42,6 +42,16 @@ function AdminOverview() {
 
   return (
     <div className="space-y-8">
+      <div className="flex justify-between items-center bg-card/30 backdrop-blur-sm border border-border/50 rounded-lg px-4 py-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground shadow-sm">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-success animate-pulse shadow-[0_0_8px_var(--color-success)]" />
+          Modo Produção Ativo
+        </div>
+        <div className="flex items-center gap-1 opacity-60">
+          Infraestrutura Segura · SSL · AES-256
+        </div>
+      </div>
+
       <PageHero
         icon={HeroIcon}
         eyebrow={"Super Admin · Global"}
