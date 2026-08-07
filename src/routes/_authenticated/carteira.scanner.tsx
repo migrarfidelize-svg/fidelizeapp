@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { QrScanner } from "@/components/QrScanner";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/carteira/scanner")({
 
 function WalletScannerPage() {
   const navigate = useNavigate();
-  const [error, setError] = useState<"denied" | "not_found" | "invalid" | null>(null);
+  const [error, setError] = useState<"denied" | "unavailable" | "error" | "invalid" | null>(null);
   const [paused, setPaused] = useState(false);
 
   const onDetected = async (text: string) => {
@@ -21,7 +21,6 @@ function WalletScannerPage() {
 
     const raw = text.trim();
     // Exemplo de URL: https://afidelize.app/cartao/restaurante-do-joao
-    // O scanner deve identificar o slug do estabelecimento
     const match = raw.match(/\/cartao\/([A-Za-z0-9_-]+)/);
     
     if (match && match[1]) {
@@ -43,7 +42,7 @@ function WalletScannerPage() {
   return (
     <div className="fixed inset-0 z-[200] flex flex-col bg-black text-white">
       {/* Header */}
-      <div className="relative z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/60 to-transparent">
+      <div className="relative z-20 flex items-center justify-between p-4 bg-gradient-to-b from-black/80 to-transparent">
         <Button 
           variant="ghost" 
           size="icon" 
@@ -53,7 +52,7 @@ function WalletScannerPage() {
           <ChevronLeft className="h-6 w-6" />
         </Button>
         <h1 className="text-lg font-bold">Escanear Estabelecimento</h1>
-        <div className="w-10" /> {/* Spacer */}
+        <div className="w-10" />
       </div>
 
       <div className="relative flex-1 flex flex-col items-center justify-center p-6 text-center">
@@ -64,25 +63,16 @@ function WalletScannerPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="w-full h-full max-w-sm aspect-square relative"
+              className="w-full h-full max-w-sm flex flex-col items-center justify-center"
             >
-              <div className="absolute inset-0 border-2 border-primary/50 rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(var(--primary-rgb),0.3)]">
+              <div className="w-full aspect-square relative overflow-hidden rounded-[40px] shadow-[0_0_100px_rgba(var(--primary-rgb),0.2)]">
                 <QrScanner onDetected={onDetected} paused={paused} />
                 
-                {/* Overlay visual do scanner */}
-                <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute inset-0 border-[40px] border-black/40" />
-                  <div className="absolute top-[15%] left-[15%] right-[15%] bottom-[15%] border-2 border-primary rounded-xl">
-                    <motion.div 
-                      className="absolute top-0 left-0 right-0 h-0.5 bg-primary shadow-[0_0_15px_rgba(var(--primary-rgb),0.8)]"
-                      animate={{ top: ["0%", "100%", "0%"] }}
-                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                    />
-                  </div>
-                </div>
+                {/* O QrScanner já renderiza HUD overlays se o CSS bater, mas garantimos o visual Afidelize */}
+                <div className="absolute inset-0 pointer-events-none border-2 border-primary/20 rounded-[40px]" />
               </div>
-              <p className="mt-8 text-sm text-neutral-400 font-medium">
-                Aponte para o QR Code no balcão ou mesa do estabelecimento
+              <p className="mt-10 text-sm text-neutral-400 font-medium max-w-[240px] leading-relaxed">
+                Aponte a câmera para o QR Code de um estabelecimento parceiro
               </p>
             </motion.div>
           ) : (
@@ -97,7 +87,7 @@ function WalletScannerPage() {
                   <CameraOff className="h-16 w-16 text-destructive" />
                   <div>
                     <h2 className="text-xl font-bold">Câmera Negada</h2>
-                    <p className="text-sm text-neutral-400 mt-2">Não foi possível acessar a câmera do seu dispositivo.</p>
+                    <p className="text-sm text-neutral-400 mt-2">Ative a permissão de câmera nas configurações do seu navegador.</p>
                   </div>
                 </>
               ) : error === "invalid" ? (
@@ -105,24 +95,24 @@ function WalletScannerPage() {
                   <AlertCircle className="h-16 w-16 text-yellow-500" />
                   <div>
                     <h2 className="text-xl font-bold">QR Inválido</h2>
-                    <p className="text-sm text-neutral-400 mt-2">Este QR Code não parece ser de um estabelecimento Afidelize.</p>
+                    <p className="text-sm text-neutral-400 mt-2">Este QR Code não pertence a um estabelecimento Afidelize.</p>
                   </div>
                 </>
               ) : (
                 <>
                   <AlertCircle className="h-16 w-16 text-destructive" />
                   <div>
-                    <h2 className="text-xl font-bold">Não disponível</h2>
-                    <p className="text-sm text-neutral-400 mt-2">Câmera não disponível neste dispositivo.</p>
+                    <h2 className="text-xl font-bold">Câmera Indisponível</h2>
+                    <p className="text-sm text-neutral-400 mt-2">Não detectamos uma câmera funcional neste dispositivo.</p>
                   </div>
                 </>
               )}
 
-              <div className="flex flex-col gap-3 w-full max-w-[200px]">
-                <Button onClick={handleRetry} className="w-full gap-2">
+              <div className="flex flex-col gap-3 w-full max-w-[220px] mt-4">
+                <Button onClick={handleRetry} className="w-full gap-2 gradient-brand">
                   <RefreshCw className="h-4 w-4" /> Tentar novamente
                 </Button>
-                <Button variant="ghost" onClick={() => navigate({ to: "/carteira" })} className="w-full text-white">
+                <Button variant="ghost" onClick={() => navigate({ to: "/carteira" })} className="w-full text-neutral-400">
                   Voltar para Carteira
                 </Button>
               </div>
@@ -133,3 +123,4 @@ function WalletScannerPage() {
     </div>
   );
 }
+
