@@ -967,25 +967,10 @@ function CampaignEditor({
                   </div>
                 </div>
               )}
-            </div>
-
-                <span className="absolute left-2 top-2 rounded-full bg-background/85 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground backdrop-blur">
-                  Patrocinado
-                </span>
-              </div>
-              <div className="p-3">
-                <div className="text-sm font-bold leading-tight">{title || "Título do seu destaque"}</div>
-                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-                  {description || "Uma frase curta contando por que vale a visita."}
-                </p>
-                <div className="mt-2 inline-flex items-center gap-1.5 rounded-xl bg-primary px-3 py-1.5 text-[11px] font-bold text-primary-foreground">
-                  <MousePointerClick className="h-3 w-3" /> {cta}
-                </div>
-              </div>
-            </div>
             <p className="mt-3 text-[11px] text-muted-foreground">
               É assim que os clientes verão seu card em <strong>Descobrir</strong>, no topo da categoria escolhida.
             </p>
+
           </aside>
         </div>
 
