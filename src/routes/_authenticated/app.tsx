@@ -80,9 +80,9 @@ export const Route = createFileRoute("/_authenticated/app")({
   beforeLoad: async ({ location }) => {
     // 1. Validar papéis básicos (Super Admin e Customer)
     try {
-      const access = await getAuthenticatedAccountAccess();
-      if (access.isSuperAdmin || access.accountType === "super_admin") throw redirect({ to: "/hash" });
-      if (access.accountType === "customer") throw redirect({ to: "/carteira" });
+      const { resolveAuthenticatedDestination } = await import("@/lib/destination-resolver");
+      const to = await resolveAuthenticatedDestination();
+      if (to === "/onboarding" || to === "/carteira") throw redirect({ to });
     } catch (e) {
       if (e && typeof e === "object" && ("isRedirect" in e || "to" in e)) throw e;
       // Fail-open para erros transitórios: o componente lida com loading
