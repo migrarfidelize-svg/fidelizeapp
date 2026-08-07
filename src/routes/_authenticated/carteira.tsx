@@ -393,8 +393,8 @@ function WalletLayout() {
             </div>
           </div>
 
-          {/* Footer Area */}
-          <footer className="mt-20 border-t border-border/20 py-10 px-6 opacity-40">
+          {/* Footer Area - Desktop Only */}
+          <footer className="mt-20 border-t border-border/20 py-10 px-6 opacity-40 hidden lg:block">
             <div className="max-w-md mx-auto text-center">
               <LogoMark size={24} className="mx-auto grayscale opacity-50 mb-4" />
               <p className="text-[10px] font-black uppercase tracking-[0.2em]">Fidelize 2.0 • Premium Clean Platform</p>
