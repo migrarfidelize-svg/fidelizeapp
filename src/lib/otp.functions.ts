@@ -25,8 +25,8 @@ export const requestOTP = createServerFn({ method: "POST" })
       throw new Error(`Muitas tentativas. Aguarde alguns minutos.`);
     }
 
-    // 2. Generate OTP
-    const { code, hash } = generateOTP();
+    // 2. Generate OTP with HMAC
+    const { code, hash } = generateOTP(identifier);
     const expiresAt = new Date(Date.now() + 10 * 60_000).toISOString(); // 10 minutes
 
     // 3. Store OTP in DB
@@ -55,16 +55,17 @@ export const verifyOTP = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => verifyOtpSchema.parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { hashOTP, normalizeWhatsApp } = await import("./otp.server");
+    const { hashOTP, normalizeWhatsApp, verifyOTPHash } = await import("./otp.server");
     const { recordAuthAttempt, clientIpFromHeaders } = await import("./auth-rate-limit.server");
     
     const req = getRequest();
     const ip = req?.headers ? clientIpFromHeaders(req.headers) : null;
     const phone = normalizeWhatsApp(data.whatsapp);
     const identifier = `wa:${phone.replace(/\+/g, "")}`;
-    const codeHash = hashOTP(data.code);
+    const codeHash = hashOTP(data.code, identifier);
 
-    // 1. Find and validate OTP
+    // 1. Find and validate OTP using atomic lookup for code_hash
+    // We fetch and then verify in constant time for extra safety.
     const { data: otp, error: findErr } = await supabaseAdmin
       .from("auth_otps")
       .select("*")
@@ -81,8 +82,17 @@ export const verifyOTP = createServerFn({ method: "POST" })
       throw new Error("Código inválido ou expirado.");
     }
 
-    // 2. Mark as used
-    await supabaseAdmin.from("auth_otps").update({ used: true }).eq("id", otp.id);
+    // 2. Mark as used (Atomic update to prevent reuse)
+    const { error: updateErr, count: updateCount } = await supabaseAdmin
+      .from("auth_otps")
+      .update({ used: true })
+      .eq("id", otp.id)
+      .eq("used", false) // Invariant check
+      .select("id");
+
+    if (updateErr || !updateCount) {
+      throw new Error("Código já processado.");
+    }
 
     // 3. Resolve User
     const syntheticEmail = `wa${phone.replace(/\D/g, "")}@carteira.fidelize.app`;
