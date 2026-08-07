@@ -70,11 +70,10 @@ function IconRow({ value }: { value: string }) {
 
 const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 10;
 
-type StepId = "empresa" | "marca" | "campanha";
+type StepId = "empresa" | "marca";
 const STEPS: { id: StepId; label: string; icon: typeof Building2 }[] = [
   { id: "empresa", label: "Empresa", icon: Building2 },
   { id: "marca", label: "Marca", icon: Palette },
-  { id: "campanha", label: "Campanha", icon: Gift },
 ];
 
 function Onboarding() {
