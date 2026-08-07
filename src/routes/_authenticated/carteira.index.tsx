@@ -208,7 +208,36 @@ function WalletHome() {
                   Nenhum cartão encontrado para “{query}”.
                 </p>
               ) : (
-                <WalletStack key={term} items={visibleFeatured.slice(0, 5)} />
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                  <div className="md:col-span-1">
+                    <WalletStack key={term} items={visibleFeatured.slice(0, 5)} />
+                  </div>
+                  <div className="hidden md:grid md:col-span-1 xl:col-span-2 grid-cols-1 xl:grid-cols-2 gap-4 h-fit">
+                    {visibleFeatured.slice(1, 5).map(item => (
+                       <Link 
+                        key={item.customer.id} 
+                        to="/carteira/$slug" 
+                        params={{ slug: (item.establishment as { slug: string }).slug }}
+                        className="group flex items-center gap-4 p-4 rounded-3xl bg-background/40 border border-border/40 hover:bg-background/60 hover:border-primary/30 transition-all"
+                       >
+                          <div className="h-12 w-12 rounded-2xl overflow-hidden border border-border/40 shrink-0">
+                            { (item.establishment as { logo_url: string }).logo_url ? (
+                              <img src={(item.establishment as { logo_url: string }).logo_url} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full bg-primary/10 flex items-center justify-center font-bold text-primary">
+                                {(item.establishment as { name: string }).name.slice(0,1)}
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-black truncate">{(item.establishment as { name: string }).name}</p>
+                            <p className="text-[10px] text-muted-foreground font-bold">{item.card?.stamps || 0} de {(item.card?.campaign as { stamps_required: number })?.stamps_required || 0} carimbos</p>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                       </Link>
+                    ))}
+                  </div>
+                </div>
               )}
             </section>
 
