@@ -299,11 +299,11 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
     // e o recurso está liberado no plano do lojista.
     let hasMenu = false;
     try {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { isMenuDestinationValid } = await import("@/lib/qr-target.server");
-      hasMenu = await isMenuDestinationValid(
-        supabaseAdmin,
+      const { isShowcaseDestinationValid } = await import("@/lib/qr-target.server");
+      hasMenu = await isShowcaseDestinationValid(
+        context.supabase,
         (row.establishment as unknown as { id: string }).id,
+        "menu"
       );
     } catch {
       hasMenu = false;

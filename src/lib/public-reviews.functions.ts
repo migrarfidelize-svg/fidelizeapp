@@ -62,8 +62,7 @@ export const getPublicReviewForm = createServerFn({ method: "GET" })
       .maybeSingle();
     if (!est) return null;
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: settings } = await supabaseAdmin
+    const { data: settings } = await sb
       .from("review_settings")
       .select("theme")
       .eq("establishment_id", est.id)
@@ -507,11 +506,11 @@ export const getPublicReviewsList = createServerFn({ method: "GET" })
   .inputValidator((d: { slug: string; limit?: number }) =>
     z.object({ slug: z.string().min(1).max(80), limit: z.number().int().min(1).max(30).optional() }).parse(d))
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: est } = await supabaseAdmin
+    const sb = publicClient();
+    const { data: est } = await sb
       .from("establishments").select("id").eq("slug", data.slug).maybeSingle();
     if (!est) return [];
-    const { data: rows } = await supabaseAdmin
+    const { data: rows } = await sb
       .from("customer_reviews")
       .select("id, rating, comment, customer_name, anonymous, created_at, merchant_reply, merchant_reply_at")
       .eq("establishment_id", est.id)
@@ -673,21 +672,21 @@ export const listPublicReviewsBySlug = createServerFn({ method: "GET" })
     z.object({ slug: z.string().min(1).max(80), limit: z.number().int().min(1).max(100).optional() }).parse(d),
   )
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: est } = await supabaseAdmin
+    const sb = publicClient();
+    const { data: est } = await sb
       .from("establishments")
       .select("id")
       .eq("slug", data.slug)
       .maybeSingle();
     if (!est) return { stats: { count: 0, avg: 0 }, reviews: [], settings: { show_average: true, show_review_count: true } };
 
-    const { data: form } = await supabaseAdmin
+    const { data: form } = await sb
       .from("review_forms")
       .select("show_average, show_review_count")
       .eq("establishment_id", est.id)
       .maybeSingle();
 
-    const { data: rows } = await supabaseAdmin
+    const { data: rows } = await sb
       .from("customer_reviews")
       .select("id, rating, comment, customer_name, anonymous, submitted_at, created_at, merchant_reply, merchant_reply_at, status, public_hidden")
       .eq("establishment_id", est.id)
