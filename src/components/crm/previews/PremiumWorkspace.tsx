@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { PremiumLayout } from "./layouts/PremiumLayout";
+import { ConversationArea } from "./shared/ConversationArea";
 import { useQuery } from "@tanstack/react-query";
 import { getCRMConversations } from "@/lib/atendimento.functions";
-import { ConversationArea } from "./shared/ConversationArea";
 
 export function PremiumWorkspace() {
+  const [activeTab, setActiveTab] = useState("conversas");
   const [selected, setSelected] = useState(null);
   const { data: conversations } = useQuery({ 
     queryKey: ["crm-conversations"], 
@@ -11,17 +13,35 @@ export function PremiumWorkspace() {
   });
 
   return (
-    <div className="h-[calc(100vh-100px)] flex">
-        <div className="w-[350px] border-r flex flex-col bg-muted/20">
-             <div className="p-6 font-bold text-xl">Atendimento</div>
-             <ConversationArea conversations={conversations || []} selected={selected} onSelect={setSelected} />
-        </div>
-        <div className="flex-1 p-12 flex flex-col gap-6">
-            <div className="text-4xl font-light">Workspace Preview</div>
-            <div className="flex-1 bg-white border rounded-3xl p-12 shadow-sm">
-                Conteúdo da Conversa (Premium)
+    <PremiumLayout activeTab={activeTab} setActiveTab={setActiveTab}>
+      <div className="flex-1 flex overflow-hidden">
+        {activeTab === "conversas" ? (
+          <>
+            <div className="w-[350px] border-r flex flex-col bg-muted/10">
+                <div className="p-8 pb-4">
+                  <h2 className="text-2xl font-light">Mensagens</h2>
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest mt-1">Inbox Colaborativa</p>
+                </div>
+                <ConversationArea conversations={conversations || []} selected={selected} onSelect={setSelected} />
             </div>
-        </div>
-    </div>
+            <div className="flex-1 p-12 flex flex-col items-center justify-center text-muted-foreground bg-card/50">
+               <div className="max-w-md text-center space-y-4">
+                  <div className="h-20 w-20 bg-primary/5 rounded-full flex items-center justify-center mx-auto text-primary">
+                    <div className="h-10 w-10 border-2 border-primary rounded-lg opacity-20" />
+                  </div>
+                  <h3 className="text-xl font-medium text-foreground">Premium Canvas</h3>
+                  <p className="text-sm italic">Selecione uma interação no menu lateral para focar no atendimento concierge.</p>
+               </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 p-20 flex flex-col items-center justify-center text-muted-foreground">
+             <h2 className="text-3xl font-thin mb-2 capitalize">{activeTab}</h2>
+             <div className="h-px w-20 bg-primary/20 mb-8" />
+             <p className="text-sm max-w-sm text-center">Implementação da superfície sofisticada para {activeTab} no Afidelize Concierge.</p>
+          </div>
+        )}
+      </div>
+    </PremiumLayout>
   );
 }
