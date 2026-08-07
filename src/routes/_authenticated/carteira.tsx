@@ -110,7 +110,7 @@ function WalletLayout() {
       
       {/* 1. SIDEBAR (DESKTOP) & DRAWER (MOBILE) */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-72 transform bg-background/80 backdrop-blur-2xl border-r border-border/40 transition-all duration-500 ease-in-out lg:flex lg:flex-col lg:sticky lg:inset-y-0 lg:z-50 lg:w-20 xl:w-72",
+        "fixed inset-y-0 left-0 z-50 w-72 transform bg-background/80 backdrop-blur-2xl border-r border-border/40 transition-all duration-500 ease-in-out lg:flex lg:flex-col lg:sticky lg:inset-y-0 lg:z-50 lg:w-20 xl:w-72 hidden md:block",
         isSidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"
       )}>
         {/* Overlay for mobile when sidebar is open */}
@@ -214,7 +214,7 @@ function WalletLayout() {
       <div className="flex-1 flex flex-col min-w-0 max-h-screen overflow-hidden lg:flex-grow">
         
         {/* Top Header - Desktop & Mobile */}
-        <header className="sticky top-0 z-40 w-full bg-background/60 backdrop-blur-xl border-b border-border/40 px-4 xl:px-8 h-20 flex items-center justify-between shrink-0">
+        <header className="sticky top-0 z-40 w-full bg-background/60 backdrop-blur-xl border-b border-border/40 px-4 xl:px-8 h-16 md:h-20 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
             <button 
               className="lg:hidden p-2 -ml-2 text-muted-foreground hover:bg-accent rounded-xl"
@@ -262,7 +262,7 @@ function WalletLayout() {
             <div className="flex flex-col lg:flex-row gap-8 xl:gap-12">
               
               {/* Primary Column */}
-              <div className="flex-1 space-y-12 pb-24 lg:pb-0">
+              <div className="flex-1 space-y-6 md:space-y-12 pb-24 lg:pb-0">
                 <Outlet />
               </div>
 
@@ -447,6 +447,39 @@ function WalletLayout() {
           background: rgba(0, 0, 0, 0.1);
         }
       `}} />
+      {/* 4. MOBILE BOTTOM NAV (PREMIUM CLEAN) */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t border-border/40 bg-background/80 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.path || (tab.path === "/carteira" && activeTab === "/carteira/");
+          const Icon = tab.icon;
+          
+          if (tab.isFab) {
+            return (
+              <Link
+                key={tab.path}
+                to={tab.path}
+                className="relative -top-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/30"
+              >
+                <Icon className="h-6 w-6" />
+              </Link>
+            );
+          }
+
+          return (
+            <Link
+              key={tab.path}
+              to={tab.path}
+              className={cn(
+                "flex flex-col items-center gap-1 p-2 transition-colors",
+                isActive ? "text-primary" : "text-muted-foreground"
+              )}
+            >
+              <Icon className="h-5 w-5" />
+              <span className="text-[10px] font-bold">{tab.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 }
