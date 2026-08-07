@@ -262,15 +262,15 @@ function DiscoverPage() {
         ) : (
           <>
             {/* Busca Premium Clean */}
-            <div className="group relative">
+            <div className="group relative xl:max-w-2xl">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-muted-foreground transition-colors group-focus-within:text-primary">
-                <Search className="h-4 w-4" />
+                <Search className="h-4 w-4 xl:h-5 xl:w-5" />
               </div>
               <input
                 value={query}
                 onChange={(ev) => setQuery(ev.target.value)}
                 placeholder="Buscar por nome, cidade ou tipo…"
-                className="w-full rounded-2xl border border-border/60 bg-white/50 dark:bg-black/20 py-3.5 pl-10 pr-10 text-sm font-medium outline-none transition-all placeholder:text-muted-foreground/50 focus:border-primary/50 focus:bg-white dark:focus:bg-black/40 focus:ring-4 focus:ring-primary/5 shadow-sm"
+                className="w-full rounded-2xl xl:rounded-3xl border border-border/60 bg-white/50 dark:bg-black/20 py-3.5 xl:py-5 pl-10 xl:pl-14 pr-10 text-sm xl:text-base font-medium outline-none transition-all placeholder:text-muted-foreground/50 focus:border-primary/50 focus:bg-white dark:focus:bg-black/40 focus:ring-4 focus:ring-primary/5 shadow-sm"
               />
               {query && (
                 <button
