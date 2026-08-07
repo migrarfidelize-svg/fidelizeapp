@@ -6,7 +6,8 @@ export const getAuthenticatedAccountAccess = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
 
-    const [{ data: adminRole, error: roleError }, { data: accountType, error: typeError }] =
+    // Buscamos o tipo de conta real e o papel administrativo em paralelo
+    const [{ data: adminRole }, { data: accountType, error: typeError }] =
       await Promise.all([
         supabase
           .from("app_roles")
@@ -17,13 +18,22 @@ export const getAuthenticatedAccountAccess = createServerFn({ method: "GET" })
         supabase.rpc("my_account_type"),
       ]);
 
-    if (roleError) throw new Error(`Não foi possível carregar o papel administrativo: ${roleError.message}`);
-    if (typeError) throw new Error(`Não foi possível carregar o tipo da conta: ${typeError.message}`);
+    if (typeError) {
+       console.error("[account-access] erro na RPC my_account_type:", typeError);
+    }
 
+    // Se for super_admin no app_roles ou a RPC retornar super_admin
     const isSuperAdmin = adminRole?.role === "super_admin" || accountType === "super_admin";
+    
+    // Se a RPC falhar ou retornar nulo, o padrão para segurança é "customer"
+    // a menos que seja um Super Admin confirmado.
+    const finalAccountType = isSuperAdmin 
+      ? "super_admin" 
+      : (accountType as "establishment" | "customer" | null) || "customer";
+
     return {
       userId,
       isSuperAdmin,
-      accountType: isSuperAdmin ? ("super_admin" as const) : accountType,
+      accountType: finalAccountType,
     };
   });
