@@ -30,7 +30,9 @@ function AtendimentoCRM() {
   const { data: stats } = useQuery({ queryKey: ["crm-stats"], queryFn: () => getCRMStats() });
   const { data: conversations } = useQuery({ queryKey: ["crm-conversations"], queryFn: () => getCRMConversations({ data: { status: "all" } }) });
   const { data: flows } = useQuery({ queryKey: ["crm-flows"], queryFn: () => getCRMFlows() });
-  const { data: agentSettings } = useQuery({ queryKey: ["crm-agent-settings"], queryFn: () => getAgentSettings() });
+  const { data: agentData } = useQuery({ queryKey: ["crm-agent-settings"], queryFn: () => getAgentSettings() });
+
+  const agentSettings = agentData as any;
 
   return (
     <div className="space-y-8">
