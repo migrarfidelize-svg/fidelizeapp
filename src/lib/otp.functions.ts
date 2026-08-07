@@ -39,11 +39,9 @@ export const requestOTP = createServerFn({ method: "POST" })
 
     if (otpErr) throw otpErr;
 
-    // 4. Send via WhatsApp (Mock for now, should integrate with a real provider)
-    console.log(`[OTP] Enviando ${code} para ${phone}`);
-    
-    // TODO: Integration with Evolution API or similar
-    // await sendWhatsAppMessage(phone, `Seu código de acesso Fidelize é: ${code}`);
+    // 4. Send via WhatsApp (Mock for now)
+    console.log(`[OTP] Sending ${code} to ${phone}`);
+    // Real integration: await sendWhatsAppOTP(phone, code);
 
     return { ok: true, phone };
   });
@@ -66,7 +64,7 @@ export const verifyOTP = createServerFn({ method: "POST" })
     const identifier = `wa:${phone.replace(/\+/g, "")}`;
     const codeHash = hashOTP(data.code);
 
-    // 1. Find valid OTP
+    // 1. Find and validate OTP
     const { data: otp, error: findErr } = await supabaseAdmin
       .from("auth_otps")
       .select("*")
@@ -79,7 +77,6 @@ export const verifyOTP = createServerFn({ method: "POST" })
       .maybeSingle();
 
     if (findErr || !otp) {
-      // Increment attempts or handle failure
       await recordAuthAttempt({ ip, identifier, action: "login", success: false });
       throw new Error("Código inválido ou expirado.");
     }
@@ -90,64 +87,56 @@ export const verifyOTP = createServerFn({ method: "POST" })
     // 3. Resolve User
     const syntheticEmail = `wa${phone.replace(/\D/g, "")}@carteira.fidelize.app`;
     
-    // Check if user exists in auth.users
-    // We use listUsers or a clever lookup if possible. 
-    // Since we don't have direct access to auth.users easily via typical RPC, 
-    // we check our profiles table which should be in sync.
     const { data: profile } = await supabaseAdmin
       .from("profiles")
       .select("id")
       .eq("phone", phone)
       .maybeSingle();
 
-    let userId = profile?.id;
+    let user;
 
-    if (!userId) {
-      // Create new user if not found
-      // Password must be secure but we won't use it for login anymore.
-      // We'll generate a random long string.
-      const randomPassword = Math.random().toString(36) + Math.random().toString(36);
-      const { data: signUp, error: signUpErr } = await supabaseAdmin.auth.admin.createUser({
+    if (!profile) {
+      // New User
+      const metadata = (otp.metadata as Record<string, any>) || {};
+      const { data: newUser, error: signUpErr } = await supabaseAdmin.auth.admin.createUser({
         email: syntheticEmail,
-        password: randomPassword,
         email_confirm: true,
         user_metadata: { 
-          full_name: otp.metadata?.name || "Cliente",
+          full_name: metadata.name || "Cliente",
           phone: phone,
           whatsapp: phone
         }
       });
-
       if (signUpErr) throw signUpErr;
-      userId = signUp.user.id;
+      user = newUser.user;
 
-      // Create profile
-      await supabaseAdmin.from("profiles").upsert({
-        id: userId,
-        full_name: otp.metadata?.name || "Cliente",
+      await supabaseAdmin.from("profiles").insert({
+        id: user.id,
+        full_name: metadata.name || "Cliente",
         phone: phone,
         account_type: "customer"
       });
+    } else {
+      // Existing User
+      const { data: existingUser, error: getUserErr } = await supabaseAdmin.auth.admin.getUserById(profile.id);
+      if (getUserErr) throw getUserErr;
+      user = existingUser.user;
     }
 
-    // 4. Create Session (Magic Link or similar impersonation)
-    // In Supabase Admin API, we can generate a session or a login link.
-    // The most compatible way to get a session in the frontend is to return 
-    // a one-time login token (recovery or magiclink) that the frontend can use 
-    // to sign in without knowing the password.
-    
+    // 4. Generate Magic Link session
     const { data: link, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
       type: "magiclink",
-      email: syntheticEmail,
+      email: user.email!,
     });
 
     if (linkErr) throw linkErr;
 
     await recordAuthAttempt({ ip, identifier, action: "login", success: true });
 
+    // The hashed_token can be verified by the client via supabase.auth.verifyOtp
     return { 
       ok: true, 
-      hashed_token: link.properties.hashed_token, // This can be used with verifyOtp if type=magiclink
-      action_link: link.properties.action_link // Or just use this
+      hashed_token: link.properties.hashed_token,
+      email: user.email
     };
   });
