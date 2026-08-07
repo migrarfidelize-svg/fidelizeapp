@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, useNavigate, useLocation } from "@tanstack/react-router";
 import { PreviewSelector } from "@/components/crm/previews/PreviewSelector";
 
-export const Route = createFileRoute("/_authenticated/hash/atendimento/preview")({
+export const Route = createFileRoute("/_authenticated/hash/atendimento/preview/")({
   component: CRMPreviewLayout,
 });
 
