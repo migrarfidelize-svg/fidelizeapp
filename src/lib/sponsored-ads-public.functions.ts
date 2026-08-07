@@ -34,7 +34,7 @@ export const getDiscoverySponsoredAds = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sessionHash = await hashSession(data.session_id);
 
-    const { data: rows, error } = await supabaseAdmin.rpc("get_sponsored_ads_public_v2", {
+    const { data: rows, error } = await (supabaseAdmin.rpc as any)("get_sponsored_ads_public_v2", {
       _category: data.category ?? "",
       _session_hash: sessionHash,
       _limit: data.limit,
