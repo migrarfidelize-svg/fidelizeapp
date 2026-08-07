@@ -537,6 +537,7 @@ function Onboarding() {
               {loading ? "Criando…" : "Concluir configuração"}
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
+            )}
           </div>
         </form>
 
