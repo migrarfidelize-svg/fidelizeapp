@@ -310,21 +310,27 @@ function DiscoverPage() {
                   )}
                 </div>
 
-                <div>
-                  <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                    Escolha uma categoria
+                <div className="pt-2">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">Explorar Categorias</h2>
+                    <button
+                      onClick={() => qc.invalidateQueries({ queryKey: ["discovery-establishments"] })}
+                      className="text-[10px] font-bold text-primary hover:underline"
+                    >
+                      Atualizar
+                    </button>
                   </div>
-                  <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                     {categories.map((c) => (
                       <button
                         key={c.id}
                         onClick={() => setActive(c.id)}
-                        className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card/40 p-3 text-left transition-all hover:border-primary/40 hover:bg-card/60 active:scale-[0.98]"
+                        className="group relative overflow-hidden rounded-3xl border border-border/40 bg-white/50 dark:bg-black/20 p-4 text-left transition-all hover:border-primary/40 hover:bg-white dark:hover:bg-black/40 active:scale-[0.98] shadow-sm"
                       >
-                        <div className="pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full bg-primary/15 opacity-40 blur-2xl transition-opacity group-hover:opacity-70" />
-                        <div className="text-xl">{c.emoji}</div>
-                        <div className="mt-1.5 font-display text-sm font-bold">{c.label}</div>
-                        <div className="text-[11px] text-muted-foreground">
+                        <div className="pointer-events-none absolute -right-6 -top-6 h-16 w-16 rounded-full bg-primary/10 opacity-40 blur-xl transition-opacity group-hover:opacity-60" />
+                        <div className="text-2xl">{c.emoji}</div>
+                        <div className="mt-2 font-display text-sm font-black tracking-tight">{c.label}</div>
+                        <div className="text-[10px] font-bold text-muted-foreground/60">
                           {c.count} {c.count === 1 ? "lugar" : "lugares"}
                         </div>
                       </button>
@@ -334,11 +340,12 @@ function DiscoverPage() {
 
                 <button
                   onClick={() => setActive("todos")}
-                  className="flex w-full items-center justify-between rounded-2xl border border-border/60 bg-card/30 px-4 py-3 text-sm font-semibold transition-colors hover:border-primary/40"
+                  className="flex w-full items-center justify-between rounded-3xl border border-border/40 bg-primary/5 dark:bg-primary/10 px-6 py-4 text-sm font-black text-primary transition-all hover:bg-primary/10 active:scale-[0.99]"
                 >
-                  Ver todos os {sorted.length} estabelecimentos
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <span>Ver todos os {sorted.length} estabelecimentos</span>
+                  <ChevronRight className="h-5 w-5" />
                 </button>
+
               </div>
             ) : (
               /* Passo 2 — lista filtrada */
