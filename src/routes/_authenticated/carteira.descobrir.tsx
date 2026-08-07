@@ -188,23 +188,22 @@ function DiscoverPage() {
 
   return (
     <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["discovery-establishments"] })}>
-      <div className="space-y-4">
-        <div className="pt-2">
-          <div className="flex items-center gap-2">
-            <Compass className="h-5 w-5 text-primary" />
-            <h1 className="font-display text-2xl font-bold tracking-tight">Descobrir</h1>
-            <button
-              onClick={() => qc.invalidateQueries({ queryKey: ["discovery-establishments"] })}
-              aria-label="Atualizar lista"
-              className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-card/40 px-3 py-1.5 text-[11px] font-bold text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-            >
-              <RefreshCw className="h-3.5 w-3.5" /> Atualizar
-            </button>
+      <div className="px-4 pb-8 space-y-6">
+        {/* Header Superior Premium */}
+        <div className="pt-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-sm">
+              <Compass className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="font-display text-2xl font-black tracking-tighter text-neutral-900 dark:text-white">Descobrir</h1>
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground/70">
+                Novas experiências próximas a você
+              </p>
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Outros lugares Fidelize esperando por você — colecione novos cartões e ganhe recompensas.
-          </p>
         </div>
+
 
         {geo !== "granted" && geo !== "denied" && geo !== "unsupported" && (
           <div className="relative overflow-hidden rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/10 to-transparent p-4">
@@ -262,25 +261,28 @@ function DiscoverPage() {
           </div>
         ) : (
           <>
-            {/* Busca sempre disponível */}
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            {/* Busca Premium Clean */}
+            <div className="group relative">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-muted-foreground transition-colors group-focus-within:text-primary">
+                <Search className="h-4 w-4" />
+              </div>
               <input
                 value={query}
                 onChange={(ev) => setQuery(ev.target.value)}
                 placeholder="Buscar por nome, cidade ou tipo…"
-                className="w-full rounded-2xl border border-border/60 bg-card/40 py-2.5 pl-9 pr-9 text-sm outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-primary/50"
+                className="w-full rounded-2xl border border-border/60 bg-white/50 dark:bg-black/20 py-3.5 pl-10 pr-10 text-sm font-medium outline-none transition-all placeholder:text-muted-foreground/50 focus:border-primary/50 focus:bg-white dark:focus:bg-black/40 focus:ring-4 focus:ring-primary/5 shadow-sm"
               />
               {query && (
                 <button
                   onClick={() => setQuery("")}
                   aria-label="Limpar busca"
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-muted/60"
+                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-muted-foreground hover:text-foreground"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-4 w-4" />
                 </button>
               )}
             </div>
+
 
             <SponsoredAdsRail
               category={active && active !== "promo" && active !== "perto" && active !== "todos" ? active : null}

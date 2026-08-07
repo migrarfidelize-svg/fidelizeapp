@@ -638,8 +638,17 @@ function CampaignEditor({
     discountValue: discountValue ? parseInt(discountValue) : undefined,
     benefitText: benefitText || undefined,
     imageUrl: previewImage || "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?q=80&w=800&auto=format&fit=crop",
+    videoUrl: videoUrl || undefined,
     theme,
     ctaLabel: cta,
+    hideTitle,
+    hideDescription,
+    hideMerchantName,
+    hidePrices,
+    hideLogo,
+    hideCTA,
+    fullBleedMode,
+
   };
 
 
@@ -816,21 +825,28 @@ function CampaignEditor({
                   </div>
                   <div>
                     <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Tema Visual</label>
-                    <div className="mt-1.5 flex gap-2">
-                      <button
-                        onClick={() => setTheme("dark")}
-                        className={`flex-1 rounded-xl border py-2 text-xs font-bold transition-all ${theme === "dark" ? "border-primary bg-primary/10" : "border-border/60 hover:border-primary/40"}`}
-                      >
-                        Escuro
-                      </button>
-                      <button
-                        onClick={() => setTheme("light")}
-                        className={`flex-1 rounded-xl border py-2 text-xs font-bold transition-all ${theme === "light" ? "border-primary bg-primary/10" : "border-border/60 hover:border-primary/40"}`}
-                      >
-                        Claro
-                      </button>
+                    <div className="mt-1.5 grid grid-cols-3 gap-2">
+                      {[
+                        { id: "premium_dark", l: "Dark" },
+                        { id: "premium_light", l: "Light" },
+                        { id: "gradient_promo", l: "Gradiente" },
+                        { id: "editorial", l: "Editorial" },
+                        { id: "minimal_product", l: "Minimal" },
+                        { id: "seasonal", l: "Sazonal" },
+                      ].map((t) => (
+                        <button
+                          key={t.id}
+                          onClick={() => setTheme(t.id)}
+                          className={`rounded-xl border py-2 text-[10px] font-bold transition-all ${
+                            theme === t.id ? "border-primary bg-primary/10" : "border-border/60 hover:border-primary/40"
+                          }`}
+                        >
+                          {t.l}
+                        </button>
+                      ))}
                     </div>
                   </div>
+
                 </div>
 
                 {offerType === "discount" && (
@@ -877,7 +893,19 @@ function CampaignEditor({
                 )}
 
                 {(offerType === "percentage" || offerType === "discount") && (
-                  <div>
+                  <div className="mt-4 border-t border-border/40 pt-4">
+                    <div className="mb-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Controle de Visibilidade</div>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                      <VisibilityToggle label="Título" active={!hideTitle} onChange={() => setHideTitle(!hideTitle)} />
+                      <VisibilityToggle label="Descrição" active={!hideDescription} onChange={() => setHideDescription(!hideDescription)} />
+                      <VisibilityToggle label="Empresa" active={!hideMerchantName} onChange={() => setHideMerchantName(!hideMerchantName)} />
+                      <VisibilityToggle label="Preços" active={!hidePrices} onChange={() => setHidePrices(!hidePrices)} />
+                      <VisibilityToggle label="Botão CTA" active={!hideCTA} onChange={() => setHideCTA(!hideCTA)} />
+                      <VisibilityToggle label="Criativo Limpo" active={fullBleedMode} onChange={() => setFullBleedMode(!fullBleedMode)} />
+                    </div>
+                  </div>
+                )}
+
                     <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Desconto (%)</label>
                     <input
                       type="number"
