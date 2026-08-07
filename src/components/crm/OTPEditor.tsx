@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Smartphone, Save, Send, Eye, Code, CheckCircle2, XCircle, ExternalLink, RefreshCw, Zap, Clock, ShieldCheck, ChevronRight } from "lucide-react";
+import { Smartphone, Save, Send, Eye, Code, CheckCircle2, XCircle, ExternalLink, RefreshCw, Zap, Clock, ShieldCheck, ChevronRight, Plus, Loader2, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -311,4 +311,3 @@ export function OTPEditor() {
   );
 }
 
-import { Settings2 } from "lucide-react";
