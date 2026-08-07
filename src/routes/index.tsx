@@ -96,25 +96,11 @@ export const Route = createFileRoute("/")({
       throw redirect({ to: "/auth", search: { source: "pwa" } });
     }
 
-
-
-    const session = await supabase.auth.getSession();
-    if (session.data.session?.user) {
-      const { getAuthenticatedAccountAccess } = await import("@/lib/account-access.functions");
-      const access = await getAuthenticatedAccountAccess();
-      
-      if (access.isSuperAdmin || access.accountType === "super_admin") throw redirect({ to: "/hash" });
-      
-      // Se é um estabelecimento confirmado, vai para o painel.
-      if (access.accountType === "establishment") throw redirect({ to: "/app" });
-      
-      // Se o perfil indica estabelecimento mas não tem empresa vinculada (access.accountType seria 'customer' pela RPC),
-      // ainda assim verificamos se o perfil foi marcado como 'establishment' para mandar para o onboarding.
-      const { data: prof } = await supabase.from("profiles").select("account_type").eq("id", session.data.session.user.id).maybeSingle();
-      if (prof?.account_type === "establishment") throw redirect({ to: "/onboarding" });
-
-      // Todo o resto (incluindo account_type 'customer' real) vai para a carteira.
-      throw redirect({ to: "/carteira" });
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      const { resolveAuthenticatedDestination } = await import("@/lib/destination-resolver");
+      const to = await resolveAuthenticatedDestination();
+      throw redirect({ to });
     }
   },
   loader: () => getLandingPublic(),
@@ -231,6 +217,16 @@ const NAV_LINKS: Array<[string, string]> = [
 function SiteHeader() {
   const { data: session } = useQuery({ queryKey: ["session"], queryFn: async () => (await supabase.auth.getSession()).data.session });
   const [menuOpen, setMenuOpen] = useState(false);
+  const router = useRouter();
+
+  const handleDashboardClick = async (e: React.MouseEvent) => {
+    if (!session) return;
+    e.preventDefault();
+    const { resolveAuthenticatedDestination } = await import("@/lib/destination-resolver");
+    const to = await resolveAuthenticatedDestination();
+    router.navigate({ to });
+  };
+
   return (
     <header className="sticky top-4 z-40 px-4">
       <div className="nav-dock mx-auto flex h-18 max-w-5xl items-center justify-between gap-3 rounded-full border border-violet-400/60 bg-background/60 pl-6 pr-3 backdrop-blur-xl">
@@ -245,9 +241,10 @@ function SiteHeader() {
             <Button
               asChild
               size="sm"
-              className="rounded-full bg-primary text-primary-foreground font-semibold px-5 shadow-[0_0_0_1px_rgba(167,139,250,0.4),0_0_24px_-4px_rgba(167,139,250,0.65)] hover:brightness-110"
+              className="rounded-full bg-primary text-primary-foreground font-semibold px-5 shadow-[0_0_0_1px_rgba(167,139,250,0.4),0_0_24px_-4px_rgba(167,139,250,0.65)] hover:brightness-110 cursor-pointer"
+              onClick={handleDashboardClick}
             >
-              <Link to="/app">Meu painel <ArrowRight className="ml-1 h-4 w-4" /></Link>
+              <span className="flex items-center">Meu painel <ArrowRight className="ml-1 h-4 w-4" /></span>
             </Button>
           ) : (
             <>
@@ -295,8 +292,8 @@ function SiteHeader() {
               </nav>
               <div className="mt-6 flex flex-col gap-2 border-t border-border/60 pt-6">
                 {session ? (
-                  <Button asChild className="h-12 rounded-full" onClick={() => setMenuOpen(false)}>
-                    <Link to="/app">Meu painel <ArrowRight className="ml-1 h-4 w-4" /></Link>
+                  <Button asChild className="h-12 rounded-full cursor-pointer" onClick={(e) => { setMenuOpen(false); handleDashboardClick(e); }}>
+                    <span className="flex items-center justify-center">Meu painel <ArrowRight className="ml-1 h-4 w-4" /></span>
                   </Button>
                 ) : (
                   <>

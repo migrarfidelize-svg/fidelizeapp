@@ -35,9 +35,9 @@ export const Route = createFileRoute("/onboarding")({
     const { data } = await supabase.auth.getUser();
     if (!data.user) throw redirect({ to: "/auth" });
     try {
-      const access = await getAuthenticatedAccountAccess();
-      if (access.isSuperAdmin || access.accountType === "super_admin") throw redirect({ to: "/hash" });
-      if (access.accountType === "customer") throw redirect({ to: "/carteira" });
+      const { resolveAuthenticatedDestination } = await import("@/lib/destination-resolver");
+      const to = await resolveAuthenticatedDestination();
+      if (to !== "/onboarding") throw redirect({ to });
     } catch (e) {
       if (e && typeof e === "object" && ("isRedirect" in e || "to" in e)) throw e;
     }
