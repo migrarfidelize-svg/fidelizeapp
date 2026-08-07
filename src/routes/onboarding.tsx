@@ -395,6 +395,17 @@ function Onboarding() {
                 placeholder="Uma frase sobre o seu negócio"
               />
             </Field>
+
+            <div className="flex justify-end pt-2">
+              <Button
+                type="button"
+                disabled={!completion.checks.empresa}
+                onClick={() => setStepOverride("marca")}
+                className="gap-2"
+              >
+                Continuar <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
           </Section>
           )}
 
