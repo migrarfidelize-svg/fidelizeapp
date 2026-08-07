@@ -96,25 +96,11 @@ export const Route = createFileRoute("/")({
       throw redirect({ to: "/auth", search: { source: "pwa" } });
     }
 
-
-
-    const session = await supabase.auth.getSession();
-    if (session.data.session?.user) {
-      const { getAuthenticatedAccountAccess } = await import("@/lib/account-access.functions");
-      const access = await getAuthenticatedAccountAccess();
-      
-      if (access.isSuperAdmin || access.accountType === "super_admin") throw redirect({ to: "/hash" });
-      
-      // Se é um estabelecimento confirmado, vai para o painel.
-      if (access.accountType === "establishment") throw redirect({ to: "/app" });
-      
-      // Se o perfil indica estabelecimento mas não tem empresa vinculada (access.accountType seria 'customer' pela RPC),
-      // ainda assim verificamos se o perfil foi marcado como 'establishment' para mandar para o onboarding.
-      const { data: prof } = await supabase.from("profiles").select("account_type").eq("id", session.data.session.user.id).maybeSingle();
-      if (prof?.account_type === "establishment") throw redirect({ to: "/onboarding" });
-
-      // Todo o resto (incluindo account_type 'customer' real) vai para a carteira.
-      throw redirect({ to: "/carteira" });
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      const { resolveAuthenticatedDestination } = await import("@/lib/destination-resolver");
+      const to = await resolveAuthenticatedDestination();
+      throw redirect({ to });
     }
   },
   loader: () => getLandingPublic(),
