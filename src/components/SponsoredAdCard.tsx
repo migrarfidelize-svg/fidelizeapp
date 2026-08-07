@@ -280,36 +280,44 @@ export function SponsoredAdCard({ data, model, className, initialExpanded = fals
 
 
       {/* 3. CONTEÚDO EM FLUXO NORMAL */}
-      <div className={cn("relative z-20 w-full flex flex-col gap-4", cardConfig.padding)}>
+      <div className={cn("relative z-20 w-full flex flex-col gap-4", cardConfig.padding, data.fullBleedMode && "h-full justify-between")}>
         <motion.div layout className="flex flex-col gap-3">
           <div className="flex justify-between items-start">
             <SponsoredBadge />
-            <motion.div 
-              animate={{ rotate: isExpanded ? 180 : 0 }}
-              className="p-2 rounded-full bg-white/10 backdrop-blur-md text-white/70 sm:hidden"
-            >
-              <ChevronDown className="h-4 w-4" />
-            </motion.div>
+            {!data.fullBleedMode && (
+              <motion.div 
+                animate={{ rotate: isExpanded ? 180 : 0 }}
+                className="p-2 rounded-full bg-white/10 backdrop-blur-md text-white/70 sm:hidden"
+              >
+                <ChevronDown className="h-4 w-4" />
+              </motion.div>
+            )}
           </div>
           
-          <div className={cn("space-y-1.5", theme === "minimal_product" && "items-center")}>
-            <motion.h3 layout className={cn(
-              "font-display font-black uppercase leading-[1] tracking-tight",
-              styles.textTitle,
-              cardConfig.titleSize
-            )}>
-              {data.title}
-            </motion.h3>
-            <motion.p layout className={cn(
-              "text-[10px] sm:text-[11px] font-black uppercase tracking-[0.25em] opacity-90",
-              styles.textSecondary
-            )}>
-              {data.merchantName}
-            </motion.p>
-          </div>
+          {!data.fullBleedMode && (
+            <div className={cn("space-y-1.5", theme === "minimal_product" && "items-center")}>
+              {!data.hideTitle && (
+                <motion.h3 layout className={cn(
+                  "font-display font-black uppercase leading-[1] tracking-tight",
+                  styles.textTitle,
+                  cardConfig.titleSize
+                )}>
+                  {data.title}
+                </motion.h3>
+              )}
+              {!data.hideMerchantName && (
+                <motion.p layout className={cn(
+                  "text-[10px] sm:text-[11px] font-black uppercase tracking-[0.25em] opacity-90",
+                  styles.textSecondary
+                )}>
+                  {data.merchantName}
+                </motion.p>
+              )}
+            </div>
+          )}
           
           <AnimatePresence>
-            {(isExpanded || model === "premium_banner") && data.description && (
+            {(isExpanded || model === "premium_banner") && data.description && !data.hideDescription && !data.fullBleedMode && (
               <motion.p 
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
@@ -325,22 +333,24 @@ export function SponsoredAdCard({ data, model, className, initialExpanded = fals
           </AnimatePresence>
         </motion.div>
 
-        <motion.div layout className="flex flex-col gap-5 mt-1">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            {renderCommercialLine(model === "carousel" && !isExpanded)}
-            
-            <AnimatePresence>
-              {isExpanded && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="w-full sm:w-auto"
-                >
-                  <CTAButton size={model === "premium_banner" ? "md" : "sm"} />
-                </motion.div>
-              )}
-            </AnimatePresence>
+        {!data.fullBleedMode && (
+          <motion.div layout className="flex flex-col gap-5 mt-1">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              {!data.hidePrices && renderCommercialLine(model === "carousel" && !isExpanded)}
+              
+              <AnimatePresence>
+                {isExpanded && !data.hideCTA && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="w-full sm:w-auto"
+                  >
+                    <CTAButton size={model === "premium_banner" ? "md" : "sm"} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
             
             {!isExpanded && (
               <motion.div 
