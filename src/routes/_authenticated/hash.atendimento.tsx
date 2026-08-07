@@ -528,6 +528,11 @@ function AtendimentoCRM() {
             <TemplateManager />
           </TabsContent>
 
+          <TabsContent value="otp" className="space-y-6">
+            <OTPEditor />
+          </TabsContent>
+
+
         </div>
       </Tabs>
     </div>

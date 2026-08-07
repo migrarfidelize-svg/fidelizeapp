@@ -93,19 +93,22 @@ export function OTPEditor() {
     .replace(/{{minutes}}/g, configs.validity_minutes.toString())
     .replace(/{{brand}}/g, "Afidelize");
 
+  const providerStatus = otpData?.provider?.enabled ? "ATIVO" : "INATIVO";
+  const isConnected = !!otpData?.provider;
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold tracking-tight">AUTENTICAÇÃO VIA WHATSAPP</h2>
-          <p className="text-sm text-muted-foreground">Personalize a mensagem enviada aos clientes durante o acesso à Carteira.</p>
+          <h2 className="text-xl font-bold tracking-tight uppercase">AUTENTICAÇÃO VIA WHATSAPP</h2>
+          <p className="text-sm text-muted-foreground">Controle a mensagem de código enviada aos clientes no acesso à Carteira.</p>
         </div>
         <div className="flex gap-2">
            <Button variant="outline" className="h-9 text-xs gap-2" onClick={restoreDefault}>
              <RefreshCw className="h-3.5 w-3.5" /> Restaurar Padrão
            </Button>
            <Button className="h-9 text-xs gradient-brand gap-2" onClick={() => saveMutation.mutate({ text: template, configs })} disabled={saveMutation.isPending}>
-             {saveMutation.isPending ? <Zap className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+             {saveMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
              Salvar Alterações
            </Button>
         </div>
@@ -122,25 +125,25 @@ export function OTPEditor() {
                     <Smartphone className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <CardTitle className="text-sm">WhatsApp OTP</CardTitle>
+                    <CardTitle className="text-sm">WHATSAPP OTP</CardTitle>
                     <CardDescription className="text-xs">Motor de autenticação passwordless</CardDescription>
                   </div>
                 </div>
                 <Badge className={cn(otpData?.provider?.enabled ? "bg-green-500/10 text-green-600 hover:bg-green-500/20" : "bg-red-500/10 text-red-600")}>
-                  {otpData?.provider?.enabled ? "ATIVO" : "INATIVO"}
+                  {providerStatus}
                 </Badge>
               </div>
             </CardHeader>
             <CardContent className="pt-0 flex items-center justify-between border-t bg-muted/30 py-3 px-6">
               <div className="flex items-center gap-6">
                 <div className="space-y-0.5">
-                  <div className="text-[10px] uppercase font-black text-muted-foreground tracking-widest">Provider</div>
+                  <div className="text-[10px] uppercase font-black text-muted-foreground tracking-widest">Provider atual</div>
                   <div className="text-xs font-bold">{otpData?.provider?.name || "Nenhum configurado"}</div>
                 </div>
                 <div className="space-y-0.5">
-                  <div className="text-[10px] uppercase font-black text-muted-foreground tracking-widest">Status</div>
+                  <div className="text-[10px] uppercase font-black text-muted-foreground tracking-widest">Estado</div>
                   <div className="flex items-center gap-1.5">
-                    {otpData?.provider ? (
+                    {isConnected ? (
                       <>
                         <CheckCircle2 className="h-3 w-3 text-green-500" />
                         <span className="text-xs font-bold text-green-600">Conectado</span>
@@ -148,7 +151,7 @@ export function OTPEditor() {
                     ) : (
                       <>
                         <XCircle className="h-3 w-3 text-red-500" />
-                        <span className="text-xs font-bold text-red-600">Desconectado</span>
+                        <span className="text-xs font-bold text-red-600">Desconectado / Erro</span>
                       </>
                     )}
                   </div>
@@ -181,13 +184,17 @@ export function OTPEditor() {
                 />
                 <div className="flex flex-wrap items-center gap-2">
                    <span className="text-[10px] font-bold uppercase text-muted-foreground mr-2">Variáveis:</span>
-                   {["{{code}}", "{{minutes}}", "{{brand}}"].map(v => (
+                   {[
+                     { label: "{{code}}", value: "{{code}}" },
+                     { label: "{{minutes}}", value: "{{minutes}}" },
+                     { label: "{{brand}}", value: "{{brand}}" }
+                   ].map(v => (
                      <button 
-                       key={v}
-                       onClick={() => insertVariable(v)}
+                       key={v.value}
+                       onClick={() => insertVariable(v.value)}
                        className="bg-muted hover:bg-primary/10 hover:text-primary transition-colors text-[10px] font-mono px-2 py-1 rounded-md border border-border flex items-center gap-1"
                      >
-                       {v} <Plus className="h-2.5 w-2.5" />
+                       {v.label} <Plus className="h-2.5 w-2.5" />
                      </button>
                    ))}
                 </div>
@@ -198,12 +205,12 @@ export function OTPEditor() {
           <Card className="dash-card">
             <CardHeader>
               <CardTitle className="text-sm flex items-center gap-2">
-                <Settings2 className="h-4 w-4 text-primary" /> CONFIGURAÇÕES
+                <ShieldCheck className="h-4 w-4 text-primary" /> CONFIGURAÇÕES DE SEGURANÇA
               </CardTitle>
             </CardHeader>
             <CardContent className="grid sm:grid-cols-3 gap-6">
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Validade (min)</Label>
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Validade do código (min)</Label>
                 <Input 
                   type="number" 
                   value={configs.validity_minutes} 
@@ -212,7 +219,7 @@ export function OTPEditor() {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Cooldown (seg)</Label>
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Cooldown de reenvio (seg)</Label>
                 <Input 
                   type="number" 
                   value={configs.cooldown_seconds} 
@@ -221,7 +228,7 @@ export function OTPEditor() {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Máx. Tentativas</Label>
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Máximo de tentativas</Label>
                 <Input 
                   type="number" 
                   value={configs.max_attempts} 
@@ -261,7 +268,7 @@ export function OTPEditor() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">WhatsApp</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">WhatsApp de teste</Label>
                   <Input 
                     placeholder="Ex: 5511999999999" 
                     value={testPhone} 
@@ -276,7 +283,7 @@ export function OTPEditor() {
                   disabled={sendTestMutation.isPending || !testPhone || !otpData?.provider?.enabled}
                 >
                   {sendTestMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                  {otpData?.provider?.enabled ? "Enviar teste real" : "Provider inativo"}
+                  {otpData?.provider?.enabled ? "Enviar teste" : "Provider inativo"}
                 </Button>
               </CardContent>
             </Card>
@@ -284,21 +291,24 @@ export function OTPEditor() {
             <Card className="dash-card border-none bg-primary/5">
               <CardContent className="p-6">
                  <h4 className="text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-                   <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Fluxo Visual
+                   <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Fluxo Informativo
                  </h4>
                  <div className="space-y-3">
                    {[
                      { label: "Cliente informa WhatsApp", icon: Smartphone },
-                     { label: "Afidelize gera OTP seguro", icon: Zap },
-                     { label: "WhatsApp envia código real", icon: Send },
-                     { label: "Sessão validada com sucesso", icon: CheckCircle2 }
+                     { label: "Afidelize gera código", icon: Zap },
+                     { label: "WhatsApp envia OTP", icon: Send },
+                     { label: "Cliente informa código", icon: ShieldCheck },
+                     { label: "Backend valida", icon: CheckCircle2 },
+                     { label: "Sessão Supabase", icon: Clock },
+                     { label: "/carteira", icon: ChevronRight }
                    ].map((step, i) => (
                      <div key={i} className="flex items-center gap-3">
                         <div className="h-7 w-7 rounded-full bg-background border flex items-center justify-center text-[10px] font-bold shadow-sm">
                            <step.icon className="h-3.5 w-3.5 text-primary" />
                         </div>
                         <span className="text-xs font-medium">{step.label}</span>
-                        {i < 3 && <ChevronRight className="h-3 w-3 ml-auto opacity-20" />}
+                        {i < 6 && <ChevronRight className="h-3 w-3 ml-auto opacity-20 rotate-90 sm:rotate-0" />}
                      </div>
                    ))}
                  </div>
@@ -310,4 +320,3 @@ export function OTPEditor() {
     </div>
   );
 }
-
