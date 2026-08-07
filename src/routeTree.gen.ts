@@ -71,6 +71,7 @@ import { Route as AuthenticatedHashConfigRouteImport } from './routes/_authentic
 import { Route as AuthenticatedHashCardapioJsonldRouteImport } from './routes/_authenticated/hash.cardapio-jsonld'
 import { Route as AuthenticatedHashAvaliacoesRouteImport } from './routes/_authenticated/hash.avaliacoes'
 import { Route as AuthenticatedHashAuditoriaRouteImport } from './routes/_authenticated/hash.auditoria'
+import { Route as AuthenticatedHashAtendimentoRouteImport } from './routes/_authenticated/hash.atendimento'
 import { Route as AuthenticatedHashAssinaturasRouteImport } from './routes/_authenticated/hash.assinaturas'
 import { Route as AuthenticatedHashAnunciosRouteImport } from './routes/_authenticated/hash.anuncios'
 import { Route as AuthenticatedHashAlertasRouteImport } from './routes/_authenticated/hash.alertas'
@@ -471,6 +472,12 @@ const AuthenticatedHashAuditoriaRoute =
   AuthenticatedHashAuditoriaRouteImport.update({
     id: '/auditoria',
     path: '/auditoria',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashAtendimentoRoute =
+  AuthenticatedHashAtendimentoRouteImport.update({
+    id: '/atendimento',
+    path: '/atendimento',
     getParentRoute: () => AuthenticatedHashRoute,
   } as any)
 const AuthenticatedHashAssinaturasRoute =
@@ -989,6 +996,7 @@ export interface FileRoutesByFullPath {
   '/hash/alertas': typeof AuthenticatedHashAlertasRoute
   '/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
   '/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
+  '/hash/atendimento': typeof AuthenticatedHashAtendimentoRoute
   '/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
   '/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
   '/hash/cardapio-jsonld': typeof AuthenticatedHashCardapioJsonldRoute
@@ -1124,6 +1132,7 @@ export interface FileRoutesByTo {
   '/hash/alertas': typeof AuthenticatedHashAlertasRoute
   '/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
   '/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
+  '/hash/atendimento': typeof AuthenticatedHashAtendimentoRoute
   '/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
   '/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
   '/hash/cardapio-jsonld': typeof AuthenticatedHashCardapioJsonldRoute
@@ -1266,6 +1275,7 @@ export interface FileRoutesById {
   '/_authenticated/hash/alertas': typeof AuthenticatedHashAlertasRoute
   '/_authenticated/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
   '/_authenticated/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
+  '/_authenticated/hash/atendimento': typeof AuthenticatedHashAtendimentoRoute
   '/_authenticated/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
   '/_authenticated/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
   '/_authenticated/hash/cardapio-jsonld': typeof AuthenticatedHashCardapioJsonldRoute
@@ -1408,6 +1418,7 @@ export interface FileRouteTypes {
     | '/hash/alertas'
     | '/hash/anuncios'
     | '/hash/assinaturas'
+    | '/hash/atendimento'
     | '/hash/auditoria'
     | '/hash/avaliacoes'
     | '/hash/cardapio-jsonld'
@@ -1543,6 +1554,7 @@ export interface FileRouteTypes {
     | '/hash/alertas'
     | '/hash/anuncios'
     | '/hash/assinaturas'
+    | '/hash/atendimento'
     | '/hash/auditoria'
     | '/hash/avaliacoes'
     | '/hash/cardapio-jsonld'
@@ -1684,6 +1696,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hash/alertas'
     | '/_authenticated/hash/anuncios'
     | '/_authenticated/hash/assinaturas'
+    | '/_authenticated/hash/atendimento'
     | '/_authenticated/hash/auditoria'
     | '/_authenticated/hash/avaliacoes'
     | '/_authenticated/hash/cardapio-jsonld'
@@ -2249,6 +2262,13 @@ declare module '@tanstack/react-router' {
       path: '/auditoria'
       fullPath: '/hash/auditoria'
       preLoaderRoute: typeof AuthenticatedHashAuditoriaRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/atendimento': {
+      id: '/_authenticated/hash/atendimento'
+      path: '/atendimento'
+      fullPath: '/hash/atendimento'
+      preLoaderRoute: typeof AuthenticatedHashAtendimentoRouteImport
       parentRoute: typeof AuthenticatedHashRoute
     }
     '/_authenticated/hash/assinaturas': {
@@ -2957,6 +2977,7 @@ interface AuthenticatedHashRouteChildren {
   AuthenticatedHashAlertasRoute: typeof AuthenticatedHashAlertasRoute
   AuthenticatedHashAnunciosRoute: typeof AuthenticatedHashAnunciosRoute
   AuthenticatedHashAssinaturasRoute: typeof AuthenticatedHashAssinaturasRoute
+  AuthenticatedHashAtendimentoRoute: typeof AuthenticatedHashAtendimentoRoute
   AuthenticatedHashAuditoriaRoute: typeof AuthenticatedHashAuditoriaRoute
   AuthenticatedHashAvaliacoesRoute: typeof AuthenticatedHashAvaliacoesRoute
   AuthenticatedHashCardapioJsonldRoute: typeof AuthenticatedHashCardapioJsonldRoute
@@ -2988,6 +3009,7 @@ const AuthenticatedHashRouteChildren: AuthenticatedHashRouteChildren = {
   AuthenticatedHashAlertasRoute: AuthenticatedHashAlertasRoute,
   AuthenticatedHashAnunciosRoute: AuthenticatedHashAnunciosRoute,
   AuthenticatedHashAssinaturasRoute: AuthenticatedHashAssinaturasRoute,
+  AuthenticatedHashAtendimentoRoute: AuthenticatedHashAtendimentoRoute,
   AuthenticatedHashAuditoriaRoute: AuthenticatedHashAuditoriaRoute,
   AuthenticatedHashAvaliacoesRoute: AuthenticatedHashAvaliacoesRoute,
   AuthenticatedHashCardapioJsonldRoute: AuthenticatedHashCardapioJsonldRoute,
@@ -3127,3 +3149,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
