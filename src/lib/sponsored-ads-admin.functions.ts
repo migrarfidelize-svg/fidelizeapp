@@ -166,8 +166,8 @@ export const adminReviewAdCampaign = createServerFn({ method: "POST" })
       from_status: from,
       to_status: to,
       reason: data.reason ?? null,
-      creative_snapshot: campaign.creative_snapshot, // Manter o snapshot se disponível
-    });
+    } as any);
+
 
     await logAudit(userId, `sponsored_ad.${data.action}`, { campaign_id: data.campaign_id, from, to, reason: data.reason });
 
