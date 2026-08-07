@@ -6,29 +6,65 @@ const saveOtpTemplateSchema = z.object({
   template: z.string().min(10).max(500),
 });
 
-export const getOTPTemplate = createServerFn({ method: "GET" })
-  .handler(async () => {
+export const getOTPSettingsDetailed = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    
-    const { data, error } = await supabaseAdmin
+    const { getActiveWhatsAppProvider } = await import("./otp.functions");
+
+    // 1. Get Template
+    const { data: templateData } = await supabaseAdmin
       .from("system_settings")
       .select("value")
       .eq("namespace", "otp")
       .eq("key", "template")
       .maybeSingle();
 
-    if (error) {
-      console.error("[OTP] Error fetching template:", error);
-    }
+    // 2. Get Configs (validity, cooldown)
+    const { data: configData } = await supabaseAdmin
+      .from("system_settings")
+      .select("*")
+      .eq("namespace", "otp")
+      .in("key", ["validity_minutes", "cooldown_seconds", "max_attempts"]);
 
-    return { 
-      template: (data?.value as any)?.text || "Afidelize\n\nSeu código de acesso é {{code}}.\n\nEle expira em {{minutes}} minutos.\n\nNão compartilhe este código."
+    const configs = (configData || []).reduce((acc: any, row) => {
+      acc[row.key] = row.value;
+      return acc;
+    }, {
+      validity_minutes: 10,
+      cooldown_seconds: 60,
+      max_attempts: 5
+    });
+
+    // 3. Get Provider Info
+    const active = await getActiveWhatsAppProvider();
+
+    return {
+      template: (templateData?.value as any)?.text || "Afidelize\n\nSeu código de acesso é {{code}}.\n\nEle expira em {{minutes}} minutos.\n\nNão compartilhe este código.",
+      configs,
+      provider: active ? {
+        name: active.provider.meta.name,
+        id: active.provider.meta.id,
+        status: "connected", // Simplified for UI
+        enabled: active.runtime.enabled
+      } : null
     };
   });
 
 export const saveOTPTemplate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => saveOtpTemplateSchema.parse(d))
+  .inputValidator((d: unknown) => z.object({ 
+    template: z.string().min(10).max(500),
+    configs: z.object({
+      validity_minutes: z.number().min(1).max(60).optional(),
+      cooldown_seconds: z.number().min(10).max(300).optional(),
+      max_attempts: z.number().min(1).max(20).optional()
+    }).optional()
+  }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { supabase, userId } = context;
@@ -36,7 +72,8 @@ export const saveOTPTemplate = createServerFn({ method: "POST" })
     const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
     if (!isAdmin) throw new Error("Acesso restrito.");
 
-    const { error } = await supabaseAdmin
+    // Update Template
+    await supabaseAdmin
       .from("system_settings")
       .upsert({ 
         namespace: "otp",
@@ -44,7 +81,19 @@ export const saveOTPTemplate = createServerFn({ method: "POST" })
         value: { text: data.template } as any,
       }, { onConflict: "namespace,key" });
 
-    if (error) throw error;
+    // Update Configs if provided
+    if (data.configs) {
+      for (const [key, val] of Object.entries(data.configs)) {
+        if (val !== undefined) {
+          await supabaseAdmin.from("system_settings").upsert({
+            namespace: "otp",
+            key,
+            value: val as any
+          }, { onConflict: "namespace,key" });
+        }
+      }
+    }
+
     return { ok: true };
   });
 
