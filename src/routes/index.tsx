@@ -292,8 +292,8 @@ function SiteHeader() {
               </nav>
               <div className="mt-6 flex flex-col gap-2 border-t border-border/60 pt-6">
                 {session ? (
-                  <Button asChild className="h-12 rounded-full" onClick={() => setMenuOpen(false)}>
-                    <Link to="/app">Meu painel <ArrowRight className="ml-1 h-4 w-4" /></Link>
+                  <Button asChild className="h-12 rounded-full cursor-pointer" onClick={(e) => { setMenuOpen(false); handleDashboardClick(e); }}>
+                    <span className="flex items-center justify-center">Meu painel <ArrowRight className="ml-1 h-4 w-4" /></span>
                   </Button>
                 ) : (
                   <>
