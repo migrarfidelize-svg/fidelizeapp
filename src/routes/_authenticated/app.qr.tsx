@@ -121,8 +121,9 @@ export const Route = createFileRoute("/_authenticated/app/qr")({
     return { 
       dest: (["reviews", "linktree", "landing", "menu", "catalog"].includes(d) ? d : undefined) as QrDest | undefined,
       source: (search?.source as string) || undefined,
-    };
+    } as { dest?: QrDest; source?: string };
   },
+
   component: ReviewQrPage,
 });
 

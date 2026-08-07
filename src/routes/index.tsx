@@ -39,7 +39,8 @@ const FAQ_ITEMS: Array<[string, string]> = [
 export const Route = createFileRoute("/")({
   validateSearch: (search: Record<string, unknown>) => ({
     source: (search?.source as string) || undefined,
-  }),
+  } as { source?: string }),
+
 
   head: () => ({
     meta: [
