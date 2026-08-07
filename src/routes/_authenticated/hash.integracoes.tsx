@@ -160,6 +160,21 @@ function IntegrationsPage() {
           </section>
         </TabsContent>
 
+        <TabsContent value="otp" className="mt-6 space-y-10">
+          <section className="space-y-5">
+            <SectionBanner
+              title="WhatsApp / OTP"
+              subtitle="Configure provedores para envio de códigos de autenticação (OTP) e notificações transacionais via WhatsApp."
+              icon={MessageCircle}
+              gradient="from-emerald-600 via-green-600 to-teal-700"
+              accent="#10b981"
+              stats={[{ label: "Provedores", value: grouped.otp.length }, { label: "Ativos", value: otpConfigured }]}
+            />
+            {isLoading ? <SkeletonGrid /> : <Grid metas={grouped.otp} byKey={byKey} onChanged={() => saved.refetch()} />}
+          </section>
+        </TabsContent>
+
+
         <TabsContent value="marketing" className="mt-6 space-y-5">
           <SectionBanner
             title="Marketing &amp; Rastreamento"
