@@ -90,6 +90,7 @@ function Onboarding() {
   const [cropOpen, setCropOpen] = useState(false);
   const [rawFile, setRawFile] = useState<File | null>(null);
   const [logoRev, setLogoRev] = useState(0);
+  const [stepOverride, setStepOverride] = useState<StepId | null>(null);
   const prefill = (() => {
     try {
       const raw = localStorage.getItem("fidelize:onboarding-prefill");
