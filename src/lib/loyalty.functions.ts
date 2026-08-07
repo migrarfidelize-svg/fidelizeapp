@@ -1025,3 +1025,65 @@ export const deleteCampaign = createServerFn({ method: "POST" })
   });
 
 
+
+// ---------- Internal: Ensure initial resources on first payment ----------
+export async function ensureEstablishmentInitialResources(establishmentId: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  // 1. Criar campanha inicial se não existir nenhuma
+  const { data: campaigns } = await supabaseAdmin
+    .from("campaigns")
+    .select("id")
+    .eq("establishment_id", establishmentId)
+    .limit(1);
+
+  if (!campaigns || campaigns.length === 0) {
+    const { data: est } = await supabaseAdmin
+      .from("establishments")
+      .select("name, primary_color, accent_color")
+      .eq("id", establishmentId)
+      .single();
+
+    if (est) {
+      await supabaseAdmin.from("campaigns").insert({
+        establishment_id: establishmentId,
+        name: "Cartão Fidelidade",
+        reward_title: "Brinde Exclusivo",
+        reward_description: "Ganhe um brinde ao completar seu cartão!",
+        stamps_required: 10,
+        stamp_icon: "star",
+        primary_color: est.primary_color,
+        accent_color: est.accent_color,
+        active: true
+      });
+    }
+  }
+
+  // 2. Criar links padrão para Link Tree se não existirem
+  const { data: links } = await supabaseAdmin
+    .from("linktree_links")
+    .select("id")
+    .eq("establishment_id", establishmentId)
+    .limit(1);
+
+  if (!links || links.length === 0) {
+    await supabaseAdmin.from("linktree_links").insert([
+      {
+        establishment_id: establishmentId,
+        label: "Cartão Fidelidade",
+        url: "/cartao",
+        icon: "credit-card",
+        order_index: 0,
+        active: true
+      },
+      {
+        establishment_id: establishmentId,
+        label: "Fazer Avaliação",
+        url: "/avaliar",
+        icon: "star",
+        order_index: 1,
+        active: true
+      }
+    ]);
+  }
+}
