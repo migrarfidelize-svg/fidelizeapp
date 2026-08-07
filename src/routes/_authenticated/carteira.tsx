@@ -31,6 +31,11 @@ import { getMyWallet, getMyRewards } from "@/lib/my-wallet.functions";
 import { InboxBellBadge } from "@/components/wallet/InboxBellBadge";
 
 export const Route = createFileRoute("/_authenticated/carteira")({
+  beforeLoad: async () => {
+    const { resolveAuthenticatedDestination } = await import("@/lib/destination-resolver");
+    const to = await resolveAuthenticatedDestination();
+    if (to !== "/carteira") throw redirect({ to });
+  },
   loader: async ({ context }) => {
     // Prefetch common data to ensure Right Sidebar has content during SSR/initial load if needed
     await Promise.all([
