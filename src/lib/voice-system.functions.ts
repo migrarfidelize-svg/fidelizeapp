@@ -60,13 +60,12 @@ export const synthesizeGlobalEleven = createServerFn({ method: "POST" })
       throw new Error("ElevenLabs global: chave de API não configurada.");
     }
 
-    // Decrypt API Key before use
+    // Decrypt API Key before use using robust AES-256-GCM
     const encryptedKey = config.apiKey;
     let apiKey = encryptedKey;
-    if (encryptedKey.startsWith('enc:')) {
-      const raw = encryptedKey.substring(4);
-      const reversed = raw.split('').reverse().join('');
-      apiKey = Buffer.from(reversed, 'base64').toString('utf8');
+    if (encryptedKey) {
+      const { decryptSecret } = await import("./integrations/crypt.server");
+      apiKey = await decryptSecret(encryptedKey);
     }
 
     // Process template if event is provided
