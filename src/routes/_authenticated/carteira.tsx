@@ -109,7 +109,7 @@ function WalletLayout() {
   }, [isSidebarOpen]);
 
   return (
-    <div className="min-h-screen bg-[oklch(0.985_0.006_285)] dark:bg-[oklch(0.14_0.018_288)] font-sans transition-colors duration-300">
+    <div className="min-h-screen bg-[oklch(0.985_0.006_285)] dark:bg-[oklch(0.14_0.018_288)] font-sans transition-colors duration-300 flex">
       
       {/* 1. SIDEBAR (DESKTOP) & DRAWER (MOBILE) */}
       <aside className={cn(
