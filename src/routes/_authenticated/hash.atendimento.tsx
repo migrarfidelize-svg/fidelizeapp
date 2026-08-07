@@ -493,51 +493,105 @@ function AtendimentoCRM() {
           </TabsContent>
 
           <TabsContent value="fluxos" className="space-y-6">
-            <div className="flex justify-between items-center bg-card p-6 rounded-2xl border border-border shadow-sm">
-                <div className="space-y-1">
-                    <h3 className="text-lg font-bold">Gerenciador de Fluxos</h3>
-                    <p className="text-xs text-muted-foreground">Desenhe caminhos de atendimento personalizados.</p>
-                </div>
-                <Button className="gradient-brand shadow-lg shadow-primary/20"><Plus className="h-4 w-4 mr-2" /> Novo Fluxo</Button>
-            </div>
-            {flows?.length === 0 ? (
-                <Card className="dash-card py-20 text-center text-muted-foreground border-dashed border-2">
-                    <div className="bg-primary/5 h-20 w-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <GitBranch className="h-10 w-10 text-primary opacity-40" />
-                    </div>
-                    <h4 className="text-base font-bold text-foreground mb-1">Nenhum fluxo encontrado</h4>
-                    <p className="text-sm max-w-[300px] mx-auto">Comece criando um fluxo de boas-vindas para seus clientes.</p>
-                </Card>
+            {editingFlow ? (
+              <FlowEditor flow={editingFlow} onBack={() => setEditingFlow(null)} />
+            ) : simulatingFlow ? (
+              <div className="space-y-4">
+                <Button variant="ghost" onClick={() => setSimulatingFlow(null)}>Voltar para lista</Button>
+                <FlowSimulator flow={simulatingFlow} />
+              </div>
             ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {flows?.map((f: any) => (
-                        <Card key={f.id} className="dash-card overflow-hidden hover:border-primary/40 transition-all group">
-                            <div className="p-5 space-y-4">
-                                <div className="flex justify-between items-start">
-                                    <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center">
-                                        <GitBranch className="h-6 w-6 text-primary" />
-                                    </div>
-                                    <Badge variant={f.is_active ? "default" : "secondary"} className="text-[10px] uppercase font-bold px-2">
-                                        {f.is_active ? "Ativo" : "Rascunho"}
-                                    </Badge>
-                                </div>
-                                <div className="space-y-1">
-                                    <h4 className="font-bold text-sm line-clamp-1">{f.name}</h4>
-                                    <p className="text-xs text-muted-foreground line-clamp-2 min-h-[32px]">{f.description || 'Sem descrição'}</p>
-                                </div>
-                                <div className="flex items-center gap-4 text-[10px] text-muted-foreground font-medium pt-2 border-t">
-                                    <div className="flex items-center gap-1"><History className="h-3 w-3" /> {new Date(f.updated_at).toLocaleDateString()}</div>
-                                    <div className="flex items-center gap-1"><Users className="h-3 w-3" /> 0 execs</div>
-                                </div>
-                            </div>
-                            <div className="bg-muted/30 p-2 flex gap-2 border-t border-border/40">
-                                <Button variant="secondary" size="sm" className="flex-1 text-xs h-8"><Edit3 className="h-3 w-3 mr-2" /> Editar</Button>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /></Button>
-                            </div>
-                        </Card>
-                    ))}
+              <>
+                <div className="flex justify-between items-center bg-card p-6 rounded-2xl border border-border shadow-sm">
+                    <div className="space-y-1">
+                        <h3 className="text-lg font-bold">Gerenciador de Fluxos</h3>
+                        <p className="text-xs text-muted-foreground">Desenhe caminhos de atendimento personalizados.</p>
+                    </div>
+                    <Button onClick={() => setEditingFlow({ name: "Novo Fluxo", steps: [] })} className="gradient-brand shadow-lg shadow-primary/20"><Plus className="h-4 w-4 mr-2" /> Novo Fluxo</Button>
                 </div>
+                {flows?.length === 0 ? (
+                    <Card className="dash-card py-20 text-center text-muted-foreground border-dashed border-2">
+                        <div className="bg-primary/5 h-20 w-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <GitBranch className="h-10 w-10 text-primary opacity-40" />
+                        </div>
+                        <h4 className="text-base font-bold text-foreground mb-1">Nenhum fluxo encontrado</h4>
+                        <p className="text-sm max-w-[300px] mx-auto">Comece criando um fluxo de boas-vindas para seus clientes.</p>
+                    </Card>
+                ) : (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {flows?.map((f: any) => (
+                            <Card key={f.id} className="dash-card overflow-hidden hover:border-primary/40 transition-all group">
+                                <div className="p-5 space-y-4">
+                                    <div className="flex justify-between items-start">
+                                        <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                                            <GitBranch className="h-6 w-6 text-primary" />
+                                        </div>
+                                        <Badge variant={f.is_active ? "default" : "secondary"} className="text-[10px] uppercase font-bold px-2">
+                                            {f.is_active ? "Ativo" : "Rascunho"}
+                                        </Badge>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h4 className="font-bold text-sm line-clamp-1">{f.name}</h4>
+                                        <p className="text-xs text-muted-foreground line-clamp-2 min-h-[32px]">{f.description || 'Sem descrição'}</p>
+                                    </div>
+                                    <div className="flex items-center gap-4 text-[10px] text-muted-foreground font-medium pt-2 border-t">
+                                        <div className="flex items-center gap-1"><History className="h-3 w-3" /> {new Date(f.updated_at).toLocaleDateString()}</div>
+                                        <div className="flex items-center gap-1"><Users className="h-3 w-3" /> 0 execs</div>
+                                    </div>
+                                </div>
+                                <div className="bg-muted/30 p-2 flex gap-2 border-t border-border/40">
+                                    <Button variant="secondary" size="sm" className="flex-1 text-xs h-8" onClick={() => setEditingFlow(f)}><Edit3 className="h-3 w-3 mr-2" /> Editar</Button>
+                                    <Button variant="outline" size="sm" className="h-8 w-8 px-0" onClick={() => setSimulatingFlow(f)}><Play className="h-3.5 w-3.5" /></Button>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /></Button>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                )}
+              </>
             )}
+          </TabsContent>
+
+          <TabsContent value="config" className="space-y-6">
+            <QuickRepliesManager />
+          </TabsContent>
+
+          <TabsContent value="contatos" className="space-y-6">
+            <Card className="dash-card p-6">
+               <div className="flex justify-between items-center mb-6">
+                  <h3 className="font-bold">Diretório de Contatos</h3>
+                  <div className="flex gap-2">
+                     <Input placeholder="Buscar contatos..." className="h-9 text-xs w-[250px]" />
+                     <Button size="sm"><Search className="h-4 w-4" /></Button>
+                  </div>
+               </div>
+               <div className="border rounded-xl overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/50 border-b">
+                      <tr>
+                        <th className="text-left p-3 font-bold text-[10px] uppercase">Cliente</th>
+                        <th className="text-left p-3 font-bold text-[10px] uppercase">WhatsApp</th>
+                        <th className="text-left p-3 font-bold text-[10px] uppercase">Último Contato</th>
+                        <th className="text-left p-3 font-bold text-[10px] uppercase">Status</th>
+                        <th className="text-right p-3 font-bold text-[10px] uppercase">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {conversations?.map((c: any) => (
+                        <tr key={c.id} className="border-b hover:bg-muted/30 transition-colors">
+                          <td className="p-3 font-medium">{c.customer_phone}</td>
+                          <td className="p-3 text-muted-foreground text-xs">{c.customer_phone}</td>
+                          <td className="p-3 text-xs">{new Date(c.last_message_at).toLocaleDateString()}</td>
+                          <td className="p-3"><Badge variant="outline" className="text-[9px] uppercase">{c.status}</Badge></td>
+                          <td className="p-3 text-right">
+                             <Button variant="ghost" size="sm" className="h-7 text-[10px]" onClick={() => { setSelectedConversation(c); setActiveTab("conversas"); }}>Ver Conversa</Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+               </div>
+            </Card>
           </TabsContent>
         </div>
       </Tabs>
