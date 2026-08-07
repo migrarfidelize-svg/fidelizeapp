@@ -97,14 +97,15 @@ function WalletLayout() {
     }))
     .slice(0, 5);
 
-  // Prevent scroll when sidebar is open on mobile
-  useEffect(() => {
-    if (isSidebarOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-  }, [isSidebarOpen]);
+  // Navigation tabs (Início, Descobrir, QR Code central, Vouchers, Perfil)
+  const tabs = [
+    { icon: Home, label: "Início", path: "/carteira" },
+    { icon: Compass, label: "Descobrir", path: "/carteira/descobrir" },
+    { icon: QrCode, label: "QR Code", path: "/app/qr", isFab: true },
+    { icon: Wallet, label: "Vouchers", path: "/carteira/premios" },
+    { icon: User, label: "Perfil", path: "/carteira/perfil" },
+  ];
+
 
   return (
     <div className="min-h-screen bg-[oklch(0.985_0.006_285)] dark:bg-[oklch(0.14_0.018_288)] font-sans transition-colors duration-300 flex">
