@@ -515,7 +515,7 @@ export const saveCRMQuickReply = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ 
     id: z.string().uuid().optional(),
     shortcut: z.string().min(2),
-    content: z.string().min(1)
+    message: z.string().min(1)
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
