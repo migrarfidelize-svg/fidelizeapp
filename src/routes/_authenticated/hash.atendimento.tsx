@@ -33,24 +33,23 @@ export const Route = createFileRoute("/_authenticated/hash/atendimento")({
 
 function AtendimentoCRM() {
   const queryClient = useQueryClient();
+  useCRMRealtime();
   const [activeTab, setActiveTab] = useState("conversas");
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
   const [messageInput, setMessageInput] = useState("");
   const [isNote, setIsNote] = useState(false);
 
-  const { data: stats } = useQuery({ queryKey: ["crm-stats"], queryFn: () => getCRMStats(), refetchInterval: 10000 });
+  const { data: stats } = useQuery({ queryKey: ["crm-stats"], queryFn: () => getCRMStats() });
   const { data: conversations } = useQuery({ 
     queryKey: ["crm-conversations"], 
-    queryFn: () => getCRMConversations({ data: { status: "all" } }),
-    refetchInterval: 5000 
+    queryFn: () => getCRMConversations({ data: { status: "all" } })
   });
   const { data: flows } = useQuery({ queryKey: ["crm-flows"], queryFn: () => getCRMFlows() });
   const { data: agentData } = useQuery({ queryKey: ["crm-agent-settings"], queryFn: () => getAgentSettings() });
   const { data: messages } = useQuery({ 
     queryKey: ["crm-messages", selectedConversation?.id], 
     queryFn: () => getCRMConversationMessages({ data: { conversationId: selectedConversation.id } }),
-    enabled: !!selectedConversation?.id,
-    refetchInterval: 3000
+    enabled: !!selectedConversation?.id
   });
 
   const sendMessageMutation = useMutation({
