@@ -433,3 +433,93 @@ export const saveCRMTag = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true };
   });
+
+// --- CRM FLOWS EXTENDED ---
+export const deleteCRMFlow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ flowId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("crm_flows").delete().eq("id", data.flowId);
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const duplicateCRMFlow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ flowId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    
+    const { data: flow } = await supabaseAdmin.from("crm_flows").select("*, steps:crm_flow_steps(*)").eq("id", data.flowId).single();
+    if (!flow) throw new Error("Fluxo não encontrado");
+
+    const { data: newFlow, error: flowErr } = await supabaseAdmin.from("crm_flows").insert({
+      name: `${flow.name} (Cópia)`,
+      description: flow.description,
+      is_active: false
+    }).select("id").single();
+
+    if (flowErr) throw flowErr;
+
+    if (flow.steps && flow.steps.length > 0) {
+      const stepsToInsert = flow.steps.map((s: any) => ({
+        flow_id: newFlow.id,
+        step_key: s.step_key,
+        payload: s.payload,
+        sort_order: s.sort_order
+      }));
+      await supabaseAdmin.from("crm_flow_steps").insert(stepsToInsert);
+    }
+
+    return { id: newFlow.id };
+  });
+
+// --- CRM CONTACTS ---
+export const getCRMContacts = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+    
+    // Unindo perfis (clientes) com informações de conversas do CRM
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*, conversations:crm_conversations(last_message_at, status)")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  });
+
+// --- CRM QUICK REPLIES ---
+export const getCRMQuickReplies = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+    const { data } = await supabase.from("crm_quick_replies").select("*").order("shortcut");
+    return data || [];
+  });
+
+export const saveCRMQuickReply = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ 
+    id: z.string().uuid().optional(),
+    shortcut: z.string().min(2),
+    content: z.string().min(1)
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("crm_quick_replies").upsert(data);
+    if (error) throw error;
+    return { ok: true };
+  });
