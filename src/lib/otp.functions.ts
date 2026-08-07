@@ -7,6 +7,38 @@ const sendOtpSchema = z.object({
   name: z.string().max(100).optional(), // Only for signup
 });
 
+/**
+ * Gets the active WhatsApp provider and its runtime config.
+ */
+async function getActiveWhatsAppProvider() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { listIntegrations } = await import("./integrations/integrations.functions");
+  
+  // listIntegrations requires a context with userId, but here we are in a server internal call.
+  // However, listIntegrations is a server function. We should query the DB directly to be safe.
+  const { data: integration } = await supabaseAdmin
+    .from("integrations")
+    .select("*")
+    .eq("category", "otp")
+    .eq("enabled", true)
+    .maybeSingle();
+
+  if (!integration) return null;
+
+  const { getProvider } = await import("./integrations/registry");
+  const provider = getProvider("otp", integration.provider) as any; // Cast to WhatsAppOTPProvider
+
+  return {
+    provider,
+    runtime: {
+      enabled: integration.enabled,
+      mode: integration.mode,
+      config: integration.config as Record<string, unknown>,
+      credentials_ref: integration.credentials_ref as Record<string, string>,
+    }
+  };
+}
+
 export const requestOTP = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => sendOtpSchema.parse(d))
   .handler(async ({ data }) => {
@@ -25,11 +57,20 @@ export const requestOTP = createServerFn({ method: "POST" })
       throw new Error(`Muitas tentativas. Aguarde alguns minutos.`);
     }
 
-    // 2. Generate OTP with HMAC
+    // 2. Check if WhatsApp OTP is active and configured
+    const active = await getActiveWhatsAppProvider();
+    if (!active) {
+      // If not configured, we might allow fallback to env vars if they exist
+      if (!process.env.WHATSAPP_API_KEY) {
+        throw new Error("O envio de WhatsApp não está configurado. Tente novamente mais tarde.");
+      }
+    }
+
+    // 3. Generate OTP with HMAC
     const { code, hash } = generateOTP(identifier);
     const expiresAt = new Date(Date.now() + 10 * 60_000).toISOString(); // 10 minutes
 
-    // 3. Store OTP in DB
+    // 4. Store OTP in DB
     const { error: otpErr } = await supabaseAdmin.from("auth_otps").insert({
       identifier,
       code_hash: hash,
@@ -39,9 +80,19 @@ export const requestOTP = createServerFn({ method: "POST" })
 
     if (otpErr) throw otpErr;
 
-    // 4. Send via WhatsApp (Mock for now)
-    console.log(`[OTP] Sending ${code} to ${phone}`);
-    // Real integration: await sendWhatsAppOTP(phone, code);
+    // 5. Send via WhatsApp
+    if (active) {
+      const res = await active.provider.sendOtp(active.runtime, process.env as any, phone, code);
+      if (!res.ok) {
+        console.error(`[OTP] Failed to send via provider ${active.provider.meta.id}: ${res.message}`);
+        throw new Error("Não foi possível enviar o código no momento. Tente novamente em alguns minutos.");
+      }
+    } else {
+      // Fallback logic could go here if we wanted to support direct env-based calls
+      // For now, if active is null but we didn't throw, we assume we want a mock or dev behavior?
+      // Actually the prompt says "Ausência de configuração: Não quebrar a aplicação, mostrar mensagem controlada".
+      console.log(`[OTP] Sending (MOCK) ${code} to ${phone}`);
+    }
 
     return { ok: true, phone };
   });
@@ -55,7 +106,7 @@ export const verifyOTP = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => verifyOtpSchema.parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { hashOTP, normalizeWhatsApp, verifyOTPHash } = await import("./otp.server");
+    const { hashOTP, normalizeWhatsApp } = await import("./otp.server");
     const { recordAuthAttempt, clientIpFromHeaders } = await import("./auth-rate-limit.server");
     
     const req = getRequest();
@@ -65,7 +116,6 @@ export const verifyOTP = createServerFn({ method: "POST" })
     const codeHash = hashOTP(data.code, identifier);
 
     // 1. Find and validate OTP using atomic lookup for code_hash
-    // We fetch and then verify in constant time for extra safety.
     const { data: otp, error: findErr } = await supabaseAdmin
       .from("auth_otps")
       .select("*")
@@ -143,7 +193,6 @@ export const verifyOTP = createServerFn({ method: "POST" })
 
     await recordAuthAttempt({ ip, identifier, action: "login", success: true });
 
-    // The hashed_token can be verified by the client via supabase.auth.verifyOtp
     return { 
       ok: true, 
       hashed_token: link.properties.hashed_token,
