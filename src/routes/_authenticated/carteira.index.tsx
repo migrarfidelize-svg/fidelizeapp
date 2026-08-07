@@ -163,7 +163,7 @@ function WalletHome() {
               <StreakCard weeks={streak.weeks} lastVisit={streak.lastVisit} atRisk={streak.atRisk} daysLeft={streak.daysLeft} />
             )}
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-3 xl:grid-cols-3 xl:gap-6">
               <KpiTile label="Cartões" value={items.length} />
               <KpiTile label="Carimbos" value={totalStamps} icon={<Stamp className="h-3.5 w-3.5" />} />
               <KpiTile label="Prontas" value={readyRewards} accent={readyRewards > 0 ? "primary" : undefined} icon={<Gift className="h-3.5 w-3.5" />} />
@@ -208,14 +208,43 @@ function WalletHome() {
                   Nenhum cartão encontrado para “{query}”.
                 </p>
               ) : (
-                <WalletStack key={term} items={visibleFeatured.slice(0, 5)} />
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                  <div className="md:col-span-1">
+                    <WalletStack key={term} items={visibleFeatured.slice(0, 5)} />
+                  </div>
+                  <div className="hidden md:grid md:col-span-1 xl:col-span-2 grid-cols-1 xl:grid-cols-2 gap-4 h-fit">
+                    {visibleFeatured.slice(1, 5).map(item => (
+                       <Link 
+                        key={item.customer.id} 
+                        to="/carteira/$slug" 
+                        params={{ slug: (item.establishment as { slug: string }).slug }}
+                        className="group flex items-center gap-4 p-4 rounded-3xl bg-background/40 border border-border/40 hover:bg-background/60 hover:border-primary/30 transition-all"
+                       >
+                          <div className="h-12 w-12 rounded-2xl overflow-hidden border border-border/40 shrink-0">
+                            { (item.establishment as { logo_url: string }).logo_url ? (
+                              <img src={(item.establishment as { logo_url: string }).logo_url} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full bg-primary/10 flex items-center justify-center font-bold text-primary">
+                                {(item.establishment as { name: string }).name.slice(0,1)}
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-black truncate">{(item.establishment as { name: string }).name}</p>
+                            <p className="text-[10px] text-muted-foreground font-bold">{item.card?.stamps || 0} de {(item.card?.campaign as { stamps_required: number })?.stamps_required || 0} carimbos</p>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                       </Link>
+                    ))}
+                  </div>
+                </div>
               )}
             </section>
 
 
             {feed.length > 0 && (
               <section>
-                <div className="mb-2 flex items-center justify-between">
+                <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                     <Bell className="mr-1 inline h-3.5 w-3.5" /> Atividade recente
                   </h2>
@@ -223,7 +252,7 @@ function WalletHome() {
                     Ver tudo →
                   </Link>
                 </div>
-                <ol className="space-y-2 rounded-3xl border border-border/60 bg-card/30 p-2">
+                <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   {feed.map((f) => <FeedRow key={f.id} f={f} />)}
                 </ol>
               </section>

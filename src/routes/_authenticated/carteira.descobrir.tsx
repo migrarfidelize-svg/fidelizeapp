@@ -188,16 +188,16 @@ function DiscoverPage() {
 
   return (
     <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["discovery-establishments"] })}>
-      <div className="px-4 pb-8 space-y-6">
+      <div className="px-4 pb-8 space-y-6 xl:px-8 xl:py-10">
         {/* Header Superior Premium */}
-        <div className="pt-6">
+        <div className="pt-6 xl:pt-0">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-sm">
-              <Compass className="h-6 w-6" />
+            <div className="flex h-10 w-10 xl:h-14 xl:w-14 items-center justify-center rounded-2xl xl:rounded-3xl bg-primary/10 text-primary shadow-sm">
+              <Compass className="h-6 w-6 xl:h-8 xl:w-8" />
             </div>
             <div>
-              <h1 className="font-display text-2xl font-black tracking-tighter text-neutral-900 dark:text-white">Descobrir</h1>
-              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground/70">
+              <h1 className="font-display text-2xl xl:text-4xl font-black tracking-tighter text-neutral-900 dark:text-white">Descobrir</h1>
+              <p className="text-[11px] xl:text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground/70">
                 Novas experiências próximas a você
               </p>
             </div>
@@ -262,15 +262,15 @@ function DiscoverPage() {
         ) : (
           <>
             {/* Busca Premium Clean */}
-            <div className="group relative">
+            <div className="group relative xl:max-w-2xl">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-muted-foreground transition-colors group-focus-within:text-primary">
-                <Search className="h-4 w-4" />
+                <Search className="h-4 w-4 xl:h-5 xl:w-5" />
               </div>
               <input
                 value={query}
                 onChange={(ev) => setQuery(ev.target.value)}
                 placeholder="Buscar por nome, cidade ou tipo…"
-                className="w-full rounded-2xl border border-border/60 bg-white/50 dark:bg-black/20 py-3.5 pl-10 pr-10 text-sm font-medium outline-none transition-all placeholder:text-muted-foreground/50 focus:border-primary/50 focus:bg-white dark:focus:bg-black/40 focus:ring-4 focus:ring-primary/5 shadow-sm"
+                className="w-full rounded-2xl xl:rounded-3xl border border-border/60 bg-white/50 dark:bg-black/20 py-3.5 xl:py-5 pl-10 xl:pl-14 pr-10 text-sm xl:text-base font-medium outline-none transition-all placeholder:text-muted-foreground/50 focus:border-primary/50 focus:bg-white dark:focus:bg-black/40 focus:ring-4 focus:ring-primary/5 shadow-sm"
               />
               {query && (
                 <button
@@ -320,7 +320,7 @@ function DiscoverPage() {
                       Atualizar
                     </button>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                     {categories.map((c) => (
                       <button
                         key={c.id}
@@ -396,7 +396,7 @@ function DiscoverPage() {
                     </button>
                   </div>
                 ) : (
-                  <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                  <ul className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
                     {visible.map((e) => (
                       <DiscoverRow key={e.id} e={e} nearby={!!myCityNorm && normalizeCity(e.city) === myCityNorm} />
                     ))}
