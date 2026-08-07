@@ -193,7 +193,7 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
     <div className="space-y-6 overflow-hidden">
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
-          <Tabs defaultValue="overview" className="w-full">
+          <Tabs defaultValue="eleven" className="w-full">
             <div className="overflow-x-auto -mx-1 px-1 mb-2">
               <TabsList className="inline-flex min-w-full lg:grid lg:grid-cols-6 h-auto p-1 bg-muted/50">
                 <TabsTrigger value="overview" className="flex-1 py-2">Geral</TabsTrigger>
