@@ -262,7 +262,7 @@ function WalletLayout() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-12">
               
               {/* Primary Column */}
-              <div className="lg:col-span-8 xl:col-span-9 space-y-12">
+              <div className="lg:col-span-8 xl:col-span-9 space-y-12 pb-24 lg:pb-0">
                 <Outlet />
               </div>
 
