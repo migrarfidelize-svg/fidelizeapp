@@ -1,32 +1,67 @@
+import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
-import { MessageSquare, Users, History, UserCheck, GitBranch, Contact, FileText, Smartphone, Settings2, Send } from "lucide-react";
+import { MessageSquare, Users, History, UserCheck, GitBranch, Contact, FileText, Smartphone, Settings2, Send, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getOTPTemplate, saveOTPTemplate, sendOTPTestMessage } from "@/lib/atendimento.functions";
+
 
 export const Route = createFileRoute("/_authenticated/hash/atendimento")({
   component: AtendimentoCRM,
 });
 
 function AtendimentoCRM() {
-  const [otpTemplate, setOtpTemplate] = useState(
-    "Afidelize\n\nSeu código de acesso é {{code}}.\n\nEle expira em {{minutes}} minutos.\n\nNão compartilhe este código."
-  );
+  const queryClient = useQueryClient();
+  const getTemplate = useServerFn(getOTPTemplate);
+  const saveTemplate = useServerFn(saveOTPTemplate);
+  const sendTest = useServerFn(sendOTPTestMessage);
 
-  const handleSendTest = () => {
-    toast.info("Funcionalidade de teste será integrada ao provider global.");
-  };
+  const { data: templateData, isLoading: isLoadingTemplate } = useQuery({
+    queryKey: ["otp-template"],
+    queryFn: () => getTemplate(),
+  });
 
-  const handleSaveTemplate = () => {
-    toast.success("Template de OTP salvo com sucesso.");
-  };
+  const [otpTemplate, setOtpTemplate] = useState("");
+  const [testPhone, setTestPhone] = useState("");
+
+  useEffect(() => {
+    if (templateData?.template) {
+      setOtpTemplate(templateData.template);
+    }
+  }, [templateData]);
+
+  const saveMutation = useMutation({
+    mutationFn: (template: string) => saveTemplate({ data: { template } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["otp-template"] });
+      toast.success("Template de OTP salvo com sucesso.");
+    },
+    onError: (err: any) => toast.error(err.message || "Erro ao salvar template"),
+  });
+
+  const testMutation = useMutation({
+    mutationFn: () => {
+      const msg = otpTemplate
+        .replace("{{code}}", "123456")
+        .replace("{{minutes}}", "10");
+      return sendTest({ data: { phone: testPhone, message: msg } });
+    },
+    onSuccess: () => toast.success("Mensagem de teste enviada!"),
+    onError: (err: any) => toast.error(err.message || "Erro ao enviar teste"),
+  });
+
+  if (isLoadingTemplate) return <RouteLoading label="Carregando configurações..." />;
+
 
   return (
     <div className="space-y-8">
@@ -105,10 +140,16 @@ function AtendimentoCRM() {
                     </p>
                   </div>
                   <div className="flex gap-3">
-                    <Button className="gradient-brand text-primary-foreground" onClick={handleSaveTemplate}>
+                    <Button 
+                      className="gradient-brand text-primary-foreground" 
+                      onClick={() => saveMutation.mutate(otpTemplate)}
+                      disabled={saveMutation.isPending}
+                    >
+                      {saveMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                       Salvar Template
                     </Button>
                   </div>
+
                 </CardContent>
               </Card>
 
@@ -129,13 +170,27 @@ function AtendimentoCRM() {
                     <div className="space-y-2">
                       <Label>Enviar Mensagem de Teste</Label>
                       <div className="flex gap-2">
-                        <Input placeholder="5511999999999" className="flex-1" />
-                        <Button variant="outline" onClick={handleSendTest}>
-                          <Send className="h-4 w-4 mr-2" /> Testar
+                        <Input 
+                          placeholder="5511999999999" 
+                          className="flex-1" 
+                          value={testPhone}
+                          onChange={(e) => setTestPhone(e.target.value)}
+                        />
+                        <Button 
+                          variant="outline" 
+                          onClick={() => testMutation.mutate()}
+                          disabled={testMutation.isPending || !testPhone}
+                        >
+                          {testMutation.isPending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <><Send className="h-4 w-4 mr-2" /> Testar</>
+                          )}
                         </Button>
                       </div>
                     </div>
                   </div>
+
                 </CardContent>
               </Card>
             </div>

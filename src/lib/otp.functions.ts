@@ -10,7 +10,7 @@ const sendOtpSchema = z.object({
 /**
  * Gets the active WhatsApp provider and its runtime config.
  */
-async function getActiveWhatsAppProvider() {
+export async function getActiveWhatsAppProvider() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { listIntegrations } = await import("./integrations/integrations.functions");
   
@@ -70,6 +70,19 @@ export const requestOTP = createServerFn({ method: "POST" })
     const { code, hash } = generateOTP(identifier);
     const expiresAt = new Date(Date.now() + 10 * 60_000).toISOString(); // 10 minutes
 
+    // 3b. Fetch Custom Template
+    const { data: configRow } = await supabaseAdmin
+      .from("config")
+      .select("value")
+      .eq("key", "otp_template")
+      .maybeSingle();
+    
+    const template = (configRow?.value as string) || "Afidelize\n\nSeu código de acesso é {{code}}.\n\nEle expira em {{minutes}} minutos.\n\nNão compartilhe este código.";
+    const message = template
+      .replace("{{code}}", code)
+      .replace("{{minutes}}", "10");
+
+
     // 4. Store OTP in DB
     const { error: otpErr } = await supabaseAdmin.from("auth_otps").insert({
       identifier,
@@ -82,7 +95,7 @@ export const requestOTP = createServerFn({ method: "POST" })
 
     // 5. Send via WhatsApp
     if (active) {
-      const res = await active.provider.sendOtp(active.runtime, process.env as any, phone, code);
+      const res = await active.provider.sendTestMessage(active.runtime, process.env as any, phone, message);
       if (!res.ok) {
         console.error(`[OTP] Failed to send via provider ${active.provider.meta.id}: ${res.message}`);
         throw new Error("Não foi possível enviar o código no momento. Tente novamente em alguns minutos.");
