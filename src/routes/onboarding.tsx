@@ -334,7 +334,8 @@ function Onboarding() {
           </nav>
 
           {/* Section: Empresa */}
-          <Section
+          {activeStep === "empresa" && (
+            <Section
             icon={Building2}
             title="Configurar sua empresa"
             subtitle="Comece com a identidade base do seu negócio."
