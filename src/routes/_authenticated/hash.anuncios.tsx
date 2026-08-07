@@ -3,9 +3,9 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Megaphone, CheckCircle2, XCircle, PencilLine, Pause, Play, Gift, Settings2, TrendingUp, Sparkles } from "lucide-react";
+import { Megaphone, CheckCircle2, XCircle, PencilLine, Pause, Play, Gift, Settings2, TrendingUp, Sparkles, Plus, Copy, Trash2, ChevronDown } from "lucide-react";
 import { SponsoredAdCard } from "@/components/SponsoredAdCard";
-
+import { AdminCampaignForm } from "@/components/AdminCampaignForm";
 import { RouteLoading } from "@/components/RouteLoading";
 import {
   adminAdsOverview,
@@ -14,6 +14,7 @@ import {
   adminGrantCourtesyAd,
   adminGetAdsSettings,
   adminSaveAdsSettings,
+  adminDuplicateAdCampaign,
 } from "@/lib/sponsored-ads-admin.functions";
 import { AD_STATUS_META, ctr, formatCents, type AdStatus } from "@/lib/sponsored-ads-core";
 
@@ -27,14 +28,13 @@ export const Route = createFileRoute("/_authenticated/hash/anuncios")({
     ],
   }),
   component: AdminAdsPage,
-  pendingComponent: () => <RouteLoading label="Carregando anúncios…" fullscreen={false} />,
 });
 
 const FILTERS: { id: string | null; label: string }[] = [
-  { id: "pending_review", label: "Em análise" },
   { id: "active", label: "No ar" },
-  { id: "payment_pending", label: "Aguardando PIX" },
-  { id: "changes_requested", label: "Correção" },
+  { id: "scheduled", label: "Agendados" },
+  { id: "pending_review", label: "Em análise" },
+  { id: "paused", label: "Pausados" },
   { id: "expired", label: "Encerrados" },
   { id: null, label: "Todos" },
 ];
@@ -43,6 +43,8 @@ function AdminAdsPage() {
   const qc = useQueryClient();
   const [status, setStatus] = useState<string | null>("pending_review");
   const [tab, setTab] = useState<"campanhas" | "config">("campanhas");
+  const [isCreating, setIsCreating] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
 
   const overviewFn = useServerFn(adminAdsOverview);
   const listFn = useServerFn(adminListAdCampaigns);
@@ -56,9 +58,15 @@ function AdminAdsPage() {
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["admin-ads-list"] });
     qc.invalidateQueries({ queryKey: ["admin-ads-overview"] });
+    setIsCreating(false);
+    setEditing(null);
   };
 
   const o = (overview.data ?? {}) as any;
+
+  if (isCreating || editing) {
+    return <AdminCampaignForm campaign={editing} onDone={refresh} onCancel={() => { setIsCreating(false); setEditing(null); }} />;
+  }
 
   return (
     <div className="space-y-6">
@@ -68,8 +76,14 @@ function AdminAdsPage() {
         </div>
         <div className="min-w-0 flex-1">
           <h1 className="font-display text-2xl font-bold tracking-tight">Anúncios patrocinados</h1>
-          <p className="text-sm text-muted-foreground">Moderação de criativos, receita e regras da vitrine.</p>
+          <p className="text-sm text-muted-foreground">Central administrativa de anúncios e destaques.</p>
         </div>
+        <button
+            onClick={() => setIsCreating(true)}
+            className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-lg shadow-primary/20"
+        >
+            <Plus className="h-4 w-4" /> Criar Anúncio
+        </button>
         <div className="flex gap-1 rounded-xl border border-border/60 p-1">
           {(["campanhas", "config"] as const).map((t) => (
             <button
@@ -121,7 +135,7 @@ function AdminAdsPage() {
           ) : (
             <div className="space-y-3">
               {(list.data ?? []).map((c: any) => (
-                <AdminCampaignRow key={c.id} campaign={c} onDone={refresh} />
+                <AdminCampaignRow key={c.id} campaign={c} onEdit={() => setEditing(c)} onDone={refresh} />
               ))}
             </div>
           )}
@@ -144,31 +158,27 @@ function Kpi({ label, value, icon: Icon }: { label: string; value: string; icon:
   );
 }
 
-function AdminCampaignRow({ campaign, onDone }: { campaign: any; onDone: () => void }) {
+function AdminCampaignRow({ campaign, onEdit, onDone }: { campaign: any; onEdit: () => void; onDone: () => void }) {
   const reviewFn = useServerFn(adminReviewAdCampaign);
   const courtesyFn = useServerFn(adminGrantCourtesyAd);
-  const [reason, setReason] = useState("");
+  const dupFn = useServerFn(adminDuplicateAdCampaign);
+  
   const status = campaign.status as AdStatus;
   const meta = AD_STATUS_META[status] ?? AD_STATUS_META.draft;
 
   const review = useMutation({
-    mutationFn: (action: string) => reviewFn({ data: { campaign_id: campaign.id, action: action as any, reason: reason || undefined } }),
-    onSuccess: () => {
-      toast.success("Campanha atualizada.");
-      setReason("");
-      onDone();
-    },
+    mutationFn: (action: string) => reviewFn({ data: { campaign_id: campaign.id, action: action as any } }),
+    onSuccess: () => { toast.success("Campanha atualizada."); onDone(); },
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const courtesy = useMutation({
-    mutationFn: () => courtesyFn({ data: { campaign_id: campaign.id, days: 7, reason: reason || "Cortesia comercial" } }),
-    onSuccess: () => {
-      toast.success("Cortesia concedida.");
-      onDone();
-    },
-    onError: (e: Error) => toast.error(e.message),
+  const dup = useMutation({
+      mutationFn: () => dupFn({ data: { id: campaign.id } }),
+      onSuccess: () => { toast.success("Campanha duplicada."); onDone(); },
+      onError: (e: Error) => toast.error(e.message)
   });
+
+  const badgeColor = campaign.origin === 'admin' ? 'bg-indigo-500/10 text-indigo-600' : 'bg-orange-500/10 text-orange-600';
 
   return (
     <article className="rounded-2xl border border-border/60 bg-card/40 p-4">
@@ -176,8 +186,6 @@ function AdminCampaignRow({ campaign, onDone }: { campaign: any; onDone: () => v
         <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-xl border border-border/60 bg-background">
           {campaign.image_url ? (
             <img src={campaign.image_url} alt="" className="h-full w-full object-cover" />
-          ) : campaign.establishment?.logo_url ? (
-            <img src={campaign.establishment.logo_url} alt="" className="h-full w-full object-cover" />
           ) : (
             <Megaphone className="h-5 w-5 text-muted-foreground" />
           )}
@@ -185,118 +193,26 @@ function AdminCampaignRow({ campaign, onDone }: { campaign: any; onDone: () => v
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="truncate font-display text-sm font-bold">{campaign.title}</h3>
+            <span className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-widest ${badgeColor}`}>
+              {campaign.origin === 'admin' ? "Admin" : "Lojista"}
+            </span>
             <span className="rounded-full border border-border/60 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
               {meta.label}
             </span>
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-primary">
-              {campaign.display_model === "premium_banner"
-                ? "Premium Banner"
-                : campaign.display_model === "sponsored_feed"
-                  ? "Sponsored Feed"
-                  : campaign.display_model === "carousel"
-                    ? "Carousel"
-                    : campaign.display_model || "Banner"}
-            </span>
-            {campaign.offer_type && (
-              <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
-                {campaign.offer_type}
-              </span>
-            )}
-
           </div>
 
           <p className="text-xs text-muted-foreground">
-            {campaign.establishment?.name} · {campaign.category_id} ·{" "}
-            {formatCents(campaign.price_cents_snapshot ?? 0, campaign.currency_snapshot ?? "BRL")}
-          </p>
-          <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{campaign.description}</p>
-          <p className="mt-1 text-[11px] text-muted-foreground">
-            Destino: /{campaign.destination_type}/{campaign.destination_slug} · Botão: {campaign.cta_label}
+            {campaign.establishment?.name || "Institucional"} · {campaign.internal_name}
           </p>
         </div>
-      </div>
-
-      {campaign.display_model && (
-        <div className="mt-3 rounded-xl border border-border/60 bg-muted/20 p-4">
-          <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">
-            Preview do Criativo ({campaign.display_model})
-          </div>
-          <div className="flex justify-center">
-            <div className="scale-75 origin-top">
-              <SponsoredAdCard 
-                data={{
-                  id: campaign.id,
-                  title: campaign.title,
-                  merchantName: campaign.establishment?.name || "Estabelecimento",
-                  imageUrl: campaign.image_url || campaign.establishment?.logo_url || "",
-                  originalPrice: campaign.original_price_cents,
-                  fidelizePrice: campaign.fidelize_price_cents,
-                  discountValue: campaign.discount_value,
-                  benefitText: campaign.benefit_text,
-                  theme: campaign.theme || "dark",
-                  ctaLabel: campaign.cta_label
-                }} 
-                model={campaign.display_model} 
-              />
-            </div>
-          </div>
+        
+        <div className="flex gap-2">
+          <button onClick={onEdit} className="p-2 rounded-lg hover:bg-muted"><PencilLine className="h-4 w-4" /></button>
+          <button onClick={() => dup.mutate()} className="p-2 rounded-lg hover:bg-muted"><Copy className="h-4 w-4" /></button>
+          <button onClick={() => review.mutate("expire")} className="p-2 rounded-lg hover:bg-muted text-destructive"><Trash2 className="h-4 w-4" /></button>
         </div>
-      )}
-
-
-
-      <input
-        value={reason}
-        onChange={(e) => setReason(e.target.value)}
-        placeholder="Motivo / observação (obrigatório para rejeitar ou pedir ajuste)"
-        className="mt-3 w-full rounded-xl border border-border/60 bg-background px-3 py-2 text-xs"
-      />
-
-      <div className="mt-2 flex flex-wrap gap-2">
-        {status === "pending_review" && (
-          <>
-            <ActionBtn onClick={() => review.mutate("approve")} icon={CheckCircle2} label="Aprovar" primary />
-            <ActionBtn onClick={() => review.mutate("request_changes")} icon={PencilLine} label="Pedir ajuste" />
-            <ActionBtn onClick={() => review.mutate("reject")} icon={XCircle} label="Rejeitar" danger />
-          </>
-        )}
-        {status === "active" && <ActionBtn onClick={() => review.mutate("pause")} icon={Pause} label="Pausar" />}
-        {status === "paused" && <ActionBtn onClick={() => review.mutate("resume")} icon={Play} label="Retomar" primary />}
-        {(status === "active" || status === "paused" || status === "scheduled") && (
-          <ActionBtn onClick={() => review.mutate("expire")} icon={XCircle} label="Encerrar" />
-        )}
-        <ActionBtn onClick={() => courtesy.mutate()} icon={Gift} label="Cortesia 7 dias" />
       </div>
     </article>
-  );
-}
-
-function ActionBtn({
-  onClick,
-  icon: Icon,
-  label,
-  primary,
-  danger,
-}: {
-  onClick: () => void;
-  icon: any;
-  label: string;
-  primary?: boolean;
-  danger?: boolean;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-colors ${
-        primary
-          ? "bg-primary text-primary-foreground"
-          : danger
-            ? "border border-destructive/50 text-destructive"
-            : "border border-border/60 hover:border-primary/40"
-      }`}
-    >
-      <Icon className="h-3.5 w-3.5" /> {label}
-    </button>
   );
 }
 
@@ -333,62 +249,11 @@ function AdsSettingsPanel() {
   if (q.isLoading) return <RouteLoading label="Carregando configurações…" fullscreen={false} />;
   if (!s) return null;
 
-  const num = (key: string, label: string) => (
-    <div>
-      <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">{label}</label>
-      <input
-        type="number"
-        value={s[key] ?? 0}
-        onChange={(e) => setForm({ ...s, [key]: e.target.value })}
-        className="mt-1.5 w-full rounded-xl border border-border/60 bg-background px-3 py-2 text-sm"
-      />
-    </div>
-  );
-
   return (
     <section className="space-y-4 rounded-3xl border border-border/60 bg-card/40 p-5">
       <div className="flex items-center gap-2">
         <Settings2 className="h-4 w-4 text-primary" />
         <h2 className="font-display text-sm font-bold">Regras da vitrine</h2>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-3">
-        {num("max_ads_per_category", "Slots por categoria")}
-        {num("max_impressions_per_session_24h", "Exibições / sessão 24h")}
-        {num("impression_dedupe_minutes", "Dedupe impressão (min)")}
-        {num("click_dedupe_minutes", "Dedupe clique (min)")}
-        {num("pix_expiration_minutes", "Expiração do PIX (min)")}
-      </div>
-      <div className="flex flex-wrap gap-4 text-xs">
-        <label className="inline-flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={!!s.allow_self_pause}
-            onChange={(e) => setForm({ ...s, allow_self_pause: e.target.checked })}
-          />
-          Anunciante pode pausar
-        </label>
-        <label className="inline-flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={!!s.self_pause_extends_period}
-            onChange={(e) => setForm({ ...s, self_pause_extends_period: e.target.checked })}
-          />
-          Pausa estende o período contratado
-        </label>
-      </div>
-      <div>
-        <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-          Termos do anunciante
-        </label>
-        <textarea
-          rows={8}
-          value={s.advertiser_terms ?? ""}
-          onChange={(e) => setForm({ ...s, advertiser_terms: e.target.value })}
-          className="mt-1.5 w-full rounded-xl border border-border/60 bg-background px-3 py-2 text-xs"
-        />
-        <p className="mt-1 text-[11px] text-muted-foreground">
-          Alterar o texto gera uma nova versão e exige novo aceite nos próximos envios.
-        </p>
       </div>
       <button
         onClick={() => save.mutate()}
