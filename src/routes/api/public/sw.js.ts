@@ -10,7 +10,7 @@ import { join } from "path";
  * This route ensures that /sw.js is ALWAYS available and served with the correct Content-Type,
  * even if the environment treats it as a dynamic route.
  */
-export const Route = createFileRoute("/sw/js")({
+export const Route = createFileRoute("/api/public/sw/js")({
   server: {
     handlers: {
       GET: async () => {

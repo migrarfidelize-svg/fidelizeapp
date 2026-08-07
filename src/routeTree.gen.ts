@@ -24,7 +24,6 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AjudaIndexRouteImport } from './routes/ajuda.index'
-import { Route as SwJsRouteImport } from './routes/sw.js'
 import { Route as SuporteMeusRouteImport } from './routes/suporte.meus'
 import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as LinksSlugRouteImport } from './routes/links.$slug'
@@ -117,6 +116,7 @@ import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api/p
 import { Route as ApiPublicWebhooksAsaasRouteImport } from './routes/api/public/webhooks/asaas'
 import { Route as ApiPublicTPlanRouteImport } from './routes/api/public/t/plan'
 import { Route as ApiPublicTEventRouteImport } from './routes/api/public/t/event'
+import { Route as ApiPublicSwJsRouteImport } from './routes/api/public/sw.js'
 import { Route as ApiPublicMercadopagoPublicKeyRouteImport } from './routes/api/public/mercadopago/public-key'
 import { Route as ApiPublicHooksWalletSyncRouteImport } from './routes/api/public/hooks/wallet-sync'
 import { Route as ApiPublicHooksSponsoredAdsLifecycleRouteImport } from './routes/api/public/hooks/sponsored-ads-lifecycle'
@@ -221,11 +221,6 @@ const IndexRoute = IndexRouteImport.update({
 const AjudaIndexRoute = AjudaIndexRouteImport.update({
   id: '/ajuda/',
   path: '/ajuda/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SwJsRoute = SwJsRouteImport.update({
-  id: '/sw/js',
-  path: '/sw/js',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SuporteMeusRoute = SuporteMeusRouteImport.update({
@@ -735,6 +730,11 @@ const ApiPublicTEventRoute = ApiPublicTEventRouteImport.update({
   path: '/api/public/t/event',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSwJsRoute = ApiPublicSwJsRouteImport.update({
+  id: '/api/public/sw/js',
+  path: '/api/public/sw/js',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicMercadopagoPublicKeyRoute =
   ApiPublicMercadopagoPublicKeyRouteImport.update({
     id: '/api/public/mercadopago/public-key',
@@ -953,7 +953,6 @@ export interface FileRoutesByFullPath {
   '/links/$slug': typeof LinksSlugRoute
   '/r/$code': typeof RCodeRoute
   '/suporte/meus': typeof SuporteMeusRoute
-  '/sw/js': typeof SwJsRoute
   '/ajuda/': typeof AjudaIndexRoute
   '/app/analytics': typeof AuthenticatedAppAnalyticsRoute
   '/app/anuncios': typeof AuthenticatedAppAnunciosRoute
@@ -1038,6 +1037,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/sponsored-ads-lifecycle': typeof ApiPublicHooksSponsoredAdsLifecycleRoute
   '/api/public/hooks/wallet-sync': typeof ApiPublicHooksWalletSyncRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
+  '/api/public/sw/js': typeof ApiPublicSwJsRoute
   '/api/public/t/event': typeof ApiPublicTEventRoute
   '/api/public/t/plan': typeof ApiPublicTPlanRoute
   '/api/public/webhooks/asaas': typeof ApiPublicWebhooksAsaasRoute
@@ -1090,7 +1090,6 @@ export interface FileRoutesByTo {
   '/links/$slug': typeof LinksSlugRoute
   '/r/$code': typeof RCodeRoute
   '/suporte/meus': typeof SuporteMeusRoute
-  '/sw/js': typeof SwJsRoute
   '/ajuda': typeof AjudaIndexRoute
   '/app/analytics': typeof AuthenticatedAppAnalyticsRoute
   '/app/anuncios': typeof AuthenticatedAppAnunciosRoute
@@ -1173,6 +1172,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/sponsored-ads-lifecycle': typeof ApiPublicHooksSponsoredAdsLifecycleRoute
   '/api/public/hooks/wallet-sync': typeof ApiPublicHooksWalletSyncRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
+  '/api/public/sw/js': typeof ApiPublicSwJsRoute
   '/api/public/t/event': typeof ApiPublicTEventRoute
   '/api/public/t/plan': typeof ApiPublicTPlanRoute
   '/api/public/webhooks/asaas': typeof ApiPublicWebhooksAsaasRoute
@@ -1230,7 +1230,6 @@ export interface FileRoutesById {
   '/links/$slug': typeof LinksSlugRoute
   '/r/$code': typeof RCodeRoute
   '/suporte/meus': typeof SuporteMeusRoute
-  '/sw/js': typeof SwJsRoute
   '/ajuda/': typeof AjudaIndexRoute
   '/_authenticated/app/analytics': typeof AuthenticatedAppAnalyticsRoute
   '/_authenticated/app/anuncios': typeof AuthenticatedAppAnunciosRoute
@@ -1315,6 +1314,7 @@ export interface FileRoutesById {
   '/api/public/hooks/sponsored-ads-lifecycle': typeof ApiPublicHooksSponsoredAdsLifecycleRoute
   '/api/public/hooks/wallet-sync': typeof ApiPublicHooksWalletSyncRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
+  '/api/public/sw/js': typeof ApiPublicSwJsRoute
   '/api/public/t/event': typeof ApiPublicTEventRoute
   '/api/public/t/plan': typeof ApiPublicTPlanRoute
   '/api/public/webhooks/asaas': typeof ApiPublicWebhooksAsaasRoute
@@ -1372,7 +1372,6 @@ export interface FileRouteTypes {
     | '/links/$slug'
     | '/r/$code'
     | '/suporte/meus'
-    | '/sw/js'
     | '/ajuda/'
     | '/app/analytics'
     | '/app/anuncios'
@@ -1457,6 +1456,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/sponsored-ads-lifecycle'
     | '/api/public/hooks/wallet-sync'
     | '/api/public/mercadopago/public-key'
+    | '/api/public/sw/js'
     | '/api/public/t/event'
     | '/api/public/t/plan'
     | '/api/public/webhooks/asaas'
@@ -1509,7 +1509,6 @@ export interface FileRouteTypes {
     | '/links/$slug'
     | '/r/$code'
     | '/suporte/meus'
-    | '/sw/js'
     | '/ajuda'
     | '/app/analytics'
     | '/app/anuncios'
@@ -1592,6 +1591,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/sponsored-ads-lifecycle'
     | '/api/public/hooks/wallet-sync'
     | '/api/public/mercadopago/public-key'
+    | '/api/public/sw/js'
     | '/api/public/t/event'
     | '/api/public/t/plan'
     | '/api/public/webhooks/asaas'
@@ -1648,7 +1648,6 @@ export interface FileRouteTypes {
     | '/links/$slug'
     | '/r/$code'
     | '/suporte/meus'
-    | '/sw/js'
     | '/ajuda/'
     | '/_authenticated/app/analytics'
     | '/_authenticated/app/anuncios'
@@ -1733,6 +1732,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/sponsored-ads-lifecycle'
     | '/api/public/hooks/wallet-sync'
     | '/api/public/mercadopago/public-key'
+    | '/api/public/sw/js'
     | '/api/public/t/event'
     | '/api/public/t/plan'
     | '/api/public/webhooks/asaas'
@@ -1784,7 +1784,6 @@ export interface RootRouteChildren {
   LinksSlugRoute: typeof LinksSlugRoute
   RCodeRoute: typeof RCodeRoute
   SuporteMeusRoute: typeof SuporteMeusRoute
-  SwJsRoute: typeof SwJsRoute
   AjudaIndexRoute: typeof AjudaIndexRoute
   AjudaCategoryArticleRoute: typeof AjudaCategoryArticleRoute
   SuporteSlugNovoRoute: typeof SuporteSlugNovoRoute
@@ -1802,6 +1801,7 @@ export interface RootRouteChildren {
   ApiPublicHooksSponsoredAdsLifecycleRoute: typeof ApiPublicHooksSponsoredAdsLifecycleRoute
   ApiPublicHooksWalletSyncRoute: typeof ApiPublicHooksWalletSyncRoute
   ApiPublicMercadopagoPublicKeyRoute: typeof ApiPublicMercadopagoPublicKeyRoute
+  ApiPublicSwJsRoute: typeof ApiPublicSwJsRoute
   ApiPublicTEventRoute: typeof ApiPublicTEventRoute
   ApiPublicTPlanRoute: typeof ApiPublicTPlanRoute
   ApiPublicWebhooksAsaasRoute: typeof ApiPublicWebhooksAsaasRoute
@@ -1920,13 +1920,6 @@ declare module '@tanstack/react-router' {
       path: '/ajuda'
       fullPath: '/ajuda/'
       preLoaderRoute: typeof AjudaIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sw/js': {
-      id: '/sw/js'
-      path: '/sw/js'
-      fullPath: '/sw/js'
-      preLoaderRoute: typeof SwJsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/suporte/meus': {
@@ -2573,6 +2566,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicTEventRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/sw/js': {
+      id: '/api/public/sw/js'
+      path: '/api/public/sw/js'
+      fullPath: '/api/public/sw/js'
+      preLoaderRoute: typeof ApiPublicSwJsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/mercadopago/public-key': {
       id: '/api/public/mercadopago/public-key'
       path: '/api/public/mercadopago/public-key'
@@ -3088,7 +3088,6 @@ const rootRouteChildren: RootRouteChildren = {
   LinksSlugRoute: LinksSlugRoute,
   RCodeRoute: RCodeRoute,
   SuporteMeusRoute: SuporteMeusRoute,
-  SwJsRoute: SwJsRoute,
   AjudaIndexRoute: AjudaIndexRoute,
   AjudaCategoryArticleRoute: AjudaCategoryArticleRoute,
   SuporteSlugNovoRoute: SuporteSlugNovoRoute,
@@ -3109,6 +3108,7 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicHooksSponsoredAdsLifecycleRoute,
   ApiPublicHooksWalletSyncRoute: ApiPublicHooksWalletSyncRoute,
   ApiPublicMercadopagoPublicKeyRoute: ApiPublicMercadopagoPublicKeyRoute,
+  ApiPublicSwJsRoute: ApiPublicSwJsRoute,
   ApiPublicTEventRoute: ApiPublicTEventRoute,
   ApiPublicTPlanRoute: ApiPublicTPlanRoute,
   ApiPublicWebhooksAsaasRoute: ApiPublicWebhooksAsaasRoute,
