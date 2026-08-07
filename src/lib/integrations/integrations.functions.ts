@@ -230,7 +230,7 @@ export const saveIntegrationCredentials = createServerFn({ method: "POST" })
   });
 
 const ToggleInput = z.object({
-  category: z.enum(["ai", "payments", "marketing"]),
+  category: z.enum(["ai", "payments", "marketing", "otp"]),
   provider: z.string(),
   enabled: z.boolean(),
 });
