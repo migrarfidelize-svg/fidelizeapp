@@ -266,10 +266,7 @@ function WalletLayout() {
                 <Outlet />
               </div>
 
-              {/* Contextual Secondary Sidebar (Right) - Desktop Only */}
               <aside className="hidden lg:block w-[300px] xl:w-[380px] flex-shrink-0 space-y-10">
-                {/* [Conteúdo da Sidebar Mantido Igual] */}
-              </aside>
                 
                 {/* 1. Quick Progress Section */}
                 {progressItems.length > 0 && (
