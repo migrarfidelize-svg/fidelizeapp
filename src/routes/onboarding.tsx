@@ -396,13 +396,24 @@ function Onboarding() {
               />
             </Field>
           </Section>
+          )}
 
           {/* Section: Marca */}
-          <Section
-            icon={Palette}
-            title="Identidade visual"
-            subtitle="Cores e logo que aparecem no cartão dos seus clientes."
-          >
+          {activeStep === "marca" && (
+            <Section
+              icon={Palette}
+              title="Identidade visual"
+              subtitle="Cores e logo que aparecem no cartão dos seus clientes."
+            >
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="mb-2 -ml-2 text-muted-foreground"
+                onClick={() => setStepOverride("empresa")}
+              >
+                ← Voltar para Empresa
+              </Button>
             <div className="grid gap-4 md:grid-cols-2">
               <Field label="Cor principal">
                 <div className="flex items-center gap-2">
