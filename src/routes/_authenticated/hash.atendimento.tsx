@@ -1,7 +1,7 @@
 import { RouteLoading } from "@/components/RouteLoading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Filter, Paperclip, Reply, Smile, MoreHorizontal, User } from "lucide-react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
 import { MessageSquare, Users, History, UserCheck, GitBranch, Contact, FileText, Smartphone, Settings2, Send, Loader2, Play, Plus, Trash2, Edit3, MoreVertical, CheckCircle2, Copy } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
