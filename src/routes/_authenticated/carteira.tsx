@@ -112,7 +112,7 @@ function WalletLayout() {
       
       {/* 1. SIDEBAR (DESKTOP) & DRAWER (MOBILE) */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-72 transform bg-background/80 backdrop-blur-2xl border-r border-border/40 transition-all duration-500 ease-in-out lg:flex lg:flex-col lg:sticky lg:inset-y-0 lg:z-50 lg:w-20 xl:w-72 hidden md:block",
+        "fixed inset-y-0 left-0 z-50 w-72 transform bg-background/80 backdrop-blur-2xl border-r border-border/40 transition-all duration-500 ease-in-out lg:flex lg:flex-col lg:sticky lg:inset-y-0 lg:z-50 lg:w-20 xl:w-72",
         isSidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"
       )}>
         {/* Overlay for mobile when sidebar is open */}
