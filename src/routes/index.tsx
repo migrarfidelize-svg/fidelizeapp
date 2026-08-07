@@ -295,7 +295,7 @@ function HeroCopy() {
   const price = useFromPrice();
 
   // Caso o usuário prefira uma mensagem personalizada sobre a logo da hero
-  const badgeText = "Selo (botão pequeno acima do título) não está sendo alterado na aba sistema/pagina inicial não está correspondendo a a mensagem salva!";
+  const badgeText = copy.badge;
 
 
 
