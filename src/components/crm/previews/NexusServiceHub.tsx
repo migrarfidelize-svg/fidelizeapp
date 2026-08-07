@@ -3,6 +3,7 @@ import { NexusLayout } from "./layouts/NexusLayout";
 import { ConversationArea } from "./shared/ConversationArea";
 import { useQuery } from "@tanstack/react-query";
 import { getCRMConversations } from "@/lib/atendimento.functions";
+import { CRMContentSwitch } from "./shared/CRMContentSwitch";
 
 export function NexusServiceHub() {
   const [activeTab, setActiveTab] = useState("conversas");
@@ -36,15 +37,8 @@ export function NexusServiceHub() {
             </div>
           </>
         ) : (
-          <div className="flex-1 p-20">
-             <div className="flex items-end gap-4 mb-12">
-                <h2 className="text-6xl font-black italic tracking-tighter text-white uppercase">{activeTab}</h2>
-                <div className="h-4 w-4 rounded-full bg-primary mb-2 shadow-[0_0_15px_#fff]" />
-             </div>
-             <div className="grid grid-cols-2 gap-8">
-                <div className="h-64 border border-zinc-800 bg-zinc-900/30 rounded-3xl" />
-                <div className="h-64 border border-zinc-800 bg-zinc-900/30 rounded-3xl" />
-             </div>
+          <div className="flex-1 overflow-y-auto p-12">
+            <CRMContentSwitch tab={activeTab} />
           </div>
         )}
       </div>

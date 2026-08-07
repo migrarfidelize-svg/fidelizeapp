@@ -3,6 +3,7 @@ import { PremiumLayout } from "./layouts/PremiumLayout";
 import { ConversationArea } from "./shared/ConversationArea";
 import { useQuery } from "@tanstack/react-query";
 import { getCRMConversations } from "@/lib/atendimento.functions";
+import { CRMContentSwitch } from "./shared/CRMContentSwitch";
 
 export function PremiumWorkspace() {
   const [activeTab, setActiveTab] = useState("conversas");
@@ -35,10 +36,8 @@ export function PremiumWorkspace() {
             </div>
           </>
         ) : (
-          <div className="flex-1 p-20 flex flex-col items-center justify-center text-muted-foreground">
-             <h2 className="text-3xl font-thin mb-2 capitalize">{activeTab}</h2>
-             <div className="h-px w-20 bg-primary/20 mb-8" />
-             <p className="text-sm max-w-sm text-center">Implementação da superfície sofisticada para {activeTab} no Afidelize Concierge.</p>
+          <div className="flex-1 overflow-y-auto p-12">
+            <CRMContentSwitch tab={activeTab} />
           </div>
         )}
       </div>

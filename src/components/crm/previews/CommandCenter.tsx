@@ -4,6 +4,7 @@ import { CRMStats } from "./shared/CRMStats";
 import { ConversationArea } from "./shared/ConversationArea";
 import { useQuery } from "@tanstack/react-query";
 import { getCRMConversations } from "@/lib/atendimento.functions";
+import { CRMContentSwitch } from "./shared/CRMContentSwitch";
 
 export function CommandCenter() {
   const [activeTab, setActiveTab] = useState("conversas");
@@ -29,9 +30,7 @@ export function CommandCenter() {
             <div className="bg-card border rounded-2xl p-4 text-xs">Informações do cliente</div>
           </div>
         ) : (
-          <div className="p-12 border-2 border-dashed rounded-3xl flex items-center justify-center text-muted-foreground">
-            Conteúdo da seção {activeTab} (Command UX)
-          </div>
+          <CRMContentSwitch tab={activeTab} />
         )}
       </div>
     </CommandLayout>
