@@ -345,7 +345,7 @@ export const sendTestWhatsAppMessage = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     await assertSuperAdmin(context.supabase, context.userId);
     const { getProvider } = await import("./registry");
-    const { WhatsAppOTPProvider } = await import("./otp/base");
+
     const provider = getProvider("otp", data.provider) as any;
     
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
