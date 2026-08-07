@@ -320,7 +320,7 @@ function DiscoverPage() {
                       Atualizar
                     </button>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
                     {categories.map((c) => (
                       <button
                         key={c.id}
