@@ -445,7 +445,7 @@ function AtendimentoCRM() {
             <AgentConfig />
           </TabsContent>
 
-          <TabsContent value="fluxos"
+          <TabsContent value="fluxos" className="space-y-6">
             {editingFlow ? (
               <FlowEditor flow={editingFlow} onBack={() => setEditingFlow(null)} />
             ) : simulatingFlow ? (
