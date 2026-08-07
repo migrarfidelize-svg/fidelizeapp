@@ -295,7 +295,7 @@ function HeroCopy() {
   const price = useFromPrice();
 
   // Caso o usuário prefira uma mensagem personalizada sobre a logo da hero
-  const badgeText = "Confirme antes de considerar concluído:\n\n1. A API Key da ElevenLabs está criptografada em repouso no banco e não apenas mascarada no frontend.\n\n2. Informe qual função criptografa e qual função descriptografa, sem revelar o segredo.\n\n3. Teste realmente:\n\n   - salvar API;\n\n   - recarregar página;\n\n   - testar conexão;\n\n   - carregar vozes;\n\n   - selecionar Voice ID;\n\n   - gerar áudio;\n\n   - remover configuração.\n\n4. Informe os status HTTP reais retornados pela ElevenLabs.\n\n5. Confirme que nenhum usuário lojista consegue chamar essas Server Functions.\n\n6. Execute build e informe o commit SHA enviado para main.\n\nNão considere concluído somente porque o permission denied desapareceu.";
+  const badgeText = "Selo (botão pequeno acima do título) não está sendo alterado na aba sistema/pagina inicial não está correspondendo a a mensagem salva!";
 
 
 
