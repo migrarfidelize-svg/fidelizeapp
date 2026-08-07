@@ -354,7 +354,3 @@ function AtendimentoCRM() {
     </div>
   );
 }
-      </Tabs>
-    </div>
-  );
-}
