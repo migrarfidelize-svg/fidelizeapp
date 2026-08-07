@@ -2,25 +2,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-/**
- * Funções de criptografia no servidor para proteger a API Key em repouso.
- * Utiliza o segredo interno do Supabase ou uma chave fixa para demonstração de repouso.
- */
-async function encrypt(text: string): Promise<string> {
-  // Simula criptografia em repouso (em um ambiente real usaria crypto.createCipheriv)
-  // O importante é que o dado salvo não seja texto plano.
-  const buffer = Buffer.from(text);
-  const encrypted = buffer.toString('base64').split('').reverse().join(''); // Obfuscação reversa base64 para o teste
-  return `enc:${encrypted}`;
-}
-
-async function decrypt(encryptedText: string): Promise<string> {
-  if (!encryptedText.startsWith('enc:')) return encryptedText;
-  const raw = encryptedText.substring(4);
-  const reversed = raw.split('').reverse().join('');
-  return Buffer.from(reversed, 'base64').toString('utf8');
-}
-
 const elevenConfigSchema = z.object({
   apiKey: z.string().min(1),
   voiceId: z.string().min(1),
@@ -55,7 +36,8 @@ export const saveElevenConfig = createServerFn({ method: "POST" })
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const encryptedKey = await encrypt(data.apiKey?.trim());
+    const { encryptSecret } = await import("./integrations/crypt.server");
+    const encryptedKey = await encryptSecret(data.apiKey?.trim());
     
     const { error } = await (supabaseAdmin as any)
       .from("system_settings")
@@ -108,14 +90,14 @@ export const getElevenConfig = createServerFn({ method: "GET" })
     const config = data?.value as any;
     if (!config) return { status: 'disconnected' };
 
-    // Mascarar a API Key
-    const maskedKey = config.apiKey ? `${config.apiKey.slice(0, 4)}...${config.apiKey.slice(-4)}` : "";
+    // Retorna somente status indicativo, nunca a chave ou ciphertext
+    const isConfigured = !!config.apiKey;
 
     return {
       status: 'connected',
       config: {
         ...config,
-        apiKey: maskedKey,
+        apiKey: isConfigured ? "API configurada" : "",
         enabled: data.enabled,
         isConfigured: true
       }
@@ -153,7 +135,8 @@ export const testElevenConnection = createServerFn({ method: "POST" })
       
       const encryptedKey = (saved?.value as any)?.apiKey;
       if (encryptedKey) {
-        apiKey = await decrypt(encryptedKey);
+        const { decryptSecret } = await import("./integrations/crypt.server");
+        apiKey = await decryptSecret(encryptedKey);
       }
     }
 
@@ -213,7 +196,8 @@ export const listElevenVoices = createServerFn({ method: "POST" })
       
       const encryptedKey = (saved?.value as any)?.apiKey;
       if (encryptedKey) {
-        apiKey = await decrypt(encryptedKey);
+        const { decryptSecret } = await import("./integrations/crypt.server");
+        apiKey = await decryptSecret(encryptedKey);
       }
     }
 
