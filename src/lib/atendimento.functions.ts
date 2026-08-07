@@ -190,8 +190,8 @@ export const sendCRMMessage = createServerFn({ method: "POST" })
         .from("crm_internal_notes")
         .insert({
           conversation_id: data.conversationId,
-          created_by: userId,
-          body: data.body
+          author_id: userId,
+          content: data.body
         });
       if (error) throw error;
       return { ok: true };
