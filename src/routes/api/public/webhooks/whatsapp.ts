@@ -54,7 +54,8 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
         const { remoteMessageId, fromPhone, text } = normalized;
 
         // 4. Idempotência (provider_message_id)
-        const { data: existing } = await supabaseAdmin
+        // Usamos asany para ignorar erros de tipo até o próximo build regenerar os tipos
+        const { data: existing } = await (supabaseAdmin as any)
           .from("crm_messages")
           .select("id")
           .eq("provider_message_id", remoteMessageId)
@@ -65,14 +66,14 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
         }
 
         // 5. Fluxo CRM (Conversa + Mensagem)
-        let { data: conversation } = await supabaseAdmin
+        let { data: conversation } = await (supabaseAdmin as any)
           .from("crm_conversations")
           .select("id")
           .eq("customer_phone", fromPhone)
           .maybeSingle();
           
         if (!conversation) {
-          const { data: newConv, error: convErr } = await supabaseAdmin
+          const { data: newConv, error: convErr } = await (supabaseAdmin as any)
             .from("crm_conversations")
             .insert({
               customer_phone: fromPhone,
@@ -88,7 +89,7 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
           }
           conversation = newConv;
         } else {
-          await supabaseAdmin
+          await (supabaseAdmin as any)
             .from("crm_conversations")
             .update({ 
               last_message_at: new Date().toISOString(), 
@@ -98,7 +99,7 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
             .eq("id", conversation.id);
         }
 
-        const { error: msgErr } = await supabaseAdmin
+        const { error: msgErr } = await (supabaseAdmin as any)
           .from("crm_messages")
           .insert({
             conversation_id: conversation.id,
