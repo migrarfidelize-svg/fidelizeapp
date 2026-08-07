@@ -130,7 +130,6 @@ function Onboarding() {
     const checks = {
       empresa: f.name.trim().length >= 2 && slugify(f.slug).length >= 3 && !!f.segment,
       marca: !!f.logo_url || (!!f.primary_color && !!f.accent_color),
-      campanha: f.reward_title.trim().length >= 2 && f.stamps_required >= 2,
     };
     const done = Object.values(checks).filter(Boolean).length;
     return { checks, done, total: STEPS.length, pct: Math.round((done / STEPS.length) * 100) };
@@ -138,9 +137,7 @@ function Onboarding() {
 
   const activeStep: StepId = !completion.checks.empresa
     ? "empresa"
-    : !completion.checks.marca
-      ? "marca"
-      : "campanha";
+    : "marca";
 
   async function signOut() {
     const isPwa = window.matchMedia("(display-mode: standalone)").matches;
