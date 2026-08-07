@@ -70,17 +70,19 @@ export const requestOTP = createServerFn({ method: "POST" })
     const { code, hash } = generateOTP(identifier);
     const expiresAt = new Date(Date.now() + 10 * 60_000).toISOString(); // 10 minutes
 
-    // 3b. Fetch Custom Template
+    // 3b. Fetch Custom Template from system_settings
     const { data: configRow } = await supabaseAdmin
-      .from("config")
+      .from("system_settings")
       .select("value")
-      .eq("key", "otp_template")
+      .eq("namespace", "otp")
+      .eq("key", "template")
       .maybeSingle();
     
-    const template = (configRow?.value as string) || "Afidelize\n\nSeu código de acesso é {{code}}.\n\nEle expira em {{minutes}} minutos.\n\nNão compartilhe este código.";
+    const template = (configRow?.value as any)?.text || "Afidelize\n\nSeu código de acesso é {{code}}.\n\nEle expira em {{minutes}} minutos.\n\nNão compartilhe este código.";
     const message = template
       .replace("{{code}}", code)
       .replace("{{minutes}}", "10");
+
 
 
     // 4. Store OTP in DB
