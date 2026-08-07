@@ -256,7 +256,11 @@ function WalletLayout() {
             </div>
             
             <div className="flex items-center gap-2">
-              <InboxBellBadge unread={0} active={activeTab === "/carteira/mensagens"} />
+              <InboxBellBadge 
+                unread={0} 
+                readyRewards={readyRewards.length}
+                active={activeTab === "/carteira/mensagens"} 
+              />
               <button className="md:hidden h-11 w-11 flex items-center justify-center rounded-2xl bg-accent/60 text-muted-foreground">
                 <Search className="h-5 w-5" />
               </button>
