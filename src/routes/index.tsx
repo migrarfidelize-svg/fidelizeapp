@@ -217,6 +217,16 @@ const NAV_LINKS: Array<[string, string]> = [
 function SiteHeader() {
   const { data: session } = useQuery({ queryKey: ["session"], queryFn: async () => (await supabase.auth.getSession()).data.session });
   const [menuOpen, setMenuOpen] = useState(false);
+  const router = useRouter();
+
+  const handleDashboardClick = async (e: React.MouseEvent) => {
+    if (!session) return;
+    e.preventDefault();
+    const { resolveAuthenticatedDestination } = await import("@/lib/destination-resolver");
+    const to = await resolveAuthenticatedDestination();
+    router.navigate({ to });
+  };
+
   return (
     <header className="sticky top-4 z-40 px-4">
       <div className="nav-dock mx-auto flex h-18 max-w-5xl items-center justify-between gap-3 rounded-full border border-violet-400/60 bg-background/60 pl-6 pr-3 backdrop-blur-xl">
@@ -231,9 +241,10 @@ function SiteHeader() {
             <Button
               asChild
               size="sm"
-              className="rounded-full bg-primary text-primary-foreground font-semibold px-5 shadow-[0_0_0_1px_rgba(167,139,250,0.4),0_0_24px_-4px_rgba(167,139,250,0.65)] hover:brightness-110"
+              className="rounded-full bg-primary text-primary-foreground font-semibold px-5 shadow-[0_0_0_1px_rgba(167,139,250,0.4),0_0_24px_-4px_rgba(167,139,250,0.65)] hover:brightness-110 cursor-pointer"
+              onClick={handleDashboardClick}
             >
-              <Link to="/app">Meu painel <ArrowRight className="ml-1 h-4 w-4" /></Link>
+              <span className="flex items-center">Meu painel <ArrowRight className="ml-1 h-4 w-4" /></span>
             </Button>
           ) : (
             <>
