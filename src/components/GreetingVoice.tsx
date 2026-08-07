@@ -54,18 +54,20 @@ export function buildGreeting(gender: "female" | "male") {
   const closers =
     gender === "female"
       ? [
-          "bora fazer dinheiro hoje, chefe.",
-          "seus clientes já estão te esperando.",
-          "vamos brilhar juntos, hein?",
-          "hoje o dia é seu, chefe.",
+          "Bora fazer dinheiro hoje.",
+          "Seus clientes já estão te esperando.",
+          "Vamos brilhar juntos.",
+          "Hoje o dia é seu.",
         ]
       : [
-          "vamos comandar o dia, chefe.",
-          "hora de faturar alto, chefe.",
-          "o mercado é seu hoje.",
-          "bora dominar, chefe.",
+          "Vamos comandar o dia.",
+          "Hora de faturar alto.",
+          "O mercado é seu hoje.",
+          "Bora dominar.",
         ];
-  const closer = closers[Math.floor(Math.random() * closers.length)];
+  // Escolha estável baseada no minuto atual para evitar sensação de "fake random" constante em produção,
+  // mas mantendo alguma variedade natural.
+  const closer = closers[now.getMinutes() % closers.length];
   return `${period}, chefe. ${timePhrase}, e ${closer}`;
 }
 
