@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef } from "react";
-import { Link } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ChevronRight, Sparkles } from "lucide-react";
 import { getDiscoverySponsoredAds, trackSponsoredAdEvent } from "@/lib/sponsored-ads-public.functions";
 import { getAdSessionId, type DestinationType } from "@/lib/sponsored-ads-core";
+import { SponsoredAdCard } from "@/components/SponsoredAdCard";
 
 const ROUTE_BY_DESTINATION: Record<DestinationType, string> = {
   establishment: "/carteira/e/$slug",
@@ -19,8 +19,8 @@ type Ad = Awaited<ReturnType<typeof getDiscoverySponsoredAds>>[number];
 /**
  * Slots patrocinados da vitrine Descobrir.
  *
- * Sempre rotulados como "Patrocinado" e limitados pelas regras do servidor
- * (rotação, frequência por sessão e categorias liberadas).
+ * Utiliza o componente oficial SponsoredAdCard para garantir consistência visual
+ * entre vitrine, editor e moderação.
  */
 export function SponsoredAdsRail({ category }: { category?: string | null }) {
   const sessionId = useMemo(() => getAdSessionId(), []);
@@ -39,11 +39,11 @@ export function SponsoredAdsRail({ category }: { category?: string | null }) {
   if (ads.length === 0) return null;
 
   return (
-    <section className="space-y-2">
-      <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Patrocinado</div>
-      <ul className="space-y-2.5">
+    <section className="space-y-4">
+      <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Em destaque</div>
+      <div className="flex flex-col gap-4">
         {ads.map((ad) => (
-          <SponsoredCard
+          <AdWrapper
             key={ad.campaign_id}
             ad={ad}
             onImpression={() =>
@@ -54,12 +54,12 @@ export function SponsoredAdsRail({ category }: { category?: string | null }) {
             }
           />
         ))}
-      </ul>
+      </div>
     </section>
   );
 }
 
-function SponsoredCard({
+function AdWrapper({
   ad,
   onImpression,
   onClick,
@@ -68,10 +68,11 @@ function SponsoredCard({
   onImpression: () => void;
   onClick: () => void;
 }) {
-  const ref = useRef<HTMLLIElement | null>(null);
+  const ref = useRef<HTMLDivElement | null>(null);
   const seen = useRef(false);
+  const navigate = useNavigate();
 
-  // Impressão só conta quando o card aparece de fato na tela.
+  // Rastreamento de impressão
   useEffect(() => {
     const el = ref.current;
     if (!el || typeof IntersectionObserver === "undefined") return;
@@ -91,43 +92,33 @@ function SponsoredCard({
     return () => io.disconnect();
   }, [onImpression]);
 
-  const brand = ad.establishment_primary_color || "hsl(var(--primary))";
   const to = ROUTE_BY_DESTINATION[ad.destination_type as DestinationType] ?? ROUTE_BY_DESTINATION.establishment;
+  
+  const handleAdClick = () => {
+    onClick();
+    // O destino precisa ser resolvido substituindo o $slug
+    const path = to.replace("$slug", ad.destination_slug);
+    navigate({ to: path });
+  };
 
   return (
-    <li
-      ref={ref}
-      className="group overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/[0.07] to-transparent transition-all hover:border-primary/50"
-    >
-      <Link to={to} params={{ slug: ad.destination_slug }} onClick={() => void onClick()} className="relative flex items-center gap-3 p-3">
-        <div
-          className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full opacity-20 blur-2xl"
-          style={{ background: brand }}
-        />
-        <div
-          className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-xl border border-border/60 bg-background text-sm font-bold uppercase"
-          style={{ color: brand }}
-        >
-          {ad.image_url ? (
-            <img src={ad.image_url} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
-          ) : (
-            ad.establishment_name.slice(0, 2)
-          )}
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <div className="truncate font-display text-sm font-semibold">{ad.title}</div>
-            <span className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-primary">
-              Patrocinado
-            </span>
-          </div>
-          {ad.description && <p className="mt-0.5 line-clamp-2 text-[11px] text-muted-foreground">{ad.description}</p>}
-          <div className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-primary">
-            <Sparkles className="h-3 w-3" /> {ad.cta_label}
-          </div>
-        </div>
-        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-      </Link>
-    </li>
+    <div ref={ref} onClick={handleAdClick} className="cursor-pointer active:scale-[0.99] transition-transform">
+      <SponsoredAdCard
+        model={(ad.display_model as any) || "sponsored_feed"}
+        data={{
+          id: ad.campaign_id,
+          title: ad.title,
+          description: ad.description || undefined,
+          merchantName: ad.establishment_name,
+          imageUrl: ad.image_url || "",
+          originalPrice: ad.original_price_cents || undefined,
+          fidelizePrice: ad.fidelize_price_cents || undefined,
+          discountValue: ad.discount_value || undefined,
+          benefitText: ad.benefit_text || undefined,
+          ctaLabel: ad.cta_label || undefined,
+          theme: (ad.theme as any) || "dark",
+        }}
+      />
+    </div>
   );
 }
