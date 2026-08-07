@@ -188,7 +188,7 @@ function DiscoverPage() {
 
   return (
     <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["discovery-establishments"] })}>
-      <div className="px-4 pb-8 space-y-6 xl:px-8 xl:py-10">
+      <div className="px-4 pb-24 md:pb-10 space-y-6 xl:px-8 xl:py-10">
         {/* Header Superior Premium */}
         <div className="pt-6 xl:pt-0">
           <div className="flex items-center gap-3">
