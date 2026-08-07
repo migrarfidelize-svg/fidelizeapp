@@ -492,72 +492,9 @@ function Onboarding() {
             </Field>
           </Section>
 
-          {/* Section: Campanha */}
-          <Section
-            icon={Gift}
-            title="Primeira campanha"
-            subtitle="Configure a regra do primeiro cartão fidelidade."
-          >
-            <Field label="Nome da campanha">
-              <Input
-                value={f.campaign_name}
-                onChange={(e) => set("campaign_name", e.target.value)}
-                maxLength={80}
-              />
-            </Field>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Carimbos necessários">
-                <Input
-                  type="number"
-                  min={2}
-                  max={50}
-                  value={f.stamps_required}
-                  onChange={(e) => set("stamps_required", Number(e.target.value))}
-                />
-              </Field>
-              <Field label="Ícone do carimbo">
-                <Select value={f.stamp_icon} onValueChange={(v) => set("stamp_icon", v)}>
-                  <SelectTrigger>
-                    <SelectValue asChild>
-                      <IconRow value={f.stamp_icon} />
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent className="max-h-72">
-                    {STAMP_ICON_OPTIONS.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        <IconRow value={opt.value} />
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-            </div>
-
-            <Field label="Recompensa (título)">
-              <Input
-                value={f.reward_title}
-                onChange={(e) => set("reward_title", e.target.value)}
-                required
-                maxLength={120}
-                placeholder="Um café grátis"
-              />
-            </Field>
-
-            <Field label="Recompensa (detalhes)">
-              <Textarea
-                value={f.reward_description}
-                onChange={(e) => set("reward_description", e.target.value)}
-                maxLength={500}
-                rows={2}
-                placeholder="Ex: válido de segunda a sexta, exceto especiais"
-              />
-            </Field>
-          </Section>
-
           {/* CTA */}
-          <div className="sticky bottom-4 z-10 flex flex-col-reverse items-stretch gap-3 rounded-2xl border border-border/60 bg-card/80 p-4 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="sticky bottom-4 z-50 flex flex-col items-stretch gap-4 rounded-2xl border border-border/60 bg-card/80 p-4 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+            <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground sm:justify-start">
               <ShieldCheck className="h-4 w-4 text-primary" />
               <span>
                 {completion.done}/{completion.total} etapas concluídas · {completion.pct}%
@@ -571,7 +508,7 @@ function Onboarding() {
             >
               <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
               <Rocket className="mr-2 h-4 w-4" />
-              {loading ? "Criando…" : "Criar empresa e ir para o pagamento"}
+              {loading ? "Criando…" : "Concluir configuração"}
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
           </div>
