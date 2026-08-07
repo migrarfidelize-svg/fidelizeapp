@@ -164,7 +164,7 @@ function WalletHome() {
               <StreakCard weeks={streak.weeks} lastVisit={streak.lastVisit} atRisk={streak.atRisk} daysLeft={streak.daysLeft} />
             )}
 
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 xl:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 xl:gap-6">
               <KpiTile label="Cartões" value={items.length} />
               <KpiTile label="Carimbos" value={totalStamps} icon={<Stamp className="h-3.5 w-3.5" />} />
               <KpiTile className="hidden lg:flex" label="Prontas" value={readyRewards} accent={readyRewards > 0 ? "primary" : undefined} icon={<Gift className="h-3.5 w-3.5" />} />
@@ -209,11 +209,11 @@ function WalletHome() {
                   Nenhum cartão encontrado para “{query}”.
                 </p>
               ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
                   <div className="col-span-1">
                     <WalletStack key={term} items={visibleFeatured.slice(0, 7)} />
                   </div>
-                  <div className="hidden lg:grid col-span-1 xl:col-span-2 grid-cols-1 xl:grid-cols-3 gap-4 h-fit">
+                  <div className="hidden md:grid col-span-1 xl:col-span-2 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 h-fit">
                     {visibleFeatured.slice(1, 7).map(item => (
                        <Link 
                         key={item.customer.id} 
@@ -253,7 +253,7 @@ function WalletHome() {
                     Ver tudo →
                   </Link>
                 </div>
-                <ol className="grid gap-3 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                <ol className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                   {feed.map((f) => <FeedRow key={f.id} f={f} />)}
                 </ol>
               </section>

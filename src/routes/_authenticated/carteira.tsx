@@ -271,7 +271,7 @@ function WalletLayout() {
             <div className="flex flex-col lg:flex-row gap-8 xl:gap-12">
               
               {/* Primary Column */}
-              <div className="flex-1 space-y-6 md:space-y-12 pb-24 lg:pb-0">
+              <div className="flex-1 space-y-6 md:space-y-12 pb-24 lg:pb-10">
                 <Outlet />
               </div>
 
