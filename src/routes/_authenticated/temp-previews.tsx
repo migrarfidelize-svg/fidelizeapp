@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { 
-  PreviewAPremiumBanner, 
-  PreviewBSponsoredFeed, 
-  PreviewCSponsoredCarousel 
-} from "@/components/DiscoverAdsPreviews";
+  Preview1PremiumClean, 
+  Preview2Editorial, 
+  Preview3ModernDark 
+} from "@/components/DiscoveryRedesignPreviews";
 import { Home, Wallet, QrCode, Bell, User } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/temp-previews")({
@@ -29,9 +29,9 @@ function PreviewsLayout() {
                 : "bg-card text-muted-foreground border border-border/40 hover:bg-muted"
             }`}
           >
-            {v === "A" && "A. Premium Banner"}
-            {v === "B" && "B. Sponsored Feed"}
-            {v === "C" && "C. Carousel"}
+            {v === "A" && "1. Premium Clean"}
+            {v === "B" && "2. Editorial"}
+            {v === "C" && "3. Modern Discovery"}
           </button>
         ))}
       </div>
@@ -62,9 +62,9 @@ function PreviewsLayout() {
         </div>
         
         <div className="h-full overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-32">
-          {view === "A" && <PreviewAPremiumBanner adsPaused={adsPaused} />}
-          {view === "B" && <PreviewBSponsoredFeed adsPaused={adsPaused} />}
-          {view === "C" && <PreviewCSponsoredCarousel adsPaused={adsPaused} />}
+          {view === "A" && <Preview1PremiumClean />}
+          {view === "B" && <Preview2Editorial />}
+          {view === "C" && <Preview3ModernDark />}
         </div>
 
 
