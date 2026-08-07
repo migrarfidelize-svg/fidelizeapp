@@ -525,9 +525,10 @@ function Onboarding() {
                 {completion.done}/{completion.total} etapas concluídas · {completion.pct}%
               </span>
             </div>
-            <Button
-              type="submit"
-              disabled={loading}
+            {activeStep === "marca" && (
+              <Button
+                type="submit"
+                disabled={loading || completion.done < completion.total}
               size="lg"
               className="group relative overflow-hidden bg-gradient-to-r from-primary to-accent font-semibold text-primary-foreground shadow-[0_0_30px_-8px_var(--primary)]"
             >
