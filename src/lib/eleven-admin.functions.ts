@@ -6,9 +6,11 @@ const elevenConfigSchema = z.object({
   apiKey: z.string().min(1),
   voiceId: z.string().min(1),
   modelId: z.string().min(1),
+  enabled: z.boolean().default(true),
   voiceName: z.string().optional(),
   stability: z.number().min(0).max(1).optional(),
   similarity: z.number().min(0).max(1).optional(),
+  texts: z.record(z.string()).optional(),
 });
 
 // UUID reservado para configurações globais do sistema Fidelize
