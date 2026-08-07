@@ -119,6 +119,10 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
           throw msgErr;
         }
 
+        // 6. Engine do Bot / Fluxo
+        const { executeFlow } = await import("@/lib/crm/flow-engine.server");
+        await executeFlow(conversation.id, text);
+
         return new Response("OK", { status: 200 });
       },
     },
