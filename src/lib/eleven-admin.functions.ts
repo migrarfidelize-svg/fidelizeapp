@@ -120,9 +120,10 @@ export const testElevenConnection = createServerFn({ method: "POST" })
 
     let apiKey = data.apiKey?.trim();
     
-    // Se não enviou apiKey no teste, tenta carregar a salva
+    // Se não enviou apiKey no teste, tenta carregar a salva usando supabaseAdmin
     if (!apiKey) {
-      const { data: saved } = await (supabase as any)
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: saved } = await (supabaseAdmin as any)
         .from("system_settings")
         .select("value")
         .eq("namespace", "voice")
