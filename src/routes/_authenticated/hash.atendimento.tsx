@@ -1,7 +1,7 @@
 import { RouteLoading } from "@/components/RouteLoading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Filter, Paperclip, Reply, Smile, MoreHorizontal, User } from "lucide-react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
 import { MessageSquare, Users, History, UserCheck, GitBranch, Contact, FileText, Smartphone, Settings2, Send, Loader2, Play, Plus, Trash2, Edit3, MoreVertical, CheckCircle2, Copy } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -105,8 +105,11 @@ function AtendimentoCRM() {
             ))}
         </div>
         <div className="flex gap-3">
-            <Button variant="outline" className="h-10 text-[10px] font-black uppercase tracking-widest border-primary/20 text-primary hover:bg-primary/5" asChild>
-                <a href="/hash/atendimento/preview/command">Experimentar Propostas UX</a>
+            <Button variant="outline" className="h-10 text-[10px] font-black uppercase tracking-widest border-primary/20 text-primary hover:bg-primary/5 shadow-lg shadow-primary/10 animate-pulse" asChild>
+                <Link to="/hash/atendimento/preview">
+                  <Play className="h-3 w-3 mr-2 fill-current" />
+                  Testar novos layouts
+                </Link>
             </Button>
         </div>
       </div>
