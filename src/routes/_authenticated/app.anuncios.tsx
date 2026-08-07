@@ -520,14 +520,25 @@ function CampaignEditor({
   );
   const [imagePath, setImagePath] = useState<string | null>(campaign?.image_path ?? null);
   const [imagePreview, setImagePreview] = useState<string | null>(campaign?.image_url ?? null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(campaign?.video_url ?? null);
   const [displayModel, setDisplayModel] = useState<any>(campaign?.display_model ?? "premium_banner");
   const [offerType, setOfferType] = useState<any>(campaign?.offer_type ?? "discount");
   const [originalPrice, setOriginalPrice] = useState<string>(campaign?.original_price_cents ? (campaign.original_price_cents / 100).toString() : "");
   const [fidelizePrice, setFidelizePrice] = useState<string>(campaign?.fidelize_price_cents ? (campaign.fidelize_price_cents / 100).toString() : "");
   const [discountValue, setDiscountValue] = useState<string>(campaign?.discount_value?.toString() ?? "");
   const [benefitText, setBenefitText] = useState<string>(campaign?.benefit_text ?? "");
-  const [theme, setTheme] = useState<"dark" | "light">(campaign?.theme ?? "dark");
+  const [theme, setTheme] = useState<any>(campaign?.theme ?? "premium_dark");
   const [uploading, setUploading] = useState(false);
+  
+  // Visibility toggles
+  const [hideTitle, setHideTitle] = useState(!!campaign?.hide_title);
+  const [hideDescription, setHideDescription] = useState(!!campaign?.hide_description);
+  const [hideMerchantName, setHideMerchantName] = useState(!!campaign?.hide_merchant_name);
+  const [hidePrices, setHidePrices] = useState(!!campaign?.hide_prices);
+  const [hideLogo, setHideLogo] = useState(!!campaign?.hide_logo);
+  const [hideCTA, setHideCTA] = useState(!!campaign?.hide_cta);
+  const [fullBleedMode, setFullBleedMode] = useState(!!campaign?.full_bleed_mode);
+
 
 
 
