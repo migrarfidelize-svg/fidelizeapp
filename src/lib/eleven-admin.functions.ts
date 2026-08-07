@@ -35,8 +35,8 @@ export const saveElevenConfig = createServerFn({ method: "POST" })
       throw new Error("Acesso negado: apenas Super Administradores podem configurar a ElevenLabs.");
     }
 
-    const { error } = await (supabase as any)
-      .from("system_settings")
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
       .upsert({ 
         namespace: 'voice',
         key: 'elevenlabs',
