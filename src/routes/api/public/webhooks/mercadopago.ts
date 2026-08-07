@@ -307,6 +307,10 @@ async function activatePlan(establishmentId: string, planSlug: string, mpPayment
       .eq("mp_payment_id", mpPaymentId);
   }
 
+  // Ao ativar o plano, cria também os recursos iniciais (recompensas, campanhas) que exigem RLS.
+  const { ensureEstablishmentInitialResources } = await import("@/lib/loyalty.functions");
+  await ensureEstablishmentInitialResources(establishmentId);
+
   // Audit
   await supabaseAdmin.from("audit_logs").insert({
     establishment_id: establishmentId,

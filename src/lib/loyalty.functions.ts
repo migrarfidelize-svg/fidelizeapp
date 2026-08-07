@@ -801,13 +801,9 @@ export const createEstablishment = createServerFn({ method: "POST" })
       throw new Error("Não foi possível criar a empresa. Tente novamente em instantes.");
     }
     await supabase.from("establishment_members").insert({ establishment_id: est.id, user_id: userId, role: "owner" });
-    const { data: camp, error: ce } = await supabase.from("campaigns").insert({
-      establishment_id: est.id, name: data.campaign_name, stamps_required: data.stamps_required,
-      reward_title: data.reward_title, reward_description: data.reward_description,
-      stamp_icon: data.stamp_icon,
-    }).select("id").single();
-    if (ce) throw new Error(ce.message);
-    return { establishment_id: est.id, slug: est.slug, campaign_id: camp.id };
+    // A campanha NÃO é criada no ato do onboarding para evitar violação de RLS (requires active subscription).
+    // Ela será criada automaticamente ou manualmente APÓS o primeiro pagamento ser confirmado e a assinatura ficar ativa.
+    return { establishment_id: est.id, slug: est.slug };
   });
 
 export const getMyEstablishments = createServerFn({ method: "GET" })
@@ -854,6 +850,9 @@ export const getDashboardData = createServerFn({ method: "POST" })
 
     const productionData = (settings?.value as any) || { enabled: false, production_started_at: "1970-01-01T00:00:00Z" };
     const cutoff = productionData.production_started_at || "1970-01-01T00:00:00Z";
+
+    const now = new Date();
+    const goalMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
 
     // 3. Chamar dashboard_summary usando supabaseAdmin (service_role) pois a RPC é restrita
     const { data: raw, error } = await (supabaseAdmin as any).rpc("dashboard_summary", { 
@@ -1026,3 +1025,92 @@ export const deleteCampaign = createServerFn({ method: "POST" })
   });
 
 
+
+// ---------- Internal: Ensure initial resources on first payment ----------
+export async function ensureEstablishmentInitialResources(establishmentId: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  // 1. Criar campanha inicial se não existir nenhuma
+  const { data: campaigns } = await supabaseAdmin
+    .from("campaigns")
+    .select("id")
+    .eq("establishment_id", establishmentId)
+    .limit(1);
+
+  if (!campaigns || campaigns.length === 0) {
+    const { data: est } = await supabaseAdmin
+      .from("establishments")
+      .select("name, primary_color, accent_color")
+      .eq("id", establishmentId)
+      .single();
+
+    if (est) {
+      await supabaseAdmin.from("campaigns").insert({
+        establishment_id: establishmentId,
+        name: "Cartão Fidelidade",
+        reward_title: "Brinde Exclusivo",
+        reward_description: "Ganhe um brinde ao completar seu cartão!",
+        stamps_required: 10,
+        stamp_icon: "star",
+        primary_color: est.primary_color,
+        accent_color: est.accent_color,
+        active: true
+      });
+    }
+  }
+
+  // 2. Criar página inicial no Link Tree se não existir
+  const { data: pages } = await supabaseAdmin
+    .from("link_tree_pages")
+    .select("id")
+    .eq("establishment_id", establishmentId)
+    .limit(1);
+
+  if (!pages || pages.length === 0) {
+    const { data: est } = await supabaseAdmin
+      .from("establishments")
+      .select("name, slug, logo_url, primary_color, accent_color")
+      .eq("id", establishmentId)
+      .single();
+
+    if (est) {
+      const { data: newPage } = await supabaseAdmin.from("link_tree_pages").insert({
+        establishment_id: establishmentId,
+        title: est.name,
+        logo_url: est.logo_url,
+        theme: {
+          primary: est.primary_color,
+          accent: est.accent_color,
+          background: "#0b0f19",
+          text: "#ffffff",
+          button_style: "glass",
+          rounded: "xl"
+        },
+        published: true,
+        published_at: new Date().toISOString()
+      }).select("id").single();
+
+      if (newPage) {
+        const origin = process.env.VITE_APP_URL || "";
+        await supabaseAdmin.from("link_tree_links").insert([
+          {
+            page_id: newPage.id,
+            kind: "cartao",
+            label: "Meu Cartão Fidelidade",
+            url: `${origin}/cartao/${est.slug}`,
+            enabled: true,
+            sort_order: 0
+          },
+          {
+            page_id: newPage.id,
+            kind: "reviews",
+            label: "Avaliar Estabelecimento",
+            url: `${origin}/avaliar/${est.slug}`,
+            enabled: true,
+            sort_order: 1
+          }
+        ]);
+      }
+    }
+  }
+}

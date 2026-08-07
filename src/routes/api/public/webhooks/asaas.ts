@@ -178,6 +178,10 @@ async function activatePlanAsaas(establishmentId: string, planSlug: string, prov
     await supabaseAdmin.from("subscriptions").insert({ establishment_id: establishmentId, ...subPayload } as never);
   }
 
+  // Ao ativar o plano, cria recursos iniciais
+  const { ensureEstablishmentInitialResources } = await import("@/lib/loyalty.functions");
+  await ensureEstablishmentInitialResources(establishmentId);
+
   await supabaseAdmin.from("audit_logs").insert({
     establishment_id: establishmentId,
     action: fromTier === toTier ? "subscription_renewed" : "plan_activated",
