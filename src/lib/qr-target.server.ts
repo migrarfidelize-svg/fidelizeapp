@@ -18,17 +18,17 @@ export function normalizeQrDest(value: unknown): QrDest {
 
 /** Returns true when the merchant may actually use that showcase right now. */
 export async function isShowcaseDestinationValid(
-  admin: any,
+  client: any,
   establishmentId: string,
   kind: "menu" | "catalog" = "menu",
 ): Promise<boolean> {
   try {
     const [{ data: allowed }, { data: menu }] = await Promise.all([
-      admin.rpc("has_plan_feature", {
+      client.rpc("has_plan_feature", {
         _est: establishmentId,
         _feature: kind === "catalog" ? "digital_catalog" : "digital_menu",
       }),
-      admin
+      client
         .from("restaurant_menus")
         .select("status")
         .eq("establishment_id", establishmentId)
