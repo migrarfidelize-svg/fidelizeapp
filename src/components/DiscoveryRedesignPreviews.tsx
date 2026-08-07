@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, QrCode, User, Compass, Clock, Sparkles, Star, Heart, Gift, ArrowRight, Filter, ChevronRight, Zap, Trophy, Target, MapPin, Tag, Smartphone, TrendingUp, Navigation } from "lucide-react";
+import { Search, QrCode, User, Compass, Clock, Sparkles, Star, Heart, Gift, ArrowRight, Filter, ChevronRight, Zap, Trophy, Target, MapPin, Tag, Smartphone, TrendingUp, Navigation, PlusCircle } from "lucide-react";
 import { SponsoredAdCard, SponsoredAdData } from "./SponsoredAdCard";
 import { cn } from "@/lib/utils";
 
