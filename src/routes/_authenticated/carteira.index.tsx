@@ -210,7 +210,7 @@ function WalletHome() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
                   <div className="md:col-span-1">
-                    <WalletStack key={term} items={visibleFeatured.slice(0, 5)} />
+                    <WalletStack key={term} items={visibleFeatured.slice(0, 7)} />
                   </div>
                   <div className="hidden md:grid md:col-span-1 xl:col-span-2 grid-cols-1 xl:grid-cols-3 gap-4 h-fit">
                     {visibleFeatured.slice(1, 7).map(item => (
