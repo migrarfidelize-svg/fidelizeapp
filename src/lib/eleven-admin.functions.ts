@@ -214,7 +214,8 @@ export const removeElevenConfig = createServerFn({ method: "POST" })
     const isSuperAdmin = roles?.some(r => r.role === 'super_admin');
     if (!isSuperAdmin) throw new Error("Não autorizado");
 
-    const { error } = await (supabase as any)
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await (supabaseAdmin as any)
       .from("system_settings")
       .delete()
       .eq("namespace", "voice")
