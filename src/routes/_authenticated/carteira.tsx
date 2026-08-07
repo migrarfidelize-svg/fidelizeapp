@@ -113,17 +113,8 @@ function WalletLayout() {
       
       {/* 1. SIDEBAR (DESKTOP) & DRAWER (MOBILE) */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-72 transform bg-background/80 backdrop-blur-2xl border-r border-border/40 transition-all duration-500 ease-in-out lg:flex lg:flex-col lg:sticky lg:inset-y-0 lg:z-50 lg:w-20 xl:w-72",
-        isSidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"
+        "fixed inset-y-0 left-0 z-[110] w-72 transform bg-background/80 backdrop-blur-2xl border-r border-border/40 transition-all duration-500 ease-in-out hidden lg:flex lg:flex-col lg:sticky lg:inset-y-0 lg:w-20 xl:w-72 translate-x-0"
       )}>
-        {/* Overlay for mobile when sidebar is open */}
-        {isSidebarOpen && (
-          <div 
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm lg:hidden -z-10" 
-            onClick={() => setIsSidebarOpen(false)}
-          />
-        )}
-
         <div className="flex flex-col h-full p-4 xl:p-6">
           {/* Logo Section */}
           <div className="flex items-center gap-4 mb-10 px-2 lg:justify-center xl:justify-start">
@@ -135,12 +126,6 @@ function WalletLayout() {
               <span className="font-display text-xl font-black tracking-tighter text-primary">Fidelize</span>
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 leading-none">Premium Clean</span>
             </div>
-            <button 
-              className="ml-auto p-2 lg:hidden text-muted-foreground hover:bg-accent rounded-xl"
-              onClick={() => setIsSidebarOpen(false)}
-            >
-              <X className="h-5 w-5" />
-            </button>
           </div>
 
           {/* Main Navigation */}
