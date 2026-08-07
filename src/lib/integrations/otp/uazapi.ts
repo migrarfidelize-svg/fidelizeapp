@@ -102,7 +102,8 @@ export const uazapiOtp: WhatsAppOTPProvider = {
     return {
       remoteMessageId: msg.key?.id,
       fromPhone: msg.key?.remoteJid?.split("@")[0],
-      text
+      text,
+      messageType: msg.message?.conversation ? "text" : "other"
     };
   }
 };
