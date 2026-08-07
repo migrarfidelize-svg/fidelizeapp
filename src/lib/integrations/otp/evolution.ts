@@ -72,16 +72,22 @@ export const evolutionOtp: WhatsAppOTPProvider = {
     const apiKey = (runtime.config.apiKey as string) || env.WHATSAPP_API_KEY;
     const instance = (runtime.config.instance as string) || env.WHATSAPP_INSTANCE_ID;
 
+    if (!baseUrl || !apiKey || !instance) {
+      return { ok: false, message: "Configuração incompleta." };
+    }
+
     // Normalização simples para DDI + DDD + Número
     const cleanPhone = phone.replace(/\D/g, "");
+
+    const headers: Record<string, string> = { 
+      "apikey": apiKey,
+      "Content-Type": "application/json"
+    };
 
     try {
       const { response, body } = await timedFetch(`${baseUrl}/message/sendText/${instance}`, {
         method: "POST",
-        headers: { 
-          "apikey": apiKey,
-          "Content-Type": "application/json"
-        },
+        headers,
         body: JSON.stringify({
           number: cleanPhone,
           options: { delay: 1200, presence: "composing", linkPreview: false },
