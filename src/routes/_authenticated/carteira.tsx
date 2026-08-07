@@ -129,7 +129,7 @@ function WalletLayout() {
                 <Link
                   key={tab.path}
                   to={tab.path}
-                  onClick={() => setIsSidebarOpen(false)}
+                  onClick={() => {}}
                   className={cn(
                     "flex items-center gap-4 p-3 xl:p-4 rounded-[1.25rem] transition-all group lg:justify-center xl:justify-start",
                     isActive 
