@@ -613,7 +613,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="animate-fade-in space-y-5 rounded-2xl border border-border/60 bg-card/60 p-5 backdrop-blur-sm md:p-7">
+    <section className="animate-fade-in space-y-4 rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur-sm sm:p-5 md:p-7 lg:space-y-5">
       <header className="flex items-center gap-4">
         <span className="card-icon shrink-0">
           <Icon className="h-5 w-5" />
