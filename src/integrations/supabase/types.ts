@@ -6615,6 +6615,8 @@ export type Database = {
         Row: {
           approved_at: string | null
           approved_by: string | null
+          benefit_text: string | null
+          campaign_type: string
           category_id: string
           changes_requested_reason: string | null
           courtesy_reason: string | null
@@ -6625,39 +6627,60 @@ export type Database = {
           description: string
           destination_slug: string
           destination_type: string
+          discount_label: string | null
+          discount_value: number | null
+          display_model: string
+          display_order: number
           duration_days_snapshot: number | null
           ends_at: string | null
-          establishment_id: string
+          establishment_id: string | null
+          fidelize_price_cents: number | null
+          full_bleed_mode: boolean
+          hide_cta: boolean
+          hide_description: boolean
+          hide_logo: boolean
+          hide_merchant_name: boolean
+          hide_prices: boolean
+          hide_title: boolean
           id: string
           image_path: string | null
           image_source: string
           is_courtesy: boolean
+          offer_type: string
+          origin: string
+          original_price_cents: number | null
           package_id: string | null
           package_name_snapshot: string | null
           pause_origin: string | null
           pause_reason: string | null
           paused_at: string | null
           price_cents_snapshot: number | null
+          priority: number
           rejected_at: string | null
           rejected_by: string | null
           rejection_reason: string | null
           requested_start_at: string | null
           settings_snapshot: Json | null
+          slot_id: string
           starts_at: string | null
           status: string
           submitted_at: string | null
           terms_accepted_at: string | null
           terms_accepted_by: string | null
           terms_version: number | null
+          theme: string
           title: string
           total_paused_seconds: number
           tracking_token: string
           updated_at: string
           updated_by: string | null
+          video_path: string | null
         }
         Insert: {
           approved_at?: string | null
           approved_by?: string | null
+          benefit_text?: string | null
+          campaign_type?: string
           category_id: string
           changes_requested_reason?: string | null
           courtesy_reason?: string | null
@@ -6668,39 +6691,60 @@ export type Database = {
           description?: string
           destination_slug?: string
           destination_type?: string
+          discount_label?: string | null
+          discount_value?: number | null
+          display_model?: string
+          display_order?: number
           duration_days_snapshot?: number | null
           ends_at?: string | null
-          establishment_id: string
+          establishment_id?: string | null
+          fidelize_price_cents?: number | null
+          full_bleed_mode?: boolean
+          hide_cta?: boolean
+          hide_description?: boolean
+          hide_logo?: boolean
+          hide_merchant_name?: boolean
+          hide_prices?: boolean
+          hide_title?: boolean
           id?: string
           image_path?: string | null
           image_source?: string
           is_courtesy?: boolean
+          offer_type?: string
+          origin?: string
+          original_price_cents?: number | null
           package_id?: string | null
           package_name_snapshot?: string | null
           pause_origin?: string | null
           pause_reason?: string | null
           paused_at?: string | null
           price_cents_snapshot?: number | null
+          priority?: number
           rejected_at?: string | null
           rejected_by?: string | null
           rejection_reason?: string | null
           requested_start_at?: string | null
           settings_snapshot?: Json | null
+          slot_id?: string
           starts_at?: string | null
           status?: string
           submitted_at?: string | null
           terms_accepted_at?: string | null
           terms_accepted_by?: string | null
           terms_version?: number | null
+          theme?: string
           title?: string
           total_paused_seconds?: number
           tracking_token?: string
           updated_at?: string
           updated_by?: string | null
+          video_path?: string | null
         }
         Update: {
           approved_at?: string | null
           approved_by?: string | null
+          benefit_text?: string | null
+          campaign_type?: string
           category_id?: string
           changes_requested_reason?: string | null
           courtesy_reason?: string | null
@@ -6711,35 +6755,54 @@ export type Database = {
           description?: string
           destination_slug?: string
           destination_type?: string
+          discount_label?: string | null
+          discount_value?: number | null
+          display_model?: string
+          display_order?: number
           duration_days_snapshot?: number | null
           ends_at?: string | null
-          establishment_id?: string
+          establishment_id?: string | null
+          fidelize_price_cents?: number | null
+          full_bleed_mode?: boolean
+          hide_cta?: boolean
+          hide_description?: boolean
+          hide_logo?: boolean
+          hide_merchant_name?: boolean
+          hide_prices?: boolean
+          hide_title?: boolean
           id?: string
           image_path?: string | null
           image_source?: string
           is_courtesy?: boolean
+          offer_type?: string
+          origin?: string
+          original_price_cents?: number | null
           package_id?: string | null
           package_name_snapshot?: string | null
           pause_origin?: string | null
           pause_reason?: string | null
           paused_at?: string | null
           price_cents_snapshot?: number | null
+          priority?: number
           rejected_at?: string | null
           rejected_by?: string | null
           rejection_reason?: string | null
           requested_start_at?: string | null
           settings_snapshot?: Json | null
+          slot_id?: string
           starts_at?: string | null
           status?: string
           submitted_at?: string | null
           terms_accepted_at?: string | null
           terms_accepted_by?: string | null
           terms_version?: number | null
+          theme?: string
           title?: string
           total_paused_seconds?: number
           tracking_token?: string
           updated_at?: string
           updated_by?: string | null
+          video_path?: string | null
         }
         Relationships: [
           {
@@ -9116,6 +9179,44 @@ export type Database = {
           tracking_token: string
         }[]
       }
+      get_sponsored_ads_public_v2: {
+        Args: {
+          _category?: string
+          _limit?: number
+          _session_hash?: string
+          _slot_id: string
+        }
+        Returns: {
+          benefit_text: string
+          campaign_id: string
+          category_id: string
+          cta_label: string
+          description: string
+          destination_slug: string
+          destination_type: string
+          discount_label: string
+          discount_value: number
+          display_model: string
+          establishment_logo_url: string
+          establishment_name: string
+          establishment_primary_color: string
+          establishment_slug: string
+          fidelize_price_cents: number
+          full_bleed_mode: boolean
+          hide_cta: boolean
+          hide_description: boolean
+          hide_logo: boolean
+          hide_merchant_name: boolean
+          hide_prices: boolean
+          hide_title: boolean
+          offer_type: string
+          original_price_cents: number
+          theme: string
+          title: string
+          tracking_token: string
+          video_path: string
+        }[]
+      }
       has_active_subscription: { Args: { _est: string }; Returns: boolean }
       has_establishment_access: {
         Args: { _est: string; _user: string }
@@ -9177,6 +9278,7 @@ export type Database = {
         Returns: Json
       }
       sponsored_ads_admin_overview: { Args: never; Returns: Json }
+      sponsored_ads_admin_overview_v3: { Args: never; Returns: Json }
     }
     Enums: {
       account_type: "customer" | "establishment" | "super_admin"
