@@ -36,7 +36,8 @@ export const saveElevenConfig = createServerFn({ method: "POST" })
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
+    const { error } = await (supabaseAdmin as any)
+      .from("system_settings")
       .upsert({ 
         namespace: 'voice',
         key: 'elevenlabs',
