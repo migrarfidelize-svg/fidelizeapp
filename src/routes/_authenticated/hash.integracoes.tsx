@@ -17,8 +17,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plug, CheckCircle2, XCircle, Loader2, KeyRound, ExternalLink, Settings2,
   Copy, CopyCheck, RotateCcw, AlertTriangle, Clock, BookOpen, History, Webhook, Save,
-  Sparkles, CreditCard, Zap, Target, ShieldCheck,
+  Sparkles, CreditCard, Zap, Target, ShieldCheck, MessageCircle, Phone,
 } from "lucide-react";
+
+
 import { motion } from "framer-motion";
 import { ProviderBrand, providerAccent } from "@/components/integrations/ProviderBrand";
 import { SectionBanner } from "@/components/integrations/SectionBanner";
@@ -33,7 +35,9 @@ import {
   toggleIntegration,
   testIntegration,
   saveIntegrationCredentials,
+  sendTestWhatsAppMessage,
 } from "@/lib/integrations/integrations.functions";
+
 
 export const Route = createFileRoute("/_authenticated/hash/integracoes")({
   component: IntegrationsPage,
@@ -81,12 +85,15 @@ function IntegrationsPage() {
     const ai: CatalogMeta[] = [];
     const payments: CatalogMeta[] = [];
     const marketing: CatalogMeta[] = [];
+    const otp: CatalogMeta[] = [];
     (catalog.data ?? []).forEach((m) => {
       if (m.category === "ai") ai.push(m);
       else if (m.category === "marketing") marketing.push(m);
+      else if (m.category === "otp") otp.push(m);
       else payments.push(m);
     });
-    return { ai, payments, marketing };
+    return { ai, payments, marketing, otp };
+
   }, [catalog.data]);
 
   const isLoading = catalog.isLoading || saved.isLoading;
@@ -94,7 +101,9 @@ function IntegrationsPage() {
   const aiConfigured = grouped.ai.filter((m) => byKey.get(`ai:${m.id}`)?.enabled).length;
   const payConfigured = grouped.payments.filter((m) => byKey.get(`payments:${m.id}`)?.enabled).length;
   const mktConfigured = grouped.marketing.filter((m) => byKey.get(`marketing:${m.id}`)?.enabled).length;
+  const otpConfigured = grouped.otp.filter((m) => byKey.get(`otp:${m.id}`)?.enabled).length;
   const webhooksActive = (webhooks.data ?? []).length;
+
 
   return (
     <div className="p-4 md:p-8 space-y-8">
@@ -113,15 +122,18 @@ function IntegrationsPage() {
         stats={[
           { label: "IA ativas", value: aiConfigured },
           { label: "Pagamentos", value: payConfigured },
-          { label: "Marketing", value: mktConfigured },
+          { label: "WhatsApp", value: otpConfigured },
           { label: "Webhooks", value: webhooksActive },
         ]}
+
       />
 
       <Tabs defaultValue="providers" className="w-full">
         <TabsList>
-          <TabsTrigger value="providers"><Zap className="h-4 w-4 mr-1" />Provedores</TabsTrigger>
+          <TabsTrigger value="providers"><Zap className="h-4 w-4 mr-1" />Provedores de IA</TabsTrigger>
+          <TabsTrigger value="otp"><MessageCircle className="h-4 w-4 mr-1" />WhatsApp / OTP</TabsTrigger>
           <TabsTrigger value="marketing"><Target className="h-4 w-4 mr-1" />Marketing &amp; Pixel</TabsTrigger>
+
           <TabsTrigger value="webhooks"><Webhook className="h-4 w-4 mr-1" />Webhooks</TabsTrigger>
           <TabsTrigger value="captcha"><ShieldCheck className="h-4 w-4 mr-1" />Captcha</TabsTrigger>
         </TabsList>
@@ -150,6 +162,21 @@ function IntegrationsPage() {
             {isLoading ? <SkeletonGrid /> : <Grid metas={grouped.payments} byKey={byKey} onChanged={() => saved.refetch()} />}
           </section>
         </TabsContent>
+
+        <TabsContent value="otp" className="mt-6 space-y-10">
+          <section className="space-y-5">
+            <SectionBanner
+              title="WhatsApp / OTP"
+              subtitle="Configure provedores para envio de códigos de autenticação (OTP) e notificações transacionais via WhatsApp."
+              icon={MessageCircle}
+              gradient="from-emerald-600 via-green-600 to-teal-700"
+              accent="#10b981"
+              stats={[{ label: "Provedores", value: grouped.otp.length }, { label: "Ativos", value: otpConfigured }]}
+            />
+            {isLoading ? <SkeletonGrid /> : <Grid metas={grouped.otp} byKey={byKey} onChanged={() => saved.refetch()} />}
+          </section>
+        </TabsContent>
+
 
         <TabsContent value="marketing" className="mt-6 space-y-5">
           <SectionBanner
@@ -335,8 +362,10 @@ function ManageDialog({
           <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="config">Configuração</TabsTrigger>
             <TabsTrigger value="credentials"><KeyRound className="h-3 w-3 mr-1" />Credenciais</TabsTrigger>
+            {meta.category === "otp" && <TabsTrigger value="test"><MessageCircle className="h-3 w-3 mr-1" />Teste</TabsTrigger>}
             <TabsTrigger value="guide"><BookOpen className="h-3 w-3 mr-1" />Como configurar</TabsTrigger>
             <TabsTrigger value="history"><History className="h-3 w-3 mr-1" />Histórico</TabsTrigger>
+
           </TabsList>
 
           <TabsContent value="config" className="mt-4">
@@ -345,6 +374,10 @@ function ManageDialog({
           <TabsContent value="credentials" className="mt-4">
             <CredentialsTab meta={meta} onSaved={onSaved} credsMasked={credsMasked} secretStatus={secretStatus} />
           </TabsContent>
+          <TabsContent value="test" className="mt-4">
+            <OtpTestTab meta={meta} />
+          </TabsContent>
+
           <TabsContent value="guide" className="mt-4">
             <GuideTab meta={meta} />
           </TabsContent>
@@ -517,7 +550,63 @@ function CredentialsTab({
   );
 }
 
+function OtpTestTab({ meta }: { meta: CatalogMeta }) {
+  const sendTestFn = useServerFn(sendTestWhatsAppMessage);
+  const [phone, setPhone] = useState("");
+  const [message, setMessage] = useState("Teste de integração WhatsApp Afidelize realizado com sucesso.");
+  const [sending, setSending] = useState(false);
+
+  async function send() {
+    if (phone.length < 10) {
+      toast.error("Informe um WhatsApp válido.");
+      return;
+    }
+    setSending(true);
+    try {
+      const res = await sendTestFn({ data: { category: "otp", provider: meta.id, phone, message } });
+      if (res.ok) toast.success(res.message);
+      else toast.error(res.message);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erro no envio");
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4 pt-2">
+      <div className="space-y-1">
+        <Label className="text-sm">WhatsApp de teste</Label>
+        <div className="relative">
+          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input 
+            placeholder="(00) 00000-0000" 
+            className="pl-9"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
+        </div>
+        <p className="text-[10px] text-muted-foreground">Informe o DDI + DDD + Número. Ex: 5511999998888</p>
+      </div>
+
+      <div className="space-y-1">
+        <Label className="text-sm">Mensagem</Label>
+        <Input 
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+      </div>
+
+      <Button className="w-full" onClick={send} disabled={sending}>
+        {sending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <MessageCircle className="h-4 w-4 mr-2" />}
+        Enviar mensagem de teste
+      </Button>
+    </div>
+  );
+}
+
 function GuideTab({ meta }: { meta: CatalogMeta }) {
+
   const guide = (meta as any).guide as null | {
     intro: string; prerequisites?: string[];
     steps: { title: string; description: string; url?: string }[];

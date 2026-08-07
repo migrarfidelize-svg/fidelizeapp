@@ -104,7 +104,7 @@ export const listIntegrationHistory = createServerFn({ method: "POST" })
   });
 
 const UpsertInput = z.object({
-  category: z.enum(["ai", "payments", "marketing"]),
+  category: z.enum(["ai", "payments", "marketing", "otp"]),
   provider: z.string().min(1),
   enabled: z.boolean().optional(),
   mode: z.enum(["sandbox", "production"]).nullable().optional(),
@@ -169,7 +169,7 @@ export const upsertIntegration = createServerFn({ method: "POST" })
   });
 
 const CredentialsInput = z.object({
-  category: z.enum(["ai", "payments", "marketing"]),
+  category: z.enum(["ai", "payments", "marketing", "otp"]),
   provider: z.string(),
   // { field_name: value } — se value === "" mantém, se null remove.
   credentials: z.record(z.string(), z.union([z.string(), z.null()])),
@@ -230,7 +230,7 @@ export const saveIntegrationCredentials = createServerFn({ method: "POST" })
   });
 
 const ToggleInput = z.object({
-  category: z.enum(["ai", "payments", "marketing"]),
+  category: z.enum(["ai", "payments", "marketing", "otp"]),
   provider: z.string(),
   enabled: z.boolean(),
 });
@@ -257,7 +257,7 @@ export const toggleIntegration = createServerFn({ method: "POST" })
   });
 
 const TestInput = z.object({
-  category: z.enum(["ai", "payments", "marketing"]),
+  category: z.enum(["ai", "payments", "marketing", "otp"]),
   provider: z.string(),
 });
 export const testIntegration = createServerFn({ method: "POST" })
@@ -331,3 +331,57 @@ export const testIntegration = createServerFn({ method: "POST" })
 
     return { ...result, details };
   });
+
+const TestMessageInput = z.object({
+  category: z.literal("otp"),
+  provider: z.string(),
+  phone: z.string().min(10),
+  message: z.string().min(1),
+});
+
+export const sendTestWhatsAppMessage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => TestMessageInput.parse(d))
+  .handler(async ({ context, data }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const { getProvider } = await import("./registry");
+
+    const provider = getProvider("otp", data.provider) as any;
+    
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row } = await (supabaseAdmin as any)
+      .from("integrations")
+      .select("*")
+      .eq("category", "otp")
+      .eq("provider", data.provider)
+      .maybeSingle();
+
+    if (!row) throw new Error("Integração não encontrada.");
+
+    const runtime: IntegrationRuntimeConfig = {
+      enabled: row.enabled ?? false,
+      mode: (row.mode as any) ?? "production",
+      config: (row.config as any) ?? {},
+      credentials_ref: (row.credentials_ref as any) ?? {},
+    };
+
+    const dbCreds = (row.credentials ?? {}) as Record<string, string>;
+    const mergedEnv: Record<string, string | undefined> = { ...(process.env as Record<string, string | undefined>) };
+    for (const [field, envName] of Object.entries(runtime.credentials_ref)) {
+      const v = dbCreds[field];
+      if (v) mergedEnv[envName] = v;
+    }
+
+    const result = await provider.sendTestMessage(runtime, mergedEnv, data.phone, data.message);
+    
+    await safeAudit(supabaseAdmin, {
+      actor_id: context.userId,
+      action: "integration.otp.test_message",
+      target_type: "integration",
+      target_id: row.id,
+      metadata: { phone: data.phone, ok: result.ok, message: result.message },
+    });
+
+    return result;
+  });
+

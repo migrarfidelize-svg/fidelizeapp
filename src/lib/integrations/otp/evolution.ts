@@ -1,0 +1,107 @@
+import { timedFetch } from "../types";
+import type { IntegrationRuntimeConfig, NodeEnv, TestConnectionResult } from "../types";
+import type { WhatsAppOTPProvider } from "./base";
+
+export const evolutionOtp: WhatsAppOTPProvider = {
+  meta: {
+    id: "evolution",
+    label: "Evolution API",
+    category: "otp",
+    description: "Integração via Evolution API para envio de mensagens via WhatsApp.",
+    icon: "MessageSquare",
+    fields: [
+      {
+        name: "baseUrl",
+        label: "Servidor / Base URL",
+        kind: "url",
+        required: true,
+        placeholder: "https://minha-instancia.com",
+      },
+      {
+        name: "apiKey",
+        label: "API Key / Global Token",
+        kind: "password",
+        required: true,
+      },
+      {
+        name: "instance",
+        label: "Instância",
+        kind: "text",
+        required: true,
+        placeholder: "instancia_01",
+      },
+    ],
+  },
+
+  async testConnection(runtime: IntegrationRuntimeConfig, env: NodeEnv): Promise<TestConnectionResult> {
+    const baseUrl = (runtime.config.baseUrl as string)?.replace(/\/$/, "");
+    const apiKey = (runtime.config.apiKey as string) || env.WHATSAPP_API_KEY;
+    const instance = (runtime.config.instance as string) || env.WHATSAPP_INSTANCE_ID;
+
+    if (!baseUrl || !apiKey || !instance) {
+      return { ok: false, message: "Configuração incompleta (Base URL, API Key ou Instância ausente)." };
+    }
+
+    try {
+      const { response, body, latency_ms } = await timedFetch(`${baseUrl}/instance/display/${instance}`, {
+        headers: { "apikey": apiKey },
+      });
+
+      if (response.ok) {
+        return { ok: true, message: "Conectado com sucesso.", latency_ms };
+      }
+
+      return { 
+        ok: false, 
+        status: response.status, 
+        message: `Erro ao consultar instância: ${body}`,
+        latency_ms 
+      };
+    } catch (err) {
+      return { ok: false, message: `Falha na rede: ${err instanceof Error ? err.message : String(err)}` };
+    }
+  },
+
+  async sendOtp(runtime: IntegrationRuntimeConfig, env: NodeEnv, phone: string, code: string) {
+    const message = `Seu código de acesso Afidelize é: ${code}`;
+    return this.sendTestMessage(runtime, env, phone, message);
+  },
+
+  async sendTestMessage(runtime: IntegrationRuntimeConfig, env: NodeEnv, phone: string, message: string) {
+    const baseUrl = (runtime.config.baseUrl as string)?.replace(/\/$/, "");
+    const apiKey = (runtime.config.apiKey as string) || env.WHATSAPP_API_KEY;
+    const instance = (runtime.config.instance as string) || env.WHATSAPP_INSTANCE_ID;
+
+    if (!baseUrl || !apiKey || !instance) {
+      return { ok: false, message: "Configuração incompleta." };
+    }
+
+    // Normalização simples para DDI + DDD + Número
+    const cleanPhone = phone.replace(/\D/g, "");
+
+    const headers: Record<string, string> = { 
+      "apikey": apiKey,
+      "Content-Type": "application/json"
+    };
+
+    try {
+      const { response, body } = await timedFetch(`${baseUrl}/message/sendText/${instance}`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          number: cleanPhone,
+          options: { delay: 1200, presence: "composing", linkPreview: false },
+          textMessage: { text: message }
+        })
+      });
+
+      if (response.ok) {
+        return { ok: true, message: "Mensagem enviada." };
+      }
+
+      return { ok: false, message: `Erro no envio (${response.status}): ${body}` };
+    } catch (err) {
+      return { ok: false, message: `Falha ao enviar: ${err instanceof Error ? err.message : String(err)}` };
+    }
+  }
+};
