@@ -1,9 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { z } from "zod";
 
 /**
  * Webhook unificado para recebimento de mensagens de WhatsApp.
- * Suporta: UAZAPI, Evolution API, Z-API e Custom.
+ * Suporta: UAZAPI, Evolution API, Z-API e Custom via Strategy.
  * Rota: /api/public/webhooks/whatsapp
  */
 
@@ -21,14 +20,14 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
         // 1. Identificar Provedor Ativo
         const active = await getActiveWhatsAppProvider();
         if (!active) {
+          console.error("[Webhook] No active WhatsApp provider found.");
           return new Response("No active WhatsApp provider", { status: 404 });
         }
 
         const providerId = active.provider.meta.id;
         const config = active.runtime.config;
         
-        // 2. Validar Segurança (Token/Secret) conforme o provedor
-        // Nota: Cada provider tem sua forma de envio de webhook.
+        // 2. Validar Segurança (Token/Secret)
         const providedToken = headers["x-webhook-token"] || headers["apikey"] || headers["token"] || new URL(request.url).searchParams.get("token");
         const expectedToken = (config.webhookToken as string) || (config.token as string) || (config.apiKey as string);
 
@@ -44,43 +43,17 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
           return new Response("Invalid JSON", { status: 400 });
         }
 
-        // 3. Normalizar Payload para o CRM
-        let remoteMessageId: string | null = null;
-        let fromPhone: string | null = null;
-        let text: string | null = null;
-        let type: "text" | "image" | "other" = "text";
-
-        if (providerId === "uazapi") {
-          // UAZAPI payload structure
-          if (body.event !== "messages.upsert") return new Response("Ignored event", { status: 200 });
-          const msg = body.data;
-          remoteMessageId = msg.key?.id;
-          fromPhone = msg.key?.remoteJid?.split("@")[0];
-          text = msg.message?.conversation || msg.message?.extendedTextMessage?.text;
-        } else if (providerId === "evolution") {
-          // Evolution API payload structure
-          if (body.event !== "MESSAGES_UPSERT") return new Response("Ignored event", { status: 200 });
-          const msg = body.data?.message;
-          remoteMessageId = body.data?.key?.id;
-          fromPhone = body.data?.key?.remoteJid?.split("@")[0];
-          text = msg?.conversation || msg?.extendedTextMessage?.text;
-        } else if (providerId === "zapi") {
-          // Z-API payload structure
-          remoteMessageId = body.messageId;
-          fromPhone = body.phone;
-          text = body.text?.message;
-        } else {
-          // Custom / Fallback
-          remoteMessageId = body.id || body.messageId || body.key?.id;
-          fromPhone = body.phone || body.from || body.sender;
-          text = body.text || body.message || body.content;
+        // 3. Normalizar Payload via Strategy
+        const normalized = active.provider.parseWebhook?.(body, headers);
+        
+        if (!normalized || !normalized.remoteMessageId || !normalized.fromPhone || !normalized.text) {
+          console.log(`[Webhook] Message ignored or could not be parsed for provider ${providerId}`);
+          return new Response("Ignored or unparseable", { status: 200 });
         }
 
-        if (!remoteMessageId || !fromPhone || !text) {
-          return new Response("Could not parse message", { status: 200 }); // 200 to avoid retries on malformed but valid hits
-        }
+        const { remoteMessageId, fromPhone, text } = normalized;
 
-        // 4. Idempotência (Check if exists)
+        // 4. Idempotência (provider_message_id)
         const { data: existing } = await supabaseAdmin
           .from("crm_messages")
           .select("id")
@@ -91,11 +64,7 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
           return new Response("Duplicate", { status: 200 });
         }
 
-        // 5. Persistência e Fluxo CRM
-        // Nota: A lógica de criação de conversa e mensagens deve estar alinhada com as tabelas do CRM.
-        // Assumindo tabelas: crm_conversations (phone) e crm_messages (conversation_id, body, direction)
-        
-        // Encontrar ou criar conversa
+        // 5. Fluxo CRM (Conversa + Mensagem)
         let { data: conversation } = await supabaseAdmin
           .from("crm_conversations")
           .select("id")
@@ -113,16 +82,22 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
             .select("id")
             .single();
           
-          if (convErr) throw convErr;
+          if (convErr) {
+            console.error("[Webhook] Error creating conversation:", convErr);
+            throw convErr;
+          }
           conversation = newConv;
         } else {
           await supabaseAdmin
             .from("crm_conversations")
-            .update({ last_message_at: new Date().toISOString(), status: "open" })
+            .update({ 
+              last_message_at: new Date().toISOString(), 
+              status: "open",
+              updated_at: new Date().toISOString()
+            })
             .eq("id", conversation.id);
         }
 
-        // Inserir Mensagem
         const { error: msgErr } = await supabaseAdmin
           .from("crm_messages")
           .insert({
@@ -133,7 +108,10 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
             metadata: { raw: body }
           });
 
-        if (msgErr) throw msgErr;
+        if (msgErr) {
+          console.error("[Webhook] Error persisting message:", msgErr);
+          throw msgErr;
+        }
 
         return new Response("OK", { status: 200 });
       },
