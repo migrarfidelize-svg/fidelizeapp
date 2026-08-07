@@ -8,6 +8,7 @@ export async function executeFlow(conversationId: string, messageBody: string) {
     .single();
 
   if (!conv) return;
+  // Bot para se a conversa estiver atribuída a um humano
   if (conv.status === 'assigned') return;
 
   const flowState = (conv.metadata as any)?.flow_state;
@@ -34,13 +35,16 @@ export async function executeFlow(conversationId: string, messageBody: string) {
 
   if (!flow || !flow.is_active) return;
 
-  const steps = flow.steps.sort((a: any, b: any) => a.order_index - b.order_index);
+  const steps = (flow.steps || []).sort((a: any, b: any) => (a.order_index ?? a.sort_order) - (b.order_index ?? b.sort_order));
   
-  // Se estávamos aguardando resposta em uma etapa de 'options' ou 'question'
   if (currentStepId) {
     const lastStep = steps.find((s: any) => s.id === currentStepId);
-    if (lastStep?.type === 'options') {
-      const option = (lastStep.content as any).options?.find((o: any) => o.value === messageBody.trim());
+    // Mapeamos payload para as chaves que a engine espera ou usamos diretamente
+    const stepPayload = (lastStep?.payload as any) || {};
+    const stepType = stepPayload.type || lastStep?.step_key;
+
+    if (stepType === 'options') {
+      const option = stepPayload.options?.find((o: any) => o.value === messageBody.trim());
       if (option) {
         const next = steps.find((s: any) => s.id === option.nextStepId);
         if (next) return await processStep(conv, next, steps);
@@ -48,29 +52,32 @@ export async function executeFlow(conversationId: string, messageBody: string) {
     }
   }
 
-  const firstStep = currentStepId ? steps.find((s: any) => s.id === currentStepId) : steps[0];
-  await processStep(conv, firstStep, steps);
+  const initialStep = currentStepId ? steps.find((s: any) => s.id === currentStepId) : steps[0];
+  await processStep(conv, initialStep, steps);
 }
 
 async function processStep(conv: any, step: any, allSteps: any[]) {
   if (!step) return;
+  
+  const payload = (step.payload as any) || {};
+  const type = payload.type || step.step_key;
 
-  switch (step.type) {
+  switch (type) {
     case 'message':
     case 'question':
     case 'options':
-      await sendWhatsApp(conv.customer_phone, step.content.text);
+      await sendWhatsApp(conv.customer_phone, payload.text || "Sem conteúdo");
       await updateFlowState(conv.id, step.flow_id, step.id);
       break;
 
     case 'transfer_to_queue':
-      await sendWhatsApp(conv.customer_phone, step.content?.text || "Transferindo para um atendente...");
+      await sendWhatsApp(conv.customer_phone, payload.text || "Transferindo para um atendente...");
       await supabaseAdmin.from("crm_conversations").update({ status: 'waiting', assigned_to: null }).eq("id", conv.id);
       await updateFlowState(conv.id, null, null);
       break;
 
     case 'close':
-      await sendWhatsApp(conv.customer_phone, step.content?.text || "Atendimento finalizado.");
+      await sendWhatsApp(conv.customer_phone, payload.text || "Atendimento finalizado.");
       await supabaseAdmin.from("crm_conversations").update({ status: 'closed', closed_at: new Date().toISOString() }).eq("id", conv.id);
       await updateFlowState(conv.id, null, null);
       break;
