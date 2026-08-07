@@ -70,11 +70,10 @@ function IconRow({ value }: { value: string }) {
 
 const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 10;
 
-type StepId = "empresa" | "marca" | "campanha";
+type StepId = "empresa" | "marca";
 const STEPS: { id: StepId; label: string; icon: typeof Building2 }[] = [
   { id: "empresa", label: "Empresa", icon: Building2 },
   { id: "marca", label: "Marca", icon: Palette },
-  { id: "campanha", label: "Campanha", icon: Gift },
 ];
 
 function Onboarding() {
@@ -91,6 +90,7 @@ function Onboarding() {
   const [cropOpen, setCropOpen] = useState(false);
   const [rawFile, setRawFile] = useState<File | null>(null);
   const [logoRev, setLogoRev] = useState(0);
+  const [stepOverride, setStepOverride] = useState<StepId | null>(null);
   const prefill = (() => {
     try {
       const raw = localStorage.getItem("fidelize:onboarding-prefill");
@@ -131,17 +131,14 @@ function Onboarding() {
     const checks = {
       empresa: f.name.trim().length >= 2 && slugify(f.slug).length >= 3 && !!f.segment,
       marca: !!f.logo_url || (!!f.primary_color && !!f.accent_color),
-      campanha: f.reward_title.trim().length >= 2 && f.stamps_required >= 2,
     };
     const done = Object.values(checks).filter(Boolean).length;
     return { checks, done, total: STEPS.length, pct: Math.round((done / STEPS.length) * 100) };
   }, [f]);
 
-  const activeStep: StepId = !completion.checks.empresa
+  const activeStep: StepId = stepOverride || (!completion.checks.empresa
     ? "empresa"
-    : !completion.checks.marca
-      ? "marca"
-      : "campanha";
+    : "marca");
 
   async function signOut() {
     const isPwa = window.matchMedia("(display-mode: standalone)").matches;
@@ -294,19 +291,19 @@ function Onboarding() {
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 py-10 md:px-8 md:py-12 lg:grid-cols-[minmax(0,1fr)_400px]">
+      <main className="relative z-10 mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 md:px-8 md:py-10 lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-10">
         {/* Left: form */}
-        <form onSubmit={submit} className="min-w-0 space-y-10">
+        <form onSubmit={submit} className="flex min-w-0 flex-col gap-6 sm:gap-8 lg:gap-10">
           {/* Stepper */}
-          <nav aria-label="Progresso" className="flex flex-wrap items-center gap-3">
+          <nav aria-label="Progresso" className="flex items-center justify-center gap-1 sm:gap-3">
             {STEPS.map((s, i) => {
               const done = completion.checks[s.id];
               const active = activeStep === s.id;
               const StepIcon = s.icon;
               return (
-                <div key={s.id} className="flex items-center gap-3">
+                <div key={s.id} className="flex items-center gap-1.5 sm:gap-3">
                   <div
-                    className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium tracking-wide transition-all ${
+                    className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium tracking-wide transition-all sm:px-3 sm:py-1.5 sm:text-xs ${
                       active
                         ? "border-primary/60 bg-primary/10 text-primary shadow-[0_0_20px_-6px_var(--primary)]"
                         : done
@@ -315,7 +312,7 @@ function Onboarding() {
                     }`}
                   >
                     <span
-                      className={`grid h-5 w-5 place-items-center rounded-full text-[10px] font-bold ${
+                      className={`grid h-4 w-4 place-items-center rounded-full text-[9px] font-bold sm:h-5 sm:w-5 ${
                         done
                           ? "bg-primary text-primary-foreground"
                           : active
@@ -325,11 +322,11 @@ function Onboarding() {
                     >
                       {done ? "✓" : i + 1}
                     </span>
-                    <StepIcon className="h-3.5 w-3.5" />
-                    <span>{s.label}</span>
+                    <StepIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                    <span className="hidden sm:inline">{s.label}</span>
                   </div>
                   {i < STEPS.length - 1 && (
-                    <span className="h-px w-6 bg-gradient-to-r from-border to-transparent" />
+                    <span className="h-px w-4 bg-border sm:w-6" />
                   )}
                 </div>
               );
@@ -337,7 +334,8 @@ function Onboarding() {
           </nav>
 
           {/* Section: Empresa */}
-          <Section
+          {activeStep === "empresa" && (
+            <Section
             icon={Building2}
             title="Configurar sua empresa"
             subtitle="Comece com a identidade base do seu negócio."
@@ -397,14 +395,36 @@ function Onboarding() {
                 placeholder="Uma frase sobre o seu negócio"
               />
             </Field>
+
+            <div className="flex justify-end pt-2">
+              <Button
+                type="button"
+                disabled={!completion.checks.empresa}
+                onClick={() => setStepOverride("marca")}
+                className="gap-2"
+              >
+                Continuar <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
           </Section>
+          )}
 
           {/* Section: Marca */}
-          <Section
-            icon={Palette}
-            title="Identidade visual"
-            subtitle="Cores e logo que aparecem no cartão dos seus clientes."
-          >
+          {activeStep === "marca" && (
+            <Section
+              icon={Palette}
+              title="Identidade visual"
+              subtitle="Cores e logo que aparecem no cartão dos seus clientes."
+            >
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="mb-2 -ml-2 text-muted-foreground"
+                onClick={() => setStepOverride("empresa")}
+              >
+                ← Voltar para Empresa
+              </Button>
             <div className="grid gap-4 md:grid-cols-2">
               <Field label="Cor principal">
                 <div className="flex items-center gap-2">
@@ -495,89 +515,29 @@ function Onboarding() {
               </div>
             </Field>
           </Section>
-
-          {/* Section: Campanha */}
-          <Section
-            icon={Gift}
-            title="Primeira campanha"
-            subtitle="Configure a regra do primeiro cartão fidelidade."
-          >
-            <Field label="Nome da campanha">
-              <Input
-                value={f.campaign_name}
-                onChange={(e) => set("campaign_name", e.target.value)}
-                maxLength={80}
-              />
-            </Field>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Carimbos necessários">
-                <Input
-                  type="number"
-                  min={2}
-                  max={50}
-                  value={f.stamps_required}
-                  onChange={(e) => set("stamps_required", Number(e.target.value))}
-                />
-              </Field>
-              <Field label="Ícone do carimbo">
-                <Select value={f.stamp_icon} onValueChange={(v) => set("stamp_icon", v)}>
-                  <SelectTrigger>
-                    <SelectValue asChild>
-                      <IconRow value={f.stamp_icon} />
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent className="max-h-72">
-                    {STAMP_ICON_OPTIONS.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        <IconRow value={opt.value} />
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-            </div>
-
-            <Field label="Recompensa (título)">
-              <Input
-                value={f.reward_title}
-                onChange={(e) => set("reward_title", e.target.value)}
-                required
-                maxLength={120}
-                placeholder="Um café grátis"
-              />
-            </Field>
-
-            <Field label="Recompensa (detalhes)">
-              <Textarea
-                value={f.reward_description}
-                onChange={(e) => set("reward_description", e.target.value)}
-                maxLength={500}
-                rows={2}
-                placeholder="Ex: válido de segunda a sexta, exceto especiais"
-              />
-            </Field>
-          </Section>
+          )}
 
           {/* CTA */}
-          <div className="sticky bottom-4 z-10 flex flex-col-reverse items-stretch gap-3 rounded-2xl border border-border/60 bg-card/80 p-4 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="sticky bottom-4 z-50 flex flex-col items-stretch gap-4 rounded-2xl border border-border/60 bg-card/80 p-4 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+            <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground sm:justify-start">
               <ShieldCheck className="h-4 w-4 text-primary" />
               <span>
                 {completion.done}/{completion.total} etapas concluídas · {completion.pct}%
               </span>
             </div>
-            <Button
-              type="submit"
-              disabled={loading}
+            {activeStep === "marca" && (
+              <Button
+                type="submit"
+                disabled={loading || completion.done < completion.total}
               size="lg"
               className="group relative overflow-hidden bg-gradient-to-r from-primary to-accent font-semibold text-primary-foreground shadow-[0_0_30px_-8px_var(--primary)]"
             >
               <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
               <Rocket className="mr-2 h-4 w-4" />
-              {loading ? "Criando…" : "Criar empresa e ir para o pagamento"}
+              {loading ? "Criando…" : "Concluir configuração"}
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
+            )}
           </div>
         </form>
 
@@ -653,7 +613,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="animate-fade-in space-y-5 rounded-2xl border border-border/60 bg-card/60 p-5 backdrop-blur-sm md:p-7">
+    <section className="animate-fade-in space-y-4 rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur-sm sm:p-5 md:p-7 lg:space-y-5">
       <header className="flex items-center gap-4">
         <span className="card-icon shrink-0">
           <Icon className="h-5 w-5" />
@@ -671,7 +631,7 @@ function Section({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
+      <Label className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground sm:text-[11px] sm:tracking-[0.15em]">
         {label}
       </Label>
       {children}

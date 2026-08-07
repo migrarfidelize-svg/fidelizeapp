@@ -244,9 +244,9 @@ function CampanhasPage() {
       ) : (campaigns?.length ?? 0) === 0 ? (
         <EmptyState
           icon={Sparkles}
-          title="Nenhuma campanha ainda"
-          description="Crie sua primeira campanha para começar a distribuir cartões fidelidade aos seus clientes."
-          actionLabel="Criar campanha"
+          title="Você ainda não criou uma campanha de fidelidade"
+          description="Crie sua primeira campanha para começar a distribuir cartões fidelidade e fidelizar seus clientes."
+          actionLabel="Criar primeira campanha"
           onAction={openNew}
         />
       ) : (
