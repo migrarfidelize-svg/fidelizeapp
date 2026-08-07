@@ -169,7 +169,7 @@ export const upsertIntegration = createServerFn({ method: "POST" })
   });
 
 const CredentialsInput = z.object({
-  category: z.enum(["ai", "payments", "marketing"]),
+  category: z.enum(["ai", "payments", "marketing", "otp"]),
   provider: z.string(),
   // { field_name: value } — se value === "" mantém, se null remove.
   credentials: z.record(z.string(), z.union([z.string(), z.null()])),
