@@ -31,7 +31,7 @@ export const getDiscoverySponsoredAds = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data }) => {
-    const { supabase } = await import("@/integrations/supabase/client");
+    const { supabase } = await import("@/integrations/supabase/client.server");
     const sessionHash = await hashSession(data.session_id);
 
     const { data: rows, error } = await supabase.rpc("get_sponsored_ads_for_discovery", {
@@ -89,7 +89,7 @@ export const trackSponsoredAdEvent = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     try {
-      const { supabase } = await import("@/integrations/supabase/client");
+      const { supabase } = await import("@/integrations/supabase/client.server");
       const sessionHash = await hashSession(data.session_id);
       await supabase.rpc("register_sponsored_ad_event", {
         _token: data.token,
