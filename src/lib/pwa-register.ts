@@ -5,7 +5,11 @@
 // - Unregister any stale `/sw.js` in refused contexts.
 // - Never register more than once — this is the ONLY call site.
 
-const SW_URL = "/api/public/sw.js"; // This points to our API proxy that serves the real sw.js from the filesystem
+// Real service worker emitted by vite-plugin-pwa at the site root.
+const SW_URL = "/sw.js";
+// Legacy path previously used (served through an API route that never existed) —
+// any registration pointing at it must be removed on sight.
+const LEGACY_SW_URLS = ["/api/public/sw.js", "/api/public/sw/js"];
 const SW_READY_TIMEOUT_MS = 20000;
 
 let registrationPromise: Promise<ServiceWorkerRegistration> | null = null;
@@ -21,14 +25,34 @@ function isPreviewHost(hostname: string): boolean {
   return false;
 }
 
+function registrationScriptUrl(r: ServiceWorkerRegistration): string {
+  return r.active?.scriptURL || r.installing?.scriptURL || r.waiting?.scriptURL || "";
+}
+
 async function unregisterMatching() {
   if (!("serviceWorker" in navigator)) return;
   try {
     const regs = await navigator.serviceWorker.getRegistrations();
     await Promise.all(
       regs.map(async (r) => {
-        const url = r.active?.scriptURL || r.installing?.scriptURL || r.waiting?.scriptURL || "";
-        if (url.endsWith(SW_URL)) {
+        const url = registrationScriptUrl(r);
+        if (url.endsWith(SW_URL) || LEGACY_SW_URLS.some((legacy) => url.endsWith(legacy))) {
+          try { await r.unregister(); } catch { /* noop */ }
+        }
+      }),
+    );
+  } catch { /* noop */ }
+}
+
+/** Removes stale registrations that point at the old (404) SW path. */
+async function unregisterLegacy() {
+  if (!("serviceWorker" in navigator)) return;
+  try {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(
+      regs.map(async (r) => {
+        const url = registrationScriptUrl(r);
+        if (LEGACY_SW_URLS.some((legacy) => url.endsWith(legacy))) {
           try { await r.unregister(); } catch { /* noop */ }
         }
       }),
@@ -176,10 +200,12 @@ function waitForRegistrationActivation(registration: ServiceWorkerRegistration):
 
 function registerServiceWorkerNow(): Promise<ServiceWorkerRegistration> {
   if (registrationPromise) return registrationPromise;
-  registrationPromise = navigator.serviceWorker.register(SW_URL, { scope: "/" }).catch((error) => {
-    registrationPromise = null;
-    throw error;
-  });
+  registrationPromise = unregisterLegacy()
+    .then(() => navigator.serviceWorker.register(SW_URL, { scope: "/" }))
+    .catch((error) => {
+      registrationPromise = null;
+      throw error;
+    });
   return registrationPromise;
 }
 
