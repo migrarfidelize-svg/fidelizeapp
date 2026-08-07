@@ -78,38 +78,53 @@ function isBillingExempt(pathname: string) {
 
 export const Route = createFileRoute("/_authenticated/app")({
   beforeLoad: async ({ location }) => {
-    // Block customer accounts from the merchant panel.
-    // `_authenticated` is ssr:false, so it's safe to use the browser client here.
+    // 1. Validar papéis básicos (Super Admin e Customer)
     try {
       const access = await getAuthenticatedAccountAccess();
       if (access.isSuperAdmin || access.accountType === "super_admin") throw redirect({ to: "/hash" });
       if (access.accountType === "customer") throw redirect({ to: "/carteira" });
     } catch (e) {
       if (e && typeof e === "object" && ("isRedirect" in e || "to" in e)) throw e;
-      // Fail-open on transient RPC errors — layout still renders; auth gate protects.
+      // Fail-open para erros transitórios: o componente lida com loading
     }
 
-    // Subscription gate: contas sem plano pago só acessam planos/perfil.
-    // Fail-closed: em erro persistente do RPC mandamos para /app/planos.
-    if (!isBillingExempt(location.pathname)) {
-      try {
-        let res = await supabase.rpc("my_subscription_gate");
-        if (res.error) {
-          // uma segunda tentativa cobre falhas transitórias de rede
-          await new Promise((r) => setTimeout(r, 600));
-          res = await supabase.rpc("my_subscription_gate");
-        }
-        if (res.error) throw redirect({ to: "/app/planos", search: { gate: "erro" } as any });
-        const gate = (res.data ?? {}) as { has_establishment?: boolean; active?: boolean; super_admin?: boolean };
-        if (gate.super_admin) return;
-        if (!gate.has_establishment) throw redirect({ to: "/onboarding" });
-        if (!gate.active) throw redirect({ to: "/app/planos" });
-      } catch (e) {
-        if (e && typeof e === "object" && ("isRedirect" in e || "to" in e)) throw e;
-        throw redirect({ to: "/app/planos", search: { gate: "erro" } as any });
+    // 2. Subscription Gate
+    // Se estiver em uma rota isenta, não bloqueamos.
+    if (isBillingExempt(location.pathname)) return;
+
+    try {
+      // Usamos o cliente browser que já tem o cabeçalho de auth injetado pelo router.
+      // my_subscription_gate é SECURITY DEFINER, então resolve permissões de leitura no banco.
+      const { data, error } = await supabase.rpc("my_subscription_gate");
+      
+      if (error) {
+        console.error("[app] erro no subscription gate:", error);
+        // Em caso de erro de rede ou permissão na RPC, mandamos para planos como fallback seguro
+        throw redirect({ to: "/app/planos", search: { gate: "error", code: error.code } as any });
       }
-    }
 
+      const gate = (data ?? {}) as { has_establishment?: boolean; active?: boolean; super_admin?: boolean };
+      
+      // Super Admin acessa tudo (redundante mas seguro)
+      if (gate.super_admin) return;
+
+      // Se não tem empresa vinculada, deve ir para o onboarding
+      if (!gate.has_establishment) {
+        throw redirect({ to: "/onboarding" });
+      }
+
+      // Se tem empresa mas não tem assinatura ativa, bloqueia tudo exceto BILLING_EXEMPT
+      if (!gate.active) {
+        throw redirect({ to: "/app/planos" });
+      }
+    } catch (e) {
+      // Se for um objeto de redirecionamento do TanStack Router, relançamos para processar
+      if (e && typeof e === "object" && ("isRedirect" in e || "to" in e)) throw e;
+      
+      // Fallback para falha de rede (Failed to fetch)
+      console.error("[app] exceção no beforeLoad:", e);
+      throw redirect({ to: "/app/planos", search: { gate: "offline" } as any });
+    }
   },
 
   component: AppLayout,
