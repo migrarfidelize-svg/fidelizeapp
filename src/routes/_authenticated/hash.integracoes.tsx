@@ -34,7 +34,9 @@ import {
   toggleIntegration,
   testIntegration,
   saveIntegrationCredentials,
+  sendTestWhatsAppMessage,
 } from "@/lib/integrations/integrations.functions";
+
 
 export const Route = createFileRoute("/_authenticated/hash/integracoes")({
   component: IntegrationsPage,
