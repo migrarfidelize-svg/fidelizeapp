@@ -97,14 +97,6 @@ function WalletLayout() {
     }))
     .slice(0, 5);
 
-  // Navigation tabs (Início, Descobrir, QR Code central, Vouchers, Perfil)
-  const tabs = [
-    { icon: Home, label: "Início", path: "/carteira" },
-    { icon: Compass, label: "Descobrir", path: "/carteira/descobrir" },
-    { icon: QrCode, label: "QR Code", path: "/app/qr", isFab: true },
-    { icon: Wallet, label: "Vouchers", path: "/carteira/premios" },
-    { icon: User, label: "Perfil", path: "/carteira/perfil" },
-  ];
 
 
   return (
