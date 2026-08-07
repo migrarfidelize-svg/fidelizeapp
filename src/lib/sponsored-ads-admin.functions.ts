@@ -41,6 +41,8 @@ export const adminListAdCampaigns = createServerFn({ method: "POST" })
         status: z.string().max(40).nullable().optional(),
         search: z.string().trim().max(80).optional(),
         limit: z.number().int().min(1).max(100).default(50),
+        origin: z.enum(["merchant", "admin"]).optional(),
+        is_institutional: z.boolean().optional(),
       })
       .parse(d),
   )
@@ -54,7 +56,14 @@ export const adminListAdCampaigns = createServerFn({ method: "POST" })
       .select("*, establishment:establishments(id, name, slug, logo_url, city, primary_color)")
       .order("created_at", { ascending: false })
       .limit(data.limit);
+
     if (data.status) q = q.eq("status", data.status);
+    if (data.origin) q = q.eq("origin", data.origin);
+    if (data.is_institutional !== undefined) {
+      if (data.is_institutional) q = q.is("establishment_id", null);
+      else q = q.not("establishment_id", "is", null);
+    }
+
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
 
@@ -77,13 +86,140 @@ export const adminListAdCampaigns = createServerFn({ method: "POST" })
     );
   });
 
+export const adminSaveAdCampaign = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        id: z.string().uuid().optional(),
+        establishment_id: z.string().uuid().nullable(),
+        internal_name: z.string().trim().min(2).max(100),
+        title: z.string().trim().min(2).max(100),
+        description: z.string().trim().max(400).optional(),
+        image_path: z.string().optional(),
+        video_url: z.string().url().optional().nullable(),
+        cta_label: z.string().trim().max(20).optional(),
+        destination_type: z.enum(["establishment", "institutional", "url", "reward", "external"]),
+        destination_slug: z.string().trim().max(200).optional(),
+        display_model: z.enum(["premium_banner", "sponsored_feed", "carousel"]),
+        theme: z.enum(["premium_dark", "premium_light", "gradient_promo", "editorial", "minimal_product", "seasonal"]),
+        slot_id: z.string().max(50).optional(),
+        category_id: z.string().max(50).optional(),
+        starts_at: z.string(),
+        ends_at: z.string().optional().nullable(),
+        priority: z.enum(["low", "normal", "high", "max"]).default("normal"),
+        display_order: z.number().int().default(0),
+        status: z.string(),
+        // Visual flags
+        hide_title: z.boolean().default(false),
+        hide_description: z.boolean().default(false),
+        hide_merchant_name: z.boolean().default(false),
+        hide_prices: z.boolean().default(false),
+        hide_logo: z.boolean().default(false),
+        hide_cta: z.boolean().default(false),
+        full_bleed_mode: z.boolean().default(false),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertSuperAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const payload = {
+      ...data,
+      origin: "admin",
+      updated_by: userId,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.id) {
+      const { error } = await supabaseAdmin
+        .from("sponsored_ad_campaigns")
+        .update(payload as never)
+        .eq("id", data.id);
+      if (error) throw new Error(error.message);
+      await logAudit(userId, "sponsored_ad.admin_update", { campaign_id: data.id });
+      return { ok: true as const, id: data.id };
+    } else {
+      const { data: newAd, error } = await supabaseAdmin
+        .from("sponsored_ad_campaigns")
+        .insert({
+          ...payload,
+          created_by: userId,
+          price_cents_snapshot: 0, // Admin created are free unless manually adjusted later
+          currency_snapshot: "BRL",
+        } as never)
+        .select("id")
+        .single();
+      if (error) throw new Error(error.message);
+      await logAudit(userId, "sponsored_ad.admin_create", { campaign_id: newAd.id });
+      return { ok: true as const, id: newAd.id };
+    }
+  });
+
+export const adminDuplicateAdCampaign = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertSuperAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: original, error: fetchErr } = await supabaseAdmin
+      .from("sponsored_ad_campaigns")
+      .select("*")
+      .eq("id", data.id)
+      .single();
+    if (fetchErr || !original) throw new Error("Campanha não encontrada.");
+
+    // Strip keys that shouldn't be duplicated
+    const {
+      id,
+      created_at,
+      updated_at,
+      approved_at,
+      approved_by,
+      rejected_at,
+      rejected_by,
+      rejection_reason,
+      payment_confirmed_at,
+      payment_method,
+      payment_id,
+      revenue_cents,
+      impressions_count,
+      clicks_count,
+      ctr_snapshot,
+      ...clean
+    } = original as any;
+
+    const { data: newAd, error: insertErr } = await supabaseAdmin
+      .from("sponsored_ad_campaigns")
+      .insert({
+        ...clean,
+        internal_name: `${clean.internal_name} (Cópia)`,
+        status: "draft",
+        origin: "admin",
+        created_by: userId,
+        updated_by: userId,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as never)
+      .select("id")
+      .single();
+
+    if (insertErr) throw new Error(insertErr.message);
+    await logAudit(userId, "sponsored_ad.admin_duplicate", { original_id: data.id, new_id: newAd.id });
+    return { ok: true as const, id: newAd.id };
+  });
+
 export const adminReviewAdCampaign = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
     z
       .object({
         campaign_id: z.string().uuid(),
-        action: z.enum(["approve", "request_changes", "reject", "pause", "resume", "expire"]),
+        action: z.enum(["approve", "request_changes", "reject", "pause", "resume", "expire", "publish"]),
         reason: z.string().trim().max(400).optional(),
       })
       .parse(d),
@@ -95,11 +231,10 @@ export const adminReviewAdCampaign = createServerFn({ method: "POST" })
 
     const { data: campaign } = (await supabaseAdmin
       .from("sponsored_ad_campaigns")
-      .select("id, status, ends_at, paused_at, total_paused_seconds")
+      .select("id, status, starts_at, ends_at, paused_at, total_paused_seconds")
       .eq("id", data.campaign_id)
       .maybeSingle()) as any;
     if (!campaign) throw new Error("Campanha não encontrada.");
-
 
     const from = campaign.status as AdStatus;
     const now = new Date();
@@ -107,6 +242,18 @@ export const adminReviewAdCampaign = createServerFn({ method: "POST" })
     let to: AdStatus;
 
     switch (data.action) {
+      case "publish":
+        // Admin direct publication logic
+        const startsAt = new Date(campaign.starts_at);
+        const endsAt = campaign.ends_at ? new Date(campaign.ends_at) : null;
+        if (endsAt && endsAt < now) {
+          to = "expired";
+        } else if (startsAt <= now) {
+          to = "active";
+        } else {
+          to = "scheduled";
+        }
+        break;
       case "approve":
         to = "approved_awaiting_payment";
         patch.approved_at = now.toISOString();
@@ -132,7 +279,17 @@ export const adminReviewAdCampaign = createServerFn({ method: "POST" })
         patch.pause_reason = data.reason ?? null;
         break;
       case "resume": {
-        to = "active";
+        const startsAt2 = new Date(campaign.starts_at);
+        const endsAt2 = campaign.ends_at ? new Date(campaign.ends_at) : null;
+        
+        if (endsAt2 && endsAt2 < now) {
+          to = "expired";
+        } else if (startsAt2 <= now) {
+          to = "active";
+        } else {
+          to = "scheduled";
+        }
+        
         const pausedSeconds = campaign.paused_at
           ? Math.max(0, Math.round((now.getTime() - new Date(campaign.paused_at).getTime()) / 1000))
           : 0;
@@ -149,11 +306,14 @@ export const adminReviewAdCampaign = createServerFn({ method: "POST" })
         to = "expired";
         patch.ends_at = now.toISOString();
         break;
+      default:
+        throw new Error("Ação inválida.");
     }
 
-    if (!canTransition(from, to)) {
-      throw new Error(`Transição inválida: ${from} → ${to}.`);
+    if (data.action !== "publish" && data.action !== "resume" && !canTransition(from, to)) {
+       throw new Error(`Transição inválida: ${from} → ${to}.`);
     }
+    
     patch.status = to;
 
     const { error } = await supabaseAdmin.from("sponsored_ad_campaigns").update(patch as never).eq("id", data.campaign_id);
@@ -167,7 +327,6 @@ export const adminReviewAdCampaign = createServerFn({ method: "POST" })
       to_status: to,
       reason: data.reason ?? null,
     } as any);
-
 
     await logAudit(userId, `sponsored_ad.${data.action}`, { campaign_id: data.campaign_id, from, to, reason: data.reason });
 
@@ -205,7 +364,7 @@ export const adminGrantCourtesyAd = createServerFn({ method: "POST" })
         price_cents_snapshot: 0,
         duration_days_snapshot: data.days,
         updated_by: userId,
-      })
+      } as never)
       .eq("id", data.campaign_id);
     if (error) throw new Error(error.message);
 
@@ -215,7 +374,7 @@ export const adminGrantCourtesyAd = createServerFn({ method: "POST" })
       action: "courtesy_granted",
       to_status: "active",
       reason: data.reason,
-    });
+    } as any);
     await logAudit(userId, "sponsored_ad.courtesy", { campaign_id: data.campaign_id, days: data.days, reason: data.reason });
     return { ok: true as const };
   });
@@ -269,7 +428,7 @@ export const adminSaveAdsSettings = createServerFn({ method: "POST" })
         advertiser_terms_version: (current?.advertiser_terms_version ?? 1) + (termsChanged ? 1 : 0),
         updated_by: userId,
         updated_at: new Date().toISOString(),
-      })
+      } as never)
       .eq("id", true);
     if (error) throw new Error(error.message);
     await logAudit(userId, "sponsored_ad.settings_updated", { terms_changed: termsChanged });
@@ -297,12 +456,12 @@ export const adminSaveAdPackage = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const payload = { ...data, updated_by: userId, updated_at: new Date().toISOString() };
     if (data.id) {
-      const { error } = await supabaseAdmin.from("sponsored_ad_packages").update(payload).eq("id", data.id);
+      const { error } = await supabaseAdmin.from("sponsored_ad_packages").update(payload as never).eq("id", data.id);
       if (error) throw new Error(error.message);
     } else {
       const { error } = await supabaseAdmin
         .from("sponsored_ad_packages")
-        .insert({ ...payload, created_by: userId });
+        .insert({ ...payload, created_by: userId } as never);
       if (error) throw new Error(error.message);
     }
     await logAudit(userId, "sponsored_ad.package_saved", { name: data.name, price_cents: data.price_cents });
