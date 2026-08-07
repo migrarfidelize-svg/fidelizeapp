@@ -519,7 +519,14 @@ function CampaignEditor({
   const [imagePath, setImagePath] = useState<string | null>(campaign?.image_path ?? null);
   const [imagePreview, setImagePreview] = useState<string | null>(campaign?.image_url ?? null);
   const [displayModel, setDisplayModel] = useState<any>(campaign?.display_model ?? "premium_banner");
+  const [offerType, setOfferType] = useState<any>(campaign?.offer_type ?? "discount");
+  const [originalPrice, setOriginalPrice] = useState<string>(campaign?.original_price_cents ? (campaign.original_price_cents / 100).toString() : "");
+  const [fidelizePrice, setFidelizePrice] = useState<string>(campaign?.fidelize_price_cents ? (campaign.fidelize_price_cents / 100).toString() : "");
+  const [discountValue, setDiscountValue] = useState<string>(campaign?.discount_value?.toString() ?? "");
+  const [benefitText, setBenefitText] = useState<string>(campaign?.benefit_text ?? "");
+  const [theme, setTheme] = useState<"dark" | "light">(campaign?.theme ?? "dark");
   const [uploading, setUploading] = useState(false);
+
 
 
   const uploadPathFn = useServerFn(getAdCreativeUploadPath);
@@ -541,7 +548,14 @@ function CampaignEditor({
           image_path: imagePath,
           image_source: imagePath ? "upload" : "logo",
           display_model: displayModel,
+          offer_type: offerType,
+          original_price_cents: originalPrice ? Math.round(parseFloat(originalPrice.replace(",", ".")) * 100) : null,
+          fidelize_price_cents: fidelizePrice ? Math.round(parseFloat(fidelizePrice.replace(",", ".")) * 100) : null,
+          discount_value: discountValue ? parseInt(discountValue) : null,
+          benefit_text: benefitText,
+          theme,
         },
+
 
       }),
     onSuccess: () => {
@@ -583,7 +597,9 @@ function CampaignEditor({
   const steps = [
     { key: "pacote", label: "Pacote", hint: "Por quantos dias seu destaque fica no ar" },
     { key: "modelo", label: "Modelo", hint: "Como o anúncio será exibido" },
+    { key: "oferta", label: "Oferta", hint: "Preços e benefícios do anúncio" },
     { key: "criativo", label: "Criativo", hint: "O que o cliente lê no card" },
+
     { key: "publico", label: "Público & destino", hint: "Onde aparece e para onde leva" },
     { key: "revisao", label: "Revisão", hint: "Confira e salve" },
   ];
@@ -591,13 +607,28 @@ function CampaignEditor({
   const stepValid = [
     !!packageId,
     !!displayModel,
+    !!offerType,
     title.trim().length >= 3,
+
     !!categoryId,
     !!packageId && title.trim().length >= 3,
   ];
 
 
   const previewImage = imagePreview ?? establishment?.logo_url ?? null;
+
+  const previewData: any = {
+    title,
+    merchantName: establishment?.name ?? "Seu Negócio",
+    originalPrice: originalPrice ? Math.round(parseFloat(originalPrice.replace(",", ".")) * 100) : undefined,
+    fidelizePrice: fidelizePrice ? Math.round(parseFloat(fidelizePrice.replace(",", ".")) * 100) : undefined,
+    discountValue: discountValue ? parseInt(discountValue) : undefined,
+    benefitText: benefitText || undefined,
+    imageUrl: previewImage || "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?q=80&w=800&auto=format&fit=crop",
+    theme,
+    ctaLabel: cta,
+  };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-background/80 p-0 backdrop-blur-md sm:items-center sm:p-6">
@@ -663,7 +694,7 @@ function CampaignEditor({
           </div>
         </div>
 
-        <div className="grid flex-1 gap-0 overflow-y-auto lg:grid-cols-[1fr_320px]">
+        <div className="grid flex-1 gap-0 overflow-y-auto lg:grid-cols-[1fr_360px]">
           {/* Conteúdo da etapa */}
           <div className="space-y-4 p-5">
             {step === 0 && (
@@ -750,6 +781,117 @@ function CampaignEditor({
             )}
 
             {step === 2 && (
+              <div className="space-y-4">
+                <StepIntro
+                  title="Configure os detalhes da oferta"
+                  text="Defina se é um desconto em dinheiro, brinde ou fidelidade acelerada. O sistema calculará o percentual se você informar os preços."
+                />
+                
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Tipo de Oferta</label>
+                    <select
+                      value={offerType}
+                      onChange={(e) => setOfferType(e.target.value)}
+                      className="mt-1.5 w-full rounded-xl border border-border/60 bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+                    >
+                      <option value="discount">Preço com Desconto</option>
+                      <option value="percentage">Percentual OFF</option>
+                      <option value="benefit">Brinde / Benefício</option>
+                      <option value="loyalty">Fidelidade Turbinada</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Tema Visual</label>
+                    <div className="mt-1.5 flex gap-2">
+                      <button
+                        onClick={() => setTheme("dark")}
+                        className={`flex-1 rounded-xl border py-2 text-xs font-bold transition-all ${theme === "dark" ? "border-primary bg-primary/10" : "border-border/60 hover:border-primary/40"}`}
+                      >
+                        Escuro
+                      </button>
+                      <button
+                        onClick={() => setTheme("light")}
+                        className={`flex-1 rounded-xl border py-2 text-xs font-bold transition-all ${theme === "light" ? "border-primary bg-primary/10" : "border-border/60 hover:border-primary/40"}`}
+                      >
+                        Claro
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {offerType === "discount" && (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Preço Original (R$)</label>
+                      <input
+                        type="text"
+                        value={originalPrice}
+                        onChange={(e) => {
+                          setOriginalPrice(e.target.value);
+                          if (e.target.value && fidelizePrice) {
+                            const orig = parseFloat(e.target.value.replace(",", "."));
+                            const fid = parseFloat(fidelizePrice.replace(",", "."));
+                            if (orig > fid) {
+                              setDiscountValue(Math.round(((orig - fid) / orig) * 100).toString());
+                            }
+                          }
+                        }}
+                        placeholder="49,90"
+                        className="mt-1.5 w-full rounded-xl border border-border/60 bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-black uppercase tracking-widest text-primary">Preço Fidelize (R$)</label>
+                      <input
+                        type="text"
+                        value={fidelizePrice}
+                        onChange={(e) => {
+                          setFidelizePrice(e.target.value);
+                          if (originalPrice && e.target.value) {
+                            const orig = parseFloat(originalPrice.replace(",", "."));
+                            const fid = parseFloat(e.target.value.replace(",", "."));
+                            if (orig > fid) {
+                              setDiscountValue(Math.round(((orig - fid) / orig) * 100).toString());
+                            }
+                          }
+                        }}
+                        placeholder="34,90"
+                        className="mt-1.5 w-full rounded-xl border border-primary/40 bg-primary/5 px-3 py-2.5 text-sm font-bold outline-none focus:border-primary"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {(offerType === "percentage" || offerType === "discount") && (
+                  <div>
+                    <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Desconto (%)</label>
+                    <input
+                      type="number"
+                      value={discountValue}
+                      onChange={(e) => setDiscountValue(e.target.value)}
+                      placeholder="30"
+                      className="mt-1.5 w-full rounded-xl border border-border/60 bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+                    />
+                  </div>
+                )}
+
+                {(offerType === "benefit" || offerType === "loyalty") && (
+                  <div>
+                    <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Texto do Benefício</label>
+                    <input
+                      value={benefitText}
+                      onChange={(e) => setBenefitText(e.target.value)}
+                      placeholder="Ex: Sobremesa grátis"
+                      className="mt-1.5 w-full rounded-xl border border-border/60 bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {step === 3 && (
+
 
               <div className="space-y-4">
                 <StepIntro
@@ -814,7 +956,8 @@ function CampaignEditor({
               </div>
             )}
 
-            {step === 3 && (
+            {step === 4 && (
+
 
               <div className="space-y-4">
                 <StepIntro
@@ -877,7 +1020,8 @@ function CampaignEditor({
               </div>
             )}
 
-            {step === 4 && (
+            {step === 5 && (
+
 
               <div className="space-y-3">
                 <StepIntro
