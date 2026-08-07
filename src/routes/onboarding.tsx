@@ -294,15 +294,15 @@ function Onboarding() {
         {/* Left: form */}
         <form onSubmit={submit} className="min-w-0 space-y-10">
           {/* Stepper */}
-          <nav aria-label="Progresso" className="flex flex-wrap items-center gap-3">
+          <nav aria-label="Progresso" className="flex items-center justify-center gap-1 sm:gap-3">
             {STEPS.map((s, i) => {
               const done = completion.checks[s.id];
               const active = activeStep === s.id;
               const StepIcon = s.icon;
               return (
-                <div key={s.id} className="flex items-center gap-3">
+                <div key={s.id} className="flex items-center gap-1.5 sm:gap-3">
                   <div
-                    className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium tracking-wide transition-all ${
+                    className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium tracking-wide transition-all sm:px-3 sm:py-1.5 sm:text-xs ${
                       active
                         ? "border-primary/60 bg-primary/10 text-primary shadow-[0_0_20px_-6px_var(--primary)]"
                         : done
@@ -311,7 +311,7 @@ function Onboarding() {
                     }`}
                   >
                     <span
-                      className={`grid h-5 w-5 place-items-center rounded-full text-[10px] font-bold ${
+                      className={`grid h-4 w-4 place-items-center rounded-full text-[9px] font-bold sm:h-5 sm:w-5 ${
                         done
                           ? "bg-primary text-primary-foreground"
                           : active
@@ -321,11 +321,11 @@ function Onboarding() {
                     >
                       {done ? "✓" : i + 1}
                     </span>
-                    <StepIcon className="h-3.5 w-3.5" />
-                    <span>{s.label}</span>
+                    <StepIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                    <span className="hidden sm:inline">{s.label}</span>
                   </div>
                   {i < STEPS.length - 1 && (
-                    <span className="h-px w-6 bg-gradient-to-r from-border to-transparent" />
+                    <span className="h-px w-4 bg-border sm:w-6" />
                   )}
                 </div>
               );
