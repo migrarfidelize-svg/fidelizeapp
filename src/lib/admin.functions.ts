@@ -43,6 +43,17 @@ export const adminGetOverview = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     await assertSuperAdmin(supabase, userId);
 
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: prodData } = await supabaseAdmin
+      .from("system_settings")
+      .select("value")
+      .eq("namespace", "system")
+      .eq("key", "production_mode")
+      .maybeSingle();
+    
+    const prod = (prodData?.value as any) || { enabled: false, production_started_at: null };
+    const cutoff = prod.enabled && prod.production_started_at ? prod.production_started_at : "1970-01-01T00:00:00Z";
+
     const [
       { count: estTotal },
       { count: estActive },
@@ -58,12 +69,12 @@ export const adminGetOverview = createServerFn({ method: "GET" })
       supabase.from("establishments").select("*", { count: "exact", head: true }),
       supabase.from("establishments").select("*", { count: "exact", head: true }).eq("active", true),
       supabase.from("establishments").select("*", { count: "exact", head: true }).eq("active", false),
-      supabase.from("customers").select("*", { count: "exact", head: true }),
-      supabase.from("stamps").select("*", { count: "exact", head: true }).is("reverted_at", null),
-      supabase.from("rewards").select("*", { count: "exact", head: true }),
-      supabase.from("rewards").select("*", { count: "exact", head: true }).not("redeemed_at", "is", null),
+      supabase.from("customers").select("*", { count: "exact", head: true }).gte("created_at", cutoff),
+      supabase.from("stamps").select("*", { count: "exact", head: true }).is("reverted_at", null).gte("created_at", cutoff),
+      supabase.from("rewards").select("*", { count: "exact", head: true }).gte("created_at", cutoff),
+      supabase.from("rewards").select("*", { count: "exact", head: true }).not("redeemed_at", "is", null).gte("redeemed_at", cutoff),
       supabase.from("establishments").select("plan"),
-      supabase.from("stamps").select("created_at").is("reverted_at", null).gte("created_at", new Date(Date.now() - 30 * 86400_000).toISOString()),
+      supabase.from("stamps").select("created_at").is("reverted_at", null).gte("created_at", cutoff).gte("created_at", new Date(Date.now() - 30 * 86400_000).toISOString()),
       supabase.from("establishments").select("id, name, slug, plan, active, created_at").order("created_at", { ascending: false }).limit(6),
     ]);
 

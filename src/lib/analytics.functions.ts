@@ -107,24 +107,39 @@ export const getRecapAnalytics = createServerFn({ method: "POST" })
     const startWeek = new Date(currentWeek.getTime() - (weeksBack - 1) * WEEK_MS);
     const startIso = startWeek.toISOString();
 
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: prodData } = await supabaseAdmin
+      .from("system_settings")
+      .select("value")
+      .eq("namespace", "system")
+      .eq("key", "production_mode")
+      .maybeSingle();
+    
+    const prod = (prodData?.value as any) || { enabled: false, production_started_at: null };
+    const prodCutoff = prod.enabled && prod.production_started_at ? prod.production_started_at : "1970-01-01T00:00:00Z";
+
     const [stampsRes, rewardsRes, achRes, customersRes, campaignsRes, achCatalogRes] = await Promise.all([
       supabase.from("stamps")
         .select("id, created_at, card_id, establishment_id")
         .in("establishment_id", estIds)
         .is("reverted_at", null)
-        .gte("created_at", startIso),
+        .gte("created_at", startIso)
+        .gte("created_at", prodCutoff),
       supabase.from("rewards")
         .select("id, redeemed_at, establishment_id, campaign_id")
         .in("establishment_id", estIds)
         .not("redeemed_at", "is", null)
-        .gte("redeemed_at", startIso),
+        .gte("redeemed_at", startIso)
+        .gte("redeemed_at", prodCutoff),
       supabase.from("customer_achievements")
         .select("achievement_code, unlocked_at, establishment_id")
         .in("establishment_id", estIds)
-        .gte("unlocked_at", startIso),
+        .gte("unlocked_at", startIso)
+        .gte("unlocked_at", prodCutoff),
       supabase.from("customers")
         .select("id, establishment_id, created_at")
-        .in("establishment_id", estIds),
+        .in("establishment_id", estIds)
+        .gte("created_at", prodCutoff),
       supabase.from("campaigns")
         .select("id, name, reward_title, establishment_id")
         .in("establishment_id", estIds),
