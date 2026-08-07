@@ -244,7 +244,7 @@ function WalletHome() {
 
             {feed.length > 0 && (
               <section>
-                <div className="mb-2 flex items-center justify-between">
+                <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                     <Bell className="mr-1 inline h-3.5 w-3.5" /> Atividade recente
                   </h2>
@@ -252,7 +252,7 @@ function WalletHome() {
                     Ver tudo →
                   </Link>
                 </div>
-                <ol className="space-y-2 rounded-3xl border border-border/60 bg-card/30 p-2">
+                <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   {feed.map((f) => <FeedRow key={f.id} f={f} />)}
                 </ol>
               </section>
