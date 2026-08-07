@@ -558,10 +558,17 @@ function CampaignEditor({
           discount_value: discountValue ? parseInt(discountValue) : null,
           benefit_text: benefitText,
           theme,
+          video_url: videoUrl,
+          hide_title: hideTitle,
+          hide_description: hideDescription,
+          hide_merchant_name: hideMerchantName,
+          hide_prices: hidePrices,
+          hide_logo: hideLogo,
+          hide_cta: hideCTA,
+          full_bleed_mode: fullBleedMode,
         },
-
-
       }),
+
     onSuccess: () => {
       toast.success("Criativo salvo.");
       onSaved();
