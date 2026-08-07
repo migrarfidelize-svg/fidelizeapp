@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, Link, useLocation } from "@tanstack/react-router";
+import { createFileRoute, Outlet, Link, useLocation, redirect } from "@tanstack/react-router";
 import { 
   Home, 
   Compass, 
