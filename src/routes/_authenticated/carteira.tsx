@@ -321,7 +321,7 @@ function WalletLayout() {
                            const est = reward.establishment as { name: string, slug: string };
                            return (
                             <Link 
-                              key={reward.id}
+                              key={reward.cardId}
                               to="/carteira/$slug"
                               params={{ slug: est.slug }}
                               className="p-4 rounded-3xl bg-gradient-to-br from-primary to-accent text-white shadow-xl shadow-primary/10 group cursor-pointer overflow-hidden relative block"
