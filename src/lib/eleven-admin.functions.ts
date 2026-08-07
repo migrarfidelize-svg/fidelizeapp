@@ -194,3 +194,39 @@ export const listElevenVoices = createServerFn({ method: "POST" })
     const json = await res.json();
     return json.voices;
   });
+
+/**
+ * Super Admin only: Remover configuração global da ElevenLabs.
+ */
+export const removeElevenConfig = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: roles } = await supabase
+      .from('app_roles')
+      .select('role')
+      .eq('user_id', userId);
+    
+    const isSuperAdmin = roles?.some(r => r.role === 'super_admin');
+    if (!isSuperAdmin) throw new Error("Não autorizado");
+
+    const { error } = await (supabase as any)
+      .from("system_settings")
+      .delete()
+      .eq("namespace", "voice")
+      .eq("key", "elevenlabs");
+
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/**
+ * Gera um áudio de teste usando as configurações globais.
+ */
+export const generateElevenTestAudio = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(z.object({ text: z.string() }))
+  .handler(async ({ data, context }) => {
+    const { synthesizeGlobalEleven } = await import("./voice-system.functions");
+    return synthesizeGlobalEleven({ data: { text: data.text } });
+  });
