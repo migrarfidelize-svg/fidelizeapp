@@ -28,11 +28,46 @@ export const Route = createFileRoute("/_authenticated/hash/atendimento")({
 function AtendimentoCRM() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("conversas");
+  const [selectedConversation, setSelectedConversation] = useState<any>(null);
+  const [messageInput, setMessageInput] = useState("");
+  const [isNote, setIsNote] = useState(false);
 
-  const { data: stats } = useQuery({ queryKey: ["crm-stats"], queryFn: () => getCRMStats() });
-  const { data: conversations } = useQuery({ queryKey: ["crm-conversations"], queryFn: () => getCRMConversations({ data: { status: "all" } }) });
+  const { data: stats } = useQuery({ queryKey: ["crm-stats"], queryFn: () => getCRMStats(), refetchInterval: 10000 });
+  const { data: conversations } = useQuery({ 
+    queryKey: ["crm-conversations"], 
+    queryFn: () => getCRMConversations({ data: { status: "all" } }),
+    refetchInterval: 5000 
+  });
   const { data: flows } = useQuery({ queryKey: ["crm-flows"], queryFn: () => getCRMFlows() });
   const { data: agentData } = useQuery({ queryKey: ["crm-agent-settings"], queryFn: () => getAgentSettings() });
+  const { data: messages } = useQuery({ 
+    queryKey: ["crm-messages", selectedConversation?.id], 
+    queryFn: () => getCRMConversationMessages({ data: { conversationId: selectedConversation.id } }),
+    enabled: !!selectedConversation?.id,
+    refetchInterval: 3000
+  });
+
+  const sendMessageMutation = useMutation({
+    mutationFn: (vars: { body: string; isNote?: boolean }) => 
+      sendCRMMessage({ data: { conversationId: selectedConversation.id, body: vars.body, isNote: vars.isNote } }),
+    onSuccess: () => {
+      setMessageInput("");
+      queryClient.invalidateQueries({ queryKey: ["crm-messages", selectedConversation?.id] });
+      queryClient.invalidateQueries({ queryKey: ["crm-conversations"] });
+      toast.success(isNote ? "Nota adicionada" : "Mensagem enviada");
+    },
+    onError: (err: any) => toast.error(err.message || "Erro ao enviar")
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: (status: any) => 
+      updateCRMConversationStatus({ data: { conversationId: selectedConversation.id, status } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["crm-conversations"] });
+      queryClient.invalidateQueries({ queryKey: ["crm-stats"] });
+      toast.success("Status atualizado");
+    }
+  });
 
   const agentSettings = agentData as any;
 
