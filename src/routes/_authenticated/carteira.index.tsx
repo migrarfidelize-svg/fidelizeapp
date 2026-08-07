@@ -223,12 +223,26 @@ function WalletHome() {
                        >
                           <div className="h-12 w-12 rounded-2xl overflow-hidden border border-border/40 shrink-0">
                             { (item.establishment as { logo_url: string }).logo_url ? (
-                              <img src={(item.establishment as { logo_url: string }).logo_url} className="w-full h-full object-cover" />
+                              <img 
+                                src={(item.establishment as { logo_url: string }).logo_url} 
+                                className="w-full h-full object-cover" 
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none';
+                                  const parent = (e.target as HTMLElement).parentElement;
+                                  if (parent) {
+                                    const fb = document.createElement('div');
+                                    fb.className = "w-full h-full bg-primary/10 flex items-center justify-center font-bold text-primary uppercase";
+                                    fb.innerText = (item.establishment as { name: string }).name.slice(0, 1).toUpperCase();
+                                    parent.appendChild(fb);
+                                  }
+                                }}
+                              />
                             ) : (
-                              <div className="w-full h-full bg-primary/10 flex items-center justify-center font-bold text-primary">
-                                {(item.establishment as { name: string }).name.slice(0,1)}
+                              <div className="w-full h-full bg-primary/10 flex items-center justify-center font-bold text-primary uppercase">
+                                {(item.establishment as { name: string }).name.slice(0,1).toUpperCase()}
                               </div>
                             )}
+
                           </div>
                           <div className="min-w-0 flex-1">
                             <p className="text-sm font-black truncate">{(item.establishment as { name: string }).name}</p>
