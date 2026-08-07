@@ -831,19 +831,9 @@ export const getDashboardData = createServerFn({ method: "POST" })
     const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
     const goalMonthKey = `${monthStart.getUTCFullYear()}-${String(monthStart.getUTCMonth() + 1).padStart(2, "0")}-01`;
 
-    // Uma única ida ao banco com suporte a cutoff de produção.
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: prodData } = await supabaseAdmin
-      .from("system_settings")
-      .select("value")
-      .eq("namespace", "system")
-      .eq("key", "production_mode")
-      .maybeSingle();
-    const prod = (prodData?.value as any) || { enabled: false, production_started_at: null };
-    const cutoff = prod.enabled && prod.production_started_at ? prod.production_started_at : "1970-01-01T00:00:00Z";
-
+    // Uma única ida ao banco. O cutoff agora é resolvido internamente pela RPC no SQL.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: raw, error } = await (supabase as any).rpc("dashboard_summary", { _est: est, _cutoff: cutoff });
+    const { data: raw, error } = await (supabase as any).rpc("dashboard_summary", { _est: est });
     if (error) throw new Error(error.message);
 
     const s = (raw ?? {}) as {
