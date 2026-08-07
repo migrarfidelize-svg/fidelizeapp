@@ -26,8 +26,17 @@ import { cn } from "@/lib/utils";
 import { LogoMark } from "@/components/LogoMark";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
+import { getMyWallet, getMyRewards } from "@/lib/my-wallet.functions";
 
 export const Route = createFileRoute("/_authenticated/carteira")({
+  loader: async ({ context }) => {
+    // Prefetch common data to ensure Right Sidebar has content during SSR/initial load if needed
+    await Promise.all([
+      context.queryClient.ensureQueryData({ queryKey: ["my-wallet"], queryFn: getMyWallet }),
+      context.queryClient.ensureQueryData({ queryKey: ["my-rewards"], queryFn: getMyRewards }),
+    ]);
+  },
   component: WalletLayout,
 });
 
