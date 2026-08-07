@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
@@ -19,13 +19,17 @@ import { PageHero } from "@/components/PageHero";
 import { DashboardHeroVisual } from "@/components/DashboardHeroVisual";
 import { ErrorState, LoadingSkeleton } from "@/components/states";
 import { GreetingVoice } from "@/components/GreetingVoice";
+import { 
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter 
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 import { MerchantInstallCard } from "@/components/merchant/MerchantInstallCard";
 import { MerchantPushCard } from "@/components/merchant/MerchantPushCard";
 import { FirstStepsCard } from "@/components/merchant/FirstStepsCard";
 import { getEstablishmentCampaigns } from "@/lib/loyalty.functions";
 import { listTeam, getEstablishmentFull } from "@/lib/settings.functions";
-
+import { getMyShowcaseStatus } from "@/lib/showcase.functions";
 
 export const Route = createFileRoute("/_authenticated/app/")({
   component: Dashboard,
