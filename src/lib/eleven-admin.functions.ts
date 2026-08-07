@@ -13,12 +13,9 @@ const elevenConfigSchema = z.object({
   texts: z.record(z.string()).optional(),
 });
 
-// UUID reservado para configurações globais do sistema Fidelize
-const SYSTEM_ID = '00000000-0000-0000-0000-000000000000';
-
 /**
  * Super Admin only: Salvar configuração de integração ElevenLabs.
- * Persistido na coluna security da tabela establishment_settings sob um ID de sistema fixo.
+ * Persistido na tabela system_settings (global).
  */
 export const saveElevenConfig = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -38,19 +35,19 @@ export const saveElevenConfig = createServerFn({ method: "POST" })
       throw new Error("Acesso negado: apenas Super Administradores podem configurar a ElevenLabs.");
     }
 
-    const { error } = await supabase
-      .from("establishment_settings")
+    const { error } = await (supabase as any)
+      .from("system_settings")
       .upsert({ 
-        establishment_id: SYSTEM_ID,
-        security: {
-          elevenlabs_config: {
-            ...data,
-            apiKey: data.apiKey?.trim(),
-            updated_at: new Date().toISOString(),
-            updated_by: userId
-          }
-        }
-      }, { onConflict: 'establishment_id' });
+        namespace: 'voice',
+        key: 'elevenlabs',
+        value: {
+          ...data,
+          apiKey: data.apiKey?.trim(),
+          updated_at: new Date().toISOString(),
+          updated_by: userId
+        },
+        enabled: data.enabled
+      }, { onConflict: 'namespace,key' });
 
     if (error) {
       throw new Error(`Erro ao salvar configuração: ${error.message}`);
@@ -76,15 +73,16 @@ export const getElevenConfig = createServerFn({ method: "GET" })
     const isSuperAdmin = roles?.some(r => r.role === 'super_admin');
     if (!isSuperAdmin) return { status: 'unauthorized' };
 
-    const { data, error } = await supabase
-      .from("establishment_settings")
-      .select("security")
-      .eq("establishment_id", SYSTEM_ID)
+    const { data, error } = await (supabase as any)
+      .from("system_settings")
+      .select("value, enabled")
+      .eq("namespace", "voice")
+      .eq("key", "elevenlabs")
       .maybeSingle();
 
     if (error) throw new Error(error.message);
     
-    const config = (data?.security as any)?.elevenlabs_config;
+    const config = data?.value as any;
     if (!config) return { status: 'disconnected' };
 
     // Mascarar a API Key
@@ -95,6 +93,7 @@ export const getElevenConfig = createServerFn({ method: "GET" })
       config: {
         ...config,
         apiKey: maskedKey,
+        enabled: data.enabled,
         isConfigured: true
       }
     };
@@ -121,44 +120,40 @@ export const testElevenConnection = createServerFn({ method: "POST" })
     
     // Se não enviou apiKey no teste, tenta carregar a salva
     if (!apiKey) {
-      const { data: saved } = await supabase
-        .from("establishment_settings")
-        .select("security")
-        .eq("establishment_id", SYSTEM_ID)
+      const { data: saved } = await (supabase as any)
+        .from("system_settings")
+        .select("value")
+        .eq("namespace", "voice")
+        .eq("key", "elevenlabs")
         .maybeSingle();
-      apiKey = (saved?.security as any)?.elevenlabs_config?.apiKey;
+      apiKey = (saved?.value as any)?.apiKey;
     }
 
     if (!apiKey) throw new Error("API Key não encontrada.");
 
     try {
-      // Usando /v1/models conforme solicitado para validação segura
       const res = await fetch("https://api.elevenlabs.io/v1/models", {
         headers: { "xi-api-key": apiKey },
       });
 
-      console.log(`[ElevenLabs Diagnostic] Endpoint: /v1/models, Status: ${res.status}`);
-
       if (!res.ok) {
         if (res.status === 401) return { ok: false, status: 'invalid_key', message: "API Key inválida (401)." };
-        if (res.status === 402) return { ok: false, status: 'no_credits', message: "Créditos insuficientes ou pagamento necessário (402)." };
-        if (res.status === 403) return { ok: false, status: 'forbidden', message: "Acesso proibido ou restrição de IP (403)." };
-        if (res.status === 429) return { ok: false, status: 'rate_limit', message: "Limite de requisições atingido (429)." };
-        if (res.status >= 500) return { ok: false, status: 'server_error', message: "Indisponibilidade temporária da ElevenLabs (5xx)." };
+        if (res.status === 402) return { ok: false, status: 'no_credits', message: "Créditos insuficientes (402)." };
+        if (res.status === 403) return { ok: false, status: 'forbidden', message: "Acesso proibido (403)." };
+        if (res.status === 429) return { ok: false, status: 'rate_limit', message: "Limite atingido (429)." };
         
         const errData = await res.json().catch(() => ({}));
         return { 
           ok: false, 
           status: 'error', 
-          message: errData?.detail?.message || `Erro na API ElevenLabs (${res.status})` 
+          message: errData?.detail?.message || `Erro API (${res.status})` 
         };
       }
 
       const models = await res.json();
       return { ok: true, status: 'connected', modelsCount: models.length };
     } catch (e: any) {
-      console.error(`[ElevenLabs Diagnostic] Network Error: ${e.message}`);
-      return { ok: false, status: 'error', message: `Falha de rede ou timeout: ${e.message}` };
+      return { ok: false, status: 'error', message: `Falha de rede: ${e.message}` };
     }
   });
 
@@ -180,12 +175,13 @@ export const listElevenVoices = createServerFn({ method: "POST" })
 
     let apiKey = data.apiKey?.trim();
     if (!apiKey) {
-      const { data: saved } = await supabase
-        .from("establishment_settings")
-        .select("security")
-        .eq("establishment_id", SYSTEM_ID)
+      const { data: saved } = await (supabase as any)
+        .from("system_settings")
+        .select("value")
+        .eq("namespace", "voice")
+        .eq("key", "elevenlabs")
         .maybeSingle();
-      apiKey = (saved?.security as any)?.elevenlabs_config?.apiKey;
+      apiKey = (saved?.value as any)?.apiKey;
     }
 
     if (!apiKey) throw new Error("API Key não configurada.");
@@ -194,13 +190,13 @@ export const listElevenVoices = createServerFn({ method: "POST" })
       headers: { "xi-api-key": apiKey },
     });
 
-    if (!res.ok) throw new Error("Falha ao carregar vozes da ElevenLabs.");
+    if (!res.ok) throw new Error("Falha ao carregar vozes.");
     const json = await res.json();
     return json.voices;
   });
 
 /**
- * Super Admin only: Remover integração.
+ * Super Admin only: Remover configuração global da ElevenLabs.
  */
 export const removeElevenConfig = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -214,87 +210,23 @@ export const removeElevenConfig = createServerFn({ method: "POST" })
     const isSuperAdmin = roles?.some(r => r.role === 'super_admin');
     if (!isSuperAdmin) throw new Error("Não autorizado");
 
-    const { data: saved } = await supabase
-      .from("establishment_settings")
-      .select("security")
-      .eq("establishment_id", SYSTEM_ID)
-      .maybeSingle();
-    
-    const security = (saved?.security as any) || {};
-    delete security.elevenlabs_config;
+    const { error } = await (supabase as any)
+      .from("system_settings")
+      .delete()
+      .eq("namespace", "voice")
+      .eq("key", "elevenlabs");
 
-    await supabase
-      .from("establishment_settings")
-      .update({ security })
-      .eq("establishment_id", SYSTEM_ID);
-
+    if (error) throw new Error(error.message);
     return { ok: true };
   });
 
 /**
- * Super Admin only: Gerar áudio de teste ElevenLabs.
- * Usado para validar a configuração atual antes de salvar ou aplicar globalmente.
+ * Gera um áudio de teste usando as configurações globais.
  */
 export const generateElevenTestAudio = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator(z.object({
-    text: z.string(),
-    apiKey: z.string().optional(),
-    voiceId: z.string(),
-    modelId: z.string(),
-    stability: z.number().optional(),
-    similarity: z.number().optional(),
-  }))
+  .validator(z.object({ text: z.string() }))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    
-    const { data: roles } = await supabase
-      .from('app_roles')
-      .select('role')
-      .eq('user_id', userId);
-    
-    const isSuperAdmin = roles?.some(r => r.role === 'super_admin');
-    if (!isSuperAdmin) throw new Error("Não autorizado");
-
-    let apiKey = data.apiKey?.trim();
-    if (!apiKey) {
-      const { data: saved } = await supabase
-        .from("establishment_settings")
-        .select("security")
-        .eq("establishment_id", SYSTEM_ID)
-        .maybeSingle();
-      apiKey = (saved?.security as any)?.elevenlabs_config?.apiKey;
-    }
-
-    if (!apiKey) throw new Error("API Key não configurada.");
-
-    const url = `https://api.elevenlabs.io/v1/text-to-speech/${data.voiceId}`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "xi-api-key": apiKey,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        text: data.text,
-        model_id: data.modelId,
-        voice_settings: {
-          stability: data.stability ?? 0.5,
-          similarity_boost: data.similarity ?? 0.75,
-        },
-      }),
-    });
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err?.detail?.message || `Erro ElevenLabs: ${response.statusText}`);
-    }
-
-    const arrayBuffer = await response.arrayBuffer();
-    const base64 = Buffer.from(arrayBuffer).toString("base64");
-
-    return {
-      audio: base64,
-      mime: "audio/mpeg",
-    };
+    const { synthesizeGlobalEleven } = await import("./voice-system.functions");
+    return synthesizeGlobalEleven({ data: { text: data.text } });
   });

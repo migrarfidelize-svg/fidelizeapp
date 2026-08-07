@@ -1,26 +1,26 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-const SYSTEM_ID = '00000000-0000-0000-0000-000000000000';
-
 /**
  * Public/Merchant access: Obtém a configuração global da ElevenLabs se estiver ativa.
  * A API Key é mantida no servidor; esta função retorna apenas se está configurada.
+ * Utiliza a tabela system_settings para configurações globais da plataforma.
  */
 export const getGlobalVoiceConfig = createServerFn({ method: "GET" })
   .handler(async () => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     
-    const { data, error } = await supabaseAdmin
-      .from("establishment_settings")
-      .select("security")
-      .eq("establishment_id", SYSTEM_ID)
+    const { data, error } = await (supabaseAdmin as any)
+      .from("system_settings")
+      .select("value, enabled")
+      .eq("namespace", "voice")
+      .eq("key", "elevenlabs")
       .maybeSingle();
 
-    if (error || !data) return { isConfigured: false };
+    if (error || !data || !data.enabled) return { isConfigured: false };
     
-    const config = (data?.security as any)?.elevenlabs_config;
-    if (!config || !config.apiKey || config.enabled === false) return { isConfigured: false };
+    const config = data.value as any;
+    if (!config || !config.apiKey) return { isConfigured: false };
 
     return {
       isConfigured: true,
@@ -33,7 +33,7 @@ export const getGlobalVoiceConfig = createServerFn({ method: "GET" })
   });
 
 /**
- * Server-only synthesis using global system credentials.
+ * Server-only synthesis using global system credentials from system_settings.
  */
 export const synthesizeGlobalEleven = createServerFn({ method: "POST" })
   .validator(z.object({
@@ -43,22 +43,26 @@ export const synthesizeGlobalEleven = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     
-    // 1. Get Global Config
-    const { data: settings } = await supabaseAdmin
-      .from("establishment_settings")
-      .select("security")
-      .eq("establishment_id", SYSTEM_ID)
+    // 1. Get Global Config from system_settings
+    const { data: settings } = await (supabaseAdmin as any)
+      .from("system_settings")
+      .select("value, enabled")
+      .eq("namespace", "voice")
+      .eq("key", "elevenlabs")
       .maybeSingle();
     
-    const config = (settings?.security as any)?.elevenlabs_config;
-    if (!config || !config.apiKey || config.enabled === false) {
+    if (!settings || !settings.enabled) {
       throw new Error("ElevenLabs global não configurada ou desativada.");
+    }
+
+    const config = settings.value as any;
+    if (!config || !config.apiKey) {
+      throw new Error("ElevenLabs global: chave de API não configurada.");
     }
 
     // Process template if event is provided
     let textToSpeak = data.text;
     if (data.event && config.texts?.[data.event]) {
-      // Basic replacement for demo, the caller should ideally provide replacements
       textToSpeak = config.texts[data.event];
     }
 
