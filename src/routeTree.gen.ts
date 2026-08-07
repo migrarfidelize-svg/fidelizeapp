@@ -114,6 +114,7 @@ import { Route as AuthenticatedAppCatalogoIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedAppCardapioIndexRouteImport } from './routes/_authenticated/app.cardapio.index'
 import { Route as AuthenticatedAppAvaliacoesIndexRouteImport } from './routes/_authenticated/app.avaliacoes.index'
 import { Route as SuporteSlugKbArticleRouteImport } from './routes/suporte.$slug.kb.$article'
+import { Route as ApiPublicWebhooksWhatsappRouteImport } from './routes/api/public/webhooks/whatsapp'
 import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api/public/webhooks/mercadopago'
 import { Route as ApiPublicWebhooksAsaasRouteImport } from './routes/api/public/webhooks/asaas'
 import { Route as ApiPublicTPlanRouteImport } from './routes/api/public/t/plan'
@@ -722,6 +723,12 @@ const SuporteSlugKbArticleRoute = SuporteSlugKbArticleRouteImport.update({
   path: '/suporte/$slug/kb/$article',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWebhooksWhatsappRoute =
+  ApiPublicWebhooksWhatsappRouteImport.update({
+    id: '/api/public/webhooks/whatsapp',
+    path: '/api/public/webhooks/whatsapp',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhooksMercadopagoRoute =
   ApiPublicWebhooksMercadopagoRouteImport.update({
     id: '/api/public/webhooks/mercadopago',
@@ -1051,6 +1058,7 @@ export interface FileRoutesByFullPath {
   '/api/public/t/plan': typeof ApiPublicTPlanRoute
   '/api/public/webhooks/asaas': typeof ApiPublicWebhooksAsaasRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
+  '/api/public/webhooks/whatsapp': typeof ApiPublicWebhooksWhatsappRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
   '/app/avaliacoes/': typeof AuthenticatedAppAvaliacoesIndexRoute
   '/app/cardapio/': typeof AuthenticatedAppCardapioIndexRoute
@@ -1187,6 +1195,7 @@ export interface FileRoutesByTo {
   '/api/public/t/plan': typeof ApiPublicTPlanRoute
   '/api/public/webhooks/asaas': typeof ApiPublicWebhooksAsaasRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
+  '/api/public/webhooks/whatsapp': typeof ApiPublicWebhooksWhatsappRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
   '/app/avaliacoes': typeof AuthenticatedAppAvaliacoesIndexRoute
   '/app/cardapio': typeof AuthenticatedAppCardapioIndexRoute
@@ -1330,6 +1339,7 @@ export interface FileRoutesById {
   '/api/public/t/plan': typeof ApiPublicTPlanRoute
   '/api/public/webhooks/asaas': typeof ApiPublicWebhooksAsaasRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
+  '/api/public/webhooks/whatsapp': typeof ApiPublicWebhooksWhatsappRoute
   '/suporte/$slug/kb/$article': typeof SuporteSlugKbArticleRoute
   '/_authenticated/app/avaliacoes/': typeof AuthenticatedAppAvaliacoesIndexRoute
   '/_authenticated/app/cardapio/': typeof AuthenticatedAppCardapioIndexRoute
@@ -1473,6 +1483,7 @@ export interface FileRouteTypes {
     | '/api/public/t/plan'
     | '/api/public/webhooks/asaas'
     | '/api/public/webhooks/mercadopago'
+    | '/api/public/webhooks/whatsapp'
     | '/suporte/$slug/kb/$article'
     | '/app/avaliacoes/'
     | '/app/cardapio/'
@@ -1609,6 +1620,7 @@ export interface FileRouteTypes {
     | '/api/public/t/plan'
     | '/api/public/webhooks/asaas'
     | '/api/public/webhooks/mercadopago'
+    | '/api/public/webhooks/whatsapp'
     | '/suporte/$slug/kb/$article'
     | '/app/avaliacoes'
     | '/app/cardapio'
@@ -1751,6 +1763,7 @@ export interface FileRouteTypes {
     | '/api/public/t/plan'
     | '/api/public/webhooks/asaas'
     | '/api/public/webhooks/mercadopago'
+    | '/api/public/webhooks/whatsapp'
     | '/suporte/$slug/kb/$article'
     | '/_authenticated/app/avaliacoes/'
     | '/_authenticated/app/cardapio/'
@@ -1819,6 +1832,7 @@ export interface RootRouteChildren {
   ApiPublicTPlanRoute: typeof ApiPublicTPlanRoute
   ApiPublicWebhooksAsaasRoute: typeof ApiPublicWebhooksAsaasRoute
   ApiPublicWebhooksMercadopagoRoute: typeof ApiPublicWebhooksMercadopagoRoute
+  ApiPublicWebhooksWhatsappRoute: typeof ApiPublicWebhooksWhatsappRoute
   SuporteSlugKbArticleRoute: typeof SuporteSlugKbArticleRoute
   ApiPublicRTCodeRoute: typeof ApiPublicRTCodeRoute
   ApiPublicWalletAppleTokenRoute: typeof ApiPublicWalletAppleTokenRoute
@@ -2565,6 +2579,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuporteSlugKbArticleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhooks/whatsapp': {
+      id: '/api/public/webhooks/whatsapp'
+      path: '/api/public/webhooks/whatsapp'
+      fullPath: '/api/public/webhooks/whatsapp'
+      preLoaderRoute: typeof ApiPublicWebhooksWhatsappRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/mercadopago': {
       id: '/api/public/webhooks/mercadopago'
       path: '/api/public/webhooks/mercadopago'
@@ -3136,6 +3157,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicTPlanRoute: ApiPublicTPlanRoute,
   ApiPublicWebhooksAsaasRoute: ApiPublicWebhooksAsaasRoute,
   ApiPublicWebhooksMercadopagoRoute: ApiPublicWebhooksMercadopagoRoute,
+  ApiPublicWebhooksWhatsappRoute: ApiPublicWebhooksWhatsappRoute,
   SuporteSlugKbArticleRoute: SuporteSlugKbArticleRoute,
   ApiPublicRTCodeRoute: ApiPublicRTCodeRoute,
   ApiPublicWalletAppleTokenRoute: ApiPublicWalletAppleTokenRoute,
