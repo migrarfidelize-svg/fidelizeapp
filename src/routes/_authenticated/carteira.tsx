@@ -104,7 +104,7 @@ function WalletLayout() {
       
       {/* 1. SIDEBAR (DESKTOP) & DRAWER (MOBILE) */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-[110] w-72 transform bg-background/80 backdrop-blur-2xl border-r border-border/40 transition-all duration-500 ease-in-out hidden lg:flex lg:flex-col lg:sticky lg:inset-y-0 lg:w-20 xl:w-72 translate-x-0"
+        "fixed inset-y-0 left-0 z-[110] w-72 transform bg-background/80 backdrop-blur-2xl border-r border-border/40 transition-all duration-500 ease-in-out hidden md:flex md:flex-col md:sticky md:inset-y-0 md:w-20 xl:w-72 translate-x-0"
       )}>
         <div className="flex flex-col h-full p-4 xl:p-6">
           {/* Logo Section */}
@@ -198,7 +198,7 @@ function WalletLayout() {
       </aside>
 
       {/* 2. MAIN CONTENT AREA */}
-      <div className="flex-1 flex flex-col min-w-0 max-h-screen overflow-hidden lg:flex-grow">
+      <div className="flex-1 flex flex-col min-w-0 max-h-screen overflow-hidden md:flex-grow">
         
         {/* Top Header - Desktop & Mobile */}
         <header className="sticky top-0 z-40 w-full bg-background/60 backdrop-blur-xl border-b border-border/40 px-4 xl:px-8 h-16 md:h-20 flex items-center justify-between shrink-0">
@@ -243,14 +243,14 @@ function WalletLayout() {
         <main className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar bg-[oklch(0.985_0.006_285)] dark:bg-[oklch(0.14_0.018_288)]">
           <div className="mx-auto w-full max-w-[1440px] p-4 sm:p-6 xl:p-10">
             {/* Desktop Layout Pattern: Main content + Sidebar Right */}
-            <div className="flex flex-col lg:flex-row gap-8 xl:gap-12">
+            <div className="flex flex-col md:flex-row gap-8 xl:gap-12">
               
               {/* Primary Column */}
-              <div className="flex-1 space-y-6 md:space-y-12 pb-24 lg:pb-10">
+              <div className="flex-1 space-y-6 md:space-y-12 pb-24 md:pb-10">
                 <Outlet />
               </div>
 
-              <aside className="hidden lg:block w-[300px] xl:w-[380px] flex-shrink-0 space-y-10">
+              <aside className="hidden md:block w-[300px] xl:w-[380px] flex-shrink-0 space-y-10">
                 
                 {/* 1. Quick Progress Section */}
                 {progressItems.length > 0 && (
@@ -394,7 +394,7 @@ function WalletLayout() {
         }
       `}} />
       {/* 4. MOBILE BOTTOM NAV (PREMIUM CLEAN) */}
-      <nav className="fixed bottom-0 left-0 right-0 z-[100] flex h-16 items-center justify-around border-t border-border/40 bg-background/80 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-[100] flex h-16 items-center justify-around border-t border-border/40 bg-background/80 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.path || (tab.path === "/carteira" && activeTab === "/carteira/");
           const Icon = tab.icon;
