@@ -473,7 +473,7 @@ export const duplicateCRMFlow = createServerFn({ method: "POST" })
         flow_id: newFlow.id,
         step_key: s.step_key,
         payload: s.payload,
-        sort_order: s.sort_order
+        order_index: s.order_index
       }));
       await supabaseAdmin.from("crm_flow_steps").insert(stepsToInsert);
     }
