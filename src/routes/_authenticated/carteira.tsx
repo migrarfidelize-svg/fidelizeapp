@@ -30,6 +30,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { getMyWallet, getMyRewards } from "@/lib/my-wallet.functions";
+import { InboxBellBadge } from "@/components/wallet/InboxBellBadge";
 
 export const Route = createFileRoute("/_authenticated/carteira")({
   loader: async ({ context }) => {
