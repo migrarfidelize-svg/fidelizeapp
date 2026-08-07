@@ -3,12 +3,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Filter, Paperclip, Reply, Smile, MoreHorizontal, User } from "lucide-react";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
-import { MessageSquare, Users, History, UserCheck, GitBranch, Contact, FileText, Smartphone, Settings2, Send, Loader2, Play, Plus, Trash2, Edit3, MoreVertical, CheckCircle2 } from "lucide-react";
+import { MessageSquare, Users, History, UserCheck, GitBranch, Contact, FileText, Smartphone, Settings2, Send, Loader2, Play, Plus, Trash2, Edit3, MoreVertical, CheckCircle2, Copy } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,9 +17,15 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getCRMStats, getCRMConversations, getCRMConversationMessages, sendCRMMessage, updateCRMConversationStatus, getCRMFlows, getAgentSettings, saveAgentSettings } from "@/lib/atendimento.functions";
+import { 
+  getCRMStats, getCRMConversations, getCRMConversationMessages, sendCRMMessage, 
+  updateCRMConversationStatus, getCRMFlows, getAgentSettings, saveAgentSettings,
+  deleteCRMFlow, duplicateCRMFlow, getCRMContacts, getCRMQuickReplies, saveCRMQuickReply,
+  getOTPTemplate, saveOTPTemplate, sendOTPTestMessage
+} from "@/lib/atendimento.functions";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { useCRMRealtime } from "@/hooks/use-crm-realtime";
 
 export const Route = createFileRoute("/_authenticated/hash/atendimento")({
   component: AtendimentoCRM,
