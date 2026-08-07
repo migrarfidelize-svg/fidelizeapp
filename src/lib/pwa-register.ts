@@ -5,7 +5,7 @@
 // - Unregister any stale `/sw.js` in refused contexts.
 // - Never register more than once — this is the ONLY call site.
 
-const SW_URL = "/sw.js";
+const SW_URL = "/api/public/sw.js"; // This points to our API proxy that serves the real sw.js from the filesystem
 const SW_READY_TIMEOUT_MS = 20000;
 
 let registrationPromise: Promise<ServiceWorkerRegistration> | null = null;
