@@ -104,7 +104,7 @@ export const listIntegrationHistory = createServerFn({ method: "POST" })
   });
 
 const UpsertInput = z.object({
-  category: z.enum(["ai", "payments", "marketing"]),
+  category: z.enum(["ai", "payments", "marketing", "otp"]),
   provider: z.string().min(1),
   enabled: z.boolean().optional(),
   mode: z.enum(["sandbox", "production"]).nullable().optional(),
