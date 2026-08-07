@@ -24,6 +24,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AjudaIndexRouteImport } from './routes/ajuda.index'
+import { Route as SwJsRouteImport } from './routes/sw.js'
 import { Route as SuporteMeusRouteImport } from './routes/suporte.meus'
 import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as LinksSlugRouteImport } from './routes/links.$slug'
@@ -220,6 +221,11 @@ const IndexRoute = IndexRouteImport.update({
 const AjudaIndexRoute = AjudaIndexRouteImport.update({
   id: '/ajuda/',
   path: '/ajuda/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SwJsRoute = SwJsRouteImport.update({
+  id: '/sw/js',
+  path: '/sw/js',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SuporteMeusRoute = SuporteMeusRouteImport.update({
@@ -947,6 +953,7 @@ export interface FileRoutesByFullPath {
   '/links/$slug': typeof LinksSlugRoute
   '/r/$code': typeof RCodeRoute
   '/suporte/meus': typeof SuporteMeusRoute
+  '/sw/js': typeof SwJsRoute
   '/ajuda/': typeof AjudaIndexRoute
   '/app/analytics': typeof AuthenticatedAppAnalyticsRoute
   '/app/anuncios': typeof AuthenticatedAppAnunciosRoute
@@ -1083,6 +1090,7 @@ export interface FileRoutesByTo {
   '/links/$slug': typeof LinksSlugRoute
   '/r/$code': typeof RCodeRoute
   '/suporte/meus': typeof SuporteMeusRoute
+  '/sw/js': typeof SwJsRoute
   '/ajuda': typeof AjudaIndexRoute
   '/app/analytics': typeof AuthenticatedAppAnalyticsRoute
   '/app/anuncios': typeof AuthenticatedAppAnunciosRoute
@@ -1222,6 +1230,7 @@ export interface FileRoutesById {
   '/links/$slug': typeof LinksSlugRoute
   '/r/$code': typeof RCodeRoute
   '/suporte/meus': typeof SuporteMeusRoute
+  '/sw/js': typeof SwJsRoute
   '/ajuda/': typeof AjudaIndexRoute
   '/_authenticated/app/analytics': typeof AuthenticatedAppAnalyticsRoute
   '/_authenticated/app/anuncios': typeof AuthenticatedAppAnunciosRoute
@@ -1363,6 +1372,7 @@ export interface FileRouteTypes {
     | '/links/$slug'
     | '/r/$code'
     | '/suporte/meus'
+    | '/sw/js'
     | '/ajuda/'
     | '/app/analytics'
     | '/app/anuncios'
@@ -1499,6 +1509,7 @@ export interface FileRouteTypes {
     | '/links/$slug'
     | '/r/$code'
     | '/suporte/meus'
+    | '/sw/js'
     | '/ajuda'
     | '/app/analytics'
     | '/app/anuncios'
@@ -1637,6 +1648,7 @@ export interface FileRouteTypes {
     | '/links/$slug'
     | '/r/$code'
     | '/suporte/meus'
+    | '/sw/js'
     | '/ajuda/'
     | '/_authenticated/app/analytics'
     | '/_authenticated/app/anuncios'
@@ -1772,6 +1784,7 @@ export interface RootRouteChildren {
   LinksSlugRoute: typeof LinksSlugRoute
   RCodeRoute: typeof RCodeRoute
   SuporteMeusRoute: typeof SuporteMeusRoute
+  SwJsRoute: typeof SwJsRoute
   AjudaIndexRoute: typeof AjudaIndexRoute
   AjudaCategoryArticleRoute: typeof AjudaCategoryArticleRoute
   SuporteSlugNovoRoute: typeof SuporteSlugNovoRoute
@@ -1907,6 +1920,13 @@ declare module '@tanstack/react-router' {
       path: '/ajuda'
       fullPath: '/ajuda/'
       preLoaderRoute: typeof AjudaIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sw/js': {
+      id: '/sw/js'
+      path: '/sw/js'
+      fullPath: '/sw/js'
+      preLoaderRoute: typeof SwJsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/suporte/meus': {
@@ -3068,6 +3088,7 @@ const rootRouteChildren: RootRouteChildren = {
   LinksSlugRoute: LinksSlugRoute,
   RCodeRoute: RCodeRoute,
   SuporteMeusRoute: SuporteMeusRoute,
+  SwJsRoute: SwJsRoute,
   AjudaIndexRoute: AjudaIndexRoute,
   AjudaCategoryArticleRoute: AjudaCategoryArticleRoute,
   SuporteSlugNovoRoute: SuporteSlugNovoRoute,
@@ -3105,13 +3126,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
