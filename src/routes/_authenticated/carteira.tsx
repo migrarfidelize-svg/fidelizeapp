@@ -50,7 +50,7 @@ function WalletLayout() {
   const tabs = [
     { icon: Home, label: "Início", path: "/carteira" },
     { icon: Compass, label: "Descobrir", path: "/carteira/descobrir" },
-    { icon: QrCode, label: "QR Code", path: "/qr", isFab: true },
+    { icon: QrCode, label: "QR Code", path: "/app/qr", isFab: true },
     { icon: Wallet, label: "Vouchers", path: "/carteira/premios" },
     { icon: User, label: "Perfil", path: "/carteira/perfil" },
   ];
@@ -256,7 +256,7 @@ function WalletLayout() {
             
             <div className="flex items-center gap-2">
               <Button asChild className="h-11 w-11 flex items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all p-0">
-                <Link to="/qr"><QrCode className="h-5 w-5" /></Link>
+                <Link to="/app/qr"><QrCode className="h-5 w-5" /></Link>
               </Button>
               <button className="md:hidden h-11 w-11 flex items-center justify-center rounded-2xl bg-accent/60 text-muted-foreground">
                 <Search className="h-5 w-5" />

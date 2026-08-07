@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated")({
     // Se o usuário estava tentando abrir /carteira, sinaliza para a tela
     // de login exibir apenas o fluxo de cliente final.
     const isPublicPath = location.pathname === "/" || location.pathname === "/auth";
-    const fromWallet = location.pathname.startsWith("/carteira") || location.pathname === "/qr";
+    const fromWallet = location.pathname.startsWith("/carteira") || location.pathname === "/app/qr";
     const authSearch = fromWallet ? ({ as: "customer" as const, source: "wallet" }) : undefined;
     
     try {
