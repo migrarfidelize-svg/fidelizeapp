@@ -359,8 +359,10 @@ function ManageDialog({
           <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="config">Configuração</TabsTrigger>
             <TabsTrigger value="credentials"><KeyRound className="h-3 w-3 mr-1" />Credenciais</TabsTrigger>
+            {meta.category === "otp" && <TabsTrigger value="test"><MessageCircle className="h-3 w-3 mr-1" />Teste</TabsTrigger>}
             <TabsTrigger value="guide"><BookOpen className="h-3 w-3 mr-1" />Como configurar</TabsTrigger>
             <TabsTrigger value="history"><History className="h-3 w-3 mr-1" />Histórico</TabsTrigger>
+
           </TabsList>
 
           <TabsContent value="config" className="mt-4">
