@@ -44,7 +44,7 @@ export const Route = createFileRoute("/_authenticated/carteira")({
 function WalletLayout() {
   const location = useLocation();
   const activeTab = location.pathname;
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
 
   const tabs = [
     { icon: Home, label: "Início", path: "/carteira" },
