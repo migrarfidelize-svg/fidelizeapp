@@ -372,10 +372,17 @@ function MoMCard({
   label, current, previous, delay = 0, accent = false,
 }: { label: string; current: number; previous: number; delay?: number; accent?: boolean }) {
   const delta = current - previous;
-  const pct = previous > 0 ? (delta / previous) * 100 : current > 0 ? 100 : 0;
+  // Se o mês anterior for 0, mas houver atividade agora, mostramos 100% (ou 0% se ambos 0).
+  // Evitamos qualquer cálculo de "crescimento infinito" ou projeção.
+  const pct = previous > 0 ? (delta / previous) * 100 : (current > 0 ? 100 : 0);
+  
   const up = delta > 0, down = delta < 0;
   const Icon = up ? ArrowUpRight : down ? ArrowDownRight : Minus;
+  
+  // No modo produção, se não houver dados anteriores, exibimos 0% de forma honesta ou um traço
+  const displayPct = previous === 0 && current === 0 ? "0%" : `${pct >= 0 ? "+" : ""}${pct.toFixed(0)}%`;
   const cls = up ? "text-success" : down ? "text-destructive" : "text-muted-foreground";
+
   return (
     <div
       className={`dash-card dash-rise ${accent ? "dash-card-accent" : ""} p-5`}
@@ -386,11 +393,11 @@ function MoMCard({
         <div className="metric-solid text-3xl">{current.toLocaleString("pt-BR")}</div>
         <span className={`dash-delta ${cls}`}>
           <Icon className="h-3.5 w-3.5" />
-          {previous === 0 && current === 0 ? "—" : `${pct >= 0 ? "+" : ""}${pct.toFixed(0)}%`}
+          {displayPct}
         </span>
       </div>
       <div className="mt-1 text-xs text-muted-foreground">
-        Mês anterior: {previous.toLocaleString("pt-BR")}
+        {previous === 0 ? "Início das métricas reais" : `Mês anterior: ${previous.toLocaleString("pt-BR")}`}
       </div>
     </div>
   );
