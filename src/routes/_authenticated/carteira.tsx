@@ -399,44 +399,6 @@ function WalletLayout() {
         </main>
       </div>
 
-      {/* 3. BOTTOM NAV (MOBILE ONLY) */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-center p-4 pointer-events-none">
-        <div className="flex w-full max-w-md items-center justify-around gap-1 rounded-[2rem] border border-white/20 bg-black/80 p-2 text-white shadow-2xl backdrop-blur-2xl pointer-events-auto">
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.path || (tab.path === "/carteira" && activeTab === "/carteira/");
-            const Icon = tab.icon;
-
-            if (tab.isFab) {
-              return (
-                <Link
-                  key={tab.path}
-                  to={tab.path}
-                  className="group relative -top-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-white shadow-lg transition-transform active:scale-95 hover:scale-105"
-                >
-                  <Icon className="h-7 w-7" />
-                  <div className="absolute -inset-1 rounded-2xl bg-primary/20 blur-lg group-hover:bg-primary/30 transition-colors" />
-                </Link>
-              );
-            }
-
-            return (
-              <Link
-                key={tab.path}
-                to={tab.path}
-                className={cn(
-                  "flex flex-1 flex-col items-center justify-center gap-1 py-2 text-[10px] font-bold transition-all active:scale-95",
-                  isActive ? "text-primary" : "text-neutral-400 hover:text-neutral-200"
-                )}
-              >
-                <Icon className={cn("h-5 w-5 transition-transform", isActive && "scale-110")} />
-                <span className={cn("transition-opacity", isActive ? "opacity-100" : "opacity-60")}>
-                  {tab.label}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
 
       <style dangerouslySetInnerHTML={{ __html: `
         .custom-scrollbar::-webkit-scrollbar {
@@ -457,7 +419,7 @@ function WalletLayout() {
         }
       `}} />
       {/* 4. MOBILE BOTTOM NAV (PREMIUM CLEAN) */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t border-border/40 bg-background/80 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t border-border/40 bg-background/80 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.path || (tab.path === "/carteira" && activeTab === "/carteira/");
           const Icon = tab.icon;
