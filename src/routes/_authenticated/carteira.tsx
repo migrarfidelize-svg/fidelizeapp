@@ -45,6 +45,21 @@ function WalletLayout() {
   const activeTab = location.pathname;
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  const tabs = [
+    { icon: Home, label: "Início", path: "/carteira" },
+    { icon: Compass, label: "Descobrir", path: "/carteira/descobrir" },
+    { icon: QrCode, label: "QR Code", path: "/qr", isFab: true },
+    { icon: Wallet, label: "Meus Vouchers", path: "/carteira/vouchers" },
+    { icon: User, label: "Meu Perfil", path: "/carteira/perfil" },
+  ];
+
+  const secondaryNav = [
+    { icon: Bell, label: "Notificações", count: 2 },
+    { icon: Star, label: "Favoritos" },
+    { icon: HelpCircle, label: "Ajuda" },
+    { icon: Settings, label: "Configurações" },
+  ];
+
   const { data: walletData = [] } = useQuery({ 
     queryKey: ["my-wallet"], 
     queryFn: getMyWallet,
