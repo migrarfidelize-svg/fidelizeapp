@@ -423,7 +423,7 @@ function WalletLayout() {
         }
       `}} />
       {/* 4. MOBILE BOTTOM NAV (PREMIUM CLEAN) */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t border-border/40 bg-background/80 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-[100] flex h-16 items-center justify-around border-t border-border/40 bg-background/80 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.path || (tab.path === "/carteira" && activeTab === "/carteira/");
           const Icon = tab.icon;
@@ -433,7 +433,7 @@ function WalletLayout() {
               <Link
                 key={tab.path}
                 to={tab.path}
-                className="relative -top-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/30"
+                className="relative -top-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/30 z-[110]"
               >
                 <Icon className="h-6 w-6" />
               </Link>
