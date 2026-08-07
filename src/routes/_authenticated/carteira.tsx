@@ -7,8 +7,6 @@ import {
   QrCode,
   Search,
   Bell,
-  Menu,
-  X,
   LogOut,
   Settings,
   HelpCircle,
