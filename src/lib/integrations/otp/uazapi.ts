@@ -83,7 +83,8 @@ export const uazapiOtp: WhatsAppOTPProvider = {
       });
 
       if (response.ok) {
-        return { ok: true, message: "Mensagem enviada." };
+        const resBody = JSON.parse(body);
+        return { ok: true, message: "Mensagem enviada.", providerMessageId: resBody?.data?.key?.id || resBody?.key?.id };
       }
 
       return { ok: false, message: `Erro no envio (${response.status}): ${body}` };
