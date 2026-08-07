@@ -31,25 +31,8 @@ export const Route = createFileRoute("/api/public/r/qr/$slug/$dest")({
 
         const origin = reqUrl.origin;
 
-        // Look up establishment_id from slug via publishable-key server client
-        // (public read protected by RLS on establishments if any; slug is a
-        // stable public identifier of the merchant profile).
-        const { createClient } = await import("@supabase/supabase-js");
-        const url = process.env.SUPABASE_URL!;
-        const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
-        const sb = createClient(url, key, {
-          auth: { persistSession: false, autoRefreshToken: false },
-          global: {
-            fetch: (input, init) => {
-              const h = new Headers(init?.headers);
-              if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) {
-                h.delete("Authorization");
-              }
-              h.set("apikey", key);
-              return fetch(input, { ...init, headers: h });
-            },
-          },
-        });
+        // Usar supabaseAdmin para leitura segura via service_role, pois establishments é protegida.
+        const { supabaseAdmin: sb } = await import("@/integrations/supabase/client.server");
 
         const { data: est } = await sb
           .from("establishments")

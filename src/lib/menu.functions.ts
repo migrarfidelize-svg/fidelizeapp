@@ -28,7 +28,9 @@ export const getPublicMenuBySlug = createServerFn({ method: "POST" })
     const { slug, kind } = data;
     const timestamp = new Date().toISOString();
 
-    const { supabase } = await import("../integrations/supabase/client");
+    // Usar supabaseAdmin para leitura pública controlada via RPC (SECURITY DEFINER)
+    // Isso garante que o anon/visitante consiga ler os dados via RPC mesmo com establishments PROTEGIDO.
+    const { supabaseAdmin: supabase } = await import("../integrations/supabase/client.server");
 
     if (!supabase) {
       console.error(`[${timestamp}] Critical: Supabase client initialization failed`);
