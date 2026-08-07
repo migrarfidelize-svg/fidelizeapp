@@ -133,6 +133,6 @@ export const customOtp: WhatsAppOTPProvider = {
     
     if (!remoteMessageId || !fromPhone || !text) return null;
     
-    return { remoteMessageId, fromPhone, text };
+    return { remoteMessageId, fromPhone, text, messageType: "text" };
   }
 };
