@@ -128,10 +128,17 @@ export function TemplateManager() {
                                         defaultValue={editingTemplate?.category || "general"}
                                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                     >
-                                        <option value="general">Geral</option>
+                                        <option value="welcome">Boas-vindas (Geral)</option>
                                         <option value="support">Suporte</option>
                                         <option value="sales">Vendas</option>
                                         <option value="marketing">Marketing</option>
+                                        <option value="transfer">Transferência</option>
+                                        <option value="off_hours">Fora de Horário</option>
+                                        <option value="closing">Finalização</option>
+                                        <option value="followup">Retorno</option>
+                                        <option value="finance">Financeiro</option>
+                                        <option value="otp">OTP</option>
+                                        <option value="custom">Personalizado</option>
                                     </select>
                                 </div>
                             </div>
@@ -160,10 +167,11 @@ export function TemplateManager() {
        <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full">
          <TabsList className="bg-muted/50 p-1 rounded-xl w-fit">
            <TabsTrigger value="all" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">Todos</TabsTrigger>
-           <TabsTrigger value="general" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">Geral</TabsTrigger>
-           <TabsTrigger value="support" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">Suporte</TabsTrigger>
-           <TabsTrigger value="sales" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">Vendas</TabsTrigger>
-           <TabsTrigger value="marketing" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">Marketing</TabsTrigger>
+            <TabsTrigger value="welcome" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">Geral</TabsTrigger>
+            <TabsTrigger value="support" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">Suporte</TabsTrigger>
+            <TabsTrigger value="sales" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">Vendas</TabsTrigger>
+            <TabsTrigger value="marketing" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">Marketing</TabsTrigger>
+            <TabsTrigger value="otp" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">OTP</TabsTrigger>
          </TabsList>
 
          <div className="mt-6">
