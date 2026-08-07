@@ -52,14 +52,16 @@ export function SponsoredAdCard({ data, model, className }: SponsoredAdCardProps
     return (
       <div className={cn(
         "bg-primary text-primary-foreground font-black uppercase tracking-[0.15em] shadow-[0_10px_30px_-10px_rgba(var(--primary-rgb),0.5)] active:scale-[0.97] transition-all flex items-center justify-center gap-2 group whitespace-nowrap border border-white/20 hover:shadow-[0_15px_40px_-10px_rgba(var(--primary-rgb),0.6)] cursor-pointer relative z-30",
-        size === "sm" ? "px-5 py-2.5 rounded-xl text-[10px]" : "px-8 py-4 rounded-2xl text-[11px]"
+        size === "sm" ? "h-10 px-5 rounded-xl text-[10px]" : "h-14 px-8 rounded-2xl text-[11px]"
       )}>
-        {label}
-        {model === "carousel" ? (
-          <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
-        ) : (
-          <ExternalLink className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-        )}
+        <span className="flex items-center gap-2">
+          {label}
+          {model === "carousel" ? (
+            <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+          ) : (
+            <ExternalLink className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+          )}
+        </span>
       </div>
     );
   };
