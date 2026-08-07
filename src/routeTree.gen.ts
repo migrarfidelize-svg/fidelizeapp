@@ -40,7 +40,6 @@ import { Route as AvaliacoesSlugRouteImport } from './routes/avaliacoes.$slug'
 import { Route as AuthRecuperarRouteImport } from './routes/auth.recuperar'
 import { Route as AuthNovaSenhaRouteImport } from './routes/auth.nova-senha'
 import { Route as ApiTestTurnstileRouteImport } from './routes/api/test-turnstile'
-import { Route as AuthenticatedTempPreviewsRouteImport } from './routes/_authenticated/temp-previews'
 import { Route as AuthenticatedLgpdRouteImport } from './routes/_authenticated/lgpd'
 import { Route as AuthenticatedHashRouteImport } from './routes/_authenticated/hash'
 import { Route as AuthenticatedCarteiraRouteImport } from './routes/_authenticated/carteira'
@@ -303,12 +302,6 @@ const ApiTestTurnstileRoute = ApiTestTurnstileRouteImport.update({
   path: '/api/test-turnstile',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedTempPreviewsRoute =
-  AuthenticatedTempPreviewsRouteImport.update({
-    id: '/temp-previews',
-    path: '/temp-previews',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedLgpdRoute = AuthenticatedLgpdRouteImport.update({
   id: '/lgpd',
   path: '/lgpd',
@@ -938,7 +931,6 @@ export interface FileRoutesByFullPath {
   '/carteira': typeof AuthenticatedCarteiraRouteWithChildren
   '/hash': typeof AuthenticatedHashRouteWithChildren
   '/lgpd': typeof AuthenticatedLgpdRoute
-  '/temp-previews': typeof AuthenticatedTempPreviewsRoute
   '/api/test-turnstile': typeof ApiTestTurnstileRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
@@ -1075,7 +1067,6 @@ export interface FileRoutesByTo {
   '/termos': typeof TermosRoute
   '/videos': typeof VideosRoute
   '/lgpd': typeof AuthenticatedLgpdRoute
-  '/temp-previews': typeof AuthenticatedTempPreviewsRoute
   '/api/test-turnstile': typeof ApiTestTurnstileRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
@@ -1215,7 +1206,6 @@ export interface FileRoutesById {
   '/_authenticated/carteira': typeof AuthenticatedCarteiraRouteWithChildren
   '/_authenticated/hash': typeof AuthenticatedHashRouteWithChildren
   '/_authenticated/lgpd': typeof AuthenticatedLgpdRoute
-  '/_authenticated/temp-previews': typeof AuthenticatedTempPreviewsRoute
   '/api/test-turnstile': typeof ApiTestTurnstileRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
@@ -1357,7 +1347,6 @@ export interface FileRouteTypes {
     | '/carteira'
     | '/hash'
     | '/lgpd'
-    | '/temp-previews'
     | '/api/test-turnstile'
     | '/auth/nova-senha'
     | '/auth/recuperar'
@@ -1494,7 +1483,6 @@ export interface FileRouteTypes {
     | '/termos'
     | '/videos'
     | '/lgpd'
-    | '/temp-previews'
     | '/api/test-turnstile'
     | '/auth/nova-senha'
     | '/auth/recuperar'
@@ -1633,7 +1621,6 @@ export interface FileRouteTypes {
     | '/_authenticated/carteira'
     | '/_authenticated/hash'
     | '/_authenticated/lgpd'
-    | '/_authenticated/temp-previews'
     | '/api/test-turnstile'
     | '/auth/nova-senha'
     | '/auth/recuperar'
@@ -2033,13 +2020,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/test-turnstile'
       preLoaderRoute: typeof ApiTestTurnstileRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/temp-previews': {
-      id: '/_authenticated/temp-previews'
-      path: '/temp-previews'
-      fullPath: '/temp-previews'
-      preLoaderRoute: typeof AuthenticatedTempPreviewsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/lgpd': {
       id: '/_authenticated/lgpd'
@@ -3020,7 +3000,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCarteiraRoute: typeof AuthenticatedCarteiraRouteWithChildren
   AuthenticatedHashRoute: typeof AuthenticatedHashRouteWithChildren
   AuthenticatedLgpdRoute: typeof AuthenticatedLgpdRoute
-  AuthenticatedTempPreviewsRoute: typeof AuthenticatedTempPreviewsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -3028,7 +3007,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCarteiraRoute: AuthenticatedCarteiraRouteWithChildren,
   AuthenticatedHashRoute: AuthenticatedHashRouteWithChildren,
   AuthenticatedLgpdRoute: AuthenticatedLgpdRoute,
-  AuthenticatedTempPreviewsRoute: AuthenticatedTempPreviewsRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

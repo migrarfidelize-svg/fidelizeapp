@@ -2,7 +2,7 @@ import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Compass, MapPin, Sparkles, ChevronRight, ShieldCheck, Tag, Search, ArrowLeft, X, RefreshCw, UtensilsCrossed, ShoppingBag } from "lucide-react";
+import { Compass, MapPin, Sparkles, ChevronRight, ShieldCheck, Tag, Search, ArrowLeft, X, RefreshCw, UtensilsCrossed, ShoppingBag, CheckCircle2 } from "lucide-react";
 import { getDiscoveryEstablishments } from "@/lib/my-wallet.functions";
 import { WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
 import { SponsoredAdsRail } from "@/components/wallet/SponsoredAdsRail";
@@ -188,23 +188,22 @@ function DiscoverPage() {
 
   return (
     <WithOfflineFallback onRetry={() => qc.invalidateQueries({ queryKey: ["discovery-establishments"] })}>
-      <div className="space-y-4">
-        <div className="pt-2">
-          <div className="flex items-center gap-2">
-            <Compass className="h-5 w-5 text-primary" />
-            <h1 className="font-display text-2xl font-bold tracking-tight">Descobrir</h1>
-            <button
-              onClick={() => qc.invalidateQueries({ queryKey: ["discovery-establishments"] })}
-              aria-label="Atualizar lista"
-              className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-card/40 px-3 py-1.5 text-[11px] font-bold text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-            >
-              <RefreshCw className="h-3.5 w-3.5" /> Atualizar
-            </button>
+      <div className="px-4 pb-8 space-y-6">
+        {/* Header Superior Premium */}
+        <div className="pt-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-sm">
+              <Compass className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="font-display text-2xl font-black tracking-tighter text-neutral-900 dark:text-white">Descobrir</h1>
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground/70">
+                Novas experiências próximas a você
+              </p>
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Outros lugares Fidelize esperando por você — colecione novos cartões e ganhe recompensas.
-          </p>
         </div>
+
 
         {geo !== "granted" && geo !== "denied" && geo !== "unsupported" && (
           <div className="relative overflow-hidden rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/10 to-transparent p-4">
@@ -262,25 +261,28 @@ function DiscoverPage() {
           </div>
         ) : (
           <>
-            {/* Busca sempre disponível */}
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            {/* Busca Premium Clean */}
+            <div className="group relative">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-muted-foreground transition-colors group-focus-within:text-primary">
+                <Search className="h-4 w-4" />
+              </div>
               <input
                 value={query}
                 onChange={(ev) => setQuery(ev.target.value)}
                 placeholder="Buscar por nome, cidade ou tipo…"
-                className="w-full rounded-2xl border border-border/60 bg-card/40 py-2.5 pl-9 pr-9 text-sm outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-primary/50"
+                className="w-full rounded-2xl border border-border/60 bg-white/50 dark:bg-black/20 py-3.5 pl-10 pr-10 text-sm font-medium outline-none transition-all placeholder:text-muted-foreground/50 focus:border-primary/50 focus:bg-white dark:focus:bg-black/40 focus:ring-4 focus:ring-primary/5 shadow-sm"
               />
               {query && (
                 <button
                   onClick={() => setQuery("")}
                   aria-label="Limpar busca"
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-muted/60"
+                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-muted-foreground hover:text-foreground"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-4 w-4" />
                 </button>
               )}
             </div>
+
 
             <SponsoredAdsRail
               category={active && active !== "promo" && active !== "perto" && active !== "todos" ? active : null}
@@ -308,21 +310,27 @@ function DiscoverPage() {
                   )}
                 </div>
 
-                <div>
-                  <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                    Escolha uma categoria
+                <div className="pt-2">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">Explorar Categorias</h2>
+                    <button
+                      onClick={() => qc.invalidateQueries({ queryKey: ["discovery-establishments"] })}
+                      className="text-[10px] font-bold text-primary hover:underline"
+                    >
+                      Atualizar
+                    </button>
                   </div>
-                  <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                     {categories.map((c) => (
                       <button
                         key={c.id}
                         onClick={() => setActive(c.id)}
-                        className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card/40 p-3 text-left transition-all hover:border-primary/40 hover:bg-card/60 active:scale-[0.98]"
+                        className="group relative overflow-hidden rounded-3xl border border-border/40 bg-white/50 dark:bg-black/20 p-4 text-left transition-all hover:border-primary/40 hover:bg-white dark:hover:bg-black/40 active:scale-[0.98] shadow-sm"
                       >
-                        <div className="pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full bg-primary/15 opacity-40 blur-2xl transition-opacity group-hover:opacity-70" />
-                        <div className="text-xl">{c.emoji}</div>
-                        <div className="mt-1.5 font-display text-sm font-bold">{c.label}</div>
-                        <div className="text-[11px] text-muted-foreground">
+                        <div className="pointer-events-none absolute -right-6 -top-6 h-16 w-16 rounded-full bg-primary/10 opacity-40 blur-xl transition-opacity group-hover:opacity-60" />
+                        <div className="text-2xl">{c.emoji}</div>
+                        <div className="mt-2 font-display text-sm font-black tracking-tight">{c.label}</div>
+                        <div className="text-[10px] font-bold text-muted-foreground/60">
                           {c.count} {c.count === 1 ? "lugar" : "lugares"}
                         </div>
                       </button>
@@ -332,40 +340,42 @@ function DiscoverPage() {
 
                 <button
                   onClick={() => setActive("todos")}
-                  className="flex w-full items-center justify-between rounded-2xl border border-border/60 bg-card/30 px-4 py-3 text-sm font-semibold transition-colors hover:border-primary/40"
+                  className="flex w-full items-center justify-between rounded-3xl border border-border/40 bg-primary/5 dark:bg-primary/10 px-6 py-4 text-sm font-black text-primary transition-all hover:bg-primary/10 active:scale-[0.99]"
                 >
-                  Ver todos os {sorted.length} estabelecimentos
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <span>Ver todos os {sorted.length} estabelecimentos</span>
+                  <ChevronRight className="h-5 w-5" />
                 </button>
+
               </div>
             ) : (
               /* Passo 2 — lista filtrada */
               <div className="space-y-3">
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-4">
                   <button
                     onClick={() => {
                       setActive(null);
                       setQuery("");
                     }}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-card/40 px-3 py-1.5 text-xs font-bold transition-colors hover:border-primary/40"
+                    className="inline-flex items-center gap-2 rounded-2xl border border-border/60 bg-white dark:bg-black/20 px-4 py-2 text-xs font-black transition-all hover:bg-muted active:scale-95 shadow-sm"
                   >
-                    <ArrowLeft className="h-3.5 w-3.5" /> Categorias
+                    <ArrowLeft className="h-4 w-4" /> Voltar
                   </button>
-                  <span className="truncate text-xs text-muted-foreground">
-                    {activeLabel} · {visible.length}
-                  </span>
+                  <div className="text-right">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 leading-none mb-1">Filtrando por</div>
+                    <div className="text-xs font-bold text-primary truncate max-w-[150px]">{activeLabel}</div>
+                  </div>
                 </div>
 
                 {/* Troca rápida entre categorias sem voltar */}
-                <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   {categories.map((c) => (
                     <button
                       key={c.id}
                       onClick={() => setActive(c.id)}
-                      className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                      className={`shrink-0 rounded-2xl border px-4 py-2.5 text-[11px] font-black uppercase tracking-wider transition-all shadow-sm ${
                         active === c.id
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border/60 bg-card/40 hover:border-primary/40"
+                          ? "border-primary bg-primary text-primary-foreground shadow-primary/20"
+                          : "border-border/60 bg-white/50 dark:bg-black/20 text-muted-foreground hover:border-primary/40"
                       }`}
                     >
                       {c.emoji} {c.label}
@@ -374,18 +384,25 @@ function DiscoverPage() {
                 </div>
 
                 {visible.length === 0 ? (
-                  <div className="rounded-3xl border border-dashed border-border/60 bg-card/30 p-8 text-center">
-                    <Sparkles className="mx-auto mb-2 h-6 w-6 text-primary" />
-                    <div className="font-display text-sm font-bold">Nenhum resultado</div>
-                    <p className="mt-1 text-xs text-muted-foreground">Tente outra categoria ou busca.</p>
+                  <div className="rounded-[2.5rem] border border-dashed border-border/60 bg-primary/5 p-12 text-center">
+                    <Sparkles className="mx-auto mb-3 h-8 w-8 text-primary/40" />
+                    <div className="font-display text-lg font-black tracking-tight">Nenhum resultado</div>
+                    <p className="mt-2 text-xs text-muted-foreground leading-relaxed">Não encontramos nada nesta categoria no momento. Tente outra ou limpe a busca.</p>
+                    <button 
+                      onClick={() => { setActive(null); setQuery(""); }}
+                      className="mt-6 text-xs font-black text-primary underline underline-offset-4"
+                    >
+                      Ver todas as opções
+                    </button>
                   </div>
                 ) : (
-                  <ul className="space-y-2.5">
+                  <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
                     {visible.map((e) => (
                       <DiscoverRow key={e.id} e={e} nearby={!!myCityNorm && normalizeCity(e.city) === myCityNorm} />
                     ))}
                   </ul>
                 )}
+
               </div>
             )}
           </>
@@ -419,18 +436,18 @@ function DiscoverRow({
   const location = [e.address, e.city].filter(Boolean).join(" · ");
   const hasShowcase = e.has_menu || e.has_catalog;
   return (
-    <li className="group overflow-hidden rounded-2xl border border-border/60 bg-card/40 transition-all hover:border-primary/40 hover:bg-card/60">
+    <li className="group overflow-hidden rounded-[2rem] border border-border/40 bg-white dark:bg-black/20 transition-all hover:border-primary/40 hover:bg-white dark:hover:bg-black/40 shadow-sm hover:shadow-md">
       <Link
         to="/carteira/e/$slug"
         params={{ slug: e.slug }}
-        className="relative flex items-center gap-3 p-3"
+        className="relative flex items-center gap-4 p-4"
       >
         <div
-          className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full opacity-20 blur-2xl"
+          className="pointer-events-none absolute -right-12 -top-12 h-28 w-28 rounded-full opacity-10 blur-3xl transition-opacity group-hover:opacity-20"
           style={{ background: brand }}
         />
         <div
-          className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-xl border border-border/60 bg-background text-sm font-bold uppercase"
+          className="relative grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-[1.25rem] border border-border/40 bg-background text-sm font-black uppercase shadow-sm"
           style={{ color: brand }}
         >
           {e.logo_url ? (
@@ -440,43 +457,47 @@ function DiscoverRow({
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <div className="truncate font-display text-sm font-semibold">{e.name}</div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="truncate font-display text-base font-black tracking-tight text-neutral-900 dark:text-white">{e.name}</div>
             {e.has_promotion && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/50 bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-300">
-                <Tag className="h-2.5 w-2.5" /> Promoção
-              </span>
-            )}
-            {nearby && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-primary">
-                Perto
+              <span className="inline-flex items-center gap-1 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-300 shadow-sm">
+                <Tag className="h-2.5 w-2.5" /> Promo
               </span>
             )}
           </div>
-          {location && (
-            <div className="mt-0.5 flex items-center gap-1 truncate text-[11px] text-muted-foreground">
-              <MapPin className="h-3 w-3 shrink-0" />
-              <span className="truncate">{location}</span>
+          <div className="mt-1 flex flex-col gap-1">
+            {location && (
+              <div className="flex items-center gap-1 truncate text-[10px] font-bold text-muted-foreground/70">
+                <MapPin className="h-3 w-3 shrink-0" />
+                <span className="truncate">{location}</span>
+                {nearby && (
+                  <>
+                    <span className="mx-1 opacity-40">·</span>
+                    <span className="text-primary">Perto</span>
+                  </>
+                )}
+              </div>
+            )}
+            {e.description && (
+              <p className="line-clamp-1 text-[11px] font-medium text-muted-foreground/80 leading-tight">{e.description}</p>
+            )}
+          </div>
+        </div>
+        
+        <div className="flex flex-col items-end gap-2">
+          {e.visited ? (
+            <div className="h-8 w-8 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground/40">
+              <CheckCircle2 className="h-4 w-4" />
+            </div>
+          ) : (
+            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary animate-pulse">
+              <Sparkles className="h-4 w-4" />
             </div>
           )}
-          {e.description && (
-            <p className="mt-1 line-clamp-1 text-[11px] text-muted-foreground/80">{e.description}</p>
-          )}
+          <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground/30 transition-transform group-hover:translate-x-1" />
         </div>
-        {e.visited ? (
-          <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/60 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-            Visitado
-          </span>
-        ) : (
-          <span
-            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-primary-foreground shadow-sm"
-            style={{ background: brand }}
-          >
-            <Sparkles className="h-3 w-3" /> Novo
-          </span>
-        )}
-        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
       </Link>
+
       {hasShowcase && (
         <div className="flex flex-wrap gap-2 border-t border-border/40 px-3 pb-3 pt-2">
           {e.has_menu && (

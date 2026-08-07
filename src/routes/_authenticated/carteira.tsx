@@ -1,254 +1,96 @@
-import { createFileRoute, Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Wallet, Home, LogOut, User, Gift, History, Compass, QrCode } from "lucide-react";
-import { toast } from "sonner";
-import { MyQrSheet } from "@/components/wallet/MyQrSheet";
-import { countUnread } from "@/lib/inbox.functions";
-import { getMyWallet, getMyRewards } from "@/lib/my-wallet.functions";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { AchievementUnlockListener } from "@/components/wallet/AchievementUnlockListener";
-import { PostStampReviewSheet } from "@/components/wallet/PostStampReviewSheet";
-import { CompleteProfileDialog } from "@/components/wallet/CompleteProfileDialog";
-import { InboxBellBadge } from "@/components/wallet/InboxBellBadge";
-import { haptic } from "@/lib/haptics";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { setWalletHint } from "@/lib/wallet-hint";
-
-
+import { createFileRoute, Outlet, Link, useLocation } from "@tanstack/react-router";
+import { 
+  Home, 
+  Compass, 
+  Wallet, 
+  User, 
+  QrCode,
+  Search,
+  Bell
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { LogoMark } from "@/components/LogoMark";
 
 export const Route = createFileRoute("/_authenticated/carteira")({
-  head: () => ({
-    meta: [
-      { name: "theme-color", content: "#a78bfa" },
-      { name: "apple-mobile-web-app-capable", content: "yes" },
-      { name: "mobile-web-app-capable", content: "yes" },
-      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
-      { name: "apple-mobile-web-app-title", content: "Carteira" },
-    ],
-    links: [
-      { rel: "manifest", href: "/carteira.webmanifest" },
-      { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
-    ],
-  }),
   component: WalletLayout,
 });
 
-
-/** Lê e consome uma flash message deixada por `l/$slug` ou pelo fluxo de auth. */
-function useWalletFlash() {
-  useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem("wallet:flash");
-      if (!raw) return;
-      sessionStorage.removeItem("wallet:flash");
-      const { kind, msg } = JSON.parse(raw) as { kind: "success" | "error" | "info"; msg: string };
-      if (kind === "error") toast.error(msg);
-      else if (kind === "info") toast.message(msg);
-      else toast.success(msg);
-    } catch { /* ignore */ }
-  }, []);
-}
-
-/** 4 tabs laterais + slot central reservado ao FAB "Meu QR". */
-const TABS = [
-  { to: "/carteira", label: "Início", icon: Home, exact: true },
-  { to: "/carteira/premios", label: "Prêmios", icon: Gift, exact: false },
-  { to: "/carteira/historico", label: "Histórico", icon: History, exact: false },
-  { to: "/carteira/descobrir", label: "Descobrir", icon: Compass, exact: false },
-] as const;
-
 function WalletLayout() {
-  const navigate = useNavigate();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const [qrOpen, setQrOpen] = useState(false);
-  const qc = useQueryClient();
-  useWalletFlash();
+  const location = useLocation();
+  const activeTab = location.pathname;
 
-  // Persiste o WhatsApp do cliente para que o /auth pré-preencha o campo
-  // quando o PWA instalado abrir em contexto de storage isolado (iOS).
-  useEffect(() => {
-    let cancelled = false;
-    supabase.auth.getUser().then(({ data }) => {
-      if (cancelled) return;
-      const meta = (data.user?.user_metadata ?? {}) as { whatsapp?: string; phone?: string };
-      setWalletHint(meta.whatsapp || meta.phone || data.user?.phone || "");
-    }).catch(() => { /* noop */ });
-    return () => { cancelled = true; };
-  }, []);
-
-
-  // Perfil vira obrigatório APENAS nas ações de valor (prêmios e cartão do estabelecimento).
-  const profileRequired =
-    pathname.startsWith("/carteira/premios") ||
-    /^\/carteira\/(?!premios|historico|descobrir|perfil|conquistas|mensagens|notificacoes|retrospectiva|e\/)[^/]+/.test(pathname);
-
-  // O modal informativo só aparece na home da carteira. Nas rotas
-  // informativas (histórico, descobrir, mensagens, notificações, conquistas,
-  // retrospectiva) e no próprio /perfil — onde os campos já estão na tela —
-  // ele NÃO é montado, evitando virar "parede" a cada navegação.
-  const showProfileDialog = profileRequired || pathname === "/carteira";
-
-
-
-  // Piggyback no cache já hidratado pela home para descobrir os customer_ids.
-  const { data: wallet } = useQuery({
-    queryKey: ["my-wallet"],
-    queryFn: () => getMyWallet(),
-    staleTime: 15_000,
-  });
-  const customerIds = useMemo(
-    () => Array.from(new Set((wallet ?? []).map((w) => w.customer?.id).filter(Boolean) as string[])),
-    [wallet],
-  );
-
-  // Realtime global: qualquer carimbo em qualquer cartão do cliente dispara
-  // haptic + toast + refresh, mesmo fora da tela `/c/$token`.
-  useEffect(() => {
-    if (!customerIds.length) return;
-    const filter = `customer_id=in.(${customerIds.join(",")})`;
-    const channel = supabase
-      .channel("wallet-global-activity")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "stamps", filter }, () => {
-        haptic("stamp");
-        toast.success("Novo carimbo! 🎉");
-        qc.invalidateQueries({ queryKey: ["my-wallet"] });
-        qc.invalidateQueries({ queryKey: ["my-history"] });
-        qc.invalidateQueries({ queryKey: ["my-rewards"] });
-      })
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "rewards", filter }, () => {
-        haptic("success");
-        toast.success("Recompensa desbloqueada! 🎁");
-        qc.invalidateQueries({ queryKey: ["my-wallet"] });
-        qc.invalidateQueries({ queryKey: ["my-rewards"] });
-      });
-    channel.subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [customerIds.join(","), qc]);
-
-  async function signOut() {
-    await supabase.auth.signOut();
-    toast.success("Você saiu da sua carteira.");
-    navigate({ to: "/auth", replace: true });
-  }
+  const tabs = [
+    { icon: Home, label: "Início", path: "/carteira" },
+    { icon: Compass, label: "Descobrir", path: "/carteira/descobrir" },
+    { icon: QrCode, label: "QR", path: "/qr", isFab: true },
+    { icon: Wallet, label: "Vouchers", path: "/carteira/vouchers" },
+    { icon: User, label: "Perfil", path: "/carteira/perfil" },
+  ];
 
   return (
-    <div className="min-h-dvh bg-background pb-[calc(env(safe-area-inset-bottom)+5.5rem)]">
-      <header className="sticky top-0 z-30 border-b border-border/60 bg-background/85 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-          <Link to="/carteira" className="flex items-center gap-2">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary/25 to-primary/5 text-primary">
-              <Wallet className="h-5 w-5" />
-            </div>
-            <div className="leading-tight">
-              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Minha</div>
-              <div className="font-display text-base font-bold">Carteira Fidelize</div>
-            </div>
-          </Link>
+    <div className="flex min-h-screen flex-col bg-[oklch(0.985_0.006_285)] dark:bg-[oklch(0.14_0.018_288)]">
+      {/* Header Premium Clean */}
+      <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-md items-center justify-between px-4">
+          <div className="flex items-center gap-3">
+            <LogoMark size={32} className="rounded-xl shadow-sm" />
+            <span className="font-display text-lg font-black tracking-tight text-primary">Fidelize</span>
+          </div>
+          
           <div className="flex items-center gap-2">
-            <InboxBell pathname={pathname} />
-            <ThemeToggle />
-            <Link
-              to="/carteira/perfil"
-              className={
-                "grid h-9 w-9 place-items-center rounded-full border transition-colors " +
-                (pathname.startsWith("/carteira/perfil")
-                  ? "border-primary/50 bg-primary/10 text-primary"
-                  : "border-border/60 text-muted-foreground hover:text-foreground")
-              }
-              aria-label="Meu perfil"
-            >
-              <User className="h-4 w-4" />
-            </Link>
-            <button
-              onClick={signOut}
-              className="flex items-center gap-1.5 rounded-full border border-border/60 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
-              aria-label="Sair"
-            >
-              <LogOut className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Sair</span>
+            <button className="relative rounded-full p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+              <Search className="h-5 w-5" />
+            </button>
+            <button className="relative rounded-full p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+              <Bell className="h-5 w-5" />
+              <span className="absolute top-2 right-2 flex h-2 w-2 rounded-full bg-primary" />
             </button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 pt-4">
-        <ErrorBoundary name="carteira">
+      <main className="mx-auto w-full max-w-md flex-1 pb-24">
         <Outlet />
-        </ErrorBoundary>
       </main>
 
-      {/* Bottom nav com FAB central "Meu QR" */}
-      <nav
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 backdrop-blur-xl"
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-        aria-label="Navegação principal da carteira"
-      >
-        <div className="relative mx-auto grid max-w-3xl grid-cols-5 items-stretch">
-          {TABS.slice(0, 2).map((t) => (
-            <NavItem key={t.to} tab={t} pathname={pathname} />
-          ))}
+      {/* Bottom Nav Premium Clean */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-center p-4 pointer-events-none">
+        <div className="flex w-full max-w-md items-center justify-around gap-1 rounded-3xl border border-white/20 bg-black/80 p-2 text-white shadow-2xl backdrop-blur-2xl pointer-events-auto">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.path || (tab.path === "/carteira" && activeTab === "/carteira/");
+            const Icon = tab.icon;
 
-          {/* Slot central: FAB elevado */}
-          <div className="relative flex items-center justify-center">
-            <button
-              onClick={() => setQrOpen(true)}
-              className="group -mt-6 grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-[0_10px_30px_-8px_color-mix(in_oklab,var(--primary)_60%,transparent)] ring-4 ring-background transition-transform hover:scale-[1.04] active:scale-95"
-              aria-label="Mostrar meu QR"
-            >
-              <QrCode className="h-6 w-6 transition-transform group-hover:rotate-3" />
-              <span className="pointer-events-none absolute -bottom-4 text-[9px] font-bold uppercase tracking-widest text-primary">
-                Meu QR
-              </span>
-            </button>
-          </div>
+            if (tab.isFab) {
+              return (
+                <Link
+                  key={tab.path}
+                  to={tab.path}
+                  className="group relative -top-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-white shadow-lg transition-transform active:scale-95 hover:scale-105"
+                >
+                  <Icon className="h-7 w-7" />
+                  <div className="absolute -inset-1 rounded-2xl bg-primary/20 blur-lg group-hover:bg-primary/30 transition-colors" />
+                </Link>
+              );
+            }
 
-          {TABS.slice(2, 4).map((t) => (
-            <NavItem key={t.to} tab={t} pathname={pathname} />
-          ))}
+            return (
+              <Link
+                key={tab.path}
+                to={tab.path}
+                className={cn(
+                  "flex flex-1 flex-col items-center justify-center gap-1 py-2 text-[10px] font-bold transition-all active:scale-95",
+                  isActive ? "text-primary" : "text-neutral-400 hover:text-neutral-200"
+                )}
+              >
+                <Icon className={cn("h-5 w-5 transition-transform", isActive && "scale-110")} />
+                <span className={cn("transition-opacity", isActive ? "opacity-100" : "opacity-60")}>
+                  {tab.label}
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </nav>
-
-      <MyQrSheet open={qrOpen} onOpenChange={setQrOpen} />
-      <AchievementUnlockListener />
-      <PostStampReviewSheet />
-      {showProfileDialog && <CompleteProfileDialog required={profileRequired} />}
     </div>
   );
-}
-
-function NavItem({ tab, pathname }: { tab: (typeof TABS)[number]; pathname: string }) {
-  const active = tab.exact ? pathname === tab.to : pathname === tab.to || pathname.startsWith(tab.to + "/");
-  const Icon = tab.icon;
-  return (
-    <Link
-      to={tab.to}
-      className={
-        "relative flex flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition-colors " +
-        (active ? "text-primary" : "text-muted-foreground hover:text-foreground")
-      }
-      aria-current={active ? "page" : undefined}
-    >
-      {active && <span className="absolute top-0 h-0.5 w-8 rounded-full bg-primary" aria-hidden />}
-      <Icon className={"h-5 w-5 " + (active ? "text-primary" : "")} />
-      <span className="leading-none">{tab.label}</span>
-    </Link>
-  );
-}
-
-function InboxBell({ pathname }: { pathname: string }) {
-  const active = pathname.startsWith("/carteira/mensagens");
-  const { data: unread = 0 } = useQuery({
-    queryKey: ["inbox-unread"],
-    queryFn: () => countUnread(),
-    staleTime: 30_000,
-    refetchInterval: 90_000,
-  });
-  const { data: rewards = [] } = useQuery({
-    queryKey: ["my-rewards"],
-    queryFn: () => getMyRewards(),
-    staleTime: 30_000,
-  });
-  const readyRewards = rewards.filter((r) => r.ready).length;
-  return <InboxBellBadge unread={unread} active={active} readyRewards={readyRewards} />;
 }

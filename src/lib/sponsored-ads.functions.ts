@@ -157,9 +157,18 @@ const upsertSchema = z.object({
   fidelize_price_cents: z.number().int().min(0).nullable().optional(),
   discount_value: z.number().int().min(0).nullable().optional(),
   benefit_text: z.string().max(100).nullable().optional(),
-  theme: z.enum(["dark", "light"]).default("dark"),
+  theme: z.string().max(40).default("premium_dark"), // Changed to support newer themes
+  video_url: z.string().max(500).nullable().optional(),
+  hide_title: z.boolean().default(false),
+  hide_description: z.boolean().default(false),
+  hide_merchant_name: z.boolean().default(false),
+  hide_prices: z.boolean().default(false),
+  hide_logo: z.boolean().default(false),
+  hide_cta: z.boolean().default(false),
+  full_bleed_mode: z.boolean().default(false),
 
   requested_start_at: z.string().datetime({ offset: true }).nullable().optional(),
+
 });
 
 
@@ -214,8 +223,17 @@ export const saveAdCampaign = createServerFn({ method: "POST" })
       discount_value: data.discount_value ?? null,
       benefit_text: data.benefit_text ?? null,
       theme: data.theme,
+      video_url: data.video_url ?? null,
+      hide_title: data.hide_title,
+      hide_description: data.hide_description,
+      hide_merchant_name: data.hide_merchant_name,
+      hide_prices: data.hide_prices,
+      hide_logo: data.hide_logo,
+      hide_cta: data.hide_cta,
+      full_bleed_mode: data.full_bleed_mode,
 
       requested_start_at: data.requested_start_at ?? null,
+
 
       updated_by: userId,
     };

@@ -12,6 +12,7 @@ export type AdTheme =
   | "minimal_product" 
   | "seasonal";
 
+
 export interface SponsoredAdData {
   id: string;
   title: string;
@@ -23,13 +24,23 @@ export interface SponsoredAdData {
   discountValue?: number; // percentage
   ctaLabel?: string;
   imageUrl: string;
+  videoUrl?: string; // New field for video support
   theme?: AdTheme;
   offerType?: "discount" | "percentage" | "value" | "benefit" | "loyalty" | "reward";
   benefitText?: string;
   category?: string;
   rating?: number;
   distance?: string;
+  // Visibility toggles
+  hideTitle?: boolean;
+  hideDescription?: boolean;
+  hideMerchantName?: boolean;
+  hidePrices?: boolean;
+  hideLogo?: boolean;
+  hideCTA?: boolean;
+  fullBleedMode?: boolean; // If true, only image/video + "Patrocinado" badge
 }
+
 
 interface SponsoredAdCardProps {
   data: SponsoredAdData;
@@ -226,64 +237,87 @@ export function SponsoredAdCard({ data, model, className, initialExpanded = fals
       )}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >
-      {/* 1. IMAGEM ABSOLUTA (FULL BLEED) */}
+      {/* 1. MÍDIA ABSOLUTA (FULL BLEED) */}
       <motion.div 
         layout
         className="absolute inset-0 z-0 overflow-hidden"
       >
-        <motion.img 
-          layout
-          src={data.imageUrl} 
-          alt={data.title} 
-          animate={{ 
-            scale: isExpanded ? 1.05 : 1,
-            filter: isExpanded ? "brightness(0.7) blur(2px)" : "brightness(0.6)"
-          }}
-          className="w-full h-full object-cover" 
-        />
+        {data.videoUrl ? (
+          <video
+            src={data.videoUrl}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover"
+            poster={data.imageUrl}
+          />
+        ) : (
+          <motion.img 
+            layout
+            src={data.imageUrl} 
+            alt={data.title} 
+            animate={{ 
+              scale: isExpanded ? 1.05 : 1,
+              filter: isExpanded ? "brightness(0.7) blur(2px)" : "brightness(0.6)"
+            }}
+            className="w-full h-full object-cover" 
+          />
+        )}
         
         {/* 2. GRADIENTE PRETO OBRIGATÓRIO (DINÂMICO PELO TEMA) */}
-        <motion.div 
-          layout
-          className={cn(
-            "absolute inset-0 bg-gradient-to-t z-10",
-            styles.gradient,
-            isExpanded ? "opacity-100" : "opacity-90"
-          )} 
-        />
+        {!data.fullBleedMode && (
+          <motion.div 
+            layout
+            className={cn(
+              "absolute inset-0 bg-gradient-to-t z-10",
+              styles.gradient,
+              isExpanded ? "opacity-100" : "opacity-90"
+            )} 
+          />
+        )}
       </motion.div>
 
+
       {/* 3. CONTEÚDO EM FLUXO NORMAL */}
-      <div className={cn("relative z-20 w-full flex flex-col gap-4", cardConfig.padding)}>
+      <div className={cn("relative z-20 w-full flex flex-col gap-4", cardConfig.padding, data.fullBleedMode && "h-full justify-between")}>
         <motion.div layout className="flex flex-col gap-3">
           <div className="flex justify-between items-start">
             <SponsoredBadge />
-            <motion.div 
-              animate={{ rotate: isExpanded ? 180 : 0 }}
-              className="p-2 rounded-full bg-white/10 backdrop-blur-md text-white/70 sm:hidden"
-            >
-              <ChevronDown className="h-4 w-4" />
-            </motion.div>
+            {!data.fullBleedMode && (
+              <motion.div 
+                animate={{ rotate: isExpanded ? 180 : 0 }}
+                className="p-2 rounded-full bg-white/10 backdrop-blur-md text-white/70 sm:hidden"
+              >
+                <ChevronDown className="h-4 w-4" />
+              </motion.div>
+            )}
           </div>
           
-          <div className={cn("space-y-1.5", theme === "minimal_product" && "items-center")}>
-            <motion.h3 layout className={cn(
-              "font-display font-black uppercase leading-[1] tracking-tight",
-              styles.textTitle,
-              cardConfig.titleSize
-            )}>
-              {data.title}
-            </motion.h3>
-            <motion.p layout className={cn(
-              "text-[10px] sm:text-[11px] font-black uppercase tracking-[0.25em] opacity-90",
-              styles.textSecondary
-            )}>
-              {data.merchantName}
-            </motion.p>
-          </div>
+          {!data.fullBleedMode && (
+            <div className={cn("space-y-1.5", theme === "minimal_product" && "items-center")}>
+              {!data.hideTitle && (
+                <motion.h3 layout className={cn(
+                  "font-display font-black uppercase leading-[1] tracking-tight",
+                  styles.textTitle,
+                  cardConfig.titleSize
+                )}>
+                  {data.title}
+                </motion.h3>
+              )}
+              {!data.hideMerchantName && (
+                <motion.p layout className={cn(
+                  "text-[10px] sm:text-[11px] font-black uppercase tracking-[0.25em] opacity-90",
+                  styles.textSecondary
+                )}>
+                  {data.merchantName}
+                </motion.p>
+              )}
+            </div>
+          )}
           
           <AnimatePresence>
-            {(isExpanded || model === "premium_banner") && data.description && (
+            {(isExpanded || model === "premium_banner") && data.description && !data.hideDescription && !data.fullBleedMode && (
               <motion.p 
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
@@ -299,36 +333,39 @@ export function SponsoredAdCard({ data, model, className, initialExpanded = fals
           </AnimatePresence>
         </motion.div>
 
-        <motion.div layout className="flex flex-col gap-5 mt-1">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            {renderCommercialLine(model === "carousel" && !isExpanded)}
-            
-            <AnimatePresence>
-              {isExpanded && (
+        {!data.fullBleedMode && (
+          <motion.div layout className="flex flex-col gap-5 mt-1">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              {!data.hidePrices && renderCommercialLine(model === "carousel" && !isExpanded)}
+              
+              <AnimatePresence>
+                {isExpanded && !data.hideCTA && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="w-full sm:w-auto"
+                  >
+                    <CTAButton size={model === "premium_banner" ? "md" : "sm"} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {!isExpanded && (
                 <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="w-full sm:w-auto"
+                  layout
+                  className={cn(
+                    "p-2 rounded-full border active:scale-95 transition-all",
+                    styles.cta
+                  )}
                 >
-                  <CTAButton size={model === "premium_banner" ? "md" : "sm"} />
+                  <ArrowRight className="h-4 w-4" />
                 </motion.div>
               )}
-            </AnimatePresence>
-            
-            {!isExpanded && (
-              <motion.div 
-                layout
-                className={cn(
-                  "p-2 rounded-full border active:scale-95 transition-all",
-                  styles.cta
-                )}
-              >
-                <ArrowRight className="h-4 w-4" />
-              </motion.div>
-            )}
-          </div>
-        </motion.div>
+            </div>
+          </motion.div>
+        )}
+
       </div>
       
       {/* 4. FAIXA DO CRIATIVO (STRIPE) */}

@@ -3,23 +3,14 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import {
-  Megaphone,
-  Sparkles,
-  Upload,
-  Clock,
-  MousePointerClick,
-  Eye,
-  Play,
-  Pause,
-  QrCode,
-  ShieldCheck,
-  Loader2,
-  Info,
-  CheckCircle2,
+import { 
+  Megaphone, Sparkles, Upload, Clock, MousePointerClick, Eye, Play, Pause, 
+  QrCode, ShieldCheck, Loader2, Info, CheckCircle2, ChevronDown, ArrowRight 
 } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+
 import { RouteLoading } from "@/components/RouteLoading";
 import {
   getAdsWorkspace,
@@ -520,14 +511,25 @@ function CampaignEditor({
   );
   const [imagePath, setImagePath] = useState<string | null>(campaign?.image_path ?? null);
   const [imagePreview, setImagePreview] = useState<string | null>(campaign?.image_url ?? null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(campaign?.video_url ?? null);
   const [displayModel, setDisplayModel] = useState<any>(campaign?.display_model ?? "premium_banner");
   const [offerType, setOfferType] = useState<any>(campaign?.offer_type ?? "discount");
   const [originalPrice, setOriginalPrice] = useState<string>(campaign?.original_price_cents ? (campaign.original_price_cents / 100).toString() : "");
   const [fidelizePrice, setFidelizePrice] = useState<string>(campaign?.fidelize_price_cents ? (campaign.fidelize_price_cents / 100).toString() : "");
   const [discountValue, setDiscountValue] = useState<string>(campaign?.discount_value?.toString() ?? "");
   const [benefitText, setBenefitText] = useState<string>(campaign?.benefit_text ?? "");
-  const [theme, setTheme] = useState<"dark" | "light">(campaign?.theme ?? "dark");
+  const [theme, setTheme] = useState<any>(campaign?.theme ?? "premium_dark");
   const [uploading, setUploading] = useState(false);
+  
+  // Visibility toggles
+  const [hideTitle, setHideTitle] = useState(!!campaign?.hide_title);
+  const [hideDescription, setHideDescription] = useState(!!campaign?.hide_description);
+  const [hideMerchantName, setHideMerchantName] = useState(!!campaign?.hide_merchant_name);
+  const [hidePrices, setHidePrices] = useState(!!campaign?.hide_prices);
+  const [hideLogo, setHideLogo] = useState(!!campaign?.hide_logo);
+  const [hideCTA, setHideCTA] = useState(!!campaign?.hide_cta);
+  const [fullBleedMode, setFullBleedMode] = useState(!!campaign?.full_bleed_mode);
+
 
 
 
@@ -556,10 +558,17 @@ function CampaignEditor({
           discount_value: discountValue ? parseInt(discountValue) : null,
           benefit_text: benefitText,
           theme,
+          video_url: videoUrl,
+          hide_title: hideTitle,
+          hide_description: hideDescription,
+          hide_merchant_name: hideMerchantName,
+          hide_prices: hidePrices,
+          hide_logo: hideLogo,
+          hide_cta: hideCTA,
+          full_bleed_mode: fullBleedMode,
         },
-
-
       }),
+
     onSuccess: () => {
       toast.success("Criativo salvo.");
       onSaved();
@@ -627,8 +636,17 @@ function CampaignEditor({
     discountValue: discountValue ? parseInt(discountValue) : undefined,
     benefitText: benefitText || undefined,
     imageUrl: previewImage || "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?q=80&w=800&auto=format&fit=crop",
+    videoUrl: videoUrl || undefined,
     theme,
     ctaLabel: cta,
+    hideTitle,
+    hideDescription,
+    hideMerchantName,
+    hidePrices,
+    hideLogo,
+    hideCTA,
+    fullBleedMode,
+
   };
 
 
@@ -671,26 +689,29 @@ function CampaignEditor({
                     if (i <= step || stepValid[i - 1]) setStep(i);
                   }}
 
-                  className={`rounded-2xl border px-3 py-2 text-left transition-all ${
+                  className={`group relative rounded-2xl border px-3 py-2.5 text-left transition-all ${
                     active
-                      ? "border-primary bg-primary/10 shadow-sm"
+                      ? "border-primary bg-primary/10 shadow-[0_0_15px_rgba(var(--color-primary),0.1)]"
                       : done
-                        ? "border-primary/30 bg-primary/5"
+                        ? "border-primary/40 bg-primary/5"
                         : "border-border/60 bg-background/40 hover:border-primary/30"
                   }`}
                 >
                   <div className="flex items-center gap-2">
                     <span
-                      className={`grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-black ${
-                        active || done ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      className={`grid h-5 w-5 shrink-0 place-items-center rounded-lg text-[10px] font-black transition-transform group-active:scale-95 ${
+                        active || done ? "bg-primary text-primary-foreground shadow-sm shadow-primary/30" : "bg-muted text-muted-foreground"
                       }`}
                     >
-                      {done ? "✓" : i + 1}
+                      {done ? <CheckCircle2 className="h-3.5 w-3.5" /> : i + 1}
                     </span>
-                    <span className="truncate text-xs font-bold">{s.label}</span>
+                    <span className={`truncate text-[11px] font-black uppercase tracking-tight ${active ? "text-primary" : "text-foreground/70"}`}>
+                      {s.label}
+                    </span>
                   </div>
-                  <p className="mt-0.5 line-clamp-1 text-[10px] text-muted-foreground">{s.hint}</p>
+                  {active && <div className="absolute -bottom-1 left-2 right-2 h-0.5 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)]" />}
                 </button>
+
               );
             })}
           </div>
@@ -805,21 +826,28 @@ function CampaignEditor({
                   </div>
                   <div>
                     <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Tema Visual</label>
-                    <div className="mt-1.5 flex gap-2">
-                      <button
-                        onClick={() => setTheme("dark")}
-                        className={`flex-1 rounded-xl border py-2 text-xs font-bold transition-all ${theme === "dark" ? "border-primary bg-primary/10" : "border-border/60 hover:border-primary/40"}`}
-                      >
-                        Escuro
-                      </button>
-                      <button
-                        onClick={() => setTheme("light")}
-                        className={`flex-1 rounded-xl border py-2 text-xs font-bold transition-all ${theme === "light" ? "border-primary bg-primary/10" : "border-border/60 hover:border-primary/40"}`}
-                      >
-                        Claro
-                      </button>
+                    <div className="mt-1.5 grid grid-cols-3 gap-2">
+                      {[
+                        { id: "premium_dark", l: "Dark" },
+                        { id: "premium_light", l: "Light" },
+                        { id: "gradient_promo", l: "Gradiente" },
+                        { id: "editorial", l: "Editorial" },
+                        { id: "minimal_product", l: "Minimal" },
+                        { id: "seasonal", l: "Sazonal" },
+                      ].map((t) => (
+                        <button
+                          key={t.id}
+                          onClick={() => setTheme(t.id)}
+                          className={`rounded-xl border py-2 text-[10px] font-bold transition-all ${
+                            theme === t.id ? "border-primary bg-primary/10" : "border-border/60 hover:border-primary/40"
+                          }`}
+                        >
+                          {t.l}
+                        </button>
+                      ))}
                     </div>
                   </div>
+
                 </div>
 
                 {offerType === "discount" && (
@@ -866,6 +894,20 @@ function CampaignEditor({
                 )}
 
                 {(offerType === "percentage" || offerType === "discount") && (
+                  <div className="mt-4 border-t border-border/40 pt-4">
+                    <div className="mb-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Controle de Visibilidade</div>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                      <VisibilityToggle label="Título" active={!hideTitle} onChange={() => setHideTitle(!hideTitle)} />
+                      <VisibilityToggle label="Descrição" active={!hideDescription} onChange={() => setHideDescription(!hideDescription)} />
+                      <VisibilityToggle label="Empresa" active={!hideMerchantName} onChange={() => setHideMerchantName(!hideMerchantName)} />
+                      <VisibilityToggle label="Preços" active={!hidePrices} onChange={() => setHidePrices(!hidePrices)} />
+                      <VisibilityToggle label="Botão CTA" active={!hideCTA} onChange={() => setHideCTA(!hideCTA)} />
+                      <VisibilityToggle label="Criativo Limpo" active={fullBleedMode} onChange={() => setFullBleedMode(!fullBleedMode)} />
+                    </div>
+                  </div>
+                )}
+
+                {offerType === "percentage" && (
                   <div>
                     <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Desconto (%)</label>
                     <input
@@ -891,6 +933,7 @@ function CampaignEditor({
                 )}
               </div>
             )}
+
 
             {step === 3 && (
 
@@ -1163,3 +1206,20 @@ function ReviewRow({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+function VisibilityToggle({ label, active, onChange }: { label: string; active: boolean; onChange: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onChange}
+      className={cn(
+        "flex items-center justify-between gap-2 rounded-xl border p-2 text-[10px] font-bold transition-all",
+        active ? "border-primary bg-primary/10 text-primary" : "border-border/60 bg-muted/20 text-muted-foreground"
+      )}
+    >
+      <span className="truncate">{label}</span>
+      <div className={cn("h-3 w-3 rounded-full border border-current", active && "bg-current shadow-[0_0_8px_currentColor]")} />
+    </button>
+  );
+}
+
