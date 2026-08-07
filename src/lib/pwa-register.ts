@@ -200,10 +200,12 @@ function waitForRegistrationActivation(registration: ServiceWorkerRegistration):
 
 function registerServiceWorkerNow(): Promise<ServiceWorkerRegistration> {
   if (registrationPromise) return registrationPromise;
-  registrationPromise = navigator.serviceWorker.register(SW_URL, { scope: "/" }).catch((error) => {
-    registrationPromise = null;
-    throw error;
-  });
+  registrationPromise = unregisterLegacy()
+    .then(() => navigator.serviceWorker.register(SW_URL, { scope: "/" }))
+    .catch((error) => {
+      registrationPromise = null;
+      throw error;
+    });
   return registrationPromise;
 }
 
