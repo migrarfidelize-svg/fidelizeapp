@@ -54,6 +54,7 @@ function AtendimentoCRM() {
   const { data: flows } = useQuery({ queryKey: ["crm-flows"], queryFn: () => getCRMFlows() });
   const { data: agentData } = useQuery({ queryKey: ["crm-agent-settings"], queryFn: () => getAgentSettings() });
   const { data: messages } = useQuery({ 
+  const { data: replies } = useQuery({ queryKey: ["crm-quick-replies"], queryFn: () => getCRMQuickReplies() });
     queryKey: ["crm-messages", selectedConversation?.id], 
     queryFn: () => getCRMConversationMessages({ data: { conversationId: selectedConversation.id } }),
     enabled: !!selectedConversation?.id
@@ -291,6 +292,24 @@ function AtendimentoCRM() {
                                         <Edit3 className="h-5 w-5" />
                                     </Button>
                                     <div className="flex-1 bg-muted/50 rounded-xl border border-border p-2 focus-within:border-primary/30 transition-all">
+                                    {messageInput.startsWith("/") && (
+                                        <div className="absolute bottom-full left-0 w-full bg-card border border-primary/20 shadow-2xl rounded-t-xl overflow-hidden z-20">
+                                            <ScrollArea className="max-h-[200px]">
+                                                <div className="p-2 space-y-1">
+                                                    {replies?.filter(r => r.shortcut.startsWith(messageInput)).map(r => (
+                                                        <button 
+                                                            key={r.id} 
+                                                            className="w-full text-left p-2 hover:bg-primary/10 rounded-lg text-xs flex justify-between"
+                                                            onClick={() => setMessageInput(r.message)}
+                                                        >
+                                                            <span className="font-bold text-primary">{r.shortcut}</span>
+                                                            <span className="text-muted-foreground truncate ml-4">{r.message}</span>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </ScrollArea>
+                                        </div>
+                                    )}
                                         <Textarea 
                                             placeholder={isNote ? "Escreva uma nota para a equipe..." : "Digite sua mensagem..."}
                                             className="border-0 bg-transparent resize-none focus-visible:ring-0 min-h-[24px] p-1 text-sm scrollbar-none"
