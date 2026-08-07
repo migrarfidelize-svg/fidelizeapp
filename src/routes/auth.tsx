@@ -407,7 +407,7 @@ function AuthPage() {
                 </div>
               )}
 
-              {captchaRequired && <div className="flex justify-center py-2"><Turnstile onVerify={setCaptchaToken} /></div>}
+              {captchaRequired && captcha?.siteKey && <div className="flex justify-center py-2"><Turnstile siteKey={captcha.siteKey} onToken={setCaptchaToken} /></div>}
 
               <button type="submit" disabled={loading} className="auth-submit mt-4">
                 {loading ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : (otpStep ? "Confirmar Código" : (walletFlow ? "Receber Código via WhatsApp" : "Continuar"))}
