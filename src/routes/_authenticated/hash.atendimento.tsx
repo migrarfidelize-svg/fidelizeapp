@@ -105,8 +105,11 @@ function AtendimentoCRM() {
             ))}
         </div>
         <div className="flex gap-3">
-            <Button variant="outline" className="h-10 text-[10px] font-black uppercase tracking-widest border-primary/20 text-primary hover:bg-primary/5" asChild>
-                <a href="/hash/atendimento/preview/command">Experimentar Propostas UX</a>
+            <Button variant="outline" className="h-10 text-[10px] font-black uppercase tracking-widest border-primary/20 text-primary hover:bg-primary/5 shadow-lg shadow-primary/10 animate-pulse" asChild>
+                <Link to="/hash/atendimento/preview">
+                  <Play className="h-3 w-3 mr-2 fill-current" />
+                  Testar novos layouts
+                </Link>
             </Button>
         </div>
       </div>

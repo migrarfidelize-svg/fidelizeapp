@@ -15,7 +15,7 @@ export function PreviewSelector({ current, onChange }: PreviewSelectorProps) {
   ];
 
   return (
-    <div className="bg-card/80 backdrop-blur-md border border-border p-1 rounded-full flex gap-1 shadow-xl">
+    <div className="bg-card/90 backdrop-blur-xl border border-primary/20 p-1 rounded-full flex gap-1 shadow-2xl ring-4 ring-primary/5">
       {options.map((opt) => (
         <Button
           key={opt.id}
@@ -23,11 +23,13 @@ export function PreviewSelector({ current, onChange }: PreviewSelectorProps) {
           size="sm"
           onClick={() => onChange(opt.id)}
           className={cn(
-            "rounded-full h-8 text-[10px] font-bold uppercase px-4",
-            current === opt.id ? "gradient-brand shadow-md" : "hover:bg-primary/10"
+            "rounded-full h-8 text-[10px] font-black uppercase px-4 transition-all duration-300",
+            current === opt.id 
+              ? "gradient-brand shadow-lg scale-105 text-white" 
+              : "hover:bg-primary/10 text-muted-foreground hover:text-primary"
           )}
         >
-          <opt.icon className="h-3 w-3 mr-2" />
+          <opt.icon className={cn("h-3 w-3 mr-2", current === opt.id ? "animate-pulse" : "")} />
           {opt.label}
         </Button>
       ))}
