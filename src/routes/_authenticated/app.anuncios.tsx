@@ -906,6 +906,8 @@ function CampaignEditor({
                   </div>
                 )}
 
+                {offerType === "percentage" && (
+                  <div>
                     <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Desconto (%)</label>
                     <input
                       type="number"
@@ -930,6 +932,7 @@ function CampaignEditor({
                 )}
               </div>
             )}
+
 
             {step === 3 && (
 
