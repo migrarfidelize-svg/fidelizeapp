@@ -30,6 +30,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { getMyWallet, getMyRewards } from "@/lib/my-wallet.functions";
+import { InboxBellBadge } from "@/components/wallet/InboxBellBadge";
 
 export const Route = createFileRoute("/_authenticated/carteira")({
   loader: async ({ context }) => {
@@ -255,9 +256,11 @@ function WalletLayout() {
             </div>
             
             <div className="flex items-center gap-2">
-              <Button asChild className="h-11 w-11 flex items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all p-0">
-                <Link to="/app/qr"><QrCode className="h-5 w-5" /></Link>
-              </Button>
+              <InboxBellBadge 
+                unread={0} 
+                readyRewards={readyRewards.length}
+                active={activeTab === "/carteira/mensagens"} 
+              />
               <button className="md:hidden h-11 w-11 flex items-center justify-center rounded-2xl bg-accent/60 text-muted-foreground">
                 <Search className="h-5 w-5" />
               </button>

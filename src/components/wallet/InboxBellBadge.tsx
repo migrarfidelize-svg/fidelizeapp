@@ -25,7 +25,7 @@ export function InboxBellBadge({
     <Link
       to="/carteira/mensagens"
       className={
-        "relative grid h-9 w-9 place-items-center rounded-full border transition-colors " +
+        "relative grid h-10 w-10 md:h-11 md:w-11 place-items-center rounded-2xl border transition-all hover:scale-105 active:scale-95 " +
         (active
           ? "border-primary/50 bg-primary/10 text-primary"
           : "border-border/60 text-muted-foreground hover:text-foreground")
