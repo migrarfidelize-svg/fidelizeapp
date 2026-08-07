@@ -49,7 +49,7 @@ function WalletLayout() {
   const tabs = [
     { icon: Home, label: "Início", path: "/carteira" },
     { icon: Compass, label: "Descobrir", path: "/carteira/descobrir" },
-    { icon: QrCode, label: "QR Code", path: "/app/qr", isFab: true },
+    { icon: QrCode, label: "QR Code", path: "/carteira/scanner", isFab: true },
     { icon: Wallet, label: "Vouchers", path: "/carteira/premios" },
     { icon: User, label: "Perfil", path: "/carteira/perfil" },
   ];
