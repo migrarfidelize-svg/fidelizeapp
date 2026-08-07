@@ -144,11 +144,12 @@ function Onboarding() {
       : "campanha";
 
   async function signOut() {
+    const isPwa = window.matchMedia("(display-mode: standalone)").matches;
     setSigningOut(true);
     try {
       await supabase.auth.signOut();
       qc.clear();
-      navigate({ to: "/auth" });
+      navigate({ to: isPwa ? "/auth" : "/", search: isPwa ? { source: "pwa" } : undefined });
     } catch {
       toast.error("Não foi possível encerrar a sessão.");
     } finally {

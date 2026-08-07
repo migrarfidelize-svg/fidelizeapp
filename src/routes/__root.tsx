@@ -38,7 +38,7 @@ function NotFoundComponent() {
         <h2 className="mt-4 text-xl font-semibold">Página não encontrada</h2>
         <p className="mt-2 text-sm text-muted-foreground">O endereço que você tentou acessar não existe.</p>
         <div className="mt-6">
-          <Link to="/" className="inline-flex items-center justify-center rounded-md gradient-brand px-4 py-2 text-sm font-medium text-primary-foreground">Voltar ao início</Link>
+          <Link to="/auth" className="inline-flex items-center justify-center rounded-md gradient-brand px-4 py-2 text-sm font-medium text-primary-foreground">Voltar ao início</Link>
         </div>
       </div>
     </div>
@@ -66,7 +66,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         ) : null}
         <div className="mt-6 flex justify-center gap-2">
           <button onClick={() => { router.invalidate(); reset(); }} className="rounded-md gradient-brand px-4 py-2 text-sm font-medium text-primary-foreground">Tentar novamente</button>
-          <a href="/" className="rounded-md border px-4 py-2 text-sm font-medium">Início</a>
+          <a href="/auth" className="rounded-md border px-4 py-2 text-sm font-medium">Início</a>
         </div>
       </div>
     </div>

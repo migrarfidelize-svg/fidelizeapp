@@ -208,8 +208,9 @@ function WalletLayout() {
                   className="text-muted-foreground hover:text-destructive transition-colors lg:hidden xl:block"
                   onClick={async () => {
                     const { supabase } = await import("@/integrations/supabase/client");
+                    const isPwa = window.matchMedia("(display-mode: standalone)").matches;
                     await supabase.auth.signOut();
-                    window.location.href = "/";
+                    window.location.href = isPwa ? "/auth?source=pwa" : "/";
                   }}
                 >
                   <LogOutIcon className="h-4 w-4" />

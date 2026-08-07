@@ -201,7 +201,7 @@ function AuthPage() {
   // Fluxos de cliente final sempre chegam com `claim` ou `est_slug` (QR/scan) ou `as=customer`.
   // Se abriu como PWA instalado (source=pwa), assume "cliente".
   const [role, setRole] = useState<"customer" | "establishment">(
-    search.as ?? (search.claim || search.est_slug || search.source === "pwa" ? "customer" : "establishment"),
+    search.as ?? (search.claim || search.est_slug || search.source === "pwa" || (typeof window !== "undefined" && window.matchMedia("(display-mode: standalone)").matches) ? "customer" : "establishment"),
   );
 
   async function completeAuthRedirect(to: string, type: "SIGNED_IN" | "SIGNED_UP") {
@@ -220,7 +220,7 @@ function AuthPage() {
     // Invalida caches de rota (loaders/beforeLoad) para o próximo destino recomputar auth.
     try { await router.invalidate(); } catch {}
     // SPA navigation — sem reload de página inteira, evita o flash de telas anteriores.
-    await router.navigate({ to, replace: true });
+    await router.navigate({ to, replace: true, search: (prev: any) => ({ ...prev, source: undefined }) });
     // Rede de segurança: se o guard nos devolveu para /auth, some com o overlay.
     window.setTimeout(() => {
       if (window.location.pathname.startsWith("/auth")) setRedirecting(false);
