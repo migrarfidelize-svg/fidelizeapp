@@ -257,7 +257,7 @@ export const toggleIntegration = createServerFn({ method: "POST" })
   });
 
 const TestInput = z.object({
-  category: z.enum(["ai", "payments", "marketing"]),
+  category: z.enum(["ai", "payments", "marketing", "otp"]),
   provider: z.string(),
 });
 export const testIntegration = createServerFn({ method: "POST" })
