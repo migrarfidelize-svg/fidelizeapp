@@ -49,6 +49,8 @@ import {
   type DestinationType,
 } from "@/lib/sponsored-ads-core";
 import { DISCOVER_CATEGORIES, categorizeEstablishment } from "@/lib/discover-categories";
+import { SponsoredAdCard } from "@/components/SponsoredAdCard";
+
 
 export const Route = createFileRoute("/_authenticated/app/anuncios")({
   ssr: false,
