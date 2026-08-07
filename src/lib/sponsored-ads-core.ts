@@ -85,6 +85,43 @@ export type CtaLabel = (typeof CTA_LABELS)[number];
 export const DESTINATION_TYPES = ["establishment", "catalog", "menu", "linktree", "loyalty_card"] as const;
 export type DestinationType = (typeof DESTINATION_TYPES)[number];
 
+export const AD_DISPLAY_MODELS = ["premium_banner", "sponsored_feed", "carousel"] as const;
+export type AdDisplayModel = (typeof AD_DISPLAY_MODELS)[number];
+
+export const AD_DISPLAY_MODEL_META: Record<
+  AdDisplayModel,
+  {
+    label: string;
+    description: string;
+    aspectRatio: string;
+    recommendedRes: string;
+    features: string[];
+  }
+> = {
+  premium_banner: {
+    label: "Premium Banner",
+    description: "Banner patrocinado em destaque, ocupando um bloco próprio dentro da área Descobrir.",
+    aspectRatio: "21:9",
+    recommendedRes: "1260x540px",
+    features: ["Maior destaque visual", "Criativo ocupando todo o bloco", "Selo Patrocinado", "CTA sobreposto", "Imagem full bleed"],
+  },
+  sponsored_feed: {
+    label: "Sponsored Feed",
+    description: "Anúncio integrado ao fluxo normal de estabelecimentos e conteúdos da área Descobrir.",
+    aspectRatio: "21:9",
+    recommendedRes: "1260x540px",
+    features: ["Aparece entre conteúdos orgânicos", "Formato semelhante aos cards da plataforma", "Identificação clara Patrocinado", "Menos invasivo"],
+  },
+  carousel: {
+    label: "Carousel",
+    description: "Bloco horizontal de destaques patrocinados em formato de carrossel.",
+    aspectRatio: "1:1",
+    recommendedRes: "600x600px",
+    features: ["Vários anúncios no mesmo espaço", "Swipe horizontal no mobile", "Seção Destaques para você", "Cada anúncio identificado como Patrocinado"],
+  },
+};
+
+
 export const DESTINATION_META: Record<DestinationType, { label: string; description: string; path: string }> = {
   establishment: { label: "Página do estabelecimento", description: "Perfil público com dados e benefícios.", path: "/e" },
   catalog: { label: "Catálogo", description: "Vitrine de produtos com pedidos.", path: "/catalogo" },

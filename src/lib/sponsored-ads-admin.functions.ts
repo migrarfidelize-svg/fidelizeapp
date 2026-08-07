@@ -93,12 +93,13 @@ export const adminReviewAdCampaign = createServerFn({ method: "POST" })
     await assertSuperAdmin(supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: campaign } = await supabaseAdmin
+    const { data: campaign } = (await supabaseAdmin
       .from("sponsored_ad_campaigns")
       .select("id, status, ends_at, paused_at, total_paused_seconds")
       .eq("id", data.campaign_id)
-      .maybeSingle();
+      .maybeSingle()) as any;
     if (!campaign) throw new Error("Campanha não encontrada.");
+
 
     const from = campaign.status as AdStatus;
     const now = new Date();
@@ -165,7 +166,9 @@ export const adminReviewAdCampaign = createServerFn({ method: "POST" })
       from_status: from,
       to_status: to,
       reason: data.reason ?? null,
-    });
+    } as any);
+
+
     await logAudit(userId, `sponsored_ad.${data.action}`, { campaign_id: data.campaign_id, from, to, reason: data.reason });
 
     return { ok: true as const, status: to };

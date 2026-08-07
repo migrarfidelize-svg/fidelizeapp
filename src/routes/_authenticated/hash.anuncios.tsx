@@ -186,7 +186,17 @@ function AdminCampaignRow({ campaign, onDone }: { campaign: any; onDone: () => v
             <span className="rounded-full border border-border/60 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
               {meta.label}
             </span>
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-primary">
+              {campaign.display_model === "premium_banner"
+                ? "Premium Banner"
+                : campaign.display_model === "sponsored_feed"
+                  ? "Sponsored Feed"
+                  : campaign.display_model === "carousel"
+                    ? "Carousel"
+                    : campaign.display_model || "Banner"}
+            </span>
           </div>
+
           <p className="text-xs text-muted-foreground">
             {campaign.establishment?.name} · {campaign.category_id} ·{" "}
             {formatCents(campaign.price_cents_snapshot ?? 0, campaign.currency_snapshot ?? "BRL")}
@@ -197,6 +207,26 @@ function AdminCampaignRow({ campaign, onDone }: { campaign: any; onDone: () => v
           </p>
         </div>
       </div>
+
+      {campaign.display_model && (
+        <div className="mt-3 rounded-xl border border-border/60 bg-muted/20 p-3">
+          <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">
+            Modelo e Criativo (Preview {campaign.display_model})
+          </div>
+          <div
+            className={`mx-auto overflow-hidden rounded-xl border border-primary/20 bg-background ${campaign.display_model === "carousel" ? "max-w-[160px] aspect-square" : "max-w-[280px] aspect-[21/9]"}`}
+          >
+            {campaign.image_url ? (
+              <img src={campaign.image_url} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <div className="grid h-full w-full place-items-center bg-muted/20">
+                <Megaphone className="h-4 w-4 text-muted-foreground/30" />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
 
       <input
         value={reason}
