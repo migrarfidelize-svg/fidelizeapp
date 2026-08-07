@@ -212,8 +212,8 @@ function WalletHome() {
                   <div className="md:col-span-1">
                     <WalletStack key={term} items={visibleFeatured.slice(0, 5)} />
                   </div>
-                  <div className="hidden md:grid md:col-span-1 xl:col-span-2 grid-cols-1 xl:grid-cols-2 gap-4 h-fit">
-                    {visibleFeatured.slice(1, 5).map(item => (
+                  <div className="hidden md:grid md:col-span-1 xl:col-span-2 grid-cols-1 xl:grid-cols-3 gap-4 h-fit">
+                    {visibleFeatured.slice(1, 7).map(item => (
                        <Link 
                         key={item.customer.id} 
                         to="/carteira/$slug" 

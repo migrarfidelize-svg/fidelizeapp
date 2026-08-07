@@ -41,7 +41,7 @@ export function SponsoredAdsRail({ category }: { category?: string | null }) {
   return (
     <section className="space-y-4">
       <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Em destaque</div>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
         {ads.map((ad) => (
           <AdWrapper
             key={ad.campaign_id}

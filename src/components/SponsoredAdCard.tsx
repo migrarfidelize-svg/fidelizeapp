@@ -208,7 +208,7 @@ export function SponsoredAdCard({ data, model, className, initialExpanded = fals
     premium_banner: {
       collapsed: "min-h-[240px] sm:min-h-[280px] xl:min-h-[340px]",
       expanded: "min-h-[420px] xl:min-h-[500px]",
-      titleSize: "text-2xl sm:text-4xl xl:text-5xl",
+      titleSize: "text-2xl sm:text-3xl xl:text-4xl",
       padding: "p-6 sm:p-8 xl:p-12"
     },
     sponsored_feed: {
