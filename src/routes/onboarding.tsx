@@ -136,9 +136,9 @@ function Onboarding() {
     return { checks, done, total: STEPS.length, pct: Math.round((done / STEPS.length) * 100) };
   }, [f]);
 
-  const activeStep: StepId = !completion.checks.empresa
+  const activeStep: StepId = stepOverride || (!completion.checks.empresa
     ? "empresa"
-    : "marca";
+    : "marca");
 
   async function signOut() {
     const isPwa = window.matchMedia("(display-mode: standalone)").matches;
