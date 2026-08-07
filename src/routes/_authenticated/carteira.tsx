@@ -20,8 +20,10 @@ import {
   Gift,
   PlusCircle,
   Heart,
-  ArrowRight
+  ArrowRight,
+  LogOut as LogOutIcon
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { LogoMark } from "@/components/LogoMark";
 import { useState, useEffect } from "react";
@@ -49,8 +51,8 @@ function WalletLayout() {
     { icon: Home, label: "Início", path: "/carteira" },
     { icon: Compass, label: "Descobrir", path: "/carteira/descobrir" },
     { icon: QrCode, label: "QR Code", path: "/qr", isFab: true },
-    { icon: Wallet, label: "Meus Vouchers", path: "/carteira/vouchers" },
-    { icon: User, label: "Meu Perfil", path: "/carteira/perfil" },
+    { icon: Wallet, label: "Vouchers", path: "/carteira/premios" },
+    { icon: User, label: "Perfil", path: "/carteira/perfil" },
   ];
 
   const secondaryNav = [
@@ -110,7 +112,7 @@ function WalletLayout() {
       
       {/* 1. SIDEBAR (DESKTOP) & DRAWER (MOBILE) */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-72 transform bg-background/80 backdrop-blur-2xl border-r border-border/40 transition-all duration-500 ease-in-out lg:flex lg:flex-col lg:sticky lg:inset-y-0 lg:z-50 lg:w-20 xl:w-72",
+        "fixed inset-y-0 left-0 z-50 w-72 transform bg-background/80 backdrop-blur-2xl border-r border-border/40 transition-all duration-500 ease-in-out lg:flex lg:flex-col lg:sticky lg:inset-y-0 lg:z-50 lg:w-20 xl:w-72 hidden md:block",
         isSidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"
       )}>
         {/* Overlay for mobile when sidebar is open */}
@@ -202,8 +204,15 @@ function WalletLayout() {
                   <p className="text-xs font-black truncate">João Doria</p>
                   <p className="text-[10px] text-muted-foreground font-bold truncate">Premium Member</p>
                 </div>
-                <button className="text-muted-foreground hover:text-destructive transition-colors lg:hidden xl:block">
-                  <LogOut className="h-4 w-4" />
+                <button 
+                  className="text-muted-foreground hover:text-destructive transition-colors lg:hidden xl:block"
+                  onClick={async () => {
+                    const { supabase } = await import("@/integrations/supabase/client");
+                    await supabase.auth.signOut();
+                    window.location.href = "/";
+                  }}
+                >
+                  <LogOutIcon className="h-4 w-4" />
                 </button>
              </div>
           </div>
@@ -214,7 +223,7 @@ function WalletLayout() {
       <div className="flex-1 flex flex-col min-w-0 max-h-screen overflow-hidden lg:flex-grow">
         
         {/* Top Header - Desktop & Mobile */}
-        <header className="sticky top-0 z-40 w-full bg-background/60 backdrop-blur-xl border-b border-border/40 px-4 xl:px-8 h-20 flex items-center justify-between shrink-0">
+        <header className="sticky top-0 z-40 w-full bg-background/60 backdrop-blur-xl border-b border-border/40 px-4 xl:px-8 h-16 md:h-20 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
             <button 
               className="lg:hidden p-2 -ml-2 text-muted-foreground hover:bg-accent rounded-xl"
@@ -245,9 +254,9 @@ function WalletLayout() {
             </div>
             
             <div className="flex items-center gap-2">
-              <button className="h-11 w-11 flex items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
-                <QrCode className="h-5 w-5" />
-              </button>
+              <Button asChild className="h-11 w-11 flex items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all p-0">
+                <Link to="/qr"><QrCode className="h-5 w-5" /></Link>
+              </Button>
               <button className="md:hidden h-11 w-11 flex items-center justify-center rounded-2xl bg-accent/60 text-muted-foreground">
                 <Search className="h-5 w-5" />
               </button>
@@ -262,7 +271,7 @@ function WalletLayout() {
             <div className="flex flex-col lg:flex-row gap-8 xl:gap-12">
               
               {/* Primary Column */}
-              <div className="flex-1 space-y-12 pb-24 lg:pb-0">
+              <div className="flex-1 space-y-6 md:space-y-12 pb-24 lg:pb-0">
                 <Outlet />
               </div>
 
@@ -447,6 +456,39 @@ function WalletLayout() {
           background: rgba(0, 0, 0, 0.1);
         }
       `}} />
+      {/* 4. MOBILE BOTTOM NAV (PREMIUM CLEAN) */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t border-border/40 bg-background/80 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.path || (tab.path === "/carteira" && activeTab === "/carteira/");
+          const Icon = tab.icon;
+          
+          if (tab.isFab) {
+            return (
+              <Link
+                key={tab.path}
+                to={tab.path}
+                className="relative -top-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/30"
+              >
+                <Icon className="h-6 w-6" />
+              </Link>
+            );
+          }
+
+          return (
+            <Link
+              key={tab.path}
+              to={tab.path}
+              className={cn(
+                "flex flex-col items-center gap-1 p-2 transition-colors",
+                isActive ? "text-primary" : "text-muted-foreground"
+              )}
+            >
+              <Icon className="h-5 w-5" />
+              <span className="text-[10px] font-bold">{tab.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 }

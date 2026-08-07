@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { getMyWallet, getMyHistory, getMyRewards, getPromotedEstablishmentIds } from "@/lib/my-wallet.functions";
 import { listAchievementsCatalog, listMyAchievements } from "@/lib/achievements.functions";
 import { ChevronRight, Sparkles, Gift, Stamp, RotateCcw, Bell, Flame, Trophy, Calendar, Clock, Search, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/format";
 import { saveWalletCache, readWalletCache } from "@/lib/offline-wallet-cache";
 import {
@@ -163,10 +164,10 @@ function WalletHome() {
               <StreakCard weeks={streak.weeks} lastVisit={streak.lastVisit} atRisk={streak.atRisk} daysLeft={streak.daysLeft} />
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 xl:gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 xl:gap-6">
               <KpiTile label="Cartões" value={items.length} />
               <KpiTile label="Carimbos" value={totalStamps} icon={<Stamp className="h-3.5 w-3.5" />} />
-              <KpiTile label="Prontas" value={readyRewards} accent={readyRewards > 0 ? "primary" : undefined} icon={<Gift className="h-3.5 w-3.5" />} />
+              <KpiTile className="hidden lg:flex" label="Prontas" value={readyRewards} accent={readyRewards > 0 ? "primary" : undefined} icon={<Gift className="h-3.5 w-3.5" />} />
             </div>
 
             <AchievementsAndRecapRow />
@@ -208,11 +209,11 @@ function WalletHome() {
                   Nenhum cartão encontrado para “{query}”.
                 </p>
               ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-                  <div className="lg:col-span-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+                  <div className="md:col-span-1 lg:col-span-1">
                     <WalletStack key={term} items={visibleFeatured.slice(0, 7)} />
                   </div>
-                  <div className="hidden lg:grid lg:col-span-1 xl:col-span-2 grid-cols-1 xl:grid-cols-3 gap-4 h-fit">
+                  <div className="hidden md:grid md:col-span-1 lg:col-span-1 xl:col-span-2 grid-cols-1 xl:grid-cols-3 gap-4 h-fit">
                     {visibleFeatured.slice(1, 7).map(item => (
                        <Link 
                         key={item.customer.id} 
@@ -372,9 +373,9 @@ function FeedRow({ f }: { f: FeedItem }) {
   );
 }
 
-function KpiTile({ label, value, accent, icon }: { label: string; value: number; accent?: "primary"; icon?: React.ReactNode }) {
+function KpiTile({ label, value, accent, icon, className }: { label: string; value: number; accent?: "primary"; icon?: React.ReactNode; className?: string }) {
   return (
-    <div className="rounded-2xl border border-border/60 bg-card/40 p-3 backdrop-blur">
+    <div className={cn("rounded-2xl border border-border/60 bg-card/40 p-3 backdrop-blur", className)}>
       <div className="flex items-center gap-1 text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
         {icon}{label}
       </div>

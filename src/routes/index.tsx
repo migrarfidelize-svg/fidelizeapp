@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter, redirect } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -81,6 +81,17 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
+  beforeLoad: async () => {
+    const session = await supabase.auth.getSession();
+    if (session.data.session?.user) {
+      // Se já está logado, redireciona para o destino correto baseado no papel
+      const { getAuthenticatedAccountAccess } = await import("@/lib/account-access.functions");
+      const access = await getAuthenticatedAccountAccess();
+      if (access.isSuperAdmin || access.accountType === "super_admin") throw redirect({ to: "/hash" });
+      if (access.accountType === "establishment") throw redirect({ to: "/app" });
+      throw redirect({ to: "/carteira" });
+    }
+  },
   loader: () => getLandingPublic(),
   errorComponent: () => <Landing />,
   component: Landing,
