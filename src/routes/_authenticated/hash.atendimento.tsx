@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 import { FlowEditor } from "@/components/crm/FlowEditor";
 import { FlowSimulator } from "@/components/crm/FlowSimulator";
 import { QuickRepliesManager } from "@/components/crm/QuickReplies";
+import { OTPEditor } from "@/components/crm/OTPEditor";
 import { useCRMRealtime } from "@/hooks/use-crm-realtime";
 
 export const Route = createFileRoute("/_authenticated/hash/atendimento")({
