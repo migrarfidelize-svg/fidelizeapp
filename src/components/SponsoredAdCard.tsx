@@ -24,13 +24,23 @@ export interface SponsoredAdData {
   discountValue?: number; // percentage
   ctaLabel?: string;
   imageUrl: string;
+  videoUrl?: string; // New field for video support
   theme?: AdTheme;
   offerType?: "discount" | "percentage" | "value" | "benefit" | "loyalty" | "reward";
   benefitText?: string;
   category?: string;
   rating?: number;
   distance?: string;
+  // Visibility toggles
+  hideTitle?: boolean;
+  hideDescription?: boolean;
+  hideMerchantName?: boolean;
+  hidePrices?: boolean;
+  hideLogo?: boolean;
+  hideCTA?: boolean;
+  fullBleedMode?: boolean; // If true, only image/video + "Patrocinado" badge
 }
+
 
 interface SponsoredAdCardProps {
   data: SponsoredAdData;
