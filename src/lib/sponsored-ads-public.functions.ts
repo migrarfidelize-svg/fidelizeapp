@@ -26,7 +26,8 @@ export const getDiscoverySponsoredAds = createServerFn({ method: "POST" })
       .object({
         category: z.enum(CATEGORY_IDS).nullable().optional(),
         session_id: z.string().trim().min(8).max(80),
-        limit: z.number().int().min(1).max(6).default(3),
+        slot_id: z.string().trim().max(40).default("discover_feed"),
+        limit: z.number().int().min(1).max(50).default(3),
       })
       .parse(d),
   )
@@ -35,6 +36,7 @@ export const getDiscoverySponsoredAds = createServerFn({ method: "POST" })
     const sessionHash = await hashSession(data.session_id);
 
     const { data: rows, error } = await (supabaseAdmin.rpc as any)("get_sponsored_ads_public_v2", {
+      _slot_id: data.slot_id,
       _category: data.category ?? "",
       _session_hash: sessionHash,
       _limit: data.limit,
@@ -71,6 +73,7 @@ export const getDiscoverySponsoredAds = createServerFn({ method: "POST" })
           discount_value: r.discount_value,
           benefit_text: r.benefit_text,
           theme: r.theme,
+          video_path: r.video_path,
           hide_title: r.hide_title,
           hide_description: r.hide_description,
           hide_merchant_name: r.hide_merchant_name,

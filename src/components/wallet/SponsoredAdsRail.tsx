@@ -29,7 +29,7 @@ export function SponsoredAdsRail({ category }: { category?: string | null }) {
 
   const { data } = useQuery({
     queryKey: ["sponsored-ads", category ?? "all"],
-    queryFn: () => fetchAds({ data: { category: (category as any) ?? null, session_id: sessionId, limit: 3 } }),
+    queryFn: () => fetchAds({ data: { category: (category as any) ?? null, session_id: sessionId, slot_id: "discover_feed", limit: 3 } }),
     enabled: !!sessionId,
     staleTime: 60_000,
     retry: 0,
@@ -111,12 +111,21 @@ function AdWrapper({
           description: ad.description || undefined,
           merchantName: ad.establishment_name,
           imageUrl: ad.image_url || "",
+          videoUrl: ad.video_path || undefined,
           originalPrice: ad.original_price_cents || undefined,
           fidelizePrice: ad.fidelize_price_cents || undefined,
+          discountLabel: ad.discount_label || undefined,
           discountValue: ad.discount_value || undefined,
           benefitText: ad.benefit_text || undefined,
           ctaLabel: ad.cta_label || undefined,
-          theme: (ad.theme as any) || "dark",
+          theme: (ad.theme as any) || "premium_dark",
+          hideTitle: ad.hide_title,
+          hideDescription: ad.hide_description,
+          hideMerchantName: ad.hide_merchant_name,
+          hidePrices: ad.hide_prices,
+          hideLogo: ad.hide_logo,
+          hideCTA: ad.hide_cta,
+          fullBleedMode: ad.full_bleed_mode,
         }}
       />
     </div>
