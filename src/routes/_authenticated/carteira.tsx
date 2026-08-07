@@ -270,84 +270,112 @@ function WalletLayout() {
               <aside className="hidden lg:block lg:col-span-4 xl:col-span-3 space-y-10">
                 
                 {/* 1. Quick Progress Section */}
-                <section className="bg-background/40 backdrop-blur-md rounded-[2.5rem] p-6 border border-border/40 shadow-sm text-left">
-                   <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">Progresso Rápido</h3>
-                      <button className="text-[10px] font-bold text-primary hover:underline">Ver todos</button>
-                   </div>
-                   
-                   <div className="space-y-5">
-                      {[
-                        { name: "Coffee House", progress: 8, total: 10, icon: "☕" },
-                        { name: "Fit Food", progress: 4, total: 5, icon: "🥗" }
-                      ].map(item => (
-                        <div key={item.name} className="group cursor-pointer">
-                           <div className="flex items-center gap-3 mb-2">
-                              <div className="h-10 w-10 rounded-xl bg-primary/5 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
-                                {item.icon}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                 <p className="text-sm font-bold truncate">{item.name}</p>
-                                 <p className="text-[10px] text-muted-foreground font-medium">Faltam {item.total - item.progress} carimbos</p>
-                              </div>
-                           </div>
-                           <div className="h-1.5 w-full bg-accent/60 rounded-full overflow-hidden">
-                              <motion.div 
-                                initial={{ width: 0 }}
-                                animate={{ width: `${(item.progress/item.total)*100}%` }}
-                                className="h-full bg-primary" 
-                              />
-                           </div>
-                        </div>
-                      ))}
-                   </div>
-
-                   <button className="w-full mt-8 h-12 rounded-2xl bg-white dark:bg-black/20 border border-border/40 text-xs font-black uppercase tracking-wider hover:bg-accent transition-colors flex items-center justify-center gap-2 group">
-                      <span>Explorar mais</span>
-                      <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                   </button>
-                </section>
+                {progressItems.length > 0 && (
+                  <section className="bg-background/40 backdrop-blur-md rounded-[2.5rem] p-6 border border-border/40 shadow-sm text-left">
+                     <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">Progresso Rápido</h3>
+                        <Link to="/carteira" className="text-[10px] font-bold text-primary hover:underline">Ver todos</Link>
+                     </div>
+                     
+                     <div className="space-y-5">
+                        {progressItems.map(item => (
+                          <Link to="/carteira/$slug" params={{ slug: item.slug }} key={item.slug} className="block group cursor-pointer">
+                             <div className="flex items-center gap-3 mb-2">
+                                <div className="h-10 w-10 rounded-xl bg-primary/5 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                                  {/* Just a generic fallback or emoji for now as we don't have logo here easily without extra mapping */}
+                                  📍
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                   <p className="text-sm font-bold truncate">{item.name}</p>
+                                   <p className="text-[10px] text-muted-foreground font-medium">Faltam {item.total - item.progress} carimbos</p>
+                                </div>
+                             </div>
+                             <div className="h-1.5 w-full bg-accent/60 rounded-full overflow-hidden">
+                                <motion.div 
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${(item.progress/item.total)*100}%` }}
+                                  className="h-full bg-primary" 
+                                />
+                             </div>
+                          </Link>
+                        ))}
+                     </div>
+  
+                     <Link to="/carteira/descobrir" className="w-full mt-8 h-12 rounded-2xl bg-white dark:bg-black/20 border border-border/40 text-xs font-black uppercase tracking-wider hover:bg-accent transition-colors flex items-center justify-center gap-2 group">
+                        <span>Explorar mais</span>
+                        <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                     </Link>
+                  </section>
+                )}
 
                 {/* 2. Your Rewards Section */}
-                <section className="text-left">
-                   <div className="flex items-center gap-2 mb-4 px-2">
-                      <Gift className="h-4 w-4 text-primary" />
-                      <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">Prêmios Disponíveis</h3>
-                   </div>
-                   
-                   <div className="grid grid-cols-1 gap-3">
-                      <div className="p-4 rounded-3xl bg-gradient-to-br from-primary to-accent text-white shadow-xl shadow-primary/10 group cursor-pointer overflow-hidden relative">
-                         <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl group-hover:scale-150 transition-transform duration-700" />
-                         <p className="text-[10px] font-black uppercase tracking-widest opacity-80 mb-1">Restaurante Gourmet</p>
-                         <h4 className="text-lg font-display font-black leading-tight mb-3">Voucher Almoço Grátis</h4>
-                         <div className="flex items-center justify-between">
-                            <span className="text-[9px] font-black uppercase bg-white/20 px-2 py-1 rounded-lg">Expira em 2d</span>
-                            <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
-                              <ChevronRight className="h-4 w-4" />
-                            </div>
-                         </div>
-                      </div>
-                   </div>
-                </section>
+                {readyRewards.length > 0 && (
+                  <section className="text-left">
+                     <div className="flex items-center gap-2 mb-4 px-2">
+                        <Gift className="h-4 w-4 text-primary" />
+                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">Prêmios Disponíveis</h3>
+                     </div>
+                     
+                     <div className="grid grid-cols-1 gap-3">
+                        {readyRewards.map(reward => {
+                           const est = reward.establishment as { name: string, slug: string };
+                           return (
+                            <Link 
+                              key={reward.id}
+                              to="/carteira/$slug"
+                              params={{ slug: est.slug }}
+                              className="p-4 rounded-3xl bg-gradient-to-br from-primary to-accent text-white shadow-xl shadow-primary/10 group cursor-pointer overflow-hidden relative block"
+                            >
+                               <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl group-hover:scale-150 transition-transform duration-700" />
+                               <p className="text-[10px] font-black uppercase tracking-widest opacity-80 mb-1">{est.name}</p>
+                               <h4 className="text-lg font-display font-black leading-tight mb-3 truncate">{reward.reward}</h4>
+                               <div className="flex items-center justify-between">
+                                  <span className="text-[9px] font-black uppercase bg-white/20 px-2 py-1 rounded-lg">
+                                    {reward.expiresAt ? `Expira em ${new Date(reward.expiresAt).toLocaleDateString()}` : 'Disponível'}
+                                  </span>
+                                  <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
+                                    <ChevronRight className="h-4 w-4" />
+                                  </div>
+                               </div>
+                            </Link>
+                           );
+                        })}
+                     </div>
+                  </section>
+                )}
 
                 {/* 3. Favorite Merchants */}
-                <section className="text-left">
-                   <div className="flex items-center gap-2 mb-4 px-2">
-                      <Heart className="h-4 w-4 text-destructive" />
-                      <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">Favoritos</h3>
-                   </div>
-                   
-                   <div className="flex flex-wrap gap-2">
-                      {['🍣', '✂️', '🍔', '🧘'].map((emoji, i) => (
-                        <div key={i} className="h-12 w-12 rounded-2xl bg-background border border-border/40 flex items-center justify-center text-xl shadow-sm hover:scale-110 hover:shadow-md transition-all cursor-pointer">
-                          {emoji}
-                        </div>
-                      ))}
-                      <div className="h-12 w-12 rounded-2xl bg-accent/40 border border-dashed border-border/60 flex items-center justify-center text-muted-foreground cursor-pointer hover:bg-accent transition-colors">
-                        <PlusCircle className="h-5 w-5" />
-                      </div>
-                   </div>
-                </section>
+                {pinnedMerchants.length > 0 && (
+                  <section className="text-left">
+                     <div className="flex items-center gap-2 mb-4 px-2">
+                        <Heart className="h-4 w-4 text-destructive" />
+                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">Fixados</h3>
+                     </div>
+                     
+                     <div className="flex flex-wrap gap-2">
+                        {pinnedMerchants.map((m, i) => (
+                          <Link 
+                            to="/carteira/$slug"
+                            params={{ slug: m.slug }}
+                            key={m.slug} 
+                            className="h-12 w-12 rounded-2xl bg-background border border-border/40 overflow-hidden flex items-center justify-center shadow-sm hover:scale-110 hover:shadow-md transition-all cursor-pointer"
+                          >
+                            {m.logo ? (
+                              <img src={m.logo} className="w-full h-full object-cover" alt={m.name} />
+                            ) : (
+                              <span className="text-xs font-bold text-primary">{m.name.slice(0, 1)}</span>
+                            )}
+                          </Link>
+                        ))}
+                        <Link 
+                          to="/carteira/descobrir"
+                          className="h-12 w-12 rounded-2xl bg-accent/40 border border-dashed border-border/60 flex items-center justify-center text-muted-foreground cursor-pointer hover:bg-accent transition-colors"
+                        >
+                          <PlusCircle className="h-5 w-5" />
+                        </Link>
+                     </div>
+                  </section>
+                )}
               </aside>
 
             </div>
