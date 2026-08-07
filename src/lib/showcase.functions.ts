@@ -8,7 +8,7 @@ import { z } from "zod";
  */
 export const getMyShowcaseStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({
+  .validator((d: unknown) => z.object({
     establishment_id: z.string().uuid()
   }).parse(d))
   .handler(async ({ data, context }) => {
