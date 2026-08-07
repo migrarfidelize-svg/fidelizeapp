@@ -515,6 +515,7 @@ function Onboarding() {
               </div>
             </Field>
           </Section>
+          )}
 
           {/* CTA */}
           <div className="sticky bottom-4 z-50 flex flex-col items-stretch gap-4 rounded-2xl border border-border/60 bg-card/80 p-4 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:gap-3">
