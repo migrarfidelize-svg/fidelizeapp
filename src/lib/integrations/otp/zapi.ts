@@ -99,5 +99,14 @@ export const zapiOtp: WhatsAppOTPProvider = {
     } catch (err) {
       return { ok: false, message: `Falha ao enviar: ${err instanceof Error ? err.message : String(err)}` };
     }
+  },
+
+  parseWebhook(body: any) {
+    if (!body.messageId || !body.phone) return null;
+    return {
+      remoteMessageId: body.messageId,
+      fromPhone: body.phone,
+      text: body.text?.message || ""
+    };
   }
 };

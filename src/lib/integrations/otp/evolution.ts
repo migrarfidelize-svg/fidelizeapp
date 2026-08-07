@@ -103,5 +103,18 @@ export const evolutionOtp: WhatsAppOTPProvider = {
     } catch (err) {
       return { ok: false, message: `Falha ao enviar: ${err instanceof Error ? err.message : String(err)}` };
     }
+  },
+
+  parseWebhook(body: any) {
+    if (body.event !== "MESSAGES_UPSERT") return null;
+    const msg = body.data?.message;
+    const text = msg?.conversation || msg?.extendedTextMessage?.text;
+    if (!text) return null;
+
+    return {
+      remoteMessageId: body.data?.key?.id,
+      fromPhone: body.data?.key?.remoteJid?.split("@")[0],
+      text
+    };
   }
 };

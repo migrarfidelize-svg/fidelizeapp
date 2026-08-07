@@ -130,6 +130,17 @@ export const WEBHOOK_CATALOG: WebhookEntry[] = [
     methods: ["POST"],
     description: "Consome a fila de e-mails (Resend). Pode ser agendado via pg_cron.",
   },
+  // WhatsApp CRM
+  {
+    id: "whatsapp-webhook",
+    provider: "whatsapp",
+    category: "system",
+    label: "Recebimento de Mensagens (CRM)",
+    path: "/api/public/webhooks/whatsapp",
+    methods: ["POST"],
+    description: "Cole essa URL no seu provedor de WhatsApp (UAZAPI, Evolution, Z-API) para receber mensagens no CRM.",
+    configurable_in: "/hash/atendimento",
+  },
 ];
 
 export function resolveWebhooks() {

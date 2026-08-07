@@ -124,5 +124,15 @@ export const customOtp: WhatsAppOTPProvider = {
     } catch (err) {
       return { ok: false, message: `Falha no provider customizado: ${err instanceof Error ? err.message : String(err)}` };
     }
+  },
+
+  parseWebhook(body: any) {
+    const remoteMessageId = body.id || body.messageId || body.key?.id;
+    const fromPhone = body.phone || body.from || body.sender;
+    const text = body.text || body.message || body.content;
+    
+    if (!remoteMessageId || !fromPhone || !text) return null;
+    
+    return { remoteMessageId, fromPhone, text };
   }
 };

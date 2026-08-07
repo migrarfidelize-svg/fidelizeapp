@@ -90,5 +90,18 @@ export const uazapiOtp: WhatsAppOTPProvider = {
     } catch (err) {
       return { ok: false, message: `Falha ao enviar: ${err instanceof Error ? err.message : String(err)}` };
     }
+  },
+
+  parseWebhook(body: any) {
+    if (body.event !== "messages.upsert") return null;
+    const msg = body.data;
+    const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text;
+    if (!text) return null;
+
+    return {
+      remoteMessageId: msg.key?.id,
+      fromPhone: msg.key?.remoteJid?.split("@")[0],
+      text
+    };
   }
 };
