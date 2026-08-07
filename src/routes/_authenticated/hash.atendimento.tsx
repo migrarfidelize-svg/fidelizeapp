@@ -29,6 +29,7 @@ import { FlowEditor } from "@/components/crm/FlowEditor";
 import { FlowSimulator } from "@/components/crm/FlowSimulator";
 import { QuickRepliesManager } from "@/components/crm/QuickReplies";
 import { OTPEditor } from "@/components/crm/OTPEditor";
+import { AgentConfig } from "@/components/crm/AgentConfig";
 import { useCRMRealtime } from "@/hooks/use-crm-realtime";
 
 export const Route = createFileRoute("/_authenticated/hash/atendimento")({
@@ -422,78 +423,10 @@ function AtendimentoCRM() {
           </TabsContent>
 
           <TabsContent value="agente" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-                <Card className="dash-card">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <UserCheck className="h-5 w-5 text-primary" /> Identidade do Agente
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border border-border/40">
-                            <div>
-                                <Label className="text-sm font-bold">Status do Agente</Label>
-                                <p className="text-[10px] text-muted-foreground">Define se o bot deve responder novas mensagens.</p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className={cn("h-2 w-2 rounded-full", agentSettings?.enabled ? "bg-green-500 animate-pulse" : "bg-muted-foreground/30")} />
-                                <Switch checked={agentSettings?.enabled} />
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Nome do Assistente</Label>
-                            <Input defaultValue={agentSettings?.name} placeholder="Ex: Assistente Afidelize" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Mensagem de Apresentação</Label>
-                            <Textarea defaultValue={agentSettings?.presentation} rows={3} placeholder="Olá! 👋 Sou o assistente..." />
-                        </div>
-                    </CardContent>
-                </Card>
-                
-                <Card className="dash-card">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Settings2 className="h-5 w-5 text-primary" /> Comportamento
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid gap-3">
-                            <div className="flex justify-between items-center p-2 rounded-lg hover:bg-muted/30 transition-colors">
-                                <div className="space-y-0.5"><Label className="text-sm">Responder automaticamente</Label><p className="text-[10px] text-muted-foreground">Habilitar IA/Bot para respostas.</p></div>
-                                <Switch defaultChecked={agentSettings?.behavior?.autoReply} />
-                            </div>
-                            <div className="flex justify-between items-center p-2 rounded-lg hover:bg-muted/30 transition-colors">
-                                <div className="space-y-0.5"><Label className="text-sm">Atender novos contatos</Label><p className="text-[10px] text-muted-foreground">Iniciar conversa automaticamente.</p></div>
-                                <Switch defaultChecked={agentSettings?.behavior?.welcomeNew} />
-                            </div>
-                        </div>
-                        <div className="space-y-2 pt-2 border-t">
-                            <Label>Tempo sem resposta (Timeout)</Label>
-                            <div className="flex gap-2">
-                                <Select defaultValue={String(agentSettings?.behavior?.timeoutMinutes || "10")}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="5">5 minutos</SelectItem>
-                                        <SelectItem value="10">10 minutos</SelectItem>
-                                        <SelectItem value="30">30 minutos</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <Select defaultValue={agentSettings?.behavior?.timeoutAction || "transfer_to_queue"}>
-                                    <SelectTrigger className="flex-1"><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="transfer_to_queue">Transferir para fila</SelectItem>
-                                        <SelectItem value="end">Encerrar</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+            <AgentConfig />
           </TabsContent>
 
-          <TabsContent value="fluxos" className="space-y-6">
+          <TabsContent value="fluxos"
             {editingFlow ? (
               <FlowEditor flow={editingFlow} onBack={() => setEditingFlow(null)} />
             ) : simulatingFlow ? (
