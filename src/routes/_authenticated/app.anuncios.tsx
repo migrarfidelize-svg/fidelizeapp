@@ -967,11 +967,12 @@ function CampaignEditor({
                   </div>
                 </div>
               )}
+            </div>
             <p className="mt-3 text-[11px] text-muted-foreground">
               É assim que os clientes verão seu card em <strong>Descobrir</strong>, no topo da categoria escolhida.
             </p>
-
           </aside>
+
         </div>
 
         {/* Rodapé de navegação */}
