@@ -167,10 +167,11 @@ export function TemplateManager() {
        <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full">
          <TabsList className="bg-muted/50 p-1 rounded-xl w-fit">
            <TabsTrigger value="all" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">Todos</TabsTrigger>
-           <TabsTrigger value="general" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">Geral</TabsTrigger>
-           <TabsTrigger value="support" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">Suporte</TabsTrigger>
-           <TabsTrigger value="sales" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">Vendas</TabsTrigger>
-           <TabsTrigger value="marketing" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">Marketing</TabsTrigger>
+            <TabsTrigger value="welcome" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">Geral</TabsTrigger>
+            <TabsTrigger value="support" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">Suporte</TabsTrigger>
+            <TabsTrigger value="sales" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">Vendas</TabsTrigger>
+            <TabsTrigger value="marketing" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">Marketing</TabsTrigger>
+            <TabsTrigger value="otp" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">OTP</TabsTrigger>
          </TabsList>
 
          <div className="mt-6">
