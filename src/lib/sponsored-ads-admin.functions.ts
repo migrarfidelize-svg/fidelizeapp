@@ -95,8 +95,9 @@ export const adminReviewAdCampaign = createServerFn({ method: "POST" })
 
     const { data: campaign } = await supabaseAdmin
       .from("sponsored_ad_campaigns")
-      .select("id, status, ends_at, paused_at, total_paused_seconds")
+      .select("id, status, ends_at, paused_at, total_paused_seconds, creative_snapshot")
       .eq("id", data.campaign_id)
+
       .maybeSingle();
     if (!campaign) throw new Error("Campanha não encontrada.");
 

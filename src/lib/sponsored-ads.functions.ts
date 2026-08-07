@@ -218,18 +218,19 @@ export const saveAdCampaign = createServerFn({ method: "POST" })
       }
       const { data: row, error } = await supabase
         .from("sponsored_ad_campaigns")
-        .update(payload)
+        .update(payload as any)
         .eq("id", data.id)
         .eq("establishment_id", data.establishment_id)
         .select("id")
         .single();
+
       if (error) throw new Error(error.message);
       return { id: row.id };
     }
 
     const { data: row, error } = await supabase
       .from("sponsored_ad_campaigns")
-      .insert({ ...payload, created_by: userId, status: "draft" })
+      .insert({ ...payload, created_by: userId, status: "draft" } as any)
       .select("id")
       .single();
     if (error) throw new Error(error.message);
