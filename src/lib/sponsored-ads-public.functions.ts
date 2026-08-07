@@ -31,17 +31,17 @@ export const getDiscoverySponsoredAds = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data }) => {
-    const { supabase } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sessionHash = await hashSession(data.session_id);
 
-    const { data: rows, error } = await supabase.rpc("get_sponsored_ads_for_discovery", {
+    const { data: rows, error } = await supabaseAdmin.rpc("get_sponsored_ads_for_discovery", {
       _category: data.category ?? "",
       _session_hash: sessionHash,
       _limit: data.limit,
     });
     if (error) return [];
 
-    const storage = supabase.storage.from("sponsored-ads");
+    const storage = supabaseAdmin.storage.from("sponsored-ads");
     return Promise.all(
       (rows ?? []).map(async (r: any) => {
         let image_url: string | null = null;
@@ -89,9 +89,9 @@ export const trackSponsoredAdEvent = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     try {
-      const { supabase } = await import("@/integrations/supabase/client.server");
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const sessionHash = await hashSession(data.session_id);
-      await supabase.rpc("register_sponsored_ad_event", {
+      await supabaseAdmin.rpc("register_sponsored_ad_event", {
         _token: data.token,
         _event_type: data.event_type,
         _session_hash: sessionHash,
