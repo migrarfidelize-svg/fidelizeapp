@@ -825,15 +825,42 @@ export const getDashboardData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ establishment_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase } = context;
+    const { supabase, userId } = context;
     const est = data.establishment_id;
-    const now = new Date();
-    const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-    const goalMonthKey = `${monthStart.getUTCFullYear()}-${String(monthStart.getUTCMonth() + 1).padStart(2, "0")}-01`;
 
-    // Uma única ida ao banco. O cutoff agora é resolvido internamente pela RPC no SQL.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: raw, error } = await (supabase as any).rpc("dashboard_summary", { _est: est });
+    // 1. Validar que o usuário pertence ao establishment solicitado
+    const { data: membership } = await supabase
+      .from("establishment_members")
+      .select("id")
+      .eq("establishment_id", est)
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (!membership) {
+      // Se não for membro, checar se é super admin
+      const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+      if (!isAdmin) throw new Error("Acesso negado ao estabelecimento.");
+    }
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // 2. Ler production_started_at de system_settings usando supabaseAdmin (Server-Side Only)
+    const { data: settings } = await supabaseAdmin
+      .from("system_settings")
+      .select("value")
+      .eq("namespace", "system")
+      .eq("key", "production_mode")
+      .maybeSingle();
+
+    const productionData = (settings?.value as any) || { enabled: false, production_started_at: "1970-01-01T00:00:00Z" };
+    const cutoff = productionData.production_started_at || "1970-01-01T00:00:00Z";
+
+    // 3. Chamar dashboard_summary usando supabaseAdmin (service_role) pois a RPC é restrita
+    const { data: raw, error } = await (supabaseAdmin as any).rpc("dashboard_summary", { 
+      _est: est,
+      _cutoff: cutoff
+    });
+
     if (error) throw new Error(error.message);
 
     const s = (raw ?? {}) as {
