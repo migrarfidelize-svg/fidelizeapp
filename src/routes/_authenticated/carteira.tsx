@@ -212,12 +212,7 @@ function WalletLayout() {
         {/* Top Header - Desktop & Mobile */}
         <header className="sticky top-0 z-40 w-full bg-background/60 backdrop-blur-xl border-b border-border/40 px-4 xl:px-8 h-16 md:h-20 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
-            <button 
-              className="lg:hidden p-2 -ml-2 text-muted-foreground hover:bg-accent rounded-xl"
-              onClick={() => setIsSidebarOpen(true)}
-            >
-              <Menu className="h-6 w-6" />
-            </button>
+
             
             {/* Contextual Title / Breadcrumb */}
             <div className="hidden sm:block text-left">
