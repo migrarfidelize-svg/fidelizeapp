@@ -9044,7 +9044,10 @@ export type Database = {
         Returns: Database["public"]["Enums"]["customer_tier"]
       }
       courier_storage_owner: { Args: { _path: string }; Returns: string }
-      dashboard_summary: { Args: { _est: string }; Returns: Json }
+      dashboard_summary: {
+        Args: { _cutoff: string; _est: string }
+        Returns: Json
+      }
       delete_my_account: { Args: never; Returns: undefined }
       get_establishment_plan: {
         Args: { _est: string }
