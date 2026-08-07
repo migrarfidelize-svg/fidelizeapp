@@ -549,7 +549,63 @@ function CredentialsTab({
   );
 }
 
+function OtpTestTab({ meta }: { meta: CatalogMeta }) {
+  const sendTestFn = useServerFn(sendTestWhatsAppMessage);
+  const [phone, setPhone] = useState("");
+  const [message, setMessage] = useState("Teste de integração WhatsApp Afidelize realizado com sucesso.");
+  const [sending, setSending] = useState(false);
+
+  async function send() {
+    if (phone.length < 10) {
+      toast.error("Informe um WhatsApp válido.");
+      return;
+    }
+    setSending(true);
+    try {
+      const res = await sendTestFn({ data: { category: "otp", provider: meta.id, phone, message } });
+      if (res.ok) toast.success(res.message);
+      else toast.error(res.message);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erro no envio");
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4 pt-2">
+      <div className="space-y-1">
+        <Label className="text-sm">WhatsApp de teste</Label>
+        <div className="relative">
+          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input 
+            placeholder="(00) 00000-0000" 
+            className="pl-9"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
+        </div>
+        <p className="text-[10px] text-muted-foreground">Informe o DDI + DDD + Número. Ex: 5511999998888</p>
+      </div>
+
+      <div className="space-y-1">
+        <Label className="text-sm">Mensagem</Label>
+        <Input 
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+      </div>
+
+      <Button className="w-full" onClick={send} disabled={sending}>
+        {sending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <MessageCircle className="h-4 w-4 mr-2" />}
+        Enviar mensagem de teste
+      </Button>
+    </div>
+  );
+}
+
 function GuideTab({ meta }: { meta: CatalogMeta }) {
+
   const guide = (meta as any).guide as null | {
     intro: string; prerequisites?: string[];
     steps: { title: string; description: string; url?: string }[];
