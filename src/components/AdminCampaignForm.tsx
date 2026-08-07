@@ -185,7 +185,7 @@ export function AdminCampaignForm({ campaign, onDone, onCancel }: AdminCampaignF
                             onClick={() => { setSelectedMerchant(m); setSearch(""); }}
                             className="flex w-full items-center gap-2 rounded-lg p-2 text-left text-sm hover:bg-muted"
                           >
-                            <img src={m.logo_url} className="h-6 w-6 rounded border border-border/60" />
+                            <img src={m.logo_url || undefined} className="h-6 w-6 rounded border border-border/60" />
                             <span className="font-medium">{m.name}</span>
                           </button>
                         ))}

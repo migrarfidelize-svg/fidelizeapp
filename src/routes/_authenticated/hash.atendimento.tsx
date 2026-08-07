@@ -21,7 +21,7 @@ import {
   getCRMStats, getCRMConversations, getCRMConversationMessages, sendCRMMessage, 
   updateCRMConversationStatus, getCRMFlows, getAgentSettings, saveAgentSettings,
   deleteCRMFlow, duplicateCRMFlow, getCRMContacts, getCRMQuickReplies, saveCRMQuickReply,
-  getOTPTemplate, saveOTPTemplate, sendOTPTestMessage
+  getOTPSettingsDetailed, saveOTPTemplate, sendOTPTestMessage
 } from "@/lib/atendimento.functions";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
