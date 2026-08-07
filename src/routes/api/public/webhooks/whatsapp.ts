@@ -77,7 +77,7 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
             .from("crm_conversations")
             .insert({
               customer_phone: fromPhone,
-              status: "open",
+              status: "waiting",
               last_message_at: new Date().toISOString()
             })
             .select("id")
@@ -93,7 +93,7 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
             .from("crm_conversations")
             .update({ 
               last_message_at: new Date().toISOString(), 
-              status: "open",
+              status: "waiting",
               updated_at: new Date().toISOString()
             })
             .eq("id", conversation.id);
