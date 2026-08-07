@@ -97,11 +97,12 @@ export const verifyOTP = createServerFn({ method: "POST" })
 
     if (!profile) {
       // New User
+      const metadata = (otp.metadata as Record<string, any>) || {};
       const { data: newUser, error: signUpErr } = await supabaseAdmin.auth.admin.createUser({
         email: syntheticEmail,
         email_confirm: true,
         user_metadata: { 
-          full_name: otp.metadata?.name || "Cliente",
+          full_name: metadata.name || "Cliente",
           phone: phone,
           whatsapp: phone
         }
@@ -111,7 +112,7 @@ export const verifyOTP = createServerFn({ method: "POST" })
 
       await supabaseAdmin.from("profiles").insert({
         id: user.id,
-        full_name: otp.metadata?.name || "Cliente",
+        full_name: metadata.name || "Cliente",
         phone: phone,
         account_type: "customer"
       });
