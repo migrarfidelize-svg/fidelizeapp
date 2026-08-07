@@ -13,7 +13,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getOTPTemplate, saveOTPTemplate, sendOTPTestMessage } from "@/lib/atendimento.functions";
+import { getOTPTemplate, saveOTPTemplate, sendOTPTestMessage, getCRMConversations, getCRMConversationMessages, sendCRMMessage, updateCRMConversationStatus } from "@/lib/atendimento.functions";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 
 export const Route = createFileRoute("/_authenticated/hash/atendimento")({
@@ -26,9 +27,30 @@ function AtendimentoCRM() {
   const saveTemplate = useServerFn(saveOTPTemplate);
   const sendTest = useServerFn(sendOTPTestMessage);
 
+  const getConversations = useServerFn(getCRMConversations);
+  const getMessages = useServerFn(getCRMConversationMessages);
+  const sendMessage = useServerFn(sendCRMMessage);
+  const updateStatus = useServerFn(updateCRMConversationStatus);
+
   const { data: templateData, isLoading: isLoadingTemplate } = useQuery({
     queryKey: ["otp-template"],
     queryFn: () => getTemplate(),
+  });
+
+  const { data: conversations, isLoading: isLoadingConversations } = useQuery({
+    queryKey: ["crm-conversations"],
+    queryFn: () => getConversations(),
+    refetchInterval: 10000,
+  });
+
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
+
+  const { data: messages, isLoading: isLoadingMessages } = useQuery({
+    queryKey: ["crm-messages", selectedConversationId],
+    queryFn: () => selectedConversationId ? getMessages({ data: { conversationId: selectedConversationId } }) : Promise.resolve([]),
+    enabled: !!selectedConversationId,
+    refetchInterval: 5000,
   });
 
   const [otpTemplate, setOtpTemplate] = useState("");
@@ -60,7 +82,25 @@ function AtendimentoCRM() {
     onError: (err: any) => toast.error(err.message || "Erro ao enviar teste"),
   });
 
-  if (isLoadingTemplate) return <RouteLoading label="Carregando configurações..." />;
+  const sendMutation = useMutation({
+    mutationFn: (body: string) => sendMessage({ data: { conversationId: selectedConversationId!, body } }),
+    onSuccess: () => {
+      setReplyText("");
+      queryClient.invalidateQueries({ queryKey: ["crm-messages", selectedConversationId] });
+      toast.success("Mensagem enviada.");
+    },
+    onError: (err: any) => toast.error(err.message || "Erro ao enviar mensagem"),
+  });
+
+  const statusMutation = useMutation({
+    mutationFn: (status: any) => updateStatus({ data: { conversationId: selectedConversationId!, status } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["crm-conversations"] });
+      toast.success("Status atualizado.");
+    },
+  });
+
+  if (isLoadingTemplate || isLoadingConversations) return <RouteLoading label="Carregando CRM..." />;
 
 
   return (
@@ -97,25 +137,110 @@ function AtendimentoCRM() {
 
         <div className="mt-8">
           <TabsContent value="conversas" className="space-y-4">
-            <Card className="dash-card">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Conversas Ativas</CardTitle>
-                    <CardDescription>Atendimentos em tempo real via WhatsApp global.</CardDescription>
+            <div className="grid lg:grid-cols-[350px_1fr] gap-4 h-[650px]">
+              {/* Lista de Conversas */}
+              <Card className="dash-card flex flex-col overflow-hidden">
+                <CardHeader className="p-4 border-b border-border/40">
+                  <CardTitle className="text-sm">Recentes</CardTitle>
+                </CardHeader>
+                <ScrollArea className="flex-1">
+                  <div className="p-2 space-y-1">
+                    {conversations?.map((conv: any) => (
+                      <button
+                        key={conv.id}
+                        onClick={() => setSelectedConversationId(conv.id)}
+                        className={`w-full text-left p-3 rounded-xl transition-all ${
+                          selectedConversationId === conv.id 
+                            ? "bg-primary/10 border-primary/20" 
+                            : "hover:bg-muted/50"
+                        } border border-transparent`}
+                      >
+                        <div className="flex justify-between items-start mb-1">
+                          <span className="font-semibold text-sm">{conv.customer_phone}</span>
+                          <Badge variant="outline" className="text-[10px] h-4 px-1">
+                            {conv.status}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {conv.messages?.[0]?.body || "Sem mensagens"}
+                        </p>
+                      </button>
+                    ))}
                   </div>
-                  <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
-                    Provedor Global Ativo
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="h-[400px] flex items-center justify-center text-muted-foreground border-t border-border/40">
-                <div className="text-center space-y-2">
-                  <MessageSquare className="h-12 w-12 mx-auto opacity-20" />
-                  <p>Selecione uma conversa na lista lateral para iniciar o atendimento.</p>
-                </div>
-              </CardContent>
-            </Card>
+                </ScrollArea>
+              </Card>
+
+              {/* Chat Area */}
+              <Card className="dash-card flex flex-col overflow-hidden relative">
+                {!selectedConversationId ? (
+                  <CardContent className="h-full flex items-center justify-center text-muted-foreground">
+                    <div className="text-center space-y-2">
+                      <MessageSquare className="h-12 w-12 mx-auto opacity-20" />
+                      <p>Selecione uma conversa para visualizar o histórico.</p>
+                    </div>
+                  </CardContent>
+                ) : (
+                  <>
+                    <CardHeader className="p-4 border-b border-border/40 flex flex-row items-center justify-between shrink-0">
+                      <div>
+                        <CardTitle className="text-sm">{conversations?.find((c: any) => c.id === selectedConversationId)?.customer_phone}</CardTitle>
+                        <CardDescription className="text-[10px]">Atendimento em curso</CardDescription>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-7 text-[10px]"
+                          onClick={() => statusMutation.mutate("closed")}
+                        >
+                          Fechar Ticket
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    
+                    <ScrollArea className="flex-1 p-4">
+                      <div className="space-y-4">
+                        {messages?.map((msg: any) => (
+                          <div 
+                            key={msg.id} 
+                            className={`flex ${msg.direction === "outbound" ? "justify-end" : "justify-start"}`}
+                          >
+                            <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${
+                              msg.direction === "outbound" 
+                                ? "bg-primary text-primary-foreground rounded-tr-none" 
+                                : "bg-muted border border-border/40 rounded-tl-none"
+                            }`}>
+                              {msg.body}
+                              <div className="text-[9px] mt-1 opacity-70 text-right">
+                                {new Date(msg.created_at).toLocaleTimeString()}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+
+                    <div className="p-4 border-t border-border/40 shrink-0 bg-card/50">
+                      <div className="flex gap-2">
+                        <Input 
+                          placeholder="Digite sua resposta..." 
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && sendMutation.mutate(replyText)}
+                        />
+                        <Button 
+                          size="icon" 
+                          onClick={() => sendMutation.mutate(replyText)}
+                          disabled={sendMutation.isPending || !replyText}
+                        >
+                          {sendMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="otp" className="space-y-6">

@@ -1706,6 +1706,267 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_conversation_tags: {
+        Row: {
+          conversation_id: string
+          tag_id: string
+        }
+        Insert: {
+          conversation_id: string
+          tag_id: string
+        }
+        Update: {
+          conversation_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_conversation_tags_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "crm_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_conversation_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "crm_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_conversations: {
+        Row: {
+          assigned_at: string | null
+          assigned_to: string | null
+          closed_at: string | null
+          created_at: string
+          customer_phone: string
+          id: string
+          last_message_at: string
+          metadata: Json
+          priority: Database["public"]["Enums"]["crm_priority"]
+          status: Database["public"]["Enums"]["crm_conversation_status"]
+          updated_at: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_to?: string | null
+          closed_at?: string | null
+          created_at?: string
+          customer_phone: string
+          id?: string
+          last_message_at?: string
+          metadata?: Json
+          priority?: Database["public"]["Enums"]["crm_priority"]
+          status?: Database["public"]["Enums"]["crm_conversation_status"]
+          updated_at?: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_to?: string | null
+          closed_at?: string | null
+          created_at?: string
+          customer_phone?: string
+          id?: string
+          last_message_at?: string
+          metadata?: Json
+          priority?: Database["public"]["Enums"]["crm_priority"]
+          status?: Database["public"]["Enums"]["crm_conversation_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      crm_flow_steps: {
+        Row: {
+          flow_id: string
+          id: string
+          payload: Json
+          sort_order: number
+          step_key: string
+        }
+        Insert: {
+          flow_id: string
+          id?: string
+          payload?: Json
+          sort_order?: number
+          step_key: string
+        }
+        Update: {
+          flow_id?: string
+          id?: string
+          payload?: Json
+          sort_order?: number
+          step_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_flow_steps_flow_id_fkey"
+            columns: ["flow_id"]
+            isOneToOne: false
+            referencedRelation: "crm_flows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_flows: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          metadata: Json
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          metadata?: Json
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          metadata?: Json
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      crm_internal_notes: {
+        Row: {
+          author_id: string | null
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          author_id?: string | null
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          author_id?: string | null
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_internal_notes_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "crm_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_messages: {
+        Row: {
+          body: string | null
+          conversation_id: string
+          created_at: string
+          direction: string
+          id: string
+          media_metadata: Json
+          media_url: string | null
+          message_type: Database["public"]["Enums"]["crm_message_type"]
+          metadata: Json
+          provider: string
+          provider_message_id: string
+        }
+        Insert: {
+          body?: string | null
+          conversation_id: string
+          created_at?: string
+          direction: string
+          id?: string
+          media_metadata?: Json
+          media_url?: string | null
+          message_type?: Database["public"]["Enums"]["crm_message_type"]
+          metadata?: Json
+          provider: string
+          provider_message_id: string
+        }
+        Update: {
+          body?: string | null
+          conversation_id?: string
+          created_at?: string
+          direction?: string
+          id?: string
+          media_metadata?: Json
+          media_url?: string | null
+          message_type?: Database["public"]["Enums"]["crm_message_type"]
+          metadata?: Json
+          provider?: string
+          provider_message_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "crm_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_quick_replies: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          message: string
+          shortcut: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          message: string
+          shortcut: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          message?: string
+          shortcut?: string
+        }
+        Relationships: []
+      }
+      crm_tags: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       customer_achievements: {
         Row: {
           achievement_code: string
@@ -9324,6 +9585,16 @@ export type Database = {
         | "criminal_record"
         | "other"
       courier_status: "pending" | "approved" | "rejected" | "suspended"
+      crm_conversation_status: "bot" | "waiting" | "assigned" | "closed"
+      crm_message_type:
+        | "text"
+        | "image"
+        | "audio"
+        | "video"
+        | "document"
+        | "location"
+        | "vcard"
+      crm_priority: "low" | "medium" | "high" | "urgent"
       customer_tier: "bronze" | "prata" | "ouro" | "diamante"
       delivery_status:
         | "pending"
@@ -9541,6 +9812,17 @@ export const Constants = {
         "other",
       ],
       courier_status: ["pending", "approved", "rejected", "suspended"],
+      crm_conversation_status: ["bot", "waiting", "assigned", "closed"],
+      crm_message_type: [
+        "text",
+        "image",
+        "audio",
+        "video",
+        "document",
+        "location",
+        "vcard",
+      ],
+      crm_priority: ["low", "medium", "high", "urgent"],
       customer_tier: ["bronze", "prata", "ouro", "diamante"],
       delivery_status: [
         "pending",
