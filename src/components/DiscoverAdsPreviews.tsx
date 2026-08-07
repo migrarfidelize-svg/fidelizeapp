@@ -19,6 +19,7 @@ const MOCK_ADS_V2: SponsoredAdData[] = [
   { 
     id: "ad1", 
     title: "Combo Premium — Smash Burger + Fritas", 
+    description: "O burger mais premiado da cidade com fritas crocantes.",
     merchantName: "Burger Club", 
     originalPrice: 4990,
     fidelizePrice: 3490,
@@ -30,6 +31,7 @@ const MOCK_ADS_V2: SponsoredAdData[] = [
   { 
     id: "ad2", 
     title: "Corte + Barba + Toalha Quente", 
+    description: "Experiência completa com os melhores barbeiros da região.",
     merchantName: "Barbearia VIP", 
     originalPrice: 8000,
     fidelizePrice: 5990,
@@ -41,6 +43,7 @@ const MOCK_ADS_V2: SponsoredAdData[] = [
   { 
     id: "ad3", 
     title: "Café Especial Artesanal (Grão Selecionado)", 
+    description: "Grãos arábica selecionados com torra fresca semanal.",
     merchantName: "Café & Prosa", 
     originalPrice: 2490,
     fidelizePrice: 1790,
