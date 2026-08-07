@@ -1,10 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Search, MapPin, Star, Heart, Gift, Clock, PlusCircle, 
-  User, Home, Wallet, Compass, Bell, ArrowRight,
-  Sparkles, ExternalLink, QrCode
+  Search, Clock, PlusCircle, 
+  User, QrCode, Star, Heart, Gift, ArrowRight,
+  Sparkles
 } from "lucide-react";
-import { useState } from "react";
 import { SponsoredAdCard, SponsoredAdData } from "./SponsoredAdCard";
 
 // Shared data for simulation
@@ -18,8 +17,8 @@ const MOCK_ESTABLISHMENTS = [
 const MOCK_ADS_V2: SponsoredAdData[] = [
   { 
     id: "ad1", 
-    title: "Combo Premium — Smash Burger + Fritas", 
-    description: "O burger mais premiado da cidade com fritas crocantes.",
+    title: "Combo Premium Smash Burger + Fritas + Bebida", 
+    description: "Hambúrguer artesanal, fritas crocantes e bebida gelada com desconto exclusivo Fidelize. O burger mais premiado da cidade.",
     merchantName: "Burger Club", 
     originalPrice: 4990,
     fidelizePrice: 3490,
@@ -30,8 +29,8 @@ const MOCK_ADS_V2: SponsoredAdData[] = [
   },
   { 
     id: "ad2", 
-    title: "Corte + Barba + Toalha Quente", 
-    description: "Experiência completa com os melhores barbeiros da região.",
+    title: "Corte + Barba + Toalha Quente Premium", 
+    description: "Experiência completa com os melhores barbeiros da região. Inclui relaxamento e massagem facial profunda.",
     merchantName: "Barbearia VIP", 
     originalPrice: 8000,
     fidelizePrice: 5990,
@@ -42,8 +41,8 @@ const MOCK_ADS_V2: SponsoredAdData[] = [
   },
   { 
     id: "ad3", 
-    title: "Café Especial Artesanal (Grão Selecionado)", 
-    description: "Grãos arábica selecionados com torra fresca semanal.",
+    title: "Café Especial Artesanal Torra Fresca", 
+    description: "Grãos arábica selecionados com torra fresca semanal. Notas de chocolate e caramelo.",
     merchantName: "Café & Prosa", 
     originalPrice: 2490,
     fidelizePrice: 1790,
@@ -78,6 +77,10 @@ export function PreviewAPremiumBanner({ adsPaused = false }) {
               animate={{ opacity: 1, scale: 1 }} 
               exit={{ opacity: 0, scale: 0.95, height: 0, marginBottom: 0 }}
             >
+              <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 ml-2 flex items-center gap-2">
+                <Sparkles className="h-3 w-3 text-primary" />
+                Oferta em Destaque
+              </div>
               <SponsoredAdCard data={MOCK_ADS_V2[0]} model="premium_banner" />
             </motion.section>
           )}
@@ -162,7 +165,7 @@ export function PreviewCSponsoredCarousel({ adsPaused = false }) {
               <div className="px-6">
                 <SectionHeader title="Destaques para você" icon={Sparkles} showAll={false} />
               </div>
-              <div className="flex gap-4 overflow-x-auto px-6 pb-4 [scrollbar-width:none]">
+              <div className="flex gap-4 overflow-x-auto px-6 pb-6 [scrollbar-width:none]">
                 {MOCK_ADS_V2.map(ad => (
                   <SponsoredAdCard key={ad.id} data={ad} model="carousel" />
                 ))}

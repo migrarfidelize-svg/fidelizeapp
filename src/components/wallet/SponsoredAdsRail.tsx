@@ -102,7 +102,7 @@ function AdWrapper({
   };
 
   return (
-    <div ref={ref} onClick={handleAdClick} className="cursor-pointer active:scale-[0.99] transition-transform">
+    <div ref={ref} className="transition-transform">
       <SponsoredAdCard
         model={(ad.display_model as any) || "sponsored_feed"}
         data={{
