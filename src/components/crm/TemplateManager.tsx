@@ -137,7 +137,6 @@ export function TemplateManager() {
                                         <option value="closing">Finalização</option>
                                         <option value="followup">Retorno</option>
                                         <option value="finance">Financeiro</option>
-                                        <option value="otp">OTP</option>
                                         <option value="custom">Personalizado</option>
                                     </select>
                                 </div>
@@ -171,7 +170,7 @@ export function TemplateManager() {
             <TabsTrigger value="support" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">Suporte</TabsTrigger>
             <TabsTrigger value="sales" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">Vendas</TabsTrigger>
             <TabsTrigger value="marketing" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">Marketing</TabsTrigger>
-            <TabsTrigger value="otp" className="text-[10px] uppercase font-bold px-4 py-1.5 h-auto">OTP</TabsTrigger>
+            
          </TabsList>
 
          <div className="mt-6">
