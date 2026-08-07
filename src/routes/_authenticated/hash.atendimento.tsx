@@ -53,8 +53,8 @@ function AtendimentoCRM() {
   });
   const { data: flows } = useQuery({ queryKey: ["crm-flows"], queryFn: () => getCRMFlows() });
   const { data: agentData } = useQuery({ queryKey: ["crm-agent-settings"], queryFn: () => getAgentSettings() });
-  const { data: messages } = useQuery({ 
   const { data: replies } = useQuery({ queryKey: ["crm-quick-replies"], queryFn: () => getCRMQuickReplies() });
+  const { data: messages } = useQuery({ 
     queryKey: ["crm-messages", selectedConversation?.id], 
     queryFn: () => getCRMConversationMessages({ data: { conversationId: selectedConversation.id } }),
     enabled: !!selectedConversation?.id
