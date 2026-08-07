@@ -20,8 +20,10 @@ import {
   Gift,
   PlusCircle,
   Heart,
-  ArrowRight
+  ArrowRight,
+  LogOut as LogOutIcon
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { LogoMark } from "@/components/LogoMark";
 import { useState, useEffect } from "react";
@@ -202,8 +204,15 @@ function WalletLayout() {
                   <p className="text-xs font-black truncate">João Doria</p>
                   <p className="text-[10px] text-muted-foreground font-bold truncate">Premium Member</p>
                 </div>
-                <button className="text-muted-foreground hover:text-destructive transition-colors lg:hidden xl:block">
-                  <LogOut className="h-4 w-4" />
+                <button 
+                  className="text-muted-foreground hover:text-destructive transition-colors lg:hidden xl:block"
+                  onClick={async () => {
+                    const { supabase } = await import("@/integrations/supabase/client");
+                    await supabase.auth.signOut();
+                    window.location.href = "/";
+                  }}
+                >
+                  <LogOutIcon className="h-4 w-4" />
                 </button>
              </div>
           </div>
@@ -245,9 +254,9 @@ function WalletLayout() {
             </div>
             
             <div className="flex items-center gap-2">
-              <button className="h-11 w-11 flex items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
-                <QrCode className="h-5 w-5" />
-              </button>
+              <Button asChild className="h-11 w-11 flex items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all p-0">
+                <Link to="/qr"><QrCode className="h-5 w-5" /></Link>
+              </Button>
               <button className="md:hidden h-11 w-11 flex items-center justify-center rounded-2xl bg-accent/60 text-muted-foreground">
                 <Search className="h-5 w-5" />
               </button>
