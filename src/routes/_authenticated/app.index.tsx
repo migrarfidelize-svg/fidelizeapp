@@ -37,10 +37,14 @@ export const Route = createFileRoute("/_authenticated/app/")({
 
 
 function Dashboard() {
+  const navigate = useNavigate();
   const getEsts = useServerFn(getMyEstablishments);
   const getData = useServerFn(getDashboardData);
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
   const est = memberships?.[0]?.establishment as { id: string; name: string; slug: string } | undefined;
+  
+  const [showcaseDialog, setShowcaseDialog] = useState(false);
+
   const { data, isLoading, isError, error, refetch } = useQuery({
     enabled: !!est,
     queryKey: ["dashboard", est?.id],
@@ -68,6 +72,12 @@ function Dashboard() {
   });
   const voiceEnabled = ((estFull as any)?.settings?.appearance?.welcome_voice_enabled ?? true) === true;
 
+  const getStatusFn = useServerFn(getMyShowcaseStatus);
+  const { data: showcaseStatus } = useQuery({
+    enabled: !!est,
+    queryKey: ["showcase-status", est?.id],
+    queryFn: () => getStatusFn({ data: { establishment_id: est!.id } }),
+  });
 
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
@@ -79,6 +89,28 @@ function Dashboard() {
     if (isError) return <ErrorState title="Não foi possível carregar o painel" error={error} onRetry={() => refetch()} />;
     return <LoadingSkeleton variant="page" />;
   }
+
+  const handlePublicPageClick = () => {
+    if (!showcaseStatus) return;
+
+    const { has_menu, has_catalog } = showcaseStatus;
+
+    if (has_menu && has_catalog) {
+      setShowcaseDialog(true);
+    } else if (has_menu) {
+      window.open(`/cardapio/${est.slug}`, "_blank");
+    } else if (has_catalog) {
+      window.open(`/catalogo/${est.slug}`, "_blank");
+    } else {
+      toast.info("Você ainda não possui uma página pública publicada.", {
+        description: "Publique seu cardápio ou catálogo para visualizar.",
+        action: {
+          label: "Configurar",
+          onClick: () => navigate({ to: "/app/cardapio/aparencia" }),
+        },
+      });
+    }
+  };
 
   const last7 = data.series.slice(-7);
   const last7Total = last7.reduce((a, d) => a + (d.carimbos || 0), 0);
@@ -107,7 +139,45 @@ function Dashboard() {
     <div className="space-y-8">
       <GreetingVoice enabled={voiceEnabled} />
 
-
+      <Dialog open={showcaseDialog} onOpenChange={setShowcaseDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Qual página deseja visualizar?</DialogTitle>
+            <DialogDescription>
+              Você possui duas vitrines publicadas. Escolha qual deseja abrir.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-4 py-4">
+            <Button 
+              variant="outline" 
+              className="h-24 flex flex-col gap-2" 
+              onClick={() => {
+                window.open(`/cardapio/${est.slug}`, "_blank");
+                setShowcaseDialog(false);
+              }}
+            >
+              <Zap className="h-6 w-6 text-primary" />
+              <span>Cardápio Story</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="h-24 flex flex-col gap-2" 
+              onClick={() => {
+                window.open(`/catalogo/${est.slug}`, "_blank");
+                setShowcaseDialog(false);
+              }}
+            >
+              <QrCode className="h-6 w-6 text-primary" />
+              <span>Catálogo Digital</span>
+            </Button>
+          </div>
+          <DialogFooter className="sm:justify-start">
+            <Button type="button" variant="secondary" onClick={() => setShowcaseDialog(false)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Mobile: instalar app + ativar notificações (mesma experiência da Carteira) */}
       <div className="space-y-3 md:hidden">
@@ -138,10 +208,12 @@ function Dashboard() {
                 <TrendingUp className="mr-1 h-4 w-4" /> Analytics 2.0
               </Link>
             </Button>
-            <Button asChild variant="outline" className="border-primary/30 hover:border-primary/60">
-              <Link to="/cartao/$slug" params={{ slug: est.slug }}>
-                <QrCode className="mr-1 h-4 w-4" /> Página pública
-              </Link>
+            <Button 
+              variant="outline" 
+              className="border-primary/30 hover:border-primary/60"
+              onClick={handlePublicPageClick}
+            >
+              <QrCode className="mr-1 h-4 w-4" /> Página pública
             </Button>
             <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_-6px_var(--primary)]">
               <Link to="/app/carimbar">
