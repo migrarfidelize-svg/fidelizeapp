@@ -51,7 +51,7 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
           return new Response("Ignored or unparseable", { status: 200 });
         }
 
-        const { remoteMessageId, fromPhone, text } = normalized;
+        const { remoteMessageId, fromPhone, text, messageType, mediaUrl } = normalized;
 
         // 4. Idempotência (provider_message_id)
         // Usamos asany para ignorar erros de tipo até o próximo build regenerar os tipos
