@@ -81,12 +81,15 @@ function IntegrationsPage() {
     const ai: CatalogMeta[] = [];
     const payments: CatalogMeta[] = [];
     const marketing: CatalogMeta[] = [];
+    const otp: CatalogMeta[] = [];
     (catalog.data ?? []).forEach((m) => {
       if (m.category === "ai") ai.push(m);
       else if (m.category === "marketing") marketing.push(m);
+      else if (m.category === "otp") otp.push(m);
       else payments.push(m);
     });
-    return { ai, payments, marketing };
+    return { ai, payments, marketing, otp };
+
   }, [catalog.data]);
 
   const isLoading = catalog.isLoading || saved.isLoading;
@@ -120,8 +123,10 @@ function IntegrationsPage() {
 
       <Tabs defaultValue="providers" className="w-full">
         <TabsList>
-          <TabsTrigger value="providers"><Zap className="h-4 w-4 mr-1" />Provedores</TabsTrigger>
+          <TabsTrigger value="providers"><Zap className="h-4 w-4 mr-1" />Provedores de IA</TabsTrigger>
+          <TabsTrigger value="otp"><MessageCircle className="h-4 w-4 mr-1" />WhatsApp / OTP</TabsTrigger>
           <TabsTrigger value="marketing"><Target className="h-4 w-4 mr-1" />Marketing &amp; Pixel</TabsTrigger>
+
           <TabsTrigger value="webhooks"><Webhook className="h-4 w-4 mr-1" />Webhooks</TabsTrigger>
           <TabsTrigger value="captcha"><ShieldCheck className="h-4 w-4 mr-1" />Captcha</TabsTrigger>
         </TabsList>
