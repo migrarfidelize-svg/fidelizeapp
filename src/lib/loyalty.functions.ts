@@ -772,9 +772,9 @@ const establishmentSchema = z.object({
   primary_color: z.string().max(20).default("#5B21B6"),
   accent_color: z.string().max(20).default("#F97066"),
   logo_url: z.string().max(2000, "Link do logo muito longo.").url("Link do logo inválido.").optional().or(z.literal("")).transform((v) => v || undefined),
-  campaign_name: z.string().trim().min(2, "O nome da campanha precisa ter pelo menos 2 caracteres.").max(80).default("Cartão Fidelidade"),
-  stamps_required: z.number({ invalid_type_error: "Número de carimbos inválido." }).int().min(2, "Mínimo de 2 carimbos.").max(50, "Máximo de 50 carimbos.").default(10),
-  reward_title: z.string({ required_error: "Descreva a recompensa da campanha." }).trim().min(2, "Descreva a recompensa com pelo menos 2 caracteres.").max(120, "A recompensa pode ter no máximo 120 caracteres."),
+  campaign_name: z.string().trim().min(2).max(80).default("Cartão Fidelidade").optional(),
+  stamps_required: z.number().int().min(2).max(50).default(10).optional(),
+  reward_title: z.string().trim().min(2).max(120).default("Brinde exclusivo").optional(),
   reward_description: z.string().max(500, "Os detalhes da recompensa podem ter no máximo 500 caracteres.").optional(),
   stamp_icon: z.string().trim().min(1).max(32).default("star"),
 });
