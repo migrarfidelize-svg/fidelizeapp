@@ -10,7 +10,7 @@ export const getGlobalVoiceConfig = createServerFn({ method: "GET" })
   .handler(async () => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await (supabaseAdmin as any)
       .from("system_settings")
       .select("value, enabled")
       .eq("namespace", "voice")
@@ -44,7 +44,7 @@ export const synthesizeGlobalEleven = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     
     // 1. Get Global Config from system_settings
-    const { data: settings } = await supabaseAdmin
+    const { data: settings } = await (supabaseAdmin as any)
       .from("system_settings")
       .select("value, enabled")
       .eq("namespace", "voice")
