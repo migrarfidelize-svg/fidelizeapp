@@ -157,7 +157,6 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
           similarity: prefs.similarity,
           texts: prefs.texts
         }
-        }
       });
       setIntegrationStatus('connected');
       toast.success("Integração ElevenLabs salva como padrão do sistema!");
