@@ -117,9 +117,10 @@ function IntegrationsPage() {
         stats={[
           { label: "IA ativas", value: aiConfigured },
           { label: "Pagamentos", value: payConfigured },
-          { label: "Marketing", value: mktConfigured },
+          { label: "WhatsApp", value: otpConfigured },
           { label: "Webhooks", value: webhooksActive },
         ]}
+
       />
 
       <Tabs defaultValue="providers" className="w-full">
