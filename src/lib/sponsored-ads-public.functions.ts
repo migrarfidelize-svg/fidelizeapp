@@ -34,7 +34,7 @@ export const getDiscoverySponsoredAds = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sessionHash = await hashSession(data.session_id);
 
-    const { data: rows, error } = await supabaseAdmin.rpc("get_sponsored_ads_for_discovery", {
+    const { data: rows, error } = await (supabaseAdmin.rpc as any)("get_sponsored_ads_public_v2", {
       _category: data.category ?? "",
       _session_hash: sessionHash,
       _limit: data.limit,
@@ -67,9 +67,17 @@ export const getDiscoverySponsoredAds = createServerFn({ method: "POST" })
           display_model: r.display_model,
           original_price_cents: r.original_price_cents,
           fidelize_price_cents: r.fidelize_price_cents,
+          discount_label: r.discount_label,
           discount_value: r.discount_value,
           benefit_text: r.benefit_text,
           theme: r.theme,
+          hide_title: r.hide_title,
+          hide_description: r.hide_description,
+          hide_merchant_name: r.hide_merchant_name,
+          hide_prices: r.hide_prices,
+          hide_logo: r.hide_logo,
+          hide_cta: r.hide_cta,
+          full_bleed_mode: r.full_bleed_mode,
         };
       }),
     );

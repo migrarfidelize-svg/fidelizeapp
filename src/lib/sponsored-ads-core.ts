@@ -90,6 +90,7 @@ export const OFFER_TYPES = [
   "benefit",
   "loyalty",
   "reward",
+  "institutional",
 ] as const;
 export type AdOfferType = (typeof OFFER_TYPES)[number];
 
@@ -100,6 +101,7 @@ export const OFFER_TYPE_META: Record<AdOfferType, { label: string; hint: string 
   benefit: { label: "Benefício Extra", hint: "Ex: Ganhe uma sobremesa" },
   loyalty: { label: "Fidelidade Turbinada", hint: "Ex: Ganhe 2 carimbos extras" },
   reward: { label: "Recompensa Exclusiva", hint: "Ex: Resgate por 5 carimbos" },
+  institutional: { label: "Institucional Afidelize", hint: "Campanha de marca ou aviso geral." },
 };
 
 

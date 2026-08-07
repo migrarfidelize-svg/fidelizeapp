@@ -28,7 +28,7 @@ export const adminAdsOverview = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     await assertSuperAdmin(supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin.rpc("sponsored_ads_admin_overview");
+    const { data, error } = await (supabaseAdmin.rpc as any)("sponsored_ads_admin_overview_v3");
     if (error) throw new Error(error.message);
     return (data ?? {}) as never;
   });
