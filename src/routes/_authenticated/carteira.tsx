@@ -45,20 +45,41 @@ function WalletLayout() {
   const activeTab = location.pathname;
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const tabs = [
-    { icon: Home, label: "Início", path: "/carteira" },
-    { icon: Compass, label: "Descobrir", path: "/carteira/descobrir" },
-    { icon: QrCode, label: "QR Code", path: "/qr", isFab: true },
-    { icon: Wallet, label: "Meus Vouchers", path: "/carteira/vouchers" },
-    { icon: User, label: "Meu Perfil", path: "/carteira/perfil" },
-  ];
+  const { data: walletData = [] } = useQuery({ 
+    queryKey: ["my-wallet"], 
+    queryFn: getMyWallet,
+    staleTime: 30_000 
+  });
+  
+  const { data: rewardsData = [] } = useQuery({ 
+    queryKey: ["my-rewards"], 
+    queryFn: getMyRewards,
+    staleTime: 30_000 
+  });
 
-  const secondaryNav = [
-    { icon: Bell, label: "Notificações", count: 2 },
-    { icon: Star, label: "Favoritos" },
-    { icon: HelpCircle, label: "Ajuda" },
-    { icon: Settings, label: "Configurações" },
-  ];
+  const progressItems = walletData
+    .filter(it => it.card)
+    .map(it => ({
+      name: (it.establishment as { name: string }).name,
+      progress: it.card?.stamps || 0,
+      total: (it.card?.campaign as { stamps_required: number }).stamps_required || 10,
+      slug: (it.establishment as { slug: string }).slug
+    }))
+    .sort((a, b) => (b.progress / b.total) - (a.progress / a.total))
+    .slice(0, 3);
+
+  const readyRewards = rewardsData
+    .filter(r => r.ready)
+    .slice(0, 2);
+
+  const pinnedMerchants = walletData
+    .filter(it => it.customer.pinned)
+    .map(it => ({
+      logo: (it.establishment as { logo_url: string }).logo_url,
+      name: (it.establishment as { name: string }).name,
+      slug: (it.establishment as { slug: string }).slug
+    }))
+    .slice(0, 5);
 
   // Prevent scroll when sidebar is open on mobile
   useEffect(() => {
