@@ -142,9 +142,13 @@ import { Route as AuthenticatedAppCardapioCategoriasRouteImport } from './routes
 import { Route as AuthenticatedAppCardapioAparenciaRouteImport } from './routes/_authenticated/app.cardapio.aparencia'
 import { Route as AuthenticatedAppAvaliacoesTemaRouteImport } from './routes/_authenticated/app.avaliacoes.tema'
 import { Route as AuthenticatedAppAvaliacoesQrRouteImport } from './routes/_authenticated/app.avaliacoes.qr'
+import { Route as AuthenticatedHashAtendimentoPreviewIndexRouteImport } from './routes/_authenticated/hash/atendimento/preview/index'
 import { Route as ApiPublicWalletV1LogRouteImport } from './routes/api/public/wallet/v1/log'
 import { Route as ApiPublicWalletAppleTokenRouteImport } from './routes/api/public/wallet.apple.$token'
 import { Route as ApiPublicRTCodeRouteImport } from './routes/api/public/r/t/$code'
+import { Route as AuthenticatedHashAtendimentoPreviewWorkspaceRouteImport } from './routes/_authenticated/hash/atendimento/preview/workspace'
+import { Route as AuthenticatedHashAtendimentoPreviewNexusRouteImport } from './routes/_authenticated/hash/atendimento/preview/nexus'
+import { Route as AuthenticatedHashAtendimentoPreviewCommandRouteImport } from './routes/_authenticated/hash/atendimento/preview/command'
 import { Route as AuthenticatedAppFidelizeTicketIdRouteImport } from './routes/_authenticated/app.fidelize.ticket.$id'
 import { Route as ApiPublicRQrSlugDestRouteImport } from './routes/api/public/r/qr/$slug/$dest'
 import { Route as ApiPublicWalletV1PassesPassTypeIdSerialRouteImport } from './routes/api/public/wallet/v1/passes.$passTypeId.$serial'
@@ -885,6 +889,12 @@ const AuthenticatedAppAvaliacoesQrRoute =
     path: '/avaliacoes/qr',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedHashAtendimentoPreviewIndexRoute =
+  AuthenticatedHashAtendimentoPreviewIndexRouteImport.update({
+    id: '/preview/',
+    path: '/preview/',
+    getParentRoute: () => AuthenticatedHashAtendimentoRoute,
+  } as any)
 const ApiPublicWalletV1LogRoute = ApiPublicWalletV1LogRouteImport.update({
   id: '/api/public/wallet/v1/log',
   path: '/api/public/wallet/v1/log',
@@ -901,6 +911,24 @@ const ApiPublicRTCodeRoute = ApiPublicRTCodeRouteImport.update({
   path: '/api/public/r/t/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedHashAtendimentoPreviewWorkspaceRoute =
+  AuthenticatedHashAtendimentoPreviewWorkspaceRouteImport.update({
+    id: '/preview/workspace',
+    path: '/preview/workspace',
+    getParentRoute: () => AuthenticatedHashAtendimentoRoute,
+  } as any)
+const AuthenticatedHashAtendimentoPreviewNexusRoute =
+  AuthenticatedHashAtendimentoPreviewNexusRouteImport.update({
+    id: '/preview/nexus',
+    path: '/preview/nexus',
+    getParentRoute: () => AuthenticatedHashAtendimentoRoute,
+  } as any)
+const AuthenticatedHashAtendimentoPreviewCommandRoute =
+  AuthenticatedHashAtendimentoPreviewCommandRouteImport.update({
+    id: '/preview/command',
+    path: '/preview/command',
+    getParentRoute: () => AuthenticatedHashAtendimentoRoute,
+  } as any)
 const AuthenticatedAppFidelizeTicketIdRoute =
   AuthenticatedAppFidelizeTicketIdRouteImport.update({
     id: '/fidelize/ticket/$id',
@@ -1003,7 +1031,7 @@ export interface FileRoutesByFullPath {
   '/hash/alertas': typeof AuthenticatedHashAlertasRoute
   '/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
   '/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
-  '/hash/atendimento': typeof AuthenticatedHashAtendimentoRoute
+  '/hash/atendimento': typeof AuthenticatedHashAtendimentoRouteWithChildren
   '/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
   '/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
   '/hash/cardapio-jsonld': typeof AuthenticatedHashCardapioJsonldRoute
@@ -1068,9 +1096,13 @@ export interface FileRoutesByFullPath {
   '/hash/planos/': typeof AuthenticatedHashPlanosIndexRoute
   '/hash/suporte/': typeof AuthenticatedHashSuporteIndexRoute
   '/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
+  '/hash/atendimento/preview/command': typeof AuthenticatedHashAtendimentoPreviewCommandRoute
+  '/hash/atendimento/preview/nexus': typeof AuthenticatedHashAtendimentoPreviewNexusRoute
+  '/hash/atendimento/preview/workspace': typeof AuthenticatedHashAtendimentoPreviewWorkspaceRoute
   '/api/public/r/t/$code': typeof ApiPublicRTCodeRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
   '/api/public/wallet/v1/log': typeof ApiPublicWalletV1LogRoute
+  '/hash/atendimento/preview/': typeof AuthenticatedHashAtendimentoPreviewIndexRoute
   '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
   '/api/public/wallet/v1/passes/$passTypeId/$serial': typeof ApiPublicWalletV1PassesPassTypeIdSerialRoute
   '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId': typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren
@@ -1140,7 +1172,7 @@ export interface FileRoutesByTo {
   '/hash/alertas': typeof AuthenticatedHashAlertasRoute
   '/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
   '/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
-  '/hash/atendimento': typeof AuthenticatedHashAtendimentoRoute
+  '/hash/atendimento': typeof AuthenticatedHashAtendimentoRouteWithChildren
   '/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
   '/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
   '/hash/cardapio-jsonld': typeof AuthenticatedHashCardapioJsonldRoute
@@ -1205,9 +1237,13 @@ export interface FileRoutesByTo {
   '/hash/planos': typeof AuthenticatedHashPlanosIndexRoute
   '/hash/suporte': typeof AuthenticatedHashSuporteIndexRoute
   '/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
+  '/hash/atendimento/preview/command': typeof AuthenticatedHashAtendimentoPreviewCommandRoute
+  '/hash/atendimento/preview/nexus': typeof AuthenticatedHashAtendimentoPreviewNexusRoute
+  '/hash/atendimento/preview/workspace': typeof AuthenticatedHashAtendimentoPreviewWorkspaceRoute
   '/api/public/r/t/$code': typeof ApiPublicRTCodeRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
   '/api/public/wallet/v1/log': typeof ApiPublicWalletV1LogRoute
+  '/hash/atendimento/preview': typeof AuthenticatedHashAtendimentoPreviewIndexRoute
   '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
   '/api/public/wallet/v1/passes/$passTypeId/$serial': typeof ApiPublicWalletV1PassesPassTypeIdSerialRoute
   '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId': typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren
@@ -1284,7 +1320,7 @@ export interface FileRoutesById {
   '/_authenticated/hash/alertas': typeof AuthenticatedHashAlertasRoute
   '/_authenticated/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
   '/_authenticated/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
-  '/_authenticated/hash/atendimento': typeof AuthenticatedHashAtendimentoRoute
+  '/_authenticated/hash/atendimento': typeof AuthenticatedHashAtendimentoRouteWithChildren
   '/_authenticated/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
   '/_authenticated/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
   '/_authenticated/hash/cardapio-jsonld': typeof AuthenticatedHashCardapioJsonldRoute
@@ -1349,9 +1385,13 @@ export interface FileRoutesById {
   '/_authenticated/hash/planos/': typeof AuthenticatedHashPlanosIndexRoute
   '/_authenticated/hash/suporte/': typeof AuthenticatedHashSuporteIndexRoute
   '/_authenticated/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
+  '/_authenticated/hash/atendimento/preview/command': typeof AuthenticatedHashAtendimentoPreviewCommandRoute
+  '/_authenticated/hash/atendimento/preview/nexus': typeof AuthenticatedHashAtendimentoPreviewNexusRoute
+  '/_authenticated/hash/atendimento/preview/workspace': typeof AuthenticatedHashAtendimentoPreviewWorkspaceRoute
   '/api/public/r/t/$code': typeof ApiPublicRTCodeRoute
   '/api/public/wallet/apple/$token': typeof ApiPublicWalletAppleTokenRoute
   '/api/public/wallet/v1/log': typeof ApiPublicWalletV1LogRoute
+  '/_authenticated/hash/atendimento/preview/': typeof AuthenticatedHashAtendimentoPreviewIndexRoute
   '/api/public/r/qr/$slug/$dest': typeof ApiPublicRQrSlugDestRoute
   '/api/public/wallet/v1/passes/$passTypeId/$serial': typeof ApiPublicWalletV1PassesPassTypeIdSerialRoute
   '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId': typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren
@@ -1493,9 +1533,13 @@ export interface FileRouteTypes {
     | '/hash/planos/'
     | '/hash/suporte/'
     | '/app/fidelize/ticket/$id'
+    | '/hash/atendimento/preview/command'
+    | '/hash/atendimento/preview/nexus'
+    | '/hash/atendimento/preview/workspace'
     | '/api/public/r/t/$code'
     | '/api/public/wallet/apple/$token'
     | '/api/public/wallet/v1/log'
+    | '/hash/atendimento/preview/'
     | '/api/public/r/qr/$slug/$dest'
     | '/api/public/wallet/v1/passes/$passTypeId/$serial'
     | '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId'
@@ -1630,9 +1674,13 @@ export interface FileRouteTypes {
     | '/hash/planos'
     | '/hash/suporte'
     | '/app/fidelize/ticket/$id'
+    | '/hash/atendimento/preview/command'
+    | '/hash/atendimento/preview/nexus'
+    | '/hash/atendimento/preview/workspace'
     | '/api/public/r/t/$code'
     | '/api/public/wallet/apple/$token'
     | '/api/public/wallet/v1/log'
+    | '/hash/atendimento/preview'
     | '/api/public/r/qr/$slug/$dest'
     | '/api/public/wallet/v1/passes/$passTypeId/$serial'
     | '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId'
@@ -1773,9 +1821,13 @@ export interface FileRouteTypes {
     | '/_authenticated/hash/planos/'
     | '/_authenticated/hash/suporte/'
     | '/_authenticated/app/fidelize/ticket/$id'
+    | '/_authenticated/hash/atendimento/preview/command'
+    | '/_authenticated/hash/atendimento/preview/nexus'
+    | '/_authenticated/hash/atendimento/preview/workspace'
     | '/api/public/r/t/$code'
     | '/api/public/wallet/apple/$token'
     | '/api/public/wallet/v1/log'
+    | '/_authenticated/hash/atendimento/preview/'
     | '/api/public/r/qr/$slug/$dest'
     | '/api/public/wallet/v1/passes/$passTypeId/$serial'
     | '/api/public/wallet/v1/devices/$deviceId/registrations/$passTypeId'
@@ -2775,6 +2827,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAvaliacoesQrRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/hash/atendimento/preview/': {
+      id: '/_authenticated/hash/atendimento/preview/'
+      path: '/preview'
+      fullPath: '/hash/atendimento/preview/'
+      preLoaderRoute: typeof AuthenticatedHashAtendimentoPreviewIndexRouteImport
+      parentRoute: typeof AuthenticatedHashAtendimentoRoute
+    }
     '/api/public/wallet/v1/log': {
       id: '/api/public/wallet/v1/log'
       path: '/api/public/wallet/v1/log'
@@ -2795,6 +2854,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/r/t/$code'
       preLoaderRoute: typeof ApiPublicRTCodeRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/hash/atendimento/preview/workspace': {
+      id: '/_authenticated/hash/atendimento/preview/workspace'
+      path: '/preview/workspace'
+      fullPath: '/hash/atendimento/preview/workspace'
+      preLoaderRoute: typeof AuthenticatedHashAtendimentoPreviewWorkspaceRouteImport
+      parentRoute: typeof AuthenticatedHashAtendimentoRoute
+    }
+    '/_authenticated/hash/atendimento/preview/nexus': {
+      id: '/_authenticated/hash/atendimento/preview/nexus'
+      path: '/preview/nexus'
+      fullPath: '/hash/atendimento/preview/nexus'
+      preLoaderRoute: typeof AuthenticatedHashAtendimentoPreviewNexusRouteImport
+      parentRoute: typeof AuthenticatedHashAtendimentoRoute
+    }
+    '/_authenticated/hash/atendimento/preview/command': {
+      id: '/_authenticated/hash/atendimento/preview/command'
+      path: '/preview/command'
+      fullPath: '/hash/atendimento/preview/command'
+      preLoaderRoute: typeof AuthenticatedHashAtendimentoPreviewCommandRouteImport
+      parentRoute: typeof AuthenticatedHashAtendimentoRoute
     }
     '/_authenticated/app/fidelize/ticket/$id': {
       id: '/_authenticated/app/fidelize/ticket/$id'
@@ -2993,12 +3073,36 @@ const AuthenticatedCarteiraRouteWithChildren =
     AuthenticatedCarteiraRouteChildren,
   )
 
+interface AuthenticatedHashAtendimentoRouteChildren {
+  AuthenticatedHashAtendimentoPreviewCommandRoute: typeof AuthenticatedHashAtendimentoPreviewCommandRoute
+  AuthenticatedHashAtendimentoPreviewNexusRoute: typeof AuthenticatedHashAtendimentoPreviewNexusRoute
+  AuthenticatedHashAtendimentoPreviewWorkspaceRoute: typeof AuthenticatedHashAtendimentoPreviewWorkspaceRoute
+  AuthenticatedHashAtendimentoPreviewIndexRoute: typeof AuthenticatedHashAtendimentoPreviewIndexRoute
+}
+
+const AuthenticatedHashAtendimentoRouteChildren: AuthenticatedHashAtendimentoRouteChildren =
+  {
+    AuthenticatedHashAtendimentoPreviewCommandRoute:
+      AuthenticatedHashAtendimentoPreviewCommandRoute,
+    AuthenticatedHashAtendimentoPreviewNexusRoute:
+      AuthenticatedHashAtendimentoPreviewNexusRoute,
+    AuthenticatedHashAtendimentoPreviewWorkspaceRoute:
+      AuthenticatedHashAtendimentoPreviewWorkspaceRoute,
+    AuthenticatedHashAtendimentoPreviewIndexRoute:
+      AuthenticatedHashAtendimentoPreviewIndexRoute,
+  }
+
+const AuthenticatedHashAtendimentoRouteWithChildren =
+  AuthenticatedHashAtendimentoRoute._addFileChildren(
+    AuthenticatedHashAtendimentoRouteChildren,
+  )
+
 interface AuthenticatedHashRouteChildren {
   AuthenticatedHashAjudaRoute: typeof AuthenticatedHashAjudaRoute
   AuthenticatedHashAlertasRoute: typeof AuthenticatedHashAlertasRoute
   AuthenticatedHashAnunciosRoute: typeof AuthenticatedHashAnunciosRoute
   AuthenticatedHashAssinaturasRoute: typeof AuthenticatedHashAssinaturasRoute
-  AuthenticatedHashAtendimentoRoute: typeof AuthenticatedHashAtendimentoRoute
+  AuthenticatedHashAtendimentoRoute: typeof AuthenticatedHashAtendimentoRouteWithChildren
   AuthenticatedHashAuditoriaRoute: typeof AuthenticatedHashAuditoriaRoute
   AuthenticatedHashAvaliacoesRoute: typeof AuthenticatedHashAvaliacoesRoute
   AuthenticatedHashCardapioJsonldRoute: typeof AuthenticatedHashCardapioJsonldRoute
@@ -3030,7 +3134,8 @@ const AuthenticatedHashRouteChildren: AuthenticatedHashRouteChildren = {
   AuthenticatedHashAlertasRoute: AuthenticatedHashAlertasRoute,
   AuthenticatedHashAnunciosRoute: AuthenticatedHashAnunciosRoute,
   AuthenticatedHashAssinaturasRoute: AuthenticatedHashAssinaturasRoute,
-  AuthenticatedHashAtendimentoRoute: AuthenticatedHashAtendimentoRoute,
+  AuthenticatedHashAtendimentoRoute:
+    AuthenticatedHashAtendimentoRouteWithChildren,
   AuthenticatedHashAuditoriaRoute: AuthenticatedHashAuditoriaRoute,
   AuthenticatedHashAvaliacoesRoute: AuthenticatedHashAvaliacoesRoute,
   AuthenticatedHashCardapioJsonldRoute: AuthenticatedHashCardapioJsonldRoute,
