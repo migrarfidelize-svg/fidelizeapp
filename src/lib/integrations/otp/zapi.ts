@@ -92,7 +92,8 @@ export const zapiOtp: WhatsAppOTPProvider = {
       });
 
       if (response.ok) {
-        return { ok: true, message: "Mensagem enviada." };
+        const resBody = JSON.parse(body);
+        return { ok: true, message: "Mensagem enviada.", providerMessageId: resBody?.messageId };
       }
 
       return { ok: false, message: `Erro no envio (${response.status}): ${body}` };
@@ -106,7 +107,8 @@ export const zapiOtp: WhatsAppOTPProvider = {
     return {
       remoteMessageId: body.messageId,
       fromPhone: body.phone,
-      text: body.text?.message || ""
+      text: body.text?.message || "",
+      messageType: body.text?.message ? "text" : "other"
     };
   }
 };

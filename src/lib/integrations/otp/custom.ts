@@ -117,7 +117,7 @@ export const customOtp: WhatsAppOTPProvider = {
       });
 
       if (response.ok) {
-        return { ok: true, message: "Mensagem enviada via provider customizado." };
+        return { ok: true, message: "Mensagem enviada via provider customizado.", providerMessageId: `custom-${Date.now()}` };
       }
 
       return { ok: false, message: `Erro no envio (${response.status}): ${resBody}` };
@@ -133,6 +133,6 @@ export const customOtp: WhatsAppOTPProvider = {
     
     if (!remoteMessageId || !fromPhone || !text) return null;
     
-    return { remoteMessageId, fromPhone, text };
+    return { remoteMessageId, fromPhone, text, messageType: "text" };
   }
 };

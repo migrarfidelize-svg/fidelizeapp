@@ -83,7 +83,8 @@ export const uazapiOtp: WhatsAppOTPProvider = {
       });
 
       if (response.ok) {
-        return { ok: true, message: "Mensagem enviada." };
+        const resBody = JSON.parse(body);
+        return { ok: true, message: "Mensagem enviada.", providerMessageId: resBody?.data?.key?.id || resBody?.key?.id };
       }
 
       return { ok: false, message: `Erro no envio (${response.status}): ${body}` };
@@ -101,7 +102,8 @@ export const uazapiOtp: WhatsAppOTPProvider = {
     return {
       remoteMessageId: msg.key?.id,
       fromPhone: msg.key?.remoteJid?.split("@")[0],
-      text
+      text,
+      messageType: msg.message?.conversation ? "text" : "other"
     };
   }
 };
