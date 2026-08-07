@@ -45,6 +45,7 @@ export const saveElevenConfig = createServerFn({ method: "POST" })
         security: {
           elevenlabs_config: {
             ...data,
+            apiKey: data.apiKey?.trim(),
             updated_at: new Date().toISOString(),
             updated_by: userId
           }
@@ -116,7 +117,7 @@ export const testElevenConnection = createServerFn({ method: "POST" })
     const isSuperAdmin = roles?.some(r => r.role === 'super_admin');
     if (!isSuperAdmin) throw new Error("Não autorizado");
 
-    let apiKey = data.apiKey;
+    let apiKey = data.apiKey?.trim();
     
     // Se não enviou apiKey no teste, tenta carregar a salva
     if (!apiKey) {
@@ -131,26 +132,33 @@ export const testElevenConnection = createServerFn({ method: "POST" })
     if (!apiKey) throw new Error("API Key não encontrada.");
 
     try {
-      const res = await fetch("https://api.elevenlabs.io/v1/user", {
+      // Usando /v1/models conforme solicitado para validação segura
+      const res = await fetch("https://api.elevenlabs.io/v1/models", {
         headers: { "xi-api-key": apiKey },
       });
 
+      console.log(`[ElevenLabs Diagnostic] Endpoint: /v1/models, Status: ${res.status}`);
+
       if (!res.ok) {
-        if (res.status === 401) return { ok: false, status: 'invalid_key', message: "API Key inválida." };
-        return { ok: false, status: 'error', message: "Erro na resposta da API ElevenLabs." };
+        if (res.status === 401) return { ok: false, status: 'invalid_key', message: "API Key inválida (401)." };
+        if (res.status === 402) return { ok: false, status: 'no_credits', message: "Créditos insuficientes ou pagamento necessário (402)." };
+        if (res.status === 403) return { ok: false, status: 'forbidden', message: "Acesso proibido ou restrição de IP (403)." };
+        if (res.status === 429) return { ok: false, status: 'rate_limit', message: "Limite de requisições atingido (429)." };
+        if (res.status >= 500) return { ok: false, status: 'server_error', message: "Indisponibilidade temporária da ElevenLabs (5xx)." };
+        
+        const errData = await res.json().catch(() => ({}));
+        return { 
+          ok: false, 
+          status: 'error', 
+          message: errData?.detail?.message || `Erro na API ElevenLabs (${res.status})` 
+        };
       }
 
-      const user = await res.json();
-      const usage = user.subscription?.character_count || 0;
-      const limit = user.subscription?.character_limit || 0;
-
-      if (limit > 0 && usage >= limit) {
-        return { ok: false, status: 'no_credits', message: "Créditos esgotados na ElevenLabs." };
-      }
-
-      return { ok: true, status: 'connected', subscription: user.subscription };
+      const models = await res.json();
+      return { ok: true, status: 'connected', modelsCount: models.length };
     } catch (e: any) {
-      return { ok: false, status: 'error', message: e.message };
+      console.error(`[ElevenLabs Diagnostic] Network Error: ${e.message}`);
+      return { ok: false, status: 'error', message: `Falha de rede ou timeout: ${e.message}` };
     }
   });
 
@@ -170,7 +178,7 @@ export const listElevenVoices = createServerFn({ method: "POST" })
     const isSuperAdmin = roles?.some(r => r.role === 'super_admin');
     if (!isSuperAdmin) throw new Error("Não autorizado");
 
-    let apiKey = data.apiKey;
+    let apiKey = data.apiKey?.trim();
     if (!apiKey) {
       const { data: saved } = await supabase
         .from("establishment_settings")
@@ -248,7 +256,7 @@ export const generateElevenTestAudio = createServerFn({ method: "POST" })
     const isSuperAdmin = roles?.some(r => r.role === 'super_admin');
     if (!isSuperAdmin) throw new Error("Não autorizado");
 
-    let apiKey = data.apiKey;
+    let apiKey = data.apiKey?.trim();
     if (!apiKey) {
       const { data: saved } = await supabase
         .from("establishment_settings")
