@@ -204,16 +204,19 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
       has_menu: false,
       has_catalog: false,
     };
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: est } = await supabaseAdmin
+
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data: est } = await supabase
       .from("establishments")
       .select("id, name, slug, logo_url, primary_color, accent_color, external_links, active, description, address, city, phone, whatsapp, instagram, website, business_hours")
       .eq("slug", data.slug)
       .maybeSingle();
+
     if (!est || !est.active) return empty;
+
     const nowIso = new Date().toISOString();
     const [{ data: rows, error }, { data: camps }] = await Promise.all([
-      supabaseAdmin
+      supabase
         .from("promotions")
         .select("id, title, body, media, external_links, starts_at, ends_at, created_at")
         .eq("establishment_id", est.id)
@@ -221,27 +224,30 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
         .or(`starts_at.is.null,starts_at.lte.${nowIso}`)
         .or(`ends_at.is.null,ends_at.gte.${nowIso}`)
         .order("created_at", { ascending: false }),
-      supabaseAdmin
+      supabase
         .from("campaigns")
         .select("id, name, stamps_required, reward_title, reward_description, rules, stamp_icon, primary_color, accent_color, stamp_validity_days, reward_validity_days")
         .eq("establishment_id", est.id)
         .eq("active", true)
         .order("created_at", { ascending: false }),
     ]);
+
     if (error) throw new Error(error.message);
-    const storage = supabaseAdmin.storage.from("promotions");
+
+    const storage = supabase.storage.from("promotions");
     const promotions: PublicPromo[] = await Promise.all(
       (rows ?? []).map(async (r) => ({
         id: r.id as string,
         title: r.title as string,
         body: (r.body as string | null) ?? null,
-        media: await signMediaWith(storage, r.media as unknown as Media[]),
+        media: await signMediaWith(storage as any, r.media as unknown as Media[]),
         external_links: (r.external_links as unknown as { label: string; url: string }[]) ?? [],
         starts_at: (r.starts_at as string | null) ?? null,
         ends_at: (r.ends_at as string | null) ?? null,
         created_at: r.created_at as string,
       })),
     );
+
     const campaigns: PublicCampaign[] = (camps ?? []).map((c) => ({
       id: c.id as string,
       name: c.name as string,
@@ -255,12 +261,13 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
       stamp_validity_days: (c.stamp_validity_days as number | null) ?? null,
       reward_validity_days: (c.reward_validity_days as number | null) ?? null,
     }));
-    // Vitrine digital: só expomos o atalho quando o plano libera e o cardápio está publicado.
+
     const { isShowcaseDestinationValid } = await import("@/lib/qr-target.server");
     const [hasMenu, hasCatalog] = await Promise.all([
-      isShowcaseDestinationValid(supabaseAdmin, est.id as string, "menu"),
-      isShowcaseDestinationValid(supabaseAdmin, est.id as string, "catalog"),
+      isShowcaseDestinationValid(supabase, est.id as string, "menu"),
+      isShowcaseDestinationValid(supabase, est.id as string, "catalog"),
     ]);
+
     return {
       has_menu: hasMenu,
       has_catalog: hasCatalog,
