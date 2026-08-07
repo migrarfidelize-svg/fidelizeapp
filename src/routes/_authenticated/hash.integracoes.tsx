@@ -17,8 +17,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plug, CheckCircle2, XCircle, Loader2, KeyRound, ExternalLink, Settings2,
   Copy, CopyCheck, RotateCcw, AlertTriangle, Clock, BookOpen, History, Webhook, Save,
-  Sparkles, CreditCard, Zap, Target, ShieldCheck, MessageCircle,
+  Sparkles, CreditCard, Zap, Target, ShieldCheck, MessageCircle, Phone,
 } from "lucide-react";
+
 
 import { motion } from "framer-motion";
 import { ProviderBrand, providerAccent } from "@/components/integrations/ProviderBrand";
