@@ -351,20 +351,21 @@ export function SponsoredAdCard({ data, model, className, initialExpanded = fals
                 )}
               </AnimatePresence>
 
-            
-            {!isExpanded && (
-              <motion.div 
-                layout
-                className={cn(
-                  "p-2 rounded-full border active:scale-95 transition-all",
-                  styles.cta
-                )}
-              >
-                <ArrowRight className="h-4 w-4" />
-              </motion.div>
-            )}
-          </div>
-        </motion.div>
+              {!isExpanded && (
+                <motion.div 
+                  layout
+                  className={cn(
+                    "p-2 rounded-full border active:scale-95 transition-all",
+                    styles.cta
+                  )}
+                >
+                  <ArrowRight className="h-4 w-4" />
+                </motion.div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
       </div>
       
       {/* 4. FAIXA DO CRIATIVO (STRIPE) */}
