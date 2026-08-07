@@ -74,7 +74,8 @@ export const getElevenConfig = createServerFn({ method: "GET" })
     const isSuperAdmin = roles?.some(r => r.role === 'super_admin');
     if (!isSuperAdmin) return { status: 'unauthorized' };
 
-    const { data, error } = await (supabase as any)
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await (supabaseAdmin as any)
       .from("system_settings")
       .select("value, enabled")
       .eq("namespace", "voice")
