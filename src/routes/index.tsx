@@ -37,6 +37,11 @@ const FAQ_ITEMS: Array<[string, string]> = [
 ];
 
 export const Route = createFileRoute("/")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    source: (search?.source as string) || undefined,
+  } as { source?: string }),
+
+
   head: () => ({
     meta: [
       { title: PAGE_TITLE },
@@ -81,10 +86,20 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
-  beforeLoad: async () => {
+  beforeLoad: async ({ location }) => {
+    // Se estiver no modo PWA (standalone) ou vier de um redirecionamento de PWA
+    const isStandalone = typeof window !== "undefined" && window.matchMedia("(display-mode: standalone)").matches;
+    const search = location.search as any;
+    const isPwaSource = search?.source === "pwa";
+
+    if (isStandalone || isPwaSource) {
+      throw redirect({ to: "/auth", search: { source: "pwa" } });
+    }
+
+
+
     const session = await supabase.auth.getSession();
     if (session.data.session?.user) {
-      // Se já está logado, redireciona para o destino correto baseado no papel
       const { getAuthenticatedAccountAccess } = await import("@/lib/account-access.functions");
       const access = await getAuthenticatedAccountAccess();
       if (access.isSuperAdmin || access.accountType === "super_admin") throw redirect({ to: "/hash" });

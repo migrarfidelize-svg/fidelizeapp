@@ -265,9 +265,10 @@ function WalletProfile() {
 
       <button
         onClick={async () => {
+          const isPwa = window.matchMedia("(display-mode: standalone)").matches;
           clearWalletCache();
           await supabase.auth.signOut();
-          navigate({ to: "/auth", replace: true });
+          navigate({ to: isPwa ? "/auth" : "/", replace: true, search: isPwa ? { source: "pwa" } : undefined });
         }}
         className="w-full rounded-xl border border-border py-2.5 text-sm text-muted-foreground hover:text-foreground"
       >

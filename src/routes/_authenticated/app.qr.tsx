@@ -1,5 +1,5 @@
 import { RouteLoading } from "@/components/RouteLoading";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { LogoPaletteSync } from "@/components/LogoPaletteSync";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -118,10 +118,15 @@ export const Route = createFileRoute("/_authenticated/app/qr")({
   head: () => ({ meta: [{ title: "QR Codes — Fidelize" }] }),
   validateSearch: (search: Record<string, unknown>) => {
     const d = String(search?.dest ?? "");
-    return { dest: (["reviews", "linktree", "landing", "menu", "catalog"].includes(d) ? d : undefined) as QrDest | undefined };
+    return { 
+      dest: (["reviews", "linktree", "landing", "menu", "catalog"].includes(d) ? d : undefined) as QrDest | undefined,
+      source: (search?.source as string) || undefined,
+    } as { dest?: QrDest; source?: string };
   },
+
   component: ReviewQrPage,
 });
+
 
 /** Poster formats — landscape 15×10cm is the default. */
 type FormatKey = "counter15x10" | "story" | "feed" | "a5";
@@ -376,7 +381,13 @@ function QrStepper({ step, onSelect }: { step: number; onSelect: (s: number) => 
 }
 
 function ReviewQrPage() {
+  const navigate = useNavigate();
+  const search = Route.useSearch();
+  const isPwa = typeof window !== "undefined" && window.matchMedia("(display-mode: standalone)").matches || search.source === "pwa";
+  const backTo = isPwa ? "/auth" : "/app";
+
   const [step, setStep] = useState(1);
+
 
 
   const getEsts = useServerFn(getMyEstablishments);
@@ -387,7 +398,6 @@ function ReviewQrPage() {
 
   const { allowed, isLoading: featLoading } = useMyFeature(est?.id, "public_reviews");
 
-  const search = Route.useSearch();
 
   // Persisted preferences
   const storageKey = est ? `review-qr:${est.id}` : "review-qr:draft";
@@ -1615,11 +1625,17 @@ function ReviewQrPage() {
                 variant="ghost"
                 size="sm"
                 className="h-11 justify-self-start px-3 sm:h-9"
-                disabled={step === 1}
-                onClick={() => setStep((s) => Math.max(1, s - 1))}
+                onClick={() => {
+                  if (step === 1) {
+                    navigate({ to: backTo });
+                  } else {
+                    setStep((s) => Math.max(1, s - 1));
+                  }
+                }}
               >
                 ← Voltar
               </Button>
+
               <span className="text-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:text-[11px]">
                 Etapa {step}/{QR_STEPS.length}
               </span>

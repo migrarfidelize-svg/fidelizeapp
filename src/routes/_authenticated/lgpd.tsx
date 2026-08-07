@@ -46,9 +46,10 @@ function LgpdPage() {
     setDeleting(true);
     try {
       await deleteFn({ data: { confirmation } });
+      const isPwa = window.matchMedia("(display-mode: standalone)").matches;
       await supabase.auth.signOut();
       toast.success("Sua conta foi excluída.");
-      navigate({ to: "/" });
+      navigate({ to: isPwa ? "/auth" : "/", replace: true, search: isPwa ? { source: "pwa" } : undefined });
     } catch (e: any) {
       toast.error(e.message ?? "Falha ao excluir conta.");
       setDeleting(false);
