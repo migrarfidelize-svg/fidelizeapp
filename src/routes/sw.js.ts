@@ -16,11 +16,10 @@ export const Route = createFileRoute("/sw/js")({
       GET: async () => {
         // Paths to check based on typical TanStack Start / Nitro build outputs
         const paths = [
+          join(process.cwd(), "dist", "sw.js"),
           join(process.cwd(), "public", "sw.js"),
           join(process.cwd(), "dist", "client", "sw.js"),
-          join(process.cwd(), "dist", "sw.js"),
           join(process.cwd(), ".output", "public", "sw.js"),
-          // Fallback for development if needed, though vite handles it there
           join(process.cwd(), "sw.js"),
         ];
 
@@ -33,6 +32,7 @@ export const Route = createFileRoute("/sw/js")({
                   "Content-Type": "application/javascript; charset=utf-8",
                   "Cache-Control": "public, max-age=0, must-revalidate",
                   "Service-Worker-Allowed": "/",
+                  "X-SW-Path": p, // Audit header
                 },
               });
             } catch (err) {
