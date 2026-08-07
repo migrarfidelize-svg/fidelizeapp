@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { 
   Compass, Search, MapPin, Tag, Star, ChevronRight, Gift, Target, 
   Sparkles, Heart, Coffee, Utensils, Scissors, ShoppingBag, 
-  Filter, ArrowRight, Trophy, Zap, Clock
+  Filter, ArrowRight, Trophy, Zap, Clock, PlusCircle
 } from "lucide-react";
 
 const STYLES = {
