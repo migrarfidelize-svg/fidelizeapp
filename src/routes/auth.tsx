@@ -91,60 +91,13 @@ async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: 
   }
   if (opts.next && opts.next.startsWith("/")) return { to: opts.next };
 
-  /** Tipo de conta gravado no perfil (fonte de verdade quando ainda não há empresa). */
-  async function profileAccountType(): Promise<string | null> {
-    try {
-      const { data: uinfo } = await supabase.auth.getUser();
-      const uid = uinfo.user?.id;
-      if (!uid) return null;
-      const { data: prof } = await supabase
-        .from("profiles")
-        .select("account_type")
-        .eq("id", uid)
-        .maybeSingle();
-      return (prof?.account_type as string | undefined) ?? null;
-    } catch {
-      return null;
-    }
-  }
-
-  /** Há intenção de plano guardada? Só lojista escolhe plano. */
-  function hasPlanIntent(): boolean {
-    try {
-      return !!localStorage.getItem("fidelize:plan-intent");
-    } catch {
-      return false;
-    }
-  }
-
   try {
-    // Recarrega o papel no servidor após cada login. O UUID vem do bearer token
-    // validado, nunca do formulário, perfil ou cache do navegador.
-    const access = await getAuthenticatedAccountAccess();
-    
-    // Prioridade 1: Super Admin
-    if (access.isSuperAdmin || access.accountType === "super_admin") return { to: "/hash" };
-    
-    // Prioridade 2: Estabelecimento (com empresa já vinculada ou vindo da aba estabelecimento)
-    if (access.accountType === "establishment") return { to: "/app" };
-    if (opts.role === "establishment") return { to: "/onboarding" };
-    
-    // Prioridade 3: Casos de transição (perfil marcado ou intenção de plano)
-    // Mas se o usuário explicitamente veio como cliente (ou PWA), a carteira deve vencer.
-    const pType = await profileAccountType();
-    if (opts.role !== "customer" && (pType === "establishment" || hasPlanIntent())) {
-      return { to: "/onboarding" };
-    }
-
-    // Padrão: Carteira do Cliente
-    return { to: "/carteira" };
+    const { resolveAuthenticatedDestination } = await import("@/lib/destination-resolver");
+    const to = await resolveAuthenticatedDestination();
+    return { to };
   } catch (error) {
-    // Uma falha ao consultar autorização não pode reclassificar silenciosamente
-    // um administrador como cliente.
     console.error("[auth] falha ao carregar papel após login", error);
-    if (opts.role === "establishment") return { to: "/onboarding" };
-    if ((await profileAccountType()) === "establishment" || hasPlanIntent()) return { to: "/onboarding" };
-    throw new Error("Não foi possível confirmar as permissões da conta. Tente entrar novamente.");
+    return { to: "/carteira" };
   }
 }
 
