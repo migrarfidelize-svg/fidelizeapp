@@ -1059,31 +1059,58 @@ export async function ensureEstablishmentInitialResources(establishmentId: strin
     }
   }
 
-  // 2. Criar links padrão para Link Tree se não existirem
-  const { data: links } = await supabaseAdmin
-    .from("linktree_links")
+  // 2. Criar página inicial no Link Tree se não existir
+  const { data: pages } = await supabaseAdmin
+    .from("link_tree_pages")
     .select("id")
     .eq("establishment_id", establishmentId)
     .limit(1);
 
-  if (!links || links.length === 0) {
-    await supabaseAdmin.from("linktree_links").insert([
-      {
+  if (!pages || pages.length === 0) {
+    const { data: est } = await supabaseAdmin
+      .from("establishments")
+      .select("name, slug, logo_url, primary_color, accent_color")
+      .eq("id", establishmentId)
+      .single();
+
+    if (est) {
+      const { data: newPage } = await supabaseAdmin.from("link_tree_pages").insert({
         establishment_id: establishmentId,
-        label: "Cartão Fidelidade",
-        url: "/cartao",
-        icon: "credit-card",
-        order_index: 0,
-        active: true
-      },
-      {
-        establishment_id: establishmentId,
-        label: "Fazer Avaliação",
-        url: "/avaliar",
-        icon: "star",
-        order_index: 1,
-        active: true
+        title: est.name,
+        logo_url: est.logo_url,
+        theme: {
+          primary: est.primary_color,
+          accent: est.accent_color,
+          background: "#0b0f19",
+          text: "#ffffff",
+          button_style: "glass",
+          rounded: "xl"
+        },
+        published: true,
+        published_at: new Date().toISOString()
+      }).select("id").single();
+
+      if (newPage) {
+        const origin = process.env.VITE_APP_URL || "";
+        await supabaseAdmin.from("link_tree_links").insert([
+          {
+            page_id: newPage.id,
+            kind: "cartao",
+            label: "Meu Cartão Fidelidade",
+            url: `${origin}/cartao/${est.slug}`,
+            enabled: true,
+            sort_order: 0
+          },
+          {
+            page_id: newPage.id,
+            kind: "reviews",
+            label: "Avaliar Estabelecimento",
+            url: `${origin}/avaliar/${est.slug}`,
+            enabled: true,
+            sort_order: 1
+          }
+        ]);
       }
-    ]);
+    }
   }
 }
