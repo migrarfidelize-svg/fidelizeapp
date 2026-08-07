@@ -1,8 +1,16 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, ArrowRight, Tag, ChevronDown } from "lucide-react";
+import { Sparkles, ArrowRight, Tag, ChevronDown, Gift, ShoppingBag, Utensils, Star, MapPin } from "lucide-react";
 import { AdDisplayModel } from "@/lib/sponsored-ads-core";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+
+export type AdTheme = 
+  | "premium_dark" 
+  | "premium_light" 
+  | "gradient_promo" 
+  | "editorial" 
+  | "minimal_product" 
+  | "seasonal";
 
 export interface SponsoredAdData {
   id: string;
@@ -15,9 +23,12 @@ export interface SponsoredAdData {
   discountValue?: number; // percentage
   ctaLabel?: string;
   imageUrl: string;
-  theme?: "dark" | "light";
+  theme?: AdTheme;
   offerType?: "discount" | "percentage" | "value" | "benefit" | "loyalty" | "reward";
   benefitText?: string;
+  category?: string;
+  rating?: number;
+  distance?: string;
 }
 
 interface SponsoredAdCardProps {
@@ -29,6 +40,7 @@ interface SponsoredAdCardProps {
 
 export function SponsoredAdCard({ data, model, className, initialExpanded = false }: SponsoredAdCardProps) {
   const [isExpanded, setIsExpanded] = useState(initialExpanded);
+  const theme = data.theme || "premium_dark";
 
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -37,9 +49,79 @@ export function SponsoredAdCard({ data, model, className, initialExpanded = fals
     }).format(cents / 100);
   };
 
+  const getThemeStyles = () => {
+    switch (theme) {
+      case "premium_light":
+        return {
+          container: "bg-white border-white/20",
+          textTitle: "text-neutral-900",
+          textSecondary: "text-neutral-500",
+          badge: "bg-neutral-100 text-neutral-800 border-neutral-200",
+          accent: "text-primary",
+          gradient: "from-white via-white/40 to-transparent",
+          cta: "bg-neutral-900 text-white hover:bg-neutral-800"
+        };
+      case "gradient_promo":
+        return {
+          container: "bg-gradient-to-br from-primary via-accent to-purple-600 border-white/20",
+          textTitle: "text-white",
+          textSecondary: "text-white/80",
+          badge: "bg-white/20 text-white border-white/30",
+          accent: "text-white",
+          gradient: "from-primary/80 via-transparent to-transparent",
+          cta: "bg-white text-primary hover:bg-neutral-50"
+        };
+      case "editorial":
+        return {
+          container: "bg-neutral-50 border-neutral-200",
+          textTitle: "text-neutral-900 font-serif lowercase italic",
+          textSecondary: "text-neutral-400 font-sans uppercase tracking-[0.2em]",
+          badge: "bg-transparent text-neutral-900 border-neutral-900",
+          accent: "text-neutral-900",
+          gradient: "from-neutral-50 via-neutral-50/20 to-transparent",
+          cta: "bg-transparent border border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white"
+        };
+      case "minimal_product":
+        return {
+          container: "bg-white border-neutral-100",
+          textTitle: "text-black text-center",
+          textSecondary: "text-neutral-500 text-center",
+          badge: "bg-black text-white",
+          accent: "text-black",
+          gradient: "from-white/90 via-transparent to-transparent",
+          cta: "bg-black text-white rounded-full"
+        };
+      case "seasonal":
+        return {
+          container: "bg-rose-50 border-rose-200", // Example for mother's day / valentine
+          textTitle: "text-rose-950",
+          textSecondary: "text-rose-500",
+          badge: "bg-rose-500 text-white",
+          accent: "text-rose-600",
+          gradient: "from-rose-50 via-rose-50/20 to-transparent",
+          cta: "bg-rose-600 text-white"
+        };
+      default: // premium_dark
+        return {
+          container: "bg-neutral-950 border-white/10",
+          textTitle: "text-white",
+          textSecondary: "text-primary",
+          badge: "bg-black/60 text-white/90 border-white/10",
+          accent: "text-primary",
+          gradient: "from-black via-black/60 to-transparent",
+          cta: "bg-primary text-primary-foreground shadow-primary/20"
+        };
+    }
+  };
+
+  const styles = getThemeStyles();
+
   const SponsoredBadge = () => (
-    <div className="inline-flex items-center px-2 py-1 rounded-full backdrop-blur-xl border border-white/10 bg-black/40 text-white/80 shadow-sm w-fit">
-      <Sparkles className="h-2.5 w-2.5 mr-1.5 text-primary" />
+    <div className={cn(
+      "inline-flex items-center px-2 py-1 rounded-full backdrop-blur-xl border shadow-sm w-fit",
+      styles.badge
+    )}>
+      <Sparkles className={cn("h-2.5 w-2.5 mr-1.5", styles.accent)} />
       <span className="text-[9px] font-black uppercase tracking-[0.2em]">Patrocinado</span>
     </div>
   );
@@ -62,12 +144,13 @@ export function SponsoredAdCard({ data, model, className, initialExpanded = fals
   };
 
   const CTAButton = ({ size = "md" }: { size?: "sm" | "md" }) => {
-    const label = data.ctaLabel || (model === "carousel" ? "Ver" : "Aproveitar oferta");
+    const label = data.ctaLabel || (model === "carousel" ? "Ver" : "Aproveitar");
     
     return (
       <div className={cn(
-        "bg-primary text-primary-foreground font-black uppercase tracking-[0.15em] shadow-xl active:scale-[0.97] transition-all flex items-center justify-center gap-2 group whitespace-nowrap border border-white/30 hover:brightness-110 cursor-pointer w-full sm:w-auto",
-        size === "sm" ? "h-9 px-5 rounded-xl text-[10px]" : "h-12 px-8 rounded-2xl text-[11px]"
+        "font-black uppercase tracking-[0.15em] shadow-xl active:scale-[0.97] transition-all flex items-center justify-center gap-2 group whitespace-nowrap border border-white/10 cursor-pointer w-full sm:w-auto",
+        styles.cta,
+        size === "sm" ? "h-9 px-5 rounded-xl text-[10px]" : "h-11 px-8 rounded-2xl text-[11px]"
       )}>
         <span>{label}</span>
         <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -81,14 +164,18 @@ export function SponsoredAdCard({ data, model, className, initialExpanded = fals
     return (
       <div className="flex flex-col gap-1">
         {data.originalPrice && (
-          <div className="text-[11px] font-bold line-through text-white/50 leading-none ml-1">
+          <div className={cn(
+            "text-[10px] font-bold line-through leading-none ml-1 opacity-50",
+            theme === "premium_light" || theme === "editorial" || theme === "minimal_product" ? "text-neutral-900" : "text-white"
+          )}>
             De {formatCurrency(data.originalPrice)}
           </div>
         )}
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <div className="flex items-center gap-2">
             <span className={cn(
-              "font-display font-black leading-none text-white tracking-tight",
+              "font-display font-black leading-none tracking-tight",
+              theme === "premium_light" || theme === "editorial" || theme === "minimal_product" ? "text-neutral-900" : "text-white",
               isCarousel ? "text-lg" : "text-2xl sm:text-3xl"
             )}>
               {data.fidelizePrice ? formatCurrency(data.fidelizePrice) : data.benefitText}
@@ -106,23 +193,22 @@ export function SponsoredAdCard({ data, model, className, initialExpanded = fals
     setIsExpanded(!isExpanded);
   };
 
-  // Base heights and scales
   const cardConfig = {
     premium_banner: {
-      collapsed: "min-h-[260px] sm:aspect-[21/9]",
+      collapsed: "min-h-[240px] sm:min-h-[280px]",
       expanded: "min-h-[420px]",
       titleSize: "text-2xl sm:text-4xl",
       padding: "p-6 sm:p-8"
     },
     sponsored_feed: {
-      collapsed: "min-h-[220px] aspect-video",
+      collapsed: "min-h-[200px] aspect-video",
       expanded: "min-h-[380px]",
       titleSize: "text-xl sm:text-2xl",
       padding: "p-5 sm:p-7"
     },
     carousel: {
-      collapsed: "w-72 min-h-[200px] aspect-square",
-      expanded: "w-72 min-h-[340px]",
+      collapsed: "w-64 min-h-[180px] aspect-square",
+      expanded: "w-72 min-h-[360px]",
       titleSize: "text-lg",
       padding: "p-5"
     }
@@ -133,13 +219,14 @@ export function SponsoredAdCard({ data, model, className, initialExpanded = fals
       layout
       onClick={toggleExpand}
       className={cn(
-        "relative w-full overflow-hidden group rounded-[2.5rem] flex flex-col justify-end cursor-pointer shadow-2xl",
+        "relative w-full overflow-hidden group rounded-[2.5rem] flex flex-col justify-end cursor-pointer shadow-2xl transition-all border",
+        styles.container,
         isExpanded ? cardConfig.expanded : cardConfig.collapsed,
         className
       )}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >
-      {/* 1. IMAGEM E FAIXA VISUAL (STRIP) */}
+      {/* 1. IMAGEM ABSOLUTA (FULL BLEED) */}
       <motion.div 
         layout
         className="absolute inset-0 z-0 overflow-hidden"
@@ -150,22 +237,23 @@ export function SponsoredAdCard({ data, model, className, initialExpanded = fals
           alt={data.title} 
           animate={{ 
             scale: isExpanded ? 1.05 : 1,
-            filter: isExpanded ? "brightness(0.7)" : "brightness(0.6)"
+            filter: isExpanded ? "brightness(0.7) blur(2px)" : "brightness(0.6)"
           }}
           className="w-full h-full object-cover" 
         />
         
-        {/* 2. GRADIENTE PRETO DINÂMICO */}
+        {/* 2. GRADIENTE PRETO OBRIGATÓRIO (DINÂMICO PELO TEMA) */}
         <motion.div 
           layout
           className={cn(
-            "absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10",
+            "absolute inset-0 bg-gradient-to-t z-10",
+            styles.gradient,
             isExpanded ? "opacity-100" : "opacity-90"
           )} 
         />
       </motion.div>
 
-      {/* 3. CONTEÚDO PRINCIPAL (LAYOUT EM FLUXO) */}
+      {/* 3. CONTEÚDO EM FLUXO NORMAL */}
       <div className={cn("relative z-20 w-full flex flex-col gap-4", cardConfig.padding)}>
         <motion.div layout className="flex flex-col gap-3">
           <div className="flex justify-between items-start">
@@ -178,14 +266,18 @@ export function SponsoredAdCard({ data, model, className, initialExpanded = fals
             </motion.div>
           </div>
           
-          <div className="space-y-1">
+          <div className={cn("space-y-1.5", theme === "minimal_product" && "items-center")}>
             <motion.h3 layout className={cn(
-              "text-white font-display font-black uppercase leading-[1] tracking-tight",
+              "font-display font-black uppercase leading-[1] tracking-tight",
+              styles.textTitle,
               cardConfig.titleSize
             )}>
               {data.title}
             </motion.h3>
-            <motion.p layout className="text-primary text-[10px] sm:text-[11px] font-black uppercase tracking-[0.25em] opacity-90">
+            <motion.p layout className={cn(
+              "text-[10px] sm:text-[11px] font-black uppercase tracking-[0.25em] opacity-90",
+              styles.textSecondary
+            )}>
               {data.merchantName}
             </motion.p>
           </div>
@@ -196,7 +288,10 @@ export function SponsoredAdCard({ data, model, className, initialExpanded = fals
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                className="text-white/80 text-xs sm:text-sm font-medium line-clamp-3 max-w-xl leading-relaxed"
+                className={cn(
+                  "text-xs sm:text-sm font-medium line-clamp-3 max-w-xl leading-relaxed",
+                  theme === "premium_light" || theme === "editorial" || theme === "minimal_product" ? "text-neutral-700" : "text-white/80"
+                )}
               >
                 {data.description}
               </motion.p>
@@ -204,7 +299,7 @@ export function SponsoredAdCard({ data, model, className, initialExpanded = fals
           </AnimatePresence>
         </motion.div>
 
-        <motion.div layout className="flex flex-col gap-6 mt-2">
+        <motion.div layout className="flex flex-col gap-5 mt-1">
           <div className="flex flex-wrap items-end justify-between gap-4">
             {renderCommercialLine(model === "carousel" && !isExpanded)}
             
@@ -224,7 +319,10 @@ export function SponsoredAdCard({ data, model, className, initialExpanded = fals
             {!isExpanded && (
               <motion.div 
                 layout
-                className="p-2 rounded-full bg-primary/20 text-primary border border-primary/30"
+                className={cn(
+                  "p-2 rounded-full border active:scale-95 transition-all",
+                  styles.cta
+                )}
               >
                 <ArrowRight className="h-4 w-4" />
               </motion.div>
@@ -233,10 +331,19 @@ export function SponsoredAdCard({ data, model, className, initialExpanded = fals
         </motion.div>
       </div>
       
-      {/* Visual Stripe/Indicator at bottom when collapsed */}
-      {!isExpanded && (
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary/40 z-30" />
-      )}
+      {/* 4. FAIXA DO CRIATIVO (STRIPE) */}
+      <AnimatePresence>
+        {!isExpanded && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute bottom-0 left-0 right-0 h-1 z-30 overflow-hidden"
+          >
+            <div className={cn("w-full h-full", styles.accent, "bg-current opacity-60")} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.article>
   );
 }
