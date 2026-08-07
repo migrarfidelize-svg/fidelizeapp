@@ -689,26 +689,29 @@ function CampaignEditor({
                     if (i <= step || stepValid[i - 1]) setStep(i);
                   }}
 
-                  className={`rounded-2xl border px-3 py-2 text-left transition-all ${
+                  className={`group relative rounded-2xl border px-3 py-2.5 text-left transition-all ${
                     active
-                      ? "border-primary bg-primary/10 shadow-sm"
+                      ? "border-primary bg-primary/10 shadow-[0_0_15px_rgba(var(--color-primary),0.1)]"
                       : done
-                        ? "border-primary/30 bg-primary/5"
+                        ? "border-primary/40 bg-primary/5"
                         : "border-border/60 bg-background/40 hover:border-primary/30"
                   }`}
                 >
                   <div className="flex items-center gap-2">
                     <span
-                      className={`grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-black ${
-                        active || done ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      className={`grid h-5 w-5 shrink-0 place-items-center rounded-lg text-[10px] font-black transition-transform group-active:scale-95 ${
+                        active || done ? "bg-primary text-primary-foreground shadow-sm shadow-primary/30" : "bg-muted text-muted-foreground"
                       }`}
                     >
-                      {done ? "✓" : i + 1}
+                      {done ? <CheckCircle2 className="h-3.5 w-3.5" /> : i + 1}
                     </span>
-                    <span className="truncate text-xs font-bold">{s.label}</span>
+                    <span className={`truncate text-[11px] font-black uppercase tracking-tight ${active ? "text-primary" : "text-foreground/70"}`}>
+                      {s.label}
+                    </span>
                   </div>
-                  <p className="mt-0.5 line-clamp-1 text-[10px] text-muted-foreground">{s.hint}</p>
+                  {active && <div className="absolute -bottom-1 left-2 right-2 h-0.5 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)]" />}
                 </button>
+
               );
             })}
           </div>
