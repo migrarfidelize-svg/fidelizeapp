@@ -3,23 +3,11 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import {
-  Megaphone,
-  Sparkles,
-  Upload,
-  Clock,
-  MousePointerClick,
-  Eye,
-  Play,
-  Pause,
-  QrCode,
-  ShieldCheck,
-  Loader2,
-  Info,
-  CheckCircle2,
+import { 
+  Megaphone, Sparkles, Upload, Clock, MousePointerClick, Eye, Play, Pause, 
+  QrCode, ShieldCheck, Loader2, Info, CheckCircle2, ChevronDown, ArrowRight 
 } from "lucide-react";
 
-import { CheckCircle2, Info, Loader2, MousePointerClick, QrCode, ShieldCheck, Sparkles, Upload, Megaphone, Clock, Eye, Play, Pause, ChevronDown, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
