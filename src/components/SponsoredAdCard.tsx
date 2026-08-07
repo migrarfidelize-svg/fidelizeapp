@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 export interface SponsoredAdData {
   id: string;
   title: string;
+  description?: string;
   merchantName: string;
   originalPrice?: number; // in cents
   fidelizePrice?: number; // in cents
