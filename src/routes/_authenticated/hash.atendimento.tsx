@@ -25,6 +25,9 @@ import {
 } from "@/lib/atendimento.functions";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { FlowEditor } from "@/components/crm/FlowEditor";
+import { FlowSimulator } from "@/components/crm/FlowSimulator";
+import { QuickRepliesManager } from "@/components/crm/QuickReplies";
 import { useCRMRealtime } from "@/hooks/use-crm-realtime";
 
 export const Route = createFileRoute("/_authenticated/hash/atendimento")({
@@ -38,6 +41,8 @@ function AtendimentoCRM() {
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
   const [messageInput, setMessageInput] = useState("");
   const [isNote, setIsNote] = useState(false);
+  const [editingFlow, setEditingFlow] = useState<any>(null);
+  const [simulatingFlow, setSimulatingFlow] = useState<any>(null);
 
   const { data: stats } = useQuery({ queryKey: ["crm-stats"], queryFn: () => getCRMStats() });
   const { data: conversations } = useQuery({ 
