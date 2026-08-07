@@ -223,8 +223,17 @@ export const saveAdCampaign = createServerFn({ method: "POST" })
       discount_value: data.discount_value ?? null,
       benefit_text: data.benefit_text ?? null,
       theme: data.theme,
+      video_url: data.video_url ?? null,
+      hide_title: data.hide_title,
+      hide_description: data.hide_description,
+      hide_merchant_name: data.hide_merchant_name,
+      hide_prices: data.hide_prices,
+      hide_logo: data.hide_logo,
+      hide_cta: data.hide_cta,
+      full_bleed_mode: data.full_bleed_mode,
 
       requested_start_at: data.requested_start_at ?? null,
+
 
       updated_by: userId,
     };
