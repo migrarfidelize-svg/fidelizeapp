@@ -3,7 +3,9 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Megaphone, CheckCircle2, XCircle, PencilLine, Pause, Play, Gift, Settings2, TrendingUp } from "lucide-react";
+import { Megaphone, CheckCircle2, XCircle, PencilLine, Pause, Play, Gift, Settings2, TrendingUp, Sparkles } from "lucide-react";
+import { SponsoredAdCard } from "@/components/SponsoredAdCard";
+
 import { RouteLoading } from "@/components/RouteLoading";
 import {
   adminAdsOverview,
@@ -195,6 +197,12 @@ function AdminCampaignRow({ campaign, onDone }: { campaign: any; onDone: () => v
                     ? "Carousel"
                     : campaign.display_model || "Banner"}
             </span>
+            {campaign.offer_type && (
+              <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                {campaign.offer_type}
+              </span>
+            )}
+
           </div>
 
           <p className="text-xs text-muted-foreground">
@@ -209,23 +217,32 @@ function AdminCampaignRow({ campaign, onDone }: { campaign: any; onDone: () => v
       </div>
 
       {campaign.display_model && (
-        <div className="mt-3 rounded-xl border border-border/60 bg-muted/20 p-3">
-          <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">
-            Modelo e Criativo (Preview {campaign.display_model})
+        <div className="mt-3 rounded-xl border border-border/60 bg-muted/20 p-4">
+          <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">
+            Preview do Criativo ({campaign.display_model})
           </div>
-          <div
-            className={`mx-auto overflow-hidden rounded-xl border border-primary/20 bg-background ${campaign.display_model === "carousel" ? "max-w-[160px] aspect-square" : "max-w-[280px] aspect-[21/9]"}`}
-          >
-            {campaign.image_url ? (
-              <img src={campaign.image_url} alt="" className="h-full w-full object-cover" />
-            ) : (
-              <div className="grid h-full w-full place-items-center bg-muted/20">
-                <Megaphone className="h-4 w-4 text-muted-foreground/30" />
-              </div>
-            )}
+          <div className="flex justify-center">
+            <div className="scale-75 origin-top">
+              <SponsoredAdCard 
+                data={{
+                  id: campaign.id,
+                  title: campaign.title,
+                  merchantName: campaign.establishment?.name || "Estabelecimento",
+                  imageUrl: campaign.image_url || campaign.establishment?.logo_url || "",
+                  originalPrice: campaign.original_price_cents,
+                  fidelizePrice: campaign.fidelize_price_cents,
+                  discountValue: campaign.discount_value,
+                  benefitText: campaign.benefit_text,
+                  theme: campaign.theme || "dark",
+                  ctaLabel: campaign.cta_label
+                }} 
+                model={campaign.display_model} 
+              />
+            </div>
           </div>
         </div>
       )}
+
 
 
       <input

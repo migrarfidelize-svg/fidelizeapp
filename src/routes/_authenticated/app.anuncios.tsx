@@ -49,6 +49,8 @@ import {
   type DestinationType,
 } from "@/lib/sponsored-ads-core";
 import { DISCOVER_CATEGORIES, categorizeEstablishment } from "@/lib/discover-categories";
+import { SponsoredAdCard } from "@/components/SponsoredAdCard";
+
 
 export const Route = createFileRoute("/_authenticated/app/anuncios")({
   ssr: false,
@@ -519,7 +521,14 @@ function CampaignEditor({
   const [imagePath, setImagePath] = useState<string | null>(campaign?.image_path ?? null);
   const [imagePreview, setImagePreview] = useState<string | null>(campaign?.image_url ?? null);
   const [displayModel, setDisplayModel] = useState<any>(campaign?.display_model ?? "premium_banner");
+  const [offerType, setOfferType] = useState<any>(campaign?.offer_type ?? "discount");
+  const [originalPrice, setOriginalPrice] = useState<string>(campaign?.original_price_cents ? (campaign.original_price_cents / 100).toString() : "");
+  const [fidelizePrice, setFidelizePrice] = useState<string>(campaign?.fidelize_price_cents ? (campaign.fidelize_price_cents / 100).toString() : "");
+  const [discountValue, setDiscountValue] = useState<string>(campaign?.discount_value?.toString() ?? "");
+  const [benefitText, setBenefitText] = useState<string>(campaign?.benefit_text ?? "");
+  const [theme, setTheme] = useState<"dark" | "light">(campaign?.theme ?? "dark");
   const [uploading, setUploading] = useState(false);
+
 
 
   const uploadPathFn = useServerFn(getAdCreativeUploadPath);
@@ -541,7 +550,14 @@ function CampaignEditor({
           image_path: imagePath,
           image_source: imagePath ? "upload" : "logo",
           display_model: displayModel,
+          offer_type: offerType,
+          original_price_cents: originalPrice ? Math.round(parseFloat(originalPrice.replace(",", ".")) * 100) : null,
+          fidelize_price_cents: fidelizePrice ? Math.round(parseFloat(fidelizePrice.replace(",", ".")) * 100) : null,
+          discount_value: discountValue ? parseInt(discountValue) : null,
+          benefit_text: benefitText,
+          theme,
         },
+
 
       }),
     onSuccess: () => {
@@ -583,7 +599,9 @@ function CampaignEditor({
   const steps = [
     { key: "pacote", label: "Pacote", hint: "Por quantos dias seu destaque fica no ar" },
     { key: "modelo", label: "Modelo", hint: "Como o anúncio será exibido" },
+    { key: "oferta", label: "Oferta", hint: "Preços e benefícios do anúncio" },
     { key: "criativo", label: "Criativo", hint: "O que o cliente lê no card" },
+
     { key: "publico", label: "Público & destino", hint: "Onde aparece e para onde leva" },
     { key: "revisao", label: "Revisão", hint: "Confira e salve" },
   ];
@@ -591,13 +609,28 @@ function CampaignEditor({
   const stepValid = [
     !!packageId,
     !!displayModel,
+    !!offerType,
     title.trim().length >= 3,
+
     !!categoryId,
     !!packageId && title.trim().length >= 3,
   ];
 
 
   const previewImage = imagePreview ?? establishment?.logo_url ?? null;
+
+  const previewData: any = {
+    title,
+    merchantName: establishment?.name ?? "Seu Negócio",
+    originalPrice: originalPrice ? Math.round(parseFloat(originalPrice.replace(",", ".")) * 100) : undefined,
+    fidelizePrice: fidelizePrice ? Math.round(parseFloat(fidelizePrice.replace(",", ".")) * 100) : undefined,
+    discountValue: discountValue ? parseInt(discountValue) : undefined,
+    benefitText: benefitText || undefined,
+    imageUrl: previewImage || "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?q=80&w=800&auto=format&fit=crop",
+    theme,
+    ctaLabel: cta,
+  };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-background/80 p-0 backdrop-blur-md sm:items-center sm:p-6">
@@ -663,7 +696,7 @@ function CampaignEditor({
           </div>
         </div>
 
-        <div className="grid flex-1 gap-0 overflow-y-auto lg:grid-cols-[1fr_320px]">
+        <div className="grid flex-1 gap-0 overflow-y-auto lg:grid-cols-[1fr_360px]">
           {/* Conteúdo da etapa */}
           <div className="space-y-4 p-5">
             {step === 0 && (
@@ -750,6 +783,117 @@ function CampaignEditor({
             )}
 
             {step === 2 && (
+              <div className="space-y-4">
+                <StepIntro
+                  title="Configure os detalhes da oferta"
+                  text="Defina se é um desconto em dinheiro, brinde ou fidelidade acelerada. O sistema calculará o percentual se você informar os preços."
+                />
+                
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Tipo de Oferta</label>
+                    <select
+                      value={offerType}
+                      onChange={(e) => setOfferType(e.target.value)}
+                      className="mt-1.5 w-full rounded-xl border border-border/60 bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+                    >
+                      <option value="discount">Preço com Desconto</option>
+                      <option value="percentage">Percentual OFF</option>
+                      <option value="benefit">Brinde / Benefício</option>
+                      <option value="loyalty">Fidelidade Turbinada</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Tema Visual</label>
+                    <div className="mt-1.5 flex gap-2">
+                      <button
+                        onClick={() => setTheme("dark")}
+                        className={`flex-1 rounded-xl border py-2 text-xs font-bold transition-all ${theme === "dark" ? "border-primary bg-primary/10" : "border-border/60 hover:border-primary/40"}`}
+                      >
+                        Escuro
+                      </button>
+                      <button
+                        onClick={() => setTheme("light")}
+                        className={`flex-1 rounded-xl border py-2 text-xs font-bold transition-all ${theme === "light" ? "border-primary bg-primary/10" : "border-border/60 hover:border-primary/40"}`}
+                      >
+                        Claro
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {offerType === "discount" && (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Preço Original (R$)</label>
+                      <input
+                        type="text"
+                        value={originalPrice}
+                        onChange={(e) => {
+                          setOriginalPrice(e.target.value);
+                          if (e.target.value && fidelizePrice) {
+                            const orig = parseFloat(e.target.value.replace(",", "."));
+                            const fid = parseFloat(fidelizePrice.replace(",", "."));
+                            if (orig > fid) {
+                              setDiscountValue(Math.round(((orig - fid) / orig) * 100).toString());
+                            }
+                          }
+                        }}
+                        placeholder="49,90"
+                        className="mt-1.5 w-full rounded-xl border border-border/60 bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-black uppercase tracking-widest text-primary">Preço Fidelize (R$)</label>
+                      <input
+                        type="text"
+                        value={fidelizePrice}
+                        onChange={(e) => {
+                          setFidelizePrice(e.target.value);
+                          if (originalPrice && e.target.value) {
+                            const orig = parseFloat(originalPrice.replace(",", "."));
+                            const fid = parseFloat(e.target.value.replace(",", "."));
+                            if (orig > fid) {
+                              setDiscountValue(Math.round(((orig - fid) / orig) * 100).toString());
+                            }
+                          }
+                        }}
+                        placeholder="34,90"
+                        className="mt-1.5 w-full rounded-xl border border-primary/40 bg-primary/5 px-3 py-2.5 text-sm font-bold outline-none focus:border-primary"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {(offerType === "percentage" || offerType === "discount") && (
+                  <div>
+                    <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Desconto (%)</label>
+                    <input
+                      type="number"
+                      value={discountValue}
+                      onChange={(e) => setDiscountValue(e.target.value)}
+                      placeholder="30"
+                      className="mt-1.5 w-full rounded-xl border border-border/60 bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+                    />
+                  </div>
+                )}
+
+                {(offerType === "benefit" || offerType === "loyalty") && (
+                  <div>
+                    <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Texto do Benefício</label>
+                    <input
+                      value={benefitText}
+                      onChange={(e) => setBenefitText(e.target.value)}
+                      placeholder="Ex: Sobremesa grátis"
+                      className="mt-1.5 w-full rounded-xl border border-border/60 bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {step === 3 && (
+
 
               <div className="space-y-4">
                 <StepIntro
@@ -814,7 +958,8 @@ function CampaignEditor({
               </div>
             )}
 
-            {step === 3 && (
+            {step === 4 && (
+
 
               <div className="space-y-4">
                 <StepIntro
@@ -877,7 +1022,8 @@ function CampaignEditor({
               </div>
             )}
 
-            {step === 4 && (
+            {step === 5 && (
+
 
               <div className="space-y-3">
                 <StepIntro
@@ -918,62 +1064,46 @@ function CampaignEditor({
             )}
           </div>
 
-          {/* Prévia ao vivo */}
-          <aside className="border-t border-border/50 bg-background/40 p-5 lg:border-l lg:border-t-0">
-            <div className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-              Prévia na vitrine
-            </div>
-            <div className="mt-3 overflow-hidden rounded-2xl border border-primary/30 bg-card shadow-sm">
-              <div
-                className={`relative bg-muted ${displayModel === "carousel" ? "aspect-square" : "aspect-[21/9]"}`}
-              >
-                {previewImage ? (
-                  <img src={previewImage} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <div className="grid h-full w-full place-items-center">
-                    <Megaphone className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                )}
-                {displayModel === "premium_banner" && (
-                  <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4">
-                    <div className="inline-flex items-center gap-1 rounded-full bg-primary/90 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-white">
-                      <Sparkles className="h-2.5 w-2.5" /> Patrocinado
-                    </div>
-                    <h4 className="mt-1 line-clamp-1 font-display text-xs font-bold text-white">{title}</h4>
-                    <p className="line-clamp-1 text-[9px] text-white/80">{description}</p>
-                  </div>
-                )}
-                {displayModel === "carousel" && (
-                  <div className="absolute right-2 top-2">
-                    <div className="inline-flex items-center gap-1 rounded-full bg-primary/90 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-white">
-                      Patrocinado
-                    </div>
-                  </div>
-                )}
-              </div>
-              {displayModel !== "premium_banner" && (
-                <div className="p-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-primary">
-                      {displayModel === "sponsored_feed" && (
-                        <>
-                          <Sparkles className="h-2.5 w-2.5" /> Patrocinado
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <h4 className="mt-0.5 line-clamp-1 font-display text-sm font-bold">{title}</h4>
-                  <p className="line-clamp-2 text-[10px] text-muted-foreground">{description}</p>
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-[9px] font-bold text-primary italic">{cta}</span>
+          {/* Sidebar de Preview */}
+          <aside className="border-t border-border/50 bg-muted/20 p-5 lg:border-l lg:border-t-0 lg:w-[360px]">
+            <div className="sticky top-0 space-y-4">
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                Preview em tempo real
+              </h3>
+              
+              <div className="space-y-6">
+                <div className="flex flex-col items-center">
+                  <span className="text-[9px] font-bold uppercase tracking-tighter opacity-40 mb-2">Formato: {displayModel}</span>
+                  <div className="scale-[0.85] sm:scale-90 origin-top">
+                    <SponsoredAdCard data={previewData} model={displayModel} className="shadow-2xl" />
                   </div>
                 </div>
-              )}
+
+                <div className="rounded-2xl border border-border/60 bg-background/60 p-4">
+                  <h4 className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-3">Checklist de Impacto</h4>
+                  <ul className="space-y-2 text-[10px] text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <div className={`h-1.5 w-1.5 rounded-full transition-colors ${title.length >= 10 ? 'bg-emerald-500' : 'bg-muted'}`} />
+                      Título atrativo e claro
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className={`h-1.5 w-1.5 rounded-full transition-colors ${previewImage ? 'bg-emerald-500' : 'bg-muted'}`} />
+                      Imagem Full Bleed impactante
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className={`h-1.5 w-1.5 rounded-full transition-colors ${fidelizePrice || benefitText ? 'bg-emerald-500' : 'bg-muted'}`} />
+                      Benefício Fidelize destacado
+                    </li>
+                  </ul>
+                </div>
+
+                <p className="text-[10px] text-center text-muted-foreground italic">
+                  O visual final pode variar levemente dependendo do dispositivo do cliente.
+                </p>
+              </div>
             </div>
-            <p className="mt-3 text-[11px] text-muted-foreground">
-              É assim que os clientes verão seu card em <strong>Descobrir</strong>, no topo da categoria escolhida.
-            </p>
           </aside>
+
 
         </div>
 

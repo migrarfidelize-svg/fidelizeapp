@@ -78,9 +78,30 @@ export const CTA_LABELS = [
   "Ver catálogo",
   "Ver cardápio",
   "Ver benefícios",
-  "Saiba mais",
+  "Reservar",
+  "Resgatar",
 ] as const;
 export type CtaLabel = (typeof CTA_LABELS)[number];
+
+export const OFFER_TYPES = [
+  "discount",
+  "percentage",
+  "savings",
+  "benefit",
+  "loyalty",
+  "reward",
+] as const;
+export type AdOfferType = (typeof OFFER_TYPES)[number];
+
+export const OFFER_TYPE_META: Record<AdOfferType, { label: string; hint: string }> = {
+  discount: { label: "Preço com Desconto", hint: "Ex: De R$ 49 por R$ 34" },
+  percentage: { label: "Percentual OFF", hint: "Ex: 20% OFF em todo site" },
+  savings: { label: "Valor de Desconto", hint: "Ex: Economize R$ 15" },
+  benefit: { label: "Benefício Extra", hint: "Ex: Ganhe uma sobremesa" },
+  loyalty: { label: "Fidelidade Turbinada", hint: "Ex: Ganhe 2 carimbos extras" },
+  reward: { label: "Recompensa Exclusiva", hint: "Ex: Resgate por 5 carimbos" },
+};
+
 
 export const DESTINATION_TYPES = ["establishment", "catalog", "menu", "linktree", "loyalty_card"] as const;
 export type DestinationType = (typeof DESTINATION_TYPES)[number];

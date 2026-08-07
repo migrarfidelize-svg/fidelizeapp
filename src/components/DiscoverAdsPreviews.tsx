@@ -5,6 +5,7 @@ import {
   Sparkles, ExternalLink, QrCode
 } from "lucide-react";
 import { useState } from "react";
+import { SponsoredAdCard, SponsoredAdData } from "./SponsoredAdCard";
 
 // Shared data for simulation
 const MOCK_ESTABLISHMENTS = [
@@ -14,40 +15,41 @@ const MOCK_ESTABLISHMENTS = [
   { id: 4, name: "Bella Pasta", cat: "Restaurante", dist: "800m", reward: "Bruschetta", img: "🍝", rating: 4.6 }
 ];
 
-const MOCK_ADS = [
+const MOCK_ADS_V2: SponsoredAdData[] = [
   { 
     id: "ad1", 
-    title: "Burger Club — Combo especial hoje", 
-    merchant: "Burger Club", 
-    benefit: "Batata grátis no primeiro pedido", 
-    img: "🍔", 
-    cta: "Aproveitar" 
+    title: "Combo Premium — Smash Burger + Fritas", 
+    merchantName: "Burger Club", 
+    originalPrice: 4990,
+    fidelizePrice: 3490,
+    discountValue: 30,
+    imageUrl: "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?q=80&w=800&auto=format&fit=crop",
+    theme: "dark",
+    ctaLabel: "Aproveitar oferta"
   },
   { 
     id: "ad2", 
-    title: "Barbearia VIP — 20% na primeira visita", 
-    merchant: "Barbearia VIP", 
-    benefit: "Desconto exclusivo Afidelize", 
-    img: "💈", 
-    cta: "Agendar" 
+    title: "Corte + Barba + Toalha Quente", 
+    merchantName: "Barbearia VIP", 
+    originalPrice: 8000,
+    fidelizePrice: 5990,
+    discountValue: 25,
+    imageUrl: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=800&auto=format&fit=crop",
+    theme: "dark",
+    ctaLabel: "Agendar agora"
   },
   { 
     id: "ad3", 
-    title: "Café & Prosa — Ganhe café grátis no 5º carimbo", 
-    merchant: "Café & Prosa", 
-    benefit: "Fidelidade acelerada", 
-    img: "☕", 
-    cta: "Visitar" 
+    title: "Café Especial Artesanal (Grão Selecionado)", 
+    merchantName: "Café & Prosa", 
+    originalPrice: 2490,
+    fidelizePrice: 1790,
+    discountValue: 28,
+    imageUrl: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=800&auto=format&fit=crop",
+    theme: "light",
+    ctaLabel: "Ver detalhes"
   }
 ];
-
-// Helper components
-const SponsoredBadge = () => (
-  <div className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
-    <Sparkles className="h-2.5 w-2.5 text-primary mr-1" />
-    <span className="text-[9px] font-black uppercase tracking-widest text-primary">Patrocinado</span>
-  </div>
-);
 
 const SectionHeader = ({ title, icon: Icon, showAll = true }: { title: string, icon?: any, showAll?: boolean }) => (
   <div className="flex items-center justify-between mb-4">
@@ -66,31 +68,14 @@ export function PreviewAPremiumBanner({ adsPaused = false }) {
       <main className="px-6 space-y-10 mt-6">
         <Categories />
         
-        {/* Sponsored Banner - Modular */}
         <AnimatePresence>
           {!adsPaused && (
             <motion.section 
-              initial={{ opacity: 0, y: 10 }} 
-              animate={{ opacity: 1, y: 0 }} 
-              exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-              className="overflow-hidden"
+              initial={{ opacity: 0, scale: 0.95 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              exit={{ opacity: 0, scale: 0.95, height: 0, marginBottom: 0 }}
             >
-              <div className="relative bg-card rounded-[2rem] border border-border/60 p-6 flex items-center gap-5 shadow-sm overflow-hidden group">
-                {/* Background Decor */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/10 transition-colors" />
-                
-                <div className="h-20 w-20 rounded-2xl bg-primary/5 flex items-center justify-center text-4xl border border-primary/10">
-                  {MOCK_ADS[0].img}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <SponsoredBadge />
-                  <h3 className="font-display font-bold text-sm mt-2 leading-tight">{MOCK_ADS[0].title}</h3>
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{MOCK_ADS[0].benefit}</p>
-                  <button className="mt-3 flex items-center text-[10px] font-black uppercase tracking-widest text-primary gap-1 group/btn">
-                    {MOCK_ADS[0].cta} <ExternalLink className="h-3 w-3 transition-transform group-hover/btn:translate-x-0.5" />
-                  </button>
-                </div>
-              </div>
+              <SponsoredAdCard data={MOCK_ADS_V2[0]} model="premium_banner" />
             </motion.section>
           )}
         </AnimatePresence>
@@ -127,33 +112,14 @@ export function PreviewBSponsoredFeed({ adsPaused = false }) {
           <div className="grid grid-cols-1 gap-6">
             <PremiumCard {...MOCK_ESTABLISHMENTS[0]} />
             
-            {/* Integrated Sponsored Card */}
             <AnimatePresence>
               {!adsPaused && (
                 <motion.div 
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                  className="bg-card border border-primary/20 rounded-[2rem] overflow-hidden shadow-sm relative"
                 >
-                  <div className="absolute top-4 left-4 z-10">
-                    <SponsoredBadge />
-                  </div>
-                  <div className="aspect-[21/9] bg-primary/5 flex items-center justify-center text-5xl">
-                    {MOCK_ADS[1].img}
-                  </div>
-                  <div className="p-6">
-                    <h3 className="font-display text-xl font-bold">{MOCK_ADS[1].merchant}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{MOCK_ADS[1].title}</p>
-                    <div className="mt-4 flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-primary font-bold text-xs italic">
-                        <Gift className="h-4 w-4" /> {MOCK_ADS[1].benefit}
-                      </div>
-                      <button className="px-5 py-2.5 bg-primary text-primary-foreground rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20">
-                        {MOCK_ADS[1].cta}
-                      </button>
-                    </div>
-                  </div>
+                  <SponsoredAdCard data={MOCK_ADS_V2[1]} model="sponsored_feed" />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -183,7 +149,6 @@ export function PreviewCSponsoredCarousel({ adsPaused = false }) {
           <Categories />
         </div>
         
-        {/* Sponsored Carousel */}
         <AnimatePresence>
           {!adsPaused && (
             <motion.section 
@@ -195,20 +160,8 @@ export function PreviewCSponsoredCarousel({ adsPaused = false }) {
                 <SectionHeader title="Destaques para você" icon={Sparkles} showAll={false} />
               </div>
               <div className="flex gap-4 overflow-x-auto px-6 pb-4 [scrollbar-width:none]">
-                {MOCK_ADS.map(ad => (
-                  <div key={ad.id} className="shrink-0 w-72 bg-card border border-border/60 rounded-[2rem] p-5 shadow-sm relative overflow-hidden">
-                    <div className="absolute top-4 right-4">
-                      <SponsoredBadge />
-                    </div>
-                    <div className="h-12 w-12 rounded-xl bg-primary/5 flex items-center justify-center text-3xl mb-4 border border-primary/10">
-                      {ad.img}
-                    </div>
-                    <h3 className="font-display font-bold text-sm leading-tight line-clamp-2 mb-2">{ad.title}</h3>
-                    <p className="text-[10px] text-muted-foreground mb-4 line-clamp-1">{ad.benefit}</p>
-                    <button className="w-full py-2.5 bg-secondary hover:bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest rounded-xl transition-colors border border-border/40">
-                      {ad.cta}
-                    </button>
-                  </div>
+                {MOCK_ADS_V2.map(ad => (
+                  <SponsoredAdCard key={ad.id} data={ad} model="carousel" />
                 ))}
               </div>
             </motion.section>
@@ -246,7 +199,6 @@ function Header() {
           <h1 className="text-3xl font-display font-bold tracking-tight text-foreground">Premium</h1>
         </div>
         <div className="flex items-center gap-3">
-          {/* Top Level QR Access icon option */}
           <button className="h-10 w-10 rounded-full bg-card border border-border/60 flex items-center justify-center text-primary shadow-sm active:scale-95 transition-transform">
             <QrCode className="h-5 w-5" />
           </button>

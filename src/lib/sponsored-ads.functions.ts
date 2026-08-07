@@ -150,9 +150,18 @@ const upsertSchema = z.object({
   image_path: z.string().max(500).nullable().optional(),
   image_source: z.enum(["upload", "logo", "none"]).default("logo"),
   display_model: z.enum(["premium_banner", "sponsored_feed", "carousel"]).default("premium_banner"),
+  
+  // New visual fields
+  offer_type: z.enum(["discount", "percentage", "savings", "benefit", "loyalty", "reward"]).default("discount"),
+  original_price_cents: z.number().int().min(0).nullable().optional(),
+  fidelize_price_cents: z.number().int().min(0).nullable().optional(),
+  discount_value: z.number().int().min(0).nullable().optional(),
+  benefit_text: z.string().max(100).nullable().optional(),
+  theme: z.enum(["dark", "light"]).default("dark"),
 
   requested_start_at: z.string().datetime({ offset: true }).nullable().optional(),
 });
+
 
 export const saveAdCampaign = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -199,8 +208,15 @@ export const saveAdCampaign = createServerFn({ method: "POST" })
       image_path: data.image_path ?? null,
       image_source: data.image_source,
       display_model: data.display_model,
+      offer_type: data.offer_type,
+      original_price_cents: data.original_price_cents ?? null,
+      fidelize_price_cents: data.fidelize_price_cents ?? null,
+      discount_value: data.discount_value ?? null,
+      benefit_text: data.benefit_text ?? null,
+      theme: data.theme,
 
       requested_start_at: data.requested_start_at ?? null,
+
       updated_by: userId,
     };
     if (!payload.title) throw new Error("Informe um título para o anúncio.");

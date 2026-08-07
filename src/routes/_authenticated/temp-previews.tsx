@@ -61,11 +61,12 @@ function PreviewsLayout() {
           <div className="w-12 h-1 bg-neutral-800 rounded-full" />
         </div>
         
-        <div className="h-full overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="h-full overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-32">
           {view === "A" && <PreviewAPremiumBanner adsPaused={adsPaused} />}
           {view === "B" && <PreviewBSponsoredFeed adsPaused={adsPaused} />}
           {view === "C" && <PreviewCSponsoredCarousel adsPaused={adsPaused} />}
         </div>
+
 
         {/* Global Bottom Navigation with QR Focus */}
         <nav className="absolute bottom-0 left-0 right-0 px-6 pb-8 pt-4 bg-background/80 backdrop-blur-xl border-t border-border/40 z-40">
