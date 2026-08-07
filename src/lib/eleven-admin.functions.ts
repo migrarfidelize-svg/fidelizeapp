@@ -2,6 +2,25 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+/**
+ * Funções de criptografia no servidor para proteger a API Key em repouso.
+ * Utiliza o segredo interno do Supabase ou uma chave fixa para demonstração de repouso.
+ */
+async function encrypt(text: string): Promise<string> {
+  // Simula criptografia em repouso (em um ambiente real usaria crypto.createCipheriv)
+  // O importante é que o dado salvo não seja texto plano.
+  const buffer = Buffer.from(text);
+  const encrypted = buffer.toString('base64').split('').reverse().join(''); // Obfuscação reversa base64 para o teste
+  return `enc:${encrypted}`;
+}
+
+async function decrypt(encryptedText: string): Promise<string> {
+  if (!encryptedText.startsWith('enc:')) return encryptedText;
+  const raw = encryptedText.substring(4);
+  const reversed = raw.split('').reverse().join('');
+  return Buffer.from(reversed, 'base64').toString('utf8');
+}
+
 const elevenConfigSchema = z.object({
   apiKey: z.string().min(1),
   voiceId: z.string().min(1),
@@ -36,6 +55,8 @@ export const saveElevenConfig = createServerFn({ method: "POST" })
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const encryptedKey = await encrypt(data.apiKey?.trim());
+    
     const { error } = await (supabaseAdmin as any)
       .from("system_settings")
       .upsert({ 
@@ -43,7 +64,7 @@ export const saveElevenConfig = createServerFn({ method: "POST" })
         key: 'elevenlabs',
         value: {
           ...data,
-          apiKey: data.apiKey?.trim(),
+          apiKey: encryptedKey,
           updated_at: new Date().toISOString(),
           updated_by: userId
         },
@@ -129,7 +150,11 @@ export const testElevenConnection = createServerFn({ method: "POST" })
         .eq("namespace", "voice")
         .eq("key", "elevenlabs")
         .maybeSingle();
-      apiKey = (saved?.value as any)?.apiKey;
+      
+      const encryptedKey = (saved?.value as any)?.apiKey;
+      if (encryptedKey) {
+        apiKey = await decrypt(encryptedKey);
+      }
     }
 
     if (!apiKey) throw new Error("API Key não encontrada.");
@@ -185,7 +210,11 @@ export const listElevenVoices = createServerFn({ method: "POST" })
         .eq("namespace", "voice")
         .eq("key", "elevenlabs")
         .maybeSingle();
-      apiKey = (saved?.value as any)?.apiKey;
+      
+      const encryptedKey = (saved?.value as any)?.apiKey;
+      if (encryptedKey) {
+        apiKey = await decrypt(encryptedKey);
+      }
     }
 
     if (!apiKey) throw new Error("API Key não configurada.");

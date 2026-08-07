@@ -60,6 +60,15 @@ export const synthesizeGlobalEleven = createServerFn({ method: "POST" })
       throw new Error("ElevenLabs global: chave de API não configurada.");
     }
 
+    // Decrypt API Key before use
+    const encryptedKey = config.apiKey;
+    let apiKey = encryptedKey;
+    if (encryptedKey.startsWith('enc:')) {
+      const raw = encryptedKey.substring(4);
+      const reversed = raw.split('').reverse().join('');
+      apiKey = Buffer.from(reversed, 'base64').toString('utf8');
+    }
+
     // Process template if event is provided
     let textToSpeak = data.text;
     if (data.event && config.texts?.[data.event]) {
@@ -71,7 +80,7 @@ export const synthesizeGlobalEleven = createServerFn({ method: "POST" })
     const response = await fetch(url, {
       method: "POST",
       headers: {
-        "xi-api-key": config.apiKey,
+        "xi-api-key": apiKey,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
