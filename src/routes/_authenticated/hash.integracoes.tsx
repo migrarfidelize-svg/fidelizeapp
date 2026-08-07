@@ -371,6 +371,10 @@ function ManageDialog({
           <TabsContent value="credentials" className="mt-4">
             <CredentialsTab meta={meta} onSaved={onSaved} credsMasked={credsMasked} secretStatus={secretStatus} />
           </TabsContent>
+          <TabsContent value="test" className="mt-4">
+            <OtpTestTab meta={meta} />
+          </TabsContent>
+
           <TabsContent value="guide" className="mt-4">
             <GuideTab meta={meta} />
           </TabsContent>
