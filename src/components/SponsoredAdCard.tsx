@@ -34,7 +34,7 @@ export function SponsoredAdCard({ data, model, className }: SponsoredAdCardProps
   };
 
   const SponsoredBadge = () => (
-    <div className="inline-flex items-center px-2 py-0.5 rounded-full backdrop-blur-xl border border-white/10 bg-black/30 text-white/70 shadow-sm mb-2">
+    <div className="inline-flex items-center px-2 py-0.5 rounded-full backdrop-blur-xl border border-white/10 bg-black/30 text-white/70 shadow-sm mb-2 w-fit">
       <Sparkles className="h-2 w-2 mr-1.5 text-primary/80" />
       <span className="text-[8px] font-black uppercase tracking-[0.2em]">Patrocinado</span>
     </div>
