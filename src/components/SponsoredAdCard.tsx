@@ -12,6 +12,7 @@ export type AdTheme =
   | "minimal_product" 
   | "seasonal";
 
+
 export interface SponsoredAdData {
   id: string;
   title: string;
