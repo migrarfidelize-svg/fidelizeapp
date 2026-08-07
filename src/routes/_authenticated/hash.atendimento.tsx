@@ -3,12 +3,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Filter, Paperclip, Reply, Smile, MoreHorizontal, User } from "lucide-react";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
-import { MessageSquare, Users, History, UserCheck, GitBranch, Contact, FileText, Smartphone, Settings2, Send, Loader2, Play, Plus, Trash2, Edit3, MoreVertical, CheckCircle2 } from "lucide-react";
+import { MessageSquare, Users, History, UserCheck, GitBranch, Contact, FileText, Smartphone, Settings2, Send, Loader2, Play, Plus, Trash2, Edit3, MoreVertical, CheckCircle2, Copy } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,9 +17,20 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getCRMStats, getCRMConversations, getCRMConversationMessages, sendCRMMessage, updateCRMConversationStatus, getCRMFlows, getAgentSettings, saveAgentSettings } from "@/lib/atendimento.functions";
+import { 
+  getCRMStats, getCRMConversations, getCRMConversationMessages, sendCRMMessage, 
+  updateCRMConversationStatus, getCRMFlows, getAgentSettings, saveAgentSettings,
+  deleteCRMFlow, duplicateCRMFlow, getCRMContacts, getCRMQuickReplies, saveCRMQuickReply,
+  getOTPTemplate, saveOTPTemplate, sendOTPTestMessage
+} from "@/lib/atendimento.functions";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { FlowEditor } from "@/components/crm/FlowEditor";
+import { FlowSimulator } from "@/components/crm/FlowSimulator";
+import { QuickRepliesManager } from "@/components/crm/QuickReplies";
+import { OTPEditor } from "@/components/crm/OTPEditor";
+import { AgentConfig } from "@/components/crm/AgentConfig";
+import { useCRMRealtime } from "@/hooks/use-crm-realtime";
 
 export const Route = createFileRoute("/_authenticated/hash/atendimento")({
   component: AtendimentoCRM,
@@ -27,24 +38,26 @@ export const Route = createFileRoute("/_authenticated/hash/atendimento")({
 
 function AtendimentoCRM() {
   const queryClient = useQueryClient();
+  useCRMRealtime();
   const [activeTab, setActiveTab] = useState("conversas");
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
   const [messageInput, setMessageInput] = useState("");
   const [isNote, setIsNote] = useState(false);
+  const [editingFlow, setEditingFlow] = useState<any>(null);
+  const [simulatingFlow, setSimulatingFlow] = useState<any>(null);
 
-  const { data: stats } = useQuery({ queryKey: ["crm-stats"], queryFn: () => getCRMStats(), refetchInterval: 10000 });
+  const { data: stats } = useQuery({ queryKey: ["crm-stats"], queryFn: () => getCRMStats() });
   const { data: conversations } = useQuery({ 
     queryKey: ["crm-conversations"], 
-    queryFn: () => getCRMConversations({ data: { status: "all" } }),
-    refetchInterval: 5000 
+    queryFn: () => getCRMConversations({ data: { status: "all" } })
   });
   const { data: flows } = useQuery({ queryKey: ["crm-flows"], queryFn: () => getCRMFlows() });
   const { data: agentData } = useQuery({ queryKey: ["crm-agent-settings"], queryFn: () => getAgentSettings() });
+  const { data: replies } = useQuery({ queryKey: ["crm-quick-replies"], queryFn: () => getCRMQuickReplies() });
   const { data: messages } = useQuery({ 
     queryKey: ["crm-messages", selectedConversation?.id], 
     queryFn: () => getCRMConversationMessages({ data: { conversationId: selectedConversation.id } }),
-    enabled: !!selectedConversation?.id,
-    refetchInterval: 3000
+    enabled: !!selectedConversation?.id
   });
 
   const sendMessageMutation = useMutation({
@@ -279,6 +292,24 @@ function AtendimentoCRM() {
                                         <Edit3 className="h-5 w-5" />
                                     </Button>
                                     <div className="flex-1 bg-muted/50 rounded-xl border border-border p-2 focus-within:border-primary/30 transition-all">
+                                    {messageInput.startsWith("/") && (
+                                        <div className="absolute bottom-full left-0 w-full bg-card border border-primary/20 shadow-2xl rounded-t-xl overflow-hidden z-20">
+                                            <ScrollArea className="max-h-[200px]">
+                                                <div className="p-2 space-y-1">
+                                                    {replies?.filter(r => r.shortcut.startsWith(messageInput)).map(r => (
+                                                        <button 
+                                                            key={r.id} 
+                                                            className="w-full text-left p-2 hover:bg-primary/10 rounded-lg text-xs flex justify-between"
+                                                            onClick={() => setMessageInput(r.message)}
+                                                        >
+                                                            <span className="font-bold text-primary">{r.shortcut}</span>
+                                                            <span className="text-muted-foreground truncate ml-4">{r.message}</span>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </ScrollArea>
+                                        </div>
+                                    )}
                                         <Textarea 
                                             placeholder={isNote ? "Escreva uma nota para a equipe..." : "Digite sua mensagem..."}
                                             className="border-0 bg-transparent resize-none focus-visible:ring-0 min-h-[24px] p-1 text-sm scrollbar-none"
@@ -411,123 +442,109 @@ function AtendimentoCRM() {
           </TabsContent>
 
           <TabsContent value="agente" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-                <Card className="dash-card">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <UserCheck className="h-5 w-5 text-primary" /> Identidade do Agente
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border border-border/40">
-                            <div>
-                                <Label className="text-sm font-bold">Status do Agente</Label>
-                                <p className="text-[10px] text-muted-foreground">Define se o bot deve responder novas mensagens.</p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className={cn("h-2 w-2 rounded-full", agentSettings?.enabled ? "bg-green-500 animate-pulse" : "bg-muted-foreground/30")} />
-                                <Switch checked={agentSettings?.enabled} />
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Nome do Assistente</Label>
-                            <Input defaultValue={agentSettings?.name} placeholder="Ex: Assistente Afidelize" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Mensagem de Apresentação</Label>
-                            <Textarea defaultValue={agentSettings?.presentation} rows={3} placeholder="Olá! 👋 Sou o assistente..." />
-                        </div>
-                    </CardContent>
-                </Card>
-                
-                <Card className="dash-card">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Settings2 className="h-5 w-5 text-primary" /> Comportamento
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid gap-3">
-                            <div className="flex justify-between items-center p-2 rounded-lg hover:bg-muted/30 transition-colors">
-                                <div className="space-y-0.5"><Label className="text-sm">Responder automaticamente</Label><p className="text-[10px] text-muted-foreground">Habilitar IA/Bot para respostas.</p></div>
-                                <Switch defaultChecked={agentSettings?.behavior?.autoReply} />
-                            </div>
-                            <div className="flex justify-between items-center p-2 rounded-lg hover:bg-muted/30 transition-colors">
-                                <div className="space-y-0.5"><Label className="text-sm">Atender novos contatos</Label><p className="text-[10px] text-muted-foreground">Iniciar conversa automaticamente.</p></div>
-                                <Switch defaultChecked={agentSettings?.behavior?.welcomeNew} />
-                            </div>
-                        </div>
-                        <div className="space-y-2 pt-2 border-t">
-                            <Label>Tempo sem resposta (Timeout)</Label>
-                            <div className="flex gap-2">
-                                <Select defaultValue={String(agentSettings?.behavior?.timeoutMinutes || "10")}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="5">5 minutos</SelectItem>
-                                        <SelectItem value="10">10 minutos</SelectItem>
-                                        <SelectItem value="30">30 minutos</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <Select defaultValue={agentSettings?.behavior?.timeoutAction || "transfer_to_queue"}>
-                                    <SelectTrigger className="flex-1"><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="transfer_to_queue">Transferir para fila</SelectItem>
-                                        <SelectItem value="end">Encerrar</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+            <AgentConfig />
           </TabsContent>
 
           <TabsContent value="fluxos" className="space-y-6">
-            <div className="flex justify-between items-center bg-card p-6 rounded-2xl border border-border shadow-sm">
-                <div className="space-y-1">
-                    <h3 className="text-lg font-bold">Gerenciador de Fluxos</h3>
-                    <p className="text-xs text-muted-foreground">Desenhe caminhos de atendimento personalizados.</p>
-                </div>
-                <Button className="gradient-brand shadow-lg shadow-primary/20"><Plus className="h-4 w-4 mr-2" /> Novo Fluxo</Button>
-            </div>
-            {flows?.length === 0 ? (
-                <Card className="dash-card py-20 text-center text-muted-foreground border-dashed border-2">
-                    <div className="bg-primary/5 h-20 w-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <GitBranch className="h-10 w-10 text-primary opacity-40" />
-                    </div>
-                    <h4 className="text-base font-bold text-foreground mb-1">Nenhum fluxo encontrado</h4>
-                    <p className="text-sm max-w-[300px] mx-auto">Comece criando um fluxo de boas-vindas para seus clientes.</p>
-                </Card>
+            {editingFlow ? (
+              <FlowEditor flow={editingFlow} onBack={() => setEditingFlow(null)} />
+            ) : simulatingFlow ? (
+              <div className="space-y-4">
+                <Button variant="ghost" onClick={() => setSimulatingFlow(null)}>Voltar para lista</Button>
+                <FlowSimulator flow={simulatingFlow} />
+              </div>
             ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {flows?.map((f: any) => (
-                        <Card key={f.id} className="dash-card overflow-hidden hover:border-primary/40 transition-all group">
-                            <div className="p-5 space-y-4">
-                                <div className="flex justify-between items-start">
-                                    <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center">
-                                        <GitBranch className="h-6 w-6 text-primary" />
-                                    </div>
-                                    <Badge variant={f.is_active ? "default" : "secondary"} className="text-[10px] uppercase font-bold px-2">
-                                        {f.is_active ? "Ativo" : "Rascunho"}
-                                    </Badge>
-                                </div>
-                                <div className="space-y-1">
-                                    <h4 className="font-bold text-sm line-clamp-1">{f.name}</h4>
-                                    <p className="text-xs text-muted-foreground line-clamp-2 min-h-[32px]">{f.description || 'Sem descrição'}</p>
-                                </div>
-                                <div className="flex items-center gap-4 text-[10px] text-muted-foreground font-medium pt-2 border-t">
-                                    <div className="flex items-center gap-1"><History className="h-3 w-3" /> {new Date(f.updated_at).toLocaleDateString()}</div>
-                                    <div className="flex items-center gap-1"><Users className="h-3 w-3" /> 0 execs</div>
-                                </div>
-                            </div>
-                            <div className="bg-muted/30 p-2 flex gap-2 border-t border-border/40">
-                                <Button variant="secondary" size="sm" className="flex-1 text-xs h-8"><Edit3 className="h-3 w-3 mr-2" /> Editar</Button>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /></Button>
-                            </div>
-                        </Card>
-                    ))}
+              <>
+                <div className="flex justify-between items-center bg-card p-6 rounded-2xl border border-border shadow-sm">
+                    <div className="space-y-1">
+                        <h3 className="text-lg font-bold">Gerenciador de Fluxos</h3>
+                        <p className="text-xs text-muted-foreground">Desenhe caminhos de atendimento personalizados.</p>
+                    </div>
+                    <Button onClick={() => setEditingFlow({ name: "Novo Fluxo", steps: [] })} className="gradient-brand shadow-lg shadow-primary/20"><Plus className="h-4 w-4 mr-2" /> Novo Fluxo</Button>
                 </div>
+                {flows?.length === 0 ? (
+                    <Card className="dash-card py-20 text-center text-muted-foreground border-dashed border-2">
+                        <div className="bg-primary/5 h-20 w-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <GitBranch className="h-10 w-10 text-primary opacity-40" />
+                        </div>
+                        <h4 className="text-base font-bold text-foreground mb-1">Nenhum fluxo encontrado</h4>
+                        <p className="text-sm max-w-[300px] mx-auto">Comece criando um fluxo de boas-vindas para seus clientes.</p>
+                    </Card>
+                ) : (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {flows?.map((f: any) => (
+                            <Card key={f.id} className="dash-card overflow-hidden hover:border-primary/40 transition-all group">
+                                <div className="p-5 space-y-4">
+                                    <div className="flex justify-between items-start">
+                                        <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                                            <GitBranch className="h-6 w-6 text-primary" />
+                                        </div>
+                                        <Badge variant={f.is_active ? "default" : "secondary"} className="text-[10px] uppercase font-bold px-2">
+                                            {f.is_active ? "Ativo" : "Rascunho"}
+                                        </Badge>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h4 className="font-bold text-sm line-clamp-1">{f.name}</h4>
+                                        <p className="text-xs text-muted-foreground line-clamp-2 min-h-[32px]">{f.description || 'Sem descrição'}</p>
+                                    </div>
+                                    <div className="flex items-center gap-4 text-[10px] text-muted-foreground font-medium pt-2 border-t">
+                                        <div className="flex items-center gap-1"><History className="h-3 w-3" /> {new Date(f.updated_at).toLocaleDateString()}</div>
+                                        <div className="flex items-center gap-1"><Users className="h-3 w-3" /> 0 execs</div>
+                                    </div>
+                                </div>
+                                <div className="bg-muted/30 p-2 flex gap-2 border-t border-border/40">
+                                    <Button variant="secondary" size="sm" className="flex-1 text-xs h-8" onClick={() => setEditingFlow(f)}><Edit3 className="h-3 w-3 mr-2" /> Editar</Button>
+                                    <Button variant="outline" size="sm" className="h-8 w-8 px-0" onClick={() => setSimulatingFlow(f)}><Play className="h-3.5 w-3.5" /></Button>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /></Button>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                )}
+              </>
             )}
+          </TabsContent>
+
+          <TabsContent value="config" className="space-y-6">
+            <QuickRepliesManager />
+          </TabsContent>
+
+          <TabsContent value="contatos" className="space-y-6">
+            <Card className="dash-card p-6">
+               <div className="flex justify-between items-center mb-6">
+                  <h3 className="font-bold">Diretório de Contatos</h3>
+                  <div className="flex gap-2">
+                     <Input placeholder="Buscar contatos..." className="h-9 text-xs w-[250px]" />
+                     <Button size="sm"><Search className="h-4 w-4" /></Button>
+                  </div>
+               </div>
+               <div className="border rounded-xl overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/50 border-b">
+                      <tr>
+                        <th className="text-left p-3 font-bold text-[10px] uppercase">Cliente</th>
+                        <th className="text-left p-3 font-bold text-[10px] uppercase">WhatsApp</th>
+                        <th className="text-left p-3 font-bold text-[10px] uppercase">Último Contato</th>
+                        <th className="text-left p-3 font-bold text-[10px] uppercase">Status</th>
+                        <th className="text-right p-3 font-bold text-[10px] uppercase">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {conversations?.map((c: any) => (
+                        <tr key={c.id} className="border-b hover:bg-muted/30 transition-colors">
+                          <td className="p-3 font-medium">{c.customer_phone}</td>
+                          <td className="p-3 text-muted-foreground text-xs">{c.customer_phone}</td>
+                          <td className="p-3 text-xs">{new Date(c.last_message_at).toLocaleDateString()}</td>
+                          <td className="p-3"><Badge variant="outline" className="text-[9px] uppercase">{c.status}</Badge></td>
+                          <td className="p-3 text-right">
+                             <Button variant="ghost" size="sm" className="h-7 text-[10px]" onClick={() => { setSelectedConversation(c); setActiveTab("conversas"); }}>Ver Conversa</Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+               </div>
+            </Card>
           </TabsContent>
         </div>
       </Tabs>
