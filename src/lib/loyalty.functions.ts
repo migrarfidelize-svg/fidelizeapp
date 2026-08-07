@@ -851,6 +851,9 @@ export const getDashboardData = createServerFn({ method: "POST" })
     const productionData = (settings?.value as any) || { enabled: false, production_started_at: "1970-01-01T00:00:00Z" };
     const cutoff = productionData.production_started_at || "1970-01-01T00:00:00Z";
 
+    const now = new Date();
+    const goalMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+
     // 3. Chamar dashboard_summary usando supabaseAdmin (service_role) pois a RPC é restrita
     const { data: raw, error } = await (supabaseAdmin as any).rpc("dashboard_summary", { 
       _est: est,
