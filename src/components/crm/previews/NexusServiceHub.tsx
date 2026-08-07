@@ -17,7 +17,7 @@ export function NexusServiceHub() {
         </div>
         <div className="w-[300px] border-r border-zinc-800 flex flex-col">
              <div className="p-6 font-black tracking-widest text-primary">NEXUS</div>
-             <ConversationArea conversations={conversations} selected={selected} onSelect={setSelected} />
+             <ConversationArea conversations={conversations || []} selected={selected} onSelect={setSelected} />
         </div>
         <div className="flex-1 p-8">
             <div className="text-2xl font-bold tracking-tight">Preview Nexus Hub</div>

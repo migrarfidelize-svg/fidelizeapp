@@ -14,7 +14,7 @@ export function PremiumWorkspace() {
     <div className="h-[calc(100vh-100px)] flex">
         <div className="w-[350px] border-r flex flex-col bg-muted/20">
              <div className="p-6 font-bold text-xl">Atendimento</div>
-             <ConversationArea conversations={conversations} selected={selected} onSelect={setSelected} />
+             <ConversationArea conversations={conversations || []} selected={selected} onSelect={setSelected} />
         </div>
         <div className="flex-1 p-12 flex flex-col gap-6">
             <div className="text-4xl font-light">Workspace Preview</div>

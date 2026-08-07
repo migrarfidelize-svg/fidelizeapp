@@ -17,7 +17,7 @@ export function CommandCenter() {
       <div className="flex-1 grid grid-cols-[300px_1fr_300px] gap-6 overflow-hidden">
         <div className="bg-card border rounded-2xl flex flex-col overflow-hidden">
           <div className="p-4 border-b font-bold text-xs uppercase tracking-wider">Conversas</div>
-          <ConversationArea conversations={conversations} selected={selected} onSelect={setSelected} />
+          <ConversationArea conversations={conversations || []} selected={selected} onSelect={setSelected} />
         </div>
         <div className="bg-card border rounded-2xl flex items-center justify-center text-muted-foreground text-sm italic">
             Área de Chat (Preview Command)
