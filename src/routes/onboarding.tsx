@@ -290,9 +290,9 @@ function Onboarding() {
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 py-10 md:px-8 md:py-12 lg:grid-cols-[minmax(0,1fr)_400px]">
+      <main className="relative z-10 mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 md:px-8 md:py-10 lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-10">
         {/* Left: form */}
-        <form onSubmit={submit} className="min-w-0 space-y-10">
+        <form onSubmit={submit} className="flex min-w-0 flex-col gap-6 sm:gap-8 lg:gap-10">
           {/* Stepper */}
           <nav aria-label="Progresso" className="flex items-center justify-center gap-1 sm:gap-3">
             {STEPS.map((s, i) => {
