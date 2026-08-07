@@ -178,7 +178,8 @@ export const listElevenVoices = createServerFn({ method: "POST" })
 
     let apiKey = data.apiKey?.trim();
     if (!apiKey) {
-      const { data: saved } = await (supabase as any)
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: saved } = await (supabaseAdmin as any)
         .from("system_settings")
         .select("value")
         .eq("namespace", "voice")
