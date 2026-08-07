@@ -436,18 +436,18 @@ function DiscoverRow({
   const location = [e.address, e.city].filter(Boolean).join(" · ");
   const hasShowcase = e.has_menu || e.has_catalog;
   return (
-    <li className="group overflow-hidden rounded-2xl border border-border/60 bg-card/40 transition-all hover:border-primary/40 hover:bg-card/60">
+    <li className="group overflow-hidden rounded-[2rem] border border-border/40 bg-white dark:bg-black/20 transition-all hover:border-primary/40 hover:bg-white dark:hover:bg-black/40 shadow-sm hover:shadow-md">
       <Link
         to="/carteira/e/$slug"
         params={{ slug: e.slug }}
-        className="relative flex items-center gap-3 p-3"
+        className="relative flex items-center gap-4 p-4"
       >
         <div
-          className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full opacity-20 blur-2xl"
+          className="pointer-events-none absolute -right-12 -top-12 h-28 w-28 rounded-full opacity-10 blur-3xl transition-opacity group-hover:opacity-20"
           style={{ background: brand }}
         />
         <div
-          className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-xl border border-border/60 bg-background text-sm font-bold uppercase"
+          className="relative grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-[1.25rem] border border-border/40 bg-background text-sm font-black uppercase shadow-sm"
           style={{ color: brand }}
         >
           {e.logo_url ? (
@@ -457,43 +457,47 @@ function DiscoverRow({
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <div className="truncate font-display text-sm font-semibold">{e.name}</div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="truncate font-display text-base font-black tracking-tight text-neutral-900 dark:text-white">{e.name}</div>
             {e.has_promotion && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/50 bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-300">
-                <Tag className="h-2.5 w-2.5" /> Promoção
-              </span>
-            )}
-            {nearby && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-primary">
-                Perto
+              <span className="inline-flex items-center gap-1 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-300 shadow-sm">
+                <Tag className="h-2.5 w-2.5" /> Promo
               </span>
             )}
           </div>
-          {location && (
-            <div className="mt-0.5 flex items-center gap-1 truncate text-[11px] text-muted-foreground">
-              <MapPin className="h-3 w-3 shrink-0" />
-              <span className="truncate">{location}</span>
+          <div className="mt-1 flex flex-col gap-1">
+            {location && (
+              <div className="flex items-center gap-1 truncate text-[10px] font-bold text-muted-foreground/70">
+                <MapPin className="h-3 w-3 shrink-0" />
+                <span className="truncate">{location}</span>
+                {nearby && (
+                  <>
+                    <span className="mx-1 opacity-40">·</span>
+                    <span className="text-primary">Perto</span>
+                  </>
+                )}
+              </div>
+            )}
+            {e.description && (
+              <p className="line-clamp-1 text-[11px] font-medium text-muted-foreground/80 leading-tight">{e.description}</p>
+            )}
+          </div>
+        </div>
+        
+        <div className="flex flex-col items-end gap-2">
+          {e.visited ? (
+            <div className="h-8 w-8 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground/40">
+              <CheckCircle2 className="h-4 w-4" />
+            </div>
+          ) : (
+            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary animate-pulse">
+              <Sparkles className="h-4 w-4" />
             </div>
           )}
-          {e.description && (
-            <p className="mt-1 line-clamp-1 text-[11px] text-muted-foreground/80">{e.description}</p>
-          )}
+          <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground/30 transition-transform group-hover:translate-x-1" />
         </div>
-        {e.visited ? (
-          <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/60 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-            Visitado
-          </span>
-        ) : (
-          <span
-            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-primary-foreground shadow-sm"
-            style={{ background: brand }}
-          >
-            <Sparkles className="h-3 w-3" /> Novo
-          </span>
-        )}
-        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
       </Link>
+
       {hasShowcase && (
         <div className="flex flex-wrap gap-2 border-t border-border/40 px-3 pb-3 pt-2">
           {e.has_menu && (
