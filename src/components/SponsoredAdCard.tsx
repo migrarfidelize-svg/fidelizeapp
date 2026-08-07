@@ -206,16 +206,16 @@ export function SponsoredAdCard({ data, model, className, initialExpanded = fals
 
   const cardConfig = {
     premium_banner: {
-      collapsed: "min-h-[240px] sm:min-h-[280px]",
-      expanded: "min-h-[420px]",
-      titleSize: "text-2xl sm:text-4xl",
-      padding: "p-6 sm:p-8"
+      collapsed: "min-h-[240px] sm:min-h-[280px] xl:min-h-[340px]",
+      expanded: "min-h-[420px] xl:min-h-[500px]",
+      titleSize: "text-2xl sm:text-4xl xl:text-5xl",
+      padding: "p-6 sm:p-8 xl:p-12"
     },
     sponsored_feed: {
-      collapsed: "min-h-[200px] aspect-video",
-      expanded: "min-h-[380px]",
-      titleSize: "text-xl sm:text-2xl",
-      padding: "p-5 sm:p-7"
+      collapsed: "min-h-[200px] aspect-video xl:aspect-[21/9]",
+      expanded: "min-h-[380px] xl:min-h-[450px]",
+      titleSize: "text-xl sm:text-2xl xl:text-3xl",
+      padding: "p-5 sm:p-7 xl:p-10"
     },
     carousel: {
       collapsed: "w-64 min-h-[180px] aspect-square",
