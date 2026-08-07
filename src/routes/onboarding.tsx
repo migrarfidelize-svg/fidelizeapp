@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate, useRouter } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
@@ -79,6 +79,7 @@ const STEPS: { id: StepId; label: string; icon: typeof Building2 }[] = [
 
 function Onboarding() {
   const navigate = useNavigate();
+  const router = useRouter();
   const qc = useQueryClient();
   const create = useServerFn(createEstablishment);
   const getEsts = useServerFn(getMyEstablishments);
@@ -227,13 +228,18 @@ function Onboarding() {
       await create({ data: { ...f, reward_title: rewardTitle, slug: cleanSlug } });
 
       try { localStorage.removeItem("fidelize:onboarding-prefill"); } catch { /* ignore */ }
-      qc.removeQueries({ queryKey: ["memberships"] });
-      const fresh = await getEsts();
-      qc.setQueryData(["memberships"], fresh);
+      
+      // Invalidação agressiva de cache para o Subscription Gate refletir a nova empresa imediatamente
+      await qc.invalidateQueries({ queryKey: ["memberships"] });
+      await qc.refetchQueries({ queryKey: ["memberships"] });
+      
+      // Forçamos a invalidação do estado do roteador antes de navegar
+      await router.invalidate();
+      
       toast.success("Empresa criada! Agora escolha seu plano para ativar.");
       navigate({ to: "/app/planos" });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro");
+      toast.error(err instanceof Error ? err.message : "Erro ao criar empresa.");
     } finally {
       setLoading(false);
     }
