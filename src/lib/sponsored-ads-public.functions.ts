@@ -64,6 +64,12 @@ export const getDiscoverySponsoredAds = createServerFn({ method: "POST" })
           establishment_slug: r.establishment_slug,
           establishment_primary_color: r.establishment_primary_color,
           image_url,
+          display_model: r.display_model,
+          original_price_cents: r.original_price_cents,
+          fidelize_price_cents: r.fidelize_price_cents,
+          discount_value: r.discount_value,
+          benefit_text: r.benefit_text,
+          theme: r.theme,
         };
       }),
     );
