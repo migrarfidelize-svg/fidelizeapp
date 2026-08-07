@@ -373,9 +373,9 @@ function FeedRow({ f }: { f: FeedItem }) {
   );
 }
 
-function KpiTile({ label, value, accent, icon }: { label: string; value: number; accent?: "primary"; icon?: React.ReactNode }) {
+function KpiTile({ label, value, accent, icon, className }: { label: string; value: number; accent?: "primary"; icon?: React.ReactNode; className?: string }) {
   return (
-    <div className="rounded-2xl border border-border/60 bg-card/40 p-3 backdrop-blur">
+    <div className={cn("rounded-2xl border border-border/60 bg-card/40 p-3 backdrop-blur", className)}>
       <div className="flex items-center gap-1 text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
         {icon}{label}
       </div>
