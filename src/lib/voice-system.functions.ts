@@ -20,14 +20,15 @@ export const getGlobalVoiceConfig = createServerFn({ method: "GET" })
     if (error || !data) return { isConfigured: false };
     
     const config = (data?.security as any)?.elevenlabs_config;
-    if (!config || !config.apiKey) return { isConfigured: false };
+    if (!config || !config.apiKey || config.enabled === false) return { isConfigured: false };
 
     return {
       isConfigured: true,
       voiceId: config.voiceId,
       modelId: config.modelId,
       stability: config.stability,
-      similarity: config.similarity
+      similarity: config.similarity,
+      texts: config.texts || {}
     };
   });
 
@@ -36,7 +37,8 @@ export const getGlobalVoiceConfig = createServerFn({ method: "GET" })
  */
 export const synthesizeGlobalEleven = createServerFn({ method: "POST" })
   .validator(z.object({
-    text: z.string()
+    text: z.string(),
+    event: z.string().optional()
   }))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -49,8 +51,15 @@ export const synthesizeGlobalEleven = createServerFn({ method: "POST" })
       .maybeSingle();
     
     const config = (settings?.security as any)?.elevenlabs_config;
-    if (!config || !config.apiKey) {
-      throw new Error("ElevenLabs global não configurada.");
+    if (!config || !config.apiKey || config.enabled === false) {
+      throw new Error("ElevenLabs global não configurada ou desativada.");
+    }
+
+    // Process template if event is provided
+    let textToSpeak = data.text;
+    if (data.event && config.texts?.[data.event]) {
+      // Basic replacement for demo, the caller should ideally provide replacements
+      textToSpeak = config.texts[data.event];
     }
 
     // 2. Call ElevenLabs API
@@ -62,7 +71,7 @@ export const synthesizeGlobalEleven = createServerFn({ method: "POST" })
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        text: data.text,
+        text: textToSpeak,
         model_id: config.modelId || "eleven_multilingual_v2",
         voice_settings: {
           stability: config.stability ?? 0.5,

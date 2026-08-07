@@ -49,6 +49,7 @@ class VoiceManager {
   private currentAudio: HTMLAudioElement | null = null;
   private isMuted: boolean = false;
   private isElevenLabsGlobalActive: boolean = false;
+  private globalConfig: any = null;
 
   constructor() {
     if (typeof window !== "undefined") {
@@ -61,6 +62,7 @@ class VoiceManager {
     try {
       const config = await getGlobalVoiceConfig();
       this.isElevenLabsGlobalActive = config.isConfigured;
+      this.globalConfig = config;
     } catch (e) {
       console.warn("Falha ao verificar config global de voz", e);
     }
@@ -84,14 +86,18 @@ class VoiceManager {
     }
   }
 
-  async speak(text: string) {
+  async speak(text: string, event?: string) {
     const prefs = loadVoicePrefs();
     if (!prefs.enabled || this.isMuted || !text) return;
+    
+    // Check global enable flag
+    if (this.globalConfig && this.globalConfig.enabled === false) return;
+
     this.stop();
 
     try {
       if (prefs.provider === "elevenlabs" || (prefs.provider === "auto" && this.isElevenLabsGlobalActive)) {
-        await this.playElevenLabs(text, prefs);
+        await this.playElevenLabs(text, prefs, event);
         return;
       }
       
@@ -110,12 +116,12 @@ class VoiceManager {
     }
   }
 
-  private async playElevenLabs(text: string, prefs: VoicePrefs) {
+  private async playElevenLabs(text: string, prefs: VoicePrefs, event?: string) {
     try {
       // 1. Tentar síntese global (se configurada)
       if (this.isElevenLabsGlobalActive) {
         const res: any = await synthesizeGlobalEleven({
-          data: { text }
+          data: { text, event }
         });
         if (res.audio) {
           await this.playBase64(res.audio, res.mime, prefs.volume);

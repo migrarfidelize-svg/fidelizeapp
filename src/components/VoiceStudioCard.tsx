@@ -49,7 +49,9 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
   const [elevenModelId, setElevenModelId] = useState("eleven_multilingual_v2");
   const [elevenVoices, setElevenVoices] = useState<any[]>([]);
   const [fetchingVoices, setFetchingVoices] = useState(false);
-  const [integrationStatus, setIntegrationStatus] = useState<'disconnected' | 'connected' | 'unauthorized'>('disconnected');
+  const [integrationStatus, setIntegrationStatus] = useState<'disconnected' | 'connected' | 'unauthorized' | 'invalid_key' | 'no_credits' | 'error'>('disconnected');
+  const [lastTested, setLastTested] = useState<string | null>(null);
+  const [elevenEnabled, setElevenEnabled] = useState(true);
   const [testingConnection, setTestingConnection] = useState(false);
 
   const [prefs, setPrefs] = useState<VoicePrefs>(() => defaultVoicePrefs("admin"));
@@ -72,6 +74,8 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
           setElevenApiKey(configRes.config.apiKey);
           setElevenVoiceId(configRes.config.voiceId);
           setElevenModelId(configRes.config.modelId || "eleven_multilingual_v2");
+          setElevenEnabled(configRes.config.enabled !== false);
+          if (configRes.config.updated_at) setLastTested(new Date(configRes.config.updated_at).toLocaleString());
         } else if (configRes.status === 'unauthorized') {
           setIntegrationStatus('unauthorized');
         }
@@ -120,9 +124,12 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
     try {
       const res = await testElevenConnFn({ data: { apiKey: elevenApiKey.includes('...') ? undefined : elevenApiKey } });
       if (res.ok) {
+        setIntegrationStatus('connected');
+        setLastTested(new Date().toLocaleString());
         toast.success("Conexão validada com sucesso!");
         if (elevenVoices.length === 0) fetchElevenVoices();
       } else {
+        setIntegrationStatus(res.status as any);
         toast.error(res.message || "Falha na validação.");
       }
     } catch (e: any) {
@@ -144,9 +151,11 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
           apiKey: elevenApiKey.includes('...') ? undefined : elevenApiKey,
           voiceId: elevenVoiceId,
           modelId: elevenModelId,
+          enabled: elevenEnabled,
           voiceName: elevenVoices.find(v => v.voice_id === elevenVoiceId)?.name || "Voz Selecionada",
           stability: prefs.stability,
-          similarity: prefs.similarity
+          similarity: prefs.similarity,
+          texts: prefs.texts
         }
       });
       setIntegrationStatus('connected');
@@ -384,14 +393,24 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
 
             <TabsContent value="eleven" className="mt-4 space-y-4">
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-primary" />
-                    Integração ElevenLabs
-                  </CardTitle>
-                  <CardDescription>
-                    Configure a integração global para vozes neurais de alta fidelidade em todo o ecossistema Fidelize.
-                  </CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <div className="space-y-1">
+                    <CardTitle className="flex items-center gap-2">
+                      <Zap className="h-5 w-5 text-primary" />
+                      Integração ElevenLabs
+                    </CardTitle>
+                    <CardDescription>
+                      Configure a integração global para vozes neurais de alta fidelidade em todo o ecossistema Fidelize.
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="eleven-enabled" className="text-xs">Ativar</Label>
+                    <Switch 
+                      id="eleven-enabled"
+                      checked={elevenEnabled} 
+                      onCheckedChange={setElevenEnabled} 
+                    />
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {integrationStatus === 'unauthorized' ? (
@@ -431,75 +450,48 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
                           </p>
                         </div>
 
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label>Modelo de IA</Label>
-                            <Select value={elevenModelId} onValueChange={setElevenModelId}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione o modelo" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="eleven_multilingual_v2">Multilingual v2 (Melhor)</SelectItem>
-                                <SelectItem value="eleven_turbo_v2">Turbo v2 (Mais Rápido)</SelectItem>
-                                <SelectItem value="eleven_monolingual_v1">Monolingual v1</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <Label>Voz Padrão</Label>
-                              <Button 
-                                variant="link" 
-                                size="sm" 
-                                className="h-auto p-0 text-xs" 
-                                onClick={fetchElevenVoices}
-                                disabled={fetchingVoices || !elevenApiKey}
-                              >
-                                {fetchingVoices ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
-                                Sincronizar
-                              </Button>
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label>Modelo de IA</Label>
+                              <Select value={elevenModelId} onValueChange={setElevenModelId}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione o modelo" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="eleven_multilingual_v2">Multilingual v2 (Melhor)</SelectItem>
+                                  <SelectItem value="eleven_turbo_v2">Turbo v2 (Mais Rápido)</SelectItem>
+                                  <SelectItem value="eleven_monolingual_v1">Monolingual v1</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </div>
-                            <Select value={elevenVoiceId} onValueChange={setElevenVoiceId}>
-                              <SelectTrigger>
-                                <SelectValue placeholder={fetchingVoices ? "Carregando..." : "Escolha uma voz..."} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {elevenVoices.length > 0 ? elevenVoices.map((v: any) => (
-                                  <SelectItem key={v.voice_id} value={v.voice_id}>{v.name} ({v.category})</SelectItem>
-                                )) : (
-                                  <SelectItem value="21m0pOTjCwobq1Wnu3pd">Rachel (Padrão Fidelize)</SelectItem>
-                                )}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <Label>Voz Padrão</Label>
-                              <Button 
-                                variant="link" 
-                                size="sm" 
-                                className="h-auto p-0 text-xs" 
-                                onClick={fetchElevenVoices}
-                                disabled={fetchingVoices || !elevenApiKey}
-                              >
-                                {fetchingVoices ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
-                                Sincronizar
-                              </Button>
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <Label>Voz Padrão</Label>
+                                <Button 
+                                  variant="link" 
+                                  size="sm" 
+                                  className="h-auto p-0 text-xs" 
+                                  onClick={fetchElevenVoices}
+                                  disabled={fetchingVoices || !elevenApiKey}
+                                >
+                                  {fetchingVoices ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
+                                  Sincronizar
+                                </Button>
+                              </div>
+                              <Select value={elevenVoiceId} onValueChange={setElevenVoiceId}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder={fetchingVoices ? "Carregando..." : "Escolha uma voz..."} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {elevenVoices.length > 0 ? elevenVoices.map((v: any) => (
+                                    <SelectItem key={v.voice_id} value={v.voice_id}>{v.name} ({v.category})</SelectItem>
+                                  )) : (
+                                    <SelectItem value="21m0pOTjCwobq1Wnu3pd">Rachel (Padrão Fidelize)</SelectItem>
+                                  )}
+                                </SelectContent>
+                              </Select>
                             </div>
-                            <Select value={elevenVoiceId} onValueChange={setElevenVoiceId}>
-                              <SelectTrigger>
-                                <SelectValue placeholder={fetchingVoices ? "Carregando..." : "Escolha uma voz..."} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {elevenVoices.length > 0 ? elevenVoices.map((v: any) => (
-                                  <SelectItem key={v.voice_id} value={v.voice_id}>{v.name} ({v.category})</SelectItem>
-                                )) : (
-                                  <SelectItem value="21m0pOTjCwobq1Wnu3pd">Rachel (Padrão Fidelize)</SelectItem>
-                                )}
-                              </SelectContent>
-                            </Select>
                           </div>
-                        </div>
                       </div>
 
                       <div className="p-4 bg-muted/30 rounded-xl border space-y-4">
@@ -509,9 +501,18 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
                             <span className="text-sm font-medium">Status da Integração</span>
                           </div>
                           <Badge variant={integrationStatus === 'connected' ? 'default' : 'secondary'} className={integrationStatus === 'connected' ? 'bg-emerald-500 hover:bg-emerald-600' : ''}>
-                            {integrationStatus === 'connected' ? 'Conectado' : 'Aguardando Configuração'}
+                            {integrationStatus === 'connected' ? 'Conectado' : 
+                             integrationStatus === 'invalid_key' ? 'Chave Inválida' :
+                             integrationStatus === 'no_credits' ? 'Sem Créditos' :
+                             integrationStatus === 'error' ? 'Erro de API' : 'Aguardando Configuração'}
                           </Badge>
                         </div>
+                        {lastTested && (
+                          <div className="flex justify-between text-[10px] text-muted-foreground">
+                            <span>Última verificação:</span>
+                            <span>{lastTested}</span>
+                          </div>
+                        )}
                         <div className="flex gap-2">
                           <Button 
                             variant="outline" 
