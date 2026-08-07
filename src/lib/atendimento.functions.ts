@@ -489,14 +489,140 @@ export const getCRMContacts = createServerFn({ method: "GET" })
     const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
     if (!isAdmin) throw new Error("Acesso restrito.");
     
-    // Unindo perfis (clientes) com informações de conversas do CRM
+    // In CRM, contacts are the 'crm_contacts' table (manual/external) 
+    // PLUS we might want to see 'profiles' (auth users).
+    // The requirement says "crm_contacts" and "contact manual NÃO cria usuário Auth".
     const { data, error } = await supabase
-      .from("profiles")
-      .select("*, conversations:crm_conversations(last_message_at, status)")
+      .from("crm_contacts")
+      .select("*, tags:crm_contact_tags(tag:crm_tags(*))")
       .order("created_at", { ascending: false });
 
     if (error) throw error;
     return data || [];
+  });
+
+export const saveCRMContact = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    id: z.string().uuid().optional(),
+    name: z.string().min(2),
+    phone: z.string().min(10),
+    email: z.string().email().optional().nullable(),
+    notes: z.string().optional().nullable()
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Impedir telefone duplicado
+    const phone = data.phone.replace(/\D/g, "");
+    const { data: existing } = await supabaseAdmin
+      .from("crm_contacts")
+      .select("id")
+      .eq("phone", phone)
+      .maybeSingle();
+    
+    if (existing && existing.id !== data.id) {
+      throw new Error("Este número de telefone já está cadastrado.");
+    }
+
+    const { error } = await supabaseAdmin
+      .from("crm_contacts")
+      .upsert({
+        id: data.id || undefined,
+        name: data.name,
+        phone: phone,
+        email: data.email,
+        notes: data.notes
+      });
+
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const deleteCRMContact = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ contactId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    
+    const { error } = await supabaseAdmin
+      .from("crm_contacts")
+      .delete()
+      .eq("id", data.contactId);
+    
+    if (error) throw error;
+    return { ok: true };
+  });
+
+// --- CRM TEMPLATES ---
+export const getCRMTemplates = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+    
+    const { data, error } = await supabase
+      .from("crm_templates")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  });
+
+export const saveCRMTemplate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    id: z.string().uuid().optional(),
+    name: z.string().min(2),
+    content: z.string().min(1),
+    category: z.string().default("general"),
+    is_active: z.boolean().default(true)
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { error } = await supabaseAdmin
+      .from("crm_templates")
+      .upsert({
+        id: data.id || undefined,
+        name: data.name,
+        body: data.content,
+        category: data.category,
+        is_active: data.is_active
+      });
+
+
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const deleteCRMTemplate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ templateId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    
+    const { error } = await supabaseAdmin
+      .from("crm_templates")
+      .delete()
+      .eq("id", data.templateId);
+    
+    if (error) throw error;
+    return { ok: true };
   });
 
 // --- CRM QUICK REPLIES ---
@@ -523,3 +649,4 @@ export const saveCRMQuickReply = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true };
   });
+

@@ -80,8 +80,10 @@ export const requestOTP = createServerFn({ method: "POST" })
     
     const template = (configRow?.value as any)?.text || "Afidelize\n\nSeu código de acesso é {{code}}.\n\nEle expira em {{minutes}} minutos.\n\nNão compartilhe este código.";
     const message = template
-      .replace("{{code}}", code)
-      .replace("{{minutes}}", "10");
+      .replace(/{{code}}/g, code)
+      .replace(/{{minutes}}/g, "10")
+      .replace(/{{brand}}/g, "Afidelize");
+
 
 
 

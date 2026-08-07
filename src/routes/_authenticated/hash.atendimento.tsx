@@ -30,7 +30,10 @@ import { FlowSimulator } from "@/components/crm/FlowSimulator";
 import { QuickRepliesManager } from "@/components/crm/QuickReplies";
 import { OTPEditor } from "@/components/crm/OTPEditor";
 import { AgentConfig } from "@/components/crm/AgentConfig";
+import { ContactManager } from "@/components/crm/ContactManager";
+import { TemplateManager } from "@/components/crm/TemplateManager";
 import { useCRMRealtime } from "@/hooks/use-crm-realtime";
+
 
 export const Route = createFileRoute("/_authenticated/hash/atendimento")({
   component: AtendimentoCRM,
@@ -510,42 +513,21 @@ function AtendimentoCRM() {
           </TabsContent>
 
           <TabsContent value="contatos" className="space-y-6">
-            <Card className="dash-card p-6">
-               <div className="flex justify-between items-center mb-6">
-                  <h3 className="font-bold">Diretório de Contatos</h3>
-                  <div className="flex gap-2">
-                     <Input placeholder="Buscar contatos..." className="h-9 text-xs w-[250px]" />
-                     <Button size="sm"><Search className="h-4 w-4" /></Button>
-                  </div>
-               </div>
-               <div className="border rounded-xl overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead className="bg-muted/50 border-b">
-                      <tr>
-                        <th className="text-left p-3 font-bold text-[10px] uppercase">Cliente</th>
-                        <th className="text-left p-3 font-bold text-[10px] uppercase">WhatsApp</th>
-                        <th className="text-left p-3 font-bold text-[10px] uppercase">Último Contato</th>
-                        <th className="text-left p-3 font-bold text-[10px] uppercase">Status</th>
-                        <th className="text-right p-3 font-bold text-[10px] uppercase">Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {conversations?.map((c: any) => (
-                        <tr key={c.id} className="border-b hover:bg-muted/30 transition-colors">
-                          <td className="p-3 font-medium">{c.customer_phone}</td>
-                          <td className="p-3 text-muted-foreground text-xs">{c.customer_phone}</td>
-                          <td className="p-3 text-xs">{new Date(c.last_message_at).toLocaleDateString()}</td>
-                          <td className="p-3"><Badge variant="outline" className="text-[9px] uppercase">{c.status}</Badge></td>
-                          <td className="p-3 text-right">
-                             <Button variant="ghost" size="sm" className="h-7 text-[10px]" onClick={() => { setSelectedConversation(c); setActiveTab("conversas"); }}>Ver Conversa</Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-               </div>
-            </Card>
+            <ContactManager onSelectConversation={(contact) => {
+              const existing = conversations?.find((c: any) => c.customer_phone === contact.phone);
+              if (existing) {
+                setSelectedConversation(existing);
+                setActiveTab("conversas");
+              } else {
+                toast.info("Este contato ainda não possui histórico de conversa.");
+              }
+            }} />
           </TabsContent>
+
+          <TabsContent value="templates" className="space-y-6">
+            <TemplateManager />
+          </TabsContent>
+
         </div>
       </Tabs>
     </div>
