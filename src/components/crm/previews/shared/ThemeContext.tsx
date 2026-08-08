@@ -8,7 +8,13 @@ interface ThemeContextType {
 
 const CRMThemeContext = createContext<ThemeContextType>({ theme: "default" });
 
-export const useCRMTheme = () => useContext(CRMThemeContext);
+export const useCRMTheme = () => {
+  const context = useContext(CRMThemeContext);
+  if (!context) {
+    return { theme: "default" as CRMThemeType };
+  }
+  return context;
+};
 
 export function CRMThemeProvider({ theme, children }: { theme: CRMThemeType; children: ReactNode }) {
   return (
