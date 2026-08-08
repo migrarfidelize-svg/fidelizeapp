@@ -364,7 +364,7 @@ function ManageDialog({
     if (open) {
       const initialConfig = (row?.config ?? {}) as Record<string, unknown>;
       setFormConfig({ ...initialConfig });
-      setFormMode((row?.mode as any) ?? "production" as any);
+      setFormMode((row?.mode as any) ?? "production");
       setFormCredentials({});
       setActiveTab("config");
     }
