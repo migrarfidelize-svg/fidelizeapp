@@ -121,7 +121,7 @@ function AtendimentoCRM() {
             {activeTab === "otp" && <OTPEditor />}
             {activeTab === "config" && <AgentConfig />}
             {activeTab === "contatos" && <ContactManager />}
-            {activeTab === "fluxos" && <FlowEditor />}
+            {activeTab === "fluxos" && <FlowEditor flow={selectedFlow} onBack={() => { setActiveTab("conversas"); setSelectedFlow(null); }} />}
             {/* Outros tabs placeholders para implementação incremental */}
             {activeTab === "conversas" && <div className="p-8 text-sm text-muted-foreground">Área de Conversas (Em implementação com novo design)</div>}
             {activeTab === "fila" && <div className="p-8 text-sm text-muted-foreground">Fila de Atendimento (Em implementação)</div>}
