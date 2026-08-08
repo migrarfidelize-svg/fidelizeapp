@@ -17,7 +17,10 @@ export const Route = createFileRoute("/_authenticated/hash/atendimento/")({
 });
 
 function AtendimentoCRM() {
+  console.log("Rendering AtendimentoCRM (New Structure)");
   const [activeTab, setActiveTab] = useState("conversas");
+  const [selectedFlow, setSelectedFlow] = useState<any>(null);
+
   const { data: stats } = useQuery({ queryKey: ["crm-stats"], queryFn: () => getCRMStats() });
 
   const navItems = [
