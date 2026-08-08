@@ -281,6 +281,7 @@ export const testIntegration = createServerFn({ method: "POST" })
       mode: (((row as any)?.mode as "sandbox" | "production" | null) ?? "production"),
       config: ((row as any)?.config ?? {}) as Record<string, unknown>,
       credentials_ref: ((row as any)?.credentials_ref ?? {}) as Record<string, string>,
+      db_credentials: dbCreds,
     };
     for (const f of provider.meta.fields) {
       if (f.kind === "secret" && f.secretName && !runtime.credentials_ref[f.name]) {
@@ -367,6 +368,7 @@ export const sendTestWhatsAppMessage = createServerFn({ method: "POST" })
       mode: (row.mode as any) ?? "production",
       config: (row.config as any) ?? {},
       credentials_ref: (row.credentials_ref as any) ?? {},
+      db_credentials: dbCreds,
     };
 
     const dbCredsEncrypted = (row.credentials ?? {}) as Record<string, string>;
