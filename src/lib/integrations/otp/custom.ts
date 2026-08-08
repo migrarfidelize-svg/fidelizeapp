@@ -1,6 +1,6 @@
 import { timedFetch } from "../types";
 import type { IntegrationRuntimeConfig, NodeEnv, TestConnectionResult } from "../types";
-import type { WhatsAppOTPProvider } from "./base";
+import type { WhatsAppOTPProvider, WhatsAppInstanceStatus } from "./base";
 
 export const customOtp: WhatsAppOTPProvider = {
   meta: {
@@ -16,7 +16,7 @@ export const customOtp: WhatsAppOTPProvider = {
         kind: "url",
         required: true,
         placeholder: "https://minhaapi.com/send",
-        helpText: "URL completa do endpoint de envio de texto.",
+        helpText: "URL completa do endpoint de envio de text.",
       },
       {
         name: "method",
@@ -52,11 +52,10 @@ export const customOtp: WhatsAppOTPProvider = {
     ],
   },
 
-  async testConnection(runtime: IntegrationRuntimeConfig): Promise<TestConnectionResult> {
+  async testConnection(runtime: IntegrationRuntimeConfig, env: NodeEnv): Promise<TestConnectionResult> {
     const url = runtime.config.url as string;
     if (!url) return { ok: false, message: "URL não configurada." };
     
-    // Teste de conexão genérico: tenta um HEAD ou o próprio endpoint
     try {
       const { response, latency_ms } = await timedFetch(url, { method: "HEAD" });
       if (response.ok || response.status < 500) {
@@ -66,6 +65,15 @@ export const customOtp: WhatsAppOTPProvider = {
     } catch (err) {
       return { ok: false, message: `Falha ao alcançar URL: ${err instanceof Error ? err.message : String(err)}` };
     }
+  },
+
+  async getInstanceStatus(runtime: IntegrationRuntimeConfig, env: NodeEnv): Promise<WhatsAppInstanceStatus> {
+    // Custom providers don't have a standard status API
+    return { status: "ERROR", updatedAt: new Date().toISOString() };
+  },
+
+  async disconnectInstance(runtime: IntegrationRuntimeConfig, env: NodeEnv) {
+    return { ok: false, message: "Não suportado pelo provider customizado." };
   },
 
   async sendOtp(runtime: IntegrationRuntimeConfig, env: NodeEnv, phone: string, code: string) {
@@ -97,11 +105,9 @@ export const customOtp: WhatsAppOTPProvider = {
           .replace(/{{phone}}/g, cleanPhone)
           .replace(/{{message}}/g, message);
       } else {
-        // Fallback simples se não houver template
         body = JSON.stringify({ phone: cleanPhone, message });
       }
 
-      // Se for GET, anexar ao invés de enviar body
       if (method.toUpperCase() === "GET") {
         const params = new URLSearchParams();
         params.append("phone", cleanPhone);

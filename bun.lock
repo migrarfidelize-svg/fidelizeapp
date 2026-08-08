@@ -51,6 +51,7 @@
         "node-forge": "^1.4.0",
         "qr-scanner": "^1.4.2",
         "qrcode": "^1.5.4",
+        "qrcode.react": "^4.2.0",
         "react": "^19.2.0",
         "react-dom": "^19.2.0",
         "react-hook-form": "^7.71.2",
@@ -1637,6 +1638,8 @@
     "qr-scanner": ["qr-scanner@1.4.2", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/qr-scanner/-/qr-scanner-1.4.2.tgz", { "dependencies": { "@types/offscreencanvas": "^2019.6.4" } }, "sha512-kV1yQUe2FENvn59tMZW6mOVfpq9mGxGf8l6+EGaXUOd4RBOLg7tRC83OrirM5AtDvZRpdjdlXURsHreAOSPOUw=="],
 
     "qrcode": ["qrcode@1.5.4", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/qrcode/-/qrcode-1.5.4.tgz", { "dependencies": { "dijkstrajs": "^1.0.1", "pngjs": "^5.0.0", "yargs": "^15.3.1" }, "bin": { "qrcode": "bin/qrcode" } }, "sha512-1ca71Zgiu6ORjHqFBDpnSMTR2ReToX4l1Au1VFLyVeBTFavzQnv5JxMFr3ukHVKpSrSA2MCk0lNJSykjUfz7Zg=="],
+
+    "qrcode.react": ["qrcode.react@4.2.0", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/qrcode.react/-/qrcode.react-4.2.0.tgz", { "peerDependencies": { "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-QpgqWi8rD9DsS9EP3z7BT+5lY5SFhsqGjpgW5DY/i3mK4M9DTBNz3ErMi8BWYEfI3L0d8GIbGmcdFAS1uIRGjA=="],
 
     "raf": ["raf@3.4.1", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/raf/-/raf-3.4.1.tgz", { "dependencies": { "performance-now": "^2.1.0" } }, "sha512-Sq4CW4QhwOHE8ucn6J34MqtZCeWFP2aQSmrlroYgqAV1PjStIhJXxYuTgUIfkEk7zTLjmIjLmU5q+fbD1NnOJA=="],
 

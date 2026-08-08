@@ -1,6 +1,6 @@
 import { timedFetch } from "../types";
 import type { IntegrationRuntimeConfig, NodeEnv, TestConnectionResult } from "../types";
-import type { WhatsAppOTPProvider } from "./base";
+import type { WhatsAppOTPProvider, WhatsAppInstanceStatus } from "./base";
 
 export const zapiOtp: WhatsAppOTPProvider = {
   meta: {
@@ -58,6 +58,64 @@ export const zapiOtp: WhatsAppOTPProvider = {
       };
     } catch (err) {
       return { ok: false, message: `Falha na rede: ${err instanceof Error ? err.message : String(err)}` };
+    }
+  },
+
+  async getInstanceStatus(runtime: IntegrationRuntimeConfig, env: NodeEnv): Promise<WhatsAppInstanceStatus> {
+    const instanceId = runtime.config.instanceId as string;
+    const instanceToken = runtime.config.instanceToken as string;
+    const clientToken = runtime.config.clientToken as string;
+
+    if (!instanceId || !instanceToken || !clientToken) {
+      return { status: "ERROR", updatedAt: new Date().toISOString() };
+    }
+
+    try {
+      const baseUrl = `https://api.z-api.io/instances/${instanceId}/token/${instanceToken}`;
+      const { response, body } = await timedFetch(`${baseUrl}/status`, {
+        headers: { "client-token": clientToken },
+      });
+      
+      const res = JSON.parse(body);
+      
+      if (res.connected) {
+        return { status: "CONNECTED", updatedAt: new Date().toISOString() };
+      }
+
+      // Get QR
+      const { response: qrRes, body: qrBody } = await timedFetch(`${baseUrl}/qr-code`, {
+        headers: { "client-token": clientToken },
+      });
+      const qrData = JSON.parse(qrBody);
+
+      if (qrData.value) {
+        // Z-API returns raw QR string, usually frontend needs base64 or generates it
+        // We'll return it as qrcode string
+        return { status: "QRCODE", qrcode: qrData.value, updatedAt: new Date().toISOString() };
+      }
+
+      return { status: "DISCONNECTED", updatedAt: new Date().toISOString() };
+    } catch (err) {
+      console.error("[Z-API] Status Error:", err);
+      return { status: "ERROR", updatedAt: new Date().toISOString() };
+    }
+  },
+
+  async disconnectInstance(runtime: IntegrationRuntimeConfig, env: NodeEnv) {
+    const instanceId = runtime.config.instanceId as string;
+    const instanceToken = runtime.config.instanceToken as string;
+    const clientToken = runtime.config.clientToken as string;
+    if (!instanceId || !instanceToken || !clientToken) return { ok: false, message: "Configuração incompleta." };
+
+    try {
+      const baseUrl = `https://api.z-api.io/instances/${instanceId}/token/${instanceToken}`;
+      const { response, body } = await timedFetch(`${baseUrl}/disconnect`, {
+        method: "GET", // Z-API disconnect is often a GET to an endpoint or specific API call
+        headers: { "client-token": clientToken },
+      });
+      return { ok: response.ok, message: response.ok ? "Desconectado" : body };
+    } catch (err) {
+      return { ok: false, message: String(err) };
     }
   },
 
