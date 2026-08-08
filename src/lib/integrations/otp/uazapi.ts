@@ -237,12 +237,13 @@ export const uazapiOtp: WhatsAppOTPProvider = {
     if (body.event !== "messages.upsert") return null;
     const msg = body.data;
     const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text;
-    if (!text) return null;
+    const pushName = body.pushName || msg.pushName || body.instance?.pushName;
 
     return {
       remoteMessageId: msg.key?.id,
       fromPhone: msg.key?.remoteJid?.split("@")[0],
       text,
+      pushName,
       messageType: msg.message?.conversation ? "text" : "other"
     };
   }
