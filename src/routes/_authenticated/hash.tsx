@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/_authenticated/hash")({
   component: AdminLayout,
@@ -352,7 +354,11 @@ function AdminLayout() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                className="relative px-4 py-5 md:px-6 md:py-7 max-w-[1400px] w-full mx-auto"
+                className={cn(
+                  "relative max-w-[1400px] w-full mx-auto px-4 py-5 md:px-6 md:py-7",
+                  pathname.startsWith("/hash/atendimento") && "max-w-none w-full mx-0 p-0"
+                )}
+
               >
                 <PanelTransition />
                 <Outlet />
