@@ -173,9 +173,23 @@ export const sendOTPTestMessage = createServerFn({ method: "POST" })
       throw new Error("Nenhum provedor de WhatsApp ativo configurado nas Integrações.");
     }
 
+    const { decryptSecret } = await import("./integrations/crypt.server");
+    const dbCredsEncrypted = (active.runtime as any).db_credentials || (active.runtime as any).credentials || {};
+    const dbCreds: Record<string, string> = {};
+    for (const [k, v] of Object.entries(dbCredsEncrypted)) {
+      dbCreds[k] = typeof v === "string" && v.length > 20 ? await decryptSecret(v) : v as string;
+    }
+
+    const runtime = { ...active.runtime, db_credentials: dbCreds };
+    const mergedEnv = { ...process.env } as Record<string, string | undefined>;
+    for (const [field, envName] of Object.entries(runtime.credentials_ref)) {
+      const v = dbCreds[field];
+      if (v) mergedEnv[envName] = v;
+    }
+
     const res = await active.provider.sendTestMessage(
-      active.runtime, 
-      process.env as any, 
+      runtime, 
+      mergedEnv, 
       data.phone, 
       data.message
     );
