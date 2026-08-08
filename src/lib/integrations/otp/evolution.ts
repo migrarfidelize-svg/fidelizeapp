@@ -106,6 +106,10 @@ export const evolutionOtp: WhatsAppOTPProvider = {
     const apiKey = (runtime.config.apiKey as string) || env.WHATSAPP_API_KEY;
     const instance = (runtime.config.instance as string) || env.WHATSAPP_INSTANCE_ID;
 
+    if (!baseUrl || !apiKey || !instance) {
+      return { ok: false, message: "Configuração incompleta." };
+    }
+
     try {
       const { response, body } = await timedFetch(`${baseUrl}/instance/logout/${instance}`, {
         method: "DELETE",
