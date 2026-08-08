@@ -9785,6 +9785,14 @@ export type Database = {
         Returns: boolean
       }
       is_super_admin: { Args: { _user: string }; Returns: boolean }
+      mark_broadcast_recipient_failed: {
+        Args: { p_error?: string; p_recipient_id: string }
+        Returns: boolean
+      }
+      mark_broadcast_recipient_sent: {
+        Args: { p_provider_message_id?: string; p_recipient_id: string }
+        Returns: boolean
+      }
       mark_past_due_subscriptions: {
         Args: never
         Returns: {
