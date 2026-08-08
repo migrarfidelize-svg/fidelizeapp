@@ -21,22 +21,22 @@ export function PremiumLayout({ children, activeTab, setActiveTab }: LayoutProps
   ];
 
   return (
-    <div className="flex h-full bg-white dark:bg-zinc-950 font-sans">
+    <div className="flex h-full bg-[#fafafa] dark:bg-zinc-950 font-sans">
       {/* Slim Sidebar */}
-      <div className="w-20 bg-card border-r flex flex-col items-center py-8 gap-8">
-        <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+      <div className="w-24 bg-white border-r border-zinc-100 flex flex-col items-center py-10 gap-10">
+        <div className="h-14 w-14 rounded-[22px] bg-primary/5 flex items-center justify-center text-primary shadow-sm border border-primary/5">
             <Briefcase className="h-6 w-6" />
         </div>
-        <div className="flex-1 flex flex-col gap-4">
+        <div className="flex-1 flex flex-col gap-6">
             {menuItems.map(item => (
                 <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
                     className={cn(
-                        "h-12 w-12 rounded-2xl flex items-center justify-center transition-all relative group",
+                        "h-14 w-14 rounded-[22px] flex items-center justify-center transition-all relative group",
                         activeTab === item.id 
-                            ? "bg-primary text-primary-foreground shadow-xl" 
-                            : "text-muted-foreground hover:bg-muted"
+                            ? "bg-primary text-primary-foreground shadow-[0_20px_40px_-10px_rgba(var(--primary),0.3)] scale-110" 
+                            : "text-zinc-400 hover:bg-zinc-50 hover:text-primary"
                     )}
                 >
                     <item.icon className="h-5 w-5" />
@@ -49,8 +49,8 @@ export function PremiumLayout({ children, activeTab, setActiveTab }: LayoutProps
       </div>
 
       {/* Main Canvas */}
-      <div className="flex-1 flex flex-col overflow-hidden p-8">
-        <div className="flex-1 bg-card border shadow-2xl rounded-[40px] overflow-hidden flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden p-12">
+        <div className="flex-1 bg-white border border-zinc-100 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.04)] rounded-[60px] overflow-hidden flex flex-col">
             {children}
         </div>
       </div>

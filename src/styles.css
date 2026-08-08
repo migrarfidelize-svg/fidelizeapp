@@ -3265,3 +3265,100 @@ header[data-slot="site-header"],
   50%  { transform: translateX(140%); }
   100% { transform: translateX(340%); }
 }
+
+/* ============================================================
+   CRM THEME: COMMAND CENTER
+   Focado em densidade, eficiência e contraste técnico (Linear/Slack)
+   ============================================================ */
+.crm-theme-command {
+  --radius: 0.5rem;
+  --background: oklch(0.97 0 0); /* Cinza muito claro, quase branco */
+  --foreground: oklch(0.25 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0 0);
+  --primary: oklch(0.25 0 0); /* Preto/Cinza profundo para botões */
+  --primary-foreground: oklch(0.98 0 0);
+  --muted: oklch(0.93 0 0);
+  --muted-foreground: oklch(0.45 0 0);
+  --border: oklch(0 0 0 / 8%);
+  --accent: oklch(0.45 0 0);
+  
+  font-family: "Inter", sans-serif;
+}
+
+.crm-theme-command .bg-card {
+  backdrop-filter: none;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  background-image: none !important;
+}
+
+.crm-theme-command .bg-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+  transform: none;
+}
+
+/* ============================================================
+   CRM THEME: PREMIUM WORKSPACE
+   Focado em respiro, elegância e minimalismo (Apple/Intercom)
+   ============================================================ */
+.crm-theme-premium {
+  --radius: 2rem;
+  --background: oklch(1 0 0); /* Branco puro */
+  --foreground: oklch(0.2 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0 0);
+  --primary: oklch(0.55 0.12 288); /* Roxo Afidelize mais suave */
+  --primary-foreground: oklch(1 0 0);
+  --muted: oklch(0.98 0.005 285);
+  --muted-foreground: oklch(0.5 0.01 285);
+  --border: oklch(0.2 0.026 285 / 5%);
+  
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.crm-theme-premium .bg-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 40px -10px rgba(0,0,0,0.03);
+  backdrop-filter: blur(20px);
+  background-image: none !important;
+}
+
+/* ============================================================
+   CRM THEME: NEXUS
+   Focado em tecnologia, camadas e alto impacto
+   ============================================================ */
+.crm-theme-nexus {
+  --radius: 1rem;
+  --background: oklch(0.12 0.02 288); /* Fundo ultra escuro violeta */
+  --foreground: oklch(0.95 0.01 288);
+  --card: oklch(0.16 0.03 288);
+  --card-foreground: oklch(0.95 0.01 288);
+  --primary: oklch(0.7 0.15 288); /* Roxo elétrico */
+  --primary-foreground: oklch(0.1 0.02 288);
+  --muted: oklch(0.2 0.04 288);
+  --muted-foreground: oklch(0.6 0.03 288);
+  --border: oklch(1 0 0 / 10%);
+  
+  font-family: "Inter", sans-serif;
+}
+
+.crm-theme-nexus .bg-card {
+  background: linear-gradient(135deg, oklch(0.18 0.04 288), oklch(0.14 0.03 288));
+  border: 1px solid oklch(1 0 0 / 15%);
+  box-shadow: 0 0 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+  border-radius: var(--radius);
+  background-image: none !important; /* Resetting global behavior */
+}
+
+.crm-theme-nexus .bg-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 0%, oklch(0.7 0.15 288 / 10%), transparent 70%);
+  pointer-events: none;
+}
