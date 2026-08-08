@@ -595,13 +595,14 @@ function ConfigTab({
 }
 
 function CredentialsTab({
-  meta, onSaved, credsMasked, secretStatus, formCredentials, setFormCredentials
+  meta, onSaved, credsMasked, secretStatus, formCredentials, setFormCredentials, hasDraftSecret
 }: {
   meta: CatalogMeta; onSaved: () => void;
   credsMasked: Record<string, { set: boolean; masked: string | null }>;
   secretStatus: Record<string, boolean>;
   formCredentials: Record<string, string>;
   setFormCredentials: (fn: (d: Record<string, string>) => Record<string, string>) => void;
+  hasDraftSecret: (fieldName: string) => boolean;
 }) {
   const saveFn = useServerFn(saveIntegrationCredentials);
   const qc = useQueryClient();
