@@ -709,7 +709,6 @@ function WebhooksPanel({ data, loading }: { data: WebhookRow[]; loading: boolean
     });
     return g;
   }, [data]);
-  }, [data]);
 
   async function copyOne(w: WebhookRow) {
     await copyToClipboard(w.url, "Webhook copiado.");
@@ -732,7 +731,7 @@ function WebhooksPanel({ data, loading }: { data: WebhookRow[]; loading: boolean
       </div>
 
       {Object.entries(grouped).map(([provider, items]) => {
-        const isWhatsApp = provider === "whatsapp" || items.some(i => i.id === "whatsapp-webhook");
+        const isWhatsApp = provider === "whatsapp" || items.some((i: WebhookRow) => i.id === "whatsapp-webhook");
         
         return (
           <Card key={provider} className={isWhatsApp ? "border-emerald-500/30 bg-emerald-500/5 shadow-sm" : ""}>
@@ -743,7 +742,7 @@ function WebhooksPanel({ data, loading }: { data: WebhookRow[]; loading: boolean
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {items.map((w) => (
+              {items.map((w: WebhookRow) => (
                 <div key={w.id} className="rounded-lg border bg-card p-3 space-y-2">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -751,7 +750,7 @@ function WebhooksPanel({ data, loading }: { data: WebhookRow[]; loading: boolean
                       <p className="text-xs text-muted-foreground">{w.description}</p>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                      {w.methods.map((m) => <Badge key={m} variant="outline" className="text-[10px] uppercase font-bold">{m}</Badge>)}
+                      {w.methods.map((m: string) => <Badge key={m} variant="outline" className="text-[10px] uppercase font-bold">{m}</Badge>)}
                     </div>
                   </div>
                   
