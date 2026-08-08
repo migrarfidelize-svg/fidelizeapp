@@ -1,6 +1,6 @@
 import { timedFetch } from "../types";
 import type { IntegrationRuntimeConfig, NodeEnv, TestConnectionResult } from "../types";
-import type { WhatsAppOTPProvider } from "./base";
+import type { WhatsAppOTPProvider, WhatsAppInstanceStatus } from "./base";
 
 export const evolutionOtp: WhatsAppOTPProvider = {
   meta: {
@@ -62,6 +62,61 @@ export const evolutionOtp: WhatsAppOTPProvider = {
     }
   },
 
+  async getInstanceStatus(runtime: IntegrationRuntimeConfig, env: NodeEnv): Promise<WhatsAppInstanceStatus> {
+    const baseUrl = (runtime.config.baseUrl as string)?.replace(/\/$/, "");
+    const apiKey = (runtime.config.apiKey as string) || env.WHATSAPP_API_KEY;
+    const instance = (runtime.config.instance as string) || env.WHATSAPP_INSTANCE_ID;
+
+    if (!baseUrl || !apiKey || !instance) {
+      return { status: "ERROR", updatedAt: new Date().toISOString() };
+    }
+
+    try {
+      // 1. Check current status
+      const { response, body } = await timedFetch(`${baseUrl}/instance/connectionState/${instance}`, {
+        headers: { "apikey": apiKey },
+      });
+
+      const res = JSON.parse(body);
+      const state = res.instance?.state || res.state;
+
+      if (state === "open" || state === "CONNECTED") {
+        return { status: "CONNECTED", updatedAt: new Date().toISOString(), instanceName: instance };
+      }
+
+      // 2. If not connected, get QR code
+      const { response: qrRes, body: qrBody } = await timedFetch(`${baseUrl}/instance/connect/${instance}`, {
+        headers: { "apikey": apiKey },
+      });
+      
+      const qrData = JSON.parse(qrBody);
+      if (qrData.base64) {
+        return { status: "QRCODE", qrcode: qrData.base64, updatedAt: new Date().toISOString() };
+      }
+
+      return { status: "DISCONNECTED", updatedAt: new Date().toISOString() };
+    } catch (err) {
+      console.error("[Evolution] Status Error:", err);
+      return { status: "ERROR", updatedAt: new Date().toISOString() };
+    }
+  },
+
+  async disconnectInstance(runtime: IntegrationRuntimeConfig, env: NodeEnv) {
+    const baseUrl = (runtime.config.baseUrl as string)?.replace(/\/$/, "");
+    const apiKey = (runtime.config.apiKey as string) || env.WHATSAPP_API_KEY;
+    const instance = (runtime.config.instance as string) || env.WHATSAPP_INSTANCE_ID;
+
+    try {
+      const { response, body } = await timedFetch(`${baseUrl}/instance/logout/${instance}`, {
+        method: "DELETE",
+        headers: { "apikey": apiKey },
+      });
+      return { ok: response.ok, message: response.ok ? "Desconectado" : body };
+    } catch (err) {
+      return { ok: false, message: String(err) };
+    }
+  },
+
   async sendOtp(runtime: IntegrationRuntimeConfig, env: NodeEnv, phone: string, code: string) {
     const message = `Seu código de acesso Afidelize é: ${code}`;
     return this.sendTestMessage(runtime, env, phone, message);
@@ -76,9 +131,7 @@ export const evolutionOtp: WhatsAppOTPProvider = {
       return { ok: false, message: "Configuração incompleta." };
     }
 
-    // Normalização simples para DDI + DDD + Número
     const cleanPhone = phone.replace(/\D/g, "");
-
     const headers: Record<string, string> = { 
       "apikey": apiKey,
       "Content-Type": "application/json"
