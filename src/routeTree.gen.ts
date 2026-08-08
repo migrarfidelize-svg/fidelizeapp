@@ -71,7 +71,6 @@ import { Route as AuthenticatedHashConfigRouteImport } from './routes/_authentic
 import { Route as AuthenticatedHashCardapioJsonldRouteImport } from './routes/_authenticated/hash.cardapio-jsonld'
 import { Route as AuthenticatedHashAvaliacoesRouteImport } from './routes/_authenticated/hash.avaliacoes'
 import { Route as AuthenticatedHashAuditoriaRouteImport } from './routes/_authenticated/hash.auditoria'
-import { Route as AuthenticatedHashAtendimentoRouteImport } from './routes/_authenticated/hash.atendimento'
 import { Route as AuthenticatedHashAssinaturasRouteImport } from './routes/_authenticated/hash.assinaturas'
 import { Route as AuthenticatedHashAnunciosRouteImport } from './routes/_authenticated/hash.anuncios'
 import { Route as AuthenticatedHashAlertasRouteImport } from './routes/_authenticated/hash.alertas'
@@ -108,6 +107,7 @@ import { Route as AuthenticatedAppAnunciosRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppAnalyticsRouteImport } from './routes/_authenticated/app.analytics'
 import { Route as AuthenticatedHashSuporteIndexRouteImport } from './routes/_authenticated/hash.suporte.index'
 import { Route as AuthenticatedHashPlanosIndexRouteImport } from './routes/_authenticated/hash.planos.index'
+import { Route as AuthenticatedHashAtendimentoIndexRouteImport } from './routes/_authenticated/hash/atendimento/index'
 import { Route as AuthenticatedAppPlanosIndexRouteImport } from './routes/_authenticated/app.planos.index'
 import { Route as AuthenticatedAppFidelizeIndexRouteImport } from './routes/_authenticated/app.fidelize.index'
 import { Route as AuthenticatedAppCatalogoIndexRouteImport } from './routes/_authenticated/app.catalogo.index'
@@ -479,12 +479,6 @@ const AuthenticatedHashAuditoriaRoute =
     path: '/auditoria',
     getParentRoute: () => AuthenticatedHashRoute,
   } as any)
-const AuthenticatedHashAtendimentoRoute =
-  AuthenticatedHashAtendimentoRouteImport.update({
-    id: '/atendimento',
-    path: '/atendimento',
-    getParentRoute: () => AuthenticatedHashRoute,
-  } as any)
 const AuthenticatedHashAssinaturasRoute =
   AuthenticatedHashAssinaturasRouteImport.update({
     id: '/assinaturas',
@@ -692,6 +686,12 @@ const AuthenticatedHashPlanosIndexRoute =
     path: '/planos/',
     getParentRoute: () => AuthenticatedHashRoute,
   } as any)
+const AuthenticatedHashAtendimentoIndexRoute =
+  AuthenticatedHashAtendimentoIndexRouteImport.update({
+    id: '/atendimento/',
+    path: '/atendimento/',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
 const AuthenticatedAppPlanosIndexRoute =
   AuthenticatedAppPlanosIndexRouteImport.update({
     id: '/planos/',
@@ -891,9 +891,9 @@ const AuthenticatedAppAvaliacoesQrRoute =
   } as any)
 const AuthenticatedHashAtendimentoPreviewIndexRoute =
   AuthenticatedHashAtendimentoPreviewIndexRouteImport.update({
-    id: '/preview/',
-    path: '/preview/',
-    getParentRoute: () => AuthenticatedHashAtendimentoRoute,
+    id: '/atendimento/preview/',
+    path: '/atendimento/preview/',
+    getParentRoute: () => AuthenticatedHashRoute,
   } as any)
 const ApiPublicWalletV1LogRoute = ApiPublicWalletV1LogRouteImport.update({
   id: '/api/public/wallet/v1/log',
@@ -913,21 +913,21 @@ const ApiPublicRTCodeRoute = ApiPublicRTCodeRouteImport.update({
 } as any)
 const AuthenticatedHashAtendimentoPreviewWorkspaceRoute =
   AuthenticatedHashAtendimentoPreviewWorkspaceRouteImport.update({
-    id: '/preview/workspace',
-    path: '/preview/workspace',
-    getParentRoute: () => AuthenticatedHashAtendimentoRoute,
+    id: '/atendimento/preview/workspace',
+    path: '/atendimento/preview/workspace',
+    getParentRoute: () => AuthenticatedHashRoute,
   } as any)
 const AuthenticatedHashAtendimentoPreviewNexusRoute =
   AuthenticatedHashAtendimentoPreviewNexusRouteImport.update({
-    id: '/preview/nexus',
-    path: '/preview/nexus',
-    getParentRoute: () => AuthenticatedHashAtendimentoRoute,
+    id: '/atendimento/preview/nexus',
+    path: '/atendimento/preview/nexus',
+    getParentRoute: () => AuthenticatedHashRoute,
   } as any)
 const AuthenticatedHashAtendimentoPreviewCommandRoute =
   AuthenticatedHashAtendimentoPreviewCommandRouteImport.update({
-    id: '/preview/command',
-    path: '/preview/command',
-    getParentRoute: () => AuthenticatedHashAtendimentoRoute,
+    id: '/atendimento/preview/command',
+    path: '/atendimento/preview/command',
+    getParentRoute: () => AuthenticatedHashRoute,
   } as any)
 const AuthenticatedAppFidelizeTicketIdRoute =
   AuthenticatedAppFidelizeTicketIdRouteImport.update({
@@ -1031,7 +1031,6 @@ export interface FileRoutesByFullPath {
   '/hash/alertas': typeof AuthenticatedHashAlertasRoute
   '/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
   '/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
-  '/hash/atendimento': typeof AuthenticatedHashAtendimentoRouteWithChildren
   '/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
   '/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
   '/hash/cardapio-jsonld': typeof AuthenticatedHashCardapioJsonldRoute
@@ -1093,6 +1092,7 @@ export interface FileRoutesByFullPath {
   '/app/catalogo/': typeof AuthenticatedAppCatalogoIndexRoute
   '/app/fidelize/': typeof AuthenticatedAppFidelizeIndexRoute
   '/app/planos/': typeof AuthenticatedAppPlanosIndexRoute
+  '/hash/atendimento/': typeof AuthenticatedHashAtendimentoIndexRoute
   '/hash/planos/': typeof AuthenticatedHashPlanosIndexRoute
   '/hash/suporte/': typeof AuthenticatedHashSuporteIndexRoute
   '/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
@@ -1172,7 +1172,6 @@ export interface FileRoutesByTo {
   '/hash/alertas': typeof AuthenticatedHashAlertasRoute
   '/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
   '/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
-  '/hash/atendimento': typeof AuthenticatedHashAtendimentoRouteWithChildren
   '/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
   '/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
   '/hash/cardapio-jsonld': typeof AuthenticatedHashCardapioJsonldRoute
@@ -1234,6 +1233,7 @@ export interface FileRoutesByTo {
   '/app/catalogo': typeof AuthenticatedAppCatalogoIndexRoute
   '/app/fidelize': typeof AuthenticatedAppFidelizeIndexRoute
   '/app/planos': typeof AuthenticatedAppPlanosIndexRoute
+  '/hash/atendimento': typeof AuthenticatedHashAtendimentoIndexRoute
   '/hash/planos': typeof AuthenticatedHashPlanosIndexRoute
   '/hash/suporte': typeof AuthenticatedHashSuporteIndexRoute
   '/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
@@ -1320,7 +1320,6 @@ export interface FileRoutesById {
   '/_authenticated/hash/alertas': typeof AuthenticatedHashAlertasRoute
   '/_authenticated/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
   '/_authenticated/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
-  '/_authenticated/hash/atendimento': typeof AuthenticatedHashAtendimentoRouteWithChildren
   '/_authenticated/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
   '/_authenticated/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
   '/_authenticated/hash/cardapio-jsonld': typeof AuthenticatedHashCardapioJsonldRoute
@@ -1382,6 +1381,7 @@ export interface FileRoutesById {
   '/_authenticated/app/catalogo/': typeof AuthenticatedAppCatalogoIndexRoute
   '/_authenticated/app/fidelize/': typeof AuthenticatedAppFidelizeIndexRoute
   '/_authenticated/app/planos/': typeof AuthenticatedAppPlanosIndexRoute
+  '/_authenticated/hash/atendimento/': typeof AuthenticatedHashAtendimentoIndexRoute
   '/_authenticated/hash/planos/': typeof AuthenticatedHashPlanosIndexRoute
   '/_authenticated/hash/suporte/': typeof AuthenticatedHashSuporteIndexRoute
   '/_authenticated/app/fidelize/ticket/$id': typeof AuthenticatedAppFidelizeTicketIdRoute
@@ -1468,7 +1468,6 @@ export interface FileRouteTypes {
     | '/hash/alertas'
     | '/hash/anuncios'
     | '/hash/assinaturas'
-    | '/hash/atendimento'
     | '/hash/auditoria'
     | '/hash/avaliacoes'
     | '/hash/cardapio-jsonld'
@@ -1530,6 +1529,7 @@ export interface FileRouteTypes {
     | '/app/catalogo/'
     | '/app/fidelize/'
     | '/app/planos/'
+    | '/hash/atendimento/'
     | '/hash/planos/'
     | '/hash/suporte/'
     | '/app/fidelize/ticket/$id'
@@ -1609,7 +1609,6 @@ export interface FileRouteTypes {
     | '/hash/alertas'
     | '/hash/anuncios'
     | '/hash/assinaturas'
-    | '/hash/atendimento'
     | '/hash/auditoria'
     | '/hash/avaliacoes'
     | '/hash/cardapio-jsonld'
@@ -1671,6 +1670,7 @@ export interface FileRouteTypes {
     | '/app/catalogo'
     | '/app/fidelize'
     | '/app/planos'
+    | '/hash/atendimento'
     | '/hash/planos'
     | '/hash/suporte'
     | '/app/fidelize/ticket/$id'
@@ -1756,7 +1756,6 @@ export interface FileRouteTypes {
     | '/_authenticated/hash/alertas'
     | '/_authenticated/hash/anuncios'
     | '/_authenticated/hash/assinaturas'
-    | '/_authenticated/hash/atendimento'
     | '/_authenticated/hash/auditoria'
     | '/_authenticated/hash/avaliacoes'
     | '/_authenticated/hash/cardapio-jsonld'
@@ -1818,6 +1817,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/catalogo/'
     | '/_authenticated/app/fidelize/'
     | '/_authenticated/app/planos/'
+    | '/_authenticated/hash/atendimento/'
     | '/_authenticated/hash/planos/'
     | '/_authenticated/hash/suporte/'
     | '/_authenticated/app/fidelize/ticket/$id'
@@ -2330,13 +2330,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHashAuditoriaRouteImport
       parentRoute: typeof AuthenticatedHashRoute
     }
-    '/_authenticated/hash/atendimento': {
-      id: '/_authenticated/hash/atendimento'
-      path: '/atendimento'
-      fullPath: '/hash/atendimento'
-      preLoaderRoute: typeof AuthenticatedHashAtendimentoRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
     '/_authenticated/hash/assinaturas': {
       id: '/_authenticated/hash/assinaturas'
       path: '/assinaturas'
@@ -2589,6 +2582,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHashPlanosIndexRouteImport
       parentRoute: typeof AuthenticatedHashRoute
     }
+    '/_authenticated/hash/atendimento/': {
+      id: '/_authenticated/hash/atendimento/'
+      path: '/atendimento'
+      fullPath: '/hash/atendimento/'
+      preLoaderRoute: typeof AuthenticatedHashAtendimentoIndexRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
     '/_authenticated/app/planos/': {
       id: '/_authenticated/app/planos/'
       path: '/planos'
@@ -2829,10 +2829,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/hash/atendimento/preview/': {
       id: '/_authenticated/hash/atendimento/preview/'
-      path: '/preview'
+      path: '/atendimento/preview'
       fullPath: '/hash/atendimento/preview/'
       preLoaderRoute: typeof AuthenticatedHashAtendimentoPreviewIndexRouteImport
-      parentRoute: typeof AuthenticatedHashAtendimentoRoute
+      parentRoute: typeof AuthenticatedHashRoute
     }
     '/api/public/wallet/v1/log': {
       id: '/api/public/wallet/v1/log'
@@ -2857,24 +2857,24 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/hash/atendimento/preview/workspace': {
       id: '/_authenticated/hash/atendimento/preview/workspace'
-      path: '/preview/workspace'
+      path: '/atendimento/preview/workspace'
       fullPath: '/hash/atendimento/preview/workspace'
       preLoaderRoute: typeof AuthenticatedHashAtendimentoPreviewWorkspaceRouteImport
-      parentRoute: typeof AuthenticatedHashAtendimentoRoute
+      parentRoute: typeof AuthenticatedHashRoute
     }
     '/_authenticated/hash/atendimento/preview/nexus': {
       id: '/_authenticated/hash/atendimento/preview/nexus'
-      path: '/preview/nexus'
+      path: '/atendimento/preview/nexus'
       fullPath: '/hash/atendimento/preview/nexus'
       preLoaderRoute: typeof AuthenticatedHashAtendimentoPreviewNexusRouteImport
-      parentRoute: typeof AuthenticatedHashAtendimentoRoute
+      parentRoute: typeof AuthenticatedHashRoute
     }
     '/_authenticated/hash/atendimento/preview/command': {
       id: '/_authenticated/hash/atendimento/preview/command'
-      path: '/preview/command'
+      path: '/atendimento/preview/command'
       fullPath: '/hash/atendimento/preview/command'
       preLoaderRoute: typeof AuthenticatedHashAtendimentoPreviewCommandRouteImport
-      parentRoute: typeof AuthenticatedHashAtendimentoRoute
+      parentRoute: typeof AuthenticatedHashRoute
     }
     '/_authenticated/app/fidelize/ticket/$id': {
       id: '/_authenticated/app/fidelize/ticket/$id'
@@ -3073,36 +3073,11 @@ const AuthenticatedCarteiraRouteWithChildren =
     AuthenticatedCarteiraRouteChildren,
   )
 
-interface AuthenticatedHashAtendimentoRouteChildren {
-  AuthenticatedHashAtendimentoPreviewCommandRoute: typeof AuthenticatedHashAtendimentoPreviewCommandRoute
-  AuthenticatedHashAtendimentoPreviewNexusRoute: typeof AuthenticatedHashAtendimentoPreviewNexusRoute
-  AuthenticatedHashAtendimentoPreviewWorkspaceRoute: typeof AuthenticatedHashAtendimentoPreviewWorkspaceRoute
-  AuthenticatedHashAtendimentoPreviewIndexRoute: typeof AuthenticatedHashAtendimentoPreviewIndexRoute
-}
-
-const AuthenticatedHashAtendimentoRouteChildren: AuthenticatedHashAtendimentoRouteChildren =
-  {
-    AuthenticatedHashAtendimentoPreviewCommandRoute:
-      AuthenticatedHashAtendimentoPreviewCommandRoute,
-    AuthenticatedHashAtendimentoPreviewNexusRoute:
-      AuthenticatedHashAtendimentoPreviewNexusRoute,
-    AuthenticatedHashAtendimentoPreviewWorkspaceRoute:
-      AuthenticatedHashAtendimentoPreviewWorkspaceRoute,
-    AuthenticatedHashAtendimentoPreviewIndexRoute:
-      AuthenticatedHashAtendimentoPreviewIndexRoute,
-  }
-
-const AuthenticatedHashAtendimentoRouteWithChildren =
-  AuthenticatedHashAtendimentoRoute._addFileChildren(
-    AuthenticatedHashAtendimentoRouteChildren,
-  )
-
 interface AuthenticatedHashRouteChildren {
   AuthenticatedHashAjudaRoute: typeof AuthenticatedHashAjudaRoute
   AuthenticatedHashAlertasRoute: typeof AuthenticatedHashAlertasRoute
   AuthenticatedHashAnunciosRoute: typeof AuthenticatedHashAnunciosRoute
   AuthenticatedHashAssinaturasRoute: typeof AuthenticatedHashAssinaturasRoute
-  AuthenticatedHashAtendimentoRoute: typeof AuthenticatedHashAtendimentoRouteWithChildren
   AuthenticatedHashAuditoriaRoute: typeof AuthenticatedHashAuditoriaRoute
   AuthenticatedHashAvaliacoesRoute: typeof AuthenticatedHashAvaliacoesRoute
   AuthenticatedHashCardapioJsonldRoute: typeof AuthenticatedHashCardapioJsonldRoute
@@ -3125,8 +3100,13 @@ interface AuthenticatedHashRouteChildren {
   AuthenticatedHashIndexRoute: typeof AuthenticatedHashIndexRoute
   AuthenticatedHashEmpresaIdRoute: typeof AuthenticatedHashEmpresaIdRoute
   AuthenticatedHashSuporteIdRoute: typeof AuthenticatedHashSuporteIdRoute
+  AuthenticatedHashAtendimentoIndexRoute: typeof AuthenticatedHashAtendimentoIndexRoute
   AuthenticatedHashPlanosIndexRoute: typeof AuthenticatedHashPlanosIndexRoute
   AuthenticatedHashSuporteIndexRoute: typeof AuthenticatedHashSuporteIndexRoute
+  AuthenticatedHashAtendimentoPreviewCommandRoute: typeof AuthenticatedHashAtendimentoPreviewCommandRoute
+  AuthenticatedHashAtendimentoPreviewNexusRoute: typeof AuthenticatedHashAtendimentoPreviewNexusRoute
+  AuthenticatedHashAtendimentoPreviewWorkspaceRoute: typeof AuthenticatedHashAtendimentoPreviewWorkspaceRoute
+  AuthenticatedHashAtendimentoPreviewIndexRoute: typeof AuthenticatedHashAtendimentoPreviewIndexRoute
 }
 
 const AuthenticatedHashRouteChildren: AuthenticatedHashRouteChildren = {
@@ -3134,8 +3114,6 @@ const AuthenticatedHashRouteChildren: AuthenticatedHashRouteChildren = {
   AuthenticatedHashAlertasRoute: AuthenticatedHashAlertasRoute,
   AuthenticatedHashAnunciosRoute: AuthenticatedHashAnunciosRoute,
   AuthenticatedHashAssinaturasRoute: AuthenticatedHashAssinaturasRoute,
-  AuthenticatedHashAtendimentoRoute:
-    AuthenticatedHashAtendimentoRouteWithChildren,
   AuthenticatedHashAuditoriaRoute: AuthenticatedHashAuditoriaRoute,
   AuthenticatedHashAvaliacoesRoute: AuthenticatedHashAvaliacoesRoute,
   AuthenticatedHashCardapioJsonldRoute: AuthenticatedHashCardapioJsonldRoute,
@@ -3158,8 +3136,18 @@ const AuthenticatedHashRouteChildren: AuthenticatedHashRouteChildren = {
   AuthenticatedHashIndexRoute: AuthenticatedHashIndexRoute,
   AuthenticatedHashEmpresaIdRoute: AuthenticatedHashEmpresaIdRoute,
   AuthenticatedHashSuporteIdRoute: AuthenticatedHashSuporteIdRoute,
+  AuthenticatedHashAtendimentoIndexRoute:
+    AuthenticatedHashAtendimentoIndexRoute,
   AuthenticatedHashPlanosIndexRoute: AuthenticatedHashPlanosIndexRoute,
   AuthenticatedHashSuporteIndexRoute: AuthenticatedHashSuporteIndexRoute,
+  AuthenticatedHashAtendimentoPreviewCommandRoute:
+    AuthenticatedHashAtendimentoPreviewCommandRoute,
+  AuthenticatedHashAtendimentoPreviewNexusRoute:
+    AuthenticatedHashAtendimentoPreviewNexusRoute,
+  AuthenticatedHashAtendimentoPreviewWorkspaceRoute:
+    AuthenticatedHashAtendimentoPreviewWorkspaceRoute,
+  AuthenticatedHashAtendimentoPreviewIndexRoute:
+    AuthenticatedHashAtendimentoPreviewIndexRoute,
 }
 
 const AuthenticatedHashRouteWithChildren =
@@ -3276,13 +3264,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/_authenticated/hash")({
   component: AdminLayout,
