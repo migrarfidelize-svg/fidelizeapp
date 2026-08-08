@@ -38,7 +38,7 @@ export async function executeFlow(conversationId: string, messageBody: string) {
     if (!currentFlowId) return;
   }
 
-  const { data: flow } = await supabaseAdmin
+  const { data: flow } = await (supabaseAdmin as any)
     .from("crm_flows")
     .select("*, steps:crm_flow_steps(*)")
     .eq("id", currentFlowId)
@@ -83,7 +83,7 @@ export async function executeFlow(conversationId: string, messageBody: string) {
   }
 
   const initialStep = currentStepId ? steps.find((s: any) => s.id === currentStepId) : steps[0];
-  await processStep(conv, initialStep, steps);
+  if (initialStep) await processStep(conv, initialStep, steps);
 }
 
 async function processStep(conv: any, step: any, allSteps: any[]) {
