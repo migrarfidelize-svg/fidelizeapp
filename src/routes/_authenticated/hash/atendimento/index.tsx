@@ -54,7 +54,8 @@ function AtendimentoCRM() {
     { id: "fluxos", label: "Fluxos", icon: GitBranch },
     { id: "templates", label: "Templates", icon: FileText },
     { id: "otp", label: "OTP", icon: Smartphone },
-    { id: "config", label: "Configurações", icon: Settings2 },
+    { id: "whatsapp", label: "WhatsApp", icon: Smartphone },
+    { id: "config", label: "Agente IA", icon: Settings2 },
   ];
 
   return (
@@ -118,7 +119,7 @@ function AtendimentoCRM() {
             ))}
 
             <div className="crm-sidebar-section-label">Sistema</div>
-            {navItems.filter(i => ["config"].includes(i.id)).map(item => (
+            {navItems.filter(i => ["whatsapp", "config"].includes(i.id)).map(item => (
               <button 
                   key={item.id} 
                   onClick={() => setActiveTab(item.id)}
@@ -178,6 +179,7 @@ function AtendimentoCRM() {
               {activeTab === "templates" && <TemplateManager />}
               {activeTab === "otp" && <OTPEditor />}
               {activeTab === "config" && <AgentConfig />}
+              {activeTab === "whatsapp" && <WhatsAppManager />}
               {activeTab === "contatos" && <ContactManager />}
               {activeTab === "fluxos" && <FlowEditor flow={selectedFlow} onBack={() => { setActiveTab("conversas"); setSelectedFlow(null); }} />}
               {activeTab === "conversas" && <div className="p-12 flex flex-col items-center justify-center h-full text-center space-y-4">
