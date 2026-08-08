@@ -276,6 +276,15 @@ export const testIntegration = createServerFn({ method: "POST" })
       .eq("provider", data.provider)
       .maybeSingle();
 
+    const { decryptSecret } = await import("./crypt.server");
+
+    // Descriptografa credenciais do DB para uso em runtime
+    const dbCredsEncrypted = ((row as any)?.credentials ?? {}) as Record<string, string>;
+    const dbCreds: Record<string, string> = {};
+    for (const [k, v] of Object.entries(dbCredsEncrypted)) {
+      dbCreds[k] = await decryptSecret(v);
+    }
+
     const runtime: IntegrationRuntimeConfig = {
       enabled: (row as any)?.enabled ?? false,
       mode: (((row as any)?.mode as "sandbox" | "production" | null) ?? "production"),
@@ -289,9 +298,6 @@ export const testIntegration = createServerFn({ method: "POST" })
       }
     }
 
-    // Mescla credenciais salvas no DB no "env" passado ao provider,
-    // priorizando o valor do DB sobre process.env.
-    const dbCreds = ((row as any)?.credentials ?? {}) as Record<string, string>;
     const mergedEnv: Record<string, string | undefined> = { ...(process.env as Record<string, string | undefined>) };
     for (const [field, envName] of Object.entries(runtime.credentials_ref)) {
       const v = dbCreds[field];
@@ -363,6 +369,12 @@ export const sendTestWhatsAppMessage = createServerFn({ method: "POST" })
 
     const { decryptSecret } = await import("./crypt.server");
     
+    const dbCredsEncrypted = (row.credentials ?? {}) as Record<string, string>;
+    const dbCreds: Record<string, string> = {};
+    for (const [k, v] of Object.entries(dbCredsEncrypted)) {
+      dbCreds[k] = await decryptSecret(v);
+    }
+
     const runtime: IntegrationRuntimeConfig = {
       enabled: row.enabled ?? false,
       mode: (row.mode as any) ?? "production",
@@ -370,12 +382,6 @@ export const sendTestWhatsAppMessage = createServerFn({ method: "POST" })
       credentials_ref: (row.credentials_ref as any) ?? {},
       db_credentials: dbCreds,
     };
-
-    const dbCredsEncrypted = (row.credentials ?? {}) as Record<string, string>;
-    const dbCreds: Record<string, string> = {};
-    for (const [k, v] of Object.entries(dbCredsEncrypted)) {
-      dbCreds[k] = await decryptSecret(v);
-    }
     
     const mergedEnv: Record<string, string | undefined> = { ...(process.env as Record<string, string | undefined>) };
     for (const [field, envName] of Object.entries(runtime.credentials_ref)) {
