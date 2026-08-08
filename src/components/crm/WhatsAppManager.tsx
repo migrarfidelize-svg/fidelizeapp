@@ -279,6 +279,7 @@ export function WhatsAppManager() {
           </Card>
         </div>
       </div>
+      </div>
     </div>
   );
 }
