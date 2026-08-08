@@ -1,6 +1,6 @@
-import { Search, History, UserCheck, GitBranch, Contact, FileText, Smartphone, Settings2, MessageSquare, Play } from "lucide-react";
+import { Search, History, UserCheck, GitBranch, Contact, FileText, Smartphone, Settings2, MessageSquare, Play, ChevronLeft, ChevronRight } from "lucide-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
   getCRMStats
@@ -11,6 +11,12 @@ import { OTPEditor } from "@/components/crm/OTPEditor";
 import { AgentConfig } from "@/components/crm/AgentConfig";
 import { ContactManager } from "@/components/crm/ContactManager";
 import { FlowEditor } from "@/components/crm/FlowEditor";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export const Route = createFileRoute("/_authenticated/hash/atendimento/")({
   component: AtendimentoCRM,
@@ -20,8 +26,21 @@ function AtendimentoCRM() {
   console.log("Rendering AtendimentoCRM (New Structure)");
   const [activeTab, setActiveTab] = useState("conversas");
   const [selectedFlow, setSelectedFlow] = useState<any>(null);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("crm-sidebar-collapsed");
+      if (saved !== null) return saved === "true";
+      return window.innerWidth < 1024;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("crm-sidebar-collapsed", String(isCollapsed));
+  }, [isCollapsed]);
 
   const { data: stats } = useQuery({ queryKey: ["crm-stats"], queryFn: () => getCRMStats() });
+
 
   const navItems = [
     { id: "conversas", label: "Conversas", icon: MessageSquare },
