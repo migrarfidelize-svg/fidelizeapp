@@ -703,10 +703,12 @@ function WebhooksPanel({ data, loading }: { data: WebhookRow[]; loading: boolean
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const grouped = useMemo(() => {
     const g: Record<string, WebhookRow[]> = {};
-    data.forEach((w) => {
-      const groupKey = (w.category === "otp" || w.provider === "whatsapp") ? "whatsapp" : w.provider;
+    data.forEach((w: WebhookRow) => {
+      const groupKey = (w.category as string === "otp" || w.provider === "whatsapp") ? "whatsapp" : w.provider;
       (g[groupKey] ||= []).push(w);
     });
+    return g;
+  }, [data]);
   }, [data]);
 
   async function copyOne(w: WebhookRow) {
