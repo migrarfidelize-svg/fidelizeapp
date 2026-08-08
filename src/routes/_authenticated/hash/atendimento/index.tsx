@@ -53,9 +53,9 @@ function AtendimentoCRM() {
     { id: "agente", label: "Agente", icon: UserCheck },
     { id: "fluxos", label: "Fluxos", icon: GitBranch },
     { id: "templates", label: "Templates", icon: FileText },
-    { id: "otp", label: "OTP", icon: Smartphone },
+    { id: "otp", label: "OTP", icon: MessageSquare },
     { id: "whatsapp", label: "WhatsApp", icon: Smartphone },
-    { id: "config", label: "Agente IA", icon: Settings2 },
+    { id: "config", label: "Configurações", icon: Settings2 },
   ];
 
   return (
