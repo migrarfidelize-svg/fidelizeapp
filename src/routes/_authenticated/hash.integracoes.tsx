@@ -540,20 +540,14 @@ function ManageDialog({
         </Tabs>
 
         {(activeTab === "config" || activeTab === "credentials") && (
-          <DialogFooter className="pt-4 border-t mt-4 flex items-center justify-between">
-            <div className="flex flex-col">
-              <Button variant="ghost" onClick={handleRestore} disabled={!isDirty}>
-                <RotateCcw className="h-4 w-4 mr-1" />Restaurar
-              </Button>
-              {meta.id === "uazapi" && (
-                <span className="text-[10px] text-muted-foreground/50 ml-2 uppercase tracking-tighter">UAZAPI SAVE FLOW V4</span>
-              )}
-            </div>
+          <DialogFooter className="pt-4 border-t mt-4">
+            <Button variant="ghost" onClick={handleRestore} disabled={!isDirty}><RotateCcw className="h-4 w-4 mr-1" />Restaurar</Button>
             <Button onClick={handleGlobalSave} disabled={saving || !isDirty}>
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
               Salvar alterações
             </Button>
           </DialogFooter>
+
 
         )}
       </DialogContent>
