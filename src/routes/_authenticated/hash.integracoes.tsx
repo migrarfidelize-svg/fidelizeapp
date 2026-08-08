@@ -4,7 +4,7 @@ import { PageHero } from "@/components/PageHero";
 import { Plug as HeroIcon } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -350,6 +350,106 @@ function ManageDialog({
   credsMasked: Record<string, { set: boolean; masked: string | null }>;
   secretStatus: Record<string, boolean>;
 }) {
+  const [activeTab, setActiveTab] = useState("config");
+  const [formConfig, setFormConfig] = useState<Record<string, unknown>>({});
+  const [formMode, setFormMode] = useState<"sandbox" | "production">("production");
+  const [formCredentials, setFormCredentials] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+
+  const upsertFn = useServerFn(upsertIntegration);
+  const saveCredsFn = useServerFn(saveIntegrationCredentials);
+  const qc = useQueryClient();
+
+  useEffect(() => {
+    if (open) {
+      const initialConfig = (row?.config ?? {}) as Record<string, unknown>;
+      setFormConfig({ ...initialConfig });
+      setFormMode((row?.mode as any) ?? "production" as any);
+      setFormCredentials({});
+      setActiveTab("config");
+    }
+  }, [open, row?.id]);
+
+  const nonSecretFields = meta.fields.filter((f) => f.kind !== "secret" && f.kind !== "password");
+  const secretFields = meta.fields.filter((f) => f.kind === "secret" || f.kind === "password");
+
+  const initialConfig = (row?.config ?? {}) as Record<string, unknown>;
+  const isDirty = 
+    JSON.stringify(formConfig) !== JSON.stringify(initialConfig) || 
+    (row?.mode ?? "production") !== formMode ||
+    Object.keys(formCredentials).length > 0;
+
+  async function handleGlobalSave() {
+    // Validation
+    for (const f of nonSecretFields) {
+      const v = formConfig[f.name];
+      if (f.required && (v === undefined || v === null || v === "")) {
+        toast.error(`Campo obrigatório: ${f.label}`);
+        setActiveTab("config");
+        return;
+      }
+      if (v != null && v !== "") {
+        if (f.kind === "url" && !/^https?:\/\/.+/i.test(String(v))) {
+          toast.error(`URL inválida no campo ${f.label}`);
+          setActiveTab("config");
+          return;
+        }
+      }
+    }
+
+    for (const f of secretFields) {
+      const masked = credsMasked[f.name];
+      const envSet = secretStatus[f.name];
+      const draft = formCredentials[f.name];
+      if (f.required && !masked?.set && !envSet && !draft) {
+        toast.error(`Campo obrigatório: ${f.label}`);
+        setActiveTab("credentials");
+        return;
+      }
+    }
+
+    setSaving(true);
+    try {
+      // Upsert main config
+      await upsertFn({ 
+        data: { 
+          category: meta.category, 
+          provider: meta.id, 
+          mode: meta.supportsMode ? formMode : null, 
+          config: formConfig 
+        } 
+      });
+
+      // Save credentials if any
+      if (Object.keys(formCredentials).length > 0) {
+        await saveCredsFn({ 
+          data: { 
+            category: meta.category, 
+            provider: meta.id, 
+            credentials: formCredentials 
+          } 
+        });
+      }
+
+      toast.success("Integração salva.");
+      qc.invalidateQueries({ queryKey: ["integrations-saved"] });
+      onSaved();
+      // Keep modal open so user can see the updated "Saved" indicators if they want, 
+      // but instructions imply saving is the final step for this interaction.
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao salvar");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function handleRestore() {
+    const initialConfig = (row?.config ?? {}) as Record<string, unknown>;
+    setFormConfig({ ...initialConfig });
+    setFormMode((row?.mode as any) ?? "production");
+    setFormCredentials({});
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
@@ -358,21 +458,33 @@ function ManageDialog({
           <DialogDescription>{meta.description}</DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="config" className="mt-2">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
           <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="config">Configuração</TabsTrigger>
             <TabsTrigger value="credentials"><KeyRound className="h-3 w-3 mr-1" />Credenciais</TabsTrigger>
             {meta.category === "otp" && <TabsTrigger value="test"><MessageCircle className="h-3 w-3 mr-1" />Teste</TabsTrigger>}
             <TabsTrigger value="guide"><BookOpen className="h-3 w-3 mr-1" />Como configurar</TabsTrigger>
             <TabsTrigger value="history"><History className="h-3 w-3 mr-1" />Histórico</TabsTrigger>
-
           </TabsList>
 
           <TabsContent value="config" className="mt-4">
-            <ConfigTab meta={meta} row={row} onSaved={onSaved} />
+            <ConfigTab 
+              meta={meta} 
+              formMode={formMode} 
+              setFormMode={setFormMode}
+              formConfig={formConfig}
+              setFormConfig={setFormConfig}
+            />
           </TabsContent>
           <TabsContent value="credentials" className="mt-4">
-            <CredentialsTab meta={meta} onSaved={onSaved} credsMasked={credsMasked} secretStatus={secretStatus} />
+            <CredentialsTab 
+              meta={meta} 
+              credsMasked={credsMasked} 
+              secretStatus={secretStatus}
+              formCredentials={formCredentials}
+              setFormCredentials={setFormCredentials}
+              onSaved={onSaved}
+            />
           </TabsContent>
           <TabsContent value="test" className="mt-4">
             <OtpTestTab meta={meta} />
@@ -385,6 +497,16 @@ function ManageDialog({
             <HistoryTab row={row} />
           </TabsContent>
         </Tabs>
+
+        {(activeTab === "config" || activeTab === "credentials") && (
+          <DialogFooter className="pt-4 border-t mt-4">
+            <Button variant="ghost" onClick={handleRestore} disabled={!isDirty}><RotateCcw className="h-4 w-4 mr-1" />Restaurar</Button>
+            <Button onClick={handleGlobalSave} disabled={saving || !isDirty}>
+              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
+              Salvar alterações
+            </Button>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );
