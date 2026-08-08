@@ -380,14 +380,22 @@ function ManageDialog({
   const qc = useQueryClient();
 
   useEffect(() => {
-    // Only load initial data when the modal is first opened or when the underlying row/meta changes.
+    // Only load initial data when the underlying row/meta changes.
     // This effect is NO LONGER triggered by the 'open' state alone to prevent resets on focus/refetch.
     const initialConfig = (row?.config ?? {}) as Record<string, unknown>;
     setFormConfig({ ...initialConfig });
     setFormMode((row?.mode as any) ?? "production");
     setFormCredentials({});
-    setActiveTab("config");
-  }, [row?.id, meta.id]); // Removed 'open' dependency to preserve draft on accidental close/re-open or focus cycles.
+    // We don't reset activeTab here because we want to preserve it if it was "credentials" 
+    // and the window just re-focused/re-fetched.
+  }, [row?.id, meta.id]); 
+
+  // Reset tab to config only when specifically opening the dialog (first time)
+  useEffect(() => {
+    if (open) {
+      setActiveTab("config");
+    }
+  }, [open]);
 
   const nonSecretFields = meta.fields.filter((f) => f.kind !== "secret" && f.kind !== "password");
   const secretFields = meta.fields.filter((f) => f.kind === "secret" || f.kind === "password");
