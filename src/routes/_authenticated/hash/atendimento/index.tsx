@@ -12,6 +12,8 @@ import { OTPEditor } from "@/components/crm/OTPEditor";
 import { AgentConfig } from "@/components/crm/AgentConfig";
 import { ContactManager } from "@/components/crm/ContactManager";
 import { FlowEditor } from "@/components/crm/FlowEditor";
+import { WhatsAppManager } from "@/components/crm/WhatsAppManager";
+
 import {
   Tooltip,
   TooltipContent,
