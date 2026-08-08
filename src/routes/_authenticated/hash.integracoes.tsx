@@ -562,45 +562,29 @@ function ConfigTab({
 }
 
 function CredentialsTab({
-  meta, onSaved, credsMasked, secretStatus,
+  meta, onSaved, credsMasked, secretStatus, formCredentials, setFormCredentials
 }: {
   meta: CatalogMeta; onSaved: () => void;
   credsMasked: Record<string, { set: boolean; masked: string | null }>;
   secretStatus: Record<string, boolean>;
+  formCredentials: Record<string, string>;
+  setFormCredentials: (fn: (d: Record<string, string>) => Record<string, string>) => void;
 }) {
   const saveFn = useServerFn(saveIntegrationCredentials);
   const qc = useQueryClient();
   const secretFields = meta.fields.filter((f) => f.kind === "secret" || f.kind === "password");
-  const [drafts, setDrafts] = useState<Record<string, string>>({});
-  const [saving, setSaving] = useState(false);
-
-  const dirty = Object.values(drafts).some((v) => v !== "");
-
-  async function save() {
-    setSaving(true);
-    try {
-      const payload: Record<string, string | null> = {};
-      for (const [k, v] of Object.entries(drafts)) if (v !== "") payload[k] = v;
-      if (Object.keys(payload).length === 0) { toast.info("Nada a salvar."); setSaving(false); return; }
-      await saveFn({ data: { category: meta.category, provider: meta.id, credentials: payload } });
-      toast.success("Credenciais atualizadas.");
-      setDrafts({});
-      qc.invalidateQueries({ queryKey: ["integrations-saved"] });
-      onSaved();
-    } catch (e: any) { toast.error(e?.message ?? "Falha ao salvar credenciais"); }
-    finally { setSaving(false); }
-  }
+  const [removing, setRemoving] = useState(false);
 
   async function clearOne(field: string) {
     if (!confirm(`Remover o valor salvo para "${field}"?`)) return;
-    setSaving(true);
+    setRemoving(true);
     try {
       await saveFn({ data: { category: meta.category, provider: meta.id, credentials: { [field]: null } } });
       toast.success("Valor removido.");
       qc.invalidateQueries({ queryKey: ["integrations-saved"] });
       onSaved();
     } catch (e: any) { toast.error(e?.message ?? "Falha ao remover"); }
-    finally { setSaving(false); }
+    finally { setRemoving(false); }
   }
 
   return (
@@ -628,25 +612,20 @@ function CredentialsTab({
               type="password"
               autoComplete="off"
               placeholder={masked?.set ? "•••• (manter atual)" : (f.placeholder ?? f.secretName ?? f.label)}
-              value={drafts[f.name] ?? ""}
-              onChange={(e) => setDrafts((d) => ({ ...d, [f.name]: e.target.value }))}
+              value={formCredentials[f.name] ?? ""}
+              onChange={(e) => setFormCredentials((d) => ({ ...d, [f.name]: e.target.value }))}
             />
             <div className="flex items-center justify-between gap-2">
               <p className="text-xs text-muted-foreground">
                 {f.helpText ?? (f.secretName ? `Alternativa: definir como secret ${f.secretName}.` : "")}
               </p>
               {masked?.set && (
-                <Button variant="ghost" size="sm" onClick={() => clearOne(f.name)} disabled={saving}>Remover valor salvo</Button>
+                <Button variant="ghost" size="sm" onClick={() => clearOne(f.name)} disabled={removing}>Remover valor salvo</Button>
               )}
             </div>
           </div>
         );
       })}
-
-      <DialogFooter>
-        <Button variant="ghost" onClick={() => setDrafts({})} disabled={!dirty}><RotateCcw className="h-4 w-4 mr-1" />Cancelar</Button>
-        <Button onClick={save} disabled={!dirty || saving}>{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : (<><Save className="h-4 w-4 mr-1" />Salvar credenciais</>)}</Button>
-      </DialogFooter>
     </div>
   );
 }
