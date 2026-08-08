@@ -403,8 +403,11 @@ function ManageDialog({
     for (const f of secretFields) {
       const masked = credsMasked[f.name];
       const envSet = secretStatus[f.name];
-      const draft = formCredentials[f.name];
-      if (f.required && !masked?.set && !envSet && !draft) {
+      const draft = (formCredentials[f.name] ?? "").trim();
+      
+      const isMissing = f.required && !masked?.set && !envSet && draft === "";
+      
+      if (isMissing) {
         toast.error(`Campo obrigatório: ${f.label}`);
         setActiveTab("credentials");
         return;
