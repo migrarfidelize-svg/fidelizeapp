@@ -1706,6 +1706,141 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_broadcast_recipients: {
+        Row: {
+          attempts: number
+          broadcast_id: string
+          contact_id: string
+          created_at: string
+          delivered_at: string | null
+          failed_at: string | null
+          id: string
+          last_error: string | null
+          metadata: Json
+          phone: string
+          provider_message_id: string | null
+          queued_at: string
+          read_at: string | null
+          rendered_message: string | null
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          attempts?: number
+          broadcast_id: string
+          contact_id: string
+          created_at?: string
+          delivered_at?: string | null
+          failed_at?: string | null
+          id?: string
+          last_error?: string | null
+          metadata?: Json
+          phone: string
+          provider_message_id?: string | null
+          queued_at?: string
+          read_at?: string | null
+          rendered_message?: string | null
+          sent_at?: string | null
+          status?: string
+        }
+        Update: {
+          attempts?: number
+          broadcast_id?: string
+          contact_id?: string
+          created_at?: string
+          delivered_at?: string | null
+          failed_at?: string | null
+          id?: string
+          last_error?: string | null
+          metadata?: Json
+          phone?: string
+          provider_message_id?: string | null
+          queued_at?: string
+          read_at?: string | null
+          rendered_message?: string | null
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_broadcast_recipients_broadcast_id_fkey"
+            columns: ["broadcast_id"]
+            isOneToOne: false
+            referencedRelation: "crm_broadcasts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_broadcast_recipients_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_broadcasts: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          delivered_count: number
+          failed_count: number
+          finished_at: string | null
+          id: string
+          message_template: string
+          metadata: Json
+          name: string
+          provider: string | null
+          queued_count: number
+          read_count: number
+          scheduled_at: string | null
+          sent_count: number
+          started_at: string | null
+          status: string
+          total_contacts: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          delivered_count?: number
+          failed_count?: number
+          finished_at?: string | null
+          id?: string
+          message_template: string
+          metadata?: Json
+          name: string
+          provider?: string | null
+          queued_count?: number
+          read_count?: number
+          scheduled_at?: string | null
+          sent_count?: number
+          started_at?: string | null
+          status?: string
+          total_contacts?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          delivered_count?: number
+          failed_count?: number
+          finished_at?: string | null
+          id?: string
+          message_template?: string
+          metadata?: Json
+          name?: string
+          provider?: string | null
+          queued_count?: number
+          read_count?: number
+          scheduled_at?: string | null
+          sent_count?: number
+          started_at?: string | null
+          status?: string
+          total_contacts?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       crm_contact_tags: {
         Row: {
           contact_id: string
@@ -1738,33 +1873,45 @@ export type Database = {
       }
       crm_contacts: {
         Row: {
+          accept_communications: boolean
           created_at: string
           email: string | null
           id: string
+          metadata: Json
           name: string
+          name_source: string | null
           notes: string | null
+          opt_out: boolean
           phone: string
           type: string
           updated_at: string
           user_id: string | null
         }
         Insert: {
+          accept_communications?: boolean
           created_at?: string
           email?: string | null
           id?: string
+          metadata?: Json
           name: string
+          name_source?: string | null
           notes?: string | null
+          opt_out?: boolean
           phone: string
           type?: string
           updated_at?: string
           user_id?: string | null
         }
         Update: {
+          accept_communications?: boolean
           created_at?: string
           email?: string | null
           id?: string
+          metadata?: Json
           name?: string
+          name_source?: string | null
           notes?: string | null
+          opt_out?: boolean
           phone?: string
           type?: string
           updated_at?: string

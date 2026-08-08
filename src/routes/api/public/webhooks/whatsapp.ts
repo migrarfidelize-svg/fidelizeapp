@@ -46,15 +46,57 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
         // 3. Normalizar Payload via Strategy
         const normalized = active.provider.parseWebhook?.(body, headers);
         
-        if (!normalized || !normalized.remoteMessageId || !normalized.fromPhone || !normalized.text) {
+        if (!normalized || !normalized.fromPhone) {
           console.log(`[Webhook] Message ignored or could not be parsed for provider ${providerId}`);
           return new Response("Ignored or unparseable", { status: 200 });
         }
 
-        const { remoteMessageId, fromPhone, text, messageType, mediaUrl } = normalized;
+        const { remoteMessageId, fromPhone, text, messageType, mediaUrl, pushName } = normalized;
+
+        // --- CRM Contact Sync ---
+        let contactId: string | null = null;
+        try {
+          // Normalize phone (digits only)
+          const cleanPhone = fromPhone.replace(/\D/g, "");
+          const { data: contact } = await (supabaseAdmin as any)
+            .from("crm_contacts")
+            .select("id, name, name_source")
+            .eq("phone", cleanPhone)
+            .maybeSingle();
+
+          if (!contact) {
+            const { data: newContact, error: contactErr } = await (supabaseAdmin as any)
+              .from("crm_contacts")
+              .insert({
+                phone: cleanPhone,
+                name: pushName || null,
+                name_source: pushName ? 'push_name' : null,
+                accept_communications: true
+              })
+              .select("id")
+              .single();
+            if (!contactErr) contactId = newContact.id;
+          } else {
+            contactId = contact.id;
+            // Update name if source allows it (priority: manual > flow > push_name)
+            if (pushName && (!contact.name || contact.name_source === 'push_name')) {
+              await (supabaseAdmin as any)
+                .from("crm_contacts")
+                .update({ 
+                  name: pushName, 
+                  name_source: 'push_name',
+                  updated_at: new Date().toISOString()
+                })
+                .eq("id", contact.id);
+            }
+          }
+        } catch (err) {
+          console.error("[Webhook] Error syncing CRM contact:", err);
+        }
+
+        if (!text) return new Response("OK - No text", { status: 200 });
 
         // 4. Idempotência (provider_message_id)
-        // Usamos asany para ignorar erros de tipo até o próximo build regenerar os tipos
         const { data: existing } = await (supabaseAdmin as any)
           .from("crm_messages")
           .select("id")
@@ -80,6 +122,7 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
             .from("crm_conversations")
             .insert({
               customer_phone: fromPhone,
+              contact_id: contactId,
               status: "waiting",
               last_message_at: new Date().toISOString()
             })
@@ -97,7 +140,8 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
             .update({ 
               last_message_at: new Date().toISOString(), 
               status: "waiting",
-              updated_at: new Date().toISOString()
+              updated_at: new Date().toISOString(),
+              contact_id: contactId // Ensure relation is up to date
             })
             .eq("id", conversation.id);
         }
