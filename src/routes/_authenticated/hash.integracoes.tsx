@@ -606,24 +606,32 @@ function CredentialsTab({
       {secretFields.map((f) => {
         const masked = credsMasked[f.name];
         const envSet = secretStatus[f.name];
+        const draftValue = formCredentials[f.name] ?? "";
+        
         return (
           <div key={f.name} className="rounded-lg border p-3 space-y-2">
             <div className="flex items-center justify-between gap-2">
               <Label className="text-sm">{f.label}{f.required && <span className="text-destructive"> *</span>}</Label>
               <div className="flex items-center gap-1">
-                {masked?.set
-                  ? <Badge variant="secondary" className="gap-1"><CheckCircle2 className="h-3 w-3 text-emerald-600" />Salvo {masked.masked}</Badge>
-                  : envSet
-                    ? <Badge variant="secondary" className="gap-1"><CheckCircle2 className="h-3 w-3 text-emerald-600" />Env {f.secretName}</Badge>
-                    : <Badge variant="outline" className="gap-1 border-amber-500 text-amber-700"><KeyRound className="h-3 w-3" />Vazio</Badge>}
+                {draftValue.trim() !== "" 
+                  ? <Badge variant="secondary" className="gap-1 border-indigo-500/50 text-indigo-700 bg-indigo-50/50"><KeyRound className="h-3 w-3" />Novo token informado</Badge>
+                  : masked?.set
+                    ? <Badge variant="secondary" className="gap-1"><CheckCircle2 className="h-3 w-3 text-emerald-600" />Configurado {masked.masked}</Badge>
+                    : envSet
+                      ? <Badge variant="secondary" className="gap-1"><CheckCircle2 className="h-3 w-3 text-emerald-600" />Env {f.secretName}</Badge>
+                      : <Badge variant="outline" className="gap-1 border-amber-500 text-amber-700"><AlertTriangle className="h-3 w-3" />Vazio</Badge>}
               </div>
             </div>
             <Input
               type="password"
               autoComplete="off"
-              placeholder={masked?.set ? "•••• (manter atual)" : (f.placeholder ?? f.secretName ?? f.label)}
-              value={formCredentials[f.name] ?? ""}
-              onChange={(e) => setFormCredentials((d) => ({ ...d, [f.name]: e.target.value }))}
+              name={f.name}
+              placeholder={masked?.set ? "Deixe em branco para manter o token atual" : (f.placeholder ?? f.secretName ?? f.label)}
+              value={draftValue}
+              onChange={(e) => {
+                const val = e.target.value;
+                setFormCredentials((d) => ({ ...d, [f.name]: val }));
+              }}
             />
             <div className="flex items-center justify-between gap-2">
               <p className="text-xs text-muted-foreground">
