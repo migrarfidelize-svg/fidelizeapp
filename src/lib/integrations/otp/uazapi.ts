@@ -56,9 +56,10 @@ export const uazapiOtp: WhatsAppOTPProvider = {
 
   async getInstanceStatus(runtime: IntegrationRuntimeConfig, env: NodeEnv): Promise<WhatsAppInstanceStatus> {
     const baseUrl = (runtime.config.baseUrl as string)?.replace(/\/$/, "");
-    const token = (runtime.config.token as string) || (runtime.db_credentials?.token as string) || (env["UAZAPI_TOKEN"] as string);
+    const token = (runtime.db_credentials?.token as string) || (runtime.config.token as string) || (env["UAZAPI_TOKEN"] as string);
 
     if (!baseUrl || !token) {
+      console.error("[UAZAPI] Status Error: Missing baseUrl or token", { baseUrl, tokenPresent: !!token });
       return { status: "ERROR", updatedAt: new Date().toISOString() };
     }
 
@@ -67,26 +68,52 @@ export const uazapiOtp: WhatsAppOTPProvider = {
         headers: { "token": token },
       });
       
+      if (!response.ok) {
+        console.error(`[UAZAPI] Status HTTP Error ${response.status}:`, body);
+        return { status: "ERROR", updatedAt: new Date().toISOString() };
+      }
+
       const res = JSON.parse(body);
-      const isConnected = res.status === "CONNECTED" || res.state === "CONNECTED";
+      const instanceName = res.instance?.name || res.instanceName || "WhatsApp";
+      
+      // UAZAPI disconnected is NOT a communication error (HTTP 200)
+      const isConnected = res.status === "CONNECTED" || res.state === "CONNECTED" || res.status?.connected === true;
 
       if (isConnected) {
-        return { status: "CONNECTED", updatedAt: new Date().toISOString() };
+        return { 
+          status: "CONNECTED", 
+          instanceName,
+          updatedAt: new Date().toISOString() 
+        };
       }
 
-      // Get QR
-      const { response: qrRes, body: qrBody } = await timedFetch(`${baseUrl}/instance/connect`, {
-        headers: { "token": token },
-      });
-      const qrData = JSON.parse(qrBody);
-
-      if (qrData.base64) {
-        return { status: "QRCODE", qrcode: qrData.base64, updatedAt: new Date().toISOString() };
+      // If disconnected, try to get QR
+      try {
+        const { response: qrRes, body: qrBody } = await timedFetch(`${baseUrl}/instance/connect`, {
+          headers: { "token": token },
+        });
+        if (qrRes.ok) {
+          const qrData = JSON.parse(qrBody);
+          if (qrData.base64) {
+            return { 
+              status: "QRCODE", 
+              qrcode: qrData.base64, 
+              instanceName,
+              updatedAt: new Date().toISOString() 
+            };
+          }
+        }
+      } catch (qrErr) {
+        console.warn("[UAZAPI] Failed to fetch QR code:", qrErr);
       }
 
-      return { status: "DISCONNECTED", updatedAt: new Date().toISOString() };
+      return { 
+        status: "DISCONNECTED", 
+        instanceName,
+        updatedAt: new Date().toISOString() 
+      };
     } catch (err) {
-      console.error("[UAZAPI] Status Error:", err);
+      console.error("[UAZAPI] Runtime Status Error:", err);
       return { status: "ERROR", updatedAt: new Date().toISOString() };
     }
   },

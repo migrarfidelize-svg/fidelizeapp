@@ -35,6 +35,7 @@ export async function getActiveWhatsAppProvider() {
       mode: integration.mode,
       config: integration.config as Record<string, unknown>,
       credentials_ref: integration.credentials_ref as Record<string, string>,
+      db_credentials: integration.credentials as Record<string, string>,
     }
   };
 }

@@ -71,14 +71,27 @@ export const getWhatsAppInstanceStatus = createServerFn({ method: "GET" })
 
     if (!active) return { status: "DISCONNECTED", message: "Nenhum provedor configurado" };
 
-    const dbCreds = (active.runtime as any).credentials || {};
+    const dbCredsEncrypted = (active.runtime as any).db_credentials || (active.runtime as any).credentials || {};
+    const { decryptSecret } = await import("./integrations/crypt.server");
+    
+    const dbCreds: Record<string, string> = {};
+    for (const [k, v] of Object.entries(dbCredsEncrypted)) {
+      if (typeof v === "string" && v.length > 20) { // Criptografado
+        dbCreds[k] = await decryptSecret(v);
+      } else {
+        dbCreds[k] = v as string;
+      }
+    }
+
     const mergedEnv: Record<string, string | undefined> = { ...(process.env as Record<string, string | undefined>) };
     for (const [field, envName] of Object.entries(active.runtime.credentials_ref)) {
       const v = dbCreds[field];
       if (v) mergedEnv[envName] = v;
     }
 
-    return await active.provider.getInstanceStatus(active.runtime, mergedEnv);
+    // Garante que db_credentials esteja descriptografado para o provider
+    const runtime = { ...active.runtime, db_credentials: dbCreds };
+    return await active.provider.getInstanceStatus(runtime, mergedEnv);
   });
 
 export const disconnectWhatsAppInstance = createServerFn({ method: "POST" })
