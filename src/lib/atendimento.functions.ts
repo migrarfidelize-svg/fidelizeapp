@@ -47,6 +47,17 @@ export const getOTPSettingsDetailed = createServerFn({ method: "GET" })
 
     // 3. Get Provider Info
     const active = await getActiveWhatsAppProvider();
+    
+    // 4. Get Current Status for the UI
+    let status = "DISCONNECTED";
+    if (active) {
+      try {
+        const statusRes = await getWhatsAppInstanceStatus({ context });
+        status = statusRes?.status || "DISCONNECTED";
+      } catch (e) {
+        console.warn("Failed to fetch initial WhatsApp status for OTP Dashboard", e);
+      }
+    }
 
     return {
       template: (templateData?.value as any)?.text || "Afidelize\n\nSeu código de acesso é {{code}}.\n\nEle expira em {{minutes}} minutos.\n\nNão compartilhe este código.",
@@ -55,7 +66,7 @@ export const getOTPSettingsDetailed = createServerFn({ method: "GET" })
         name: active.provider.meta.label,
         id: active.provider.meta.id,
         enabled: active.runtime.enabled,
-        status: status?.status || "DISCONNECTED"
+        status: status
       } : null
     };
   });
