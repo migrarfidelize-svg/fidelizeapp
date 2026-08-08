@@ -188,16 +188,35 @@ export const uazapiOtp: WhatsAppOTPProvider = {
       });
 
       const resBody = JSON.parse(body || "{}");
-      const providerMessageId = resBody?.data?.key?.id || resBody?.key?.id || resBody?.messageId;
       
-      // UAZAPI pode retornar 200/201 mas com erro no body em alguns cenários
+      // Sanitized log for debugging
+      console.log(`[UAZAPI] Response ${response.status}:`, {
+        keys: Object.keys(resBody),
+        hasMessageId: !!(resBody.messageId || resBody.messageid || resBody.data?.messageId || resBody.data?.messageid),
+        hasKeyId: !!(resBody.key?.id || resBody.data?.key?.id),
+        hasId: !!resBody.id,
+        hasError: !!(resBody.error || resBody.status === "error")
+      });
+
+      // Unified Message ID Parser (v1, v2 and variants)
+      const providerMessageId = 
+        resBody?.messageId || 
+        resBody?.messageid || 
+        resBody?.data?.messageId || 
+        resBody?.data?.messageid || 
+        resBody?.key?.id || 
+        resBody?.data?.key?.id || 
+        resBody?.id ||
+        resBody?.data?.id;
+      
       const hasError = resBody.error || resBody.status === "error" || resBody.message === "error";
 
-      if (response.ok && providerMessageId && !hasError) {
+      // If HTTP 2xx and no explicit error in body, it's a success
+      if (response.ok && !hasError) {
         return { 
           ok: true, 
-          message: "Mensagem enviada com sucesso.", 
-          providerMessageId,
+          message: "Mensagem aceita pela UAZAPI.", 
+          providerMessageId: providerMessageId || null,
           httpStatus: response.status,
           providerResponse: resBody
         };
@@ -206,7 +225,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
       return { 
         ok: false, 
         httpStatus: response.status,
-        message: resBody.message || resBody.error || `Erro UAZAPI ${response.status}`,
+        message: resBody.message || resBody.error || resBody.reason || `Erro UAZAPI ${response.status}`,
         providerResponse: resBody
       };
     } catch (err) {
