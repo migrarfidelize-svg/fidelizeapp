@@ -403,11 +403,14 @@ function ManageDialog({
     for (const f of secretFields) {
       const masked = credsMasked[f.name];
       const envSet = secretStatus[f.name];
+      // Capturamos o valor do draft usando o nome do campo (ex: 'token' para UAZAPI)
       const draftValue = (formCredentials[f.name] ?? "").trim();
       
       const hasStored = Boolean(masked?.set || envSet);
       const isMissing = f.required && !hasStored && draftValue === "";
       
+      console.log(`[Validation] Field: ${f.name}, Required: ${f.required}, HasStored: ${hasStored}, DraftLength: ${draftValue.length}, Missing: ${isMissing}`);
+
       if (isMissing) {
         toast.error(`Campo obrigatório ausente: ${f.label}`);
         setActiveTab("credentials");
