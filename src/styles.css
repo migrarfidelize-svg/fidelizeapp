@@ -662,6 +662,9 @@
   background: color-mix(in oklab, var(--crm-text-muted) 30%, transparent);
 }
 
+.crm-title {
+  font-size: 24px;
+  font-weight: 700;
   letter-spacing: -0.03em;
   background: linear-gradient(180deg, var(--foreground), color-mix(in oklab, var(--foreground) 60%, var(--primary)));
   -webkit-background-clip: text;
