@@ -309,7 +309,7 @@ function AdminLayout() {
             {renderNav()}
           </div>
 
-          <div className="space-y-2 border-t border-border/60 p-2">
+          <div className="border-t border-border/60 p-2 space-y-1">
             <button
               onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
               className="flex w-full items-center justify-center h-10 rounded-lg hover:bg-muted text-muted-foreground transition-colors"
@@ -317,22 +317,24 @@ function AdminLayout() {
             >
               {isSidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
             </button>
+            <div className="pt-2">
+              <Link
+                to="/app"
+                className={cn(
+                  "flex items-center gap-2 rounded-lg px-2 py-2 text-xs text-muted-foreground hover:text-foreground transition-all",
+                  isSidebarCollapsed && "justify-center"
+                )}
+              >
+                <ArrowLeft className="h-[18px] w-[18px] shrink-0" /> 
+                {!isSidebarCollapsed && <span className="truncate">Painel do lojista</span>}
+              </Link>
+            </div>
             {!isSidebarCollapsed && (
-              <div className="flex items-center justify-between px-2 pt-2">
+              <div className="flex items-center justify-between px-2 py-2">
                 <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Tema</span>
                 <ThemeToggle />
               </div>
             )}
-            <Link
-              to="/app"
-              className={cn(
-                "flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground",
-                isSidebarCollapsed && "justify-center"
-              )}
-            >
-              <ArrowLeft className="h-3.5 w-3.5" /> 
-              {!isSidebarCollapsed && <span className="whitespace-nowrap">Painel do lojista</span>}
-            </Link>
           </div>
         </aside>
 
