@@ -126,10 +126,11 @@ export function WhatsAppManager() {
                     <span className="font-bold text-lg">
                       {isConnected ? "Conectado" : hasQR ? "Aguardando QR Code" : isError ? "Erro na Instância" : "Desconectado"}
                     </span>
-                    <Badge variant={isConnected ? "success" : hasQR ? "warning" : "secondary"}>
+                    <Badge variant={isConnected ? "secondary" : hasQR ? "outline" : "secondary"}>
                       {status?.status || "OFFLINE"}
                     </Badge>
                   </div>
+
                   <p className="text-xs text-muted-foreground mt-0.5">
                     Última verificação: {status?.updatedAt ? new Date(status.updatedAt).toLocaleTimeString() : "Nunca"}
                   </p>
