@@ -10,24 +10,23 @@
  * Nunca fazer hardcode do domínio do projeto — configure via env.
  */
 export function getPublicAppUrl(): string {
-  const PUBLISHED_FALLBACK = "https://fidelizeapp.lovable.app";
+  const candidates = [
+    process.env['PUBLIC_APP_URL'],
+    process.env['PUBLISHED_APP_URL'],
+    process.env['APP_URL'],
+    process.env['VITE_APP_URL'],
+  ].filter((v): v is string => !!v);
+
   const isPreviewOrLocal = (u: string) =>
     /(-preview--|--[0-9a-f-]+\.lovable\.app|localhost|127\.0\.0\.1)/i.test(u);
 
-  const candidates = [
-    process.env.PUBLISHED_APP_URL,
-    process.env.PUBLIC_APP_URL,
-    process.env.APP_URL,
-    process.env.VITE_APP_URL,
-  ].filter((v): v is string => !!v);
-
-  // Prefer any candidate that is NOT a preview/local URL
+  // Se estivermos em produção (não local/preview) e houver um candidato canônico, use-o.
   const canonical = candidates.find((u) => !isPreviewOrLocal(u));
   if (canonical) return canonical.replace(/\/+$/, "");
 
-  // Known published domain fallback (avoids exposing preview URL in admin UI)
-  if (process.env.NODE_ENV === "production") return PUBLISHED_FALLBACK;
+  // Fallback dinâmico para evitar hardcode: tenta o primeiro candidato disponível (provavelmente a URL do preview)
+  if (candidates.length > 0) return candidates[0].replace(/\/+$/, "");
 
-  // Dev fallback
-  return candidates[0]?.replace(/\/+$/, "") || "http://localhost:8080";
+  // Último recurso
+  return "http://localhost:8080";
 }
