@@ -423,13 +423,20 @@ function ManageDialog({
         } 
       });
 
-      // Save credentials if any
-      if (Object.keys(formCredentials).length > 0) {
+      // Save credentials if any (only those with values)
+      const credsToSave: Record<string, string> = {};
+      for (const [k, v] of Object.entries(formCredentials)) {
+        if (v && v.trim() !== "") {
+          credsToSave[k] = v;
+        }
+      }
+
+      if (Object.keys(credsToSave).length > 0) {
         await saveCredsFn({ 
           data: { 
             category: meta.category, 
             provider: meta.id, 
-            credentials: formCredentials 
+            credentials: credsToSave 
           } 
         });
       }
