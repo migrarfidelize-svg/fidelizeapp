@@ -355,8 +355,8 @@ function AdminLayout() {
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
                 className={cn(
-                  "relative max-w-[1400px] w-full mx-auto px-4 py-5 md:px-6 md:py-7",
-                  pathname.startsWith("/hash/atendimento") && "max-w-none w-full mx-0 p-0"
+                  "relative max-w-[1400px] w-full mx-auto px-4 py-5 md:px-6 md:py-7 min-h-0 min-w-0 flex flex-col",
+                  pathname.startsWith("/hash/atendimento") && "max-w-none w-full mx-0 p-0 h-[calc(100dvh-56px)]"
                 )}
 
               >
