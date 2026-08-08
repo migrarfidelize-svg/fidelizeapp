@@ -54,10 +54,28 @@ function AtendimentoCRM() {
   ];
 
   return (
-    <div className="flex h-[calc(100vh-56px)] bg-background crm-enterprise-layout crm-scrollbar overflow-hidden -m-4 md:-m-6 lg:-m-7 relative">
-      {/* Sidebar Interna */}
-      <aside className="w-[var(--crm-sidebar-width)] border-r bg-sidebar flex flex-col shrink-0 z-30">
-        <div className="h-[var(--crm-header-height)] flex items-center px-6 border-b font-bold tracking-tight text-xs opacity-60 uppercase">ATENDIMENTO</div>
+    <TooltipProvider delayDuration={400}>
+      <div className={cn(
+        "flex h-[calc(100vh-56px)] bg-background crm-enterprise-layout crm-scrollbar overflow-hidden -m-4 md:-m-6 lg:-m-7 relative transition-[padding] duration-300",
+        isCollapsed && "crm-sidebar-collapsed"
+      )}>
+        {/* Sidebar Interna */}
+        <aside className="w-[var(--crm-sidebar-width)] border-r bg-sidebar flex flex-col shrink-0 z-30 transition-all duration-300 relative">
+          <div className="h-[var(--crm-header-height)] flex items-center px-6 border-b font-bold tracking-tight text-xs opacity-60 uppercase relative">
+            ATENDIMENTO
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button 
+                  onClick={() => setIsCollapsed(true)}
+                  className="crm-collapse-trigger crm-collapse-trigger-hide"
+                >
+                  <ChevronLeft className="h-3 w-3" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Ocultar menu</TooltipContent>
+            </Tooltip>
+          </div>
+
         
         <div className="flex-1 overflow-y-auto py-4 crm-scrollbar">
 
@@ -109,10 +127,22 @@ function AtendimentoCRM() {
             </button>
           ))}
         </div>
-      </aside>
+        </aside>
 
-      {/* Área Principal */}
-      <main className="flex-1 flex flex-col h-full bg-background overflow-hidden relative">
+        {/* Área Principal */}
+        <main className="flex-1 flex flex-col h-full bg-background overflow-hidden relative">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button 
+                onClick={() => setIsCollapsed(false)}
+                className="crm-collapse-trigger crm-collapse-trigger-expand"
+              >
+                <ChevronRight className="h-3 w-3" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Expandir menu</TooltipContent>
+          </Tooltip>
+
         {/* Header Interno */}
         <header className="h-[var(--crm-header-height)] border-b px-8 flex items-center justify-between shrink-0 bg-background/50 backdrop-blur z-20">
           <div>
@@ -147,6 +177,8 @@ function AtendimentoCRM() {
             {activeTab === "fila" && <div className="p-8 text-sm text-muted-foreground">Fila de Atendimento (Em implementação)</div>}
         </section>
       </main>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }
+
