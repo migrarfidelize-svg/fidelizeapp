@@ -1,17 +1,18 @@
 import { Search, History, UserCheck, GitBranch, Contact, FileText, Smartphone, Settings2, MessageSquare, Play } from "lucide-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { 
-  getCRMStats, getCRMFlows, getAgentSettings, getCRMQuickReplies
+  getCRMStats
 } from "@/lib/atendimento.functions";
 import { cn } from "@/lib/utils";
 import { TemplateManager } from "@/components/crm/TemplateManager";
 import { OTPEditor } from "@/components/crm/OTPEditor";
 import { AgentConfig } from "@/components/crm/AgentConfig";
 import { ContactManager } from "@/components/crm/ContactManager";
+import { FlowEditor } from "@/components/crm/FlowEditor";
 
-export const Route = createFileRoute("/_authenticated/hash/atendimento")({
+export const Route = createFileRoute("/_authenticated/hash/atendimento/")({
   component: AtendimentoCRM,
 });
 
@@ -31,10 +32,10 @@ function AtendimentoCRM() {
   ];
 
   return (
-    <div className="flex h-screen bg-background crm-enterprise-layout crm-scrollbar overflow-hidden">
+    <div className="flex h-[calc(100vh-56px)] bg-background crm-enterprise-layout crm-scrollbar overflow-hidden -m-4 md:-m-6 lg:-m-7">
       {/* Sidebar Interna */}
       <aside className="w-[var(--crm-sidebar-width)] border-r bg-sidebar flex flex-col shrink-0">
-        <div className="h-[var(--crm-header-height)] flex items-center px-6 border-b font-bold tracking-tight">ATENDIMENTO</div>
+        <div className="h-[var(--crm-header-height)] flex items-center px-6 border-b font-bold tracking-tight text-xs opacity-60 uppercase">ATENDIMENTO</div>
         
         <div className="flex-1 overflow-y-auto py-4 crm-scrollbar">
           <div className="crm-sidebar-section-label">Operação</div>
@@ -88,9 +89,9 @@ function AtendimentoCRM() {
       </aside>
 
       {/* Área Principal */}
-      <main className="flex-1 flex flex-col h-full bg-background overflow-hidden">
+      <main className="flex-1 flex flex-col h-full bg-background overflow-hidden relative">
         {/* Header Interno */}
-        <header className="h-[var(--crm-header-height)] border-b px-8 flex items-center justify-between shrink-0 bg-background/50 backdrop-blur">
+        <header className="h-[var(--crm-header-height)] border-b px-8 flex items-center justify-between shrink-0 bg-background/50 backdrop-blur z-20">
           <div>
             <h1 className="text-sm font-bold uppercase tracking-widest">{navItems.find(i => i.id === activeTab)?.label}</h1>
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Afidelize Enterprise CRM</p>
@@ -112,13 +113,15 @@ function AtendimentoCRM() {
         </header>
 
         {/* Conteúdo dinâmico */}
-        <section className="flex-1 overflow-hidden">
+        <section className="flex-1 overflow-hidden relative">
             {activeTab === "templates" && <TemplateManager />}
             {activeTab === "otp" && <OTPEditor />}
             {activeTab === "config" && <AgentConfig />}
             {activeTab === "contatos" && <ContactManager />}
+            {activeTab === "fluxos" && <FlowEditor />}
             {/* Outros tabs placeholders para implementação incremental */}
             {activeTab === "conversas" && <div className="p-8 text-sm text-muted-foreground">Área de Conversas (Em implementação com novo design)</div>}
+            {activeTab === "fila" && <div className="p-8 text-sm text-muted-foreground">Fila de Atendimento (Em implementação)</div>}
         </section>
       </main>
     </div>
