@@ -456,7 +456,20 @@ function ManageDialog({
 
       // Save credentials if any (only those with values)
       const credsToSave: Record<string, string> = {};
-      for (const [k, v] of Object.entries(formCredentials)) {
+      const credentialsSnapshot = { ...formCredentials };
+
+      if (isUAZAPI) {
+        const token = String(credentialsSnapshot.token ?? "").trim();
+        if (token.length > 0) {
+          credsToSave["token"] = token;
+        }
+        // If empty string but hasStoredToken, we don't add it to credsToSave, 
+        // so saveIntegrationCredentials won't overwrite with null unless explicitly coded to do so.
+      }
+
+      // Other fields
+      for (const [k, v] of Object.entries(credentialsSnapshot)) {
+        if (isUAZAPI && k === "token") continue;
         if (v && v.trim() !== "") {
           credsToSave[k] = v;
         }
