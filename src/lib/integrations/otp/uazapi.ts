@@ -1,6 +1,6 @@
 import { timedFetch } from "../types";
 import type { IntegrationRuntimeConfig, NodeEnv, TestConnectionResult } from "../types";
-import type { WhatsAppOTPProvider } from "./base";
+import type { WhatsAppOTPProvider, WhatsAppInstanceStatus } from "./base";
 
 export const uazapiOtp: WhatsAppOTPProvider = {
   meta: {
@@ -51,6 +51,59 @@ export const uazapiOtp: WhatsAppOTPProvider = {
       };
     } catch (err) {
       return { ok: false, message: `Falha na rede: ${err instanceof Error ? err.message : String(err)}` };
+    }
+  },
+
+  async getInstanceStatus(runtime: IntegrationRuntimeConfig): Promise<WhatsAppInstanceStatus> {
+    const baseUrl = (runtime.config.baseUrl as string)?.replace(/\/$/, "");
+    const token = (runtime.config.token as string);
+
+    if (!baseUrl || !token) {
+      return { status: "ERROR", updatedAt: new Date().toISOString() };
+    }
+
+    try {
+      const { response, body } = await timedFetch(`${baseUrl}/instance/status`, {
+        headers: { "token": token },
+      });
+      
+      const res = JSON.parse(body);
+      const isConnected = res.status === "CONNECTED" || res.state === "CONNECTED";
+
+      if (isConnected) {
+        return { status: "CONNECTED", updatedAt: new Date().toISOString() };
+      }
+
+      // Get QR
+      const { response: qrRes, body: qrBody } = await timedFetch(`${baseUrl}/instance/connect`, {
+        headers: { "token": token },
+      });
+      const qrData = JSON.parse(qrBody);
+
+      if (qrData.base64) {
+        return { status: "QRCODE", qrcode: qrData.base64, updatedAt: new Date().toISOString() };
+      }
+
+      return { status: "DISCONNECTED", updatedAt: new Date().toISOString() };
+    } catch (err) {
+      console.error("[UAZAPI] Status Error:", err);
+      return { status: "ERROR", updatedAt: new Date().toISOString() };
+    }
+  },
+
+  async disconnectInstance(runtime: IntegrationRuntimeConfig) {
+    const baseUrl = (runtime.config.baseUrl as string)?.replace(/\/$/, "");
+    const token = (runtime.config.token as string);
+    if (!baseUrl || !token) return { ok: false, message: "Configuração incompleta." };
+
+    try {
+      const { response, body } = await timedFetch(`${baseUrl}/instance/logout`, {
+        method: "DELETE",
+        headers: { "token": token },
+      });
+      return { ok: response.ok, message: response.ok ? "Desconectado" : body };
+    } catch (err) {
+      return { ok: false, message: String(err) };
     }
   },
 
