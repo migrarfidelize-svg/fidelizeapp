@@ -54,7 +54,8 @@ export const getOTPSettingsDetailed = createServerFn({ method: "GET" })
       provider: active ? {
         name: active.provider.meta.label,
         id: active.provider.meta.id,
-        enabled: active.runtime.enabled
+        enabled: active.runtime.enabled,
+        status: status?.status || "DISCONNECTED"
       } : null
     };
   });
@@ -195,10 +196,19 @@ export const sendOTPTestMessage = createServerFn({ method: "POST" })
     );
 
     if (!res.ok) {
-      throw new Error(res.message || "Falha ao enviar mensagem de teste.");
+      return { 
+        ok: false, 
+        message: res.message || "Falha ao enviar mensagem de teste.",
+        details: res.providerResponse,
+        httpStatus: res.httpStatus
+      };
     }
 
-    return { ok: true };
+    return { 
+      ok: true, 
+      messageId: res.providerMessageId,
+      provider: "uazapi"
+    };
   });
 
 // --- CRM FUNCTIONS ---
