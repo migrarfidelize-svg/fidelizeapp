@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
 import { Label } from "@/components/ui/label";
 
-import { useCRMTheme } from "./previews/ThemeContext";
+import { useCRMTheme } from "./previews/shared/ThemeContext";
 
 export function OTPEditor() {
   const { theme } = useCRMTheme();
