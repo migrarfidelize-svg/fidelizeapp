@@ -386,8 +386,6 @@ function ManageDialog({
     (row?.mode ?? "production") !== formMode ||
     Object.values(formCredentials).some(v => v && v.trim() !== "");
 
-  const hasDraftSecret = (fieldName: string) =>
-    String(formCredentials[fieldName] ?? "").trim().length > 0;
 
   async function handleGlobalSave() {
     // Validation
