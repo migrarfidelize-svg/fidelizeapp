@@ -35,12 +35,13 @@ function AtendimentoCRM() {
   ];
 
   return (
-    <div className="flex h-[calc(100vh-56px)] bg-background crm-enterprise-layout crm-scrollbar overflow-hidden -m-4 md:-m-6 lg:-m-7">
+    <div className="flex h-[calc(100vh-56px)] bg-background crm-enterprise-layout crm-scrollbar overflow-hidden -m-4 md:-m-6 lg:-m-7 relative">
       {/* Sidebar Interna */}
-      <aside className="w-[var(--crm-sidebar-width)] border-r bg-sidebar flex flex-col shrink-0">
+      <aside className="w-[var(--crm-sidebar-width)] border-r bg-sidebar flex flex-col shrink-0 z-30">
         <div className="h-[var(--crm-header-height)] flex items-center px-6 border-b font-bold tracking-tight text-xs opacity-60 uppercase">ATENDIMENTO</div>
         
         <div className="flex-1 overflow-y-auto py-4 crm-scrollbar">
+
           <div className="crm-sidebar-section-label">Operação</div>
           {navItems.filter(i => ["conversas", "fila", "contatos"].includes(i.id)).map(item => (
             <button 
