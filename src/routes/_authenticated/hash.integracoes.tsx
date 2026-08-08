@@ -393,23 +393,10 @@ function ManageDialog({
     const isUAZAPI = meta.id === "uazapi";
     const credentialsSnapshot = { ...formCredentials };
 
-    // 1. UAZAPI EXPLICIT VALIDATION
-    if (isUAZAPI) {
-      const token = String(credentialsSnapshot.token ?? "").trim();
-      const hasNewToken = token.length > 0;
-      const hasStoredToken = Boolean(
-        credsMasked["token"]?.set || 
-        secretStatus["token"]
-      );
+    // UAZAPI is NO LONGER BLOCKED by frontend validation.
+    // The server function is the source of truth for mandatory fields.
+    // We only perform generic validation for other providers.
 
-      if (!hasNewToken && !hasStoredToken) {
-        toast.error("Token da Instância é obrigatório");
-        setActiveTab("credentials");
-        return;
-      }
-      // If hasNewToken, we proceed to save. 
-      // If hasStoredToken && !hasNewToken, we proceed (preserving the existing one).
-    }
 
     // Validation for non-secret fields
     for (const f of nonSecretFields) {
