@@ -35,7 +35,12 @@ function AtendimentoCRM() {
   ];
 
   return (
-    <div className="flex h-[calc(100vh-56px)] bg-background crm-enterprise-layout crm-scrollbar overflow-hidden -m-4 md:-m-6 lg:-m-7">
+    <div className="flex h-[calc(100vh-56px)] bg-background crm-enterprise-layout crm-scrollbar overflow-hidden -m-4 md:-m-6 lg:-m-7 relative">
+      {/* TESTE VISUAL OBRIGATÓRIO */}
+      <div className="fixed top-0 left-0 right-0 z-[9999] bg-red-600 text-white text-center font-black py-4 animate-bounce shadow-2xl border-b-4 border-white">
+        TESTE NOVO ATENDIMENTO — ROTA CORRETA
+      </div>
+
       {/* Sidebar Interna */}
       <aside className="w-[var(--crm-sidebar-width)] border-r bg-sidebar flex flex-col shrink-0">
         <div className="h-[var(--crm-header-height)] flex items-center px-6 border-b font-bold tracking-tight text-xs opacity-60 uppercase">ATENDIMENTO</div>
