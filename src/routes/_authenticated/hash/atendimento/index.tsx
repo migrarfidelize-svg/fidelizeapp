@@ -181,8 +181,20 @@ function AtendimentoCRM() {
               {activeTab === "config" && <AgentConfig />}
               {activeTab === "contatos" && <ContactManager />}
               {activeTab === "fluxos" && <FlowEditor flow={selectedFlow} onBack={() => { setActiveTab("conversas"); setSelectedFlow(null); }} />}
-              {activeTab === "conversas" && <div className="p-8 text-sm text-muted-foreground">Área de Conversas (Interface Nexus)</div>}
-              {activeTab === "fila" && <div className="p-8 text-sm text-muted-foreground">Fila de Atendimento</div>}
+              {activeTab === "conversas" && <div className="p-12 flex flex-col items-center justify-center h-full text-center space-y-4">
+                <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center text-primary animate-pulse">
+                  <MessageSquare className="h-8 w-8" />
+                </div>
+                <div className="max-w-md">
+                  <h3 className="text-lg font-bold">Nexus Chat Hub</h3>
+                  <p className="text-sm text-muted-foreground">O motor de conversas em tempo real do Nexus está sendo carregado. As conversas ativas do WhatsApp aparecerão aqui.</p>
+                </div>
+              </div>}
+              {activeTab === "fila" && <div className="p-12 flex flex-col items-center justify-center h-full text-center space-y-4 opacity-60">
+                <History className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-bold uppercase tracking-widest">Fila de Atendimento</h3>
+                <p className="text-sm">Nenhuma conversa aguardando agente no momento.</p>
+              </div>}
           </section>
         </main>
       </div>
