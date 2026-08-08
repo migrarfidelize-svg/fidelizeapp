@@ -59,11 +59,6 @@ export const createBroadcast = createServerFn({ method: "POST" })
       .eq("opt_out", false)
       .eq("accept_communications", true);
     
-    // Simple filter for now
-    if (!data.filters?.allContacts) {
-        // Fallback to all if not specified, but logic for tags would go here
-    }
-
     const { data: contacts, error: contactErr } = await query;
     if (contactErr) throw contactErr;
 
@@ -123,8 +118,11 @@ export const startBroadcast = createServerFn({ method: "POST" })
 
     if (error) throw error;
     
-    // In a real serverless env, we would trigger a background worker here
-    // For now, we simulate the "queued" status which the UI will pick up.
+    // Server-side Engine Trigger (Batch sending)
+    const { processNextBroadcastBatch } = await import("./broadcasts-engine.server");
+    // We trigger the first batch immediately
+    processNextBroadcastBatch().catch(console.error);
+
     return { ok: true };
   });
 
