@@ -145,7 +145,7 @@ export function OTPEditor() {
           <div className="crm-card p-6">
             <div className="flex items-center justify-between mb-6">
               <h4 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">Conectividade do Sistema</h4>
-              <button className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1" asChild>
+              <button className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1" onClick={() => window.location.href='/hash/integracoes'}>
                 <Link to="/hash/integracoes">Geral Integracoes <ExternalLink className="h-3 w-3" /></Link>
               </button>
             </div>
