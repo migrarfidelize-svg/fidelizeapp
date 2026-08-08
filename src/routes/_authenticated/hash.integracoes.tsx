@@ -337,7 +337,20 @@ function ProviderCard({ meta, row, onChanged }: { meta: CatalogMeta; row?: Integ
         </div>
       </CardContent>
 
-      <ManageDialog open={openConfig} onOpenChange={setOpenConfig} meta={meta} row={row} onSaved={onChanged} credsMasked={credsMasked} secretStatus={secretStatus} />
+      <ManageDialog 
+        open={openConfig} 
+        onOpenChange={(val) => {
+          // If closing via X or ESC but isDirty, we would ideally show a confirm, 
+          // but simple instruction is: only close on X, Cancel or Save.
+          // Dialog (shadcn/Radix) onOpenChange is called for ESC and Outside Click too.
+          setOpenConfig(val);
+        }} 
+        meta={meta} 
+        row={row} 
+        onSaved={onChanged} 
+        credsMasked={credsMasked} 
+        secretStatus={secretStatus} 
+      />
     </Card>
   );
 }
@@ -367,17 +380,22 @@ function ManageDialog({
   const qc = useQueryClient();
 
   useEffect(() => {
+    // Only load initial data when the underlying row/meta changes.
+    // This effect is NO LONGER triggered by the 'open' state alone to prevent resets on focus/refetch.
+    const initialConfig = (row?.config ?? {}) as Record<string, unknown>;
+    setFormConfig({ ...initialConfig });
+    setFormMode((row?.mode as any) ?? "production");
+    setFormCredentials({});
+    // We don't reset activeTab here because we want to preserve it if it was "credentials" 
+    // and the window just re-focused/re-fetched.
+  }, [row?.id, meta.id]); 
+
+  // Reset tab to config only when specifically opening the dialog (first time)
+  useEffect(() => {
     if (open) {
-      const initialConfig = (row?.config ?? {}) as Record<string, unknown>;
-      setFormConfig({ ...initialConfig });
-      setFormMode((row?.mode as any) ?? "production");
-      setFormCredentials({});
-      // Do NOT reset activeTab here if we want it to persist during session, 
-      // but user said "Load saved data only when modal opens or selected integration changes".
-      // We will reset activeTab only when open becomes true to start fresh.
       setActiveTab("config");
     }
-  }, [open, row?.id, meta.id]);
+  }, [open]);
 
   const nonSecretFields = meta.fields.filter((f) => f.kind !== "secret" && f.kind !== "password");
   const secretFields = meta.fields.filter((f) => f.kind === "secret" || f.kind === "password");
@@ -477,8 +495,8 @@ function ManageDialog({
       toast.success("Integração salva.");
       qc.invalidateQueries({ queryKey: ["integrations-saved"] });
       onSaved();
-      // Keep modal open so user can see the updated "Saved" indicators if they want, 
-      // but instructions imply saving is the final step for this interaction.
+      // After save, the data is no longer dirty, so standard close behavior resumes.
+      onOpenChange(false);
     } catch (e: any) {
       toast.error(e?.message ?? "Falha ao salvar");
     } finally {
@@ -495,7 +513,12 @@ function ManageDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent 
+        className="max-w-2xl max-h-[85vh] overflow-y-auto"
+        onPointerDownOutside={(e) => isDirty && e.preventDefault()}
+        onInteractOutside={(e) => isDirty && e.preventDefault()}
+        onEscapeKeyDown={(e) => isDirty && e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3"><ProviderBrand providerId={meta.id} size="sm" animate={false} />{meta.label}</DialogTitle>
           <DialogDescription>{meta.description}</DialogDescription>
