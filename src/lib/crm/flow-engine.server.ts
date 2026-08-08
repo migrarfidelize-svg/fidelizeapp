@@ -53,6 +53,26 @@ export async function executeFlow(conversationId: string, messageBody: string) {
     const stepPayload = (lastStep?.payload as any) || {};
     const stepType = stepPayload.type || lastStep?.step_key;
 
+    // --- Name Capture Handling ---
+    if (flowState?.capturing === 'name' && messageBody.length > 2) {
+      const { data: contact } = await supabaseAdmin
+        .from("crm_contacts")
+        .select("id, name_source")
+        .eq("id", conv.contact_id)
+        .maybeSingle();
+      
+      if (contact && (!contact.name_source || contact.name_source === 'push_name')) {
+        await supabaseAdmin.from("crm_contacts").update({
+          name: messageBody.trim(),
+          name_source: 'flow',
+          updated_at: new Date().toISOString()
+        }).eq("id", contact.id);
+      }
+      
+      const nextIdx = steps.indexOf(lastStep) + 1;
+      if (steps[nextIdx]) return await processStep(conv, steps[nextIdx], steps);
+    }
+
     if (stepType === 'options') {
       const option = stepPayload.options?.find((o: any) => o.value.toLowerCase() === messageBody.trim().toLowerCase() || o.label.toLowerCase() === messageBody.trim().toLowerCase());
       if (option) {
@@ -79,6 +99,12 @@ async function processStep(conv: any, step: any, allSteps: any[]) {
       await sendWhatsApp(conv.customer_phone, payload.text || "Sem conteúdo");
       await updateFlowState(conv.id, step.flow_id, step.id);
       break;
+
+    case 'capture_name': {
+      await sendWhatsApp(conv.customer_phone, payload.text || "Qual é o seu nome?");
+      await updateFlowState(conv.id, step.flow_id, step.id, { capturing: 'name' });
+      break;
+    }
 
     case 'transfer_to_queue':
       await sendWhatsApp(conv.customer_phone, payload.text || "Transferindo para um atendente...");
@@ -117,11 +143,11 @@ async function sendWhatsApp(phone: string, text: string) {
   }
 }
 
-async function updateFlowState(convId: string, flowId: string | null, stepId: string | null) {
+async function updateFlowState(convId: string, flowId: string | null, stepId: string | null, extra: any = {}) {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: conv } = await supabaseAdmin.from("crm_conversations").select("metadata").eq("id", convId).single();
     const metadata = (conv?.metadata as any) || {};
-    metadata.flow_state = { flowId, stepId };
+    metadata.flow_state = { flowId, stepId, ...extra };
     
     await supabaseAdmin
       .from("crm_conversations")
