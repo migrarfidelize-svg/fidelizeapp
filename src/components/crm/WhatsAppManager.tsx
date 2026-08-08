@@ -31,8 +31,12 @@ export function WhatsAppManager() {
   const { data: status, isLoading: isLoadingStatus, error: statusError } = useQuery({
     queryKey: ["whatsapp-status"],
     queryFn: () => getWhatsAppInstanceStatus(),
-    refetchInterval: (data) => (data?.status === "QRCODE" || data?.status === "DISCONNECTED") ? 10000 : 30000,
+    refetchInterval: (query) => {
+      const data = query.state.data as any;
+      return (data?.status === "QRCODE" || data?.status === "DISCONNECTED") ? 10000 : 30000;
+    },
   });
+
 
   const { data: settings } = useQuery({
     queryKey: ["otp-settings"],
