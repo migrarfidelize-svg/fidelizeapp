@@ -12,8 +12,12 @@ import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
 import { Label } from "@/components/ui/label";
 
+import { useCRMTheme } from "./previews/ThemeContext";
+
 export function OTPEditor() {
+  const { theme } = useCRMTheme();
   const queryClient = useQueryClient();
+
   const { data: otpData, isLoading } = useQuery({ 
     queryKey: ["crm-otp-settings"], 
     queryFn: () => getOTPSettingsDetailed() 
@@ -97,22 +101,39 @@ export function OTPEditor() {
   const isConnected = !!otpData?.provider;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className={cn(
+      "space-y-8 animate-in fade-in duration-500",
+      theme === "command" ? "space-y-4" : theme === "premium" ? "space-y-12" : "space-y-8"
+    )}>
+      <div className={cn(
+        "flex flex-col md:flex-row md:items-center justify-between gap-4",
+        theme === "command" ? "p-3 bg-muted/30 rounded border" : ""
+      )}>
         <div>
-          <h2 className="text-xl font-bold tracking-tight uppercase">AUTENTICAÇÃO VIA WHATSAPP</h2>
-          <p className="text-sm text-muted-foreground">Controle a mensagem de código enviada aos clientes no acesso à Carteira.</p>
+          <h2 className={cn(
+            "font-black tracking-tight uppercase",
+            theme === "command" ? "text-sm" : theme === "premium" ? "text-3xl font-light normal-case" : "text-xl"
+          )}>
+            {theme === "command" ? "SECURITY PROTOCOL / OTP" : 
+             theme === "premium" ? "Autenticação Segura" : 
+             "WHATSAPP OTP GATEWAY"}
+          </h2>
+          <p className={cn(
+            "text-muted-foreground",
+            theme === "command" ? "text-[10px]" : "text-sm"
+          )}>Gestão de tokens e mensagens transacionais para acesso à Carteira.</p>
         </div>
         <div className="flex gap-2">
-           <Button variant="outline" className="h-9 text-xs gap-2" onClick={restoreDefault}>
-             <RefreshCw className="h-3.5 w-3.5" /> Restaurar Padrão
+           <Button variant="outline" className={cn("h-9 text-xs gap-2", theme === "premium" ? "rounded-full" : "")} onClick={restoreDefault}>
+             <RefreshCw className="h-3.5 w-3.5" /> Restaurar
            </Button>
-           <Button className="h-9 text-xs gradient-brand gap-2" onClick={() => saveMutation.mutate({ text: template, configs })} disabled={saveMutation.isPending}>
+           <Button className={cn("h-9 text-xs gap-2", theme === "premium" ? "rounded-full py-6 px-8 shadow-xl" : "gradient-brand")} onClick={() => saveMutation.mutate({ text: template, configs })} disabled={saveMutation.isPending}>
              {saveMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-             Salvar Alterações
+             Salvar
            </Button>
         </div>
       </div>
+
 
       <div className="grid lg:grid-cols-12 gap-6">
         {/* COLUNA ESQUERDA: Status e Editor */}
