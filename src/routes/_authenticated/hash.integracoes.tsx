@@ -366,9 +366,12 @@ function ManageDialog({
       setFormConfig({ ...initialConfig });
       setFormMode((row?.mode as any) ?? "production");
       setFormCredentials({});
+      // Do NOT reset activeTab here if we want it to persist during session, 
+      // but user said "Load saved data only when modal opens or selected integration changes".
+      // We will reset activeTab only when open becomes true to start fresh.
       setActiveTab("config");
     }
-  }, [open, row?.id]);
+  }, [open, row?.id, meta.id]);
 
   const nonSecretFields = meta.fields.filter((f) => f.kind !== "secret" && f.kind !== "password");
   const secretFields = meta.fields.filter((f) => f.kind === "secret" || f.kind === "password");
