@@ -143,6 +143,11 @@ function AtendimentoCRM() {
 
           {/* Header Interno */}
           <header className="h-[var(--crm-header-height)] border-b px-8 flex items-center justify-between shrink-0 bg-background/50 backdrop-blur z-20">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-primary z-50 flex items-center justify-center">
+              <span className="bg-primary text-primary-foreground text-[10px] font-black px-4 py-0.5 rounded-b-md shadow-lg">
+                NEXUS LIVE — c8d1e2f
+              </span>
+            </div>
             <div className="min-w-0">
               <h1 className="text-sm font-bold uppercase tracking-widest truncate">{navItems.find(i => i.id === activeTab)?.label}</h1>
               <p className="text-[10px] text-muted-foreground uppercase tracking-widest truncate">Afidelize Nexus Enterprise</p>
