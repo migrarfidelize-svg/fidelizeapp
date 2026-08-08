@@ -321,11 +321,35 @@ function AuthPage() {
         <div className="hidden flex-col items-center space-y-6 lg:flex lg:items-start">
           <div className="auth-card-stage group [perspective:2200px]">
              {/* Animacion visual del card omitida para brevedad pero mantenida en el real */}
-             <div className="auth-loyalty-card relative aspect-[1.6/1] w-[460px] rounded-[26px] bg-card border border-white/10 shadow-2xl overflow-hidden" data-no-fx>
+             <div className="auth-loyalty-card relative aspect-[1.6/1] w-[460px] max-w-full rounded-[26px] bg-card border border-white/10 shadow-2xl overflow-hidden" data-no-fx>
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/10 z-0" />
-                <div className="relative z-10 p-8">
-                   <div className="text-[10px] uppercase tracking-widest text-primary font-bold">Fidelize App</div>
-                   <div className="mt-1 text-2xl font-bold">Sua fidelidade digital</div>
+                <div className="relative z-10 p-8 flex flex-col h-full">
+                   <div className="flex items-center justify-between">
+                     <div className="text-[10px] uppercase tracking-[0.2em] text-primary font-black">Fidelize Rewards</div>
+                     <div className="h-8 w-8 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white">
+                        <Sparkles className="h-4 w-4" />
+                     </div>
+                   </div>
+                   
+                   <div className="mt-auto">
+                     <div className="text-2xl font-black text-foreground tracking-tighter leading-tight">Sua fidelidade<br />digital agora é <span className="text-primary">real.</span></div>
+                     
+                     <div className="mt-6 flex items-center gap-4">
+                        <div className="flex -space-x-2">
+                          {[1,2,3].map(i => (
+                            <div key={i} className="h-8 w-8 rounded-full border-2 border-card bg-muted flex items-center justify-center">
+                              <Check className="h-4 w-4 text-primary" />
+                            </div>
+                          ))}
+                          <div className="h-8 w-8 rounded-full border-2 border-card bg-primary flex items-center justify-center text-[10px] font-bold text-white shadow-lg">
+                            +5
+                          </div>
+                        </div>
+                        <div className="h-1 flex-1 bg-white/10 rounded-full overflow-hidden">
+                           <div className="h-full w-2/3 bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
+                        </div>
+                     </div>
+                   </div>
                 </div>
              </div>
           </div>
