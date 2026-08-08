@@ -54,11 +54,11 @@ export const getOTPSettingsDetailed = createServerFn({ method: "GET" })
       provider: active ? {
         name: active.provider.meta.label,
         id: active.provider.meta.id,
-        status: "unknown", 
         enabled: active.runtime.enabled
       } : null
     };
   });
+
 
 export const getWhatsAppInstanceStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

@@ -35,8 +35,9 @@ export const evolutionOtp: WhatsAppOTPProvider = {
 
   async testConnection(runtime: IntegrationRuntimeConfig, env: NodeEnv): Promise<TestConnectionResult> {
     const baseUrl = (runtime.config.baseUrl as string)?.replace(/\/$/, "");
-    const apiKey = (runtime.config.apiKey as string) || env.WHATSAPP_API_KEY;
-    const instance = (runtime.config.instance as string) || env.WHATSAPP_INSTANCE_ID;
+    const apiKey = (runtime.config.apiKey as string) || (env.WHATSAPP_API_KEY as string);
+    const instance = (runtime.config.instance as string) || (env.WHATSAPP_INSTANCE_ID as string);
+
 
     if (!baseUrl || !apiKey || !instance) {
       return { ok: false, message: "Configuração incompleta (Base URL, API Key ou Instância ausente)." };
