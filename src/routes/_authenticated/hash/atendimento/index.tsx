@@ -53,9 +53,9 @@ function AtendimentoCRM() {
     { id: "agente", label: "Agente", icon: UserCheck },
     { id: "fluxos", label: "Fluxos", icon: GitBranch },
     { id: "templates", label: "Templates", icon: FileText },
-    { id: "otp", label: "OTP", icon: Smartphone },
+    { id: "otp", label: "OTP", icon: MessageSquare },
     { id: "whatsapp", label: "WhatsApp", icon: Smartphone },
-    { id: "config", label: "Agente IA", icon: Settings2 },
+    { id: "config", label: "Configurações", icon: Settings2 },
   ];
 
   return (
@@ -119,16 +119,26 @@ function AtendimentoCRM() {
             ))}
 
             <div className="crm-sidebar-section-label">Sistema</div>
-            {navItems.filter(i => ["whatsapp", "config"].includes(i.id)).map(item => (
+            {navItems.find(i => i.id === "whatsapp") && (
               <button 
-                  key={item.id} 
-                  onClick={() => setActiveTab(item.id)}
-                  className={cn("crm-sidebar-item", activeTab === item.id && "active")}
+                  key="whatsapp" 
+                  onClick={() => setActiveTab("whatsapp")}
+                  className={cn("crm-sidebar-item", activeTab === "whatsapp" && "active")}
               >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
+                  <Smartphone className="h-4 w-4" />
+                  WhatsApp
               </button>
-            ))}
+            )}
+            {navItems.find(i => i.id === "config") && (
+              <button 
+                  key="config" 
+                  onClick={() => setActiveTab("config")}
+                  className={cn("crm-sidebar-item", activeTab === "config" && "active")}
+              >
+                  <Settings2 className="h-4 w-4" />
+                  Configurações
+              </button>
+            )}
           </div>
         </aside>
 

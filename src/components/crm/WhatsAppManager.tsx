@@ -180,11 +180,14 @@ export function WhatsAppManager() {
               )}
 
               {!isConnected && !hasQR && !isError && settings?.provider && (
-                <div className="py-12 flex flex-col items-center justify-center border-2 border-dashed rounded-xl opacity-60">
-                  <Smartphone className="w-12 h-12 mb-4 text-muted-foreground" />
-                  <p className="text-sm font-medium">Instância pronta para conexão</p>
-                  <Button variant="link" size="sm" onClick={handleRefresh}>
-                    Gerar novo QR Code
+                <div className="py-12 flex flex-col items-center justify-center border-2 border-dashed rounded-2xl bg-muted/5 border-border/40">
+                  <Smartphone className="w-12 h-12 mb-4 text-muted-foreground opacity-20" />
+                  <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Instância Pronta</p>
+                  <Button 
+                    className="mt-6 crm-button-primary"
+                    onClick={handleRefresh}
+                  >
+                    Conectar WhatsApp
                   </Button>
                 </div>
               )}
