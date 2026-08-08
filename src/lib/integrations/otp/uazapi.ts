@@ -141,16 +141,22 @@ export const uazapiOtp: WhatsAppOTPProvider = {
 
   async sendTestMessage(runtime: IntegrationRuntimeConfig, env: NodeEnv, phone: string, message: string) {
     const baseUrl = (runtime.config.baseUrl as string)?.replace(/\/$/, "");
-    const token = (runtime.config.token as string) || (runtime.db_credentials?.token as string) || (env["UAZAPI_TOKEN"] as string);
+    const token = (runtime.db_credentials?.token as string) || (runtime.config.token as string) || (env["UAZAPI_TOKEN"] as string);
 
     if (!baseUrl || !token) {
       return { ok: false, message: "Configuração incompleta." };
     }
 
-    const cleanPhone = phone.replace(/\D/g, "");
+    // Normalização rigorosa para UAZAPI (Brasil: 55 + DDD + Numero, somente dígitos)
+    let cleanPhone = phone.replace(/\D/g, "");
+    if (cleanPhone.length === 11 && !cleanPhone.startsWith("55")) {
+      cleanPhone = "55" + cleanPhone;
+    } else if (cleanPhone.length === 10 && !cleanPhone.startsWith("55")) {
+      cleanPhone = "55" + cleanPhone;
+    }
 
     try {
-      const { response, body } = await timedFetch(`${baseUrl}/message/sendText`, {
+      const { response, body } = await timedFetch(`${baseUrl}/send/text`, {
         method: "POST",
         headers: { 
           "token": token,
@@ -158,16 +164,25 @@ export const uazapiOtp: WhatsAppOTPProvider = {
         },
         body: JSON.stringify({
           number: cleanPhone,
-          text: message
+          text: message,
+          linkPreview: false
         })
       });
 
       if (response.ok) {
         const resBody = JSON.parse(body);
-        return { ok: true, message: "Mensagem enviada.", providerMessageId: resBody?.data?.key?.id || resBody?.key?.id };
+        return { 
+          ok: true, 
+          message: "Mensagem enviada com sucesso.", 
+          providerMessageId: resBody?.data?.key?.id || resBody?.key?.id 
+        };
       }
 
-      return { ok: false, message: `Erro no envio (${response.status}): ${body}` };
+      // UAZAPI 405 ou outros erros são passados com clareza
+      return { 
+        ok: false, 
+        message: `UAZAPI ${response.status} — ${body || response.statusText}` 
+      };
     } catch (err) {
       return { ok: false, message: `Falha ao enviar: ${err instanceof Error ? err.message : String(err)}` };
     }
