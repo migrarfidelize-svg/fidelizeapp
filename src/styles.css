@@ -485,6 +485,183 @@
 @utility metric-number {
   font-family: var(--font-display);
   font-weight: 700;
+}
+
+/* ============================================================
+   CRM PREMIUM DESIGN SYSTEM (Enterprise Software Layout)
+   ============================================================ */
+
+.crm-enterprise-layout {
+  --crm-sidebar-width: 260px;
+  --crm-header-height: 64px;
+  --crm-bg: var(--background);
+  --crm-surface: var(--card);
+  --crm-border: var(--border);
+  --crm-primary: var(--primary);
+  --crm-text-main: var(--foreground);
+  --crm-text-muted: var(--muted-foreground);
+  --crm-radius: 8px;
+  --crm-spacing-xs: 8px;
+  --crm-spacing-sm: 12px;
+  --crm-spacing-md: 20px;
+  --crm-spacing-lg: 32px;
+}
+
+.crm-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: var(--crm-radius);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--crm-text-muted);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.crm-sidebar-item:hover {
+  background: color-mix(in oklab, var(--crm-primary) 8%, transparent);
+  color: var(--crm-primary);
+}
+
+.crm-sidebar-item.active {
+  background: color-mix(in oklab, var(--crm-primary) 12%, transparent);
+  color: var(--crm-primary);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--crm-primary) 15%, transparent);
+}
+
+.crm-sidebar-section-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  color: var(--crm-text-muted);
+  opacity: 0.6;
+  margin: 24px 16px 8px;
+}
+
+.crm-card {
+  background: var(--crm-surface);
+  border: 1px solid var(--crm-border);
+  border-radius: var(--crm-radius);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.crm-button-primary {
+  background: var(--crm-primary);
+  color: var(--primary-foreground);
+  font-weight: 600;
+  border-radius: var(--crm-radius);
+  height: 40px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  border: none;
+  white-space: nowrap;
+}
+
+.crm-button-primary:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.crm-button-secondary {
+  background: transparent;
+  color: var(--crm-text-main);
+  border: 1px solid var(--crm-border);
+  font-weight: 600;
+  border-radius: var(--crm-radius);
+  height: 40px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.crm-button-secondary:hover:not(:disabled) {
+  background: var(--muted);
+}
+
+.crm-table-header {
+  background: var(--muted);
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--crm-text-muted);
+  border-bottom: 1px solid var(--crm-border);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.crm-table-row {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--crm-border);
+  display: flex;
+  align-items: center;
+  transition: background 0.1s ease;
+}
+
+.crm-table-row:hover {
+  background: color-mix(in oklab, var(--crm-primary) 4%, transparent);
+}
+
+.crm-chat-bubble-in {
+  background: var(--muted);
+  color: var(--crm-text-main);
+  border-radius: 12px 12px 12px 2px;
+  padding: 10px 14px;
+  max-width: 85%;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.crm-chat-bubble-out {
+  background: var(--crm-primary);
+  color: var(--primary-foreground);
+  border-radius: 12px 12px 2px 12px;
+  padding: 10px 14px;
+  max-width: 85%;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.crm-tab-trigger {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--crm-text-muted);
+  border-radius: var(--crm-radius);
+  transition: all 0.2s ease;
+}
+
+.crm-tab-trigger[data-state="active"] {
+  background: var(--crm-surface);
+  color: var(--crm-primary);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Scrollbar styling for enterprise look */
+.crm-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.crm-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.crm-scrollbar::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--crm-text-muted) 20%, transparent);
+  border-radius: 10px;
+}
+.crm-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklab, var(--crm-text-muted) 30%, transparent);
+}
+
   letter-spacing: -0.03em;
   background: linear-gradient(180deg, var(--foreground), color-mix(in oklab, var(--foreground) 60%, var(--primary)));
   -webkit-background-clip: text;
