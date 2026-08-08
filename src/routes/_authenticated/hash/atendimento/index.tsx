@@ -1,4 +1,4 @@
-import { Search, History, UserCheck, GitBranch, Contact, FileText, Smartphone, Settings2, MessageSquare, ChevronLeft, ChevronRight, Moon, Sun, ShieldCheck, ShieldAlert } from "lucide-react";
+import { Search, History, UserCheck, GitBranch, Contact, FileText, Smartphone, Settings2, MessageSquare, ChevronLeft, ChevronRight, Moon, Sun, ShieldCheck, ShieldAlert, Menu } from "lucide-react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -13,15 +13,8 @@ import { AgentConfig } from "@/components/crm/AgentConfig";
 import { ContactManager } from "@/components/crm/ContactManager";
 import { FlowEditor } from "@/components/crm/FlowEditor";
 import { WhatsAppManager } from "@/components/crm/WhatsAppManager";
-
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { useTheme } from "@/components/ThemeToggle";
-
 
 export const Route = createFileRoute("/_authenticated/hash/atendimento/")({
   component: AtendimentoCRM,
@@ -31,184 +24,101 @@ function AtendimentoCRM() {
   const { theme, toggle } = useTheme();
   const [activeTab, setActiveTab] = useState("conversas");
   const [selectedFlow, setSelectedFlow] = useState<any>(null);
-  const [isCollapsed, setIsCollapsed] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("crm-sidebar-collapsed");
-      if (saved !== null) return saved === "true";
-      return window.innerWidth < 1024;
-    }
-    return false;
-  });
-
-  useEffect(() => {
-    localStorage.setItem("crm-sidebar-collapsed", String(isCollapsed));
-  }, [isCollapsed]);
-
   const { data: stats } = useQuery({ queryKey: ["crm-stats"], queryFn: () => getCRMStats() });
 
   const navItems = [
-    { id: "conversas", label: "Conversas", icon: MessageSquare },
-    { id: "fila", label: "Fila", icon: History },
-    { id: "contatos", label: "Contatos", icon: Contact },
-    { id: "agente", label: "Agente", icon: UserCheck },
-    { id: "fluxos", label: "Fluxos", icon: GitBranch },
-    { id: "templates", label: "Templates", icon: FileText },
-    { id: "otp", label: "OTP", icon: MessageSquare },
-    { id: "whatsapp", label: "WhatsApp", icon: Smartphone },
-    { id: "config", label: "Configurações", icon: Settings2 },
+    { id: "conversas", label: "Conversas", icon: MessageSquare, group: "Operação" },
+    { id: "fila", label: "Fila", icon: History, group: "Operação" },
+    { id: "contatos", label: "Contatos", icon: Contact, group: "Operação" },
+    { id: "agente", label: "Agente", icon: UserCheck, group: "Automação" },
+    { id: "fluxos", label: "Fluxos", icon: GitBranch, group: "Automação" },
+    { id: "templates", label: "Templates", icon: FileText, group: "Comunicação" },
+    { id: "otp", label: "OTP", icon: MessageSquare, group: "Comunicação" },
+    { id: "whatsapp", label: "WhatsApp", icon: Smartphone, group: "Comunicação" },
+    { id: "config", label: "Configurações", icon: Settings2, group: "Sistema" },
   ];
 
   return (
-    <TooltipProvider delayDuration={400}>
-      <div className={cn(
-        "flex h-full w-full bg-background crm-enterprise-layout crm-scrollbar overflow-hidden relative",
-        isCollapsed && "crm-sidebar-collapsed"
-      )}>
-        {/* Sidebar Interna Nexus */}
-        <aside className="w-[var(--crm-sidebar-width)] border-r bg-sidebar flex flex-col shrink-0 z-30 transition-all duration-300 relative">
-          <div className="h-[var(--crm-header-height)] flex items-center px-6 border-b font-bold tracking-tight text-xs opacity-60 uppercase relative">
-            ATENDIMENTO
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button 
-                  onClick={() => setIsCollapsed(true)}
-                  className="crm-collapse-trigger crm-collapse-trigger-hide"
+    <div className="flex flex-col h-full w-full bg-background overflow-hidden relative crm-enterprise-layout">
+      {/* Object Dock Superior */}
+      <header className="h-14 border-b flex items-center justify-between px-4 bg-background z-20 shrink-0">
+        <div className="flex items-center h-full overflow-x-auto no-scrollbar gap-1">
+          {navItems.map((item, idx) => {
+            const isFirstInSection = idx === 0 || navItems[idx - 1].group !== item.group;
+            return (
+              <div key={item.id} className="flex items-center h-full">
+                {isFirstInSection && idx !== 0 && (
+                  <div className="w-[1px] h-6 bg-border mx-2" />
+                )}
+                <button
+                  onClick={() => setActiveTab(item.id)}
+                  className={cn(
+                    "flex items-center gap-2 px-3 h-9 rounded-md text-xs font-medium transition-all whitespace-nowrap",
+                    activeTab === item.id 
+                      ? "bg-primary text-primary-foreground shadow-sm" 
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
                 >
-                  <ChevronLeft className="h-3 w-3" />
+                  <item.icon className="h-3.5 w-3.5" />
+                  {item.label}
                 </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">Ocultar menu</TooltipContent>
-            </Tooltip>
-          </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-2 pl-4 border-l ml-2">
+            <button
+                onClick={toggle}
+                className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-muted"
+            >
+                {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+            </button>
+        </div>
+      </header>
 
-          <div className="flex-1 overflow-y-auto py-4 crm-scrollbar">
-            <div className="crm-sidebar-section-label">Operação</div>
-            {navItems.filter(i => ["conversas", "fila", "contatos"].includes(i.id)).map(item => (
-              <button 
-                  key={item.id} 
-                  onClick={() => setActiveTab(item.id)}
-                  className={cn("crm-sidebar-item", activeTab === item.id && "active")}
-              >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-              </button>
-            ))}
-            
-            <div className="crm-sidebar-section-label">Automação</div>
-            {navItems.filter(i => ["agente", "fluxos"].includes(i.id)).map(item => (
-              <button 
-                  key={item.id} 
-                  onClick={() => setActiveTab(item.id)}
-                  className={cn("crm-sidebar-item", activeTab === item.id && "active")}
-              >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-              </button>
-            ))}
-            
-            <div className="crm-sidebar-section-label">Comunicação</div>
-            {navItems.filter(i => ["templates", "otp"].includes(i.id)).map(item => (
-              <button 
-                  key={item.id} 
-                  onClick={() => setActiveTab(item.id)}
-                  className={cn("crm-sidebar-item", activeTab === item.id && "active")}
-              >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-              </button>
-            ))}
-
-            <div className="crm-sidebar-section-label">Sistema</div>
-            {navItems.find(i => i.id === "whatsapp") && (
-              <button 
-                  key="whatsapp" 
-                  onClick={() => setActiveTab("whatsapp")}
-                  className={cn("crm-sidebar-item", activeTab === "whatsapp" && "active")}
-              >
-                  <Smartphone className="h-4 w-4" />
-                  WhatsApp
-              </button>
-            )}
-            {navItems.find(i => i.id === "config") && (
-              <button 
-                  key="config" 
-                  onClick={() => setActiveTab("config")}
-                  className={cn("crm-sidebar-item", activeTab === "config" && "active")}
-              >
-                  <Settings2 className="h-4 w-4" />
-                  Configurações
-              </button>
-            )}
-          </div>
-        </aside>
-
-        {/* Área Principal */}
-        <main className="flex-1 flex flex-col h-full bg-background min-h-0 min-w-0 overflow-hidden relative">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button 
-                onClick={() => setIsCollapsed(false)}
-                className="crm-collapse-trigger crm-collapse-trigger-expand"
-              >
-                <ChevronRight className="h-3 w-3" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right">Expandir menu</TooltipContent>
-          </Tooltip>
-
-          {/* Header Interno */}
-          <header className="h-[var(--crm-header-height)] border-b px-8 flex items-center justify-between shrink-0 bg-background/50 backdrop-blur z-20">
-            <div className="min-w-0">
-              <h1 className="text-sm font-bold uppercase tracking-widest truncate">{navItems.find(i => i.id === activeTab)?.label}</h1>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest truncate">Afidelize Nexus Enterprise</p>
+      {/* Conteúdo CRM */}
+      <main className="flex-1 overflow-hidden relative">
+        {activeTab === "conversas" && (
+            <div className="flex h-full w-full">
+                {/* Lista */}
+                <div className="w-80 border-r flex flex-col">
+                    <div className="h-12 border-b flex items-center px-4">
+                        <input className="w-full text-xs bg-muted/50 px-2 py-1 rounded" placeholder="Buscar conversas..." />
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-2">
+                        {/* Lista de conversas */}
+                        <div className="text-xs text-muted-foreground p-4 text-center">Nenhuma conversa encontrada.</div>
+                    </div>
+                </div>
+                {/* Chat */}
+                <div className="flex-1 flex flex-col border-r">
+                    <div className="h-14 border-b flex items-center px-4 font-bold text-sm">Conversa ativa</div>
+                    <div className="flex-1 bg-muted/10"></div>
+                    <div className="h-20 border-t p-2">
+                        <textarea className="w-full h-full text-xs p-2" placeholder="Digite uma mensagem..." />
+                    </div>
+                </div>
+                {/* Detalhes */}
+                <div className="w-72">
+                    <div className="h-14 border-b flex items-center px-4 font-bold text-sm">Detalhes</div>
+                </div>
             </div>
-            <div className="flex items-center gap-4 shrink-0">
-               <div className="hidden sm:flex gap-4">
-                  {[ { label: "Abertas", val: stats?.open || 0 }, { label: "Fila", val: stats?.waiting || 0 } ].map(s => (
-                      <div key={s.label} className="text-right">
-                          <div className="text-[9px] font-bold text-muted-foreground uppercase">{s.label}</div>
-                          <div className="text-sm font-black">{s.val}</div>
-                      </div>
-                  ))}
-               </div>
-               <div className="hidden sm:block w-[1px] h-6 bg-border mx-2" />
-               <div className="flex items-center gap-2">
-                 <button
-                   onClick={toggle}
-                   className="crm-button-secondary w-8 h-8 p-0 flex items-center justify-center"
-                   title={theme === "dark" ? "Modo Claro" : "Modo Escuro"}
-                 >
-                   {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
-                 </button>
-               </div>
-            </div>
-          </header>
+        )}
 
-          {/* Conteúdo dinâmico com scroll interno */}
-          <section className="flex-1 overflow-y-auto crm-scrollbar relative min-h-0">
+        {/* Renderização de outros componentes (ajustar conforme necessário) */}
+        {activeTab !== "conversas" && (
+            <div className="h-full overflow-y-auto p-8">
+              {activeTab === "fila" && <p>Visualização de Fila</p>}
+              {activeTab === "contatos" && <ContactManager />}
+              {activeTab === "agente" && <AgentConfig />}
+              {activeTab === "fluxos" && <FlowEditor flow={selectedFlow} onBack={() => { setActiveTab("conversas"); setSelectedFlow(null); }} />}
               {activeTab === "templates" && <TemplateManager />}
               {activeTab === "otp" && <OTPEditor />}
-              {activeTab === "config" && <AgentConfig />}
               {activeTab === "whatsapp" && <WhatsAppManager />}
-              {activeTab === "contatos" && <ContactManager />}
-              {activeTab === "fluxos" && <FlowEditor flow={selectedFlow} onBack={() => { setActiveTab("conversas"); setSelectedFlow(null); }} />}
-              {activeTab === "conversas" && <div className="p-12 flex flex-col items-center justify-center h-full text-center space-y-4">
-                <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center text-primary animate-pulse">
-                  <MessageSquare className="h-8 w-8" />
-                </div>
-                <div className="max-w-md">
-                  <h3 className="text-lg font-bold">Nexus Chat Hub</h3>
-                  <p className="text-sm text-muted-foreground">O motor de conversas em tempo real do Nexus está sendo carregado. As conversas ativas do WhatsApp aparecerão aqui.</p>
-                </div>
-              </div>}
-              {activeTab === "fila" && <div className="p-12 flex flex-col items-center justify-center h-full text-center space-y-4 opacity-60">
-                <History className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-bold uppercase tracking-widest">Fila de Atendimento</h3>
-                <p className="text-sm">Nenhuma conversa aguardando agente no momento.</p>
-              </div>}
-          </section>
-        </main>
-      </div>
-    </TooltipProvider>
+              {activeTab === "config" && <p>Configurações gerais</p>}
+            </div>
+        )}
+      </main>
+    </div>
   );
 }

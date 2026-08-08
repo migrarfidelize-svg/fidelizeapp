@@ -12,11 +12,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import {
   Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock, Wallet2,
   UsersRound, Settings, Mail, FileText, ListChecks, LifeBuoy, Package, Mic,
-  DollarSign, Wallet, Megaphone, Cog, BookOpen, Menu, Star, Plug, Sparkles, Rocket, FileJson, KeyRound, ChevronRight, Activity, MessageSquare,
+  DollarSign, Wallet, Megaphone, Cog, BookOpen, Menu, Star, Plug, Sparkles, Rocket, FileJson, KeyRound, ChevronRight, ChevronLeft, Activity, MessageSquare,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -95,6 +95,18 @@ function AdminLayout() {
   const navigate = useNavigate();
   const getStatus = useServerFn(getAdminStatus);
   const bootstrap = useServerFn(bootstrapSuperAdmin);
+  
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("admin-sidebar-collapsed") === "true";
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("admin-sidebar-collapsed", String(isSidebarCollapsed));
+  }, [isSidebarCollapsed]);
+
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["admin-status"],
     queryFn: () => getStatus(),
@@ -151,22 +163,42 @@ function AdminLayout() {
   const closeMobile = () => setMobileOpen(false);
 
   const navItemClass = (active: boolean) =>
-    [
-      "flex items-center gap-3 rounded-xl px-3 h-[var(--nav-item-h,2.5rem)] text-[length:var(--nav-fs,0.875rem)] font-medium transition-colors",
+    cn(
+      "flex items-center gap-3 rounded-xl transition-colors font-medium",
+      isSidebarCollapsed ? "justify-center w-10 h-10 mx-auto" : "px-3 h-[var(--nav-item-h,2.5rem)] text-[length:var(--nav-fs,0.875rem)]",
       active
         ? "bg-primary-soft text-primary"
         : "text-muted-foreground hover:bg-muted hover:text-foreground",
-    ].join(" ");
+    );
 
-  const renderNavItem = (n: NavItem, onNavigate?: () => void) => (
-    <Link key={n.to} to={n.to} onClick={onNavigate} className={navItemClass(isItemActive(n))}>
-      <n.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.8} />
-      <span className="truncate">{n.label}</span>
-    </Link>
-  );
+  const renderNavItem = (n: NavItem, onNavigate?: () => void) => {
+    const active = isItemActive(n);
+    const content = (
+      <Link key={n.to} to={n.to} onClick={onNavigate} className={navItemClass(active)}>
+        <n.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.8} />
+        {!isSidebarCollapsed && <span className="truncate">{n.label}</span>}
+      </Link>
+    );
+
+    if (isSidebarCollapsed) {
+      return (
+        <TooltipProvider key={n.to}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {content}
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              {n.label}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+    return content;
+  };
 
   const renderNav = (onNavigate?: () => void, forceExpanded = false) => (
-    <nav className="nav-dense flex flex-1 flex-col gap-[var(--nav-gap)] overflow-y-auto overflow-x-visible px-2.5 py-[var(--nav-py)]">
+    <nav className={cn("nav-dense flex flex-1 flex-col gap-[var(--nav-gap)] overflow-y-auto overflow-x-hidden py-[var(--nav-py)]", isSidebarCollapsed ? "px-1" : "px-2.5")}>
       {renderNavItem(OVERVIEW, onNavigate)}
       {renderNavItem(ATENDIMENTO, onNavigate)}
       {NAV_GROUPS.map((g) => {
@@ -188,16 +220,22 @@ function AdminLayout() {
           >
             <button
               type="button"
-              onClick={() => setOpenGroups((prev) => (prev.includes(g.key) ? [] : [g.key]))}
+              onClick={() => {
+                if (isSidebarCollapsed) {
+                  setIsSidebarCollapsed(false);
+                }
+                setOpenGroups((prev) => (prev.includes(g.key) ? [] : [g.key]));
+              }}
               aria-expanded={expanded}
-              className={[
-                "relative w-full flex items-center gap-3 rounded-xl px-3 h-[var(--nav-item-h,2.5rem)] text-[length:var(--nav-fs,0.875rem)] font-semibold transition-colors",
+              className={cn(
+                "relative flex items-center gap-3 rounded-xl transition-colors font-semibold",
+                isSidebarCollapsed ? "justify-center w-10 h-10 mx-auto" : "w-full px-3 h-[var(--nav-item-h,2.5rem)] text-[length:var(--nav-fs,0.875rem)]",
                 groupActive ? "text-foreground bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
-              ].join(" ")}
+              )}
             >
               <GroupIcon className={`h-[18px] w-[18px] shrink-0 ${groupActive ? "text-primary" : ""}`} strokeWidth={groupActive ? 2.3 : 1.8} />
-              <span className="flex-1 text-left truncate">{g.label}</span>
-              <ChevronRight className={`h-4 w-4 shrink-0 transition-transform duration-200 ${expanded ? "rotate-90" : ""}`} />
+              {!isSidebarCollapsed && <span className="flex-1 text-left truncate">{g.label}</span>}
+              {!isSidebarCollapsed && <ChevronRight className={`h-4 w-4 shrink-0 transition-transform duration-200 ${expanded ? "rotate-90" : ""}`} />}
             </button>
 
             <AnimatePresence initial={false}>
@@ -248,35 +286,62 @@ function AdminLayout() {
   return (
     <TooltipProvider>
       <div className="min-h-dvh dock-page-bg">
-        {/* Desktop: sidebar padrão (ícone + nome) */}
-        <aside className={cn("hidden md:flex fixed inset-y-0 left-0 z-30 w-64 flex-col border-r border-border/60 bg-card/80 backdrop-blur-xl")}>
-          <div className="flex h-14 items-center gap-2 border-b border-border/60 px-3">
+        {/* Desktop Sidebar */}
+        <aside 
+          className={cn(
+            "hidden md:flex fixed inset-y-0 left-0 z-30 flex-col border-r border-border/60 bg-card/80 backdrop-blur-xl transition-all duration-300",
+            isSidebarCollapsed ? "w-16" : "w-64"
+          )}
+        >
+          <div className="flex h-14 items-center gap-2 border-b border-border/60 px-3 overflow-hidden">
             <Link to="/hash" aria-label="Fidelize Admin" className="flex min-w-0 items-center gap-2">
               <LogoMark size={20} className="text-primary" />
-              <span className="font-display text-sm font-bold">Fidelize</span>
+              {!isSidebarCollapsed && <span className="font-display text-sm font-bold whitespace-nowrap">Fidelize</span>}
             </Link>
-            <span className="rounded bg-primary-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
-              Admin
-            </span>
+            {!isSidebarCollapsed && (
+              <span className="rounded bg-primary-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary whitespace-nowrap">
+                Admin
+              </span>
+            )}
           </div>
 
-          {renderNav()}
+          <div className="flex-1 overflow-y-auto no-scrollbar py-2">
+            {renderNav()}
+          </div>
 
-          <div className="space-y-2 border-t border-border/60 p-3">
-            <div className="flex items-center justify-between px-1">
-              <span className="text-xs text-muted-foreground">Tema</span>
-              <ThemeToggle />
-            </div>
+          <div className="space-y-2 border-t border-border/60 p-2">
+            <button
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              className="flex w-full items-center justify-center h-10 rounded-lg hover:bg-muted text-muted-foreground transition-colors"
+              title={isSidebarCollapsed ? "Expandir menu" : "Recolher menu"}
+            >
+              {isSidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            </button>
+            {!isSidebarCollapsed && (
+              <div className="flex items-center justify-between px-2 pt-2">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Tema</span>
+                <ThemeToggle />
+              </div>
+            )}
             <Link
               to="/app"
-              className="flex items-center gap-2 rounded-lg px-1 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+              className={cn(
+                "flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground",
+                isSidebarCollapsed && "justify-center"
+              )}
             >
-              <ArrowLeft className="h-3.5 w-3.5" /> Painel do lojista
+              <ArrowLeft className="h-3.5 w-3.5" /> 
+              {!isSidebarCollapsed && <span className="whitespace-nowrap">Painel do lojista</span>}
             </Link>
           </div>
         </aside>
 
-        <div className={cn("flex flex-col min-w-0 md:pl-64")}>
+        <div 
+          className={cn(
+            "flex flex-col min-w-0 transition-all duration-300",
+            isSidebarCollapsed ? "md:pl-16" : "md:pl-64"
+          )}
+        >
 
           {/* Top bar */}
           <header className={cn("sticky top-0 z-20 flex items-center justify-between gap-3 h-14 px-4 md:px-6 border-b bg-card/70 backdrop-blur-xl")}>
@@ -311,17 +376,12 @@ function AdminLayout() {
               </div>
 
               <div className="hidden md:flex items-center gap-2 min-w-0">
-                <span className="text-xs uppercase tracking-wider text-muted-foreground">Fidelize</span>
-                <span className="text-muted-foreground/40">/</span>
-                <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-primary-soft text-primary">Admin</span>
-                <span className="text-muted-foreground/40">/</span>
                 <AnimatePresence mode="wait">
                   <motion.h1
                     key={activeNav.to}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.18 }}
+                    initial={{ opacity: 0, x: -4 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 4 }}
                     className="font-display text-sm font-semibold truncate"
                   >
                     {activeNav.label}
