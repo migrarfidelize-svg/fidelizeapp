@@ -431,6 +431,14 @@ function ManageDialog({
 
 
     setSaving(true);
+    // SANITIZED LOG (NUNCA LOGAR VALORES)
+    console.log("UAZAPI SAVE FLOW V5", {
+      category: meta.category,
+      provider: meta.id,
+      hasConfig: Object.keys(formConfig).length > 0,
+      credsDraft: Object.keys(formCredentials).filter(k => !!formCredentials[k]),
+    });
+
     try {
       // Upsert main config
       await upsertFn({ 

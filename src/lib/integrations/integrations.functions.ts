@@ -158,6 +158,14 @@ export const upsertIntegration = createServerFn({ method: "POST" })
       } catch { /* noop */ }
     }
 
+    // SANITIZED DEBUG LOG (Remover após teste)
+    console.log("INTEGRATION UPSERT SUCCESS", {
+      category: data.category,
+      provider: data.provider,
+      configKeys: Object.keys(data.config ?? {}),
+      credentialKeys: Object.keys((row as any)?.credentials ?? {}),
+    });
+
     await safeAudit(supabaseAdmin, {
       actor_id: context.userId,
       action: "integration.upsert",
