@@ -372,9 +372,9 @@ function ManageDialog({
       setFormConfig({ ...initialConfig });
       setFormMode((row?.mode as any) ?? "production");
       setFormCredentials({});
-      // Do NOT reset activeTab here if we want it to persist during session, 
-      // but user said "Load saved data only when modal opens or selected integration changes".
-      // We will reset activeTab only when open becomes true to start fresh.
+      // Note: We don't reset activeTab here anymore to preserve tab selection if the modal 
+      // were to accidentally close and reopen, but the user wants it to NOT close at all.
+      // However, to start fresh on a new intentional open, we keep it.
       setActiveTab("config");
     }
   }, [open, row?.id, meta.id]);
