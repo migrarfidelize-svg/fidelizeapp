@@ -73,15 +73,14 @@ export function WhatsAppManager() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-foreground uppercase">WhatsApp Business</h2>
-            <p className="text-muted-foreground">
-              Gerencie a conexão da instância ativa para atendimento e OTP.
-            </p>
+          <p className="text-xs text-muted-foreground uppercase tracking-widest mt-1">
+            Gerencie a conexão da instância ativa para atendimento e OTP.
+          </p>
           </div>
           <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleRefresh} 
-            disabled={isLoadingStatus || isRefreshing}
+          variant="ghost" 
+          size="sm" 
+          className="crm-button-secondary h-9"
           >
             {isLoadingStatus || isRefreshing ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -104,7 +103,7 @@ export function WhatsAppManager() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="md:col-span-2">
+          <Card className="md:col-span-2 crm-card border-none shadow-none bg-card/50">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Smartphone className="w-5 h-5 text-primary" />
@@ -115,7 +114,7 @@ export function WhatsAppManager() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="flex items-center justify-between p-4 rounded-xl border bg-muted/30">
+              <div className="flex items-center justify-between p-6 rounded-2xl border bg-muted/20 border-border/40">
                 <div className="flex items-center gap-4">
                   <div className={cn(
                     "w-12 h-12 rounded-full flex items-center justify-center shadow-sm",
@@ -128,7 +127,7 @@ export function WhatsAppManager() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-lg">
-                        {isConnected ? "Conectado" : hasQR ? "Aguardando QR Code" : isError ? "Erro na Instância" : "Desconectado"}
+                        {isConnected ? "Instância Conectada" : hasQR ? "Aguardando Pareamento" : isError ? "Falha na Conexão" : "Instância Desconectada"}
                       </span>
                       <Badge variant={isConnected ? "secondary" : hasQR ? "outline" : "secondary"}>
                         {status?.status || "OFFLINE"}
@@ -195,7 +194,7 @@ export function WhatsAppManager() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="crm-card border-none shadow-none bg-card/50">
             <CardHeader>
               <CardTitle className="text-lg">Configuração Global</CardTitle>
               <CardDescription>
