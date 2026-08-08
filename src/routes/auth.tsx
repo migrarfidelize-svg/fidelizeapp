@@ -400,6 +400,24 @@ function AuthPage() {
                           <input value={company} onChange={(e) => setCompany(e.target.value)} required className="auth-input" placeholder="Ex: Pizzaria do Vale" />
                         </div>
                       )}
+                      {isEstablishmentSignup && (
+                        <div className="space-y-1">
+                          <label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary">Categoria do Negócio</label>
+                          <select
+                            value={segment}
+                            onChange={(e) => setSegment(e.target.value)}
+                            required
+                            className="auth-input appearance-none bg-card"
+                          >
+                            <option value="">Selecione uma categoria</option>
+                            {DISCOVER_CATEGORIES.map((cat) => (
+                              <option key={cat.id} value={cat.id}>
+                                {cat.emoji} {cat.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
                       <div className="space-y-1">
                         <label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary">E-mail</label>
                         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="auth-input" placeholder="seu@email.com" />
