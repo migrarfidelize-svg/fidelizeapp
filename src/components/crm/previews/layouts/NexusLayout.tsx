@@ -23,14 +23,14 @@ export function NexusLayout({ children, activeTab, setActiveTab }: LayoutProps) 
   return (
     <div className="flex h-full bg-black text-zinc-400">
       {/* Futuristic Sidebar */}
-      <div className="w-72 border-r border-zinc-800 flex flex-col bg-zinc-950/50 backdrop-blur-xl">
-        <div className="p-8 flex items-center gap-4">
-            <div className="h-10 w-10 rounded-full border-2 border-primary flex items-center justify-center text-primary shadow-[0_0_20px_rgba(var(--primary),0.3)]">
-                <Zap className="h-5 w-5 fill-primary" />
+      <div className="w-72 border-r border-white/5 flex flex-col bg-black/60 backdrop-blur-3xl z-20">
+        <div className="p-10 flex items-center gap-4">
+            <div className="h-12 w-12 rounded-2xl border border-primary/30 bg-primary/5 flex items-center justify-center text-primary shadow-[0_0_30px_rgba(var(--primary),0.2)]">
+                <Zap className="h-6 w-6 fill-primary" />
             </div>
             <div>
-                <div className="font-black text-white tracking-widest text-lg italic">NEXUS</div>
-                <div className="text-[8px] font-bold text-primary animate-pulse tracking-[0.3em]">SYSTEM ACTIVE</div>
+                <div className="font-black text-white tracking-[0.3em] text-xl italic uppercase">Nexus</div>
+                <div className="text-[7px] font-black text-primary animate-pulse tracking-[0.5em] mt-1">CORE AUTHENTICATED</div>
             </div>
         </div>
         <div className="flex-1 py-4 px-4 space-y-1">
@@ -39,10 +39,10 @@ export function NexusLayout({ children, activeTab, setActiveTab }: LayoutProps) 
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
                     className={cn(
-                        "w-full flex items-center gap-4 px-4 py-3 rounded-xl text-xs font-bold transition-all border border-transparent",
+                        "w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all border border-white/5 relative group overflow-hidden",
                         activeTab === item.id 
-                            ? "bg-zinc-900 border-zinc-800 text-white shadow-2xl" 
-                            : "hover:bg-white/5"
+                            ? "bg-primary text-primary-foreground border-primary/50 shadow-[0_0_40px_rgba(var(--primary),0.3)]" 
+                            : "text-zinc-500 hover:bg-white/5 hover:text-white"
                     )}
                 >
                     <item.icon className={cn("h-4 w-4 transition-colors", activeTab === item.id ? "text-primary" : "")} />
