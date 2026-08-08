@@ -124,7 +124,7 @@ export function ContactManager({ onSelectConversation }: { onSelectConversation?
               <DialogFooter className="gap-2">
                 <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)} className="h-11 font-bold">Cancelar</Button>
                 <button type="submit" className="crm-button-primary px-8 h-11" disabled={saveMutation.isPending}>
-                  {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
+                  {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
                   {editingContact ? "Salvar Cadastro" : "Confirmar Cadastro"}
                 </button>
               </DialogFooter>
