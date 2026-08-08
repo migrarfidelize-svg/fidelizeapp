@@ -65,7 +65,13 @@ export function WhatsAppManager() {
   const isError = status?.status === "ERROR" || !!statusError;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="bg-background min-h-full p-6 lg:p-8">
+      <div className="absolute top-0 right-0 p-2 z-50 pointer-events-none">
+        <div className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-1 rounded shadow-lg border border-white/20 animate-pulse uppercase tracking-widest">
+          WHATSAPP QR — COMPONENTE ATIVO
+        </div>
+      </div>
+      <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">WhatsApp Business</h2>
