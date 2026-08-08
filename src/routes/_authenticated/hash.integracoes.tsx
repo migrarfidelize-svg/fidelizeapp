@@ -367,17 +367,14 @@ function ManageDialog({
   const qc = useQueryClient();
 
   useEffect(() => {
-    if (open) {
-      const initialConfig = (row?.config ?? {}) as Record<string, unknown>;
-      setFormConfig({ ...initialConfig });
-      setFormMode((row?.mode as any) ?? "production");
-      setFormCredentials({});
-      // Note: We don't reset activeTab here anymore to preserve tab selection if the modal 
-      // were to accidentally close and reopen, but the user wants it to NOT close at all.
-      // However, to start fresh on a new intentional open, we keep it.
-      setActiveTab("config");
-    }
-  }, [open, row?.id, meta.id]);
+    // Only load initial data when the modal is first opened or when the underlying row/meta changes.
+    // This effect is NO LONGER triggered by the 'open' state alone to prevent resets on focus/refetch.
+    const initialConfig = (row?.config ?? {}) as Record<string, unknown>;
+    setFormConfig({ ...initialConfig });
+    setFormMode((row?.mode as any) ?? "production");
+    setFormCredentials({});
+    setActiveTab("config");
+  }, [row?.id, meta.id]); // Removed 'open' dependency to preserve draft on accidental close/re-open or focus cycles.
 
   const nonSecretFields = meta.fields.filter((f) => f.kind !== "secret" && f.kind !== "password");
   const secretFields = meta.fields.filter((f) => f.kind === "secret" || f.kind === "password");
