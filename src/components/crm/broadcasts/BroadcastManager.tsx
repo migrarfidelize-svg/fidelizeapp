@@ -88,10 +88,12 @@ export function BroadcastManager() {
     }
 
     try {
-      await saveBroadcast({
-        name: newCampaign.name,
-        message_template: newCampaign.message_template,
-        filters: { allContacts: newCampaign.allContacts }
+      await saveBroadcast({ 
+        data: {
+          name: newCampaign.name,
+          message_template: newCampaign.message_template,
+          filters: { allContacts: newCampaign.allContacts }
+        }
       });
       toast.success("Campanha criada com sucesso");
       setIsCreateOpen(false);
@@ -103,7 +105,7 @@ export function BroadcastManager() {
 
   const handleStart = async (id: string) => {
     try {
-      await triggerBroadcast({ id });
+      await triggerBroadcast({ data: { id } });
       toast.success("Disparo iniciado");
       loadData();
     } catch (err) {
