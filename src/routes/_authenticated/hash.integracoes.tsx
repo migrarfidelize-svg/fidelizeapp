@@ -405,30 +405,12 @@ function ManageDialog({
       }
     }
 
-    // DEBUG UAZAPI SAVE V3 INSTRUMENTATION
-    if (meta.id === "uazapi") {
-      const tokenDraft = String(formCredentials["token"] ?? "").trim();
-      const hasNewToken = hasDraftSecret("token");
-      const hasStoredToken = Boolean(credsMasked["token"]?.set || secretStatus["token"]);
-      console.log("[DEBUG UAZAPI SAVE V3]", {
-        provider: "uazapi",
-        field: "token",
-        hasNewToken,
-        tokenLength: tokenDraft.length,
-        hasStoredToken
-      });
-    }
-
     for (const f of secretFields) {
       const hasNewValue = hasDraftSecret(f.name);
       const hasStoredValue = Boolean(credsMasked[f.name]?.set || secretStatus[f.name]);
       
       if (f.required && !hasNewValue && !hasStoredValue) {
-        // TEMPORARY DEBUG MESSAGE
-        const msg = meta.id === "uazapi" && f.name === "token" 
-          ? "DEBUG UAZAPI SAVE V3 — token ausente" 
-          : `Campo obrigatório ausente: ${f.label}`;
-        toast.error(msg);
+        toast.error(`Campo obrigatório ausente: ${f.label}`);
         setActiveTab("credentials");
         return;
       }
