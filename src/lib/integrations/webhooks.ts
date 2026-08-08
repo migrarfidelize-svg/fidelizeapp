@@ -7,7 +7,7 @@ import { getPublicAppUrl } from "@/lib/app-url";
 export type WebhookEntry = {
   id: string;
   provider: string;         // "mercadopago" | "stripe" | "asaas" | "openai" | ...
-  category: "payments" | "ai" | "system";
+  category: "payments" | "ai" | "system" | "otp";
   label: string;            // "Notificações de pagamento (IPN)"
   path: string;             // "/api/public/webhooks/mercadopago"
   methods: string[];        // ["POST"]
@@ -134,11 +134,11 @@ export const WEBHOOK_CATALOG: WebhookEntry[] = [
   {
     id: "whatsapp-webhook",
     provider: "whatsapp",
-    category: "system",
-    label: "Recebimento de Mensagens (CRM)",
+    category: "otp",
+    label: "WHATSAPP CRM (Recebimento de Mensagens)",
     path: "/api/public/webhooks/whatsapp",
     methods: ["POST"],
-    description: "Cole essa URL no seu provedor de WhatsApp (UAZAPI, Evolution, Z-API) para receber mensagens no CRM.",
+    description: "Endpoint central para receber mensagens e eventos de status dos provedores WhatsApp (UAZAPI, Evolution, Z-API).",
     configurable_in: "/hash/atendimento",
   },
 ];

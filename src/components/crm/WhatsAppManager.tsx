@@ -13,7 +13,9 @@ import {
   ShieldAlert, 
   Loader2,
   AlertCircle,
-  ExternalLink
+  ExternalLink,
+  Webhook,
+  Copy
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -99,8 +101,8 @@ export function WhatsAppManager() {
           </Alert>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="md:col-span-2 crm-card border-none shadow-none bg-card/50">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+          <Card className="md:col-span-3 crm-card border-none shadow-none bg-card/50">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Smartphone className="w-5 h-5 text-primary" />
@@ -194,7 +196,60 @@ export function WhatsAppManager() {
             </CardContent>
           </Card>
 
-          <Card className="crm-card border-none shadow-none bg-card/50">
+          <div className="md:col-span-2 space-y-6">
+            <Card className="crm-card border-none shadow-none bg-card/50">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Webhook className="h-5 w-5 text-primary" />
+                  Configuração de Webhook
+                </CardTitle>
+                <CardDescription>
+                  Necessário para o UAZAPI/Evolution/Z-API
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                    URL do Webhook <Badge variant="outline" className="text-[8px] h-4">POST</Badge>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 truncate text-xs bg-muted px-2 py-2 rounded border font-mono">
+                      {typeof window !== 'undefined' ? `${window.location.origin}/api/public/webhooks/whatsapp` : "/api/public/webhooks/whatsapp"}
+                    </code>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="h-8 w-8 p-0"
+                      onClick={() => {
+                        const url = `${window.location.origin}/api/public/webhooks/whatsapp`;
+                        navigator.clipboard.writeText(url);
+                        toast.success("URL do webhook copiada!");
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg text-[11px] space-y-2">
+                  <p className="font-semibold text-primary">Instruções para UAZAPI:</p>
+                  <ol className="list-decimal pl-4 space-y-1 text-muted-foreground">
+                    <li>Copie a URL acima</li>
+                    <li>No painel UAZAPI, acesse sua instância</li>
+                    <li>Vá em <b>Webhooks</b></li>
+                    <li>Cole em <b>Webhook URL</b></li>
+                    <li>Selecione <b>MESSAGES_UPSERT</b> (ou eventos de mensagem)</li>
+                    <li>Salve as alterações</li>
+                  </ol>
+                </div>
+
+                <p className="text-[10px] text-muted-foreground italic">
+                  O sistema usa <b>idempotência</b> via <code>provider_message_id</code> para evitar duplicidade de mensagens no CRM.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="crm-card border-none shadow-none bg-card/50">
             <CardHeader>
               <CardTitle className="text-lg">Configuração Global</CardTitle>
               <CardDescription>
@@ -223,6 +278,7 @@ export function WhatsAppManager() {
             </CardContent>
           </Card>
         </div>
+      </div>
       </div>
     </div>
   );

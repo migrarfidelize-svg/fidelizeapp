@@ -703,7 +703,10 @@ function WebhooksPanel({ data, loading }: { data: WebhookRow[]; loading: boolean
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const grouped = useMemo(() => {
     const g: Record<string, WebhookRow[]> = {};
-    data.forEach((w) => { (g[w.provider] ||= []).push(w); });
+    data.forEach((w: WebhookRow) => {
+      const groupKey = (w.category as string === "otp" || w.provider === "whatsapp") ? "whatsapp" : w.provider;
+      (g[groupKey] ||= []).push(w);
+    });
     return g;
   }, [data]);
 
@@ -727,39 +730,60 @@ function WebhooksPanel({ data, loading }: { data: WebhookRow[]; loading: boolean
         <Button variant="outline" size="sm" onClick={copyAll}><Copy className="h-4 w-4 mr-1" />Copiar todos</Button>
       </div>
 
-      {Object.entries(grouped).map(([provider, items]) => (
-        <Card key={provider}>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base capitalize flex items-center gap-2">
-              <Webhook className="h-4 w-4" /> {provider}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {items.map((w) => (
-              <div key={w.id} className="rounded-lg border p-3 space-y-2">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm">{w.label}</p>
-                    <p className="text-xs text-muted-foreground">{w.description}</p>
+      {Object.entries(grouped).map(([provider, items]) => {
+        const isWhatsApp = provider === "whatsapp" || items.some((i: WebhookRow) => i.id === "whatsapp-webhook");
+        
+        return (
+          <Card key={provider} className={isWhatsApp ? "border-emerald-500/30 bg-emerald-500/5 shadow-sm" : ""}>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base capitalize flex items-center gap-2">
+                {isWhatsApp ? <MessageCircle className="h-4 w-4 text-emerald-600" /> : <Webhook className="h-4 w-4" />} 
+                {isWhatsApp ? "WhatsApp CRM" : provider}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {items.map((w: WebhookRow) => (
+                <div key={w.id} className="rounded-lg border bg-card p-3 space-y-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm">{w.label}</p>
+                      <p className="text-xs text-muted-foreground">{w.description}</p>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {w.methods.map((m: string) => <Badge key={m} variant="outline" className="text-[10px] uppercase font-bold">{m}</Badge>)}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    {w.methods.map((m) => <Badge key={m} variant="outline" className="text-[10px]">{m}</Badge>)}
+                  
+                  <div className="flex flex-col gap-1.5">
+                    <Label className="text-[10px] text-muted-foreground uppercase font-semibold">URL do Webhook</Label>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 truncate text-xs bg-muted/50 rounded px-2 py-1.5 border font-mono" title={w.url}>{w.url}</code>
+                      <Button size="sm" variant="outline" onClick={() => copyOne(w)} className="h-8 w-8 p-0">
+                        {copiedId === w.id ? <CopyCheck className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
+                      </Button>
+                    </div>
                   </div>
+
+                  {isWhatsApp && (
+                    <div className="mt-2 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded text-[11px] text-emerald-800 dark:text-emerald-300">
+                      <p className="font-semibold flex items-center gap-1">
+                        <ShieldCheck className="h-3 w-3" /> Configuração UAZAPI / Evolution
+                      </p>
+                      <p className="mt-0.5">Use o Token/API Key da sua instância no cabeçalho ou parâmetro <code>token</code> para autenticação.</p>
+                    </div>
+                  )}
+
+                  {w.configurable_in && (
+                    <p className="text-xs text-muted-foreground">
+                      Configuração da instância: <a href={w.configurable_in} className="text-primary hover:underline font-medium inline-flex items-center gap-0.5">Acessar central <ExternalLink className="h-3 w-3" /></a>
+                    </p>
+                  )}
                 </div>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 truncate text-xs bg-muted/50 rounded px-2 py-1" title={w.url}>{w.url}</code>
-                  <Button size="sm" variant="outline" onClick={() => copyOne(w)}>
-                    {copiedId === w.id ? <CopyCheck className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
-                  </Button>
-                </div>
-                {w.configurable_in && (
-                  <p className="text-xs text-muted-foreground">Configuração avançada: <a href={w.configurable_in} className="text-primary underline">{w.configurable_in}</a></p>
-                )}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      ))}
+              ))}
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }
