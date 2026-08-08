@@ -1,9 +1,10 @@
-import { Search, History, UserCheck, GitBranch, Contact, FileText, Smartphone, Settings2, MessageSquare, ChevronLeft, ChevronRight, Moon, Sun } from "lucide-react";
+import { Search, History, UserCheck, GitBranch, Contact, FileText, Smartphone, Settings2, MessageSquare, ChevronLeft, ChevronRight, Moon, Sun, ShieldCheck, ShieldAlert } from "lucide-react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
-  getCRMStats
+  getCRMStats,
+  getWhatsAppInstanceStatus
 } from "@/lib/atendimento.functions";
 import { cn } from "@/lib/utils";
 import { TemplateManager } from "@/components/crm/TemplateManager";
@@ -18,6 +19,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useTheme } from "@/components/ThemeToggle";
+
 
 export const Route = createFileRoute("/_authenticated/hash/atendimento/")({
   component: AtendimentoCRM,
