@@ -634,7 +634,7 @@ function CredentialsTab({
             <div className="flex items-center justify-between gap-2">
               <Label className="text-sm">{f.label}{f.required && <span className="text-destructive"> *</span>}</Label>
               <div className="flex items-center gap-1">
-                {draftValue.trim() !== "" 
+                {hasDraftSecret(f.name) 
                   ? <Badge variant="secondary" className="gap-1 border-indigo-500/50 text-indigo-700 bg-indigo-50/50"><KeyRound className="h-3 w-3" />Novo token informado</Badge>
                   : masked?.set
                     ? <Badge variant="secondary" className="gap-1"><CheckCircle2 className="h-3 w-3 text-emerald-600" />Configurado {masked.masked}</Badge>
