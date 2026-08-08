@@ -403,14 +403,13 @@ function ManageDialog({
     for (const f of secretFields) {
       const masked = credsMasked[f.name];
       const envSet = secretStatus[f.name];
-      // FIX: Ensure we are checking the exact field name defined in the provider metadata
+      
+      // Use EXACT same source as the badge for validation
       const draftValue = (formCredentials[f.name] ?? "").trim();
+      const hasNewValue = draftValue.length > 0;
+      const hasStoredValue = Boolean(masked?.set || envSet);
       
-      const hasStored = Boolean(masked?.set || envSet);
-      // Valid if it's already stored OR if a new value is being provided in the draft
-      const isMissing = f.required && !hasStored && draftValue === "";
-      
-      if (isMissing) {
+      if (f.required && !hasNewValue && !hasStoredValue) {
         toast.error(`Campo obrigatório ausente: ${f.label}`);
         setActiveTab("credentials");
         return;
