@@ -366,9 +366,12 @@ function ManageDialog({
       setFormConfig({ ...initialConfig });
       setFormMode((row?.mode as any) ?? "production");
       setFormCredentials({});
+      // Do NOT reset activeTab here if we want it to persist during session, 
+      // but user said "Load saved data only when modal opens or selected integration changes".
+      // We will reset activeTab only when open becomes true to start fresh.
       setActiveTab("config");
     }
-  }, [open, row?.id]);
+  }, [open, row?.id, meta.id]);
 
   const nonSecretFields = meta.fields.filter((f) => f.kind !== "secret" && f.kind !== "password");
   const secretFields = meta.fields.filter((f) => f.kind === "secret" || f.kind === "password");
@@ -377,7 +380,7 @@ function ManageDialog({
   const isDirty = 
     JSON.stringify(formConfig) !== JSON.stringify(initialConfig) || 
     (row?.mode ?? "production") !== formMode ||
-    Object.keys(formCredentials).length > 0;
+    Object.values(formCredentials).some(v => v && v.trim() !== "");
 
   async function handleGlobalSave() {
     // Validation
@@ -420,13 +423,20 @@ function ManageDialog({
         } 
       });
 
-      // Save credentials if any
-      if (Object.keys(formCredentials).length > 0) {
+      // Save credentials if any (only those with values)
+      const credsToSave: Record<string, string> = {};
+      for (const [k, v] of Object.entries(formCredentials)) {
+        if (v && v.trim() !== "") {
+          credsToSave[k] = v;
+        }
+      }
+
+      if (Object.keys(credsToSave).length > 0) {
         await saveCredsFn({ 
           data: { 
             category: meta.category, 
             provider: meta.id, 
-            credentials: formCredentials 
+            credentials: credsToSave 
           } 
         });
       }
