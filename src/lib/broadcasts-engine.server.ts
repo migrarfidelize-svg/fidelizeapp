@@ -119,8 +119,8 @@ export async function processNextBroadcastBatch() {
         await (supabaseAdmin.rpc as any)("mark_broadcast_recipient_sent", { p_recipient_id: recipient.id });
 
         // Registrar no histórico de mensagens (crm_messages)
-        const { data: conv } = await supabaseAdmin
-          .from("crm_conversations")
+        const { data: conv } = await (supabaseAdmin
+          .from("crm_conversations") as any)
           .select("id")
           .eq("customer_phone", recipient.phone)
           .neq("status", "closed")
@@ -141,7 +141,7 @@ export async function processNextBroadcastBatch() {
         }
 
         if (convId) {
-          await supabaseAdmin.from("crm_messages").insert({
+          await (supabaseAdmin.from("crm_messages") as any).insert({
             conversation_id: convId,
             body: renderedMessage,
             direction: "outbound",
