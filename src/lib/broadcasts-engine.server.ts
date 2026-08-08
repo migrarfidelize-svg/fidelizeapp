@@ -1,6 +1,6 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { getActiveWhatsAppProvider } from "../otp.functions";
-import { decryptSecret } from "../integrations/crypt.server";
+import { getActiveWhatsAppProvider } from "./otp.functions";
+import { decryptSecret } from "./integrations/crypt.server";
 
 /**
  * Motor Profissional de Disparos Server-Side
@@ -57,14 +57,16 @@ export async function processNextBroadcastBatch() {
   }
 
   // Descriptografar credenciais
-  const dbCredsEncrypted = (active.runtime as any).db_credentials || (active.runtime as any).credentials || {};
+  const runtimeObj = active.runtime as any;
+  const dbCredsEncrypted = runtimeObj.db_credentials || runtimeObj.credentials || {};
   const dbCreds: Record<string, string> = {};
   for (const [k, v] of Object.entries(dbCredsEncrypted)) {
     dbCreds[k] = typeof v === "string" && v.length > 20 ? await decryptSecret(v) : v as string;
   }
   const runtime = { ...active.runtime, db_credentials: dbCreds };
   const mergedEnv = { ...process.env } as Record<string, string | undefined>;
-  for (const [field, envName] of Object.entries(runtime.credentials_ref)) {
+  const credentialsRef = runtime.credentials_ref as Record<string, string> || {};
+  for (const [field, envName] of Object.entries(credentialsRef)) {
     const v = dbCreds[field];
     if (v) mergedEnv[envName] = v;
   }
@@ -114,11 +116,11 @@ export async function processNextBroadcastBatch() {
           .eq("id", recipient.id);
 
         // Incrementar contador da campanha
-        await supabaseAdmin.rpc("increment_broadcast_sent", { broadcast_id: broadcast.id });
+        await (supabaseAdmin.rpc as any)("mark_broadcast_recipient_sent", { p_recipient_id: recipient.id });
 
         // Registrar no histórico de mensagens (crm_messages)
-        const { data: conv } = await supabaseAdmin
-          .from("crm_conversations")
+        const { data: conv } = await (supabaseAdmin
+          .from("crm_conversations") as any)
           .select("id")
           .eq("customer_phone", recipient.phone)
           .neq("status", "closed")
@@ -126,8 +128,8 @@ export async function processNextBroadcastBatch() {
         
         let convId = conv?.id;
         if (!convId) {
-          const { data: newConv } = await supabaseAdmin
-            .from("crm_conversations")
+          const { data: newConv } = await (supabaseAdmin
+            .from("crm_conversations") as any)
             .insert({ 
                 customer_phone: recipient.phone, 
                 contact_id: recipient.contact_id,
@@ -139,7 +141,7 @@ export async function processNextBroadcastBatch() {
         }
 
         if (convId) {
-          await supabaseAdmin.from("crm_messages").insert({
+          await (supabaseAdmin.from("crm_messages") as any).insert({
             conversation_id: convId,
             body: renderedMessage,
             direction: "outbound",
@@ -161,7 +163,7 @@ export async function processNextBroadcastBatch() {
           })
           .eq("id", recipient.id);
         
-        await supabaseAdmin.rpc("increment_broadcast_failed", { broadcast_id: broadcast.id });
+        await (supabaseAdmin.rpc as any)("mark_broadcast_recipient_failed", { p_recipient_id: recipient.id, p_error: res.message });
       }
     } catch (err) {
       console.error(`[BroadcastEngine] Error processing recipient ${recipient.id}:`, err);
