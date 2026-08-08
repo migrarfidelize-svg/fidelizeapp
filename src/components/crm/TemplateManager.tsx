@@ -90,7 +90,7 @@ export function TemplateManager() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background crm-enterprise-layout">
+    <div className="flex flex-col min-h-full bg-background">
       {/* Search and Categories Bar */}
       <div className="p-6 border-b bg-card flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0">
         <div className="flex flex-wrap gap-2">

@@ -102,7 +102,7 @@ export function OTPEditor() {
   const isConnected = !!otpData?.provider;
 
   return (
-    <div className="crm-enterprise-layout bg-background min-h-full p-8 crm-scrollbar overflow-y-auto">
+    <div className="bg-background min-h-full p-6 lg:p-8">
       {/* Header Central OTP */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 bg-card p-6 border rounded-xl shadow-sm">
         <div className="flex items-center gap-4">
