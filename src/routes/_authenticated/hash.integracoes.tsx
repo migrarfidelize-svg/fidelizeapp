@@ -356,6 +356,10 @@ function ManageDialog({
   const [formCredentials, setFormCredentials] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
+  const hasDraftSecret = (fieldName: string) =>
+    String(formCredentials[fieldName] ?? "").trim().length > 0;
+
+
   const upsertFn = useServerFn(upsertIntegration);
   const saveCredsFn = useServerFn(saveIntegrationCredentials);
   const qc = useQueryClient();
@@ -382,6 +386,7 @@ function ManageDialog({
     (row?.mode ?? "production") !== formMode ||
     Object.values(formCredentials).some(v => v && v.trim() !== "");
 
+
   async function handleGlobalSave() {
     // Validation
     for (const f of nonSecretFields) {
@@ -401,13 +406,8 @@ function ManageDialog({
     }
 
     for (const f of secretFields) {
-      const masked = credsMasked[f.name];
-      const envSet = secretStatus[f.name];
-      
-      // Use EXACT same source as the badge for validation
-      const draftValue = (formCredentials[f.name] ?? "").trim();
-      const hasNewValue = draftValue.length > 0;
-      const hasStoredValue = Boolean(masked?.set || envSet);
+      const hasNewValue = hasDraftSecret(f.name);
+      const hasStoredValue = Boolean(credsMasked[f.name]?.set || secretStatus[f.name]);
       
       if (f.required && !hasNewValue && !hasStoredValue) {
         toast.error(`Campo obrigatório ausente: ${f.label}`);
@@ -499,6 +499,7 @@ function ManageDialog({
               formCredentials={formCredentials}
               setFormCredentials={setFormCredentials}
               onSaved={onSaved}
+              hasDraftSecret={hasDraftSecret}
             />
           </TabsContent>
           <TabsContent value="test" className="mt-4">
@@ -577,13 +578,14 @@ function ConfigTab({
 }
 
 function CredentialsTab({
-  meta, onSaved, credsMasked, secretStatus, formCredentials, setFormCredentials
+  meta, onSaved, credsMasked, secretStatus, formCredentials, setFormCredentials, hasDraftSecret
 }: {
   meta: CatalogMeta; onSaved: () => void;
   credsMasked: Record<string, { set: boolean; masked: string | null }>;
   secretStatus: Record<string, boolean>;
   formCredentials: Record<string, string>;
   setFormCredentials: (fn: (d: Record<string, string>) => Record<string, string>) => void;
+  hasDraftSecret: (fieldName: string) => boolean;
 }) {
   const saveFn = useServerFn(saveIntegrationCredentials);
   const qc = useQueryClient();
@@ -618,7 +620,7 @@ function CredentialsTab({
             <div className="flex items-center justify-between gap-2">
               <Label className="text-sm">{f.label}{f.required && <span className="text-destructive"> *</span>}</Label>
               <div className="flex items-center gap-1">
-                {draftValue.trim() !== "" 
+                {hasDraftSecret(f.name) 
                   ? <Badge variant="secondary" className="gap-1 border-indigo-500/50 text-indigo-700 bg-indigo-50/50"><KeyRound className="h-3 w-3" />Novo token informado</Badge>
                   : masked?.set
                     ? <Badge variant="secondary" className="gap-1"><CheckCircle2 className="h-3 w-3 text-emerald-600" />Configurado {masked.masked}</Badge>
