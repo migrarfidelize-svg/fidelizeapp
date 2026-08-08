@@ -78,9 +78,11 @@ export function WhatsAppManager() {
           </p>
           </div>
           <Button 
-          variant="ghost" 
-          size="sm" 
-          className="crm-button-secondary h-9"
+            variant="ghost" 
+            size="sm" 
+            className="crm-button-secondary h-9"
+            onClick={handleRefresh} 
+            disabled={isLoadingStatus || isRefreshing}
           >
             {isLoadingStatus || isRefreshing ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
