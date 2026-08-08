@@ -382,6 +382,9 @@ function ManageDialog({
     (row?.mode ?? "production") !== formMode ||
     Object.values(formCredentials).some(v => v && v.trim() !== "");
 
+  const hasDraftSecret = (fieldName: string) =>
+    String(formCredentials[fieldName] ?? "").trim().length > 0;
+
   async function handleGlobalSave() {
     // Validation
     for (const f of nonSecretFields) {
@@ -400,17 +403,30 @@ function ManageDialog({
       }
     }
 
+    // DEBUG UAZAPI SAVE V3 INSTRUMENTATION
+    if (meta.id === "uazapi") {
+      const tokenDraft = String(formCredentials["token"] ?? "").trim();
+      const hasNewToken = hasDraftSecret("token");
+      const hasStoredToken = Boolean(credsMasked["token"]?.set || secretStatus["token"]);
+      console.log("[DEBUG UAZAPI SAVE V3]", {
+        provider: "uazapi",
+        field: "token",
+        hasNewToken,
+        tokenLength: tokenDraft.length,
+        hasStoredToken
+      });
+    }
+
     for (const f of secretFields) {
-      const masked = credsMasked[f.name];
-      const envSet = secretStatus[f.name];
-      
-      // Use EXACT same source as the badge for validation
-      const draftValue = (formCredentials[f.name] ?? "").trim();
-      const hasNewValue = draftValue.length > 0;
-      const hasStoredValue = Boolean(masked?.set || envSet);
+      const hasNewValue = hasDraftSecret(f.name);
+      const hasStoredValue = Boolean(credsMasked[f.name]?.set || secretStatus[f.name]);
       
       if (f.required && !hasNewValue && !hasStoredValue) {
-        toast.error(`Campo obrigatório ausente: ${f.label}`);
+        // TEMPORARY DEBUG MESSAGE
+        const msg = meta.id === "uazapi" && f.name === "token" 
+          ? "DEBUG UAZAPI SAVE V3 — token ausente" 
+          : `Campo obrigatório ausente: ${f.label}`;
+        toast.error(msg);
         setActiveTab("credentials");
         return;
       }
