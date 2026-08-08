@@ -128,11 +128,11 @@ export async function processNextBroadcastBatch() {
         
         let convId = conv?.id;
         if (!convId) {
-          const { data: newConv } = await supabaseAdmin
-            .from("crm_conversations")
+          const { data: newConv } = await (supabaseAdmin
+            .from("crm_conversations") as any)
             .insert({ 
                 customer_phone: recipient.phone, 
-                contact_id: recipient.contact_id as any,
+                contact_id: recipient.contact_id,
                 status: "waiting" 
             })
             .select("id")
