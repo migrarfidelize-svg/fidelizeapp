@@ -21,8 +21,10 @@ import { Badge } from "@/components/ui/badge";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { cn } from "@/lib/utils";
 
 export function WhatsAppManager() {
+
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
