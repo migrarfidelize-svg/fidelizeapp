@@ -495,7 +495,12 @@ function ManageDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent 
+        className="max-w-2xl max-h-[85vh] overflow-y-auto"
+        onPointerDownOutside={(e) => isDirty && e.preventDefault()}
+        onInteractOutside={(e) => isDirty && e.preventDefault()}
+        onEscapeKeyDown={(e) => isDirty && e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3"><ProviderBrand providerId={meta.id} size="sm" animate={false} />{meta.label}</DialogTitle>
           <DialogDescription>{meta.description}</DialogDescription>
