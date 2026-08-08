@@ -337,7 +337,20 @@ function ProviderCard({ meta, row, onChanged }: { meta: CatalogMeta; row?: Integ
         </div>
       </CardContent>
 
-      <ManageDialog open={openConfig} onOpenChange={setOpenConfig} meta={meta} row={row} onSaved={onChanged} credsMasked={credsMasked} secretStatus={secretStatus} />
+      <ManageDialog 
+        open={openConfig} 
+        onOpenChange={(val) => {
+          // If closing via X or ESC but isDirty, we would ideally show a confirm, 
+          // but simple instruction is: only close on X, Cancel or Save.
+          // Dialog (shadcn/Radix) onOpenChange is called for ESC and Outside Click too.
+          setOpenConfig(val);
+        }} 
+        meta={meta} 
+        row={row} 
+        onSaved={onChanged} 
+        credsMasked={credsMasked} 
+        secretStatus={secretStatus} 
+      />
     </Card>
   );
 }
