@@ -356,6 +356,9 @@ function ManageDialog({
   const [formCredentials, setFormCredentials] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
+  const hasDraftSecret = (fieldName: string) =>
+    String(formCredentials[fieldName] ?? "").trim().length > 0;
+
   const upsertFn = useServerFn(upsertIntegration);
   const saveCredsFn = useServerFn(saveIntegrationCredentials);
   const qc = useQueryClient();
