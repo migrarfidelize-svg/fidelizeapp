@@ -56,7 +56,7 @@ function AtendimentoCRM() {
   return (
     <TooltipProvider delayDuration={400}>
       <div className={cn(
-        "flex h-[calc(100dvh-56px)] bg-background crm-enterprise-layout crm-scrollbar overflow-hidden -m-4 md:-m-6 lg:-m-7 relative",
+        "flex h-dvh bg-background crm-enterprise-layout crm-scrollbar overflow-hidden relative",
         isCollapsed && "crm-sidebar-collapsed"
       )}>
         {/* Sidebar Interna Nexus */}
