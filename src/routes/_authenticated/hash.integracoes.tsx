@@ -380,7 +380,7 @@ function ManageDialog({
   const isDirty = 
     JSON.stringify(formConfig) !== JSON.stringify(initialConfig) || 
     (row?.mode ?? "production") !== formMode ||
-    Object.keys(formCredentials).length > 0;
+    Object.values(formCredentials).some(v => v && v.trim() !== "");
 
   async function handleGlobalSave() {
     // Validation
