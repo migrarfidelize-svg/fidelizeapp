@@ -55,7 +55,13 @@ export function OTPEditor() {
           .replace(/{{brand}}/g, "Afidelize") 
       } 
     }),
-    onSuccess: () => toast.success("Mensagem de teste enviada!"),
+    onSuccess: (res) => {
+      if (res && res.ok) {
+        toast.success("Mensagem de teste enviada!");
+      } else {
+        toast.error(res?.message || "Falha no envio da mensagem.");
+      }
+    },
     onError: (err: any) => toast.error(err.message)
   });
 
@@ -158,7 +164,7 @@ export function OTPEditor() {
                 </div>
               </div>
               <div className="space-y-1">
-                <div className="text-[10px] uppercase font-bold text-muted-foreground opacity-60">Status de Rede</div>
+                <div className="text-[10px] uppercase font-bold text-muted-foreground opacity-60">Status de Rede (API)</div>
                 <div className="flex items-center gap-2">
                   {isConnected ? (
                     <>
@@ -169,6 +175,22 @@ export function OTPEditor() {
                     <>
                       <div className="h-2 w-2 rounded-full bg-red-500" />
                       <span className="font-black text-lg text-red-600">DESCONECTADO</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-[10px] uppercase font-bold text-muted-foreground opacity-60">WhatsApp Logado</div>
+                <div className="flex items-center gap-2">
+                  {otpData?.provider?.status === "CONNECTED" ? (
+                    <>
+                      <div className="h-2 w-2 rounded-full bg-green-500" />
+                      <span className="font-black text-lg text-green-600">CONECTADO</span>
+                    </>
+                  ) : (
+                    <>
+                      <div className="h-2 w-2 rounded-full bg-orange-500" />
+                      <span className="font-black text-lg text-orange-600">AGUARDANDO PAREAMENTO</span>
                     </>
                   )}
                 </div>

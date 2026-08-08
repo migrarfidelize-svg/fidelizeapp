@@ -47,6 +47,31 @@ export const getOTPSettingsDetailed = createServerFn({ method: "GET" })
 
     // 3. Get Provider Info
     const active = await getActiveWhatsAppProvider();
+    
+    // 4. Get Current Status for the UI
+    let status = "DISCONNECTED";
+    if (active) {
+      try {
+        const { decryptSecret } = await import("./integrations/crypt.server");
+        const dbCredsEncrypted = (active.runtime as any).db_credentials || (active.runtime as any).credentials || {};
+        const dbCreds: Record<string, string> = {};
+        for (const [k, v] of Object.entries(dbCredsEncrypted)) {
+          dbCreds[k] = typeof v === "string" && v.length > 20 ? await decryptSecret(v) : v as string;
+        }
+        
+        const mergedEnv: Record<string, string | undefined> = { ...(process.env as Record<string, string | undefined>) };
+        for (const [field, envName] of Object.entries(active.runtime.credentials_ref)) {
+          const v = dbCreds[field];
+          if (v) mergedEnv[envName] = v;
+        }
+
+        const runtime = { ...active.runtime, db_credentials: dbCreds };
+        const statusRes = await active.provider.getInstanceStatus(runtime, mergedEnv);
+        status = statusRes?.status || "DISCONNECTED";
+      } catch (e) {
+        console.warn("Failed to fetch initial WhatsApp status for OTP Dashboard", e);
+      }
+    }
 
     return {
       template: (templateData?.value as any)?.text || "Afidelize\n\nSeu código de acesso é {{code}}.\n\nEle expira em {{minutes}} minutos.\n\nNão compartilhe este código.",
@@ -54,7 +79,8 @@ export const getOTPSettingsDetailed = createServerFn({ method: "GET" })
       provider: active ? {
         name: active.provider.meta.label,
         id: active.provider.meta.id,
-        enabled: active.runtime.enabled
+        enabled: active.runtime.enabled,
+        status: status
       } : null
     };
   });
@@ -195,10 +221,19 @@ export const sendOTPTestMessage = createServerFn({ method: "POST" })
     );
 
     if (!res.ok) {
-      throw new Error(res.message || "Falha ao enviar mensagem de teste.");
+      return { 
+        ok: false, 
+        message: res.message || "Falha ao enviar mensagem de teste.",
+        details: res.providerResponse,
+        httpStatus: res.httpStatus
+      };
     }
 
-    return { ok: true };
+    return { 
+      ok: true, 
+      messageId: res.providerMessageId,
+      provider: "uazapi"
+    };
   });
 
 // --- CRM FUNCTIONS ---

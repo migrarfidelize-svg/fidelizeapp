@@ -144,18 +144,36 @@ export const uazapiOtp: WhatsAppOTPProvider = {
     const token = (runtime.db_credentials?.token as string) || (runtime.config.token as string) || (env["UAZAPI_TOKEN"] as string);
 
     if (!baseUrl || !token) {
-      return { ok: false, message: "Configuração incompleta." };
+      return { ok: false, message: "Configuração incompleta (Base URL ou Token ausente)." };
     }
 
     // Normalização rigorosa para UAZAPI (Brasil: 55 + DDD + Numero, somente dígitos)
     let cleanPhone = phone.replace(/\D/g, "");
-    if (cleanPhone.length === 11 && !cleanPhone.startsWith("55")) {
-      cleanPhone = "55" + cleanPhone;
-    } else if (cleanPhone.length === 10 && !cleanPhone.startsWith("55")) {
+    if (cleanPhone.length > 0 && !cleanPhone.startsWith("55") && cleanPhone.length <= 11) {
       cleanPhone = "55" + cleanPhone;
     }
 
     try {
+      // 1. Verificar status da instância antes de enviar
+      const { response: statusRes, body: statusBody } = await timedFetch(`${baseUrl}/instance/status`, {
+        headers: { "token": token },
+      });
+
+      let isConnected = false;
+      if (statusRes.ok) {
+        const s = JSON.parse(statusBody);
+        isConnected = s.status === "CONNECTED" || s.state === "CONNECTED" || s.status?.connected === true || s.instance?.status === "CONNECTED";
+      }
+
+      if (!isConnected) {
+        return { 
+          ok: false, 
+          message: "WhatsApp desconectado. Conecte a instância antes de enviar mensagens.",
+          status: "DISCONNECTED"
+        };
+      }
+
+      // 2. Envio Real
       const { response, body } = await timedFetch(`${baseUrl}/send/text`, {
         method: "POST",
         headers: { 
@@ -169,22 +187,30 @@ export const uazapiOtp: WhatsAppOTPProvider = {
         })
       });
 
-      if (response.ok) {
-        const resBody = JSON.parse(body);
+      const resBody = JSON.parse(body || "{}");
+      const providerMessageId = resBody?.data?.key?.id || resBody?.key?.id || resBody?.messageId;
+      
+      // UAZAPI pode retornar 200/201 mas com erro no body em alguns cenários
+      const hasError = resBody.error || resBody.status === "error" || resBody.message === "error";
+
+      if (response.ok && providerMessageId && !hasError) {
         return { 
           ok: true, 
           message: "Mensagem enviada com sucesso.", 
-          providerMessageId: resBody?.data?.key?.id || resBody?.key?.id 
+          providerMessageId,
+          httpStatus: response.status,
+          providerResponse: resBody
         };
       }
 
-      // UAZAPI 405 ou outros erros são passados com clareza
       return { 
         ok: false, 
-        message: `UAZAPI ${response.status} — ${body || response.statusText}` 
+        httpStatus: response.status,
+        message: resBody.message || resBody.error || `Erro UAZAPI ${response.status}`,
+        providerResponse: resBody
       };
     } catch (err) {
-      return { ok: false, message: `Falha ao enviar: ${err instanceof Error ? err.message : String(err)}` };
+      return { ok: false, message: `Falha técnica: ${err instanceof Error ? err.message : String(err)}` };
     }
   },
 
