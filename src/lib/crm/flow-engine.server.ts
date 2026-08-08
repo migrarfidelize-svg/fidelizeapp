@@ -1,7 +1,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export async function executeFlow(conversationId: string, messageBody: string) {
-  const { data: conv } = await supabaseAdmin
+  const { data: conv } = await (supabaseAdmin as any)
     .from("crm_conversations")
     .select("*, metadata")
     .eq("id", conversationId)
