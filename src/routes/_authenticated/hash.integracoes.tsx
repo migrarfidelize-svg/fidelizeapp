@@ -512,39 +512,23 @@ function ManageDialog({
   );
 }
 
-function ConfigTab({ meta, row, onSaved }: { meta: CatalogMeta; row?: IntegrationRow; onSaved: () => void }) {
-  const upsertFn = useServerFn(upsertIntegration);
-  const qc = useQueryClient();
-  const initialConfig = (row?.config ?? {}) as Record<string, unknown>;
-  const [mode, setMode] = useState<"sandbox" | "production">((row?.mode as any) ?? "production");
-  const [config, setConfig] = useState<Record<string, unknown>>({ ...initialConfig });
-  const [saving, setSaving] = useState(false);
-
+function ConfigTab({ 
+  meta, formMode, setFormMode, formConfig, setFormConfig 
+}: { 
+  meta: CatalogMeta; 
+  formMode: "sandbox" | "production";
+  setFormMode: (v: "sandbox" | "production") => void;
+  formConfig: Record<string, unknown>;
+  setFormConfig: (fn: (c: Record<string, unknown>) => Record<string, unknown>) => void;
+}) {
   const nonSecretFields = meta.fields.filter((f) => f.kind !== "secret" && f.kind !== "password");
-  const dirty = JSON.stringify(config) !== JSON.stringify(initialConfig) || (row?.mode ?? "production") !== mode;
-
-  async function save() {
-    setSaving(true);
-    try {
-      await upsertFn({ data: { category: meta.category, provider: meta.id, mode: meta.supportsMode ? mode : null, config } });
-      toast.success("Configuração salva.");
-      qc.invalidateQueries({ queryKey: ["integrations-saved"] });
-      onSaved();
-    } catch (e: any) { toast.error(e?.message ?? "Falha ao salvar"); }
-    finally { setSaving(false); }
-  }
-
-  function reset() {
-    setConfig({ ...initialConfig });
-    setMode((row?.mode as any) ?? "production");
-  }
 
   return (
     <div className="space-y-4">
       {meta.supportsMode && (
         <div className="space-y-2">
           <Label>Ambiente</Label>
-          <Select value={mode} onValueChange={(v) => setMode(v as any)}>
+          <Select value={formMode} onValueChange={(v) => setFormMode(v as any)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="sandbox">Sandbox / Teste</SelectItem>
@@ -559,7 +543,7 @@ function ConfigTab({ meta, row, onSaved }: { meta: CatalogMeta; row?: Integratio
       )}
 
       {nonSecretFields.map((f) => {
-        const value = (config[f.name] ?? f.defaultValue ?? "") as string | number;
+        const value = (formConfig[f.name] ?? f.defaultValue ?? "") as string | number;
         return (
           <div key={f.name} className="space-y-1">
             <Label className="text-sm">{f.label}{f.required && <span className="text-destructive"> *</span>}</Label>
@@ -567,17 +551,12 @@ function ConfigTab({ meta, row, onSaved }: { meta: CatalogMeta; row?: Integratio
               type={f.kind === "number" ? "number" : "text"}
               placeholder={f.placeholder}
               value={value as any}
-              onChange={(e) => setConfig((c) => ({ ...c, [f.name]: f.kind === "number" ? Number(e.target.value) : e.target.value }))}
+              onChange={(e) => setFormConfig((c) => ({ ...c, [f.name]: f.kind === "number" ? Number(e.target.value) : e.target.value }))}
             />
             {f.helpText && <p className="text-xs text-muted-foreground">{f.helpText}</p>}
           </div>
         );
       })}
-
-      <DialogFooter className="pt-2">
-        <Button variant="ghost" onClick={reset} disabled={!dirty}><RotateCcw className="h-4 w-4 mr-1" />Restaurar</Button>
-        <Button onClick={save} disabled={saving || !dirty}>{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : (<><Save className="h-4 w-4 mr-1" />Salvar alterações</>)}</Button>
-      </DialogFooter>
     </div>
   );
 }
