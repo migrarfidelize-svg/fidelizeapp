@@ -12,7 +12,8 @@ import { AgentConfig } from "@/components/crm/AgentConfig";
 import { ContactManager } from "@/components/crm/ContactManager";
 import { FlowEditor } from "@/components/crm/FlowEditor";
 import { WhatsAppManager } from "@/components/crm/WhatsAppManager";
-import { MessageSquare, History, Contact, UserCheck, GitBranch, FileText, Smartphone, Settings2, Moon, Sun, Search, Bell, Plus, Filter } from "lucide-react";
+import { BroadcastManager } from "@/components/crm/broadcasts/BroadcastManager";
+import { MessageSquare, History, Contact, UserCheck, GitBranch, FileText, Smartphone, Settings2, Moon, Sun, Search, Bell, Plus, Filter, SendHorizontal } from "lucide-react";
 import { useTheme } from "@/components/ThemeToggle";
 
 export const Route = createFileRoute("/_authenticated/hash/atendimento/")({
@@ -29,6 +30,7 @@ function AtendimentoCRM() {
       { id: "conversas", label: "Conversas", icon: MessageSquare },
       { id: "fila", label: "Fila", icon: History },
       { id: "contatos", label: "Contatos", icon: Contact },
+      { id: "disparos", label: "Disparos", icon: SendHorizontal },
     ]},
     { group: "Automação", items: [
       { id: "agente", label: "Agente", icon: UserCheck },
@@ -111,6 +113,7 @@ function AtendimentoCRM() {
           <div className="h-full overflow-y-auto p-8">
             {activeTab === "fila" && <p>Visualização de Fila</p>}
             {activeTab === "contatos" && <ContactManager />}
+            {activeTab === "disparos" && <BroadcastManager />}
             {activeTab === "agente" && <AgentConfig />}
             {activeTab === "fluxos" && <FlowEditor flow={selectedFlow} onBack={() => { setActiveTab("conversas"); setSelectedFlow(null); }} />}
             {activeTab === "templates" && <TemplateManager />}
