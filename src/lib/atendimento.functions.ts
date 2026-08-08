@@ -2,6 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+async function assertSuperAdmin(supabase: any, userId: string) {
+  const { data, error } = await supabase.rpc("is_super_admin", { _user: userId });
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("Acesso restrito: apenas administradores da plataforma.");
+}
+
 const saveOtpTemplateSchema = z.object({
   template: z.string().min(10).max(500),
 });
@@ -10,8 +16,7 @@ export const getOTPSettingsDetailed = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
-    if (!isAdmin) throw new Error("Acesso restrito.");
+    await assertSuperAdmin(supabase, userId);
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { getActiveWhatsAppProvider } = await import("./otp.functions");
@@ -47,13 +52,55 @@ export const getOTPSettingsDetailed = createServerFn({ method: "GET" })
       template: (templateData?.value as any)?.text || "Afidelize\n\nSeu código de acesso é {{code}}.\n\nEle expira em {{minutes}} minutos.\n\nNão compartilhe este código.",
       configs,
       provider: active ? {
-        name: active.provider.meta.name,
+        name: active.provider.meta.label,
         id: active.provider.meta.id,
-        status: "connected", // Simplified for UI
+        status: "unknown", 
         enabled: active.runtime.enabled
       } : null
     };
   });
+
+export const getWhatsAppInstanceStatus = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    await assertSuperAdmin(supabase, userId);
+
+    const { getActiveWhatsAppProvider } = await import("./otp.functions");
+    const active = await getActiveWhatsAppProvider();
+
+    if (!active) return { status: "DISCONNECTED", message: "Nenhum provedor configurado" };
+
+    const dbCreds = (active.runtime as any).credentials || {};
+    const mergedEnv: Record<string, string | undefined> = { ...(process.env as Record<string, string | undefined>) };
+    for (const [field, envName] of Object.entries(active.runtime.credentials_ref)) {
+      const v = dbCreds[field];
+      if (v) mergedEnv[envName] = v;
+    }
+
+    return await active.provider.getInstanceStatus(active.runtime, mergedEnv);
+  });
+
+export const disconnectWhatsAppInstance = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    await assertSuperAdmin(supabase, userId);
+
+    const { getActiveWhatsAppProvider } = await import("./otp.functions");
+    const active = await getActiveWhatsAppProvider();
+    if (!active) throw new Error("Nenhum provedor ativo.");
+
+    const dbCreds = (active.runtime as any).credentials || {};
+    const mergedEnv: Record<string, string | undefined> = { ...(process.env as Record<string, string | undefined>) };
+    for (const [field, envName] of Object.entries(active.runtime.credentials_ref)) {
+      const v = dbCreds[field];
+      if (v) mergedEnv[envName] = v;
+    }
+
+    return await active.provider.disconnectInstance(active.runtime, mergedEnv);
+  });
+
 
 export const saveOTPTemplate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
