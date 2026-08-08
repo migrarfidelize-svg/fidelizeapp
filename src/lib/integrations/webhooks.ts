@@ -7,7 +7,7 @@ import { getPublicAppUrl } from "@/lib/app-url";
 export type WebhookEntry = {
   id: string;
   provider: string;         // "mercadopago" | "stripe" | "asaas" | "openai" | ...
-  category: "payments" | "ai" | "system";
+  category: "payments" | "ai" | "system" | "otp";
   label: string;            // "Notificações de pagamento (IPN)"
   path: string;             // "/api/public/webhooks/mercadopago"
   methods: string[];        // ["POST"]
