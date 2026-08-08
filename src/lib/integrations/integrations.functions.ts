@@ -122,7 +122,7 @@ export const upsertIntegration = createServerFn({ method: "POST" })
     // Validação de campos obrigatórios não-secretos + tipos (url/number)
     if (data.config) {
       for (const f of provider.meta.fields) {
-        if (f.kind === "secret") continue;
+        if (f.kind === "secret" || f.kind === "password") continue;
         const v = (data.config as any)[f.name];
         if (f.required && (v === undefined || v === null || v === "")) {
           throw new Error(`Campo obrigatório ausente: ${f.label}`);

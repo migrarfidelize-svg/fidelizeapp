@@ -392,9 +392,13 @@ function ManageDialog({
   async function handleGlobalSave() {
     const isUAZAPI = meta.id === "uazapi";
     
-    // UAZAPI is NO LONGER BLOCKED by frontend validation for required secrets.
-    // The server function (saveIntegrationCredentials) is the authority.
-    // This removes the source of the "Campo obrigatório ausente: Token da Instância" error.
+    // BACKEND AUDIT LOG DEBUG (SANITIZED)
+    console.log("INTEGRATION SAVE ATTEMPT", {
+      category: meta.category,
+      provider: meta.id,
+      configKeys: Object.keys(formConfig),
+      credentialKeys: Object.keys(formCredentials).filter(k => formCredentials[k]?.trim() !== ""),
+    });
 
     // Validation for non-secret fields
     for (const f of nonSecretFields) {
@@ -413,10 +417,8 @@ function ManageDialog({
       }
     }
 
-    // Validation for other secret fields (skip ALL for UAZAPI)
+    // Validation for secret/password fields
     for (const f of secretFields) {
-      if (isUAZAPI) continue;
-
       const hasNewValue = hasDraftSecret(f.name);
       const hasStoredValue = Boolean(credsMasked[f.name]?.set || secretStatus[f.name]);
       
