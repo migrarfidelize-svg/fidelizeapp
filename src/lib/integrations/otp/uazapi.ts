@@ -28,7 +28,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
 
   async testConnection(runtime: IntegrationRuntimeConfig, env: NodeEnv): Promise<TestConnectionResult> {
     const baseUrl = (runtime.config.baseUrl as string)?.replace(/\/$/, "");
-    const token = (runtime.config.token as string) || (env["UAZAPI_TOKEN"] as string);
+    const token = (runtime.config.token as string) || (runtime.db_credentials?.token as string) || (env["UAZAPI_TOKEN"] as string);
 
     if (!baseUrl || !token) {
       return { ok: false, message: "Configuração incompleta (Base URL ou Token ausente)." };
@@ -56,7 +56,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
 
   async getInstanceStatus(runtime: IntegrationRuntimeConfig, env: NodeEnv): Promise<WhatsAppInstanceStatus> {
     const baseUrl = (runtime.config.baseUrl as string)?.replace(/\/$/, "");
-    const token = (runtime.config.token as string) || (env["UAZAPI_TOKEN"] as string);
+    const token = (runtime.config.token as string) || (runtime.db_credentials?.token as string) || (env["UAZAPI_TOKEN"] as string);
 
     if (!baseUrl || !token) {
       return { status: "ERROR", updatedAt: new Date().toISOString() };
@@ -93,7 +93,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
 
   async disconnectInstance(runtime: IntegrationRuntimeConfig, env: NodeEnv) {
     const baseUrl = (runtime.config.baseUrl as string)?.replace(/\/$/, "");
-    const token = (runtime.config.token as string) || (env["UAZAPI_TOKEN"] as string);
+    const token = (runtime.config.token as string) || (runtime.db_credentials?.token as string) || (env["UAZAPI_TOKEN"] as string);
     if (!baseUrl || !token) return { ok: false, message: "Configuração incompleta." };
 
     try {
@@ -114,7 +114,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
 
   async sendTestMessage(runtime: IntegrationRuntimeConfig, env: NodeEnv, phone: string, message: string) {
     const baseUrl = (runtime.config.baseUrl as string)?.replace(/\/$/, "");
-    const token = (runtime.config.token as string) || (env["UAZAPI_TOKEN"] as string);
+    const token = (runtime.config.token as string) || (runtime.db_credentials?.token as string) || (env["UAZAPI_TOKEN"] as string);
 
     if (!baseUrl || !token) {
       return { ok: false, message: "Configuração incompleta." };

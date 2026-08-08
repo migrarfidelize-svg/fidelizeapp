@@ -200,7 +200,8 @@ export const saveIntegrationCredentials = createServerFn({ method: "POST" })
       if (v === null || v === "") { delete merged[k]; changedFields.push(`-${k}`); }
       else {
         if (String(v).length > 4096) throw new Error(`Valor muito longo para ${k}.`);
-        merged[k] = String(v);
+        const { encryptSecret } = await import("./crypt.server");
+        merged[k] = await encryptSecret(String(v));
         changedFields.push(k);
       }
     }
@@ -275,11 +276,21 @@ export const testIntegration = createServerFn({ method: "POST" })
       .eq("provider", data.provider)
       .maybeSingle();
 
+    const { decryptSecret } = await import("./crypt.server");
+
+    // Descriptografa credenciais do DB para uso em runtime
+    const dbCredsEncrypted = ((row as any)?.credentials ?? {}) as Record<string, string>;
+    const dbCreds: Record<string, string> = {};
+    for (const [k, v] of Object.entries(dbCredsEncrypted)) {
+      dbCreds[k] = await decryptSecret(v);
+    }
+
     const runtime: IntegrationRuntimeConfig = {
       enabled: (row as any)?.enabled ?? false,
       mode: (((row as any)?.mode as "sandbox" | "production" | null) ?? "production"),
       config: ((row as any)?.config ?? {}) as Record<string, unknown>,
       credentials_ref: ((row as any)?.credentials_ref ?? {}) as Record<string, string>,
+      db_credentials: dbCreds,
     };
     for (const f of provider.meta.fields) {
       if (f.kind === "secret" && f.secretName && !runtime.credentials_ref[f.name]) {
@@ -287,9 +298,6 @@ export const testIntegration = createServerFn({ method: "POST" })
       }
     }
 
-    // Mescla credenciais salvas no DB no "env" passado ao provider,
-    // priorizando o valor do DB sobre process.env.
-    const dbCreds = ((row as any)?.credentials ?? {}) as Record<string, string>;
     const mergedEnv: Record<string, string | undefined> = { ...(process.env as Record<string, string | undefined>) };
     for (const [field, envName] of Object.entries(runtime.credentials_ref)) {
       const v = dbCreds[field];
@@ -359,14 +367,22 @@ export const sendTestWhatsAppMessage = createServerFn({ method: "POST" })
 
     if (!row) throw new Error("Integração não encontrada.");
 
+    const { decryptSecret } = await import("./crypt.server");
+    
+    const dbCredsEncrypted = (row.credentials ?? {}) as Record<string, string>;
+    const dbCreds: Record<string, string> = {};
+    for (const [k, v] of Object.entries(dbCredsEncrypted)) {
+      dbCreds[k] = await decryptSecret(v);
+    }
+
     const runtime: IntegrationRuntimeConfig = {
       enabled: row.enabled ?? false,
       mode: (row.mode as any) ?? "production",
       config: (row.config as any) ?? {},
       credentials_ref: (row.credentials_ref as any) ?? {},
+      db_credentials: dbCreds,
     };
-
-    const dbCreds = (row.credentials ?? {}) as Record<string, string>;
+    
     const mergedEnv: Record<string, string | undefined> = { ...(process.env as Record<string, string | undefined>) };
     for (const [field, envName] of Object.entries(runtime.credentials_ref)) {
       const v = dbCreds[field];

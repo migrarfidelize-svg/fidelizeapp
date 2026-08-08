@@ -36,6 +36,7 @@ export interface IntegrationRuntimeConfig {
   mode?: "sandbox" | "production" | null;
   config: Record<string, unknown>;
   credentials_ref: Record<string, string>; // { field_name: SECRET_ENV_NAME }
+  db_credentials?: Record<string, string>; // Credenciais descriptografadas do DB
 }
 
 export interface IntegrationProviderMeta {
