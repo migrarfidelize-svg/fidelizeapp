@@ -487,8 +487,8 @@ function ManageDialog({
       toast.success("Integração salva.");
       qc.invalidateQueries({ queryKey: ["integrations-saved"] });
       onSaved();
-      // Keep modal open so user can see the updated "Saved" indicators if they want, 
-      // but instructions imply saving is the final step for this interaction.
+      // After save, the data is no longer dirty, so standard close behavior resumes.
+      onOpenChange(false);
     } catch (e: any) {
       toast.error(e?.message ?? "Falha ao salvar");
     } finally {
