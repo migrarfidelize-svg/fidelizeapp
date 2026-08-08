@@ -390,7 +390,28 @@ function ManageDialog({
 
 
   async function handleGlobalSave() {
-    // Validation
+    const isUAZAPI = meta.id === "uazapi";
+    const credentialsSnapshot = { ...formCredentials };
+
+    // 1. UAZAPI EXPLICIT VALIDATION
+    if (isUAZAPI) {
+      const token = String(credentialsSnapshot.token ?? "").trim();
+      const hasNewToken = token.length > 0;
+      const hasStoredToken = Boolean(
+        credsMasked["token"]?.set || 
+        secretStatus["token"]
+      );
+
+      if (!hasNewToken && !hasStoredToken) {
+        toast.error("Token da Instância é obrigatório");
+        setActiveTab("credentials");
+        return;
+      }
+      // If hasNewToken, we proceed to save. 
+      // If hasStoredToken && !hasNewToken, we proceed (preserving the existing one).
+    }
+
+    // Validation for non-secret fields
     for (const f of nonSecretFields) {
       const v = formConfig[f.name];
       if (f.required && (v === undefined || v === null || v === "")) {
@@ -407,7 +428,10 @@ function ManageDialog({
       }
     }
 
+    // Validation for other secret fields (skip UAZAPI token if already validated)
     for (const f of secretFields) {
+      if (isUAZAPI && f.name === "token") continue;
+
       const hasNewValue = hasDraftSecret(f.name);
       const hasStoredValue = Boolean(credsMasked[f.name]?.set || secretStatus[f.name]);
       
