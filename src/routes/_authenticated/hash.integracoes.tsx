@@ -517,6 +517,7 @@ function ManageDialog({
               formCredentials={formCredentials}
               setFormCredentials={setFormCredentials}
               onSaved={onSaved}
+              hasDraftSecret={hasDraftSecret}
             />
           </TabsContent>
           <TabsContent value="test" className="mt-4">
