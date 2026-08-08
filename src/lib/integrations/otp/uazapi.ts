@@ -26,7 +26,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
     ],
   },
 
-  async testConnection(runtime: IntegrationRuntimeConfig): Promise<TestConnectionResult> {
+  async testConnection(runtime: IntegrationRuntimeConfig, env: NodeEnv): Promise<TestConnectionResult> {
     const baseUrl = (runtime.config.baseUrl as string)?.replace(/\/$/, "");
     const token = (runtime.config.token as string);
 
@@ -54,7 +54,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
     }
   },
 
-  async getInstanceStatus(runtime: IntegrationRuntimeConfig): Promise<WhatsAppInstanceStatus> {
+  async getInstanceStatus(runtime: IntegrationRuntimeConfig, env: NodeEnv): Promise<WhatsAppInstanceStatus> {
     const baseUrl = (runtime.config.baseUrl as string)?.replace(/\/$/, "");
     const token = (runtime.config.token as string);
 
@@ -91,7 +91,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
     }
   },
 
-  async disconnectInstance(runtime: IntegrationRuntimeConfig) {
+  async disconnectInstance(runtime: IntegrationRuntimeConfig, env: NodeEnv) {
     const baseUrl = (runtime.config.baseUrl as string)?.replace(/\/$/, "");
     const token = (runtime.config.token as string);
     if (!baseUrl || !token) return { ok: false, message: "Configuração incompleta." };

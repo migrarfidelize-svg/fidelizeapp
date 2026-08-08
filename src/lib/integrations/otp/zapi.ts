@@ -61,7 +61,7 @@ export const zapiOtp: WhatsAppOTPProvider = {
     }
   },
 
-  async getInstanceStatus(runtime: IntegrationRuntimeConfig): Promise<WhatsAppInstanceStatus> {
+  async getInstanceStatus(runtime: IntegrationRuntimeConfig, env: NodeEnv): Promise<WhatsAppInstanceStatus> {
     const instanceId = runtime.config.instanceId as string;
     const instanceToken = runtime.config.instanceToken as string;
     const clientToken = runtime.config.clientToken as string;
@@ -101,7 +101,7 @@ export const zapiOtp: WhatsAppOTPProvider = {
     }
   },
 
-  async disconnectInstance(runtime: IntegrationRuntimeConfig) {
+  async disconnectInstance(runtime: IntegrationRuntimeConfig, env: NodeEnv) {
     const instanceId = runtime.config.instanceId as string;
     const instanceToken = runtime.config.instanceToken as string;
     const clientToken = runtime.config.clientToken as string;

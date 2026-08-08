@@ -52,7 +52,7 @@ export const customOtp: WhatsAppOTPProvider = {
     ],
   },
 
-  async testConnection(runtime: IntegrationRuntimeConfig): Promise<TestConnectionResult> {
+  async testConnection(runtime: IntegrationRuntimeConfig, env: NodeEnv): Promise<TestConnectionResult> {
     const url = runtime.config.url as string;
     if (!url) return { ok: false, message: "URL não configurada." };
     
@@ -67,12 +67,12 @@ export const customOtp: WhatsAppOTPProvider = {
     }
   },
 
-  async getInstanceStatus(): Promise<WhatsAppInstanceStatus> {
+  async getInstanceStatus(runtime: IntegrationRuntimeConfig, env: NodeEnv): Promise<WhatsAppInstanceStatus> {
     // Custom providers don't have a standard status API
     return { status: "ERROR", updatedAt: new Date().toISOString() };
   },
 
-  async disconnectInstance() {
+  async disconnectInstance(runtime: IntegrationRuntimeConfig, env: NodeEnv) {
     return { ok: false, message: "Não suportado pelo provider customizado." };
   },
 
