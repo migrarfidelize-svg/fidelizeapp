@@ -51,7 +51,13 @@ export async function processNextBroadcastBatch() {
   if (!active) {
     await supabaseAdmin
       .from("crm_broadcasts")
-      .update({ status: "failed", metadata: { ...((broadcast.metadata as any) || {}), last_error: "Nenhum provedor WhatsApp ativo" } })
+      .update({ 
+        status: "failed", 
+        metadata: { 
+          ...((broadcast.metadata as any) || {}), 
+          last_error: "Nenhum provedor WhatsApp ativo" 
+        } 
+      })
       .eq("id", broadcast.id);
     return;
   }
@@ -65,7 +71,7 @@ export async function processNextBroadcastBatch() {
   }
   const runtime = { ...active.runtime, db_credentials: dbCreds };
   const mergedEnv = { ...process.env } as Record<string, string | undefined>;
-  const credentialsRef = runtime.credentials_ref as Record<string, string> || {};
+  const credentialsRef = (runtime.credentials_ref as Record<string, string>) || {};
   for (const [field, envName] of Object.entries(credentialsRef)) {
     const v = dbCreds[field];
     if (v) mergedEnv[envName] = v;
@@ -85,21 +91,24 @@ export async function processNextBroadcastBatch() {
     try {
       // Personalização {{nome}}
       const contactName = (recipient.contact as any)?.name || "Cliente";
-      const renderedMessage = broadcast.message_template
+      const renderedMessage = (broadcast.message_template || "")
         .replace(/{{nome}}/g, contactName)
-        .replace(/{{telefone}}/g, recipient.phone);
+        .replace(/{{telefone}}/g, recipient.phone || "");
 
       // Atualizar destinatário para 'sending' (Idempotência/Bloqueio)
       await supabaseAdmin
         .from("crm_broadcast_recipients")
-        .update({ status: "sending", rendered_message: renderedMessage })
+        .update({ 
+          status: "sending" as any, 
+          rendered_message: renderedMessage 
+        })
         .eq("id", recipient.id);
 
       // Enviar via provider
       const res = await active.provider.sendTestMessage(
         runtime,
         mergedEnv,
-        recipient.phone,
+        recipient.phone || "",
         renderedMessage
       );
 
@@ -108,15 +117,18 @@ export async function processNextBroadcastBatch() {
         await supabaseAdmin
           .from("crm_broadcast_recipients")
           .update({
-            status: "sent",
+            status: "sent" as any,
             sent_at: new Date().toISOString(),
             provider_message_id: res.providerMessageId,
             attempts: (recipient.attempts || 0) + 1
           })
           .eq("id", recipient.id);
 
-        // Incrementar contador da campanha
-        await (supabaseAdmin.rpc as any)("mark_broadcast_recipient_sent", { p_recipient_id: recipient.id });
+        // Incrementar contador da campanha via RPC (Service Role)
+        await (supabaseAdmin.rpc as any)("mark_broadcast_recipient_sent", { 
+          p_recipient_id: recipient.id,
+          p_provider_message_id: res.providerMessageId
+        });
 
         // Registrar no histórico de mensagens (crm_messages)
         const { data: conv } = await (supabaseAdmin
@@ -156,26 +168,34 @@ export async function processNextBroadcastBatch() {
         await supabaseAdmin
           .from("crm_broadcast_recipients")
           .update({
-            status: "failed",
+            status: "failed" as any,
             failed_at: new Date().toISOString(),
             last_error: res.message || "Erro desconhecido",
             attempts: (recipient.attempts || 0) + 1
           })
           .eq("id", recipient.id);
         
-        await (supabaseAdmin.rpc as any)("mark_broadcast_recipient_failed", { p_recipient_id: recipient.id, p_error: res.message });
+        await (supabaseAdmin.rpc as any)("mark_broadcast_recipient_failed", { 
+          p_recipient_id: recipient.id, 
+          p_error: res.message 
+        });
       }
     } catch (err) {
       console.error(`[BroadcastEngine] Error processing recipient ${recipient.id}:`, err);
       await supabaseAdmin
         .from("crm_broadcast_recipients")
         .update({
-          status: "failed",
+          status: "failed" as any,
           failed_at: new Date().toISOString(),
           last_error: String(err),
           attempts: (recipient.attempts || 0) + 1
         })
         .eq("id", recipient.id);
+      
+      await (supabaseAdmin.rpc as any)("mark_broadcast_recipient_failed", { 
+        p_recipient_id: recipient.id, 
+        p_error: String(err) 
+      });
     }
 
     // Intervalo entre mensagens (Rate Limit: 2s)
@@ -183,7 +203,5 @@ export async function processNextBroadcastBatch() {
   }
 
   // 6. Recursividade controlada (agendar próximo lote)
-  // Em uma infra real, isso seria um cron ou queue trigger. 
-  // Aqui disparamos novamente se ainda houver campanha rodando.
   setTimeout(() => processNextBroadcastBatch().catch(console.error), 1000);
 }
