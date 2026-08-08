@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Smartphone, Save, Send, Eye, Code, CheckCircle2, XCircle, ExternalLink, RefreshCw, Zap, Clock, ShieldCheck, ChevronRight, Plus, Loader2, Settings2 } from "lucide-react";
+import { Smartphone, Save, Send, Eye, Code, CheckCircle2, XCircle, ExternalLink, RefreshCw, Zap, Clock, ShieldCheck, ChevronRight, Plus, Loader2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,10 +12,7 @@ import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
 import { Label } from "@/components/ui/label";
 
-import { useCRMTheme } from "./previews/shared/ThemeContext";
-
 export function OTPEditor() {
-  const { theme } = useCRMTheme();
   const queryClient = useQueryClient();
 
   const { data: otpData, isLoading } = useQuery({ 
@@ -75,7 +72,6 @@ export function OTPEditor() {
     const newTemplate = before + variable + after;
     setTemplate(newTemplate);
     
-    // Focus back and set cursor position
     setTimeout(() => {
       textarea.focus();
       textarea.setSelectionRange(start + variable.length, start + variable.length);
@@ -90,7 +86,12 @@ export function OTPEditor() {
     }
   };
 
-  if (isLoading) return <div className="p-12 text-center opacity-50">Carregando configurações...</div>;
+  if (isLoading) return (
+    <div className="flex flex-col items-center justify-center h-full opacity-40 py-20">
+      <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
+      <span className="text-sm font-bold uppercase tracking-widest">Sincronizando Gateway OTP...</span>
+    </div>
+  );
 
   const previewText = template
     .replace(/{{code}}/g, "482913")
@@ -101,240 +102,232 @@ export function OTPEditor() {
   const isConnected = !!otpData?.provider;
 
   return (
-    <div className={cn(
-      "space-y-8 animate-in fade-in duration-500",
-      theme === "command" ? "space-y-4" : theme === "premium" ? "space-y-12" : "space-y-8"
-    )}>
-      <div className={cn(
-        "flex flex-col md:flex-row md:items-center justify-between gap-4",
-        theme === "command" ? "p-3 bg-muted/30 rounded border" : ""
-      )}>
-        <div>
-          <h2 className={cn(
-            "font-black tracking-tight uppercase",
-            theme === "command" ? "text-sm" : theme === "premium" ? "text-3xl font-light normal-case" : "text-xl"
-          )}>
-            {theme === "command" ? "SECURITY PROTOCOL / OTP" : 
-             theme === "premium" ? "Autenticação Segura" : 
-             "WHATSAPP OTP GATEWAY"}
-          </h2>
-          <p className={cn(
-            "text-muted-foreground",
-            theme === "command" ? "text-[10px]" : "text-sm"
-          )}>Gestão de tokens e mensagens transacionais para acesso à Carteira.</p>
+    <div className="crm-enterprise-layout bg-background min-h-full p-8 crm-scrollbar overflow-y-auto">
+      {/* Header Central OTP */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 bg-card p-6 border rounded-xl shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="h-14 w-14 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
+            <Smartphone className="h-7 w-7 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-black tracking-tight text-foreground uppercase">Central de Autenticação OTP</h2>
+            <div className="flex items-center gap-2 mt-1">
+              <Badge variant="outline" className={cn(
+                "text-[10px] font-black tracking-widest px-2 py-0.5 border-none",
+                otpData?.provider?.enabled ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"
+              )}>
+                GATEWAY {providerStatus}
+              </Badge>
+              <span className="text-xs text-muted-foreground">• Responsável pelo login passwordless da Carteira</span>
+            </div>
+          </div>
         </div>
-        <div className="flex gap-2">
-           <Button variant="outline" className={cn("h-9 text-xs gap-2", theme === "premium" ? "rounded-full" : "")} onClick={restoreDefault}>
-             <RefreshCw className="h-3.5 w-3.5" /> Restaurar
-           </Button>
-           <Button className={cn("h-9 text-xs gap-2", theme === "premium" ? "rounded-full py-6 px-8 shadow-xl" : "gradient-brand")} onClick={() => saveMutation.mutate({ text: template, configs })} disabled={saveMutation.isPending}>
-             {saveMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-             Salvar
-           </Button>
+        <div className="flex gap-3">
+          <button className="crm-button-secondary px-6" onClick={restoreDefault}>
+            <RefreshCw className="h-4 w-4" /> Restaurar Padrão
+          </button>
+          <button 
+            className="crm-button-primary px-8" 
+            onClick={() => saveMutation.mutate({ text: template, configs })} 
+            disabled={saveMutation.isPending}
+          >
+            {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            Salvar Configurações
+          </button>
         </div>
       </div>
 
-
-      <div className="grid lg:grid-cols-12 gap-6">
-        {/* COLUNA ESQUERDA: Status e Editor */}
-        <div className="lg:col-span-7 space-y-6">
-          <Card className="dash-card border-l-4 border-l-primary">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
-                    <Smartphone className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-sm">WHATSAPP OTP</CardTitle>
-                    <CardDescription className="text-xs">Motor de autenticação passwordless</CardDescription>
-                  </div>
-                </div>
-                <Badge className={cn(otpData?.provider?.enabled ? "bg-green-500/10 text-green-600 hover:bg-green-500/20" : "bg-red-500/10 text-red-600")}>
-                  {providerStatus}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0 flex items-center justify-between border-t bg-muted/30 py-3 px-6">
-              <div className="flex items-center gap-6">
-                <div className="space-y-0.5">
-                  <div className="text-[10px] uppercase font-black text-muted-foreground tracking-widest">Provider atual</div>
-                  <div className="text-xs font-bold">{otpData?.provider?.name || "Nenhum configurado"}</div>
-                </div>
-                <div className="space-y-0.5">
-                  <div className="text-[10px] uppercase font-black text-muted-foreground tracking-widest">Estado</div>
-                  <div className="flex items-center gap-1.5">
-                    {isConnected ? (
-                      <>
-                        <CheckCircle2 className="h-3 w-3 text-green-500" />
-                        <span className="text-xs font-bold text-green-600">Conectado</span>
-                      </>
-                    ) : (
-                      <>
-                        <XCircle className="h-3 w-3 text-red-500" />
-                        <span className="text-xs font-bold text-red-600">Desconectado / Erro</span>
-                      </>
-                    )}
-                  </div>
+      <div className="grid lg:grid-cols-12 gap-8 items-start">
+        {/* COLUNA ESQUERDA: Configuração */}
+        <div className="lg:col-span-7 space-y-8">
+          
+          {/* Status do Provider */}
+          <div className="crm-card p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">Conectividade do Sistema</h4>
+              <button className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1" asChild>
+                <Link to="/hash/integracoes">Geral Integracoes <ExternalLink className="h-3 w-3" /></Link>
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-8">
+              <div className="space-y-1">
+                <div className="text-[10px] uppercase font-bold text-muted-foreground opacity-60">Provedor Ativo</div>
+                <div className="flex items-center gap-2">
+                  <span className="font-black text-lg">{otpData?.provider?.name || "Nenhum"}</span>
                 </div>
               </div>
-              <Button variant="ghost" size="sm" asChild className="h-8 text-[10px] uppercase font-bold tracking-tight">
-                <Link to="/hash/integracoes">
-                  Abrir Integrações <ExternalLink className="h-3 w-3 ml-1.5" />
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+              <div className="space-y-1">
+                <div className="text-[10px] uppercase font-bold text-muted-foreground opacity-60">Status de Rede</div>
+                <div className="flex items-center gap-2">
+                  {isConnected ? (
+                    <>
+                      <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                      <span className="font-black text-lg text-green-600">OPERACIONAL</span>
+                    </>
+                  ) : (
+                    <>
+                      <div className="h-2 w-2 rounded-full bg-red-500" />
+                      <span className="font-black text-lg text-red-600">DESCONECTADO</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
 
-          <Card className="dash-card">
-            <CardHeader>
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Code className="h-4 w-4 text-primary" /> MENSAGEM DO CÓDIGO DE ACESSO
-              </CardTitle>
-              <CardDescription className="text-xs">Configure o texto que o cliente receberá no WhatsApp.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          {/* Editor de Template */}
+          <div className="crm-card">
+            <div className="p-6 border-b flex items-center justify-between">
+              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
+                <Code className="h-4 w-4" /> Template da Mensagem
+              </h4>
+            </div>
+            <div className="p-6 space-y-6">
               <div className="space-y-3">
                 <Textarea 
                   id="otp-template-editor"
                   value={template} 
                   onChange={e => setTemplate(e.target.value)} 
-                  rows={6}
-                  placeholder="Escreva sua mensagem aqui..."
-                  className="font-mono text-sm resize-none focus-visible:ring-primary/30"
+                  rows={8}
+                  placeholder="Escreva a mensagem que o cliente receberá..."
+                  className="font-mono text-sm resize-none bg-muted/20 border-border/50 focus-visible:ring-primary/20 leading-relaxed"
                 />
-                <div className="flex flex-wrap items-center gap-2">
-                   <span className="text-[10px] font-bold uppercase text-muted-foreground mr-2">Variáveis:</span>
+                <div className="flex flex-wrap items-center gap-3 p-3 bg-muted/30 rounded-lg border border-border/40">
+                   <div className="flex items-center gap-2 mr-4">
+                     <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                     <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Variáveis</span>
+                   </div>
                    {[
-                     { label: "{{code}}", value: "{{code}}" },
-                     { label: "{{minutes}}", value: "{{minutes}}" },
-                     { label: "{{brand}}", value: "{{brand}}" }
+                     { label: "{{code}}", value: "{{code}}", desc: "Token de 6 dígitos" },
+                     { label: "{{minutes}}", value: "{{minutes}}", desc: "Tempo de validade" },
+                     { label: "{{brand}}", value: "{{brand}}", desc: "Nome da marca" }
                    ].map(v => (
                      <button 
                        key={v.value}
                        onClick={() => insertVariable(v.value)}
-                       className="bg-muted hover:bg-primary/10 hover:text-primary transition-colors text-[10px] font-mono px-2 py-1 rounded-md border border-border flex items-center gap-1"
+                       title={v.desc}
+                       className="bg-card hover:bg-primary hover:text-white transition-all text-[11px] font-mono px-3 py-1.5 rounded-md border border-border flex items-center gap-2 shadow-sm"
                      >
-                       {v.label} <Plus className="h-2.5 w-2.5" />
+                       {v.label} <Plus className="h-3 w-3" />
                      </button>
                    ))}
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card className="dash-card">
-            <CardHeader>
-              <CardTitle className="text-sm flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-primary" /> CONFIGURAÇÕES DE SEGURANÇA
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="grid sm:grid-cols-3 gap-6">
+          {/* Segurança */}
+          <div className="crm-card">
+            <div className="p-6 border-b">
+              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4" /> Parâmetros de Segurança
+              </h4>
+            </div>
+            <div className="p-6 grid sm:grid-cols-3 gap-8">
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Validade do código (min)</Label>
-                <Input 
-                  type="number" 
-                  value={configs.validity_minutes} 
-                  onChange={e => setConfigs({...configs, validity_minutes: parseInt(e.target.value)})}
-                  className="h-9 text-sm"
-                />
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Validade do Token</Label>
+                <div className="relative">
+                  <Input 
+                    type="number" 
+                    value={configs.validity_minutes} 
+                    onChange={e => setConfigs({...configs, validity_minutes: parseInt(e.target.value)})}
+                    className="h-11 font-bold pl-4 pr-12 bg-muted/20"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-muted-foreground">MIN</span>
+                </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Cooldown de reenvio (seg)</Label>
-                <Input 
-                  type="number" 
-                  value={configs.cooldown_seconds} 
-                  onChange={e => setConfigs({...configs, cooldown_seconds: parseInt(e.target.value)})}
-                  className="h-9 text-sm"
-                />
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Intervalo Reenvio</Label>
+                <div className="relative">
+                  <Input 
+                    type="number" 
+                    value={configs.cooldown_seconds} 
+                    onChange={e => setConfigs({...configs, cooldown_seconds: parseInt(e.target.value)})}
+                    className="h-11 font-bold pl-4 pr-12 bg-muted/20"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-muted-foreground">SEG</span>
+                </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Máximo de tentativas</Label>
-                <Input 
-                  type="number" 
-                  value={configs.max_attempts} 
-                  onChange={e => setConfigs({...configs, max_attempts: parseInt(e.target.value)})}
-                  className="h-9 text-sm"
-                />
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Tentativas Máximas</Label>
+                <div className="relative">
+                  <Input 
+                    type="number" 
+                    value={configs.max_attempts} 
+                    onChange={e => setConfigs({...configs, max_attempts: parseInt(e.target.value)})}
+                    className="h-11 font-bold pl-4 pr-12 bg-muted/20"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-muted-foreground">QTD</span>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
-        {/* COLUNA DIREITA: Preview e Teste */}
-        <div className="lg:col-span-5 space-y-6">
-          <div className="sticky top-8 space-y-6">
-            <Card className="dash-card overflow-hidden">
-              <CardHeader className="bg-muted/30 pb-4">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Eye className="h-4 w-4 text-primary" /> PREVIEW WHATSAPP
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 bg-[#E5DDD5] min-h-[250px] relative flex flex-col justify-end">
-                {/* Visual Estilo WhatsApp */}
-                <div className="bg-white rounded-2xl p-3 shadow-sm relative max-w-[85%] animate-in slide-in-from-left-4">
-                  <div className="absolute -left-2 top-2 w-0 h-0 border-t-[6px] border-t-transparent border-r-[10px] border-r-white border-b-[6px] border-b-transparent"></div>
-                  <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{previewText}</p>
-                  <div className="text-[9px] text-muted-foreground mt-1 text-right">10:42</div>
+        {/* COLUNA DIREITA: Preview */}
+        <div className="lg:col-span-5 space-y-8">
+          <div className="sticky top-8 space-y-8">
+            
+            {/* Preview WhatsApp */}
+            <div className="crm-card overflow-hidden bg-[#E5DDD5]">
+              <div className="p-4 border-b bg-card flex items-center justify-between shrink-0">
+                <h4 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
+                  <Eye className="h-4 w-4" /> Simulador de Recebimento
+                </h4>
+              </div>
+              <div className="p-8 min-h-[300px] flex flex-col justify-end">
+                <div className="bg-white rounded-2xl rounded-tl-none p-4 shadow-md relative max-w-[90%] animate-in slide-in-from-left-4">
+                  <div className="absolute -left-2 top-0 w-0 h-0 border-t-[8px] border-t-white border-l-[8px] border-l-transparent"></div>
+                  <p className="text-[14px] leading-relaxed whitespace-pre-wrap text-[#111]">{previewText}</p>
+                  <div className="text-[10px] text-[#667781] mt-2 text-right flex items-center justify-end gap-1">
+                    10:45 <span className="text-[#53bdeb]">✓✓</span>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
-            <Card className="dash-card">
-              <CardHeader>
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Send className="h-4 w-4 text-primary" /> TESTAR MENSAGEM
-                </CardTitle>
-                <CardDescription className="text-xs">Envie uma mensagem de teste real para o seu número.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+            {/* Teste de Envio */}
+            <div className="crm-card p-6">
+              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground mb-6 flex items-center gap-2">
+                <Send className="h-4 w-4" /> Homologação de Envio
+              </h4>
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">WhatsApp de teste</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Número para teste (DDI+DDD+NÚMERO)</Label>
                   <Input 
                     placeholder="Ex: 5511999999999" 
                     value={testPhone} 
                     onChange={e => setTestPhone(e.target.value)} 
-                    className="h-10 text-sm"
+                    className="h-11 font-bold bg-muted/20"
                   />
                 </div>
-                <Button 
-                  variant="outline" 
-                  className="w-full h-10 text-xs font-bold gap-2 hover:bg-primary hover:text-white transition-all" 
+                <button 
+                  className="crm-button-primary w-full h-11 text-xs font-black tracking-[0.1em] uppercase" 
                   onClick={() => sendTestMutation.mutate()} 
                   disabled={sendTestMutation.isPending || !testPhone || !otpData?.provider?.enabled}
                 >
-                  {sendTestMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                  {otpData?.provider?.enabled ? "Enviar teste" : "Provider inativo"}
-                </Button>
-              </CardContent>
-            </Card>
+                  {sendTestMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
+                  Disparar Mensagem de Teste
+                </button>
+                {!otpData?.provider?.enabled && (
+                  <p className="text-[10px] text-destructive font-bold text-center uppercase tracking-widest animate-pulse">
+                    Gateway inativo. Verifique as integrações.
+                  </p>
+                )}
+              </div>
+            </div>
 
-            <Card className="dash-card border-none bg-primary/5">
-              <CardContent className="p-6">
-                 <h4 className="text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-                   <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Fluxo Informativo
-                 </h4>
-                 <div className="space-y-3">
-                   {[
-                     { label: "Cliente informa WhatsApp", icon: Smartphone },
-                     { label: "Afidelize gera código", icon: Zap },
-                     { label: "WhatsApp envia OTP", icon: Send },
-                     { label: "Cliente informa código", icon: ShieldCheck },
-                     { label: "Backend valida", icon: CheckCircle2 },
-                     { label: "Sessão Supabase", icon: Clock },
-                     { label: "/carteira", icon: ChevronRight }
-                   ].map((step, i) => (
-                     <div key={i} className="flex items-center gap-3">
-                        <div className="h-7 w-7 rounded-full bg-background border flex items-center justify-center text-[10px] font-bold shadow-sm">
-                           <step.icon className="h-3.5 w-3.5 text-primary" />
-                        </div>
-                        <span className="text-xs font-medium">{step.label}</span>
-                        {i < 6 && <ChevronRight className="h-3 w-3 ml-auto opacity-20 rotate-90 sm:rotate-0" />}
-                     </div>
-                   ))}
-                 </div>
-              </CardContent>
-            </Card>
+            {/* Dica de Segurança */}
+            <div className="p-6 bg-primary/5 rounded-xl border border-primary/10 flex gap-4">
+              <ShieldCheck className="h-6 w-6 text-primary shrink-0" />
+              <div className="space-y-1">
+                <h5 className="text-[11px] font-black uppercase tracking-widest text-primary">Protocolo Afidelize</h5>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Utilize <strong>{"{{code}}"}</strong> em uma linha isolada para facilitar a leitura do cliente. O tempo de validade <strong>{"{{minutes}}"}</strong> ajuda a reduzir chamados de suporte por tokens expirados.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
