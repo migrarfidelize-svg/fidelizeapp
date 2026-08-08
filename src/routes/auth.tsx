@@ -321,9 +321,9 @@ function AuthPage() {
         <div className="hidden flex-col items-center space-y-6 lg:flex lg:items-start">
           <div className="auth-card-stage group [perspective:2200px]">
              {/* Animacion visual del card omitida para brevedad pero mantenida en el real */}
-             <div className="auth-loyalty-card relative aspect-[1.6/1] w-[460px] rounded-[26px] bg-card border border-white/10 shadow-2xl overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/10" />
-                <div className="p-8">
+             <div className="auth-loyalty-card relative aspect-[1.6/1] w-[460px] rounded-[26px] bg-card border border-white/10 shadow-2xl overflow-hidden" data-no-fx>
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/10 z-0" />
+                <div className="relative z-10 p-8">
                    <div className="text-[10px] uppercase tracking-widest text-primary font-bold">Fidelize App</div>
                    <div className="mt-1 text-2xl font-bold">Sua fidelidade digital</div>
                 </div>
