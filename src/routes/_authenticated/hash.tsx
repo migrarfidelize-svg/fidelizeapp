@@ -249,7 +249,7 @@ function AdminLayout() {
     <TooltipProvider>
       <div className="min-h-dvh dock-page-bg">
         {/* Desktop: sidebar padrão (ícone + nome) */}
-        <aside className={cn("hidden md:flex fixed inset-y-0 left-0 z-30 w-64 flex-col border-r border-border/60 bg-card/80 backdrop-blur-xl", pathname.startsWith("/hash/atendimento") && "hidden")}>
+        <aside className={cn("hidden md:flex fixed inset-y-0 left-0 z-30 w-64 flex-col border-r border-border/60 bg-card/80 backdrop-blur-xl")}>
           <div className="flex h-14 items-center gap-2 border-b border-border/60 px-3">
             <Link to="/hash" aria-label="Fidelize Admin" className="flex min-w-0 items-center gap-2">
               <LogoMark size={20} className="text-primary" />
@@ -276,10 +276,10 @@ function AdminLayout() {
           </div>
         </aside>
 
-        <div className={cn("flex flex-col min-w-0 md:pl-64", pathname.startsWith("/hash/atendimento") && "md:pl-0")}>
+        <div className={cn("flex flex-col min-w-0 md:pl-64")}>
 
           {/* Top bar */}
-          <header className={cn("sticky top-0 z-20 flex items-center justify-between gap-3 h-14 px-4 md:px-6 border-b bg-card/70 backdrop-blur-xl", pathname.startsWith("/hash/atendimento") && "hidden")}>
+          <header className={cn("sticky top-0 z-20 flex items-center justify-between gap-3 h-14 px-4 md:px-6 border-b bg-card/70 backdrop-blur-xl")}>
             <div className="flex items-center gap-3 min-w-0">
               <div className="md:hidden">
                 <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -355,8 +355,8 @@ function AdminLayout() {
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
                 className={cn(
-                  "relative max-w-[1400px] w-full mx-auto px-4 py-5 md:px-6 md:py-7",
-                  pathname.startsWith("/hash/atendimento") && "max-w-none w-full mx-0 p-0"
+                  "relative max-w-[1400px] w-full mx-auto px-4 py-5 md:px-6 md:py-7 min-h-0 min-w-0 flex flex-col",
+                  pathname.startsWith("/hash/atendimento") && "max-w-none w-full mx-0 p-0 h-[calc(100dvh-56px)]"
                 )}
 
               >
