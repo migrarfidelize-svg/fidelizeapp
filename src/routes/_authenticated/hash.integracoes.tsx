@@ -391,25 +391,10 @@ function ManageDialog({
 
   async function handleGlobalSave() {
     const isUAZAPI = meta.id === "uazapi";
-    const credentialsSnapshot = { ...formCredentials };
-
-    // 1. UAZAPI EXPLICIT VALIDATION
-    if (isUAZAPI) {
-      const token = String(credentialsSnapshot.token ?? "").trim();
-      const hasNewToken = token.length > 0;
-      const hasStoredToken = Boolean(
-        credsMasked["token"]?.set || 
-        secretStatus["token"]
-      );
-
-      if (!hasNewToken && !hasStoredToken) {
-        toast.error("Token da Instância é obrigatório");
-        setActiveTab("credentials");
-        return;
-      }
-      // If hasNewToken, we proceed to save. 
-      // If hasStoredToken && !hasNewToken, we proceed (preserving the existing one).
-    }
+    
+    // UAZAPI is NO LONGER BLOCKED by frontend validation for required secrets.
+    // The server function (saveIntegrationCredentials) is the authority.
+    // This removes the source of the "Campo obrigatório ausente: Token da Instância" error.
 
     // Validation for non-secret fields
     for (const f of nonSecretFields) {
@@ -428,9 +413,9 @@ function ManageDialog({
       }
     }
 
-    // Validation for other secret fields (skip UAZAPI token if already validated)
+    // Validation for other secret fields (skip ALL for UAZAPI)
     for (const f of secretFields) {
-      if (isUAZAPI && f.name === "token") continue;
+      if (isUAZAPI) continue;
 
       const hasNewValue = hasDraftSecret(f.name);
       const hasStoredValue = Boolean(credsMasked[f.name]?.set || secretStatus[f.name]);
@@ -441,6 +426,7 @@ function ManageDialog({
         return;
       }
     }
+
 
     setSaving(true);
     try {
@@ -561,6 +547,8 @@ function ManageDialog({
               Salvar alterações
             </Button>
           </DialogFooter>
+
+
         )}
       </DialogContent>
     </Dialog>
