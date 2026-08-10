@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const elevenConfigSchema = z.object({
-  apiKey: z.string().min(1),
+  apiKey: z.string().trim().min(1).optional(),
   voiceId: z.string().min(1),
   modelId: z.string().min(1),
   enabled: z.boolean().default(true),
@@ -37,7 +37,35 @@ export const saveElevenConfig = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { encryptSecret } = await import("./integrations/crypt.server");
-    const encryptedKey = await encryptSecret(data.apiKey?.trim());
+    
+    const { data: existingRow, error: existingError } =
+      await (supabaseAdmin as any)
+        .from("system_settings")
+        .select("value")
+        .eq("namespace", "voice")
+        .eq("key", "elevenlabs")
+        .maybeSingle();
+
+    if (existingError) {
+      throw new Error(
+        `Erro ao carregar configuração atual: ${existingError.message}`
+      );
+    }
+
+    const existingConfig =
+      (existingRow?.value || {}) as Record<string, any>;
+
+    let encryptedKey = existingConfig.apiKey;
+
+    if (data.apiKey?.trim()) {
+      encryptedKey = await encryptSecret(data.apiKey.trim());
+    }
+
+    if (!encryptedKey) {
+      throw new Error(
+        "API Key ElevenLabs não configurada."
+      );
+    }
     
     const { error } = await (supabaseAdmin as any)
       .from("system_settings")
@@ -45,6 +73,7 @@ export const saveElevenConfig = createServerFn({ method: "POST" })
         namespace: 'voice',
         key: 'elevenlabs',
         value: {
+          ...existingConfig,
           ...data,
           apiKey: encryptedKey,
           updated_at: new Date().toISOString(),
@@ -90,16 +119,16 @@ export const getElevenConfig = createServerFn({ method: "GET" })
     const config = data?.value as any;
     if (!config) return { status: 'disconnected' };
 
-    // Retorna somente status indicativo, nunca a chave ou ciphertext
     const isConfigured = !!config.apiKey;
 
     return {
       status: 'connected',
       config: {
         ...config,
-        apiKey: isConfigured ? "API configurada" : "",
+        apiKey: isConfigured ? "••••••••" : "",
+        hasApiKey: isConfigured,
         enabled: data.enabled,
-        isConfigured: true
+        isConfigured: isConfigured
       }
     };
   });

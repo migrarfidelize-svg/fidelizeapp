@@ -127,26 +127,14 @@ class VoiceManager {
     }
   }
 
-  async speakDashboard(text: string, event: string = "welcome") {
-    const prefs = loadVoicePrefs();
-
-    if (!text || !prefs.enabled || this.isMuted) return;
-
+  async speakDashboard(event: string = "welcome") {
     const generation = ++this.speechGeneration;
 
-    // Interrompe qualquer reprodução anterior,
-    // sem invalidar a geração que acabamos de criar.
+    // O dashboard não usa mute/provider/textos do VoicePrefs.
+    // Interrompe qualquer áudio ou speechSynthesis legado em execução.
     this.stopCurrentPlayback();
 
     try {
-      // IMPORTANTE:
-      // O dashboard sempre consulta a configuração global
-      // ANTES de decidir se pode falar.
-      //
-      // Não depender de:
-      // this.isElevenLabsGlobalActive
-      // provider:auto
-      // inicialização assíncrona do constructor.
       const config: any = await getGlobalVoiceConfig();
 
       if (generation !== this.speechGeneration) return;
@@ -154,21 +142,33 @@ class VoiceManager {
       this.globalConfig = config;
       this.isElevenLabsGlobalActive = !!config?.isConfigured;
 
-      // getGlobalVoiceConfig já considera o enabled global.
-      // Se ElevenLabs não estiver habilitado/configurado no Studio,
-      // o dashboard simplesmente não fala.
+      // enabled global do Studio é soberano.
+      // getGlobalVoiceConfig retorna isConfigured=false
+      // quando system_settings.enabled=false ou a integração não existe.
       if (!config?.isConfigured) {
+        return;
+      }
+
+      const configuredText =
+        typeof config?.texts?.[event] === "string"
+          ? config.texts[event].trim()
+          : "";
+
+      // NÃO utilizar texto padrão/local caso o Studio não tenha esse evento.
+      if (!configuredText) {
+        console.warn(
+          `Dashboard Voice: texto global "${event}" não configurado no Voice Studio.`
+        );
         return;
       }
 
       const res: any = await synthesizeGlobalEleven({
         data: {
-          text,
+          text: configuredText,
           event,
         },
       });
 
-      // Uma resposta antiga nunca pode começar a tocar.
       if (generation !== this.speechGeneration) return;
 
       if (!res?.audio) {
@@ -186,12 +186,8 @@ class VoiceManager {
 
       this.currentAudio = audio;
 
-      const volume =
-        typeof prefs.volume === "number"
-          ? Math.max(0, Math.min(1, prefs.volume))
-          : 1;
-
-      audio.volume = volume;
+      // Não utilizar prefs.volume/localStorage no dashboard.
+      audio.volume = 1;
 
       audio.onended = () => {
         if (this.currentAudio === audio) {
@@ -205,7 +201,7 @@ class VoiceManager {
         }
 
         console.error(
-          "Dashboard Voice: erro ao reproduzir áudio ElevenLabs."
+          "Dashboard Voice: erro ao reproduzir ElevenLabs."
         );
       };
 
@@ -213,11 +209,11 @@ class VoiceManager {
 
       await audio.play();
 
-      // Caso outra chamada tenha ocorrido enquanto play() iniciava.
       if (generation !== this.speechGeneration) {
         try {
           audio.pause();
           audio.currentTime = 0;
+          audio.src = "";
         } catch {}
 
         if (this.currentAudio === audio) {
@@ -232,14 +228,12 @@ class VoiceManager {
         err
       );
 
-      // ABSOLUTAMENTE SEM FALLBACK.
-      //
-      // NÃO chamar:
-      // playNative()
-      // playNatural()
-      // synthesizeGreeting()
-      // synthesizeElevenLabs()
-      // speechSynthesis
+      // SEM FALLBACK.
+      // NÃO chamar playNative.
+      // NÃO chamar playNatural.
+      // NÃO chamar synthesizeGreeting.
+      // NÃO chamar synthesizeElevenLabs.
+      // NÃO chamar speechSynthesis.
     }
   }
 
