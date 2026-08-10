@@ -133,7 +133,7 @@ export const Route = createFileRoute("/_authenticated/app")({
 type NavItem = { to: string; label: string; icon: any; exact?: boolean };
 type NavGroup = { key: string; label: string; icon: any; items: NavItem[] };
 
-const NAV_GROUPS: NavGroup[] = [
+const NAV_GROUPS: (NavGroup | NavItem)[] = [
   {
     key: "visao",
     icon: LayoutDashboard,
@@ -143,12 +143,8 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
     ],
   },
-  {
-    key: "qr",
-    icon: QrCode,
-    label: "QR Codes",
-    items: [{ to: "/app/qr", label: "QR Codes", icon: QrCode }],
-  },
+  { to: "/app/qr", label: "QR Codes", icon: QrCode },
+
   {
     key: "clientes",
     icon: Users,
@@ -243,7 +239,7 @@ const NAV_GROUPS: NavGroup[] = [
 
 
 
-const FLAT_NAV = NAV_GROUPS.flatMap((g) => g.items);
+const FLAT_NAV = NAV_GROUPS.flatMap((g) => ('items' in g ? g.items : [g]));
 
 /** Atalhos fixos da barra inferior no mobile (operação do balcão). */
 const MOBILE_TABS: NavItem[] = [
@@ -270,10 +266,11 @@ function AppLayout() {
 
   // mantém a categoria da rota atual expandida
   useEffect(() => {
-    const g = NAV_GROUPS.find((grp) => grp.items.some((n) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))));
+    const g = NAV_GROUPS.find((grp) => 'items' in grp && grp.items.some((n: NavItem) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))));
     // apenas uma categoria aberta por vez: mantém o menu inteiro visível sem scroll
-    setOpenGroups(g ? [g.key] : []);
+    setOpenGroups(g && 'key' in g ? [g.key] : []);
   }, [pathname]);
+
 
   // fecha o menu mobile ao trocar de rota
   useEffect(() => { setMobileOpen(false); }, [pathname]);
@@ -392,16 +389,28 @@ function AppLayout() {
   const activeEst = memberships?.[0]?.establishment as { id: string; name: string; slug: string; logo_url: string | null } | undefined;
 
   const { can, isLoading: permsLoading } = usePermissions(activeEst?.id);
-  const filteredGroups = NAV_GROUPS.map((g) => ({
-    ...g,
-    items: g.items.filter((it) => {
-      const action = ROUTE_PERMISSIONS[it.to];
+  const filteredGroups = NAV_GROUPS.map((g) => {
+    if (!('items' in g)) return g;
+    return {
+      ...g,
+      items: g.items.filter((it: NavItem) => {
+        const action = ROUTE_PERMISSIONS[it.to];
+        if (!action) return true;
+        if (permsLoading) return true;
+        return can(action);
+      }),
+    };
+  }).filter((g) => {
+    if (!('items' in g)) {
+      const action = ROUTE_PERMISSIONS[g.to];
       if (!action) return true;
       if (permsLoading) return true;
       return can(action);
-    }),
-  })).filter((g) => g.items.length > 0);
-  const FLAT_ALLOWED = filteredGroups.flatMap((g) => g.items);
+    }
+    return g.items.length > 0;
+  });
+
+  const FLAT_ALLOWED = filteredGroups.flatMap((g) => ('items' in g ? g.items : [g]));
 
   if (isLoading) return <RouteLoading label="Carregando seu painel…" />;
   if (!memberships?.length) {
@@ -412,7 +421,8 @@ function AppLayout() {
   }
 
   const isItemActive = (n: NavItem) => (n.exact ? pathname === n.to : pathname.startsWith(n.to));
-  const activeNav = FLAT_ALLOWED.find((n) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))) ?? FLAT_NAV.find((n) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))) ?? FLAT_NAV[0];
+  const activeNav = FLAT_ALLOWED.find((n) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))) ?? FLAT_NAV.find((n) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))) ?? (FLAT_NAV[0] as NavItem);
+
 
   async function signOut() {
     const isPwa = typeof window !== "undefined" && window.matchMedia("(display-mode: standalone)").matches;
@@ -486,11 +496,21 @@ function AppLayout() {
     return (
       <LayoutGroup id="sidebar-nav">
         <nav className="flex flex-1 flex-col gap-1 px-3 py-4 overflow-y-auto overflow-x-visible">
-          {filteredGroups.map((g) => {
+          {filteredGroups.map((g, idx) => {
+            // Se for item direto (NavItem)
+            if (!('items' in g)) {
+              return (
+                <div key={g.to + idx}>
+                  {renderNavItem(g, onNavigate, forceExpanded)}
+                </div>
+              );
+            }
+
             const GroupIcon = g.icon;
             const groupActive = g.items.some(isItemActive);
             const expanded = openGroups.includes(g.key);
             const flyout = !forceExpanded && hoverGroup === g.key;
+
             // Categoria com um único destino vira link direto (sem submenu).
             if (g.items.length === 1) {
               return (
@@ -548,7 +568,7 @@ function AppLayout() {
                       className="overflow-hidden"
                     >
                       <div className={`flex flex-col gap-1 py-1 ${showLabel ? "ml-4 pl-3 border-l border-border/40" : ""}`}>
-                        {g.items.map((n) => renderNavItem(n, onNavigate, forceExpanded, true))}
+                        {g.items.map((n: NavItem) => renderNavItem(n, onNavigate, forceExpanded, true))}
                       </div>
                     </motion.div>
                   )}
@@ -570,7 +590,7 @@ function AppLayout() {
                         {g.label}
                       </div>
                       <div className="flex flex-col gap-1">
-                        {g.items.map((n) => renderNavItem(n, () => { setHoverGroup(null); onNavigate?.(); }, true, true))}
+                        {g.items.map((n: NavItem) => renderNavItem(n, () => { setHoverGroup(null); onNavigate?.(); }, true, true))}
                       </div>
                     </motion.div>
                   )}
@@ -579,6 +599,7 @@ function AppLayout() {
             );
           })}
         </nav>
+
       </LayoutGroup>
     );
   };
