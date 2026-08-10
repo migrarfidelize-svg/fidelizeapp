@@ -1,5 +1,6 @@
 import { Gift } from "lucide-react";
 import { getStampIcon } from "@/lib/stampIcons";
+import { resolveLogoUrl } from "@/lib/logo-url";
 
 function initialsOf(name: string): string {
   const parts = (name || "").trim().split(/\s+/).filter(Boolean);
@@ -23,6 +24,7 @@ interface Props {
 
 export function StampCard({ brandName, logoUrl, customerName, stamps, required, reward, primary = "#5B21B6", accent = "#F97066", icon = "coffee", code }: Props) {
   const Icon = getStampIcon(icon);
+  const resolvedLogoUrl = resolveLogoUrl(logoUrl);
   const cells = Array.from({ length: required }, (_, i) => i < stamps);
   const missing = Math.max(0, required - stamps);
   return (
@@ -32,8 +34,8 @@ export function StampCard({ brandName, logoUrl, customerName, stamps, required, 
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {logoUrl ? (
-            <img src={logoUrl} alt="" className="h-10 w-10 object-contain" />
+          {resolvedLogoUrl ? (
+            <img src={resolvedLogoUrl} alt="" className="h-10 w-10 object-contain" />
           ) : (
             <div className="grid h-10 w-10 place-items-center rounded-full bg-white/20 backdrop-blur ring-2 ring-white/30 font-display font-bold text-sm">
               {initialsOf(brandName)}
