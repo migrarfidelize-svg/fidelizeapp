@@ -7,20 +7,6 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertFeature } from "@/lib/plans.functions";
 import type { ReviewThemeConfig } from "@/lib/review-themes";
 
-function publicClient() {
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
-  return createClient<Database>(process.env.SUPABASE_URL!, key, {
-    auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
-    global: {
-      fetch: (input, init) => {
-        const h = new Headers(init?.headers);
-        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
-        h.set("apikey", key);
-        return fetch(input as RequestInfo, { ...init, headers: h });
-      },
-    },
-  });
-}
 
 const DEFAULT_LABELS: Record<number, string> = {
   1: "Muito ruim", 2: "Ruim", 3: "Regular", 4: "Bom", 5: "Excelente",
