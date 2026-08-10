@@ -422,7 +422,7 @@ function AppLayout() {
     navigate({ to: isPwa ? "/auth" : "/", replace: true, search: isPwa ? { source: "pwa" } : undefined });
   }
 
-  const renderNavItem = (n: NavItem, onNavigate?: () => void, forceExpanded = false) => {
+  const renderNavItem = (n: NavItem, onNavigate?: () => void, forceExpanded = false, isSubItem = false) => {
     const active = isItemActive(n);
     const badge = n.to === "/app/fidelize" && unreadSupport > 0 ? unreadSupport : 0;
     const showLabel = forceExpanded || !collapsed;
@@ -432,40 +432,36 @@ function AppLayout() {
         data-tour={`nav-${n.to}`}
         onClick={onNavigate}
         className={[
-          "group relative flex items-center gap-3 rounded-xl h-[var(--nav-item-h,2.5rem)] text-[length:var(--nav-fs,0.875rem)] font-medium transition-colors",
-          showLabel ? "px-3" : "px-0 justify-center",
-          active ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+          "group relative flex items-center rounded-xl transition-all duration-200",
+          isSubItem ? "h-9 text-[13px] font-medium" : "h-10 text-sm font-medium",
+          showLabel ? (isSubItem ? "px-2.5 gap-2" : "px-3 gap-2.5") : "px-0 justify-center",
+          active 
+            ? "text-primary-foreground bg-primary shadow-sm" 
+            : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
         ].join(" ")}
       >
-        {active && (
-          <motion.span
-            layoutId="active-nav-pill"
-            transition={{ type: "spring", stiffness: 380, damping: 32 }}
-            className="nav-item-active-aurora"
-          />
-        )}
-        <span className="relative z-10 grid place-items-center h-[var(--nav-icon,2rem)] w-[var(--nav-icon,2rem)] shrink-0">
+        <span className="relative z-10 grid place-items-center h-8 w-8 shrink-0">
           <n.icon
-            className={`h-[18px] w-[18px] ${active ? "nav-icon-active" : "nav-icon-idle"}`}
-            strokeWidth={active ? 2.4 : 1.8}
+            className={isSubItem ? "h-4 w-4" : "h-[18px] w-[18px]"}
+            strokeWidth={active ? 2.5 : 2}
           />
         </span>
         <AnimatePresence initial={false}>
           {showLabel && (
             <motion.span
               key="label"
-              initial={{ opacity: 0, x: -6 }}
+              initial={{ opacity: 0, x: -4 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -6 }}
-              transition={{ duration: 0.18 }}
-              className="relative z-10 flex-1 whitespace-nowrap"
+              exit={{ opacity: 0, x: -4 }}
+              transition={{ duration: 0.15 }}
+              className="relative z-10 flex-1 truncate"
             >
               {n.label}
             </motion.span>
           )}
         </AnimatePresence>
         {badge > 0 && showLabel && (
-          <span className="relative z-10 inline-flex min-w-[20px] h-5 items-center justify-center rounded-full bg-accent px-1.5 text-[11px] font-semibold text-accent-foreground">
+          <span className="relative z-10 inline-flex min-w-[18px] h-4.5 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground ring-1 ring-white/10">
             {badge > 9 ? "9+" : badge}
           </span>
         )}
@@ -478,7 +474,7 @@ function AppLayout() {
       return (
         <Tooltip key={n.to} delayDuration={100}>
           <TooltipTrigger asChild>{inner}</TooltipTrigger>
-          <TooltipContent side="right" className="font-medium">{n.label}</TooltipContent>
+          <TooltipContent side="right" className="font-semibold shadow-md">{n.label}</TooltipContent>
         </Tooltip>
       );
     }
@@ -489,7 +485,7 @@ function AppLayout() {
     const showLabel = forceExpanded || !collapsed;
     return (
       <LayoutGroup id="sidebar-nav">
-        <nav className="nav-dense flex flex-1 flex-col gap-[var(--nav-gap)] px-2.5 py-[var(--nav-py)] overflow-y-auto overflow-x-visible">
+        <nav className="flex flex-1 flex-col gap-1 px-3 py-4 overflow-y-auto overflow-x-visible">
           {filteredGroups.map((g) => {
             const GroupIcon = g.icon;
             const groupActive = g.items.some(isItemActive);
@@ -499,7 +495,7 @@ function AppLayout() {
             if (g.items.length === 1) {
               return (
                 <div key={g.key}>
-                  {renderNavItem({ ...g.items[0], label: g.label }, onNavigate, forceExpanded)}
+                  {renderNavItem({ ...g.items[0], label: g.label, icon: g.icon }, onNavigate, forceExpanded)}
                 </div>
               );
             }
@@ -521,19 +517,21 @@ function AppLayout() {
                   onClick={() => setOpenGroups((prev) => (prev.includes(g.key) ? [] : [g.key]))}
                   aria-expanded={expanded}
                   className={[
-                    "relative w-full flex items-center gap-3 rounded-xl h-[var(--nav-item-h,2.5rem)] text-[length:var(--nav-fs,0.875rem)] font-semibold transition-colors",
-                    showLabel ? "px-3" : "px-0 justify-center",
-                    groupActive ? "text-foreground bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                    "relative w-full flex items-center rounded-xl h-10 text-sm font-semibold transition-all duration-200",
+                    showLabel ? "px-3 gap-2.5" : "px-0 justify-center",
+                    groupActive 
+                      ? "text-primary bg-primary/10" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
                   ].join(" ")}
                 >
-                  <span className="grid place-items-center h-[var(--nav-icon,2rem)] w-[var(--nav-icon,2rem)] shrink-0">
-                    <GroupIcon className={`h-[18px] w-[18px] ${groupActive ? "text-primary" : ""}`} strokeWidth={groupActive ? 2.3 : 1.8} />
+                  <span className="grid place-items-center h-8 w-8 shrink-0">
+                    <GroupIcon className="h-[18px] w-[18px]" strokeWidth={groupActive ? 2.5 : 2} />
                   </span>
 
                   {showLabel && (
                     <>
-                      <span className="flex-1 text-left whitespace-nowrap">{g.label}</span>
-                      <ChevronRight className={`h-4 w-4 shrink-0 transition-transform duration-200 ${expanded ? "rotate-90" : ""}`} />
+                      <span className="flex-1 text-left truncate">{g.label}</span>
+                      <ChevronRight className={`h-4 w-4 shrink-0 transition-transform duration-200 opacity-60 ${expanded ? "rotate-90" : ""}`} />
                     </>
                   )}
                 </button>
@@ -549,8 +547,8 @@ function AppLayout() {
                       transition={{ duration: 0.18 }}
                       className="overflow-hidden"
                     >
-                      <div className={`flex flex-col gap-[var(--nav-gap)] py-[var(--nav-gap)] ${showLabel ? "ml-4 border-l border-border/60 pl-2" : ""}`}>
-                        {g.items.map((n) => renderNavItem(n, onNavigate, forceExpanded))}
+                      <div className={`flex flex-col gap-1 py-1 ${showLabel ? "ml-4 pl-3 border-l border-border/40" : ""}`}>
+                        {g.items.map((n) => renderNavItem(n, onNavigate, forceExpanded, true))}
                       </div>
                     </motion.div>
                   )}
@@ -566,13 +564,13 @@ function AppLayout() {
                       exit={{ opacity: 0, x: -8 }}
                       transition={{ duration: 0.15 }}
                       style={{ position: "fixed", top: hoverPos.top, left: hoverPos.left }}
-                      className="z-[100] w-60 max-h-[70vh] overflow-y-auto rounded-2xl border border-border/60 bg-popover/95 p-2 shadow-xl backdrop-blur-xl"
+                      className="z-[100] w-64 max-h-[80vh] overflow-y-auto rounded-2xl border border-border/60 bg-popover/95 p-2 shadow-2xl backdrop-blur-xl"
                     >
-                      <div className="px-2 pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+                      <div className="px-3 pb-2 pt-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
                         {g.label}
                       </div>
-                      <div className="space-y-0.5">
-                        {g.items.map((n) => renderNavItem(n, () => { setHoverGroup(null); onNavigate?.(); }, true))}
+                      <div className="flex flex-col gap-1">
+                        {g.items.map((n) => renderNavItem(n, () => { setHoverGroup(null); onNavigate?.(); }, true, true))}
                       </div>
                     </motion.div>
                   )}
@@ -589,35 +587,40 @@ function AppLayout() {
   const renderFooter = (onNavigate?: () => void, forceExpanded = false) => {
     const showLabel = forceExpanded || !collapsed;
     return (
-      <div className={`border-t ${showLabel ? "p-3" : "p-2"} space-y-2`}>
-        <div className={`flex items-center ${showLabel ? "justify-between px-1" : "justify-center"}`}>
-          {showLabel && <span className="text-xs text-muted-foreground">Tema</span>}
-          <ThemeToggle />
+      <div className={`mt-auto border-t bg-muted/20 ${showLabel ? "p-3" : "p-2"} flex flex-col gap-2`}>
+        <div className={`flex items-center rounded-xl h-10 ${showLabel ? "px-3 justify-between" : "justify-center"}`}>
+          {showLabel && <span className="text-[13px] font-medium text-muted-foreground">Tema</span>}
+          <div className="flex items-center justify-center w-8 h-8">
+            <ThemeToggle />
+          </div>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className={`w-full ${showLabel ? "justify-between" : "justify-center px-0"} h-11`}>
-              <span className={`grid place-items-center h-8 w-8 rounded-lg bg-primary/15 text-primary text-[11px] font-bold shrink-0`}>
+            <Button 
+              variant="ghost" 
+              className={`w-full ${showLabel ? "px-3 justify-between" : "px-0 justify-center"} h-10 rounded-xl hover:bg-muted/50 transition-all duration-200`}
+            >
+              <span className="grid place-items-center h-7.5 w-7.5 rounded-lg bg-primary/15 text-primary text-[10px] font-bold shrink-0 border border-primary/10">
                 {activeEst?.name?.slice(0, 2).toUpperCase() ?? "FZ"}
               </span>
               {showLabel && (
                 <>
-                  <span className="truncate text-sm flex-1 text-left ml-2">{activeEst?.name}</span>
-                  <ChevronDown className="h-4 w-4" />
+                  <span className="truncate text-[13px] font-semibold flex-1 text-left ml-2.5">{activeEst?.name}</span>
+                  <ChevronDown className="h-4 w-4 opacity-50 ml-1" />
                 </>
               )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem asChild><Link to="/app/perfil" onClick={onNavigate}><UserCircle2 className="mr-2 h-4 w-4" />Editar perfil</Link></DropdownMenuItem>
-            <DropdownMenuItem asChild><Link to="/cartao/$slug" params={{ slug: activeEst!.slug }} onClick={onNavigate}>Ver página pública</Link></DropdownMenuItem>
-            <DropdownMenuItem asChild><Link to="/lgpd" onClick={onNavigate}><Shield className="mr-2 h-4 w-4" />Meus Dados (LGPD)</Link></DropdownMenuItem>
+          <DropdownMenuContent align={collapsed ? "center" : "end"} side={collapsed ? "right" : "bottom"} className="w-56 rounded-2xl p-1.5 shadow-2xl">
+            <DropdownMenuItem asChild className="rounded-xl"><Link to="/app/perfil" onClick={onNavigate}><UserCircle2 className="mr-2.5 h-4 w-4 opacity-60" />Editar perfil</Link></DropdownMenuItem>
+            <DropdownMenuItem asChild className="rounded-xl"><Link to="/cartao/$slug" params={{ slug: activeEst!.slug }} onClick={onNavigate}><Compass className="mr-2.5 h-4 w-4 opacity-60" />Ver página pública</Link></DropdownMenuItem>
+            <DropdownMenuItem asChild className="rounded-xl"><Link to="/lgpd" onClick={onNavigate}><Shield className="mr-2.5 h-4 w-4 opacity-60" />Meus Dados (LGPD)</Link></DropdownMenuItem>
 
             {adminStatus?.isAdmin && (
-              <DropdownMenuItem asChild><Link to="/hash" onClick={onNavigate}><Shield className="mr-2 h-4 w-4" />Painel do administrador</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild className="rounded-xl"><Link to="/hash" onClick={onNavigate}><Shield className="mr-2.5 h-4 w-4 opacity-60 text-primary" />Painel do administrador</Link></DropdownMenuItem>
             )}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => { onNavigate?.(); signOut(); }}><LogOut className="mr-2 h-4 w-4" />Sair</DropdownMenuItem>
+            <DropdownMenuSeparator className="my-1.5 opacity-50" />
+            <DropdownMenuItem onClick={() => { onNavigate?.(); signOut(); }} className="rounded-xl text-destructive focus:text-destructive focus:bg-destructive/10"><LogOut className="mr-2.5 h-4 w-4" />Sair</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
