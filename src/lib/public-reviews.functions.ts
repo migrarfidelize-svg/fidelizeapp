@@ -17,7 +17,7 @@ const DEFAULT_ACTIONS: Record<number, "apologize" | "ask_details" | "thank" | "i
 
 // Ensure a form (and its 5 rating options) exists for an establishment.
 async function ensureForm(
-  sb: ReturnType<typeof publicClient>,
+  sb: any,
   establishmentId: string,
 ): Promise<string> {
   const { data: existing } = await sb.from("review_forms").select("id").eq("establishment_id", establishmentId).maybeSingle();
@@ -118,7 +118,7 @@ export const submitPublicReview = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: est } = await supabaseAdmin.from("establishments").select("id").eq("slug", data.slug).maybeSingle();
     if (!est) throw new Error("Estabelecimento não encontrado.");
-    const { data: form } = await sb
+    const { data: form } = await supabaseAdmin
       .from("review_forms")
       .select("*")
       .eq("establishment_id", est.id)
@@ -127,7 +127,7 @@ export const submitPublicReview = createServerFn({ method: "POST" })
     if (!form) throw new Error("Avaliações desativadas.");
 
     // rating enabled?
-    const { data: opt } = await sb
+    const { data: opt } = await supabaseAdmin
       .from("review_rating_options")
       .select("enabled, comment_required, post_submit_action, selection_message")
       .eq("review_form_id", form.id)
@@ -150,7 +150,7 @@ export const submitPublicReview = createServerFn({ method: "POST" })
     const deviceHash = createHash("sha256").update(`${form.id}:${data.device_id}`).digest("hex");
     if (!form.allow_multiple && form.cooldown_hours > 0) {
       const since = new Date(Date.now() - form.cooldown_hours * 3600_000).toISOString();
-      const { data: prev } = await sb
+      const { data: prev } = await supabaseAdmin
         .from("customer_reviews")
         .select("id")
         .eq("review_form_id", form.id)
@@ -162,7 +162,7 @@ export const submitPublicReview = createServerFn({ method: "POST" })
     }
 
     // insert (service role bypasses RLS: no INSERT policy on customer_reviews)
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // const { supabaseAdmin } = await import("@/integrations/supabase/client.server"); // Already imported above
     const { data: inserted, error } = await supabaseAdmin
       .from("customer_reviews")
       .insert({
@@ -260,7 +260,7 @@ export const getMerchantReviewForm = createServerFn({ method: "GET" })
   .inputValidator((d: { establishmentId: string }) => z.object({ establishmentId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const formId = await ensureForm(
-      context.supabase as unknown as ReturnType<typeof publicClient>,
+      context.supabase,
       data.establishmentId,
     );
     const [{ data: form }, { data: options }, { data: questions }] = await Promise.all([
@@ -301,7 +301,7 @@ export const saveMerchantReviewForm = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertFeature(context.supabase, data.establishmentId, "public_reviews");
     const formId = await ensureForm(
-      context.supabase as unknown as ReturnType<typeof publicClient>,
+      context.supabase,
       data.establishmentId,
     );
     const { establishmentId: _e, ...rest } = data;
@@ -496,7 +496,7 @@ export const getPublicReviewsList = createServerFn({ method: "GET" })
     const { data: est } = await supabaseAdmin
       .from("establishments").select("id").eq("slug", data.slug).maybeSingle();
     if (!est) return [];
-    const { data: rows } = await sb
+    const { data: rows } = await supabaseAdmin
       .from("customer_reviews")
       .select("id, rating, comment, customer_name, anonymous, created_at, merchant_reply, merchant_reply_at")
       .eq("establishment_id", est.id)
@@ -666,13 +666,13 @@ export const listPublicReviewsBySlug = createServerFn({ method: "GET" })
       .maybeSingle();
     if (!est) return { stats: { count: 0, avg: 0 }, reviews: [], settings: { show_average: true, show_review_count: true } };
 
-    const { data: form } = await sb
+    const { data: form } = await supabaseAdmin
       .from("review_forms")
       .select("show_average, show_review_count")
       .eq("establishment_id", est.id)
       .maybeSingle();
 
-    const { data: rows } = await sb
+    const { data: rows } = await supabaseAdmin
       .from("customer_reviews")
       .select("id, rating, comment, customer_name, anonymous, submitted_at, created_at, merchant_reply, merchant_reply_at, status, public_hidden")
       .eq("establishment_id", est.id)
