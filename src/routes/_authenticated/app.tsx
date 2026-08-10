@@ -133,7 +133,7 @@ export const Route = createFileRoute("/_authenticated/app")({
 type NavItem = { to: string; label: string; icon: any; exact?: boolean };
 type NavGroup = { key: string; label: string; icon: any; items: NavItem[] };
 
-const NAV_GROUPS: NavGroup[] = [
+const NAV_GROUPS: (NavGroup | NavItem)[] = [
   {
     key: "visao",
     icon: LayoutDashboard,
@@ -143,12 +143,8 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
     ],
   },
-  {
-    key: "qr",
-    icon: QrCode,
-    label: "QR Codes",
-    items: [{ to: "/app/qr", label: "QR Codes", icon: QrCode }],
-  },
+  { to: "/app/qr", label: "QR Codes", icon: QrCode },
+
   {
     key: "clientes",
     icon: Users,
