@@ -40,22 +40,22 @@ async function ensureForm(
 export const getPublicReviewForm = createServerFn({ method: "GET" })
   .inputValidator((d: { slug: string }) => z.object({ slug: z.string().min(1).max(80) }).parse(d))
   .handler(async ({ data }) => {
-    const sb = publicClient();
-    const { data: est } = await sb
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: est } = await supabaseAdmin
       .from("establishments")
       .select("id, name, slug, logo_url, primary_color, accent_color, description")
       .eq("slug", data.slug)
       .maybeSingle();
     if (!est) return null;
 
-    const { data: settings } = await sb
+    const { data: settings } = await supabaseAdmin
       .from("review_settings")
       .select("theme")
       .eq("establishment_id", est.id)
       .maybeSingle();
     const theme = (settings?.theme ?? null) as ReviewThemeConfig | null;
 
-    const { data: form } = await sb
+    const { data: form } = await supabaseAdmin
       .from("review_forms")
       .select("*")
       .eq("establishment_id", est.id)
@@ -64,13 +64,13 @@ export const getPublicReviewForm = createServerFn({ method: "GET" })
     if (!form) return { est, form: null, options: [], questions: [], stats: null, theme };
 
     const [{ data: options }, { data: questions }] = await Promise.all([
-      sb.from("review_rating_options").select("*").eq("review_form_id", form.id).eq("enabled", true).order("display_order"),
-      sb.from("review_questions").select("*").eq("review_form_id", form.id).eq("active", true).order("display_order"),
+      supabaseAdmin.from("review_rating_options").select("*").eq("review_form_id", form.id).eq("enabled", true).order("display_order"),
+      supabaseAdmin.from("review_questions").select("*").eq("review_form_id", form.id).eq("active", true).order("display_order"),
     ]);
 
     let stats: { count: number; avg: number } | null = null;
     if (form.show_average || form.show_review_count) {
-      const { data: rows } = await sb
+      const { data: rows } = await supabaseAdmin
         .from("customer_reviews")
         .select("rating")
         .eq("establishment_id", est.id);
@@ -115,8 +115,8 @@ function sanitizeText(v: string | undefined | null): string | null {
 export const submitPublicReview = createServerFn({ method: "POST" })
   .inputValidator((d: z.infer<typeof submitSchema>) => submitSchema.parse(d))
   .handler(async ({ data }) => {
-    const sb = publicClient();
-    const { data: est } = await sb.from("establishments").select("id").eq("slug", data.slug).maybeSingle();
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: est } = await supabaseAdmin.from("establishments").select("id").eq("slug", data.slug).maybeSingle();
     if (!est) throw new Error("Estabelecimento não encontrado.");
     const { data: form } = await sb
       .from("review_forms")
@@ -492,8 +492,8 @@ export const getPublicReviewsList = createServerFn({ method: "GET" })
   .inputValidator((d: { slug: string; limit?: number }) =>
     z.object({ slug: z.string().min(1).max(80), limit: z.number().int().min(1).max(30).optional() }).parse(d))
   .handler(async ({ data }) => {
-    const sb = publicClient();
-    const { data: est } = await sb
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: est } = await supabaseAdmin
       .from("establishments").select("id").eq("slug", data.slug).maybeSingle();
     if (!est) return [];
     const { data: rows } = await sb
@@ -658,8 +658,8 @@ export const listPublicReviewsBySlug = createServerFn({ method: "GET" })
     z.object({ slug: z.string().min(1).max(80), limit: z.number().int().min(1).max(100).optional() }).parse(d),
   )
   .handler(async ({ data }) => {
-    const sb = publicClient();
-    const { data: est } = await sb
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: est } = await supabaseAdmin
       .from("establishments")
       .select("id")
       .eq("slug", data.slug)

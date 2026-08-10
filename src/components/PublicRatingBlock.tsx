@@ -89,7 +89,7 @@ export function PublicRatingBlock({ slug, source = "linktree", compact = false }
   const options = data?.options ?? [];
   const questions = (data?.questions ?? []) as Question[];
   const stats = data?.stats;
-  const currentOpt = useMemo(() => options.find((o) => o.rating === rating), [options, rating]);
+  const currentOpt = useMemo(() => options.find((o: any) => o.rating === rating), [options, rating]);
 
   if (!form) return null;
 
@@ -223,7 +223,7 @@ export function PublicRatingBlock({ slug, source = "linktree", compact = false }
         <div className="flex flex-col items-center gap-6">
           <div className="flex gap-3" role="radiogroup" aria-label="Nota">
             {[1, 2, 3, 4, 5].map((n) => {
-              const enabled = options.some((o) => o.rating === n);
+              const enabled = options.some((o: any) => o.rating === n);
               const filled = (hover || rating) >= n;
               return (
                 <button
