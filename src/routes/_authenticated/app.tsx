@@ -239,7 +239,7 @@ const NAV_GROUPS: (NavGroup | NavItem)[] = [
 
 
 
-const FLAT_NAV = NAV_GROUPS.flatMap((g) => g.items);
+const FLAT_NAV = NAV_GROUPS.flatMap((g) => ('items' in g ? g.items : [g]));
 
 /** Atalhos fixos da barra inferior no mobile (operação do balcão). */
 const MOBILE_TABS: NavItem[] = [
