@@ -410,7 +410,7 @@ function AppLayout() {
     return g.items.length > 0;
   });
 
-  const FLAT_ALLOWED = filteredGroups.flatMap((g) => g.items);
+  const FLAT_ALLOWED = filteredGroups.flatMap((g) => ('items' in g ? g.items : [g]));
 
   if (isLoading) return <RouteLoading label="Carregando seu painel…" />;
   if (!memberships?.length) {
