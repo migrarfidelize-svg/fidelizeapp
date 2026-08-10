@@ -140,9 +140,14 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Visão geral",
     items: [
       { to: "/app", label: "Painel", icon: LayoutDashboard, exact: true },
-      { to: "/app/qr", label: "QR Codes", icon: QrCode },
       { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
     ],
+  },
+  {
+    key: "qr",
+    icon: QrCode,
+    label: "QR Codes",
+    items: [{ to: "/app/qr", label: "QR Codes", icon: QrCode }],
   },
   {
     key: "clientes",
