@@ -971,27 +971,70 @@ export const createCampaign = createServerFn({ method: "POST" })
 
 export const updateCampaign = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).and(campaignInput).parse(d))
+  .inputValidator((d: unknown) =>
+    z.object({
+      id: z.string().uuid(),
+    }).and(campaignInput).parse(d)
+  )
   .handler(async ({ data, context }) => {
-    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
     const { supabase, userId } = context;
     const { id, ...rest } = data;
-    const { data: cur } = await supabase.from("campaigns").select("establishment_id").eq("id", id).maybeSingle();
-    if (!cur) throw new Error("Campanha não encontrada");
-    const { error } = await supabase.from("campaigns").update({
-      name: rest.name,
-      reward_title: rest.reward_title,
-      reward_description: rest.reward_description,
-      rules: rest.rules,
-      stamps_required: rest.stamps_required,
-      stamp_icon: rest.stamp_icon,
-      stamp_validity_days: rest.stamp_validity_days ?? null,
-      reward_validity_days: rest.reward_validity_days ?? null,
-      primary_color: rest.primary_color ?? null,
-      accent_color: rest.accent_color ?? null,
-    }).eq("id", id);
-    if (error) throw new Error(error.message);
-    await auditLog(cur.establishment_id, userId, "campaign_updated", "campaign", id, { name: rest.name });
+
+    // Primeiro resolve o estabelecimento REAL da campanha.
+    // Nunca confiar em establishment_id enviado pelo frontend.
+    const { data: cur, error: curError } = await supabase
+      .from("campaigns")
+      .select("establishment_id")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (curError) {
+      throw new Error(curError.message);
+    }
+
+    if (!cur?.establishment_id) {
+      throw new Error("Campanha não encontrada");
+    }
+
+    // Agora valida a assinatura usando o establishment_id real do banco.
+    await assertActiveSubscription(
+      supabase,
+      cur.establishment_id
+    );
+
+    const { error } = await supabase
+      .from("campaigns")
+      .update({
+        name: rest.name,
+        reward_title: rest.reward_title,
+        reward_description: rest.reward_description,
+        rules: rest.rules,
+        stamps_required: rest.stamps_required,
+        stamp_icon: rest.stamp_icon,
+        stamp_validity_days:
+          rest.stamp_validity_days ?? null,
+        reward_validity_days:
+          rest.reward_validity_days ?? null,
+        primary_color:
+          rest.primary_color ?? null,
+        accent_color:
+          rest.accent_color ?? null,
+      })
+      .eq("id", id);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    await auditLog(
+      cur.establishment_id,
+      userId,
+      "campaign_updated",
+      "campaign",
+      id,
+      { name: rest.name }
+    );
+
     return { ok: true };
   });
 
