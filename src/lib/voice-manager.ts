@@ -50,6 +50,7 @@ class VoiceManager {
   private isMuted: boolean = false;
   private isElevenLabsGlobalActive: boolean = false;
   private globalConfig: any = null;
+  private speechGeneration = 0;
 
   constructor() {
     if (typeof window !== "undefined") {
@@ -76,14 +77,24 @@ class VoiceManager {
     if (muted) this.stop();
   }
 
-  stop() {
+  private stopCurrentPlayback() {
     if (this.currentAudio) {
-      this.currentAudio.pause();
+      try {
+        this.currentAudio.pause();
+        this.currentAudio.currentTime = 0;
+        this.currentAudio.src = "";
+      } catch {}
       this.currentAudio = null;
     }
+
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
     }
+  }
+
+  stop() {
+    this.speechGeneration += 1;
+    this.stopCurrentPlayback();
   }
 
   async speak(text: string, event?: string) {
@@ -113,6 +124,122 @@ class VoiceManager {
       if (prefs.fallback_enabled) {
         await this.playNative(text, prefs);
       }
+    }
+  }
+
+  async speakDashboard(text: string, event: string = "welcome") {
+    const prefs = loadVoicePrefs();
+
+    if (!text || !prefs.enabled || this.isMuted) return;
+
+    const generation = ++this.speechGeneration;
+
+    // Interrompe qualquer reprodução anterior,
+    // sem invalidar a geração que acabamos de criar.
+    this.stopCurrentPlayback();
+
+    try {
+      // IMPORTANTE:
+      // O dashboard sempre consulta a configuração global
+      // ANTES de decidir se pode falar.
+      //
+      // Não depender de:
+      // this.isElevenLabsGlobalActive
+      // provider:auto
+      // inicialização assíncrona do constructor.
+      const config: any = await getGlobalVoiceConfig();
+
+      if (generation !== this.speechGeneration) return;
+
+      this.globalConfig = config;
+      this.isElevenLabsGlobalActive = !!config?.isConfigured;
+
+      // getGlobalVoiceConfig já considera o enabled global.
+      // Se ElevenLabs não estiver habilitado/configurado no Studio,
+      // o dashboard simplesmente não fala.
+      if (!config?.isConfigured) {
+        return;
+      }
+
+      const res: any = await synthesizeGlobalEleven({
+        data: {
+          text,
+          event,
+        },
+      });
+
+      // Uma resposta antiga nunca pode começar a tocar.
+      if (generation !== this.speechGeneration) return;
+
+      if (!res?.audio) {
+        console.error(
+          "Dashboard Voice: ElevenLabs não retornou áudio."
+        );
+        return;
+      }
+
+      const audio = new Audio(
+        `data:${res.mime || "audio/mpeg"};base64,${res.audio}`
+      );
+
+      if (generation !== this.speechGeneration) return;
+
+      this.currentAudio = audio;
+
+      const volume =
+        typeof prefs.volume === "number"
+          ? Math.max(0, Math.min(1, prefs.volume))
+          : 1;
+
+      audio.volume = volume;
+
+      audio.onended = () => {
+        if (this.currentAudio === audio) {
+          this.currentAudio = null;
+        }
+      };
+
+      audio.onerror = () => {
+        if (this.currentAudio === audio) {
+          this.currentAudio = null;
+        }
+
+        console.error(
+          "Dashboard Voice: erro ao reproduzir áudio ElevenLabs."
+        );
+      };
+
+      if (generation !== this.speechGeneration) return;
+
+      await audio.play();
+
+      // Caso outra chamada tenha ocorrido enquanto play() iniciava.
+      if (generation !== this.speechGeneration) {
+        try {
+          audio.pause();
+          audio.currentTime = 0;
+        } catch {}
+
+        if (this.currentAudio === audio) {
+          this.currentAudio = null;
+        }
+      }
+    } catch (err) {
+      if (generation !== this.speechGeneration) return;
+
+      console.error(
+        "Dashboard Voice: falha no ElevenLabs global.",
+        err
+      );
+
+      // ABSOLUTAMENTE SEM FALLBACK.
+      //
+      // NÃO chamar:
+      // playNative()
+      // playNatural()
+      // synthesizeGreeting()
+      // synthesizeElevenLabs()
+      // speechSynthesis
     }
   }
 
