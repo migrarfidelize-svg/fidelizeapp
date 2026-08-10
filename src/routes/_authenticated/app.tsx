@@ -266,10 +266,11 @@ function AppLayout() {
 
   // mantém a categoria da rota atual expandida
   useEffect(() => {
-    const g = NAV_GROUPS.find((grp) => grp.items.some((n) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))));
+    const g = NAV_GROUPS.find((grp) => 'items' in grp && grp.items.some((n: NavItem) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))));
     // apenas uma categoria aberta por vez: mantém o menu inteiro visível sem scroll
-    setOpenGroups(g ? [g.key] : []);
+    setOpenGroups(g && 'key' in g ? [g.key] : []);
   }, [pathname]);
+
 
   // fecha o menu mobile ao trocar de rota
   useEffect(() => { setMobileOpen(false); }, [pathname]);
