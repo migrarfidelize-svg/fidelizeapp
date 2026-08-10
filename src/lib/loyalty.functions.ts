@@ -1040,15 +1040,56 @@ export const updateCampaign = createServerFn({ method: "POST" })
 
 export const toggleCampaign = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid(), active: z.boolean() }).parse(d))
+  .inputValidator((d: unknown) =>
+    z.object({
+      id: z.string().uuid(),
+      active: z.boolean(),
+    }).parse(d)
+  )
   .handler(async ({ data, context }) => {
-    await assertActiveSubscription(context.supabase, (data as any).establishment_id);
     const { supabase, userId } = context;
-    const { data: cur } = await supabase.from("campaigns").select("establishment_id").eq("id", data.id).maybeSingle();
-    if (!cur) throw new Error("Campanha não encontrada");
-    const { error } = await supabase.from("campaigns").update({ active: data.active }).eq("id", data.id);
-    if (error) throw new Error(error.message);
-    await auditLog(cur.establishment_id, userId, data.active ? "campaign_activated" : "campaign_paused", "campaign", data.id, {});
+
+    const { data: cur, error: curError } = await supabase
+      .from("campaigns")
+      .select("establishment_id")
+      .eq("id", data.id)
+      .maybeSingle();
+
+    if (curError) {
+      throw new Error(curError.message);
+    }
+
+    if (!cur?.establishment_id) {
+      throw new Error("Campanha não encontrada");
+    }
+
+    await assertActiveSubscription(
+      supabase,
+      cur.establishment_id
+    );
+
+    const { error } = await supabase
+      .from("campaigns")
+      .update({
+        active: data.active,
+      })
+      .eq("id", data.id);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    await auditLog(
+      cur.establishment_id,
+      userId,
+      data.active
+        ? "campaign_activated"
+        : "campaign_paused",
+      "campaign",
+      data.id,
+      {}
+    );
+
     return { ok: true };
   });
 
