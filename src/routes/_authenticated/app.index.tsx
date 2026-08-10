@@ -70,7 +70,7 @@ function Dashboard() {
     queryKey: ["est-full", est?.id],
     queryFn: () => getFull({ data: { establishment_id: est!.id } }),
   });
-  const voiceEnabled = ((estFull as any)?.settings?.appearance?.welcome_voice_enabled ?? true) === true;
+  
 
   const getStatusFn = useServerFn(getMyShowcaseStatus);
   const { data: showcaseStatus } = useQuery({
@@ -137,7 +137,7 @@ function Dashboard() {
 
   return (
     <div className="space-y-8">
-      <GreetingVoice enabled={voiceEnabled} />
+      <GreetingVoice />
 
       <Dialog open={showcaseDialog} onOpenChange={setShowcaseDialog}>
         <DialogContent className="sm:max-w-md">

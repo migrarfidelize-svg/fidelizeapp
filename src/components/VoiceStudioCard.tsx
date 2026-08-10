@@ -71,7 +71,7 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
         const configRes = await getElevenConfigFn();
         if (configRes.status === 'connected' && configRes.config) {
           setIntegrationStatus('connected');
-          setElevenApiKey(configRes.config.apiKey);
+          setElevenApiKey(configRes.config.hasApiKey ? "••••••••" : "");
           setElevenVoiceId(configRes.config.voiceId);
           setElevenModelId(configRes.config.modelId || "eleven_multilingual_v2");
           setElevenEnabled(configRes.config.enabled !== false);
@@ -109,7 +109,7 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
   async function fetchElevenVoices() {
     setFetchingVoices(true);
     try {
-      const list = await listVoicesFn({ data: { apiKey: elevenApiKey.includes('...') ? undefined : elevenApiKey } });
+      const list = await listVoicesFn({ data: { apiKey: elevenApiKey === "••••••••" ? undefined : elevenApiKey.trim() || undefined } });
       setElevenVoices(list);
       toast.success(`${list.length} vozes carregadas.`);
     } catch (e: any) {
@@ -122,7 +122,7 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
   async function handleTestIntegration() {
     setTestingConnection(true);
     try {
-      const res = await testElevenConnFn({ data: { apiKey: elevenApiKey.includes('...') ? undefined : elevenApiKey } });
+      const res = await testElevenConnFn({ data: { apiKey: elevenApiKey === "••••••••" ? undefined : elevenApiKey.trim() || undefined } });
       if (res.ok) {
         setIntegrationStatus('connected');
         setLastTested(new Date().toLocaleString());
@@ -148,7 +148,7 @@ export function VoiceStudioCard({ scope }: { scope: "admin" }) {
     try {
       await saveElevenConfigFn({
         data: {
-          apiKey: elevenApiKey.includes('...') ? undefined : elevenApiKey,
+          apiKey: elevenApiKey === "••••••••" ? undefined : elevenApiKey.trim() || undefined,
           voiceId: elevenVoiceId,
           modelId: elevenModelId,
           enabled: elevenEnabled,

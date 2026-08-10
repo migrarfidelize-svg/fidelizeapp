@@ -190,20 +190,16 @@ export async function speakWithBrowser(text: string, gender: "female" | "male", 
   return true;
 }
 
-export function GreetingVoice({ enabled = true }: { enabled?: boolean }) {
+export function GreetingVoice() {
   const playedRef = useRef(false);
 
   useEffect(() => {
-    if (!enabled || playedRef.current) return;
+    if (playedRef.current) return;
 
     let disposed = false;
 
     const check = async () => {
       if (disposed || playedRef.current) return;
-
-      const prefs = loadVoicePrefs();
-
-      if (!prefs.enabled) return;
 
       const now = new Date();
 
@@ -213,10 +209,7 @@ export function GreetingVoice({ enabled = true }: { enabled?: boolean }) {
 
       if (sessionStorage.getItem(key)) return;
 
-      // BLOQUEIO ANTES DA REQUISIÇÃO.
-      //
-      // Isso evita duas execuções paralelas enquanto
-      // ElevenLabs ainda está sintetizando o áudio.
+      // Bloqueia chamadas paralelas antes da request.
       playedRef.current = true;
       sessionStorage.setItem(key, "1");
 
@@ -227,24 +220,15 @@ export function GreetingVoice({ enabled = true }: { enabled?: boolean }) {
 
         if (disposed) return;
 
-        const text = prefs.texts?.welcome;
-
-        if (!text?.trim()) return;
-
-        // DASHBOARD USA SOMENTE O CAMINHO GLOBAL ELEVENLABS.
-        await voiceManager.speakDashboard(
-          text.trim(),
-          "welcome"
-        );
+        // Não passa texto local.
+        // Não passa provider.
+        // Não passa enabled local.
+        await voiceManager.speakDashboard("welcome");
       } catch (err) {
         console.error(
           "GreetingVoice: falha na voz global do dashboard.",
           err
         );
-
-        // NÃO chamar voz do navegador.
-        // NÃO chamar Google.
-        // NÃO executar fallback.
       }
     };
 
@@ -269,7 +253,7 @@ export function GreetingVoice({ enabled = true }: { enabled?: boolean }) {
       window.removeEventListener("pointerdown", armed);
       window.removeEventListener("keydown", armed);
     };
-  }, [enabled]);
+  }, []);
 
   return null;
 }
