@@ -587,35 +587,40 @@ function AppLayout() {
   const renderFooter = (onNavigate?: () => void, forceExpanded = false) => {
     const showLabel = forceExpanded || !collapsed;
     return (
-      <div className={`border-t ${showLabel ? "p-3" : "p-2"} space-y-2`}>
-        <div className={`flex items-center ${showLabel ? "justify-between px-1" : "justify-center"}`}>
-          {showLabel && <span className="text-xs text-muted-foreground">Tema</span>}
-          <ThemeToggle />
+      <div className={`mt-auto border-t bg-muted/20 ${showLabel ? "p-3" : "p-2"} flex flex-col gap-2`}>
+        <div className={`flex items-center rounded-xl h-10 ${showLabel ? "px-3 justify-between" : "justify-center"}`}>
+          {showLabel && <span className="text-[13px] font-medium text-muted-foreground">Tema</span>}
+          <div className="flex items-center justify-center w-8 h-8">
+            <ThemeToggle />
+          </div>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className={`w-full ${showLabel ? "justify-between" : "justify-center px-0"} h-11`}>
-              <span className={`grid place-items-center h-8 w-8 rounded-lg bg-primary/15 text-primary text-[11px] font-bold shrink-0`}>
+            <Button 
+              variant="ghost" 
+              className={`w-full ${showLabel ? "px-3 justify-between" : "px-0 justify-center"} h-10 rounded-xl hover:bg-muted/50 transition-all duration-200`}
+            >
+              <span className="grid place-items-center h-7.5 w-7.5 rounded-lg bg-primary/15 text-primary text-[10px] font-bold shrink-0 border border-primary/10">
                 {activeEst?.name?.slice(0, 2).toUpperCase() ?? "FZ"}
               </span>
               {showLabel && (
                 <>
-                  <span className="truncate text-sm flex-1 text-left ml-2">{activeEst?.name}</span>
-                  <ChevronDown className="h-4 w-4" />
+                  <span className="truncate text-[13px] font-semibold flex-1 text-left ml-2.5">{activeEst?.name}</span>
+                  <ChevronDown className="h-4 w-4 opacity-50 ml-1" />
                 </>
               )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem asChild><Link to="/app/perfil" onClick={onNavigate}><UserCircle2 className="mr-2 h-4 w-4" />Editar perfil</Link></DropdownMenuItem>
-            <DropdownMenuItem asChild><Link to="/cartao/$slug" params={{ slug: activeEst!.slug }} onClick={onNavigate}>Ver página pública</Link></DropdownMenuItem>
-            <DropdownMenuItem asChild><Link to="/lgpd" onClick={onNavigate}><Shield className="mr-2 h-4 w-4" />Meus Dados (LGPD)</Link></DropdownMenuItem>
+          <DropdownMenuContent align={collapsed ? "center" : "end"} side={collapsed ? "right" : "bottom"} className="w-56 rounded-2xl p-1.5 shadow-2xl">
+            <DropdownMenuItem asChild className="rounded-xl"><Link to="/app/perfil" onClick={onNavigate}><UserCircle2 className="mr-2.5 h-4 w-4 opacity-60" />Editar perfil</Link></DropdownMenuItem>
+            <DropdownMenuItem asChild className="rounded-xl"><Link to="/cartao/$slug" params={{ slug: activeEst!.slug }} onClick={onNavigate}><Compass className="mr-2.5 h-4 w-4 opacity-60" />Ver página pública</Link></DropdownMenuItem>
+            <DropdownMenuItem asChild className="rounded-xl"><Link to="/lgpd" onClick={onNavigate}><Shield className="mr-2.5 h-4 w-4 opacity-60" />Meus Dados (LGPD)</Link></DropdownMenuItem>
 
             {adminStatus?.isAdmin && (
-              <DropdownMenuItem asChild><Link to="/hash" onClick={onNavigate}><Shield className="mr-2 h-4 w-4" />Painel do administrador</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild className="rounded-xl"><Link to="/hash" onClick={onNavigate}><Shield className="mr-2.5 h-4 w-4 opacity-60 text-primary" />Painel do administrador</Link></DropdownMenuItem>
             )}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => { onNavigate?.(); signOut(); }}><LogOut className="mr-2 h-4 w-4" />Sair</DropdownMenuItem>
+            <DropdownMenuSeparator className="my-1.5 opacity-50" />
+            <DropdownMenuItem onClick={() => { onNavigate?.(); signOut(); }} className="rounded-xl text-destructive focus:text-destructive focus:bg-destructive/10"><LogOut className="mr-2.5 h-4 w-4" />Sair</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
