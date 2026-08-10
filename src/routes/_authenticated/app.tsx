@@ -496,11 +496,21 @@ function AppLayout() {
     return (
       <LayoutGroup id="sidebar-nav">
         <nav className="flex flex-1 flex-col gap-1 px-3 py-4 overflow-y-auto overflow-x-visible">
-          {filteredGroups.map((g) => {
+          {filteredGroups.map((g, idx) => {
+            // Se for item direto (NavItem)
+            if (!('items' in g)) {
+              return (
+                <div key={g.to + idx}>
+                  {renderNavItem(g, onNavigate, forceExpanded)}
+                </div>
+              );
+            }
+
             const GroupIcon = g.icon;
             const groupActive = g.items.some(isItemActive);
             const expanded = openGroups.includes(g.key);
             const flyout = !forceExpanded && hoverGroup === g.key;
+
             // Categoria com um único destino vira link direto (sem submenu).
             if (g.items.length === 1) {
               return (
@@ -558,7 +568,7 @@ function AppLayout() {
                       className="overflow-hidden"
                     >
                       <div className={`flex flex-col gap-1 py-1 ${showLabel ? "ml-4 pl-3 border-l border-border/40" : ""}`}>
-                        {g.items.map((n) => renderNavItem(n, onNavigate, forceExpanded, true))}
+                        {g.items.map((n: NavItem) => renderNavItem(n, onNavigate, forceExpanded, true))}
                       </div>
                     </motion.div>
                   )}
@@ -580,7 +590,7 @@ function AppLayout() {
                         {g.label}
                       </div>
                       <div className="flex flex-col gap-1">
-                        {g.items.map((n) => renderNavItem(n, () => { setHoverGroup(null); onNavigate?.(); }, true, true))}
+                        {g.items.map((n: NavItem) => renderNavItem(n, () => { setHoverGroup(null); onNavigate?.(); }, true, true))}
                       </div>
                     </motion.div>
                   )}
@@ -589,6 +599,7 @@ function AppLayout() {
             );
           })}
         </nav>
+
       </LayoutGroup>
     );
   };
