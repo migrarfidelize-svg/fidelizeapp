@@ -485,7 +485,7 @@ function AppLayout() {
     const showLabel = forceExpanded || !collapsed;
     return (
       <LayoutGroup id="sidebar-nav">
-        <nav className="nav-dense flex flex-1 flex-col gap-[var(--nav-gap)] px-2.5 py-[var(--nav-py)] overflow-y-auto overflow-x-visible">
+        <nav className="flex flex-1 flex-col gap-1 px-3 py-4 overflow-y-auto overflow-x-visible">
           {filteredGroups.map((g) => {
             const GroupIcon = g.icon;
             const groupActive = g.items.some(isItemActive);
@@ -495,7 +495,7 @@ function AppLayout() {
             if (g.items.length === 1) {
               return (
                 <div key={g.key}>
-                  {renderNavItem({ ...g.items[0], label: g.label }, onNavigate, forceExpanded)}
+                  {renderNavItem({ ...g.items[0], label: g.label, icon: g.icon }, onNavigate, forceExpanded)}
                 </div>
               );
             }
@@ -517,19 +517,21 @@ function AppLayout() {
                   onClick={() => setOpenGroups((prev) => (prev.includes(g.key) ? [] : [g.key]))}
                   aria-expanded={expanded}
                   className={[
-                    "relative w-full flex items-center gap-3 rounded-xl h-[var(--nav-item-h,2.5rem)] text-[length:var(--nav-fs,0.875rem)] font-semibold transition-colors",
-                    showLabel ? "px-3" : "px-0 justify-center",
-                    groupActive ? "text-foreground bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                    "relative w-full flex items-center rounded-xl h-10 text-sm font-semibold transition-all duration-200",
+                    showLabel ? "px-3 gap-2.5" : "px-0 justify-center",
+                    groupActive 
+                      ? "text-primary bg-primary/10" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
                   ].join(" ")}
                 >
-                  <span className="grid place-items-center h-[var(--nav-icon,2rem)] w-[var(--nav-icon,2rem)] shrink-0">
-                    <GroupIcon className={`h-[18px] w-[18px] ${groupActive ? "text-primary" : ""}`} strokeWidth={groupActive ? 2.3 : 1.8} />
+                  <span className="grid place-items-center h-8 w-8 shrink-0">
+                    <GroupIcon className="h-[18px] w-[18px]" strokeWidth={groupActive ? 2.5 : 2} />
                   </span>
 
                   {showLabel && (
                     <>
-                      <span className="flex-1 text-left whitespace-nowrap">{g.label}</span>
-                      <ChevronRight className={`h-4 w-4 shrink-0 transition-transform duration-200 ${expanded ? "rotate-90" : ""}`} />
+                      <span className="flex-1 text-left truncate">{g.label}</span>
+                      <ChevronRight className={`h-4 w-4 shrink-0 transition-transform duration-200 opacity-60 ${expanded ? "rotate-90" : ""}`} />
                     </>
                   )}
                 </button>
@@ -545,8 +547,8 @@ function AppLayout() {
                       transition={{ duration: 0.18 }}
                       className="overflow-hidden"
                     >
-                      <div className={`flex flex-col gap-[var(--nav-gap)] py-[var(--nav-gap)] ${showLabel ? "ml-4 border-l border-border/60 pl-2" : ""}`}>
-                        {g.items.map((n) => renderNavItem(n, onNavigate, forceExpanded))}
+                      <div className={`flex flex-col gap-1 py-1 ${showLabel ? "ml-4 pl-3 border-l border-border/40" : ""}`}>
+                        {g.items.map((n) => renderNavItem(n, onNavigate, forceExpanded, true))}
                       </div>
                     </motion.div>
                   )}
@@ -562,13 +564,13 @@ function AppLayout() {
                       exit={{ opacity: 0, x: -8 }}
                       transition={{ duration: 0.15 }}
                       style={{ position: "fixed", top: hoverPos.top, left: hoverPos.left }}
-                      className="z-[100] w-60 max-h-[70vh] overflow-y-auto rounded-2xl border border-border/60 bg-popover/95 p-2 shadow-xl backdrop-blur-xl"
+                      className="z-[100] w-64 max-h-[80vh] overflow-y-auto rounded-2xl border border-border/60 bg-popover/95 p-2 shadow-2xl backdrop-blur-xl"
                     >
-                      <div className="px-2 pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+                      <div className="px-3 pb-2 pt-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
                         {g.label}
                       </div>
-                      <div className="space-y-0.5">
-                        {g.items.map((n) => renderNavItem(n, () => { setHoverGroup(null); onNavigate?.(); }, true))}
+                      <div className="flex flex-col gap-1">
+                        {g.items.map((n) => renderNavItem(n, () => { setHoverGroup(null); onNavigate?.(); }, true, true))}
                       </div>
                     </motion.div>
                   )}
