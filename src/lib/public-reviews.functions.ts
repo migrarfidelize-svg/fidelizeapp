@@ -77,7 +77,7 @@ export const getPublicReviewForm = createServerFn({ method: "GET" })
       const list = rows ?? [];
       stats = {
         count: list.length,
-        avg: list.length ? list.reduce((a, r) => a + r.rating, 0) / list.length : 0,
+        avg: list.length ? list.reduce((a: number, r: any) => a + r.rating, 0) / list.length : 0,
       };
     }
     return { est, form, options: options ?? [], questions: questions ?? [], stats, theme };
@@ -504,7 +504,7 @@ export const getPublicReviewsList = createServerFn({ method: "GET" })
       .or("merchant_reply.not.is.null,rating.gte.4")
       .order("created_at", { ascending: false })
       .limit(data.limit ?? 10);
-    return (rows ?? []).map((r) => ({
+    return (rows ?? []).map((r: any) => ({
       id: r.id,
       rating: r.rating,
       comment: r.comment,
@@ -682,9 +682,9 @@ export const listPublicReviewsBySlug = createServerFn({ method: "GET" })
       .limit(data.limit ?? 50);
 
     const list = rows ?? [];
-    const withComments = list.filter((r) => r.rating > 0);
+    const withComments = list.filter((r: any) => r.rating > 0);
     const count = withComments.length;
-    const avg = count ? withComments.reduce((a, r) => a + (r.rating ?? 0), 0) / count : 0;
+    const avg = count ? withComments.reduce((a: number, r: any) => a + (r.rating ?? 0), 0) / count : 0;
 
     return {
       stats: { count, avg },
@@ -692,7 +692,7 @@ export const listPublicReviewsBySlug = createServerFn({ method: "GET" })
         show_average: form?.show_average ?? true,
         show_review_count: form?.show_review_count ?? true,
       },
-      reviews: list.map((r) => ({
+      reviews: list.map((r: any) => ({
         id: r.id,
         rating: r.rating,
         comment: r.comment,
