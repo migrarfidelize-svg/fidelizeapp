@@ -8,7 +8,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Upload, Loader2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
-const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 10; // 10 anos
+
 
 interface Props {
   establishmentId: string;
@@ -64,9 +64,14 @@ export function LogoUploadButton({
         cacheControl: "31536000", upsert: false, contentType: "image/png",
       });
       if (upErr) throw upErr;
-      const { data: signed, error: sErr } = await supabase.storage.from("logos").createSignedUrl(path, SIGNED_URL_TTL);
-      if (sErr || !signed?.signedUrl) throw sErr || new Error("Falha ao gerar link");
-      await updateLogo({ data: { establishment_id: establishmentId, logo_url: signed.signedUrl } });
+      const { data: publicData } = supabase.storage.from("logos").getPublicUrl(path);
+      const publicUrl = publicData?.publicUrl;
+
+      if (!publicUrl) {
+        throw new Error("Falha ao gerar URL pública da logo.");
+      }
+
+      await updateLogo({ data: { establishment_id: establishmentId, logo_url: publicUrl } });
       toast.success("Logo atualizado!");
       qc.invalidateQueries({ queryKey: ["memberships"] });
       qc.invalidateQueries({ queryKey: ["est-full", establishmentId] });
