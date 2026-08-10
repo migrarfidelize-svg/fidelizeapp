@@ -389,15 +389,27 @@ function AppLayout() {
   const activeEst = memberships?.[0]?.establishment as { id: string; name: string; slug: string; logo_url: string | null } | undefined;
 
   const { can, isLoading: permsLoading } = usePermissions(activeEst?.id);
-  const filteredGroups = NAV_GROUPS.map((g) => ({
-    ...g,
-    items: g.items.filter((it) => {
-      const action = ROUTE_PERMISSIONS[it.to];
+  const filteredGroups = NAV_GROUPS.map((g) => {
+    if (!('items' in g)) return g;
+    return {
+      ...g,
+      items: g.items.filter((it: NavItem) => {
+        const action = ROUTE_PERMISSIONS[it.to];
+        if (!action) return true;
+        if (permsLoading) return true;
+        return can(action);
+      }),
+    };
+  }).filter((g) => {
+    if (!('items' in g)) {
+      const action = ROUTE_PERMISSIONS[g.to];
       if (!action) return true;
       if (permsLoading) return true;
       return can(action);
-    }),
-  })).filter((g) => g.items.length > 0);
+    }
+    return g.items.length > 0;
+  });
+
   const FLAT_ALLOWED = filteredGroups.flatMap((g) => g.items);
 
   if (isLoading) return <RouteLoading label="Carregando seu painel…" />;
