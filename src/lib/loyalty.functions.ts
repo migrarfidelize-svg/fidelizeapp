@@ -6,40 +6,56 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { enforceLimit } from "@/lib/plans.functions";
 import type { Database } from "@/integrations/supabase/types";
 
-function publicClient() {
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
-  return createClient<Database>(process.env.SUPABASE_URL!, key, {
-    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
-    global: {
-      fetch: (input, init) => {
-        const h = new Headers(init?.headers);
-        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
-        h.set("apikey", key);
-        return fetch(input, { ...init, headers: h });
-      },
-    },
-  });
-}
-
 // ---------- Public: get establishment by slug ----------
 export const getEstablishmentBySlug = createServerFn({ method: "GET" })
-  .inputValidator((d: { slug: string }) => z.object({ slug: z.string().min(1).max(80) }).parse(d))
+  .inputValidator((d: { slug: string }) =>
+    z.object({
+      slug: z.string().min(1).max(80),
+    }).parse(d)
+  )
   .handler(async ({ data }) => {
-    const s = publicClient();
-    const { data: est, error } = await s
+    const { supabaseAdmin } = await import(
+      "@/integrations/supabase/client.server"
+    );
+
+    const { data: est, error } = await supabaseAdmin
       .from("establishments")
-      .select("id, slug, name, description, address, phone, whatsapp, instagram, business_hours, logo_url, cover_url, primary_color, accent_color, plan, active")
+      .select(`
+        id,
+        slug,
+        name,
+        description,
+        address,
+        phone,
+        whatsapp,
+        instagram,
+        business_hours,
+        logo_url,
+        cover_url,
+        primary_color,
+        accent_color,
+        plan,
+        active
+      `)
       .eq("slug", data.slug)
       .eq("active", true)
       .maybeSingle();
-    if (error) throw new Error(error.message);
-    if (!est) return null;
-    const { data: campaigns } = await s
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!est) {
+      return null;
+    }
+
+    const { data: campaigns } = await supabaseAdmin
       .from("campaigns")
       .select("id, name, type, stamps_required, reward_title, reward_description, rules, stamp_icon, reward_validity_days")
       .eq("establishment_id", est.id)
       .eq("active", true)
       .order("created_at", { ascending: true });
+
     return { establishment: est, campaigns: campaigns ?? [] };
   });
 
