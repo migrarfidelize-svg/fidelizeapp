@@ -246,7 +246,7 @@ function Page() {
               <ReviewsEmptyState accent={accent} />
             ) : (
               <div className="space-y-4">
-                {reviews.map((r) => (
+                {reviews.map((r: any) => (
                   <article
                     key={r.id}
                     className="group relative rounded-xl border p-5 transition"
