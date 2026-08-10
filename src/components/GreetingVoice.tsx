@@ -194,34 +194,78 @@ export function GreetingVoice({ enabled = true }: { enabled?: boolean }) {
   const playedRef = useRef(false);
 
   useEffect(() => {
-    if (!enabled) return;
-    if (playedRef.current) return;
-    
+    if (!enabled || playedRef.current) return;
+
+    let disposed = false;
+
     const check = async () => {
+      if (disposed || playedRef.current) return;
+
       const prefs = loadVoicePrefs();
+
       if (!prefs.enabled) return;
 
-      const key = `fidelize:voice:greeted:global:${new Date().toDateString()}:${new Date().getHours()}`;
+      const now = new Date();
+
+      const key =
+        `fidelize:voice:greeted:global:` +
+        `${now.toDateString()}:${now.getHours()}`;
+
       if (sessionStorage.getItem(key)) return;
-      
+
+      // BLOQUEIO ANTES DA REQUISIÇÃO.
+      //
+      // Isso evita duas execuções paralelas enquanto
+      // ElevenLabs ainda está sintetizando o áudio.
       playedRef.current = true;
-      const { voiceManager } = await import("@/lib/voice-manager");
-      
-      const text = prefs.texts.welcome;
-      await voiceManager.speak(text);
       sessionStorage.setItem(key, "1");
+
+      try {
+        const { voiceManager } = await import(
+          "@/lib/voice-manager"
+        );
+
+        if (disposed) return;
+
+        const text = prefs.texts?.welcome;
+
+        if (!text?.trim()) return;
+
+        // DASHBOARD USA SOMENTE O CAMINHO GLOBAL ELEVENLABS.
+        await voiceManager.speakDashboard(
+          text.trim(),
+          "welcome"
+        );
+      } catch (err) {
+        console.error(
+          "GreetingVoice: falha na voz global do dashboard.",
+          err
+        );
+
+        // NÃO chamar voz do navegador.
+        // NÃO chamar Google.
+        // NÃO executar fallback.
+      }
     };
 
     const armed = () => {
-      check();
+      void check();
+
       window.removeEventListener("pointerdown", armed);
       window.removeEventListener("keydown", armed);
     };
 
-    window.addEventListener("pointerdown", armed, { once: true });
-    window.addEventListener("keydown", armed, { once: true });
+    window.addEventListener("pointerdown", armed, {
+      once: true,
+    });
+
+    window.addEventListener("keydown", armed, {
+      once: true,
+    });
 
     return () => {
+      disposed = true;
+
       window.removeEventListener("pointerdown", armed);
       window.removeEventListener("keydown", armed);
     };
