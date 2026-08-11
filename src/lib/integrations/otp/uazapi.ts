@@ -193,14 +193,12 @@ export const uazapiOtp: WhatsAppOTPProvider = {
       return { ok: false, message: "Configuração incompleta (Base URL ou Token ausente)." };
     }
 
-    // Normalização rigorosa para UAZAPI (Brasil: 55 + DDD + Numero, somente dígitos)
     let cleanPhone = phone.replace(/\D/g, "");
     if (cleanPhone.length > 0 && !cleanPhone.startsWith("55") && cleanPhone.length <= 11) {
       cleanPhone = "55" + cleanPhone;
     }
 
     try {
-      // 1. Detect Interactivity
       let endpoint = "/send/text";
       let payload: any = {
         number: cleanPhone,
@@ -209,7 +207,6 @@ export const uazapiOtp: WhatsAppOTPProvider = {
       };
 
       if (options.type === 'options' && options.options?.length > 0) {
-        // UAZAPI v2 Supports Interactive Buttons (up to 3) or List
         if (options.options.length <= 3) {
           endpoint = "/send/button";
           payload = {
@@ -243,14 +240,8 @@ export const uazapiOtp: WhatsAppOTPProvider = {
         }
       }
 
-      // Sanitized log for debugging
-      console.log("[UAZAPI] Sending message", {
-        endpoint,
-        tokenPresent: Boolean(token),
-        phonePresent: Boolean(cleanPhone),
-      });
+      console.log("[UAZAPI] Sending message", { endpoint });
 
-      // 2. Envio Real
       const { response, body } = await timedFetch(`${baseUrl}${endpoint}`, {
         method: "POST",
         headers: { 
@@ -260,7 +251,6 @@ export const uazapiOtp: WhatsAppOTPProvider = {
         body: JSON.stringify(payload)
       });
 
-      // Se endpoint interativo falhar, tentar fallback para texto
       if (!response.ok && endpoint !== "/send/text") {
         console.warn(`[UAZAPI] Endpoint ${endpoint} failed, falling back to /send/text`);
         const { response: fallbackRes, body: fallbackBody } = await timedFetch(`${baseUrl}/send/text`, {
@@ -277,7 +267,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
         });
         
         const fallbackResBody = JSON.parse(fallbackBody || "{}");
-        const fallbackId = fallbackResBody?.messageId || fallbackResBody?.data?.messageId || fallbackResBody?.id;
+        const fallbackId = fallbackResBody?.messageId || fallbackResBody?.data?.messageId || fallbackResBody?.id || fallbackResBody?.data?.id || fallbackResBody?.key?.id;
 
         if (fallbackRes.ok && !(fallbackResBody.error || fallbackResBody.status === "error")) {
           return {
@@ -290,19 +280,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
         }
       }
 
-
       const resBody = JSON.parse(body || "{}");
-      
-      // Sanitized log for debugging
-      console.log(`[UAZAPI] Response ${response.status}:`, {
-        keys: Object.keys(resBody),
-        hasMessageId: !!(resBody.messageId || resBody.messageid || resBody.data?.messageId || resBody.data?.messageid),
-        hasKeyId: !!(resBody.key?.id || resBody.data?.key?.id),
-        hasId: !!resBody.id,
-        hasError: !!(resBody.error || resBody.status === "error")
-      });
-
-      // Unified Message ID Parser (v1, v2 and variants)
       const providerMessageId = 
         resBody?.messageId || 
         resBody?.messageid || 
@@ -315,7 +293,6 @@ export const uazapiOtp: WhatsAppOTPProvider = {
       
       const hasError = resBody.error || resBody.status === "error" || resBody.message === "error";
 
-      // If HTTP 2xx and no explicit error in body, it's a success
       if (response.ok && !hasError) {
         return { 
           ok: true, 
