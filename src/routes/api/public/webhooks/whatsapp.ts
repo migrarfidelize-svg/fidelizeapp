@@ -221,6 +221,10 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
         try {
           const { executeFlow } =
             await import("@/lib/crm/flow-engine.server");
+
+          const { ensureDefaultWhatsAppFlow } = await import("@/lib/crm/bootstrap.server");
+          await ensureDefaultWhatsAppFlow();
+
  
           await executeFlow(
             conversation.id,
