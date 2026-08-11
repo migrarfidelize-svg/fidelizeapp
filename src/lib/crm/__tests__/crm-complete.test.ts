@@ -101,7 +101,7 @@ describe('CRM End-to-End Logic', () => {
         return createMockChain();
     });
 
-    await processAgentMessage({ conversationId: 'c1', customerPhone: '5511', inboundText: 'Quero meus pontos', stepId: 's2' });
+    await processAgentMessage({ conversationId: 'c1', customerPhone: '5511', inboundText: 'Quero meus pontos', flowId: 'f1', stepId: 's2' });
     
     expect(generateAgentResponse).toHaveBeenCalled();
     const callArgs = (generateAgentResponse as any).mock.calls[0][0];

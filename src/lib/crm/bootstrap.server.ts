@@ -7,7 +7,6 @@ export async function ensureDefaultWhatsAppFlow() {
   console.log(`[CRM Bootstrap] Starting for establishment ${ESTABLISHMENT_ID}...`);
 
   try {
-    // 1. Get or Create Flow
     let { data: flow, error: findErr } = await supabaseAdmin
       .from("crm_flows")
       .select("id")
@@ -37,10 +36,9 @@ export async function ensureDefaultWhatsAppFlow() {
     if (!flow) throw new Error("Flow could not be found or created");
     const flowId = flow.id;
 
-    // 2. Sync steps (Idempotent)
     const { data: existingSteps, error: stepsErr } = await supabaseAdmin
       .from("crm_flow_steps")
-      .select("id, sort_order")
+      .select("id, step_key")
       .eq("flow_id", flowId);
 
     if (stepsErr) throw stepsErr;
@@ -48,50 +46,46 @@ export async function ensureDefaultWhatsAppFlow() {
     const stepsCount = existingSteps?.length || 0;
     
     if (stepsCount === 0) {
-      console.log("[CRM Bootstrap] Creating 7 steps...");
+      console.log("[CRM Bootstrap] Creating 7 steps with unique keys...");
       const stepIds = {
-        step0: crypto.randomUUID(), step1: crypto.randomUUID(), step2: crypto.randomUUID(),
-        step3: crypto.randomUUID(), step4: crypto.randomUUID(), step5: crypto.randomUUID(), step6: crypto.randomUUID()
+        s0: crypto.randomUUID(), s1: crypto.randomUUID(), s2: crypto.randomUUID(),
+        s3: crypto.randomUUID(), s4: crypto.randomUUID(), s5: crypto.randomUUID(), s6: crypto.randomUUID()
       };
 
       const steps = [
-        { id: stepIds.step0, flow_id: flowId, establishment_id: ESTABLISHMENT_ID, step_key: "message", sort_order: 0, payload: { type: "message", text: "Olá, {{nome}}! 👋\n\nBem-vindo ao atendimento Fidelize. 💜\n\nEstou aqui para ajudar.\n\nEscolha uma das opções abaixo para começarmos:" } },
-        { id: stepIds.step1, flow_id: flowId, establishment_id: ESTABLISHMENT_ID, step_key: "options", sort_order: 1, payload: { type: "options", text: "Como podemos ajudar você hoje?", options: [
-            { label: "1 — 💜 Cartão, pontos e recompensas", value: "1", nextStepId: stepIds.step2 },
-            { label: "2 — 🎁 Promoções e benefícios", value: "2", nextStepId: stepIds.step3 },
-            { label: "3 — 🔐 Problemas com acesso ou carteira", value: "3", nextStepId: stepIds.step4 },
-            { label: "4 — 💬 Tenho uma dúvida", value: "4", nextStepId: stepIds.step5 },
-            { label: "5 — 👨‍💼 Falar com atendente", value: "5", nextStepId: stepIds.step6 }
+        { id: stepIds.s0, flow_id: flowId, establishment_id: ESTABLISHMENT_ID, step_key: "welcome", sort_order: 0, payload: { type: "message", text: "Olá! Bem-vindo à Fidelize. 💜\n\nComo posso ajudar hoje?" } },
+        { id: stepIds.s1, flow_id: flowId, establishment_id: ESTABLISHMENT_ID, step_key: "main_menu", sort_order: 1, payload: { type: "options", text: "Menu Principal:", options: [
+            { label: "1 — Cartão e Recompensas", value: "1", nextStepId: stepIds.s2 },
+            { label: "2 — Promoções", value: "2", nextStepId: stepIds.s3 },
+            { label: "3 — Acesso à conta", value: "3", nextStepId: stepIds.s4 },
+            { label: "4 — Dúvidas", value: "4", nextStepId: stepIds.s5 },
+            { label: "5 — Falar com atendente", value: "5", nextStepId: stepIds.s6 }
         ] } },
-        { id: stepIds.step2, flow_id: flowId, establishment_id: ESTABLISHMENT_ID, step_key: "agent", sort_order: 2, payload: { type: "agent", text: "Entrando em contato com nosso assistente...", context: "O cliente selecionou atendimento relacionado a cartão fidelidade, pontos, carimbos, recompensas e carteira Fidelize." } },
-        { id: stepIds.step3, flow_id: flowId, establishment_id: ESTABLISHMENT_ID, step_key: "agent", sort_order: 3, payload: { type: "agent", text: "Entrando em contato com nosso assistente...", context: "O cliente quer informações sobre promoções, benefícios, produtos, serviços ou vantagens disponíveis." } },
-        { id: stepIds.step4, flow_id: flowId, establishment_id: ESTABLISHMENT_ID, step_key: "agent", sort_order: 4, payload: { type: "agent", text: "Entrando em contato com nosso assistente...", context: "O cliente está com dificuldade relacionada a login, acesso, carteira digital ou utilização da conta." } },
-        { id: stepIds.step5, flow_id: flowId, establishment_id: ESTABLISHMENT_ID, step_key: "agent", sort_order: 5, payload: { type: "agent", text: "Entrando em contato com nosso assistente...", context: "Atendimento geral." } },
-        { id: stepIds.step6, flow_id: flowId, establishment_id: ESTABLISHMENT_ID, step_key: "transfer_to_queue", sort_order: 6, payload: { type: "transfer_to_queue", text: "Claro! Vou encaminhar você para nossa equipe. Aguarde um momento. 💜" } }
+        { id: stepIds.s2, flow_id: flowId, establishment_id: ESTABLISHMENT_ID, step_key: "agent_loyalty", sort_order: 2, payload: { type: "agent", text: "Entrando em contato com nosso assistente...", context: "Atendimento sobre cartão e recompensas." } },
+        { id: stepIds.s3, flow_id: flowId, establishment_id: ESTABLISHMENT_ID, step_key: "agent_promotions", sort_order: 3, payload: { type: "agent", text: "Entrando em contato com nosso assistente...", context: "Atendimento sobre promoções." } },
+        { id: stepIds.s4, flow_id: flowId, establishment_id: ESTABLISHMENT_ID, step_key: "agent_access", sort_order: 4, payload: { type: "agent", text: "Entrando em contato com nosso assistente...", context: "Atendimento sobre problemas de acesso." } },
+        { id: stepIds.s5, flow_id: flowId, establishment_id: ESTABLISHMENT_ID, step_key: "agent_general", sort_order: 5, payload: { type: "agent", text: "Entrando em contato com nosso assistente...", context: "Atendimento geral." } },
+        { id: stepIds.s6, flow_id: flowId, establishment_id: ESTABLISHMENT_ID, step_key: "human_handoff", sort_order: 6, payload: { type: "transfer_to_queue", text: "Vou encaminhar você para nossa equipe. Aguarde um momento. 💜" } }
       ];
 
       const { error: insertErr } = await supabaseAdmin.from("crm_flow_steps").insert(steps);
       if (insertErr) {
-          console.error("[CRM Bootstrap] create_steps failed", insertErr);
+          console.error("[CRM Bootstrap] insert steps failed:", insertErr);
           throw insertErr;
       }
-    } else if (stepsCount > 0 && stepsCount < 7) {
+    } else if (stepsCount > 0 && stepsCount !== 7) {
       throw new Error(`CRM_DEFAULT_FLOW_PARTIAL:${stepsCount}`);
     }
 
-    // 3. Update Agent Config
-    const { data: agentConfigRow, error: getErr } = await supabaseAdmin
+    const { data: agentConfigRow } = await supabaseAdmin
       .from("system_settings")
       .select("value")
       .eq("namespace", "crm")
       .eq("key", "agent_config")
       .maybeSingle();
-      
-    if (getErr) throw getErr;
     
     const currentConfig = (agentConfigRow?.value as any) || {};
     
-    // Find active integration for AI
     const { data: integration } = await supabaseAdmin
         .from("integrations")
         .select("id, provider")
@@ -111,18 +105,9 @@ export async function ensureDefaultWhatsAppFlow() {
       }
     };
 
-    const { error: upsertErr } = await supabaseAdmin
+    await supabaseAdmin
       .from("system_settings")
-      .upsert({
-        namespace: "crm",
-        key: "agent_config",
-        value: newConfig as any
-      }, { onConflict: "namespace,key" });
-
-    if (upsertErr) {
-        console.error("[CRM Bootstrap] agent_config upsert failed", upsertErr);
-        throw upsertErr;
-    }
+      .upsert({ namespace: "crm", key: "agent_config", value: newConfig as any }, { onConflict: "namespace,key" });
 
     return { flowId, created: !flow, stepsCount: stepsCount === 0 ? 7 : stepsCount };
   } catch (error) {
