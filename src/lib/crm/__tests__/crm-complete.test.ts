@@ -82,7 +82,13 @@ describe('CRM End-to-End Logic', () => {
   });
 
   it('agent engine recebe contexto do step', async () => {
-    const conv = { id: 'c1', status: 'bot', customer_phone: '5511', contact: { name: 'João' }, metadata: { flow_state: { mode: 'agent', flowId: 'f1', stepId: 's2' } } };
+    const conv = { 
+      id: 'c1', 
+      status: 'bot', 
+      customer_phone: '5511', 
+      contact: { name: 'João' }, 
+      metadata: { flow_state: { mode: 'agent', flowId: 'f1', stepId: 's2' } } 
+    };
     const step = { id: 's2', payload: { context: 'Contexto Especial Fidelidade' } };
     
     (supabaseAdmin.from as any).mockImplementation((table: string) => {
@@ -96,8 +102,8 @@ describe('CRM End-to-End Logic', () => {
 
     await processAgentMessage({ conversationId: 'c1', customerPhone: '5511', inboundText: 'Quero meus pontos', stepId: 's2' });
     
-    expect(generateAgentResponse).toHaveBeenCalledWith(expect.objectContaining({
-        systemPrompt: expect.stringContaining('Contexto Especial Fidelidade')
-    }));
+    expect(generateAgentResponse).toHaveBeenCalled();
+    const callArgs = vi.mocked(generateAgentResponse).mock.calls[0][0];
+    expect(callArgs.systemPrompt).toContain('Contexto Especial Fidelidade');
   });
 });
