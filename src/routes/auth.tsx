@@ -225,18 +225,41 @@ function AuthPage() {
     try {
       const res = await verifyOTP({ data: { whatsapp: whatsapp.replace(/\D/g, ""), code: otpCode } });
       if (res.ok && res.hashed_token) {
-        // Authenticate with Supabase using the hashed_token (magic link verification)
-        const { error } = await supabase.auth.verifyOtp({
-          email: res.email!,
-          token: res.hashed_token,
-          type: "magiclink",
+        const { data: authData, error } =
+          await supabase.auth.verifyOtp({
+            token_hash: res.hashed_token,
+            type: "email",
+          });
+
+        if (error) {
+          console.error("[auth] Falha ao criar sessão após OTP:", {
+            message: error.message,
+            status: error.status,
+          });
+          throw error;
+        }
+
+        if (!authData.session || !authData.user) {
+          throw new Error(
+            "Não foi possível iniciar sua sessão. Solicite um novo código."
+          );
+        }
+
+        if (walletFlow) {
+          setWalletHint(whatsapp);
+        }
+
+        const dest = await routeAfterAuth({
+          claim: search.claim,
+          est_slug: search.est_slug,
+          next: search.next,
+          role,
         });
 
-        if (error) throw error;
-
-        if (walletFlow) setWalletHint(whatsapp);
-        const dest = await routeAfterAuth({ claim: search.claim, est_slug: search.est_slug, next: search.next, role });
-        await completeAuthRedirect(dest.to, isSignup ? "SIGNED_UP" : "SIGNED_IN");
+        await completeAuthRedirect(
+          dest.to,
+          isSignup ? "SIGNED_UP" : "SIGNED_IN"
+        );
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Código inválido.");
