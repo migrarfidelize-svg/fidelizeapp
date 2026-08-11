@@ -14,7 +14,7 @@ export interface AgentEngineInput {
  * Motor principal do Agente IA.
  * Responsável por carregar contexto, histórico e gerar resposta via LLM.
  */
-export async function processAgentMessage(input: AgentEngineInput) {
+export async function processAgentMessage(input: AgentEngineInput): Promise<void> {
   const { conversationId, customerPhone, inboundText, flowId, stepId, additionalContext } = input;
 
   // 1. Garantia de Estado: Buscar conversa atualizada
