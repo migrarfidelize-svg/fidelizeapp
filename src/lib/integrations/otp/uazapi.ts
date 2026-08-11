@@ -260,6 +260,36 @@ export const uazapiOtp: WhatsAppOTPProvider = {
         body: JSON.stringify(payload)
       });
 
+      // Se endpoint interativo falhar, tentar fallback para texto
+      if (!response.ok && endpoint !== "/send/text") {
+        console.warn(`[UAZAPI] Endpoint ${endpoint} failed, falling back to /send/text`);
+        const { response: fallbackRes, body: fallbackBody } = await timedFetch(`${baseUrl}/send/text`, {
+          method: "POST",
+          headers: { 
+            "token": token,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            number: cleanPhone,
+            text: message,
+            linkPreview: false
+          })
+        });
+        
+        const fallbackResBody = JSON.parse(fallbackBody || "{}");
+        const fallbackId = fallbackResBody?.messageId || fallbackResBody?.data?.messageId || fallbackResBody?.id;
+
+        if (fallbackRes.ok && !(fallbackResBody.error || fallbackResBody.status === "error")) {
+          return {
+            ok: true,
+            message: "Mensagem aceita via fallback texto.",
+            providerMessageId: fallbackId || null,
+            httpStatus: fallbackRes.status,
+            providerResponse: fallbackResBody
+          };
+        }
+      }
+
 
       const resBody = JSON.parse(body || "{}");
       

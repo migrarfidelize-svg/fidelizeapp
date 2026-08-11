@@ -8,8 +8,8 @@ export async function executeFlow(conversationId: string, messageBody: string) {
     .single();
 
   if (!conv) return;
-  // Bot para se a conversa estiver atribuída a um humano
-  if (conv.status === 'assigned') return;
+  // Se a conversa não estiver em modo bot, não processamos automação
+  if (conv.status !== 'bot') return;
 
   const { data: agentConfigRow } = await supabaseAdmin
     .from("system_settings")
@@ -108,6 +108,12 @@ export async function executeFlow(conversationId: string, messageBody: string) {
       if (steps[nextIdx]) return await processStep(conv, steps[nextIdx], steps);
     }
 
+    if (stepType === 'message' || stepType === 'question') {
+       // Se o step atual for mensagem/pergunta, tentamos localizar o próximo pela ordem
+       const nextIdx = steps.indexOf(lastStep) + 1;
+       if (steps[nextIdx]) return await processStep(conv, steps[nextIdx], steps);
+    }
+
     if (stepType === 'options') {
       const option = stepPayload.options?.find((o: any) => o.value.toLowerCase() === messageBody.trim().toLowerCase() || o.label.toLowerCase() === messageBody.trim().toLowerCase());
       if (option) {
@@ -159,15 +165,11 @@ async function processStep(conv: any, step: any, allSteps: any[]) {
       break;
 
     case 'agent': {
-      const { processAgentMessage } = await import("./agent-engine.server");
-      await processAgentMessage({
-        conversationId: conv.id,
-        customerPhone: conv.customer_phone,
-        inboundText: "", // Primeira entrada no bloco
-        flowId: step.flow_id,
-        stepId: step.id,
-        additionalContext: payload.context || ""
-      });
+      // Mensagem fixa de transição para o Agent
+      await sendWhatsApp(conv.customer_phone, "Perfeito! Conte um pouco mais sobre o que você precisa. 💜");
+      
+      // Salvar estado ANTES de entrar no modo contínuo
+      await updateFlowState(conv.id, step.flow_id, step.id, { mode: 'agent' });
       break;
     }
   }

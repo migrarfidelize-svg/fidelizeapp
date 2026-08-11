@@ -19,7 +19,7 @@ export async function ensureDefaultWhatsAppFlow() {
       .from("crm_flows")
       .insert({
         name: flowName,
-        description: "Fluxo principal de atendimento WhatsApp com menu, IA e atendimento humano.",
+        description: "Atendimento principal WhatsApp com menu, IA e transferência humana.",
         is_active: true,
         establishment_id: 'f406351f-487b-47db-b0d3-bd5cb918b6c3'
       })
@@ -105,7 +105,7 @@ export async function ensureDefaultWhatsAppFlow() {
 
     const { data: createdSteps, error: stepErr } = await supabaseAdmin
       .from("crm_flow_steps")
-      .insert(steps.map(s => ({ ...s, flow_id: flowId })))
+      .insert(steps.map(s => ({ ...s, flow_id: flowId, establishment_id: 'f406351f-487b-47db-b0d3-bd5cb918b6c3' })))
       .select("id, sort_order");
 
     if (stepErr) {
