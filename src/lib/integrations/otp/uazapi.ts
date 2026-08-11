@@ -180,29 +180,12 @@ export const uazapiOtp: WhatsAppOTPProvider = {
     }
 
     try {
-      // 1. Verificar status da instância antes de enviar
-      const { response: statusRes, body: statusBody } = await timedFetch(`${baseUrl}/instance/status`, {
-        headers: { "token": token },
+      // Sanitized log for debugging
+      console.log("[UAZAPI] Sending message", {
+        endpoint: "/send/text",
+        tokenPresent: Boolean(token),
+        phonePresent: Boolean(cleanPhone),
       });
-
-      let isConnected = false;
- 
-      if (statusRes.ok) {
-        try {
-          const s = JSON.parse(statusBody);
-          isConnected = isUazapiConnected(s);
-        } catch {
-          isConnected = false;
-        }
-      }
-
-      if (!isConnected) {
-        return { 
-          ok: false, 
-          message: "WhatsApp desconectado. Conecte a instância antes de enviar mensagens.",
-          status: "DISCONNECTED"
-        };
-      }
 
       // 2. Envio Real
       const { response, body } = await timedFetch(`${baseUrl}/send/text`, {
