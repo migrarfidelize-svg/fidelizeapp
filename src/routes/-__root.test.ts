@@ -102,11 +102,6 @@ describe('SEO Engine & Security', () => {
 
   it('should verify security in saveSeoConfig', async () => {
     const { saveSeoConfig } = await import('@/lib/seo.functions');
-    
-    // As we are in Vitest, we don't have the TanStack Start runtime context.
-    // The server function wrapper fails before our handler (and assertSuperAdmin) is even called.
-    // However, if we reach the "No Start context" error, it confirms that 
-    // saveSeoConfig is a properly created server function that expects a runtime.
     expect(saveSeoConfig).toBeDefined();
     expect(typeof saveSeoConfig).toBe('function');
   });
