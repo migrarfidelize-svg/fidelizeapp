@@ -11,32 +11,88 @@ const sendOtpSchema = z.object({
  * Gets the active WhatsApp provider and its runtime config.
  */
 export async function getActiveWhatsAppProvider() {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { listIntegrations } = await import("./integrations/integrations.functions");
-  
-  // listIntegrations requires a context with userId, but here we are in a server internal call.
-  // However, listIntegrations is a server function. We should query the DB directly to be safe.
-  const { data: integration } = await supabaseAdmin
-    .from("integrations")
-    .select("*")
-    .eq("category", "otp")
-    .eq("enabled", true)
-    .maybeSingle();
+  const { supabaseAdmin } =
+    await import("@/integrations/supabase/client.server");
+
+  const { data: integration, error } =
+    await supabaseAdmin
+      .from("integrations")
+      .select("*")
+      .eq("category", "otp")
+      .eq("enabled", true)
+      .maybeSingle();
+
+  if (error) {
+    console.error(
+      "[WhatsApp] Failed to load active provider:",
+      error.message
+    );
+    return null;
+  }
 
   if (!integration) return null;
 
-  const { getProvider } = await import("./integrations/registry");
-  const provider = getProvider("otp", integration.provider) as any; // Cast to WhatsAppOTPProvider
+  const { getProvider } =
+    await import("./integrations/registry");
+
+  const { decryptSecret } =
+    await import("./integrations/crypt.server");
+
+  const provider =
+    getProvider("otp", integration.provider) as any;
+
+  if (!provider) {
+    console.error(
+      `[WhatsApp] Provider not registered: ${integration.provider}`
+    );
+    return null;
+  }
+
+  const encryptedCredentials =
+    (
+      integration.credentials &&
+      typeof integration.credentials === "object"
+    )
+      ? integration.credentials as Record<string, unknown>
+      : {};
+
+  const dbCredentials: Record<string, string> = {};
+
+  for (
+    const [field, rawValue]
+    of Object.entries(encryptedCredentials)
+  ) {
+    if (typeof rawValue !== "string") continue;
+
+    const value = rawValue.trim();
+
+    if (!value) continue;
+
+    dbCredentials[field] =
+      await decryptSecret(value);
+  }
+
+  console.log("[WhatsApp] Active provider runtime ready", {
+    provider: integration.provider,
+    credentialFields: Object.keys(dbCredentials),
+    hasToken: Boolean(dbCredentials.token),
+  });
 
   return {
     provider,
     runtime: {
       enabled: integration.enabled,
       mode: integration.mode,
-      config: integration.config as Record<string, unknown>,
-      credentials_ref: integration.credentials_ref as Record<string, string>,
-      db_credentials: integration.credentials as Record<string, string>,
-    }
+      config:
+        (integration.config || {}) as Record<string, unknown>,
+      credentials_ref:
+        (integration.credentials_ref || {}) as Record<string, string>,
+
+      // INVARIANTE:
+      // daqui para frente db_credentials SEMPRE contém
+      // valores descriptografados.
+      db_credentials: dbCredentials,
+    },
   };
 }
 
