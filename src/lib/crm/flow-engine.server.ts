@@ -3,7 +3,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 export async function executeFlow(conversationId: string, messageBody: string) {
   const { data: conv } = await (supabaseAdmin as any)
     .from("crm_conversations")
-    .select("*, metadata")
+    .select("*, metadata, establishment_id")
     .eq("id", conversationId)
     .single();
 
@@ -179,7 +179,7 @@ async function sendWhatsApp(phone: string, text: string, options: any = {}) {
   if (active) {
     // Registramos a mensagem de saída para que apareça no CRM em tempo real
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: conv } = await supabaseAdmin.from("crm_conversations").select("id").eq("customer_phone", phone).maybeSingle();
+    const { data: conv } = await supabaseAdmin.from("crm_conversations").select("id, establishment_id").eq("customer_phone", phone).maybeSingle();
     
     const res = await active.provider.sendTestMessage(active.runtime, process.env as any, phone, text, options);
     

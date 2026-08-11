@@ -358,7 +358,7 @@ export const sendCRMMessage = createServerFn({ method: "POST" })
     // Regular Message logic
     const { data: conv, error: convErr } = await supabase
       .from("crm_conversations")
-      .select("customer_phone")
+      .select("customer_phone, establishment_id")
       .eq("id", data.conversationId)
       .single();
 
@@ -479,10 +479,16 @@ export const saveCRMFlow = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("Acesso restrito.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+    const { data: adminCheck } = await supabase.rpc("my_account_type");
+    const establishmentId = adminCheck === 'admin' ? 'f406351f-487b-47db-b0d3-bd5cb918b6c3' : null;
+
+    if (!establishmentId) throw new Error("Não foi possível determinar o estabelecimento.");
+
     const flowData = { 
       name: data.name, 
       description: data.description, 
       is_active: data.is_active ?? false,
+      establishment_id: establishmentId,
       updated_at: new Date().toISOString()
     };
 
@@ -622,6 +628,7 @@ export const duplicateCRMFlow = createServerFn({ method: "POST" })
     const { data: newFlow, error: flowErr } = await supabaseAdmin.from("crm_flows").insert({
       name: `${flow.name} (Cópia)`,
       description: flow.description,
+      establishment_id: flow.establishment_id,
       is_active: false
     }).select("id").single();
 
