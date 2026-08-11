@@ -11,7 +11,9 @@ import { OTPEditor } from "@/components/crm/OTPEditor";
 import { AgentConfig } from "@/components/crm/AgentConfig";
 import { ContactManager } from "@/components/crm/ContactManager";
 import { FlowEditor } from "@/components/crm/FlowEditor";
+import { FlowsView } from "@/components/crm/FlowsView";
 import { WhatsAppManager } from "@/components/crm/WhatsAppManager";
+
 import { BroadcastManager } from "@/components/crm/broadcasts/BroadcastManager";
 import { MessageSquare, History, Contact, UserCheck, GitBranch, FileText, Smartphone, Settings2, Moon, Sun, Search, Bell, Plus, Filter, SendHorizontal } from "lucide-react";
 import { useTheme } from "@/components/ThemeToggle";
@@ -34,7 +36,7 @@ function AtendimentoCRM() {
     ]},
     { group: "Automação", items: [
       { id: "agente", label: "Agente", icon: UserCheck },
-      { id: "fluxos", label: "Fluxos", icon: GitBranch },
+      { id: "fluxos", label: "Fluxos", icon: GitBranch, subId: "fluxos_editor" },
     ]},
     { group: "Comunicação", items: [
       { id: "templates", label: "Templates", icon: FileText },
@@ -56,7 +58,7 @@ function AtendimentoCRM() {
               {group.items.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => setActiveTab(item.id)}
+                  onClick={() => { setActiveTab(item.id); setSelectedFlow(null); }}
                   className={cn(
                     "flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all border border-transparent",
                     activeTab === item.id 
@@ -115,7 +117,9 @@ function AtendimentoCRM() {
             {activeTab === "contatos" && <ContactManager />}
             {activeTab === "disparos" && <BroadcastManager />}
             {activeTab === "agente" && <AgentConfig />}
-            {activeTab === "fluxos" && <FlowEditor flow={selectedFlow} onBack={() => { setActiveTab("conversas"); setSelectedFlow(null); }} />}
+            {activeTab === "fluxos" && <FlowsView onEdit={setSelectedFlow} />}
+            {activeTab === "fluxos_editor" && <FlowEditor flow={selectedFlow} onBack={() => { setActiveTab("fluxos"); setSelectedFlow(null); }} />}
+
             {activeTab === "templates" && <TemplateManager />}
             {activeTab === "otp" && <OTPEditor />}
             {activeTab === "whatsapp" && <WhatsAppManager />}

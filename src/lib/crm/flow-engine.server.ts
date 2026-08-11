@@ -19,7 +19,15 @@ export async function executeFlow(conversationId: string, messageBody: string) {
     .maybeSingle();
   
   const agentConfig = (agentConfigRow?.value as any) || {};
+
+  // Idempotent Seed: Trigger only if flow is missing
+  if (!agentConfig?.behavior?.mainFlowId) {
+    const { ensureDefaultWhatsAppFlow } = await import("./bootstrap.server");
+    await ensureDefaultWhatsAppFlow();
+  }
+
   if (!agentConfig.enabled) return;
+
 
   // 0. Global Intents (Human / Menu)
   const normalizedInput = messageBody.trim().toLowerCase();
