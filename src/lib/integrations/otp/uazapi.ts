@@ -308,6 +308,26 @@ export const uazapiOtp: WhatsAppOTPProvider = {
   },
 
   parseWebhook(body: any) {
+    function extractInteractiveValue(msg: any) {
+      // v1/v2 Interactive Button Response
+      const buttonId = 
+        msg?.selectedButtonId || 
+        msg?.buttonResponse?.selectedButtonId || 
+        msg?.buttonsResponseMessage?.selectedButtonId;
+
+      if (buttonId) return String(buttonId);
+
+      // v1/v2 List Response
+      const listId = 
+        msg?.selectedRowId || 
+        msg?.listResponse?.singleSelectReply?.selectedRowId || 
+        msg?.listResponseMessage?.singleSelectReply?.selectedRowId;
+
+      if (listId) return String(listId);
+
+      return null;
+    }
+
     if (!body || typeof body !== "object") {
       return null;
     }
@@ -430,7 +450,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
         (value) =>
           typeof value === "string" &&
           value.trim().length > 0
-      )?.trim() || "";
+      )?.trim() || extractInteractiveValue(msg) || extractInteractiveValue(root) || extractInteractiveValue(body) || "";
 
     const remoteMessageId = String(
       msg?.messageid ||
