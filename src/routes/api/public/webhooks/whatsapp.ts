@@ -191,8 +191,10 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
                   .from("crm_messages")
                   .select("*")
                   .eq("conversation_id", conversation.id)
+                  .eq("establishment_id", establishmentId)
                   .is("processed_at", null)
-                  .order("created_at", { ascending: true });
+                  .order("created_at", { ascending: true })
+                  .order("id", { ascending: true });
 
                 if (pendingMessages && pendingMessages.length > 0) {
                   const { executeFlow } = await import("@/lib/crm/flow-engine.server");

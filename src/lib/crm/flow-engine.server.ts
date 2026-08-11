@@ -175,11 +175,11 @@ async function processStep(conv: any, step: any, allSteps: any[]) {
 
 async function sendWhatsApp(phone: string, text: string, options: any = {}) {
   const { getActiveWhatsAppProvider } = await import("../otp.functions");
-  const active = await getActiveWhatsAppProvider();
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: conv } = await supabaseAdmin.from("crm_conversations").select("id, establishment_id").eq("customer_phone", phone).maybeSingle();
+
+  const active = await getActiveWhatsAppProvider(conv?.establishment_id);
   if (active) {
-    // Registramos a mensagem de saída para que apareça no CRM em tempo real
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: conv } = await supabaseAdmin.from("crm_conversations").select("id, establishment_id").eq("customer_phone", phone).maybeSingle();
     
     const res = await active.provider.sendTestMessage(active.runtime, process.env as any, phone, text, options);
     
