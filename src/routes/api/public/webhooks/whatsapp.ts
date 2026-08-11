@@ -27,14 +27,14 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
                phone: customerPhone,
                name: normalized.senderName || customerPhone,
                establishment_id: estId
-             }).select("id").single();
+             } as any).select("id").single();
              
              const { data: newConv } = await supabaseAdmin.from("crm_conversations").insert({ 
                establishment_id: estId, 
                customer_phone: customerPhone, 
                contact_id: contact?.id, 
                status: 'bot' 
-             }).select("id").single();
+             } as any).select("id").single();
              conv = newConv;
         }
 
