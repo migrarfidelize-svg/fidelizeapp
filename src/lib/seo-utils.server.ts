@@ -11,6 +11,9 @@ export async function getSeoMetadata(pathname: string) {
   const noindex = routeData.noindex || pathname.startsWith("/app") || pathname.startsWith("/hash");
   const canonical = routeData.canonical || `${config.siteUrl}${pathname}`;
   
+  const faviconUrl = config.faviconUrl || "/favicon.ico";
+  const appleTouchIconUrl = config.appleTouchIconUrl || config.faviconUrl || "/apple-touch-icon.png";
+  
   return {
     title,
     meta: [
@@ -32,7 +35,12 @@ export async function getSeoMetadata(pathname: string) {
     ],
     links: [
       { rel: "canonical", href: canonical },
-      { rel: "icon", href: config.faviconUrl },
+      { rel: "icon", href: faviconUrl },
+      { 
+        rel: "apple-touch-icon", 
+        sizes: "180x180", 
+        href: appleTouchIconUrl 
+      },
       { rel: "manifest", href: "/api/public/manifest" },
     ]
   };
