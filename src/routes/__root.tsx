@@ -6,8 +6,18 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  useRouterState,
 } from "@tanstack/react-router";
 import { useEffect, useRef, type ReactNode } from "react";
+import { createServerFn } from "@tanstack/react-start";
+import { getSeoMetadata } from "../lib/seo-utils.server";
+
+const getSeoMetadataFn = createServerFn({ method: "GET" })
+  .validator((d: string) => d)
+  .handler(async ({ data }) => {
+    return getSeoMetadata(data);
+  });
+
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -74,8 +84,21 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    meta: [
+  loader: async ({ location }) => {
+    return getSeoMetadataFn({ data: location.pathname });
+  },
+  head: ({ loaderData }) => {
+    const data = loaderData as Awaited<ReturnType<typeof getSeoMetadata>>;
+    return {
+      title: data.title,
+      meta: [
+        { charSet: "utf-8" },
+        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        ...data.meta,
+      ],
+      links: data.links,
+    };
+  },
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
