@@ -87,6 +87,7 @@ export async function getActiveWhatsAppProvider(establishmentId?: string) {
     runtime: {
       enabled: integration.enabled,
       mode: integration.mode,
+      establishment_id: integration.establishment_id,
       config:
         (integration.config || {}) as Record<string, unknown>,
       credentials_ref:

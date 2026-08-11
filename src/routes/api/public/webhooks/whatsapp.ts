@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { getActiveWhatsAppProvider } from "@/lib/otp.functions";
 
@@ -23,10 +23,22 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
         
         let { data: conv } = await supabaseAdmin.from("crm_conversations").select("id").eq("establishment_id", estId).eq("customer_phone", customerPhone).maybeSingle();
         if (!conv) {
-             const { data: contact } = await supabaseAdmin.from("crm_contacts").insert({ phone: customerPhone }).select("id").single();
-             const { data: newConv } = await supabaseAdmin.from("crm_conversations").insert({ establishment_id: estId, customer_phone: customerPhone, contact_id: contact?.id, status: 'bot' }).select("id").single();
+             const { data: contact } = await supabaseAdmin.from("crm_contacts").insert({ 
+               phone: customerPhone,
+               name: normalized.senderName || customerPhone,
+               establishment_id: estId
+             }).select("id").single();
+             
+             const { data: newConv } = await supabaseAdmin.from("crm_conversations").insert({ 
+               establishment_id: estId, 
+               customer_phone: customerPhone, 
+               contact_id: contact?.id, 
+               status: 'bot' 
+             }).select("id").single();
              conv = newConv;
         }
+
+        if (!conv) return new Response("Failed to create conversation", { status: 500 });
 
         await supabaseAdmin.from("crm_messages").insert({
             conversation_id: conv.id,

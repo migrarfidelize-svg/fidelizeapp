@@ -49,23 +49,28 @@ export type FlowActionResult = { ok: boolean; action: string; error?: any; };
 export async function processStep(conv: any, step: any, allSteps: any[]): Promise<FlowActionResult> {
   if (!step) return { ok: false, action: "error", error: "Step is null" };
   const type = getStepType(step);
+  const payload = step.payload as any;
 
   try {
     switch (type) {
       case 'message':
-        await sendWhatsAppWrapper(conv, step.payload.text || "");
+        await sendWhatsAppWrapper(conv, payload?.text || "");
         await updateFlowState(conv.id, step.flow_id, step.id);
         const next = allSteps.find(s => s.sort_order === (step.sort_order + 1));
         return next ? await processStep(conv, next, allSteps) : { ok: true, action: "end" };
 
       case 'options':
-        await sendWhatsAppWrapper(conv, step.payload.text || "Escolha:", { type: 'options', options: step.payload.options || [] });
+        await sendWhatsAppWrapper(conv, payload?.text || "Escolha:", { type: 'options', options: payload?.options || [] });
         await updateFlowState(conv.id, step.flow_id, step.id);
         return { ok: true, action: "menu" };
 
       case 'transfer_to_queue':
-        await sendWhatsAppWrapper(conv, step.payload.text || "Transferindo...");
-        await supabaseAdmin.from("crm_conversations").update({ status: 'waiting', assigned_to: null, updated_at: new Date().toISOString() }).eq("id", conv.id);
+        await sendWhatsAppWrapper(conv, payload?.text || "Transferindo...");
+        await supabaseAdmin.from("crm_conversations").update({ 
+          status: 'waiting', 
+          assigned_to: null, 
+          updated_at: new Date().toISOString() 
+        }).eq("id", conv.id);
         await updateFlowState(conv.id, null, null, { mode: 'manual' });
         return { ok: true, action: "handoff" };
 
@@ -108,14 +113,21 @@ export async function executeFlow(conversationId: string, messageBody: string): 
 
   if (state?.mode === 'agent') {
     const { processAgentMessage } = await import("./agent-engine.server");
-    await processAgentMessage({ conversationId, customerPhone: conv.customer_phone, inboundText: messageBody, flowId: state.flowId, stepId: state.stepId });
+    await processAgentMessage({ 
+      conversationId, 
+      customerPhone: conv.customer_phone, 
+      inboundText: messageBody, 
+      flowId: state.flowId, 
+      stepId: state.stepId 
+    });
     return { ok: true, action: "agent" };
   }
 
   if (state?.stepId) {
     const current = steps.find((s: any) => s.id === state.stepId);
-    if (getStepType(current) === 'options') {
-      const opt = (current.payload.options || []).find((o: any) => o.value === input);
+    if (current && getStepType(current) === 'options') {
+      const payload = current.payload as any;
+      const opt = (payload?.options || []).find((o: any) => o.value === input);
       if (opt) return await processStep(conv, steps.find(s => s.id === opt.nextStepId), steps);
     }
   }
