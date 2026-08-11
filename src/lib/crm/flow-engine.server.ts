@@ -1,13 +1,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { sendWhatsApp } from "./uazapi.server"; // Mocked location or adapted logic
-import { ensureDefaultWhatsAppFlow } from "./bootstrap.server";
-
-// We need processStep, but it must be exported or called here.
-// Let's keep existing imports and adjust.
 
 async function sendWhatsAppWrapper(phone: string, text: string, options: any = {}) {
     const { getActiveWhatsAppProvider } = await import("../otp.functions");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: conv } = await supabaseAdmin.from("crm_conversations").select("id, establishment_id").eq("customer_phone", phone).maybeSingle();
 
     const active = await getActiveWhatsAppProvider(conv?.establishment_id);
@@ -28,7 +22,6 @@ async function sendWhatsAppWrapper(phone: string, text: string, options: any = {
 }
 
 async function updateFlowState(convId: string, flowId: string | null, stepId: string | null, extra: any = {}) {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: conv } = await supabaseAdmin.from("crm_conversations").select("metadata").eq("id", convId).single();
     const metadata = (conv?.metadata as any) || {};
     metadata.flow_state = { flowId, stepId, ...extra };
@@ -81,7 +74,6 @@ export async function executeFlow(conversationId: string, messageBody: string) {
   const agentConfig = (agentConfigRow?.value as any) || {};
   if (!agentConfig.enabled) return;
 
-  // Global Commands
   const normalizedInput = messageBody.trim().toLowerCase();
   const humanKeywords = ['atendente', 'humano', 'suporte', 'falar com alguém', 'reclamação'];
   const menuKeywords = ['menu', 'voltar', 'início', 'inicio', 'opções', 'opcoes'];
@@ -96,19 +88,17 @@ export async function executeFlow(conversationId: string, messageBody: string) {
   if (menuKeywords.some(k => normalizedInput === k)) {
     const mainFlowId = agentConfig?.behavior?.mainFlowId;
     if (mainFlowId) {
-        // Force restart flow
-        const { data: flow } = await supabaseAdmin.from("crm_flows").select("*, steps:crm_flow_steps(*)").eq("id", mainFlowId).single();
-        const steps = (flow.steps || []).sort((a: any, b: any) => a.sort_order - b.sort_order);
-        await updateFlowState(conv.id, mainFlowId, null, { mode: 'flow' });
-        await processStep(conv, steps[0], steps);
-        return;
+        const { data: flow } = await supabaseAdmin.from("crm_flows").select("*, steps:crm_flow_steps!crm_flow_steps_flow_id_fkey(*)").eq("id", mainFlowId).single();
+        if (flow) {
+          const steps = (flow.steps || []).sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+          await updateFlowState(conv.id, mainFlowId, null, { mode: 'flow' });
+          await processStep(conv, steps[0], steps);
+          return;
+        }
     }
   }
 
-  // Flow Processing
   const flowState = (conv.metadata as any)?.flow_state;
-  
-  // Agent Logic
   if (flowState?.mode === 'agent' && conv.status === 'bot') {
     const { processAgentMessage } = await import("./agent-engine.server");
     await processAgentMessage({
@@ -121,18 +111,19 @@ export async function executeFlow(conversationId: string, messageBody: string) {
     return;
   }
 
-  // New Flow Logic
   let flowId = flowState?.flowId || agentConfig?.behavior?.mainFlowId;
-  const { data: flow } = await supabaseAdmin.from("crm_flows").select("*, steps:crm_flow_steps(*)").eq("id", flowId).single();
+  if (!flowId) return;
+
+  const { data: flow } = await supabaseAdmin.from("crm_flows").select("*, steps:crm_flow_steps!crm_flow_steps_flow_id_fkey(*)").eq("id", flowId).single();
   if (!flow) return;
 
-  const steps = (flow.steps || []).sort((a: any, b: any) => a.sort_order - b.sort_order);
+  const steps = (flow.steps || []).sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
   
   if (flowState?.stepId) {
     const currentIdx = steps.findIndex((s: any) => s.id === flowState.stepId);
+    if (currentIdx === -1) return;
     const currentStep = steps[currentIdx];
     
-    // Handle Option Response
     if (currentStep.step_key === 'options') {
       const option = currentStep.payload.options?.find((o: any) => o.value === messageBody.trim());
       if (option) {
@@ -141,12 +132,10 @@ export async function executeFlow(conversationId: string, messageBody: string) {
       }
     }
     
-    // Auto advance if not options
     if (currentIdx + 1 < steps.length) {
        return await processStep(conv, steps[currentIdx + 1], steps);
     }
   } else {
-    // Start flow
     await processStep(conv, steps[0], steps);
   }
 }
