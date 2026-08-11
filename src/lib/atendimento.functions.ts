@@ -479,8 +479,24 @@ export const getCRMFlowWithSteps = createServerFn({ method: "GET" })
     const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
     if (!isAdmin) throw new Error("Acesso restrito.");
 
-    const { data: flow, error } = await supabase.from("crm_flows").select("*, steps:crm_flow_steps(*)").eq("id", data.flowId).single();
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: flow, error } = await supabaseAdmin
+      .from("crm_flows")
+      .select(`
+        *,
+        steps:crm_flow_steps!crm_flow_steps_flow_id_fkey(*)
+      `)
+      .eq("id", data.flowId)
+      .eq("establishment_id", "f406351f-487b-47db-b0d3-bd5cb918b6c3")
+      .single();
+
     if (error) throw error;
+
+    if (flow && flow.steps) {
+      flow.steps.sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+    }
+
     return flow;
   });
 
