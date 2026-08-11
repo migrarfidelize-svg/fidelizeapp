@@ -32,59 +32,9 @@ export const Route = createFileRoute("/catalogo/$slug")({
     if (!d) throw notFound();
     return d;
   },
-  head: ({ params, loaderData }) => {
-    const url = `https://fidelizeapp.lovable.app/catalogo/${params.slug}`;
-    if (!loaderData) {
-      return {
-        meta: [
-          { title: "Catálogo não encontrado — Fidelize" },
-          { name: "robots", content: "noindex" },
-        ],
-      };
-    }
-    const name = loaderData.establishment.name;
-    const title = `${name} — Catálogo Digital`;
-    const description =
-      (loaderData.menu as any)?.tagline ||
-      loaderData.establishment.description ||
-      `Confira o catálogo digital de ${name}: produtos, fotos e preços atualizados.`;
-    const image = loaderData.establishment.cover_url || loaderData.establishment.logo_url || null;
-    const absImage = image
-      ? image.startsWith("http") ? image : `https://fidelizeapp.lovable.app${image}`
-      : null;
-
-    return {
-      meta: [
-        { title },
-        { name: "description", content: description },
-        { property: "og:title", content: title },
-        { property: "og:description", content: description },
-        { property: "og:type", content: "website" },
-        { property: "og:url", content: url },
-        { property: "og:site_name", content: "Fidelize" },
-        { property: "og:locale", content: "pt_BR" },
-        { name: "twitter:card", content: "summary_large_image" },
-        { name: "twitter:title", content: title },
-        { name: "twitter:description", content: description },
-        ...(absImage
-          ? [
-              { property: "og:image", content: absImage },
-              { property: "og:image:alt", content: `Catálogo de ${name}` },
-              { name: "twitter:image", content: absImage },
-            ]
-          : []),
-      ],
-      links: [
-        { rel: "canonical", href: url },
-        { rel: "preconnect", href: "https://fonts.googleapis.com" },
-        { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-        {
-          rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap",
-        },
-      ],
-    };
-  },
+  head: () => ({
+    // Head metadata is now handled by the central SEO configuration.
+  }),
   component: PublicCatalogPage,
   notFoundComponent: () => (
     <div className="min-h-dvh grid place-items-center p-6 text-center" style={{ background: "#FBF7F0", color: "#17130E" }}>

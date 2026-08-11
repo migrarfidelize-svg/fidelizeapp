@@ -44,32 +44,9 @@ export const Route = createFileRoute("/e/$slug")({
     if (!d?.establishment) throw notFound();
     return d;
   },
-  head: ({ params, loaderData }) => {
-    const est = loaderData?.establishment;
-    const title = est ? `${est.name} — Promoções e fidelidade` : `Descobrir — Fidelize`;
-    const desc = est?.description
-      ? est.description
-      : est
-      ? `Confira promoções, campanhas de fidelidade e novidades de ${est.name}.`
-      : "Descubra estabelecimentos e promoções na Fidelize.";
-    const meta: Array<
-      | { title: string }
-      | { name: string; content: string }
-      | { property: string; content: string }
-    > = [
-      { title },
-      { name: "description", content: desc },
-      { property: "og:title", content: title },
-      { property: "og:description", content: desc },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ];
-    if (est?.logo_url) {
-      meta.push({ property: "og:image", content: est.logo_url });
-      meta.push({ name: "twitter:image", content: est.logo_url });
-    }
-    return { meta };
-  },
+  head: () => ({
+    // Head metadata is now handled by the central SEO configuration.
+  }),
   component: DiscoveryProfilePage,
   errorComponent: ({ error, reset }) => (
     <div className="mx-auto max-w-2xl p-6">

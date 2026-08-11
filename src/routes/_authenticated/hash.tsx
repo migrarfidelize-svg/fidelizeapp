@@ -16,7 +16,7 @@ import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/comp
 import {
   Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock, Wallet2,
   UsersRound, Settings, Mail, FileText, ListChecks, LifeBuoy, Package, Mic,
-  DollarSign, Wallet, Megaphone, Cog, BookOpen, Menu, Star, Plug, Sparkles, Rocket, FileJson, KeyRound, ChevronRight, ChevronLeft, Activity, MessageSquare,
+  DollarSign, Wallet, Megaphone, Cog, BookOpen, Menu, Star, Plug, Sparkles, Rocket, FileJson, KeyRound, ChevronRight, ChevronLeft, Activity, MessageSquare, Globe
 } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -85,6 +85,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/hash/auditoria", label: "Auditoria", icon: FileClock },
       { to: "/hash/migracao", label: "Migração & Downloads", icon: Rocket },
       { to: "/hash/studio", label: "Studio de Voz", icon: Mic },
+      { to: "/hash/seo", label: "SEO & Identidade", icon: Globe },
       { to: "/hash/config", label: "Configurações", icon: Settings },
     ],
   },

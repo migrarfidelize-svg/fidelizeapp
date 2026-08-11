@@ -6,8 +6,18 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  useRouterState,
 } from "@tanstack/react-router";
 import { useEffect, useRef, type ReactNode } from "react";
+import { createServerFn } from "@tanstack/react-start";
+import { getSeoMetadata } from "../lib/seo-utils.server";
+
+const getSeoMetadataFn = createServerFn({ method: "GET" })
+  .validator((d: string) => d)
+  .handler(async ({ data }) => {
+    return getSeoMetadata(data);
+  });
+
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -74,41 +84,21 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Fidelize — Cartão fidelidade digital para o seu negócio" },
-      { name: "description", content: "Crie seu cartão fidelidade digital, compartilhe por QR Code e faça seus clientes voltarem mais vezes. Sem aplicativo, sem cartão de papel." },
-      { name: "author", content: "Fidelize" },
-      { property: "og:title", content: "Fidelize — Cartão fidelidade digital" },
-      { property: "og:description", content: "Transforme visitantes em clientes fiéis. Sem app, sem cartão de papel." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "theme-color", content: "#ffffff" },
-      { name: "apple-mobile-web-app-capable", content: "yes" },
-      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
-
-      { name: "apple-mobile-web-app-title", content: "Fidelize" },
-      { name: "mobile-web-app-capable", content: "yes" },
-    ],
-    links: [
-      { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico", sizes: "any" },
-      { rel: "icon", type: "image/svg+xml", href: "/favicon-mark.svg" },
-      { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16.png" },
-      { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32.png" },
-      { rel: "icon", type: "image/png", sizes: "192x192", href: "/icon-192.png" },
-      { rel: "icon", type: "image/png", sizes: "512x512", href: "/icon-512.png" },
-      { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
-      { rel: "manifest", href: "/manifest.webmanifest" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" },
-      { rel: "preload", as: "image", href: "https://i.imgur.com/PHNbTAi.png" },
-      { rel: "preload", as: "image", href: "https://i.imgur.com/iiN56vY.png" },
-    ],
-  }),
+  loader: async ({ location }) => {
+    return getSeoMetadataFn({ data: location.pathname });
+  },
+  head: ({ loaderData }) => {
+    const data = loaderData as Awaited<ReturnType<typeof getSeoMetadata>>;
+    return {
+      title: data.title,
+      meta: [
+        { charSet: "utf-8" },
+        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        ...data.meta,
+      ],
+      links: data.links,
+    };
+  },
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,

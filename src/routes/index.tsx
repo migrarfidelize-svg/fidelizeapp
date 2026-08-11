@@ -43,48 +43,7 @@ export const Route = createFileRoute("/")({
 
 
   head: () => ({
-    meta: [
-      { title: PAGE_TITLE },
-      { name: "description", content: PAGE_DESC },
-      { name: "keywords", content: "cartão fidelidade digital, programa de fidelidade, QR Code, fidelização de clientes, PME, cafeteria, barbearia" },
-      { property: "og:title", content: PAGE_TITLE },
-      { property: "og:description", content: PAGE_DESC },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: `${SITE_URL}/` },
-      { property: "og:site_name", content: "Fidelize" },
-      { property: "og:locale", content: "pt_BR" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: PAGE_TITLE },
-      { name: "twitter:description", content: PAGE_DESC },
-    ],
-    links: [{ rel: "canonical", href: `${SITE_URL}/` }],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@graph": [
-            { "@type": "Organization", name: "Fidelize", url: SITE_URL, logo: `${SITE_URL}/favicon.ico` },
-            { "@type": "WebSite", name: "Fidelize", url: SITE_URL, inLanguage: "pt-BR" },
-            {
-              "@type": "SoftwareApplication",
-              name: "Fidelize",
-              applicationCategory: "BusinessApplication",
-              operatingSystem: "Web",
-              offers: { "@type": "Offer", price: "0", priceCurrency: "BRL" },
-            },
-            {
-              "@type": "FAQPage",
-              mainEntity: FAQ_ITEMS.map(([q, a]) => ({
-                "@type": "Question",
-                name: q,
-                acceptedAnswer: { "@type": "Answer", text: a },
-              })),
-            },
-          ],
-        }),
-      },
-    ],
+    // Head metadata is now handled by the central SEO configuration.
   }),
   beforeLoad: async ({ location }) => {
     // Se estiver no modo PWA (standalone) ou vier de um redirecionamento de PWA

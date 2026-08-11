@@ -31,6 +31,7 @@ import { getMyWallet, getMyRewards } from "@/lib/my-wallet.functions";
 import { InboxBellBadge } from "@/components/wallet/InboxBellBadge";
 
 export const Route = createFileRoute("/_authenticated/carteira")({
+  head: () => ({}),
   beforeLoad: async () => {
     const { resolveAuthenticatedDestination } = await import("@/lib/destination-resolver");
     const to = await resolveAuthenticatedDestination();
