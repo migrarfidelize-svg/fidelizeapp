@@ -91,6 +91,8 @@ async function getDynamicSeo(
   if (menuMatch) {
     const slug = safeDecode(menuMatch[1]);
 
+    if (!supabaseAdmin) return { noindex: true };
+
     const { data: result, error } = await (supabaseAdmin as any).rpc(
       "get_public_catalogo_v2",
       {
@@ -189,6 +191,8 @@ async function getDynamicSeo(
   if (establishmentMatch) {
     const slug = safeDecode(establishmentMatch[1]);
 
+    if (!supabaseAdmin) return { noindex: true };
+
     const { data: est, error } = await (supabaseAdmin as any)
       .from("establishments")
       .select(
@@ -230,6 +234,8 @@ async function getDynamicSeo(
   if (reviewMatch) {
     const slug = safeDecode(reviewMatch[1]);
 
+    if (!supabaseAdmin) return { noindex: true };
+
     const { data: est, error } = await (supabaseAdmin as any)
       .from("establishments")
       .select(
@@ -247,6 +253,8 @@ async function getDynamicSeo(
 
     // Só considera a página de avaliação realmente disponível
     // quando existe formulário ativo.
+    if (!supabaseAdmin) return { noindex: true };
+
     const { data: form } = await (supabaseAdmin as any)
       .from("review_forms")
       .select("id")

@@ -13,6 +13,7 @@ import { META_PIXEL_ID_RE } from "./meta";
 export const getPublicMetaPixel = createServerFn({ method: "GET" }).handler(async () => {
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    if (!supabaseAdmin) return { pixelId: null as string | null };
     const { data } = await (supabaseAdmin as any)
       .from("integrations")
       .select("enabled, config")
@@ -62,6 +63,7 @@ export const logPixelEvent = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      if (!supabaseAdmin) return { ok: false };
       const props = data.props ?? {};
       const entries = Object.entries(props).slice(0, 12);
       await (supabaseAdmin as any).from("pixel_events").insert({
@@ -110,6 +112,7 @@ export const getPixelAnalytics = createServerFn({ method: "GET" })
     if (!isAdmin) throw new Error("Acesso restrito: apenas administradores da plataforma.");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    if (!supabaseAdmin) throw new Error("Serviço administrativo indisponível.");
 
     const { data: integration } = await (supabaseAdmin as any)
       .from("integrations")
