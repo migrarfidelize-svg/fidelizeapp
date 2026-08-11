@@ -89,6 +89,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   },
   head: ({ loaderData }) => {
     const data = loaderData as Awaited<ReturnType<typeof getSeoMetadata>>;
+    const seoLinks = data.links ?? [];
+    
     return {
       title: data.title,
       meta: [
@@ -98,11 +100,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       ],
       links: [
         { rel: "stylesheet", href: appCss },
-        { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
-        { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32x32.png" },
-        { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16x16.png" },
-        ...(data.links ?? []).filter(link => 
-          link.rel !== "stylesheet" || link.href !== appCss
+        ...seoLinks.filter(link => 
+          !(link.rel === "stylesheet" && link.href === appCss)
         ),
       ],
     };
