@@ -358,7 +358,7 @@ export const sendCRMMessage = createServerFn({ method: "POST" })
     // Regular Message logic
     const { data: conv, error: convErr } = await supabase
       .from("crm_conversations")
-      .select("customer_phone")
+      .select("customer_phone, establishment_id")
       .eq("id", data.conversationId)
       .single();
 
@@ -379,13 +379,14 @@ export const sendCRMMessage = createServerFn({ method: "POST" })
 
     const { error: msgErr } = await supabaseAdmin
       .from("crm_messages")
-      .insert({
-        conversation_id: data.conversationId,
-        body: data.body,
-        direction: "outbound",
-        provider: active.provider.meta.id,
-        provider_message_id: res.providerMessageId || `admin-${Date.now()}`
-      });
+        .insert({
+          conversation_id: data.conversationId,
+          establishment_id: conv.establishment_id,
+          body: data.body,
+          direction: "outbound",
+          provider: active.provider.meta.id,
+          provider_message_id: res.providerMessageId || `admin-${Date.now()}`
+        });
 
     if (msgErr) throw msgErr;
 
@@ -478,10 +479,16 @@ export const saveCRMFlow = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("Acesso restrito.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+    const { data: accountType } = await supabase.rpc("my_account_type");
+    const establishmentId = accountType === 'super_admin' ? 'f406351f-487b-47db-b0d3-bd5cb918b6c3' : null;
+
+    if (!establishmentId) throw new Error("Não foi possível determinar o estabelecimento.");
+
     const flowData = { 
       name: data.name, 
       description: data.description, 
       is_active: data.is_active ?? false,
+      establishment_id: establishmentId,
       updated_at: new Date().toISOString()
     };
 
@@ -615,12 +622,13 @@ export const duplicateCRMFlow = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("Acesso restrito.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     
-    const { data: flow } = await supabaseAdmin.from("crm_flows").select("*, steps:crm_flow_steps(*)").eq("id", data.flowId).single();
+    const { data: flow } = await supabaseAdmin.from("crm_flows").select("*, steps:crm_flow_steps!crm_flow_steps_flow_id_fkey(*)").eq("id", data.flowId).single();
     if (!flow) throw new Error("Fluxo não encontrado");
 
     const { data: newFlow, error: flowErr } = await supabaseAdmin.from("crm_flows").insert({
       name: `${flow.name} (Cópia)`,
       description: flow.description,
+      establishment_id: flow.establishment_id,
       is_active: false
     }).select("id").single();
 
@@ -629,6 +637,7 @@ export const duplicateCRMFlow = createServerFn({ method: "POST" })
     if (flow.steps && flow.steps.length > 0) {
       const stepsToInsert = flow.steps.map((s: any) => ({
         flow_id: newFlow.id,
+        establishment_id: flow.establishment_id,
         step_key: s.step_key,
         payload: s.payload,
         sort_order: s.order_index ?? 0

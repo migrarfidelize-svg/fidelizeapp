@@ -1919,6 +1919,35 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_conversation_locks: {
+        Row: {
+          conversation_id: string
+          expires_at: string
+          locked_at: string | null
+          owner_token: string
+        }
+        Insert: {
+          conversation_id: string
+          expires_at: string
+          locked_at?: string | null
+          owner_token: string
+        }
+        Update: {
+          conversation_id?: string
+          expires_at?: string
+          locked_at?: string | null
+          owner_token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_conversation_locks_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: true
+            referencedRelation: "crm_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_conversation_tags: {
         Row: {
           conversation_id: string
@@ -1957,11 +1986,12 @@ export type Database = {
           contact_id: string | null
           created_at: string
           customer_phone: string
+          establishment_id: string
           id: string
           last_message_at: string
           metadata: Json
           priority: Database["public"]["Enums"]["crm_priority"]
-          status: Database["public"]["Enums"]["crm_conversation_status"]
+          status: Database["public"]["Enums"]["crm_conversation_status_v2"]
           updated_at: string
         }
         Insert: {
@@ -1971,11 +2001,12 @@ export type Database = {
           contact_id?: string | null
           created_at?: string
           customer_phone: string
+          establishment_id: string
           id?: string
           last_message_at?: string
           metadata?: Json
           priority?: Database["public"]["Enums"]["crm_priority"]
-          status?: Database["public"]["Enums"]["crm_conversation_status"]
+          status?: Database["public"]["Enums"]["crm_conversation_status_v2"]
           updated_at?: string
         }
         Update: {
@@ -1985,11 +2016,12 @@ export type Database = {
           contact_id?: string | null
           created_at?: string
           customer_phone?: string
+          establishment_id?: string
           id?: string
           last_message_at?: string
           metadata?: Json
           priority?: Database["public"]["Enums"]["crm_priority"]
-          status?: Database["public"]["Enums"]["crm_conversation_status"]
+          status?: Database["public"]["Enums"]["crm_conversation_status_v2"]
           updated_at?: string
         }
         Relationships: [
@@ -2000,10 +2032,32 @@ export type Database = {
             referencedRelation: "crm_contacts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "crm_conversations_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_conversations_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_conversations_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
         ]
       }
       crm_flow_steps: {
         Row: {
+          establishment_id: string
           flow_id: string
           id: string
           payload: Json
@@ -2011,6 +2065,7 @@ export type Database = {
           step_key: string
         }
         Insert: {
+          establishment_id: string
           flow_id: string
           id?: string
           payload?: Json
@@ -2018,6 +2073,7 @@ export type Database = {
           step_key: string
         }
         Update: {
+          establishment_id?: string
           flow_id?: string
           id?: string
           payload?: Json
@@ -2026,11 +2082,39 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "crm_flow_steps_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_flow_steps_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_flow_steps_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "crm_flow_steps_flow_id_fkey"
             columns: ["flow_id"]
             isOneToOne: false
             referencedRelation: "crm_flows"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_flow_steps_tenant_integrity"
+            columns: ["flow_id", "establishment_id"]
+            isOneToOne: false
+            referencedRelation: "crm_flows"
+            referencedColumns: ["id", "establishment_id"]
           },
         ]
       }
@@ -2038,6 +2122,7 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          establishment_id: string
           id: string
           is_active: boolean
           metadata: Json
@@ -2047,6 +2132,7 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
+          establishment_id: string
           id?: string
           is_active?: boolean
           metadata?: Json
@@ -2056,13 +2142,36 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
+          establishment_id?: string
           id?: string
           is_active?: boolean
           metadata?: Json
           name?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "crm_flows_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_flows_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_flows_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       crm_internal_notes: {
         Row: {
@@ -2102,11 +2211,13 @@ export type Database = {
           conversation_id: string
           created_at: string
           direction: string
+          establishment_id: string
           id: string
           media_metadata: Json
           media_url: string | null
           message_type: Database["public"]["Enums"]["crm_message_type"]
           metadata: Json
+          processed_at: string | null
           provider: string
           provider_message_id: string
         }
@@ -2115,11 +2226,13 @@ export type Database = {
           conversation_id: string
           created_at?: string
           direction: string
+          establishment_id: string
           id?: string
           media_metadata?: Json
           media_url?: string | null
           message_type?: Database["public"]["Enums"]["crm_message_type"]
           metadata?: Json
+          processed_at?: string | null
           provider: string
           provider_message_id: string
         }
@@ -2128,11 +2241,13 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           direction?: string
+          establishment_id?: string
           id?: string
           media_metadata?: Json
           media_url?: string | null
           message_type?: Database["public"]["Enums"]["crm_message_type"]
           metadata?: Json
+          processed_at?: string | null
           provider?: string
           provider_message_id?: string
         }
@@ -2143,6 +2258,34 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "crm_conversations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_messages_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_messages_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_messages_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_messages_tenant_integrity"
+            columns: ["conversation_id", "establishment_id"]
+            isOneToOne: false
+            referencedRelation: "crm_conversations"
+            referencedColumns: ["id", "establishment_id"]
           },
         ]
       }
@@ -3630,6 +3773,7 @@ export type Database = {
           credentials: Json
           credentials_ref: Json
           enabled: boolean
+          establishment_id: string | null
           id: string
           last_test_details: Json | null
           last_test_message: string | null
@@ -3647,6 +3791,7 @@ export type Database = {
           credentials?: Json
           credentials_ref?: Json
           enabled?: boolean
+          establishment_id?: string | null
           id?: string
           last_test_details?: Json | null
           last_test_message?: string | null
@@ -3664,6 +3809,7 @@ export type Database = {
           credentials?: Json
           credentials_ref?: Json
           enabled?: boolean
+          establishment_id?: string | null
           id?: string
           last_test_details?: Json | null
           last_test_message?: string | null
@@ -3674,7 +3820,29 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "integrations_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integrations_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integrations_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       kb_articles: {
         Row: {
@@ -8949,6 +9117,7 @@ export type Database = {
           display_name: string
           encrypted_api_token: string | null
           encrypted_webhook_secret: string | null
+          establishment_id: string
           id: string
           is_enabled: boolean
           last_test_message: string | null
@@ -8966,6 +9135,7 @@ export type Database = {
           display_name?: string
           encrypted_api_token?: string | null
           encrypted_webhook_secret?: string | null
+          establishment_id: string
           id?: string
           is_enabled?: boolean
           last_test_message?: string | null
@@ -8983,6 +9153,7 @@ export type Database = {
           display_name?: string
           encrypted_api_token?: string | null
           encrypted_webhook_secret?: string | null
+          establishment_id?: string
           id?: string
           is_enabled?: boolean
           last_test_message?: string | null
@@ -8994,7 +9165,29 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_providers_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_providers_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_providers_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       whatsapp_webhook_events: {
         Row: {
@@ -9618,9 +9811,17 @@ export type Database = {
       }
     }
     Functions: {
+      acquire_crm_lock: {
+        Args: { _conv_id: string; _token: string; _ttl_sec: number }
+        Returns: boolean
+      }
       check_and_unlock_achievements: {
         Args: { _user_id: string }
         Returns: number
+      }
+      check_establishment_access: {
+        Args: { target_id: string }
+        Returns: boolean
       }
       claim_automation_jobs: {
         Args: { _limit?: number; _worker: string }
@@ -9833,6 +10034,10 @@ export type Database = {
         }
         Returns: Json
       }
+      release_crm_lock: {
+        Args: { _conv_id: string; _token: string }
+        Returns: boolean
+      }
       sponsored_ads_admin_overview: { Args: never; Returns: Json }
       sponsored_ads_admin_overview_v3: { Args: never; Returns: Json }
     }
@@ -9848,6 +10053,7 @@ export type Database = {
         | "other"
       courier_status: "pending" | "approved" | "rejected" | "suspended"
       crm_conversation_status: "bot" | "waiting" | "assigned" | "closed"
+      crm_conversation_status_v2: "bot" | "waiting" | "assigned" | "closed"
       crm_message_type:
         | "text"
         | "image"
@@ -10075,6 +10281,7 @@ export const Constants = {
       ],
       courier_status: ["pending", "approved", "rejected", "suspended"],
       crm_conversation_status: ["bot", "waiting", "assigned", "closed"],
+      crm_conversation_status_v2: ["bot", "waiting", "assigned", "closed"],
       crm_message_type: [
         "text",
         "image",
