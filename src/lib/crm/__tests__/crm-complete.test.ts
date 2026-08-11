@@ -6,7 +6,7 @@ import { supabaseAdmin } from '@/integrations/supabase/client.server';
 import { generateAgentResponse } from '../ai-adapter.server';
 
 const createMockChain = (data: any = null, error: any = null) => {
-    const chain = {
+    const chain: any = {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
         maybeSingle: vi.fn().mockImplementation(() => Promise.resolve({ data, error })),
@@ -96,7 +96,6 @@ describe('CRM End-to-End Logic', () => {
         if (table === 'crm_flow_steps') return createMockChain(step);
         if (table === 'system_settings') return createMockChain({ enabled: true, provider_id: 'openai' });
         if (table === 'crm_messages') return createMockChain([]);
-        if (table === 'crm_contacts') return createMockChain({ name: 'João' });
         return createMockChain();
     });
 
