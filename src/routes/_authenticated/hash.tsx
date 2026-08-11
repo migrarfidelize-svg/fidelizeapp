@@ -85,6 +85,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/hash/auditoria", label: "Auditoria", icon: FileClock },
       { to: "/hash/migracao", label: "Migração & Downloads", icon: Rocket },
       { to: "/hash/studio", label: "Studio de Voz", icon: Mic },
+      { to: "/hash/seo", label: "SEO & Identidade", icon: Globe },
       { to: "/hash/config", label: "Configurações", icon: Settings },
     ],
   },
