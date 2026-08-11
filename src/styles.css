@@ -531,7 +531,7 @@
 
 /* Compact controls for tools */
 .crm-button-primary {
-  @apply inline-flex items-center justify-center gap-2 px-4 h-9 rounded-lg bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50;
+  @apply inline-flex items-center justify-center gap-2 px-4 h-9 rounded-lg bg-primary text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-95 transition-all disabled:opacity-50;
 }
 
 .crm-button-secondary {
