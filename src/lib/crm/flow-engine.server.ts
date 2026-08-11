@@ -21,19 +21,29 @@ export async function executeFlow(conversationId: string, messageBody: string) {
   const agentConfig = (agentConfigRow?.value as any) || {};
   if (!agentConfig.enabled) return;
 
-  // Handoff check
-  const handoffKeywords = agentConfig.handoff?.keywords || [];
-  if (handoffKeywords.some((k: string) => messageBody.toLowerCase().includes(k.toLowerCase()))) {
-    await sendWhatsApp(conv.customer_phone, agentConfig.handoff?.message || "Transferindo para um atendente...");
+  // 0. Global Intents (Human / Menu)
+  const normalizedInput = messageBody.trim().toLowerCase();
+  const humanKeywords = ['atendente', 'humano', 'falar com alguém', 'quero falar com uma pessoa', 'suporte humano', 'não resolveu', 'reclamação'];
+  const menuKeywords = ['menu', 'voltar', 'início', 'inicio', 'opções', 'opcoes'];
+
+  if (humanKeywords.some(k => normalizedInput.includes(k))) {
+    await sendWhatsApp(conv.customer_phone, "Entendi. Vou encaminhar você para nossa equipe de atendimento. Aguarde um momento. 💜");
     await supabaseAdmin.from("crm_conversations").update({ status: 'waiting', assigned_to: null }).eq("id", conv.id);
+    await updateFlowState(conv.id, null, null, { mode: 'manual' });
     return;
   }
 
-  const flowState = (conv.metadata as any)?.flow_state;
-  let currentFlowId = flowState?.flowId;
-  let currentStepId = flowState?.stepId;
+  if (menuKeywords.some(k => normalizedInput === k)) {
+    const mainFlowId = agentConfig?.behavior?.mainFlowId;
+    if (mainFlowId) {
+      await sendWhatsApp(conv.customer_phone, "Claro! Escolha uma opção:");
+      await updateFlowState(conv.id, mainFlowId, null, { mode: 'flow' });
+      return executeFlow(conversationId, ""); // Restart flow
+    }
+  }
 
   // Se a conversa já estiver em modo Agent, redirecionar para o processador de IA
+
   if (flowState?.mode === 'agent' && conv.status === 'bot') {
     const { processAgentMessage } = await import("./agent-engine.server");
     await processAgentMessage({
