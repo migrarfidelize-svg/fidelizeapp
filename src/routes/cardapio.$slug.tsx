@@ -43,14 +43,18 @@ export const Route = createFileRoute("/cardapio/$slug")({
     return d;
   },
   head: ({ loaderData }) => {
-    const est = loaderData?.establishment;
+    const est = loaderData?.establishment as any;
     if (!est) return {};
+    const menu = loaderData?.menu as any;
+    const title = `${menu?.display_name || est.name} | ${est.name} | Cardápio | Afidelize`;
+    const description = menu?.tagline || est.description || "Veja o cardápio digital e faça seu pedido.";
+    
     return {
-      title: `${(loaderData.menu as any).display_name || est.name} | ${est.name} | Cardápio | Afidelize`,
+      title,
       meta: [
-        { name: "description", content: est.description || "Veja o cardápio digital e faça seu pedido." },
+        { name: "description", content: description },
         { property: "og:title", content: `${est.name} | Cardápio` },
-        { property: "og:description", content: est.description || "Veja o cardápio digital." },
+        { property: "og:description", content: description },
         { property: "og:image", content: est.cover_url || est.logo_url || "" }
       ]
     };

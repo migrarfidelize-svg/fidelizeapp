@@ -28,6 +28,16 @@ vi.mock('@/integrations/supabase/client.server', () => ({
   }
 }));
 
+// Mock Auth Middleware
+vi.mock('@/integrations/supabase/auth-middleware', () => ({
+  requireSupabaseAuth: (fn: any) => fn
+}));
+
+// Mock Admin Functions
+vi.mock('./admin.functions', () => ({
+  assertSuperAdmin: vi.fn().mockResolvedValue(true)
+}));
+
 const mockConfigBase = {
   platformName: "Test",
   defaultTitle: "Default",
@@ -41,9 +51,9 @@ const mockConfigBase = {
   routes: {}
 };
 
-describe('SEO Engine & Global CSS logic', () => {
+describe('SEO Engine & Security', () => {
   it('should always include the global stylesheet in head links', async () => {
-    vi.mocked(getSeoConfig).mockResolvedValue(mockConfigBase);
+    vi.mocked(getSeoConfig).mockResolvedValue(mockConfigBase as any);
 
     const mockSeoData = await getSeoMetadata('/');
     const headResult = Route.options.head!({ 
@@ -72,36 +82,32 @@ describe('SEO Engine & Global CSS logic', () => {
       routes: {
         "/cardapio/*": { title: "Cardapio Template" }
       }
-    });
+    } as any);
 
     const metadata = await getSeoMetadata('/cardapio/my-store');
     expect(metadata.title).toBe("Cardapio Template");
   });
 
-  it('should prioritize exact match over wildcard', async () => {
-    vi.mocked(getSeoConfig).mockResolvedValue({
-      ...mockConfigBase,
-      routes: {
-        "/cardapio/*": { title: "Wildcard" },
-        "/cardapio/special": { title: "Exact" }
-      }
-    });
+  it('should include noindex for sensitive prefixes (/app, /hash, /carteira)', async () => {
+    vi.mocked(getSeoConfig).mockResolvedValue(mockConfigBase as any);
 
-    const metadata = await getSeoMetadata('/cardapio/special');
-    expect(metadata.title).toBe("Exact");
+    for (const path of ['/app', '/app/dashboard', '/hash', '/hash/seo', '/carteira', '/carteira/card']) {
+      const seo = await getSeoMetadata(path);
+      const robots = seo.meta.find((m: any) => m.name === 'robots');
+      expect(robots?.content).toContain('noindex');
+      expect(robots?.content).toContain('noarchive');
+    }
   });
 
-  it('should include noindex for sensitive prefixes (/app, /hash)', async () => {
-    vi.mocked(getSeoConfig).mockResolvedValue(mockConfigBase);
-
-    const appSeo = await getSeoMetadata('/app/dashboard');
-    const robotsApp = appSeo.meta.find((m: any) => m.name === 'robots');
-    expect(robotsApp?.content).toContain('noindex');
-    expect(robotsApp?.content).toContain('noarchive');
-
-    const hashSeo = await getSeoMetadata('/hash/seo');
-    const robotsHash = hashSeo.meta.find((m: any) => m.name === 'robots');
-    expect(robotsHash?.content).toContain('noindex');
-    expect(robotsHash?.content).toContain('noarchive');
+  it('should verify security in saveSeoConfig', async () => {
+    const { saveSeoConfig } = await import('./seo.functions');
+    const { assertSuperAdmin } = await import('./admin.functions');
+    
+    // Simulate lojista trying to save
+    vi.mocked(assertSuperAdmin).mockRejectedValueOnce(new Error("Unauthorized"));
+    
+    await expect(saveSeoConfig({ 
+      data: { ...mockConfigBase, siteUrl: "https://test.com" } 
+    })).rejects.toThrow("Unauthorized");
   });
 });

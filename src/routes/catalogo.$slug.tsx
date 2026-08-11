@@ -33,14 +33,17 @@ export const Route = createFileRoute("/catalogo/$slug")({
     return d;
   },
   head: ({ loaderData }) => {
-    const est = loaderData?.establishment;
+    const est = loaderData?.establishment as any;
     if (!est) return {};
+    const title = `${est.name} | Catálogo | Afidelize`;
+    const description = est.description || "Confira nosso catálogo de produtos.";
+    
     return {
-      title: `${est.name} | Catálogo | Afidelize`,
+      title,
       meta: [
-        { name: "description", content: est.description || "Confira nosso catálogo de produtos." },
+        { name: "description", content: description },
         { property: "og:title", content: `${est.name} | Catálogo` },
-        { property: "og:description", content: est.description || "Confira nosso catálogo de produtos." },
+        { property: "og:description", content: description },
         { property: "og:image", content: est.cover_url || est.logo_url || "" }
       ]
     };

@@ -16,25 +16,18 @@ export const Route = createFileRoute("/api/public/manifest")({
           background_color: config.backgroundColor || "#ffffff",
           theme_color: config.themeColor,
           icons: [
-            {
-              src: config.faviconUrl || "/favicon.ico",
-              sizes: "any",
-              type: config.faviconUrl?.endsWith(".png") ? "image/png" : 
-                    config.faviconUrl?.endsWith(".svg") ? "image/svg+xml" : 
-                    config.faviconUrl?.endsWith(".webp") ? "image/webp" : "image/x-icon"
-            },
-            {
-              src: config.pwaIcon192Url || "/icon-192.png",
+            ...(config.pwaIcon192Url ? [{
+              src: config.pwaIcon192Url,
               sizes: "192x192",
               type: "image/png",
               purpose: "any maskable"
-            },
-            {
-              src: config.pwaIcon512Url || "/icon-512.png",
+            }] : []),
+            ...(config.pwaIcon512Url ? [{
+              src: config.pwaIcon512Url,
               sizes: "512x512",
               type: "image/png",
               purpose: "any maskable"
-            }
+            }] : [])
           ]
         };
 

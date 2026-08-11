@@ -45,14 +45,17 @@ export const Route = createFileRoute("/e/$slug")({
     return d;
   },
   head: ({ loaderData }) => {
-    const est = loaderData?.establishment;
+    const est = loaderData?.establishment as any;
     if (!est) return {};
+    const title = `${est.name} | Descobrir | Afidelize`;
+    const description = est.description || "Conheça este estabelecimento.";
+    
     return {
-      title: `${est.name} | Descobrir | Afidelize`,
+      title,
       meta: [
-        { name: "description", content: est.description || "Conheça este estabelecimento." },
+        { name: "description", content: description },
         { property: "og:title", content: est.name },
-        { property: "og:description", content: est.description || "Conheça este estabelecimento." },
+        { property: "og:description", content: description },
         { property: "og:image", content: est.cover_url || est.logo_url || "" }
       ]
     };
