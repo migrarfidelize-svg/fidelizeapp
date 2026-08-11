@@ -446,15 +446,27 @@ export const getCRMFlows = createServerFn({ method: "GET" })
     const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
     if (!isAdmin) throw new Error("Acesso restrito.");
 
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const ESTABLISHMENT_ID = 'f406351f-487b-47db-b0d3-bd5cb918b6c3';
+
     try {
       const { ensureDefaultWhatsAppFlow } = await import("./crm/bootstrap.server");
       await ensureDefaultWhatsAppFlow();
-    } catch (err) {
+    } catch (err: any) {
       console.error("[CRM Functions] Bootstrap failure in getCRMFlows:", err);
-      // We still try to query even if bootstrap fails
+      // Erro explícito de bootstrap parcial ou falha crítica
+      if (err.message?.includes("CRM_DEFAULT_FLOW_PARTIAL")) {
+        throw new Error(err.message);
+      }
+      throw err;
     }
 
-    const { data, error } = await supabase.from("crm_flows").select("*").order("created_at", { ascending: false });
+    const { data, error } = await supabaseAdmin
+      .from("crm_flows")
+      .select("*")
+      .eq("establishment_id", ESTABLISHMENT_ID)
+      .order("created_at", { ascending: false });
+
     if (error) throw error;
     return data || [];
   });
