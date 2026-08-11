@@ -28,20 +28,22 @@ vi.mock('@/integrations/supabase/client.server', () => ({
   }
 }));
 
+const mockConfigBase = {
+  platformName: "Test",
+  defaultTitle: "Default",
+  defaultDescription: "Desc",
+  shortName: "T",
+  siteUrl: "https://test.com",
+  faviconUrl: "/favicon.ico",
+  logoUrl: "/logo.svg",
+  socialImageUrl: "/og.png",
+  themeColor: "#000000",
+  routes: {}
+};
+
 describe('SEO Engine & Global CSS logic', () => {
   it('should always include the global stylesheet in head links', async () => {
-    vi.mocked(getSeoConfig).mockResolvedValue({
-      platformName: "Test",
-      defaultTitle: "Default",
-      defaultDescription: "Desc",
-      shortName: "T",
-      siteUrl: "https://test.com",
-      faviconUrl: "/favicon.ico",
-      logoUrl: "/logo.svg",
-      socialImageUrl: "/og.png",
-      themeColor: "#000000",
-      routes: {}
-    });
+    vi.mocked(getSeoConfig).mockResolvedValue(mockConfigBase);
 
     const mockSeoData = await getSeoMetadata('/');
     const headResult = Route.options.head!({ 
@@ -66,15 +68,7 @@ describe('SEO Engine & Global CSS logic', () => {
 
   it('should resolve wildcard routes correctly (e.g. /cardapio/*)', async () => {
     vi.mocked(getSeoConfig).mockResolvedValue({
-      platformName: "Test",
-      defaultTitle: "Default",
-      defaultDescription: "Desc",
-      shortName: "T",
-      siteUrl: "https://test.com",
-      faviconUrl: "/favicon.ico",
-      logoUrl: "/logo.svg",
-      socialImageUrl: "/og.png",
-      themeColor: "#000000",
+      ...mockConfigBase,
       routes: {
         "/cardapio/*": { title: "Cardapio Template" }
       }
@@ -86,15 +80,7 @@ describe('SEO Engine & Global CSS logic', () => {
 
   it('should prioritize exact match over wildcard', async () => {
     vi.mocked(getSeoConfig).mockResolvedValue({
-      platformName: "Test",
-      defaultTitle: "Default",
-      defaultDescription: "Desc",
-      shortName: "T",
-      siteUrl: "https://test.com",
-      faviconUrl: "/favicon.ico",
-      logoUrl: "/logo.svg",
-      socialImageUrl: "/og.png",
-      themeColor: "#000000",
+      ...mockConfigBase,
       routes: {
         "/cardapio/*": { title: "Wildcard" },
         "/cardapio/special": { title: "Exact" }
@@ -106,25 +92,16 @@ describe('SEO Engine & Global CSS logic', () => {
   });
 
   it('should include noindex for sensitive prefixes (/app, /hash)', async () => {
-    vi.mocked(getSeoConfig).mockResolvedValue({
-      platformName: "Test",
-      defaultTitle: "Default",
-      defaultDescription: "Desc",
-      shortName: "T",
-      siteUrl: "https://test.com",
-      faviconUrl: "/favicon.ico",
-      logoUrl: "/logo.svg",
-      socialImageUrl: "/og.png",
-      themeColor: "#000000",
-      routes: {}
-    });
+    vi.mocked(getSeoConfig).mockResolvedValue(mockConfigBase);
 
     const appSeo = await getSeoMetadata('/app/dashboard');
     const robotsApp = appSeo.meta.find((m: any) => m.name === 'robots');
     expect(robotsApp?.content).toContain('noindex');
+    expect(robotsApp?.content).toContain('noarchive');
 
     const hashSeo = await getSeoMetadata('/hash/seo');
     const robotsHash = hashSeo.meta.find((m: any) => m.name === 'robots');
     expect(robotsHash?.content).toContain('noindex');
+    expect(robotsHash?.content).toContain('noarchive');
   });
 });
