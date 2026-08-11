@@ -27,7 +27,8 @@ export async function processAgentMessage(input: AgentEngineInput) {
   if (convErr || !conv) return;
 
   // 2. Bloqueios de Segurança (Server-side)
-  if (['waiting', 'assigned', 'closed'].includes(conv.status)) {
+  // Agent só responde se a conversa estiver em modo bot
+  if (conv.status !== 'bot') {
     console.log(`[Agent Engine] Aborting: Conversation status is ${conv.status}`);
     return;
   }
@@ -43,9 +44,23 @@ export async function processAgentMessage(input: AgentEngineInput) {
   const agentConfig = (agentConfigRow?.value as any) || {};
   if (!agentConfig.enabled) return;
 
-  // 4. Handoff Manual (Keywords)
-  const handoffKeywords = agentConfig.handoff?.keywords || ['atendente', 'humano', 'suporte', 'falar com alguém'];
-  if (handoffKeywords.some((k: string) => inboundText.toLowerCase().includes(k.toLowerCase()))) {
+  // 4. Handoff e Comandos Globais (Keywords)
+  const normalizedInput = inboundText.toLowerCase().trim();
+  
+  // Comandos de Menu
+  const menuKeywords = ['menu', 'voltar', 'início', 'inicio', 'opções', 'opcoes'];
+  if (menuKeywords.some(k => normalizedInput === k)) {
+    const mainFlowId = agentConfig?.behavior?.mainFlowId;
+    if (mainFlowId) {
+      const { executeFlow } = await import("./flow-engine.server");
+      await updateAgentFlowState(conv.id, mainFlowId, null, { mode: 'flow' });
+      // Forçar re-execução do fluxo para mostrar o menu
+      return await executeFlow(conv.id, "menu");
+    }
+  }
+
+  const handoffKeywords = agentConfig.handoff?.keywords || ['atendente', 'humano', 'suporte', 'falar com alguém', 'falar com uma pessoa'];
+  if (handoffKeywords.some((k: string) => normalizedInput.includes(k.toLowerCase()))) {
     return await executeHandoff(conv, agentConfig.handoff?.message || "Vou encaminhar você para nossa equipe. Aguarde um momento. 💜");
   }
 
