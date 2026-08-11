@@ -44,22 +44,6 @@ export const Route = createFileRoute("/e/$slug")({
     if (!d?.establishment) throw notFound();
     return d;
   },
-  head: ({ loaderData }) => {
-    const est = loaderData?.establishment as any;
-    if (!est) return {};
-    const title = `${est.name} | Descobrir | Afidelize`;
-    const description = est.description || "Conheça este estabelecimento.";
-    
-    return {
-      title,
-      meta: [
-        { name: "description", content: description },
-        { property: "og:title", content: est.name },
-        { property: "og:description", content: description },
-        { property: "og:image", content: est.cover_url || est.logo_url || "" }
-      ]
-    };
-  },
   component: DiscoveryProfilePage,
   errorComponent: ({ error, reset }) => (
     <div className="mx-auto max-w-2xl p-6">
