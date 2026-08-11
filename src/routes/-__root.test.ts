@@ -34,8 +34,8 @@ vi.mock('@/integrations/supabase/auth-middleware', () => ({
 }));
 
 // Mock Admin Functions
-vi.mock('./admin.functions', () => ({
-  assertSuperAdmin: vi.fn().mockResolvedValue(true)
+vi.mock('@/lib/admin.functions', () => ({
+  assertSuperAdmin: vi.fn(),
 }));
 
 const mockConfigBase = {
