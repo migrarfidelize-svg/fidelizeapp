@@ -60,7 +60,7 @@ describe('CRM Flow Engine', () => {
 
     const result = await executeFlow('conv-123', 'oi');
     expect(result.ok).toBe(true);
-    expect(result.action).toBe('welcome_menu');
+    expect(result.action).toBe('menu'); // Because step 0 advances to step 1 (options), which returns 'menu'
   });
 
   it('comando menu -> volta para o menu', async () => {
