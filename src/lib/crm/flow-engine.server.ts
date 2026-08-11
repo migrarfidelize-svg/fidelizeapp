@@ -123,9 +123,11 @@ export async function executeFlow(conversationId: string, messageBody: string) {
     const currentIdx = steps.findIndex((s: any) => s.id === flowState.stepId);
     if (currentIdx === -1) return;
     const currentStep = steps[currentIdx];
+    const payload = (currentStep.payload as any) || {};
     
     if (currentStep.step_key === 'options') {
-      const option = currentStep.payload.options?.find((o: any) => o.value === messageBody.trim());
+      const options = (payload.options as any[]) || [];
+      const option = options.find((o: any) => o.value === messageBody.trim());
       if (option) {
         const next = steps.find((s: any) => s.id === option.nextStepId);
         if (next) return await processStep(conv, next, steps);
