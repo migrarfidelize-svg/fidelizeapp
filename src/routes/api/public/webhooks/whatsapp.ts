@@ -50,13 +50,14 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
         if (existingMsg) return new Response("Duplicate", { status: 200 });
 
         // 5. Contact Sync
-        let { data: contact } = await supabaseAdmin
+        let contact: any = null;
+        const { data: existingContact } = await supabaseAdmin
           .from("crm_contacts")
           .select("id, name, name_source")
           .eq("phone", customerPhone)
           .maybeSingle();
 
-        if (!contact) {
+        if (!existingContact) {
           const { data: newContact } = await supabaseAdmin
             .from("crm_contacts")
             .insert({
@@ -65,15 +66,19 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
               name_source: pushName ? 'push_name' : null,
               accept_communications: true
             })
-            .select("id")
+            .select("id, name, name_source")
             .single();
           contact = newContact;
-        } else if (pushName && (!contact.name || contact.name_source === 'push_name')) {
-          await supabaseAdmin.from("crm_contacts").update({ name: pushName, name_source: 'push_name' }).eq("id", contact.id);
+        } else {
+          contact = existingContact;
+          if (pushName && (!contact.name || contact.name_source === 'push_name')) {
+            await supabaseAdmin.from("crm_contacts").update({ name: pushName, name_source: 'push_name' }).eq("id", contact.id);
+          }
         }
 
         // 6. Conversation
-        let { data: conversation } = await supabaseAdmin
+        let conversation: any = null;
+        const { data: existingConv } = await supabaseAdmin
           .from("crm_conversations")
           .select("id, status")
           .eq("establishment_id", establishmentId)
@@ -81,7 +86,7 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
           .neq("status", "closed")
           .maybeSingle();
 
-        if (!conversation) {
+        if (!existingConv) {
           const { data: newConv } = await supabaseAdmin
             .from("crm_conversations")
             .insert({
@@ -94,13 +99,17 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
             .select("id, status")
             .single();
           conversation = newConv;
+        } else {
+          conversation = existingConv;
         }
+
+        if (!conversation?.id) return new Response("Error identifying conversation", { status: 200 });
 
         // 7. Queue Message
         const { data: message, error: msgErr } = await supabaseAdmin
           .from("crm_messages")
           .insert({
-            conversation_id: conversation?.id,
+            conversation_id: conversation.id,
             establishment_id: establishmentId,
             body: text,
             direction: "inbound",
@@ -114,14 +123,16 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
           .select("id")
           .single();
 
-        if (msgErr || !message) return new Response("Error", { status: 200 });
+        if (msgErr || !message) return new Response("Error persisting message", { status: 200 });
 
         // 8. Process with Lock
         const lockToken = Math.random().toString(36).substring(7);
+        const convId = conversation.id;
+        
         (async () => {
           for (let i = 0; i < 3; i++) {
             const { data: locked } = await supabaseAdmin.rpc("acquire_crm_lock", {
-              _conv_id: conversation?.id,
+              _conv_id: convId,
               _token: lockToken,
               _ttl_sec: 30
             });
@@ -131,14 +142,14 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
                 const { data: pending } = await supabaseAdmin
                   .from("crm_messages")
                   .select("*")
-                  .eq("conversation_id", conversation?.id)
+                  .eq("conversation_id", convId)
                   .is("processed_at", null)
                   .order("created_at", { ascending: true });
 
                 if (pending?.length) {
                   const { executeFlow } = await import("@/lib/crm/flow-engine.server");
                   for (const m of pending) {
-                    await executeFlow(conversation?.id!, m.body || "");
+                    await executeFlow(convId, m.body || "");
                     await supabaseAdmin.from("crm_messages").update({ processed_at: new Date().toISOString() }).eq("id", m.id);
                   }
                 }
@@ -146,7 +157,7 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
               } catch (err) {
                 console.error("[Webhook] Processing Error:", err);
               } finally {
-                await supabaseAdmin.rpc("release_crm_lock", { _conv_id: conversation?.id, _token: lockToken });
+                await supabaseAdmin.rpc("release_crm_lock", { _conv_id: convId, _token: lockToken });
               }
             } else {
               await new Promise(r => setTimeout(r, 500 * (i + 1)));
