@@ -9,6 +9,7 @@ export type SeoConfig = {
   faviconUrl: string;
   logoUrl: string;
   socialImageUrl: string;
+  appleTouchIconUrl?: string;
   themeColor: string;
   routes: Record<string, {
     title?: string;

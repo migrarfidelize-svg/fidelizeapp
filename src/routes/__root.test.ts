@@ -19,21 +19,43 @@ describe('Root Route SEO & Assets', () => {
     expect(hasGlobalCss).toBe(true);
   });
 
-  it('should merge SEO links with base structural links', () => {
-    const seoLink = { rel: 'canonical', href: 'https://example.com' };
+  it('should include one canonical, one favicon, and one manifest from SEO data', () => {
+    const seoLinks = [
+      { rel: 'canonical', href: 'https://example.com' },
+      { rel: 'icon', href: '/custom-favicon.ico' },
+      { rel: 'manifest', href: '/api/public/manifest' }
+    ];
     const mockLoaderData = {
       title: 'Test',
       meta: [],
-      links: [seoLink]
+      links: seoLinks
     };
     
     const headResult = (Route.options.head as any)({ loaderData: mockLoaderData });
     
-    expect(headResult.links).toContainEqual(seoLink);
-    expect(headResult.links.some((l: any) => l.rel === 'stylesheet')).toBe(true);
+    expect(headResult.links.filter((l: any) => l.rel === 'canonical')).toHaveLength(1);
+    expect(headResult.links.filter((l: any) => l.rel === 'icon')).toHaveLength(1);
+    expect(headResult.links.filter((l: any) => l.rel === 'manifest')).toHaveLength(1);
+    expect(headResult.links.find((l: any) => l.rel === 'icon').href).toBe('/custom-favicon.ico');
   });
 
-  it('should not duplicate the global stylesheet if already present in SEO data', () => {
+  it('should include at most one apple-touch-icon', () => {
+    const seoLinks = [
+      { rel: 'apple-touch-icon', sizes: '180x180', href: '/custom-apple.png' }
+    ];
+    const mockLoaderData = {
+      title: 'Test',
+      meta: [],
+      links: seoLinks
+    };
+    
+    const headResult = (Route.options.head as any)({ loaderData: mockLoaderData });
+    
+    expect(headResult.links.filter((l: any) => l.rel === 'apple-touch-icon')).toHaveLength(1);
+    expect(headResult.links.find((l: any) => l.rel === 'apple-touch-icon').href).toBe('/custom-apple.png');
+  });
+
+  it('should not duplicate the global stylesheet even if provided by SEO', () => {
     const mockLoaderData = {
       title: 'Test',
       meta: [],

@@ -186,6 +186,14 @@ function SeoAdmin() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label>Apple Touch Icon</Label>
+                  <Input 
+                    placeholder="Fallback para favicon se vazio (Recomendado 180x180px)..."
+                    value={formData.appleTouchIconUrl || ""} 
+                    onChange={e => handleGeneralChange("appleTouchIconUrl", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label>Imagem de Compartilhamento (OG)</Label>
                   <Input 
                     value={formData.socialImageUrl} 
