@@ -59,6 +59,7 @@ const DEFAULT_SEO: SeoConfig = {
 
 export async function getSeoConfig(): Promise<SeoConfig> {
   try {
+    if (!supabaseAdmin) return DEFAULT_SEO;
     const { data, error } = await supabaseAdmin
       .from("system_settings")
       .select("value")
