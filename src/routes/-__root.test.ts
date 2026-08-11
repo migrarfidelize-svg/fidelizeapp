@@ -100,8 +100,8 @@ describe('SEO Engine & Security', () => {
   });
 
   it('should verify security in saveSeoConfig', async () => {
-    const { saveSeoConfig } = await import('./seo.functions');
-    const { assertSuperAdmin } = await import('./admin.functions');
+    const { saveSeoConfig } = await import('@/lib/seo.functions');
+    const { assertSuperAdmin } = await import('@/lib/admin.functions');
     
     // Simulate lojista trying to save
     vi.mocked(assertSuperAdmin).mockRejectedValueOnce(new Error("Unauthorized"));
