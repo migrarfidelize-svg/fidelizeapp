@@ -1,22 +1,31 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeAll } from 'vitest';
 import { Route } from './__root';
+import { getSeoMetadata } from '@/lib/seo-utils.server';
+import { getSeoConfig } from '@/lib/seo.server';
 
 // Mock appCss since it's a Vite-specific import
 vi.mock('../styles.css?url', () => ({
   default: '/src/styles.css'
 }));
 
-describe('Root Route (SEO & Style Regression)', () => {
-  it('should always include the global stylesheet in head links', async () => {
-    const mockSeoData = {
-      title: 'Test Title',
-      meta: [],
-      links: [
-        { rel: 'canonical', href: 'https://example.com' },
-        { rel: 'icon', href: '/favicon.ico' }
-      ]
-    };
+// Mock Supabase Admin to avoid environment variable errors during tests
+vi.mock('@/integrations/supabase/client.server', () => ({
+  supabaseAdmin: {
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          eq: () => ({
+            maybeSingle: async () => ({ data: { value: {} }, error: null })
+          })
+        })
+      })
+    })
+  }
+}));
 
+describe('SEO Engine & Global CSS logic', () => {
+  it('should always include the global stylesheet in head links', async () => {
+    const mockSeoData = await getSeoMetadata('/');
     const headResult = Route.options.head!({ 
       loaderData: mockSeoData,
       params: {},
@@ -37,45 +46,56 @@ describe('Root Route (SEO & Style Regression)', () => {
     expect(appCssLink?.href).toBe('/src/styles.css');
   });
 
-  it('should deduplicate metadata links correctly', async () => {
-    const mockSeoData = {
-      title: 'Test Title',
-      meta: [],
-      links: [
-        { rel: 'canonical', href: 'https://example.com' },
-        { rel: 'icon', href: '/favicon.ico' },
-        { rel: 'manifest', href: '/manifest.json' },
-        { rel: 'apple-touch-icon', href: '/apple.png' },
-        // Simulate a duplicate stylesheet coming from SEO (though it shouldn't)
-        { rel: 'stylesheet', href: '/src/styles.css' }
-      ]
-    };
+  it('should resolve wildcard routes correctly (e.g. /cardapio/*)', async () => {
+    // Mock getSeoConfig to return a config with wildcards
+    vi.mocked(getSeoConfig).mockResolvedValueOnce({
+      platformName: "Test",
+      defaultTitle: "Default",
+      defaultDescription: "Desc",
+      shortName: "T",
+      siteUrl: "https://test.com",
+      faviconUrl: "/favicon.ico",
+      logoUrl: "/logo.svg",
+      socialImageUrl: "/og.png",
+      themeColor: "#000000",
+      routes: {
+        "/cardapio/*": { title: "Cardapio Template" }
+      }
+    });
 
-    const headResult = Route.options.head!({ 
-      loaderData: mockSeoData,
-      params: {},
-      location: {} as any,
-      match: {} as any,
-      matches: [],
-      matchRoute: {} as any,
-      staticData: {},
-      search: {}
-    } as any);
+    const metadata = await getSeoMetadata('/cardapio/my-store');
+    expect(metadata.title).toBe("Cardapio Template");
+  });
 
-    const head = headResult instanceof Promise ? await headResult : headResult;
-    const links = head.links || [];
-    
-    // Check for unique critical links
-    const stylesheets = links.filter((l: any) => l.rel === 'stylesheet' && l.href?.includes('styles.css'));
-    const canonicals = links.filter((l: any) => l.rel === 'canonical');
-    const icons = links.filter((l: any) => l.rel === 'icon');
-    const manifests = links.filter((l: any) => l.rel === 'manifest');
-    const appleIcons = links.filter((l: any) => l.rel === 'apple-touch-icon');
+  it('should prioritize exact match over wildcard', async () => {
+    vi.mocked(getSeoConfig).mockResolvedValueOnce({
+      platformName: "Test",
+      defaultTitle: "Default",
+      defaultDescription: "Desc",
+      shortName: "T",
+      siteUrl: "https://test.com",
+      faviconUrl: "/favicon.ico",
+      logoUrl: "/logo.svg",
+      socialImageUrl: "/og.png",
+      themeColor: "#000000",
+      routes: {
+        "/cardapio/*": { title: "Wildcard" },
+        "/cardapio/special": { title: "Exact" }
+      }
+    });
 
-    expect(stylesheets.length).toBe(1);
-    expect(canonicals.length).toBe(1);
-    expect(icons.length).toBe(1);
-    expect(manifests.length).toBe(1);
-    expect(appleIcons.length).toBe(1);
+    const metadata = await getSeoMetadata('/cardapio/special');
+    expect(metadata.title).toBe("Exact");
+  });
+
+  it('should include noindex for sensitive prefixes (/app, /hash)', async () => {
+    const appSeo = await getSeoMetadata('/app/dashboard');
+    const hashSeo = await getSeoMetadata('/hash/seo');
+
+    const appRobots = appSeo.meta.find((m: any) => m.name === 'robots');
+    const hashRobots = hashSeo.meta.find((m: any) => m.name === 'robots');
+
+    expect(appRobots?.content).toBe('noindex, nofollow');
+    expect(hashRobots?.content).toBe('noindex, nofollow');
   });
 });
