@@ -42,8 +42,11 @@ export async function executeFlow(conversationId: string, messageBody: string) {
     }
   }
 
-  // Se a conversa já estiver em modo Agent, redirecionar para o processador de IA
+  const flowState = (conv.metadata as any)?.flow_state;
+  let currentFlowId = flowState?.flowId;
+  let currentStepId = flowState?.stepId;
 
+  // Se a conversa já estiver em modo Agent, redirecionar para o processador de IA
   if (flowState?.mode === 'agent' && conv.status === 'bot') {
     const { processAgentMessage } = await import("./agent-engine.server");
     await processAgentMessage({
@@ -60,6 +63,7 @@ export async function executeFlow(conversationId: string, messageBody: string) {
     currentFlowId = agentConfig?.behavior?.mainFlowId;
     if (!currentFlowId) return;
   }
+
 
   const { data: flow } = await (supabaseAdmin as any)
     .from("crm_flows")
