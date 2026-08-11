@@ -54,6 +54,7 @@ import { Route as SuporteSlugNovoRouteImport } from './routes/suporte.$slug.novo
 import { Route as AjudaCategoryArticleRouteImport } from './routes/ajuda.$category.$article'
 import { Route as AuthenticatedHashUsuariosRouteImport } from './routes/_authenticated/hash.usuarios'
 import { Route as AuthenticatedHashStudioRouteImport } from './routes/_authenticated/hash.studio'
+import { Route as AuthenticatedHashSeoRouteImport } from './routes/_authenticated/hash.seo'
 import { Route as AuthenticatedHashPixelRouteImport } from './routes/_authenticated/hash.pixel'
 import { Route as AuthenticatedHashPagamentosRouteImport } from './routes/_authenticated/hash.pagamentos'
 import { Route as AuthenticatedHashNotificacoesRouteImport } from './routes/_authenticated/hash.notificacoes'
@@ -375,6 +376,11 @@ const AuthenticatedHashUsuariosRoute =
 const AuthenticatedHashStudioRoute = AuthenticatedHashStudioRouteImport.update({
   id: '/studio',
   path: '/studio',
+  getParentRoute: () => AuthenticatedHashRoute,
+} as any)
+const AuthenticatedHashSeoRoute = AuthenticatedHashSeoRouteImport.update({
+  id: '/seo',
+  path: '/seo',
   getParentRoute: () => AuthenticatedHashRoute,
 } as any)
 const AuthenticatedHashPixelRoute = AuthenticatedHashPixelRouteImport.update({
@@ -1020,6 +1026,7 @@ export interface FileRoutesByFullPath {
   '/hash/notificacoes': typeof AuthenticatedHashNotificacoesRoute
   '/hash/pagamentos': typeof AuthenticatedHashPagamentosRoute
   '/hash/pixel': typeof AuthenticatedHashPixelRoute
+  '/hash/seo': typeof AuthenticatedHashSeoRoute
   '/hash/studio': typeof AuthenticatedHashStudioRoute
   '/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
@@ -1157,6 +1164,7 @@ export interface FileRoutesByTo {
   '/hash/notificacoes': typeof AuthenticatedHashNotificacoesRoute
   '/hash/pagamentos': typeof AuthenticatedHashPagamentosRoute
   '/hash/pixel': typeof AuthenticatedHashPixelRoute
+  '/hash/seo': typeof AuthenticatedHashSeoRoute
   '/hash/studio': typeof AuthenticatedHashStudioRoute
   '/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
@@ -1301,6 +1309,7 @@ export interface FileRoutesById {
   '/_authenticated/hash/notificacoes': typeof AuthenticatedHashNotificacoesRoute
   '/_authenticated/hash/pagamentos': typeof AuthenticatedHashPagamentosRoute
   '/_authenticated/hash/pixel': typeof AuthenticatedHashPixelRoute
+  '/_authenticated/hash/seo': typeof AuthenticatedHashSeoRoute
   '/_authenticated/hash/studio': typeof AuthenticatedHashStudioRoute
   '/_authenticated/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
@@ -1445,6 +1454,7 @@ export interface FileRouteTypes {
     | '/hash/notificacoes'
     | '/hash/pagamentos'
     | '/hash/pixel'
+    | '/hash/seo'
     | '/hash/studio'
     | '/hash/usuarios'
     | '/ajuda/$category/$article'
@@ -1582,6 +1592,7 @@ export interface FileRouteTypes {
     | '/hash/notificacoes'
     | '/hash/pagamentos'
     | '/hash/pixel'
+    | '/hash/seo'
     | '/hash/studio'
     | '/hash/usuarios'
     | '/ajuda/$category/$article'
@@ -1725,6 +1736,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hash/notificacoes'
     | '/_authenticated/hash/pagamentos'
     | '/_authenticated/hash/pixel'
+    | '/_authenticated/hash/seo'
     | '/_authenticated/hash/studio'
     | '/_authenticated/hash/usuarios'
     | '/ajuda/$category/$article'
@@ -2157,6 +2169,13 @@ declare module '@tanstack/react-router' {
       path: '/studio'
       fullPath: '/hash/studio'
       preLoaderRoute: typeof AuthenticatedHashStudioRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/seo': {
+      id: '/_authenticated/hash/seo'
+      path: '/seo'
+      fullPath: '/hash/seo'
+      preLoaderRoute: typeof AuthenticatedHashSeoRouteImport
       parentRoute: typeof AuthenticatedHashRoute
     }
     '/_authenticated/hash/pixel': {
@@ -3015,6 +3034,7 @@ interface AuthenticatedHashRouteChildren {
   AuthenticatedHashNotificacoesRoute: typeof AuthenticatedHashNotificacoesRoute
   AuthenticatedHashPagamentosRoute: typeof AuthenticatedHashPagamentosRoute
   AuthenticatedHashPixelRoute: typeof AuthenticatedHashPixelRoute
+  AuthenticatedHashSeoRoute: typeof AuthenticatedHashSeoRoute
   AuthenticatedHashStudioRoute: typeof AuthenticatedHashStudioRoute
   AuthenticatedHashUsuariosRoute: typeof AuthenticatedHashUsuariosRoute
   AuthenticatedHashIndexRoute: typeof AuthenticatedHashIndexRoute
@@ -3047,6 +3067,7 @@ const AuthenticatedHashRouteChildren: AuthenticatedHashRouteChildren = {
   AuthenticatedHashNotificacoesRoute: AuthenticatedHashNotificacoesRoute,
   AuthenticatedHashPagamentosRoute: AuthenticatedHashPagamentosRoute,
   AuthenticatedHashPixelRoute: AuthenticatedHashPixelRoute,
+  AuthenticatedHashSeoRoute: AuthenticatedHashSeoRoute,
   AuthenticatedHashStudioRoute: AuthenticatedHashStudioRoute,
   AuthenticatedHashUsuariosRoute: AuthenticatedHashUsuariosRoute,
   AuthenticatedHashIndexRoute: AuthenticatedHashIndexRoute,
@@ -3172,13 +3193,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { getSeoConfig, type SeoConfig } from "./seo.server";
+import { getSeoConfig } from "./seo.server";
 
 export const getPublicSeo = createServerFn({ method: "GET" })
   .handler(async () => {
@@ -8,19 +8,20 @@ export const getPublicSeo = createServerFn({ method: "GET" })
   });
 
 export const saveSeoConfig = createServerFn({ method: "POST" })
-  .input(z.any())
+  .validator((data: any) => data)
   .handler(async ({ data }) => {
-    // Only admins should call this. In practice, the route gate handles it.
-    // We import supabaseAdmin here because we're on the server.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     
+    // In system_settings, the unique constraint might be on 'namespace' and 'key'.
+    // We'll use namespace='seo' and key='config' to be safe.
     const { error } = await supabaseAdmin
       .from("system_settings")
       .upsert({
         namespace: "seo",
+        key: "config",
         value: data,
         updated_at: new Date().toISOString()
-      }, { onConflict: "namespace" });
+      }, { onConflict: "namespace,key" });
 
     if (error) throw new Error(error.message);
     return { success: true };
