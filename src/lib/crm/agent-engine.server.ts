@@ -113,7 +113,7 @@ export async function processAgentMessage(input: AgentEngineInput): Promise<void
     }
 
     // 9. Enviar WhatsApp e Persistir
-    await sendAgentWhatsApp(conv, response.text, { flowId, stepId, agentName: agentConfig.name || "Assistente Fidelize" });
+    await sendAgentWhatsApp(conv, response.message, { flowId, stepId, agentName: agentConfig.name || "Assistente Fidelize" });
 
     // 10. Atualizar Estado da Conversa (Manter modo Agent)
     await updateAgentFlowState(conv.id, flowId, stepId);
