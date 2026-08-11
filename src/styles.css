@@ -531,7 +531,7 @@
 
 /* Compact controls for tools */
 .crm-button-primary {
-  @apply inline-flex items-center justify-center gap-2 px-4 h-9 rounded-lg bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50;
+  @apply inline-flex items-center justify-center gap-2 px-4 h-9 rounded-lg bg-primary text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-95 transition-all disabled:opacity-50;
 }
 
 .crm-button-secondary {
@@ -671,43 +671,50 @@
 }
 
 .crm-button-primary {
-  background: var(--crm-primary);
-  color: var(--primary-foreground);
-  font-weight: 600;
-  border-radius: var(--crm-radius);
+  background: var(--primary);
+  color: white !important;
+  font-weight: 700;
+  border-radius: var(--radius);
   height: 40px;
   padding: 0 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 11px;
   transition: all 0.2s ease;
-  border: none;
-  white-space: nowrap;
+  box-shadow: 0 4px 12px color-mix(in oklab, var(--primary) 25%, transparent);
 }
 
 .crm-button-primary:hover:not(:disabled) {
   opacity: 0.9;
   transform: translateY(-1px);
+  box-shadow: 0 6px 16px color-mix(in oklab, var(--primary) 35%, transparent);
 }
 
 .crm-button-secondary {
-  background: transparent;
-  color: var(--crm-text-main);
-  border: 1px solid var(--crm-border);
-  font-weight: 600;
-  border-radius: var(--crm-radius);
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  font-weight: 700;
+  border-radius: var(--radius);
   height: 40px;
   padding: 0 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 11px;
   transition: all 0.2s ease;
 }
 
 .crm-button-secondary:hover:not(:disabled) {
   background: var(--muted);
+  border-color: var(--primary);
 }
 
 .crm-table-header {
