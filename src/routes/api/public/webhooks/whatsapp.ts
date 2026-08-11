@@ -205,9 +205,10 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
             conversation_id: conversation.id,
             body: text,
             direction: "inbound",
+            provider: providerId,
             provider_message_id: remoteMessageId,
             message_type: messageType || "text",
-            media_url: mediaUrl,
+            media_url: mediaUrl || null,
             metadata: { raw: body }
           });
 
