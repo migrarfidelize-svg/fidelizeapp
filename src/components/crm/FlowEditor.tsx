@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { GitBranch, MessageSquare, List, HelpCircle, ArrowRight, UserCheck, CheckCircle2, Trash2, Plus, Save, ChevronLeft, Layout, Settings2, PlayCircle, Loader2 } from "lucide-react";
+import { GitBranch, MessageSquare, List, HelpCircle, ArrowRight, UserCheck, CheckCircle2, Trash2, Plus, Save, ChevronLeft, Layout, Settings2, PlayCircle, Loader2, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
