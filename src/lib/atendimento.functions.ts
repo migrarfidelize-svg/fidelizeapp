@@ -508,12 +508,15 @@ export const saveCRMFlow = createServerFn({ method: "POST" })
     if (data.steps && data.steps.length > 0) {
       // Simple strategy: delete existing steps and re-insert to maintain order and clean up
       await supabaseAdmin.from("crm_flow_steps").delete().eq("flow_id", flowId);
-      const stepsToInsert = data.steps.map((step, index) => ({
-        ...step,
-        flow_id: flowId,
-        establishment_id: establishmentId,
-        sort_order: index
-      }));
+      const stepsToInsert = data.steps.map((step, index) => {
+        const { id, ...cleanStep } = step; // Remove ID to avoid PK conflict if not needed, or keep if managed
+        return {
+          ...cleanStep,
+          flow_id: flowId,
+          establishment_id: establishmentId,
+          sort_order: index
+        };
+      });
       await supabaseAdmin.from("crm_flow_steps").insert(stepsToInsert);
     }
 
