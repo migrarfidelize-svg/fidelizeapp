@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-async function assertSuperAdmin(supabase: any, userId: string) {
+export async function assertSuperAdmin(supabase: any, userId: string) {
   const { data, error } = await supabase.rpc("is_super_admin", { _user: userId });
   if (error) throw new Error(error.message);
   if (!data) throw new Error("Acesso restrito: apenas administradores da plataforma.");
