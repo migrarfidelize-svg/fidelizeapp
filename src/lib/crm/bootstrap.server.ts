@@ -32,14 +32,14 @@ export async function ensureDefaultWhatsAppFlow() {
     flowId = newFlow.id;
 
     // 2. Create Steps
-    const steps = [
+    const steps: any[] = [
       {
         step_key: "message",
         payload: { 
           type: "message", 
           text: "Olá, {{nome}}! 👋\n\nBem-vindo ao atendimento Fidelize. 💜\n\nEstou aqui para ajudar.\n\nEscolha uma das opções abaixo para começarmos:" 
         },
-        order_index: 0
+        sort_order: 0
       },
       {
         step_key: "options",
@@ -54,7 +54,7 @@ export async function ensureDefaultWhatsAppFlow() {
             { label: "5 — 👨‍💼 Falar com atendente", value: "5", nextStepId: "placeholder_5" }
           ]
         },
-        order_index: 1
+        sort_order: 1
       },
       {
         step_key: "agent",
@@ -63,7 +63,7 @@ export async function ensureDefaultWhatsAppFlow() {
           text: "Entrando em contato com nosso assistente...",
           context: "O cliente selecionou atendimento relacionado a cartão fidelidade, pontos, carimbos, recompensas e carteira Fidelize. Ajude especificamente sobre esse assunto. Se precisar de dados que não estejam disponíveis no contexto, não invente. Pergunte o necessário ou faça handoff."
         },
-        order_index: 2
+        sort_order: 2
       },
       {
         step_key: "agent",
@@ -72,7 +72,7 @@ export async function ensureDefaultWhatsAppFlow() {
           text: "Entrando em contato com nosso assistente...",
           context: "O cliente quer informações sobre promoções, benefícios, produtos, serviços ou vantagens disponíveis. Utilize somente informações realmente disponíveis no sistema. Não invente promoções."
         },
-        order_index: 3
+        sort_order: 3
       },
       {
         step_key: "agent",
@@ -81,7 +81,7 @@ export async function ensureDefaultWhatsAppFlow() {
           text: "Entrando em contato com nosso assistente...",
           context: "O cliente está com dificuldade relacionada a login, acesso, carteira digital ou utilização da conta. Ajude com orientações seguras. Nunca peça senha. Se for necessário procedimento administrativo, faça handoff para humano."
         },
-        order_index: 4
+        sort_order: 4
       },
       {
         step_key: "agent",
@@ -90,7 +90,7 @@ export async function ensureDefaultWhatsAppFlow() {
           text: "Entrando em contato com nosso assistente...",
           context: "Atendimento geral. Entenda primeiro a necessidade do cliente. Responda utilizando apenas informações disponíveis. Se não conseguir resolver, encaminhe para humano."
         },
-        order_index: 5
+        sort_order: 5
       },
       {
         step_key: "transfer_to_queue",
@@ -98,27 +98,27 @@ export async function ensureDefaultWhatsAppFlow() {
           type: "transfer_to_queue",
           text: "Claro! Vou encaminhar você para nossa equipe. Aguarde um momento. 💜"
         },
-        order_index: 6
+        sort_order: 6
       }
     ];
 
     const { data: createdSteps, error: stepErr } = await supabaseAdmin
       .from("crm_flow_steps")
       .insert(steps.map(s => ({ ...s, flow_id: flowId })))
-      .select("id, order_index");
+      .select("id, sort_order");
 
     if (stepErr) {
       console.error("[CRM Bootstrap] Error creating steps:", stepErr);
     } else {
       // Update options with real step IDs
-      const menuStep = createdSteps.find(s => s.order_index === 1);
+      const menuStep = createdSteps.find((s: any) => s.sort_order === 1);
       if (menuStep) {
         const optionStepIds: Record<string, string> = {
-          "placeholder_1": createdSteps.find(s => s.order_index === 2)?.id || "",
-          "placeholder_2": createdSteps.find(s => s.order_index === 3)?.id || "",
-          "placeholder_3": createdSteps.find(s => s.order_index === 4)?.id || "",
-          "placeholder_4": createdSteps.find(s => s.order_index === 5)?.id || "",
-          "placeholder_5": createdSteps.find(s => s.order_index === 6)?.id || ""
+          "placeholder_1": createdSteps.find((s: any) => s.sort_order === 2)?.id || "",
+          "placeholder_2": createdSteps.find((s: any) => s.sort_order === 3)?.id || "",
+          "placeholder_3": createdSteps.find((s: any) => s.sort_order === 4)?.id || "",
+          "placeholder_4": createdSteps.find((s: any) => s.sort_order === 5)?.id || "",
+          "placeholder_5": createdSteps.find((s: any) => s.sort_order === 6)?.id || ""
         };
         
         const { data: menuStepFull } = await supabaseAdmin.from("crm_flow_steps").select("payload").eq("id", menuStep.id).single();
@@ -158,7 +158,8 @@ export async function ensureDefaultWhatsAppFlow() {
     
     if (aiIntegration) {
       providerId = aiIntegration.provider;
-      model = aiIntegration.config?.default_model || (providerId === 'openai' ? 'gpt-4o-mini' : undefined);
+      const config = aiIntegration.config as any;
+      model = config?.default_model || (providerId === 'openai' ? 'gpt-4o-mini' : undefined);
     }
   }
 
