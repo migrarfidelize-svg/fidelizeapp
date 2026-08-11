@@ -379,13 +379,14 @@ export const sendCRMMessage = createServerFn({ method: "POST" })
 
     const { error: msgErr } = await supabaseAdmin
       .from("crm_messages")
-      .insert({
-        conversation_id: data.conversationId,
-        body: data.body,
-        direction: "outbound",
-        provider: active.provider.meta.id,
-        provider_message_id: res.providerMessageId || `admin-${Date.now()}`
-      });
+        .insert({
+          conversation_id: data.conversationId,
+          establishment_id: conv.establishment_id,
+          body: data.body,
+          direction: "outbound",
+          provider: active.provider.meta.id,
+          provider_message_id: res.providerMessageId || `admin-${Date.now()}`
+        });
 
     if (msgErr) throw msgErr;
 

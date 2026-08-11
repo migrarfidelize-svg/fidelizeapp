@@ -138,6 +138,7 @@ async function sendAgentWhatsApp(conv: any, text: string, meta: { flowId?: strin
     if (res.ok) {
         await supabaseAdmin.from("crm_messages").insert({
             conversation_id: conv.id,
+            establishment_id: conv.establishment_id,
             body: text,
             direction: 'outbound',
             provider: active.provider.meta.id,

@@ -20,7 +20,8 @@ export async function ensureDefaultWhatsAppFlow() {
       .insert({
         name: flowName,
         description: "Fluxo principal de atendimento WhatsApp com menu, IA e atendimento humano.",
-        is_active: true
+        is_active: true,
+        establishment_id: 'f406351f-487b-47db-b0d3-bd5cb918b6c3'
       })
       .select("id")
       .single();

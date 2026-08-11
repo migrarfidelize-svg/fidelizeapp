@@ -186,6 +186,7 @@ async function sendWhatsApp(phone: string, text: string, options: any = {}) {
     if (conv && res.ok) {
         await supabaseAdmin.from("crm_messages").insert({
             conversation_id: conv.id,
+            establishment_id: conv.establishment_id,
             body: text,
             direction: 'outbound',
             provider: active.provider.meta.id,
