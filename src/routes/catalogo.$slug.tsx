@@ -32,9 +32,22 @@ export const Route = createFileRoute("/catalogo/$slug")({
     if (!d) throw notFound();
     return d;
   },
-  head: () => ({
-    // Head metadata is now handled by the central SEO configuration.
-  }),
+  head: ({ loaderData }) => {
+    const est = loaderData?.establishment as any;
+    if (!est) return {};
+    const title = `${est.name} | Catálogo | Afidelize`;
+    const description = est.description || "Confira nosso catálogo de produtos.";
+    
+    return {
+      title,
+      meta: [
+        { name: "description", content: description },
+        { property: "og:title", content: `${est.name} | Catálogo` },
+        { property: "og:description", content: description },
+        { property: "og:image", content: est.cover_url || est.logo_url || "" }
+      ]
+    };
+  },
   component: PublicCatalogPage,
   notFoundComponent: () => (
     <div className="min-h-dvh grid place-items-center p-6 text-center" style={{ background: "#FBF7F0", color: "#17130E" }}>

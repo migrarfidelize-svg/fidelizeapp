@@ -18,9 +18,13 @@ Allow: /
 
 # --- Áreas autenticadas (painel, admin, carteira do cliente) ---
 Disallow: /app/
+Disallow: /app
 Disallow: /hash/
+Disallow: /hash
 Disallow: /carteira/
+Disallow: /carteira
 Disallow: /lgpd
+Disallow: /lgpd/
 
 # --- Fluxos de conta ---
 Disallow: /auth
@@ -31,11 +35,12 @@ Disallow: /c/
 Disallow: /r/
 Disallow: /l/
 Disallow: /invite/
-Disallow: /cartao/
-Disallow: /avaliar/
-
-# --- Suporte e páginas transacionais ---
+# Páginas de cartão e avaliação são controladas via meta robots noindex dinâmico.
+# Disallow: /cartao/
+# Disallow: /avaliar/
+# --- Suporte ---
 Disallow: /suporte/
+Disallow: /suporte
 
 # --- Endpoints de API, webhooks e internos ---
 Disallow: /api/

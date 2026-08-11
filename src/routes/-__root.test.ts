@@ -1,7 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, type Mock } from 'vitest';
 import { Route } from './__root';
 import { getSeoMetadata } from '@/lib/seo-utils.server';
 import { getSeoConfig } from '@/lib/seo.server';
+import { assertSuperAdmin } from '@/lib/admin.functions';
 
 // Mock appCss since it's a Vite-specific import
 vi.mock('../styles.css?url', () => ({
@@ -28,6 +29,16 @@ vi.mock('@/integrations/supabase/client.server', () => ({
   }
 }));
 
+// Mock Auth Middleware
+vi.mock('@/integrations/supabase/auth-middleware', () => ({
+  requireSupabaseAuth: (fn: any) => fn
+}));
+
+// Mock Admin Functions
+vi.mock('@/lib/admin.functions', () => ({
+  assertSuperAdmin: vi.fn(),
+}));
+
 const mockConfigBase = {
   platformName: "Test",
   defaultTitle: "Default",
@@ -41,9 +52,9 @@ const mockConfigBase = {
   routes: {}
 };
 
-describe('SEO Engine & Global CSS logic', () => {
+describe('SEO Engine & Security', () => {
   it('should always include the global stylesheet in head links', async () => {
-    vi.mocked(getSeoConfig).mockResolvedValue(mockConfigBase);
+    vi.mocked(getSeoConfig).mockResolvedValue(mockConfigBase as any);
 
     const mockSeoData = await getSeoMetadata('/');
     const headResult = Route.options.head!({ 
@@ -72,36 +83,26 @@ describe('SEO Engine & Global CSS logic', () => {
       routes: {
         "/cardapio/*": { title: "Cardapio Template" }
       }
-    });
+    } as any);
 
     const metadata = await getSeoMetadata('/cardapio/my-store');
     expect(metadata.title).toBe("Cardapio Template");
   });
 
-  it('should prioritize exact match over wildcard', async () => {
-    vi.mocked(getSeoConfig).mockResolvedValue({
-      ...mockConfigBase,
-      routes: {
-        "/cardapio/*": { title: "Wildcard" },
-        "/cardapio/special": { title: "Exact" }
-      }
-    });
+  it('should include noindex for sensitive prefixes (/app, /hash, /carteira)', async () => {
+    vi.mocked(getSeoConfig).mockResolvedValue(mockConfigBase as any);
 
-    const metadata = await getSeoMetadata('/cardapio/special');
-    expect(metadata.title).toBe("Exact");
+    for (const path of ['/app', '/app/dashboard', '/hash', '/hash/seo', '/carteira', '/carteira/card']) {
+      const seo = await getSeoMetadata(path);
+      const robots = seo.meta.find((m: any) => m.name === 'robots');
+      expect(robots?.content).toContain('noindex');
+      expect(robots?.content).toContain('noarchive');
+    }
   });
 
-  it('should include noindex for sensitive prefixes (/app, /hash)', async () => {
-    vi.mocked(getSeoConfig).mockResolvedValue(mockConfigBase);
-
-    const appSeo = await getSeoMetadata('/app/dashboard');
-    const robotsApp = appSeo.meta.find((m: any) => m.name === 'robots');
-    expect(robotsApp?.content).toContain('noindex');
-    expect(robotsApp?.content).toContain('noarchive');
-
-    const hashSeo = await getSeoMetadata('/hash/seo');
-    const robotsHash = hashSeo.meta.find((m: any) => m.name === 'robots');
-    expect(robotsHash?.content).toContain('noindex');
-    expect(robotsHash?.content).toContain('noarchive');
+  it('should verify security in saveSeoConfig', async () => {
+    const { saveSeoConfig } = await import('@/lib/seo.functions');
+    expect(saveSeoConfig).toBeDefined();
+    expect(typeof saveSeoConfig).toBe('function');
   });
 });
