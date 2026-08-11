@@ -41,14 +41,18 @@ export async function generateAgentResponse(input: AgentMessageInput): Promise<A
     throw new Error(`AI Integration not enabled for provider: ${providerId}`);
   }
 
-  const encryptedCredentials = (integration.credentials || {}) as Record<string, string>;
+  const encryptedCredentials = (integration.credentials || {}) as Record<string, any>;
+  const credentialsRef = (integration.credentials_ref || {}) as Record<string, string>;
+  const integrationConfig = (integration.config || {}) as Record<string, any>;
+
   const decryptedEnv: Record<string, string> = {};
   
   for (const [field, encryptedValue] of Object.entries(encryptedCredentials)) {
+    const envKey = credentialsRef[field] || field;
     if (typeof encryptedValue === 'string' && encryptedValue.length > 20) {
-      decryptedEnv[integration.credentials_ref?.[field] || field] = await decryptSecret(encryptedValue);
+      decryptedEnv[envKey] = await decryptSecret(encryptedValue);
     } else {
-      decryptedEnv[integration.credentials_ref?.[field] || field] = encryptedValue;
+      decryptedEnv[envKey] = String(encryptedValue);
     }
   }
 
@@ -61,17 +65,13 @@ export async function generateAgentResponse(input: AgentMessageInput): Promise<A
     ...messages
   ];
 
-  // 4. Chamar Provider (Adaptador Específico ou Genérico se possível)
-  // Como o projeto já tem os providers, vamos usar a infra existente.
-  // Note: O projeto atual tem testConnection, mas não tem um método unificado de 'chat'.
-  // Vamos implementar chamadas diretas baseadas no providerId para garantir o funcionamento.
-
+  // 4. Chamar Provider
   let resultText = "";
 
   try {
     if (providerId === 'openai') {
       const apiKey = finalEnv.OPENAI_API_KEY;
-      const baseUrl = String(integration.config?.base_url || "https://api.openai.com/v1").replace(/\/+$/, "");
+      const baseUrl = String(integrationConfig.base_url || "https://api.openai.com/v1").replace(/\/+$/, "");
       
       const response = await fetch(`${baseUrl}/chat/completions`, {
         method: "POST",
@@ -96,14 +96,19 @@ export async function generateAgentResponse(input: AgentMessageInput): Promise<A
       const data = await response.json();
       resultText = data.choices[0].message.content;
     } 
-    else if (providerId === 'groq' || providerId === 'openrouter' || providerId === 'deepseek') {
-        // Estes costumam seguir o padrão OpenAI
-        const apiKeyEnvVar = providerId === 'groq' ? 'GROQ_API_KEY' : providerId === 'openrouter' ? 'OPENROUTER_API_KEY' : 'DEEPSEEK_API_KEY';
+    else if (providerId === 'groq' || providerId === 'openrouter' || providerId === 'deepseek' || providerId === 'grok') {
+        const apiKeyEnvVar = providerId === 'groq' ? 'GROQ_API_KEY' : 
+                             providerId === 'openrouter' ? 'OPENROUTER_API_KEY' : 
+                             providerId === 'deepseek' ? 'DEEPSEEK_API_KEY' : 
+                             'XAI_API_KEY';
+
         const apiKey = finalEnv[apiKeyEnvVar];
         const defaultUrl = providerId === 'groq' ? 'https://api.groq.com/openai/v1' : 
                            providerId === 'openrouter' ? 'https://openrouter.ai/api/v1' : 
-                           'https://api.deepseek.com';
-        const baseUrl = String(integration.config?.base_url || defaultUrl).replace(/\/+$/, "");
+                           providerId === 'deepseek' ? 'https://api.deepseek.com' :
+                           'https://api.x.ai/v1';
+
+        const baseUrl = String(integrationConfig.base_url || defaultUrl).replace(/\/+$/, "");
 
         const response = await fetch(`${baseUrl}/chat/completions`, {
             method: "POST",
@@ -112,11 +117,10 @@ export async function generateAgentResponse(input: AgentMessageInput): Promise<A
               "Authorization": `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-              model: model || integration.config?.default_model,
+              model: model || integrationConfig.default_model,
               messages: fullMessages,
               temperature,
               max_tokens: maxTokens,
-              // Tentar forçar JSON se suportado, senão tratar no código
               ...(providerId !== 'openrouter' ? { response_format: { type: "json_object" } } : {})
             })
         });
@@ -130,13 +134,11 @@ export async function generateAgentResponse(input: AgentMessageInput): Promise<A
         resultText = data.choices[0].message.content;
     }
     else {
-      // Fallback para outros ou erro se não implementado
       throw new Error(`Chat implementation for provider ${providerId} not yet ready in AI Adapter.`);
     }
 
     // 5. Parsear e Validar Resposta Estruturada
     try {
-      // Tentar extrair JSON se a IA enviou markdown
       const jsonMatch = resultText.match(/\{[\s\S]*\}/);
       const cleanJson = jsonMatch ? jsonMatch[0] : resultText;
       const parsed = JSON.parse(cleanJson);
@@ -148,7 +150,6 @@ export async function generateAgentResponse(input: AgentMessageInput): Promise<A
       };
     } catch (e) {
       console.error("[AI Adapter] Failed to parse structured JSON from IA:", resultText);
-      // Fallback: se tiver texto, assume reply
       if (resultText && resultText.length > 0) {
           return { text: resultText, action: "reply" };
       }
