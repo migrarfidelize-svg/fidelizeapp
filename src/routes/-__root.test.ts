@@ -1,7 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, type Mock } from 'vitest';
 import { Route } from './__root';
 import { getSeoMetadata } from '@/lib/seo-utils.server';
 import { getSeoConfig } from '@/lib/seo.server';
+import { assertSuperAdmin } from '@/lib/admin.functions';
 
 // Mock appCss since it's a Vite-specific import
 vi.mock('../styles.css?url', () => ({
@@ -104,7 +105,7 @@ describe('SEO Engine & Security', () => {
     const { assertSuperAdmin } = await import('@/lib/admin.functions');
     
     // Simulate lojista trying to save
-    vi.mocked(assertSuperAdmin).mockRejectedValueOnce(new Error("Unauthorized"));
+    (assertSuperAdmin as Mock).mockRejectedValueOnce(new Error("Unauthorized"));
     
     await expect(saveSeoConfig({ 
       data: { ...mockConfigBase, siteUrl: "https://test.com" } 
