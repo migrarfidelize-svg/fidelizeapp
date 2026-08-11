@@ -295,6 +295,35 @@ function SeoAdmin() {
                 />
                 <p className="text-[10px] text-muted-foreground">Usado abaixo do ícone na tela inicial.</p>
               </div>
+              <div className="space-y-2">
+                <Label>Cor de Fundo (Background Color)</Label>
+                <div className="flex gap-2">
+                  <Input 
+                    value={formData.backgroundColor || "#ffffff"} 
+                    onChange={e => handleGeneralChange("backgroundColor", e.target.value)}
+                  />
+                  <div 
+                    className="w-10 h-10 rounded border" 
+                    style={{ backgroundColor: formData.backgroundColor || "#ffffff" }}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>PWA Icon 192x192 URL</Label>
+                <Input 
+                  placeholder="/icon-192.png"
+                  value={formData.pwaIcon192Url || ""} 
+                  onChange={e => handleGeneralChange("pwaIcon192Url", e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>PWA Icon 512x512 URL</Label>
+                <Input 
+                  placeholder="/icon-512.png"
+                  value={formData.pwaIcon512Url || ""} 
+                  onChange={e => handleGeneralChange("pwaIcon512Url", e.target.value)}
+                />
+              </div>
               <Separator />
               <div className="p-4 rounded-xl bg-violet-500/5 border border-violet-500/20">
                 <p className="text-xs leading-relaxed text-muted-foreground">

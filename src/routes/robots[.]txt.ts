@@ -1,23 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import type {} from "@tanstack/react-start";
-import { getPublicAppUrl } from "@/lib/app-url";
-
-/** Origem canônica: host da requisição (VPS/domínio próprio) com fallback nas envs. */
-function resolveBaseUrl(request: Request): string {
-  try {
-    const u = new URL(request.url);
-    const host = request.headers.get("x-forwarded-host") ?? u.host;
-    const proto = request.headers.get("x-forwarded-proto") ?? (u.protocol === "http:" ? "http" : "https");
-    if (host && !/localhost|127\.0\.0\.1/i.test(host)) return `${proto}://${host}`;
-  } catch {}
-  return getPublicAppUrl();
-}
+import { getSeoConfig } from "@/lib/seo.server";
 
 export const Route = createFileRoute("/robots.txt")({
   server: {
     handlers: {
-      GET: async ({ request }) => {
-        const base = resolveBaseUrl(request);
+      GET: async () => {
+        const config = await getSeoConfig();
+        const siteUrl = config.siteUrl;
+
         const body = `# Fidelize — regras de rastreamento
 # Áreas privadas ficam fora do índice. A proteção real é a autenticação
 # do servidor + meta robots noindex; este arquivo evita apenas que os
@@ -62,12 +52,13 @@ Disallow: /*?code=
 # Páginas públicas indexáveis: /, /precos, /ajuda, /videos, /privacidade,
 # /termos, /e/{slug}, /links/{slug}, /cardapio/{slug}, /catalogo/{slug}
 
-Sitemap: ${base}/sitemap.xml
+Sitemap: ${siteUrl}/sitemap.xml
 `;
+
         return new Response(body, {
           headers: {
             "Content-Type": "text/plain; charset=utf-8",
-            "Cache-Control": "public, max-age=3600",
+            "Cache-Control": "no-store, max-age=0",
           },
         });
       },

@@ -51,8 +51,6 @@ import { Route as AuthenticatedCarteiraIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
 import { Route as SuporteChamadoIdRouteImport } from './routes/suporte.chamado.$id'
 import { Route as SuporteSlugNovoRouteImport } from './routes/suporte.$slug.novo'
-import { Route as ApiPublicSitemapRouteImport } from './routes/api/public/sitemap'
-import { Route as ApiPublicRobotsRouteImport } from './routes/api/public/robots'
 import { Route as ApiPublicManifestRouteImport } from './routes/api/public/manifest'
 import { Route as AjudaCategoryArticleRouteImport } from './routes/ajuda.$category.$article'
 import { Route as AuthenticatedHashUsuariosRouteImport } from './routes/_authenticated/hash.usuarios'
@@ -363,16 +361,6 @@ const SuporteChamadoIdRoute = SuporteChamadoIdRouteImport.update({
 const SuporteSlugNovoRoute = SuporteSlugNovoRouteImport.update({
   id: '/suporte/$slug/novo',
   path: '/suporte/$slug/novo',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicSitemapRoute = ApiPublicSitemapRouteImport.update({
-  id: '/api/public/sitemap',
-  path: '/api/public/sitemap',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicRobotsRoute = ApiPublicRobotsRouteImport.update({
-  id: '/api/public/robots',
-  path: '/api/public/robots',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicManifestRoute = ApiPublicManifestRouteImport.update({
@@ -1049,8 +1037,6 @@ export interface FileRoutesByFullPath {
   '/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/api/public/manifest': typeof ApiPublicManifestRoute
-  '/api/public/robots': typeof ApiPublicRobotsRoute
-  '/api/public/sitemap': typeof ApiPublicSitemapRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/app/': typeof AuthenticatedAppIndexRoute
@@ -1190,8 +1176,6 @@ export interface FileRoutesByTo {
   '/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/api/public/manifest': typeof ApiPublicManifestRoute
-  '/api/public/robots': typeof ApiPublicRobotsRoute
-  '/api/public/sitemap': typeof ApiPublicSitemapRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/app': typeof AuthenticatedAppIndexRoute
@@ -1338,8 +1322,6 @@ export interface FileRoutesById {
   '/_authenticated/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/api/public/manifest': typeof ApiPublicManifestRoute
-  '/api/public/robots': typeof ApiPublicRobotsRoute
-  '/api/public/sitemap': typeof ApiPublicSitemapRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
@@ -1486,8 +1468,6 @@ export interface FileRouteTypes {
     | '/hash/usuarios'
     | '/ajuda/$category/$article'
     | '/api/public/manifest'
-    | '/api/public/robots'
-    | '/api/public/sitemap'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/app/'
@@ -1627,8 +1607,6 @@ export interface FileRouteTypes {
     | '/hash/usuarios'
     | '/ajuda/$category/$article'
     | '/api/public/manifest'
-    | '/api/public/robots'
-    | '/api/public/sitemap'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/app'
@@ -1774,8 +1752,6 @@ export interface FileRouteTypes {
     | '/_authenticated/hash/usuarios'
     | '/ajuda/$category/$article'
     | '/api/public/manifest'
-    | '/api/public/robots'
-    | '/api/public/sitemap'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/_authenticated/app/'
@@ -1862,8 +1838,6 @@ export interface RootRouteChildren {
   AjudaIndexRoute: typeof AjudaIndexRoute
   AjudaCategoryArticleRoute: typeof AjudaCategoryArticleRoute
   ApiPublicManifestRoute: typeof ApiPublicManifestRoute
-  ApiPublicRobotsRoute: typeof ApiPublicRobotsRoute
-  ApiPublicSitemapRoute: typeof ApiPublicSitemapRoute
   SuporteSlugNovoRoute: typeof SuporteSlugNovoRoute
   SuporteChamadoIdRoute: typeof SuporteChamadoIdRoute
   AjudaCategoryIndexRoute: typeof AjudaCategoryIndexRoute
@@ -2187,20 +2161,6 @@ declare module '@tanstack/react-router' {
       path: '/suporte/$slug/novo'
       fullPath: '/suporte/$slug/novo'
       preLoaderRoute: typeof SuporteSlugNovoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/sitemap': {
-      id: '/api/public/sitemap'
-      path: '/api/public/sitemap'
-      fullPath: '/api/public/sitemap'
-      preLoaderRoute: typeof ApiPublicSitemapRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/robots': {
-      id: '/api/public/robots'
-      path: '/api/public/robots'
-      fullPath: '/api/public/robots'
-      preLoaderRoute: typeof ApiPublicRobotsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/manifest': {
@@ -3218,8 +3178,6 @@ const rootRouteChildren: RootRouteChildren = {
   AjudaIndexRoute: AjudaIndexRoute,
   AjudaCategoryArticleRoute: AjudaCategoryArticleRoute,
   ApiPublicManifestRoute: ApiPublicManifestRoute,
-  ApiPublicRobotsRoute: ApiPublicRobotsRoute,
-  ApiPublicSitemapRoute: ApiPublicSitemapRoute,
   SuporteSlugNovoRoute: SuporteSlugNovoRoute,
   SuporteChamadoIdRoute: SuporteChamadoIdRoute,
   AjudaCategoryIndexRoute: AjudaCategoryIndexRoute,

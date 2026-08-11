@@ -11,6 +11,9 @@ export type SeoConfig = {
   socialImageUrl: string;
   appleTouchIconUrl?: string;
   themeColor: string;
+  backgroundColor?: string;
+  pwaIcon192Url?: string;
+  pwaIcon512Url?: string;
   routes: Record<string, {
     title?: string;
     description?: string;
@@ -29,6 +32,9 @@ const DEFAULT_SEO: SeoConfig = {
   logoUrl: "/favicon-mark.svg",
   socialImageUrl: "https://i.imgur.com/PHNbTAi.png",
   themeColor: "#ffffff",
+  backgroundColor: "#ffffff",
+  pwaIcon192Url: "/icon-192.png",
+  pwaIcon512Url: "/icon-512.png",
   routes: {
     "/": {
       title: "Afidelize — Cartão fidelidade digital para clientes fiéis",
@@ -57,6 +63,7 @@ export async function getSeoConfig(): Promise<SeoConfig> {
       .from("system_settings")
       .select("value")
       .eq("namespace", "seo")
+      .eq("key", "config")
       .maybeSingle();
 
     if (error || !data?.value) {

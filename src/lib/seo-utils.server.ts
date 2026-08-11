@@ -1,14 +1,41 @@
 import { getSeoConfig, type SeoConfig } from "./seo.server";
 
+function resolveRouteSeo(routes: SeoConfig["routes"], pathname: string) {
+  if (routes[pathname]) {
+    return routes[pathname];
+  }
+
+  let bestMatch: any = null;
+  let bestLength = -1;
+
+  for (const [pattern, value] of Object.entries(routes)) {
+    if (!pattern.endsWith("/*")) continue;
+    const prefix = pattern.slice(0, -2); // Remove the '/*'
+    
+    if (
+      (pathname === prefix || pathname.startsWith(prefix + "/")) &&
+      prefix.length > bestLength
+    ) {
+      bestMatch = value;
+      bestLength = prefix.length;
+    }
+  }
+
+  return bestMatch || {};
+}
+
 export async function getSeoMetadata(pathname: string) {
   const config = await getSeoConfig();
   
   // Find matching route or fallback to defaults
-  const routeData = config.routes[pathname] || {};
+  const routeData = resolveRouteSeo(config.routes, pathname);
   
   const title = routeData.title || config.defaultTitle;
   const description = routeData.description || config.defaultDescription;
-  const noindex = routeData.noindex || pathname.startsWith("/app") || pathname.startsWith("/hash");
+  const isSensitivePrefix = pathname === "/app" || pathname.startsWith("/app/") || 
+    pathname === "/hash" || pathname.startsWith("/hash/") ||
+    pathname === "/carteira" || pathname.startsWith("/carteira/");
+  const noindex = routeData.noindex || isSensitivePrefix;
   const canonical = routeData.canonical || `${config.siteUrl}${pathname}`;
   
   const faviconUrl = config.faviconUrl || "/favicon.ico";
@@ -19,7 +46,7 @@ export async function getSeoMetadata(pathname: string) {
     meta: [
       { title },
       { name: "description", content: description },
-      { name: "robots", content: noindex ? "noindex, nofollow" : "index, follow" },
+      { name: "robots", content: noindex ? "noindex, nofollow, noarchive, nosnippet" : "index, follow" },
       { property: "og:title", content: title },
       { property: "og:description", content: description },
       { property: "og:image", content: config.socialImageUrl },
