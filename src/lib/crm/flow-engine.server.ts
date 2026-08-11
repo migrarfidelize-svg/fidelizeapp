@@ -19,14 +19,35 @@ export async function executeFlow(conversationId: string, messageBody: string) {
     .maybeSingle();
   
   const agentConfig = (agentConfigRow?.value as any) || {};
+
+  // Idempotent Seed: Trigger only if flow is missing
+  if (!agentConfig?.behavior?.mainFlowId) {
+    const { ensureDefaultWhatsAppFlow } = await import("./bootstrap.server");
+    await ensureDefaultWhatsAppFlow();
+  }
+
   if (!agentConfig.enabled) return;
 
-  // Handoff check
-  const handoffKeywords = agentConfig.handoff?.keywords || [];
-  if (handoffKeywords.some((k: string) => messageBody.toLowerCase().includes(k.toLowerCase()))) {
-    await sendWhatsApp(conv.customer_phone, agentConfig.handoff?.message || "Transferindo para um atendente...");
+
+  // 0. Global Intents (Human / Menu)
+  const normalizedInput = messageBody.trim().toLowerCase();
+  const humanKeywords = ['atendente', 'humano', 'falar com alguém', 'quero falar com uma pessoa', 'suporte humano', 'não resolveu', 'reclamação'];
+  const menuKeywords = ['menu', 'voltar', 'início', 'inicio', 'opções', 'opcoes'];
+
+  if (humanKeywords.some(k => normalizedInput.includes(k))) {
+    await sendWhatsApp(conv.customer_phone, "Entendi. Vou encaminhar você para nossa equipe de atendimento. Aguarde um momento. 💜");
     await supabaseAdmin.from("crm_conversations").update({ status: 'waiting', assigned_to: null }).eq("id", conv.id);
+    await updateFlowState(conv.id, null, null, { mode: 'manual' });
     return;
+  }
+
+  if (menuKeywords.some(k => normalizedInput === k)) {
+    const mainFlowId = agentConfig?.behavior?.mainFlowId;
+    if (mainFlowId) {
+      await sendWhatsApp(conv.customer_phone, "Claro! Escolha uma opção:");
+      await updateFlowState(conv.id, mainFlowId, null, { mode: 'flow' });
+      return executeFlow(conversationId, ""); // Restart flow
+    }
   }
 
   const flowState = (conv.metadata as any)?.flow_state;
@@ -51,6 +72,7 @@ export async function executeFlow(conversationId: string, messageBody: string) {
     if (!currentFlowId) return;
   }
 
+
   const { data: flow } = await (supabaseAdmin as any)
     .from("crm_flows")
     .select("*, steps:crm_flow_steps(*)")
@@ -59,7 +81,7 @@ export async function executeFlow(conversationId: string, messageBody: string) {
 
   if (!flow || !flow.is_active) return;
 
-  const steps = (flow.steps || []).sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0));
+  const steps = (flow.steps || []).sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
   
   if (currentStepId) {
     const lastStep = steps.find((s: any) => s.id === currentStepId);
@@ -108,10 +130,15 @@ async function processStep(conv: any, step: any, allSteps: any[]) {
   switch (type) {
     case 'message':
     case 'question':
-    case 'options':
       await sendWhatsApp(conv.customer_phone, payload.text || "Sem conteúdo");
       await updateFlowState(conv.id, step.flow_id, step.id);
       break;
+
+    case 'options':
+      await sendWhatsApp(conv.customer_phone, payload.text || "Escolha uma opção:", { type: 'options', options: payload.options || [] });
+      await updateFlowState(conv.id, step.flow_id, step.id);
+      break;
+
 
     case 'capture_name': {
       await sendWhatsApp(conv.customer_phone, payload.text || "Qual é o seu nome?");
@@ -146,7 +173,7 @@ async function processStep(conv: any, step: any, allSteps: any[]) {
   }
 }
 
-async function sendWhatsApp(phone: string, text: string) {
+async function sendWhatsApp(phone: string, text: string, options: any = {}) {
   const { getActiveWhatsAppProvider } = await import("../otp.functions");
   const active = await getActiveWhatsAppProvider();
   if (active) {
@@ -154,7 +181,7 @@ async function sendWhatsApp(phone: string, text: string) {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: conv } = await supabaseAdmin.from("crm_conversations").select("id").eq("customer_phone", phone).maybeSingle();
     
-    const res = await active.provider.sendTestMessage(active.runtime, process.env as any, phone, text);
+    const res = await active.provider.sendTestMessage(active.runtime, process.env as any, phone, text, options);
     
     if (conv && res.ok) {
         await supabaseAdmin.from("crm_messages").insert({
