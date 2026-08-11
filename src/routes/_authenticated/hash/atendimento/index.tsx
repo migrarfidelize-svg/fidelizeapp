@@ -117,8 +117,24 @@ function AtendimentoCRM() {
             {activeTab === "contatos" && <ContactManager />}
             {activeTab === "disparos" && <BroadcastManager />}
             {activeTab === "agente" && <AgentConfig />}
-            {activeTab === "fluxos" && <FlowsView onEdit={setSelectedFlow} />}
-            {activeTab === "fluxos_editor" && <FlowEditor flow={selectedFlow} onBack={() => { setActiveTab("fluxos"); setSelectedFlow(null); }} />}
+            {activeTab === "fluxos" && (
+              <FlowsView 
+                onEdit={(flow) => {
+                  setSelectedFlow(flow);
+                  setActiveTab("fluxos_editor");
+                }} 
+              />
+            )}
+            {activeTab === "fluxos_editor" && (
+              <FlowEditor 
+                flow={selectedFlow} 
+                onBack={() => { 
+                  setActiveTab("fluxos"); 
+                  setSelectedFlow(null); 
+                }} 
+              />
+            )}
+
 
             {activeTab === "templates" && <TemplateManager />}
             {activeTab === "otp" && <OTPEditor />}
