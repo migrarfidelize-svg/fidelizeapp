@@ -21,5 +21,15 @@ export interface WhatsAppOTPProvider extends IntegrationProvider {
   disconnectInstance(runtime: IntegrationRuntimeConfig, env: NodeEnv): Promise<{ ok: boolean; message: string }>;
   
   /** Normaliza o payload de entrada do webhook para o formato interno */
-  parseWebhook?(body: any, headers: Record<string, string>): { remoteMessageId: string; fromPhone: string; text: string; messageType?: string; mediaUrl?: string } | null;
+  parseWebhook?(
+    body: any,
+    headers: Record<string, string>
+  ): {
+    remoteMessageId: string;
+    fromPhone: string;
+    text: string;
+    messageType?: string;
+    mediaUrl?: string;
+    pushName?: string;
+  } | null;
 }

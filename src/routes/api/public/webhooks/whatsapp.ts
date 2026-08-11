@@ -28,17 +28,45 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
         const config = active.runtime.config;
         
         // 2. Validar Segurança (Token/Secret)
-        const providedToken = headers["x-webhook-token"] || headers["apikey"] || headers["token"] || new URL(request.url).searchParams.get("token");
-        const expectedToken = (config.webhookToken as string) || (config.token as string) || (config.apiKey as string);
-
-        if (expectedToken && providedToken !== expectedToken) {
-          console.warn(`[Webhook] Unauthorized attempt for provider ${providerId}`);
-          return new Response("Unauthorized", { status: 401 });
+        const webhookToken =
+          typeof config.webhookToken === "string"
+            ? config.webhookToken.trim()
+            : "";
+ 
+        if (webhookToken) {
+          const providedToken =
+            headers["x-webhook-token"] ||
+            headers["x-webhook-secret"] ||
+            new URL(request.url).searchParams.get("token") ||
+            "";
+ 
+          if (providedToken !== webhookToken) {
+            console.warn(
+              `[Webhook] Unauthorized attempt for provider ${providerId}`
+            );
+ 
+            return new Response(
+              "Unauthorized",
+              { status: 401 }
+            );
+          }
         }
 
         let body: any;
         try {
           body = JSON.parse(rawBody);
+          console.log("[Webhook] Incoming payload", {
+            provider: providerId,
+            event:
+              body?.event ||
+              body?.type ||
+              body?.EventType ||
+              null,
+            topLevelKeys:
+              body && typeof body === "object"
+                ? Object.keys(body).slice(0, 25)
+                : [],
+          });
         } catch (e) {
           return new Response("Invalid JSON", { status: 400 });
         }
@@ -52,23 +80,48 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
         }
 
         const { remoteMessageId, fromPhone, text, messageType, mediaUrl, pushName } = normalized;
+ 
+        const customerPhone =
+          String(fromPhone || "")
+            .replace(/\D/g, "");
+ 
+        if (!customerPhone) {
+          console.warn(
+            `[Webhook] Invalid sender for provider ${providerId}`
+          );
+ 
+          return new Response(
+            "Ignored - invalid sender",
+            { status: 200 }
+          );
+        }
+ 
+        if (!remoteMessageId) {
+          console.warn(
+            `[Webhook] Message without provider id for ${providerId}`
+          );
+ 
+          return new Response(
+            "Ignored - missing message id",
+            { status: 200 }
+          );
+        }
 
         // --- CRM Contact Sync ---
         let contactId: string | null = null;
         try {
           // Normalize phone (digits only)
-          const cleanPhone = fromPhone.replace(/\D/g, "");
           const { data: contact } = await (supabaseAdmin as any)
             .from("crm_contacts")
             .select("id, name, name_source")
-            .eq("phone", cleanPhone)
+            .eq("phone", customerPhone)
             .maybeSingle();
 
           if (!contact) {
             const { data: newContact, error: contactErr } = await (supabaseAdmin as any)
               .from("crm_contacts")
               .insert({
-                phone: cleanPhone,
+                phone: customerPhone,
                 name: pushName || null,
                 name_source: pushName ? 'push_name' : null,
                 accept_communications: true
@@ -111,7 +164,7 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
         let { data: conversation } = await (supabaseAdmin as any)
           .from("crm_conversations")
           .select("id")
-          .eq("customer_phone", fromPhone)
+          .eq("customer_phone", customerPhone)
           .neq("status", "closed")
           .order("created_at", { ascending: false })
           .limit(1)
@@ -121,7 +174,7 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
           const { data: newConv, error: convErr } = await (supabaseAdmin as any)
             .from("crm_conversations")
             .insert({
-              customer_phone: fromPhone,
+              customer_phone: customerPhone,
               contact_id: contactId,
               status: "waiting",
               last_message_at: new Date().toISOString()
@@ -164,9 +217,28 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
         }
 
         // 6. Engine do Bot / Fluxo
-        const { executeFlow } = await import("@/lib/crm/flow-engine.server");
-        await executeFlow(conversation.id, text);
-
+        try {
+          const { executeFlow } =
+            await import("@/lib/crm/flow-engine.server");
+ 
+          await executeFlow(
+            conversation.id,
+            text
+          );
+        } catch (flowError) {
+          console.error(
+            "[Webhook] Flow engine failed after message persistence:",
+            flowError
+          );
+        }
+ 
+        console.log("[Webhook] Inbound message persisted", {
+          provider: providerId,
+          conversationId: conversation.id,
+          hasContact: Boolean(contactId),
+          messageType: messageType || "text",
+        });
+ 
         return new Response("OK", { status: 200 });
       },
     },
