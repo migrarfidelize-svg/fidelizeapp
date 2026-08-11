@@ -15,10 +15,7 @@ export async function ensureDefaultWhatsAppFlow() {
       .eq("name", flowName)
       .maybeSingle();
 
-    if (findErr) {
-      console.error("[CRM Bootstrap] Error finding flow:", findErr);
-      throw findErr;
-    }
+    if (findErr) throw findErr;
 
     if (!flow) {
       console.log("[CRM Bootstrap] Creating flow...");
@@ -49,6 +46,7 @@ export async function ensureDefaultWhatsAppFlow() {
     if (stepsErr) throw stepsErr;
 
     const stepsCount = existingSteps?.length || 0;
+    
     if (stepsCount === 0) {
       console.log("[CRM Bootstrap] Creating 7 steps...");
       const stepIds = {
@@ -73,31 +71,47 @@ export async function ensureDefaultWhatsAppFlow() {
       ];
 
       const { error: insertErr } = await supabaseAdmin.from("crm_flow_steps").insert(steps);
-      if (insertErr) throw insertErr;
-    } else if (stepsCount < 7) {
-      console.warn(`[CRM Bootstrap] Inconsistency: Flow has ${stepsCount} steps instead of 7.`);
+      if (insertErr) {
+          console.error("[CRM Bootstrap] create_steps failed", insertErr);
+          throw insertErr;
+      }
+    } else if (stepsCount > 0 && stepsCount < 7) {
+      throw new Error(`CRM_DEFAULT_FLOW_PARTIAL:${stepsCount}`);
     }
 
-    // 3. Update Agent Config (mainFlowId)
-    const { data: agentConfigRow } = await supabaseAdmin
+    // 3. Update Agent Config
+    const { data: agentConfigRow, error: getErr } = await supabaseAdmin
       .from("system_settings")
       .select("value")
       .eq("namespace", "crm")
       .eq("key", "agent_config")
       .maybeSingle();
+      
+    if (getErr) throw getErr;
     
     const currentConfig = (agentConfigRow?.value as any) || {};
+    
+    // Find active integration for AI
+    const { data: integration } = await supabaseAdmin
+        .from("integrations")
+        .select("id, provider")
+        .eq("enabled", true)
+        .eq("category", "ai")
+        .maybeSingle();
+
     const newConfig = {
       ...currentConfig,
-      enabled: currentConfig.enabled ?? true,
+      enabled: currentConfig.enabled ?? (!!integration),
       name: currentConfig.name || "Assistente Fidelize",
+      provider_id: currentConfig.provider_id || (integration?.provider || "openai"),
+      model: currentConfig.model || "gpt-4o-mini",
       behavior: {
         ...(currentConfig.behavior || {}),
         mainFlowId: flowId
       }
     };
 
-    await supabaseAdmin
+    const { error: upsertErr } = await supabaseAdmin
       .from("system_settings")
       .upsert({
         namespace: "crm",
@@ -105,7 +119,11 @@ export async function ensureDefaultWhatsAppFlow() {
         value: newConfig as any
       }, { onConflict: "namespace,key" });
 
-    console.log("[CRM Bootstrap] Success.");
+    if (upsertErr) {
+        console.error("[CRM Bootstrap] agent_config upsert failed", upsertErr);
+        throw upsertErr;
+    }
+
     return { flowId, created: !flow, stepsCount: stepsCount === 0 ? 7 : stepsCount };
   } catch (error) {
     console.error("[CRM Bootstrap] Critical Failure:", error);

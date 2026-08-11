@@ -446,15 +446,27 @@ export const getCRMFlows = createServerFn({ method: "GET" })
     const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
     if (!isAdmin) throw new Error("Acesso restrito.");
 
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const ESTABLISHMENT_ID = 'f406351f-487b-47db-b0d3-bd5cb918b6c3';
+
     try {
       const { ensureDefaultWhatsAppFlow } = await import("./crm/bootstrap.server");
       await ensureDefaultWhatsAppFlow();
-    } catch (err) {
+    } catch (err: any) {
       console.error("[CRM Functions] Bootstrap failure in getCRMFlows:", err);
-      // We still try to query even if bootstrap fails
+      // Erro explícito de bootstrap parcial ou falha crítica
+      if (err.message?.includes("CRM_DEFAULT_FLOW_PARTIAL")) {
+        throw new Error(err.message);
+      }
+      throw err;
     }
 
-    const { data, error } = await supabase.from("crm_flows").select("*").order("created_at", { ascending: false });
+    const { data, error } = await supabaseAdmin
+      .from("crm_flows")
+      .select("*")
+      .eq("establishment_id", ESTABLISHMENT_ID)
+      .order("created_at", { ascending: false });
+
     if (error) throw error;
     return data || [];
   });
@@ -511,18 +523,20 @@ export const saveCRMFlow = createServerFn({ method: "POST" })
 
     // Upsert steps
     if (data.steps && data.steps.length > 0) {
-      // Simple strategy: delete existing steps and re-insert to maintain order and clean up
-      await supabaseAdmin.from("crm_flow_steps").delete().eq("flow_id", flowId);
+      const { error: deleteErr } = await supabaseAdmin.from("crm_flow_steps").delete().eq("flow_id", flowId);
+      if (deleteErr) throw deleteErr;
+
       const stepsToInsert = data.steps.map((step, index) => {
-        const { id, ...cleanStep } = step; // Remove ID to avoid PK conflict if not needed, or keep if managed
+        const { id, created_at, updated_at, ...cleanStep } = step; 
         return {
           ...cleanStep,
           flow_id: flowId,
           establishment_id: establishmentId,
-          sort_order: index
+          sort_order: step.sort_order ?? index
         };
       });
-      await supabaseAdmin.from("crm_flow_steps").insert(stepsToInsert);
+      const { error: insertErr } = await supabaseAdmin.from("crm_flow_steps").insert(stepsToInsert);
+      if (insertErr) throw insertErr;
     }
 
     return { id: flowId };

@@ -24,54 +24,80 @@ export async function processAgentMessage(input: AgentEngineInput): Promise<void
     .eq("id", conversationId)
     .single();
 
-  if (convErr || !conv) return;
+  if (convErr || !conv) {
+    console.error("[Agent Engine] Conversation not found:", convErr);
+    return;
+  }
 
   // 2. Bloqueios de Segurança (Server-side)
-  // Agent só responde se a conversa estiver em modo bot
   if (conv.status !== 'bot') {
     console.log(`[Agent Engine] Aborting: Conversation status is ${conv.status}`);
     return;
   }
 
   // 3. Carregar Configuração do Agent
-  const { data: agentConfigRow } = await supabaseAdmin
+  const { data: agentConfigRow, error: configErr } = await supabaseAdmin
     .from("system_settings")
     .select("value")
     .eq("namespace", "crm")
     .eq("key", "agent_config")
     .maybeSingle();
   
+  if (configErr) {
+    console.error("[Agent Engine] Config fetch error:", configErr);
+  }
+
   const agentConfig = (agentConfigRow?.value as any) || {};
   if (!agentConfig.enabled) return;
 
   // 4. Handoff e Comandos Globais (Keywords)
   const normalizedInput = inboundText.toLowerCase().trim();
   
-  // Comandos de Menu
+  // Comandos de Menu (Tratado no flow-engine, mas garantido aqui)
   const menuKeywords = ['menu', 'voltar', 'início', 'inicio', 'opções', 'opcoes'];
   if (menuKeywords.some(k => normalizedInput === k)) {
     const mainFlowId = agentConfig?.behavior?.mainFlowId;
     if (mainFlowId) {
       const { executeFlow } = await import("./flow-engine.server");
       await updateAgentFlowState(conv.id, mainFlowId, null, { mode: 'flow' });
-      // Forçar re-execução do fluxo para mostrar o menu
-      return await executeFlow(conv.id, "menu");
+      await executeFlow(conv.id, "menu");
+      return;
     }
   }
 
   const handoffKeywords = agentConfig.handoff?.keywords || ['atendente', 'humano', 'suporte', 'falar com alguém', 'falar com uma pessoa'];
   if (handoffKeywords.some((k: string) => normalizedInput.includes(k.toLowerCase()))) {
-    return await executeHandoff(conv, agentConfig.handoff?.message || "Vou encaminhar você para nossa equipe. Aguarde um momento. 💜");
+    await executeHandoff(conv, agentConfig.handoff?.message || "Vou encaminhar você para nossa equipe. Aguarde um momento. 💜");
+    return;
   }
 
   try {
-    // 5. Carregar Histórico Recente (20 mensagens)
-    const { data: historyData } = await supabaseAdmin
+    // 5. Carregar Contexto do Step se disponível
+    let stepContext = additionalContext || "";
+    if (stepId) {
+      const { data: stepData, error: stepErr } = await supabaseAdmin
+        .from("crm_flow_steps")
+        .select("payload")
+        .eq("id", stepId)
+        .maybeSingle();
+      
+      if (!stepErr && stepData) {
+        const payload = (stepData.payload as any) || {};
+        if (payload.context) {
+          stepContext = payload.context;
+        }
+      }
+    }
+
+    // 6. Carregar Histórico Recente (20 mensagens)
+    const { data: historyData, error: historyErr } = await supabaseAdmin
       .from("crm_messages")
       .select("body, direction, created_at")
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: false })
       .limit(20);
+
+    if (historyErr) throw historyErr;
 
     const messages = (historyData || [])
       .reverse()
@@ -80,7 +106,7 @@ export async function processAgentMessage(input: AgentEngineInput): Promise<void
         content: m.body || ""
       }));
 
-    // 6. Preparar System Prompt e Contexto
+    // 7. Preparar System Prompt e Contexto
     const contactName = (conv.contact as any)?.name || "Cliente";
     const systemPrompt = `
       ${agentConfig.systemPrompt || `Você é o Assistente Virtual da Fidelize.
@@ -92,12 +118,13 @@ export async function processAgentMessage(input: AgentEngineInput): Promise<void
       3. Se o cliente pedir atendente/humano/suporte, retorne a ação "handoff".
       4. Responda em JSON estruturado: {"action": "reply" | "handoff", "message": "texto para o cliente"}.
       
-      CONTEXTO ADICIONAL:
-      ${additionalContext || ''}
+      CONTEXTO DO ATENDIMENTO ATUAL:
+      ${stepContext}
+
       ${agentConfig.presentation || ''}
     `;
 
-    // 7. Chamar LLM Real
+    // 8. Chamar LLM Real
     const response = await generateAgentResponse({
       providerId: agentConfig.provider_id || 'openai',
       model: agentConfig.model,
@@ -107,29 +134,26 @@ export async function processAgentMessage(input: AgentEngineInput): Promise<void
       maxTokens: agentConfig.max_tokens || 500
     });
 
-    // 8. Processar Resposta (Handoff ou Mensagem)
+    // 9. Processar Resposta (Handoff ou Mensagem)
     if (response.action === 'handoff') {
-      return await executeHandoff(conv, agentConfig.handoff?.message || "Vou encaminhar você para nossa equipe. Aguarde um momento. 💜");
+      await executeHandoff(conv, agentConfig.handoff?.message || "Vou encaminhar você para nossa equipe. Aguarde um momento. 💜");
+      return;
     }
 
-    // 9. Enviar WhatsApp e Persistir
+    // 10. Enviar WhatsApp e Persistir
     await sendAgentWhatsApp(conv, response.text, { flowId, stepId, agentName: agentConfig.name || "Assistente Fidelize" });
 
-    // 10. Atualizar Estado da Conversa (Manter modo Agent)
+    // 11. Atualizar Estado da Conversa (Manter modo Agent)
     await updateAgentFlowState(conv.id, flowId, stepId);
 
   } catch (error) {
     console.error("[Agent Engine] Processing failed:", error);
-    // 11. Fallback em caso de erro da IA
     await executeHandoff(conv, agentConfig.fallback?.message || "Não consegui concluir seu atendimento automaticamente. Vou encaminhar você para nossa equipe.");
   }
 }
 
 async function executeHandoff(conv: any, message: string) {
-  // Enviar mensagem de despedida/transição
   await sendAgentWhatsApp(conv, message, { agentName: "Sistema" });
-  
-  // Mudar status para waiting
   await supabaseAdmin
     .from("crm_conversations")
     .update({ 
@@ -138,8 +162,6 @@ async function executeHandoff(conv: any, message: string) {
       updated_at: new Date().toISOString()
     })
     .eq("id", conv.id);
-  
-  // Limpar flow state
   await updateAgentFlowState(conv.id, null, null, { mode: 'manual' });
 }
 
@@ -177,7 +199,7 @@ async function updateAgentFlowState(convId: string, flowId: string | undefined |
     metadata.flow_state = { 
       flowId, 
       stepId, 
-      mode: flowId ? "agent" : "manual",
+      mode: flowId ? (extra.mode || "agent") : "manual",
       ...extra 
     };
     
