@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getActiveWhatsAppProvider } from '../otp.functions';
+import { getActiveWhatsAppProvider } from '../../otp.functions';
 import { supabaseAdmin } from '@/integrations/supabase/client.server';
 
 const createMockChain = (data: any = null, error: any = null) => {
@@ -19,11 +19,11 @@ vi.mock('@/integrations/supabase/client.server', () => ({
   },
 }));
 
-vi.mock('../integrations/registry', () => ({
+vi.mock('../../integrations/registry', () => ({
   getProvider: vi.fn().mockReturnValue({ meta: { id: 'uazapi' } }),
 }));
 
-vi.mock('../integrations/crypt.server', () => ({
+vi.mock('../../integrations/crypt.server', () => ({
   decryptSecret: vi.fn().mockImplementation((val) => Promise.resolve(val)),
 }));
 
