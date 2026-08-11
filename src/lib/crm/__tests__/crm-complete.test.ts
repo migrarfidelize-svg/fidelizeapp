@@ -3,7 +3,7 @@ import { ensureDefaultWhatsAppFlow } from '../bootstrap.server';
 import { executeFlow } from '../flow-engine.server';
 import { processAgentMessage } from '../agent-engine.server';
 import { supabaseAdmin } from '@/integrations/supabase/client.server';
-import { generateAgentResponse } from '../ai-adapter.server';
+import * as aiAdapter from '../ai-adapter.server';
 
 const createMockChain = (data: any = null, error: any = null) => {
     const chain: any = {
@@ -101,8 +101,8 @@ describe('CRM End-to-End Logic', () => {
 
     await processAgentMessage({ conversationId: 'c1', customerPhone: '5511', inboundText: 'Quero meus pontos', stepId: 's2' });
     
-    expect(generateAgentResponse).toHaveBeenCalled();
-    const callArgs = vi.mocked(generateAgentResponse).mock.calls[0][0];
+    expect(aiAdapter.generateAgentResponse).toHaveBeenCalled();
+    const callArgs = (aiAdapter.generateAgentResponse as any).mock.calls[0][0];
     expect(callArgs.systemPrompt).toContain('Contexto Especial Fidelidade');
   });
 });
