@@ -26,7 +26,7 @@ async function sendWhatsAppWrapper(conv: any, text: string, options: any = {}) {
                 direction: 'outbound',
                 provider: active.provider.meta.id,
                 provider_message_id: res.providerMessageId || `bot-${Date.now()}`,
-                message_type: options.type === 'options' ? 'interactive' : 'text',
+                message_type: 'text',
                 metadata: { source: 'flow', options: options.options }
             });
         }
@@ -109,7 +109,7 @@ export async function processStep(conv: any, step: any, allSteps: any[]): Promis
   }
 }
 
-export async function executeFlow(conversationId: string, messageBody: string) {
+export async function executeFlow(conversationId: string, messageBody: string): Promise<void> {
   const { data: conv, error: convErr } = await supabaseAdmin
     .from("crm_conversations")
     .select("*, metadata, establishment_id")
@@ -148,7 +148,10 @@ export async function executeFlow(conversationId: string, messageBody: string) {
   // ERRO 2: Comando Menu/Voltar
   const menuKeywords = ['menu', 'voltar', 'início', 'inicio', 'opções', 'opcoes'];
   if (menuKeywords.some(k => normalizedInput === k)) {
-      const menuStep = steps.find(s => (s.payload?.type || s.step_key) === 'options');
+      const menuStep = steps.find(s => {
+          const p = s.payload as any;
+          return (p?.type || s.step_key) === 'options';
+      });
       if (menuStep) {
           await updateFlowState(conv.id, flowId, menuStep.id, { mode: 'flow' });
           return await processStep(conv, menuStep, steps);
