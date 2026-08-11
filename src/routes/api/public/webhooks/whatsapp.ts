@@ -16,11 +16,14 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
         
         const rawBody = await request.text();
         const headers = Object.fromEntries(request.headers.entries());
-        
+        const url = new URL(request.url);
+        const urlEstablishmentId = url.searchParams.get("establishment_id");
+
         // 1. Identificar Provedor Ativo
-        const active = await getActiveWhatsAppProvider();
+        // Se houver establishment_id na URL, usamos para isolamento imediato
+        const active = await getActiveWhatsAppProvider(urlEstablishmentId || undefined);
         if (!active) {
-          console.error("[Webhook] No active WhatsApp provider found.");
+          console.error(`[Webhook] No active WhatsApp provider found${urlEstablishmentId ? ` for establishment ${urlEstablishmentId}` : ''}.`);
           return new Response("No active WhatsApp provider", { status: 404 });
         }
 
@@ -188,8 +191,10 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
                   .from("crm_messages")
                   .select("*")
                   .eq("conversation_id", conversation.id)
+                  .eq("establishment_id", establishmentId)
                   .is("processed_at", null)
-                  .order("created_at", { ascending: true });
+                  .order("created_at", { ascending: true })
+                  .order("id", { ascending: true });
 
                 if (pendingMessages && pendingMessages.length > 0) {
                   const { executeFlow } = await import("@/lib/crm/flow-engine.server");

@@ -130,7 +130,7 @@ async function executeHandoff(conv: any, message: string) {
 
 async function sendAgentWhatsApp(conv: any, text: string, meta: { flowId?: string, stepId?: string, agentName: string }) {
   const { getActiveWhatsAppProvider } = await import("../otp.functions");
-  const active = await getActiveWhatsAppProvider();
+  const active = await getActiveWhatsAppProvider(conv.establishment_id);
   
   if (active) {
     const res = await active.provider.sendTestMessage(active.runtime, process.env as any, conv.customer_phone, text);

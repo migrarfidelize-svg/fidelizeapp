@@ -10,17 +10,21 @@ const sendOtpSchema = z.object({
 /**
  * Gets the active WhatsApp provider and its runtime config.
  */
-export async function getActiveWhatsAppProvider() {
+export async function getActiveWhatsAppProvider(establishmentId?: string) {
   const { supabaseAdmin } =
     await import("@/integrations/supabase/client.server");
 
-  const { data: integration, error } =
-    await supabaseAdmin
-      .from("integrations")
-      .select("*")
-      .eq("category", "otp")
-      .eq("enabled", true)
-      .maybeSingle();
+  let query = supabaseAdmin
+    .from("integrations")
+    .select("*")
+    .eq("category", "otp")
+    .eq("enabled", true);
+
+  if (establishmentId) {
+    query = query.eq("establishment_id", establishmentId);
+  }
+
+  const { data: integration, error } = await query.maybeSingle();
 
   if (error) {
     console.error(

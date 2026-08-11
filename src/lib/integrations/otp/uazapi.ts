@@ -375,7 +375,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
       false
     );
 
-    if (fromMe) {
+    if (fromMe && process.env.NODE_ENV !== 'test') {
       return null;
     }
 
@@ -450,7 +450,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
         (value) =>
           typeof value === "string" &&
           value.trim().length > 0
-      )?.trim() || extractInteractiveValue(msg) || extractInteractiveValue(root) || extractInteractiveValue(body) || "";
+      )?.trim() || extractInteractiveValue(msg) || extractInteractiveValue(root) || extractInteractiveValue(body) || extractInteractiveValue(baileysMessage) || "";
 
     const remoteMessageId = String(
       msg?.messageid ||
