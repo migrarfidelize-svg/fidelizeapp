@@ -446,6 +446,9 @@ export const getCRMFlows = createServerFn({ method: "GET" })
     const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
     if (!isAdmin) throw new Error("Acesso restrito.");
 
+    const { ensureDefaultWhatsAppFlow } = await import("./crm/bootstrap.server");
+    await ensureDefaultWhatsAppFlow();
+
     const { data, error } = await supabase.from("crm_flows").select("*").order("created_at", { ascending: false });
     if (error) throw error;
     return data || [];
