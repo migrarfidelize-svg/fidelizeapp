@@ -1,6 +1,33 @@
 import { timedFetch } from "../types";
 import type { IntegrationRuntimeConfig, NodeEnv, TestConnectionResult } from "../types";
 import type { WhatsAppOTPProvider, WhatsAppInstanceStatus } from "./base";
+ 
+function resolveUazapiToken(
+  runtime: IntegrationRuntimeConfig,
+  env: NodeEnv
+): string {
+  return String(
+    runtime.db_credentials?.token ||
+    runtime.config.token ||
+    env["UAZAPI_TOKEN"] ||
+    ""
+  ).trim();
+}
+
+function isUazapiConnected(payload: any): boolean {
+  if (payload?.status?.connected === true) return true;
+  if (payload?.connected === true) return true;
+
+  const state =
+    payload?.state ||
+    payload?.status ||
+    payload?.instance?.state ||
+    payload?.instance?.status ||
+    "";
+
+  return String(state).toLowerCase() === "connected";
+}
+
 
 export const uazapiOtp: WhatsAppOTPProvider = {
   meta: {
@@ -28,8 +55,8 @@ export const uazapiOtp: WhatsAppOTPProvider = {
 
   async testConnection(runtime: IntegrationRuntimeConfig, env: NodeEnv): Promise<TestConnectionResult> {
     const baseUrl = (runtime.config.baseUrl as string)?.replace(/\/$/, "");
-    const token = (runtime.config.token as string) || (runtime.db_credentials?.token as string) || (env["UAZAPI_TOKEN"] as string);
-
+    const token = resolveUazapiToken(runtime, env);
+ 
     if (!baseUrl || !token) {
       return { ok: false, message: "Configuração incompleta (Base URL ou Token ausente)." };
     }
@@ -56,8 +83,8 @@ export const uazapiOtp: WhatsAppOTPProvider = {
 
   async getInstanceStatus(runtime: IntegrationRuntimeConfig, env: NodeEnv): Promise<WhatsAppInstanceStatus> {
     const baseUrl = (runtime.config.baseUrl as string)?.replace(/\/$/, "");
-    const token = (runtime.db_credentials?.token as string) || (runtime.config.token as string) || (env["UAZAPI_TOKEN"] as string);
-
+    const token = resolveUazapiToken(runtime, env);
+ 
     if (!baseUrl || !token) {
       console.error("[UAZAPI] Status Error: Missing baseUrl or token", { baseUrl, tokenPresent: !!token });
       return { status: "ERROR", updatedAt: new Date().toISOString() };
@@ -76,8 +103,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
       const res = JSON.parse(body);
       const instanceName = res.instance?.name || res.instanceName || "WhatsApp";
       
-      // UAZAPI disconnected is NOT a communication error (HTTP 200)
-      const isConnected = res.status === "CONNECTED" || res.state === "CONNECTED" || res.status?.connected === true;
+      const isConnected = isUazapiConnected(res);
 
       if (isConnected) {
         return { 
@@ -120,7 +146,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
 
   async disconnectInstance(runtime: IntegrationRuntimeConfig, env: NodeEnv) {
     const baseUrl = (runtime.config.baseUrl as string)?.replace(/\/$/, "");
-    const token = (runtime.config.token as string) || (runtime.db_credentials?.token as string) || (env["UAZAPI_TOKEN"] as string);
+    const token = resolveUazapiToken(runtime, env);
     if (!baseUrl || !token) return { ok: false, message: "Configuração incompleta." };
 
     try {
@@ -141,8 +167,8 @@ export const uazapiOtp: WhatsAppOTPProvider = {
 
   async sendTestMessage(runtime: IntegrationRuntimeConfig, env: NodeEnv, phone: string, message: string) {
     const baseUrl = (runtime.config.baseUrl as string)?.replace(/\/$/, "");
-    const token = (runtime.db_credentials?.token as string) || (runtime.config.token as string) || (env["UAZAPI_TOKEN"] as string);
-
+    const token = resolveUazapiToken(runtime, env);
+ 
     if (!baseUrl || !token) {
       return { ok: false, message: "Configuração incompleta (Base URL ou Token ausente)." };
     }
@@ -160,9 +186,14 @@ export const uazapiOtp: WhatsAppOTPProvider = {
       });
 
       let isConnected = false;
+ 
       if (statusRes.ok) {
-        const s = JSON.parse(statusBody);
-        isConnected = s.status === "CONNECTED" || s.state === "CONNECTED" || s.status?.connected === true || s.instance?.status === "CONNECTED";
+        try {
+          const s = JSON.parse(statusBody);
+          isConnected = isUazapiConnected(s);
+        } catch {
+          isConnected = false;
+        }
       }
 
       if (!isConnected) {
@@ -234,17 +265,197 @@ export const uazapiOtp: WhatsAppOTPProvider = {
   },
 
   parseWebhook(body: any) {
-    if (body.event !== "messages.upsert") return null;
-    const msg = body.data;
-    const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text;
-    const pushName = body.pushName || msg.pushName || body.instance?.pushName;
+    if (!body || typeof body !== "object") {
+      return null;
+    }
+
+    /*
+     * UAZAPI possui mais de uma forma de payload dependendo
+     * da versão/evento configurado.
+     *
+     * Não restringir exclusivamente a "messages.upsert".
+     */
+
+    const root =
+      body?.data && typeof body.data === "object"
+        ? body.data
+        : body;
+
+    const msg =
+      body?.message && typeof body.message === "object"
+        ? body.message
+        : root?.message && typeof root.message === "object"
+          ? root.message
+          : root;
+
+    const baileysMessage =
+      msg?.message && typeof msg.message === "object"
+        ? msg.message
+        : {};
+
+    const key =
+      msg?.key ||
+      root?.key ||
+      body?.key ||
+      {};
+
+    // Nunca transformar mensagem enviada pelo próprio número
+    // em atendimento recebido.
+    const fromMe = Boolean(
+      msg?.from_me ??
+      msg?.fromMe ??
+      root?.from_me ??
+      root?.fromMe ??
+      body?.from_me ??
+      body?.fromMe ??
+      key?.fromMe ??
+      false
+    );
+
+    if (fromMe) {
+      return null;
+    }
+
+    const rawChat =
+      msg?.sender ||
+      msg?.chatid ||
+      msg?.chatId ||
+      msg?.phone ||
+      msg?.from ||
+      root?.sender ||
+      root?.chatid ||
+      root?.chatId ||
+      root?.phone ||
+      root?.from ||
+      body?.sender ||
+      body?.chatid ||
+      body?.chatId ||
+      body?.phone ||
+      body?.from ||
+      key?.remoteJid ||
+      "";
+
+    if (!rawChat) {
+      return null;
+    }
+
+    const rawChatString = String(rawChat);
+
+    // CRM não deve transformar grupo em cliente individual.
+    if (
+      rawChatString.includes("@g.us") ||
+      msg?.isGroup === true ||
+      root?.isGroup === true ||
+      body?.isGroup === true
+    ) {
+      return null;
+    }
+
+    const fromPhone = rawChatString
+      .split("@")[0]
+      .replace(/\D/g, "");
+
+    if (!fromPhone) {
+      return null;
+    }
+
+    const possibleTexts = [
+      msg?.text,
+      msg?.body,
+      typeof msg?.content === "string"
+        ? msg.content
+        : undefined,
+
+      baileysMessage?.conversation,
+      baileysMessage?.extendedTextMessage?.text,
+
+      root?.text,
+      root?.body,
+      typeof root?.content === "string"
+        ? root.content
+        : undefined,
+
+      body?.text,
+      body?.body,
+      typeof body?.content === "string"
+        ? body.content
+        : undefined,
+    ];
+
+    const text =
+      possibleTexts.find(
+        (value) =>
+          typeof value === "string" &&
+          value.trim().length > 0
+      )?.trim() || "";
+
+    const remoteMessageId = String(
+      msg?.messageid ||
+      msg?.messageId ||
+      msg?.id ||
+      key?.id ||
+      root?.messageid ||
+      root?.messageId ||
+      root?.id ||
+      body?.messageid ||
+      body?.messageId ||
+      body?.id ||
+      ""
+    ).trim();
+
+    /*
+     * Sem ID não persistimos porque crm_messages utiliza
+     * provider_message_id para idempotência.
+     */
+    if (!remoteMessageId) {
+      return null;
+    }
+
+    const pushName =
+      msg?.sender_name ||
+      msg?.senderName ||
+      msg?.pushName ||
+      root?.sender_name ||
+      root?.senderName ||
+      root?.pushName ||
+      body?.sender_name ||
+      body?.senderName ||
+      body?.pushName ||
+      undefined;
+
+    const rawType =
+      msg?.type ||
+      msg?.messageType ||
+      root?.type ||
+      root?.messageType ||
+      body?.type ||
+      body?.messageType ||
+      (text ? "text" : "other");
+
+    const messageType =
+      String(rawType).toLowerCase();
+
+    const mediaUrl =
+      msg?.mediaUrl ||
+      msg?.media_url ||
+      msg?.url ||
+      root?.mediaUrl ||
+      root?.media_url ||
+      undefined;
 
     return {
-      remoteMessageId: msg.key?.id,
-      fromPhone: msg.key?.remoteJid?.split("@")[0],
+      remoteMessageId,
+      fromPhone,
       text,
-      pushName,
-      messageType: msg.message?.conversation ? "text" : "other"
+      pushName:
+        typeof pushName === "string"
+          ? pushName
+          : undefined,
+      messageType,
+      mediaUrl:
+        typeof mediaUrl === "string"
+          ? mediaUrl
+          : undefined,
     };
   }
 };
