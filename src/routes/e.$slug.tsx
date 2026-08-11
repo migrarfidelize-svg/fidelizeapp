@@ -44,9 +44,19 @@ export const Route = createFileRoute("/e/$slug")({
     if (!d?.establishment) throw notFound();
     return d;
   },
-  head: () => ({
-    // Head metadata is now handled by the central SEO configuration.
-  }),
+  head: ({ loaderData }) => {
+    const est = loaderData?.establishment;
+    if (!est) return {};
+    return {
+      title: `${est.name} | Descobrir | Afidelize`,
+      meta: [
+        { name: "description", content: est.description || "Conheça este estabelecimento." },
+        { property: "og:title", content: est.name },
+        { property: "og:description", content: est.description || "Conheça este estabelecimento." },
+        { property: "og:image", content: est.cover_url || est.logo_url || "" }
+      ]
+    };
+  },
   component: DiscoveryProfilePage,
   errorComponent: ({ error, reset }) => (
     <div className="mx-auto max-w-2xl p-6">

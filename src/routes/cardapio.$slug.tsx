@@ -42,9 +42,19 @@ export const Route = createFileRoute("/cardapio/$slug")({
     });
     return d;
   },
-  head: () => ({
-    // Head metadata is now handled by the central SEO configuration.
-  }),
+  head: ({ loaderData }) => {
+    const est = loaderData?.establishment;
+    if (!est) return {};
+    return {
+      title: `${(loaderData.menu as any).display_name || est.name} | ${est.name} | Cardápio | Afidelize`,
+      meta: [
+        { name: "description", content: est.description || "Veja o cardápio digital e faça seu pedido." },
+        { property: "og:title", content: `${est.name} | Cardápio` },
+        { property: "og:description", content: est.description || "Veja o cardápio digital." },
+        { property: "og:image", content: est.cover_url || est.logo_url || "" }
+      ]
+    };
+  },
   component: PublicMenuPage,
   notFoundComponent: () => (
     <div className="min-h-dvh grid place-items-center p-6 text-center" style={{ background: "#FBF7F0", color: "#17130E" }}>

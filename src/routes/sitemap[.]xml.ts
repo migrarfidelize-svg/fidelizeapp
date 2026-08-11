@@ -14,18 +14,26 @@ export const Route = createFileRoute("/sitemap.xml")({
           .filter(([path, data]) => !data.noindex && !path.includes("app") && !path.includes("hash") && !path.includes("/*"))
           .map(([path]) => path);
 
-        // Fetch active establishments for /e/$slug, /catalogo/$slug, /cardapio/$slug
+        // Fetch establishments that have menu OR catalog published
         const { data: establishments } = await supabaseAdmin
           .from("establishments")
-          .select("slug")
+          .select("id, slug")
           .eq("active", true);
 
         const dynamicUrls: string[] = [];
         if (establishments) {
+          const { isShowcaseDestinationValid } = await import("@/lib/qr-target.server");
+          
           for (const est of establishments) {
+            // Check publication status for menu and catalog
+            const [hasMenu, hasCatalog] = await Promise.all([
+              isShowcaseDestinationValid(supabaseAdmin, est.id, "menu"),
+              isShowcaseDestinationValid(supabaseAdmin, est.id, "catalog")
+            ]);
+            
             dynamicUrls.push(`/e/${est.slug}`);
-            dynamicUrls.push(`/catalogo/${est.slug}`);
-            dynamicUrls.push(`/cardapio/${est.slug}`);
+            if (hasMenu) dynamicUrls.push(`/cardapio/${est.slug}`);
+            if (hasCatalog) dynamicUrls.push(`/catalogo/${est.slug}`);
           }
         }
 
