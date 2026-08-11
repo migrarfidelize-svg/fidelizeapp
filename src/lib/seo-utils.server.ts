@@ -1,10 +1,34 @@
 import { getSeoConfig, type SeoConfig } from "./seo.server";
 
+function resolveRouteSeo(routes: SeoConfig["routes"], pathname: string) {
+  if (routes[pathname]) {
+    return routes[pathname];
+  }
+
+  let bestMatch: any = null;
+  let bestLength = -1;
+
+  for (const [pattern, value] of Object.entries(routes)) {
+    if (!pattern.endsWith("/*")) continue;
+    const prefix = pattern.slice(0, -2); // Remove the '/*'
+    
+    if (
+      (pathname === prefix || pathname.startsWith(prefix + "/")) &&
+      prefix.length > bestLength
+    ) {
+      bestMatch = value;
+      bestLength = prefix.length;
+    }
+  }
+
+  return bestMatch || {};
+}
+
 export async function getSeoMetadata(pathname: string) {
   const config = await getSeoConfig();
   
   // Find matching route or fallback to defaults
-  const routeData = config.routes[pathname] || {};
+  const routeData = resolveRouteSeo(config.routes, pathname);
   
   const title = routeData.title || config.defaultTitle;
   const description = routeData.description || config.defaultDescription;

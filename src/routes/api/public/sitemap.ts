@@ -10,7 +10,7 @@ export const Route = createFileRoute("/api/public/sitemap")({
         
         // Only include indexable routes from config
         const publicRoutes = Object.entries(config.routes)
-          .filter(([path, data]) => !data.noindex && !path.includes("app") && !path.includes("hash"))
+          .filter(([path, data]) => !data.noindex && !path.includes("app") && !path.includes("hash") && !path.includes("/*"))
           .map(([path]) => path);
 
         const xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/api/public/sitemap")({
         return new Response(xml, {
           headers: {
             "Content-Type": "application/xml",
-            "Cache-Control": "public, max-age=3600",
+            "Cache-Control": "no-store, max-age=0",
           },
         });
       },

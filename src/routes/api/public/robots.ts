@@ -11,17 +11,21 @@ export const Route = createFileRoute("/api/public/robots")({
         const content = [
           "User-agent: *",
           "Allow: /",
+          "Disallow: /app",
           "Disallow: /app/",
+          "Disallow: /hash",
           "Disallow: /hash/",
+          "Disallow: /auth",
+          "Disallow: /carteira",
           "Disallow: /api/",
           "",
-          `Sitemap: ${siteUrl}/api/public/sitemap.xml`
+          `Sitemap: ${siteUrl}/sitemap.xml`
         ].join("\n");
 
         return new Response(content, {
           headers: {
             "Content-Type": "text/plain",
-            "Cache-Control": "public, max-age=3600",
+            "Cache-Control": "no-store, max-age=0",
           },
         });
       },
