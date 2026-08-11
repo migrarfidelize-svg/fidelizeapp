@@ -16,11 +16,14 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
         
         const rawBody = await request.text();
         const headers = Object.fromEntries(request.headers.entries());
-        
+        const url = new URL(request.url);
+        const urlEstablishmentId = url.searchParams.get("establishment_id");
+
         // 1. Identificar Provedor Ativo
-        const active = await getActiveWhatsAppProvider();
+        // Se houver establishment_id na URL, usamos para isolamento imediato
+        const active = await getActiveWhatsAppProvider(urlEstablishmentId || undefined);
         if (!active) {
-          console.error("[Webhook] No active WhatsApp provider found.");
+          console.error(`[Webhook] No active WhatsApp provider found${urlEstablishmentId ? ` for establishment ${urlEstablishmentId}` : ''}.`);
           return new Response("No active WhatsApp provider", { status: 404 });
         }
 
