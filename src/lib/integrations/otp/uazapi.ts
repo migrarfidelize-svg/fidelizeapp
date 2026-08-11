@@ -7,17 +7,18 @@ function resolveUazapiToken(
   env: NodeEnv
 ): string {
   const candidates = [
-    runtime.config?.token,
     runtime.db_credentials?.token,
+    runtime.config?.token,
     env["UAZAPI_TOKEN"],
   ];
 
   for (const candidate of candidates) {
     if (typeof candidate !== "string") continue;
+
     const value = candidate.trim();
+
     if (!value) continue;
 
-    // Nunca utilizar valor mascarado da interface como credencial real.
     if (
       value.includes("••") ||
       value.includes("***") ||
