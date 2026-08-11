@@ -1954,6 +1954,7 @@ export type Database = {
           assigned_at: string | null
           assigned_to: string | null
           closed_at: string | null
+          contact_id: string | null
           created_at: string
           customer_phone: string
           id: string
@@ -1967,6 +1968,7 @@ export type Database = {
           assigned_at?: string | null
           assigned_to?: string | null
           closed_at?: string | null
+          contact_id?: string | null
           created_at?: string
           customer_phone: string
           id?: string
@@ -1980,6 +1982,7 @@ export type Database = {
           assigned_at?: string | null
           assigned_to?: string | null
           closed_at?: string | null
+          contact_id?: string | null
           created_at?: string
           customer_phone?: string
           id?: string
@@ -1989,7 +1992,15 @@ export type Database = {
           status?: Database["public"]["Enums"]["crm_conversation_status"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "crm_conversations_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       crm_flow_steps: {
         Row: {
