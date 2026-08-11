@@ -32,7 +32,10 @@ export async function getSeoMetadata(pathname: string) {
   
   const title = routeData.title || config.defaultTitle;
   const description = routeData.description || config.defaultDescription;
-  const noindex = routeData.noindex || pathname.startsWith("/app") || pathname.startsWith("/hash");
+  const isSensitivePrefix = pathname === "/app" || pathname.startsWith("/app/") || 
+    pathname === "/hash" || pathname.startsWith("/hash/") ||
+    pathname === "/carteira" || pathname.startsWith("/carteira/");
+  const noindex = routeData.noindex || isSensitivePrefix;
   const canonical = routeData.canonical || `${config.siteUrl}${pathname}`;
   
   const faviconUrl = config.faviconUrl || "/favicon.ico";
@@ -43,7 +46,7 @@ export async function getSeoMetadata(pathname: string) {
     meta: [
       { title },
       { name: "description", content: description },
-      { name: "robots", content: noindex ? "noindex, nofollow" : "index, follow" },
+      { name: "robots", content: noindex ? "noindex, nofollow, noarchive, nosnippet" : "index, follow" },
       { property: "og:title", content: title },
       { property: "og:description", content: description },
       { property: "og:image", content: config.socialImageUrl },

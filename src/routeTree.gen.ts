@@ -25,8 +25,6 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AjudaIndexRouteImport } from './routes/ajuda.index'
 import { Route as SuporteMeusRouteImport } from './routes/suporte.meus'
-import { Route as SitemapXmlRouteImport } from './routes/sitemap.xml'
-import { Route as RobotsTxtRouteImport } from './routes/robots.txt'
 import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as LinksSlugRouteImport } from './routes/links.$slug'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
@@ -53,8 +51,6 @@ import { Route as AuthenticatedCarteiraIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
 import { Route as SuporteChamadoIdRouteImport } from './routes/suporte.chamado.$id'
 import { Route as SuporteSlugNovoRouteImport } from './routes/suporte.$slug.novo'
-import { Route as ApiPublicSitemapRouteImport } from './routes/api/public/sitemap'
-import { Route as ApiPublicRobotsRouteImport } from './routes/api/public/robots'
 import { Route as ApiPublicManifestRouteImport } from './routes/api/public/manifest'
 import { Route as AjudaCategoryArticleRouteImport } from './routes/ajuda.$category.$article'
 import { Route as AuthenticatedHashUsuariosRouteImport } from './routes/_authenticated/hash.usuarios'
@@ -236,16 +232,6 @@ const SuporteMeusRoute = SuporteMeusRouteImport.update({
   path: '/suporte/meus',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SitemapXmlRoute = SitemapXmlRouteImport.update({
-  id: '/sitemap/xml',
-  path: '/sitemap/xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RobotsTxtRoute = RobotsTxtRouteImport.update({
-  id: '/robots/txt',
-  path: '/robots/txt',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const RCodeRoute = RCodeRouteImport.update({
   id: '/r/$code',
   path: '/r/$code',
@@ -375,16 +361,6 @@ const SuporteChamadoIdRoute = SuporteChamadoIdRouteImport.update({
 const SuporteSlugNovoRoute = SuporteSlugNovoRouteImport.update({
   id: '/suporte/$slug/novo',
   path: '/suporte/$slug/novo',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicSitemapRoute = ApiPublicSitemapRouteImport.update({
-  id: '/api/public/sitemap',
-  path: '/api/public/sitemap',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicRobotsRoute = ApiPublicRobotsRouteImport.update({
-  id: '/api/public/robots',
-  path: '/api/public/robots',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicManifestRoute = ApiPublicManifestRouteImport.update({
@@ -1003,8 +979,6 @@ export interface FileRoutesByFullPath {
   '/l/$slug': typeof LSlugRoute
   '/links/$slug': typeof LinksSlugRoute
   '/r/$code': typeof RCodeRoute
-  '/robots/txt': typeof RobotsTxtRoute
-  '/sitemap/xml': typeof SitemapXmlRoute
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda/': typeof AjudaIndexRoute
   '/app/analytics': typeof AuthenticatedAppAnalyticsRoute
@@ -1063,8 +1037,6 @@ export interface FileRoutesByFullPath {
   '/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/api/public/manifest': typeof ApiPublicManifestRoute
-  '/api/public/robots': typeof ApiPublicRobotsRoute
-  '/api/public/sitemap': typeof ApiPublicSitemapRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/app/': typeof AuthenticatedAppIndexRoute
@@ -1148,8 +1120,6 @@ export interface FileRoutesByTo {
   '/l/$slug': typeof LSlugRoute
   '/links/$slug': typeof LinksSlugRoute
   '/r/$code': typeof RCodeRoute
-  '/robots/txt': typeof RobotsTxtRoute
-  '/sitemap/xml': typeof SitemapXmlRoute
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda': typeof AjudaIndexRoute
   '/app/analytics': typeof AuthenticatedAppAnalyticsRoute
@@ -1206,8 +1176,6 @@ export interface FileRoutesByTo {
   '/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/api/public/manifest': typeof ApiPublicManifestRoute
-  '/api/public/robots': typeof ApiPublicRobotsRoute
-  '/api/public/sitemap': typeof ApiPublicSitemapRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/app': typeof AuthenticatedAppIndexRoute
@@ -1296,8 +1264,6 @@ export interface FileRoutesById {
   '/l/$slug': typeof LSlugRoute
   '/links/$slug': typeof LinksSlugRoute
   '/r/$code': typeof RCodeRoute
-  '/robots/txt': typeof RobotsTxtRoute
-  '/sitemap/xml': typeof SitemapXmlRoute
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda/': typeof AjudaIndexRoute
   '/_authenticated/app/analytics': typeof AuthenticatedAppAnalyticsRoute
@@ -1356,8 +1322,6 @@ export interface FileRoutesById {
   '/_authenticated/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
   '/ajuda/$category/$article': typeof AjudaCategoryArticleRoute
   '/api/public/manifest': typeof ApiPublicManifestRoute
-  '/api/public/robots': typeof ApiPublicRobotsRoute
-  '/api/public/sitemap': typeof ApiPublicSitemapRoute
   '/suporte/$slug/novo': typeof SuporteSlugNovoRoute
   '/suporte/chamado/$id': typeof SuporteChamadoIdRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
@@ -1446,8 +1410,6 @@ export interface FileRouteTypes {
     | '/l/$slug'
     | '/links/$slug'
     | '/r/$code'
-    | '/robots/txt'
-    | '/sitemap/xml'
     | '/suporte/meus'
     | '/ajuda/'
     | '/app/analytics'
@@ -1506,8 +1468,6 @@ export interface FileRouteTypes {
     | '/hash/usuarios'
     | '/ajuda/$category/$article'
     | '/api/public/manifest'
-    | '/api/public/robots'
-    | '/api/public/sitemap'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/app/'
@@ -1591,8 +1551,6 @@ export interface FileRouteTypes {
     | '/l/$slug'
     | '/links/$slug'
     | '/r/$code'
-    | '/robots/txt'
-    | '/sitemap/xml'
     | '/suporte/meus'
     | '/ajuda'
     | '/app/analytics'
@@ -1649,8 +1607,6 @@ export interface FileRouteTypes {
     | '/hash/usuarios'
     | '/ajuda/$category/$article'
     | '/api/public/manifest'
-    | '/api/public/robots'
-    | '/api/public/sitemap'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/app'
@@ -1738,8 +1694,6 @@ export interface FileRouteTypes {
     | '/l/$slug'
     | '/links/$slug'
     | '/r/$code'
-    | '/robots/txt'
-    | '/sitemap/xml'
     | '/suporte/meus'
     | '/ajuda/'
     | '/_authenticated/app/analytics'
@@ -1798,8 +1752,6 @@ export interface FileRouteTypes {
     | '/_authenticated/hash/usuarios'
     | '/ajuda/$category/$article'
     | '/api/public/manifest'
-    | '/api/public/robots'
-    | '/api/public/sitemap'
     | '/suporte/$slug/novo'
     | '/suporte/chamado/$id'
     | '/_authenticated/app/'
@@ -1882,14 +1834,10 @@ export interface RootRouteChildren {
   LSlugRoute: typeof LSlugRoute
   LinksSlugRoute: typeof LinksSlugRoute
   RCodeRoute: typeof RCodeRoute
-  RobotsTxtRoute: typeof RobotsTxtRoute
-  SitemapXmlRoute: typeof SitemapXmlRoute
   SuporteMeusRoute: typeof SuporteMeusRoute
   AjudaIndexRoute: typeof AjudaIndexRoute
   AjudaCategoryArticleRoute: typeof AjudaCategoryArticleRoute
   ApiPublicManifestRoute: typeof ApiPublicManifestRoute
-  ApiPublicRobotsRoute: typeof ApiPublicRobotsRoute
-  ApiPublicSitemapRoute: typeof ApiPublicSitemapRoute
   SuporteSlugNovoRoute: typeof SuporteSlugNovoRoute
   SuporteChamadoIdRoute: typeof SuporteChamadoIdRoute
   AjudaCategoryIndexRoute: typeof AjudaCategoryIndexRoute
@@ -2031,20 +1979,6 @@ declare module '@tanstack/react-router' {
       path: '/suporte/meus'
       fullPath: '/suporte/meus'
       preLoaderRoute: typeof SuporteMeusRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap/xml': {
-      id: '/sitemap/xml'
-      path: '/sitemap/xml'
-      fullPath: '/sitemap/xml'
-      preLoaderRoute: typeof SitemapXmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/robots/txt': {
-      id: '/robots/txt'
-      path: '/robots/txt'
-      fullPath: '/robots/txt'
-      preLoaderRoute: typeof RobotsTxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/r/$code': {
@@ -2227,20 +2161,6 @@ declare module '@tanstack/react-router' {
       path: '/suporte/$slug/novo'
       fullPath: '/suporte/$slug/novo'
       preLoaderRoute: typeof SuporteSlugNovoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/sitemap': {
-      id: '/api/public/sitemap'
-      path: '/api/public/sitemap'
-      fullPath: '/api/public/sitemap'
-      preLoaderRoute: typeof ApiPublicSitemapRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/robots': {
-      id: '/api/public/robots'
-      path: '/api/public/robots'
-      fullPath: '/api/public/robots'
-      preLoaderRoute: typeof ApiPublicRobotsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/manifest': {
@@ -3254,14 +3174,10 @@ const rootRouteChildren: RootRouteChildren = {
   LSlugRoute: LSlugRoute,
   LinksSlugRoute: LinksSlugRoute,
   RCodeRoute: RCodeRoute,
-  RobotsTxtRoute: RobotsTxtRoute,
-  SitemapXmlRoute: SitemapXmlRoute,
   SuporteMeusRoute: SuporteMeusRoute,
   AjudaIndexRoute: AjudaIndexRoute,
   AjudaCategoryArticleRoute: AjudaCategoryArticleRoute,
   ApiPublicManifestRoute: ApiPublicManifestRoute,
-  ApiPublicRobotsRoute: ApiPublicRobotsRoute,
-  ApiPublicSitemapRoute: ApiPublicSitemapRoute,
   SuporteSlugNovoRoute: SuporteSlugNovoRoute,
   SuporteChamadoIdRoute: SuporteChamadoIdRoute,
   AjudaCategoryIndexRoute: AjudaCategoryIndexRoute,
@@ -3298,13 +3214,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
