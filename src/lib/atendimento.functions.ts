@@ -637,6 +637,7 @@ export const duplicateCRMFlow = createServerFn({ method: "POST" })
     if (flow.steps && flow.steps.length > 0) {
       const stepsToInsert = flow.steps.map((s: any) => ({
         flow_id: newFlow.id,
+        establishment_id: flow.establishment_id,
         step_key: s.step_key,
         payload: s.payload,
         sort_order: s.order_index ?? 0
