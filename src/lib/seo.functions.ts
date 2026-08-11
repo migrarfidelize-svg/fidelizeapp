@@ -25,7 +25,6 @@ const SeoConfigSchema = z.object({
     canonical: z.string().optional(),
   }))
 });
-import { getSeoConfig } from "./seo.server";
 
 export const getPublicSeo = createServerFn({ method: "GET" })
   .handler(async () => {
