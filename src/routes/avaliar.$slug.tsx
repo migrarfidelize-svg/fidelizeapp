@@ -32,9 +32,22 @@ export const Route = createFileRoute("/avaliar/$slug")({
     });
     return d;
   },
-  head: () => ({
-    // Head metadata is now handled by the central SEO configuration.
-  }),
+  head: ({ loaderData }) => {
+    const est = loaderData?.est as any;
+    if (!est) return {};
+    const title = `${est.name} | Avaliar | Afidelize`;
+    const description = `Dê sua opinião sobre ${est.name}. Sua avaliação é muito importante para nós.`;
+    
+    return {
+      title,
+      meta: [
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:image", content: est.logo_url || "" }
+      ]
+    };
+  },
   component: Page,
   notFoundComponent: () => <div className="grid min-h-dvh place-items-center text-muted-foreground">Página não encontrada.</div>,
 });
