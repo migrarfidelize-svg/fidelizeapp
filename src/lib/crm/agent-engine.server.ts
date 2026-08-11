@@ -62,11 +62,11 @@ export async function processAgentMessage(input: AgentEngineInput) {
       .reverse()
       .map(m => ({
         role: (m.direction === 'inbound' ? 'user' : 'assistant') as "user" | "assistant",
-        content: m.body
+        content: m.body || ""
       }));
 
     // 6. Preparar System Prompt e Contexto
-    const contactName = conv.contact?.name || "Cliente";
+    const contactName = (conv.contact as any)?.name || "Cliente";
     const systemPrompt = `
       ${agentConfig.systemPrompt || `Você é o Assistente Virtual da Fidelize.
       Atenda clientes pelo WhatsApp de forma natural, educada, objetiva e humana.`}

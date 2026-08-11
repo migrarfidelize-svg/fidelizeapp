@@ -33,6 +33,19 @@ export async function executeFlow(conversationId: string, messageBody: string) {
   let currentFlowId = flowState?.flowId;
   let currentStepId = flowState?.stepId;
 
+  // Se a conversa já estiver em modo Agent, redirecionar para o processador de IA
+  if (flowState?.mode === 'agent' && conv.status === 'bot') {
+    const { processAgentMessage } = await import("./agent-engine.server");
+    await processAgentMessage({
+      conversationId: conv.id,
+      customerPhone: conv.customer_phone,
+      inboundText: messageBody,
+      flowId: currentFlowId,
+      stepId: currentStepId
+    });
+    return;
+  }
+
   if (!currentFlowId) {
     currentFlowId = agentConfig?.behavior?.mainFlowId;
     if (!currentFlowId) return;
@@ -117,6 +130,19 @@ async function processStep(conv: any, step: any, allSteps: any[]) {
       await supabaseAdmin.from("crm_conversations").update({ status: 'closed', closed_at: new Date().toISOString() }).eq("id", conv.id);
       await updateFlowState(conv.id, null, null);
       break;
+
+    case 'agent': {
+      const { processAgentMessage } = await import("./agent-engine.server");
+      await processAgentMessage({
+        conversationId: conv.id,
+        customerPhone: conv.customer_phone,
+        inboundText: "", // Primeira entrada no bloco
+        flowId: step.flow_id,
+        stepId: step.id,
+        additionalContext: payload.context || ""
+      });
+      break;
+    }
   }
 }
 
