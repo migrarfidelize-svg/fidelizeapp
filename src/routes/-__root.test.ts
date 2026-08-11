@@ -5,7 +5,7 @@ import { getSeoMetadata } from '@/lib/seo-utils.server';
 describe('Root Route (SEO & Style Regression)', () => {
   it('should always include the global stylesheet in head links', async () => {
     const mockSeoData = await getSeoMetadata('/');
-    const head = Route.options.head!({ 
+    const headResult = Route.options.head!({ 
       loaderData: mockSeoData,
       params: {},
       location: {} as any,
@@ -16,8 +16,9 @@ describe('Root Route (SEO & Style Regression)', () => {
       search: {}
     } as any);
 
+    const head = headResult instanceof Promise ? await headResult : headResult;
     const links = head.links || [];
-    const appCssLink = links.find(l => l.rel === 'stylesheet' && l.href?.includes('styles.css'));
+    const appCssLink = links.find((l: any) => l.rel === 'stylesheet' && l.href?.includes('styles.css'));
     
     expect(appCssLink).toBeDefined();
     expect(appCssLink?.rel).toBe('stylesheet');
@@ -25,7 +26,7 @@ describe('Root Route (SEO & Style Regression)', () => {
 
   it('should deduplicate metadata links correctly', async () => {
     const mockSeoData = await getSeoMetadata('/');
-    const head = Route.options.head!({ 
+    const headResult = Route.options.head!({ 
       loaderData: mockSeoData,
       params: {},
       location: {} as any,
@@ -36,13 +37,14 @@ describe('Root Route (SEO & Style Regression)', () => {
       search: {}
     } as any);
 
+    const head = headResult instanceof Promise ? await headResult : headResult;
     const links = head.links || [];
     
     // Check for unique critical links
-    const canonicals = links.filter(l => l.rel === 'canonical');
-    const icons = links.filter(l => l.rel === 'icon');
-    const manifests = links.filter(l => l.rel === 'manifest');
-    const appleIcons = links.filter(l => l.rel === 'apple-touch-icon');
+    const canonicals = links.filter((l: any) => l.rel === 'canonical');
+    const icons = links.filter((l: any) => l.rel === 'icon');
+    const manifests = links.filter((l: any) => l.rel === 'manifest');
+    const appleIcons = links.filter((l: any) => l.rel === 'apple-touch-icon');
 
     expect(canonicals.length).toBe(1);
     expect(icons.length).toBe(1);
@@ -55,9 +57,9 @@ describe('Root Route (SEO & Style Regression)', () => {
     const hashSeo = await getSeoMetadata('/hash/users');
     const clientsSeo = await getSeoMetadata('/app/clientes');
 
-    const appRobots = appSeo.meta.find(m => (m as any).name === 'robots');
-    const hashRobots = hashSeo.meta.find(m => (m as any).name === 'robots');
-    const clientsRobots = clientsSeo.meta.find(m => (m as any).name === 'robots');
+    const appRobots = appSeo.meta.find((m: any) => m.name === 'robots');
+    const hashRobots = hashSeo.meta.find((m: any) => m.name === 'robots');
+    const clientsRobots = clientsSeo.meta.find((m: any) => m.name === 'robots');
 
     expect(appRobots?.content).toContain('noindex');
     expect(hashRobots?.content).toContain('noindex');
