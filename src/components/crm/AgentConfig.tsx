@@ -110,6 +110,46 @@ export function AgentConfig() {
                   </Select>
                 </div>
               </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">IA Provider</label>
+                  <Select 
+                    value={settings.provider_id || "openai"} 
+                    onValueChange={val => setSettings({...settings, provider_id: val})}
+                  >
+                    <SelectTrigger className="h-11 bg-muted/20 border-border/50 font-bold">
+                      <SelectValue placeholder="Selecione o provedor..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="openai">OpenAI (GPT-4o)</SelectItem>
+                      <SelectItem value="groq">Groq (Llama 3 / Mixtral)</SelectItem>
+                      <SelectItem value="deepseek">DeepSeek</SelectItem>
+                      <SelectItem value="openrouter">OpenRouter</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Modelo (Opcional)</label>
+                  <Input 
+                    value={settings.model || ""} 
+                    onChange={e => setSettings({...settings, model: e.target.value})}
+                    className="h-11 font-bold bg-muted/20 border-border/50"
+                    placeholder="Ex: gpt-4o-mini"
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">System Prompt (Diretrizes do Agente)</label>
+                <Textarea 
+                  value={settings.systemPrompt} 
+                  onChange={e => setSettings({...settings, systemPrompt: e.target.value})} 
+                  rows={6} 
+                  className="bg-muted/20 border-border/50 resize-none leading-relaxed text-sm"
+                  placeholder="Você é o Assistente Virtual da Fidelize..."
+                />
+              </div>
               
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Mensagem de Apresentação</Label>

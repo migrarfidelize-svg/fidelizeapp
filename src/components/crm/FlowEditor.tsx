@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { GitBranch, MessageSquare, List, HelpCircle, ArrowRight, UserCheck, CheckCircle2, Trash2, Plus, Save, ChevronLeft, Layout, Settings2, PlayCircle, Loader2 } from "lucide-react";
+import { GitBranch, MessageSquare, List, HelpCircle, ArrowRight, UserCheck, CheckCircle2, Trash2, Plus, Save, ChevronLeft, Layout, Settings2, PlayCircle, Loader2, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -101,6 +101,7 @@ export function FlowEditor({ flow, onBack }: { flow: any; onBack: () => void }) 
               {[
                 { id: 'message', icon: MessageSquare, label: 'Mensagem', desc: 'Envio de texto simples' },
                 { id: 'options', icon: List, label: 'Menu de Opções', desc: 'Botões interativos' },
+                { id: 'agent', icon: Bot, label: 'Atendimento IA', desc: 'IA responde naturalmente' },
                 { id: 'transfer_to_queue', icon: UserCheck, label: 'Falar com Humano', desc: 'Encaminha para fila' },
                 { id: 'close', icon: CheckCircle2, label: 'Finalizar', desc: 'Encerra a interação' },
               ].map((tool) => (
@@ -140,6 +141,7 @@ export function FlowEditor({ flow, onBack }: { flow: any; onBack: () => void }) 
                 <Card className={cn(
                   "border-l-4 p-0 overflow-hidden shadow-sm transition-all hover:shadow-md",
                   step.step_key === 'transfer_to_queue' ? "border-l-amber-500" :
+                  step.step_key === 'agent' ? "border-l-indigo-500" :
                   step.step_key === 'close' ? "border-l-emerald-500" : "border-l-primary"
                 )}>
                   {/* Cabeçalho do Bloco */}
@@ -151,6 +153,7 @@ export function FlowEditor({ flow, onBack }: { flow: any; onBack: () => void }) 
                       <Badge variant="outline" className="text-[9px] uppercase font-bold tracking-wider py-0 px-2 h-5 border-border/50">
                         {step.step_key === 'transfer_to_queue' ? 'Encaminhamento' : 
                          step.step_key === 'options' ? 'Interação' : 
+                         step.step_key === 'agent' ? 'Inteligência Artificial' : 
                          step.step_key === 'close' ? 'Finalização' : 'Mensagem'}
                       </Badge>
                     </div>
@@ -173,6 +176,20 @@ export function FlowEditor({ flow, onBack }: { flow: any; onBack: () => void }) 
                       />
                     </div>
                     
+                    {step.step_key === 'agent' && (
+                      <div className="space-y-4 pt-2 border-t border-border/30">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground opacity-60">Contexto Adicional da IA</label>
+                          <Textarea 
+                            placeholder="Instruções específicas para este ponto da conversa..." 
+                            value={step.payload.context || ""} 
+                            className="text-xs bg-muted/20 border-border/50 resize-none"
+                            onChange={(e) => updateStepPayload(step.id, { ...step.payload, context: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    )}
+
                     {step.step_key === 'options' && (
                       <div className="space-y-3 pt-2 border-t border-border/30">
                          <div className="flex justify-between items-center">
