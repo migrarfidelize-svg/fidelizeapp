@@ -479,8 +479,8 @@ export const saveCRMFlow = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("Acesso restrito.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: adminCheck } = await supabase.rpc("my_account_type");
-    const establishmentId = adminCheck === 'admin' ? 'f406351f-487b-47db-b0d3-bd5cb918b6c3' : null;
+    const { data: accountType } = await supabase.rpc("my_account_type");
+    const establishmentId = accountType === 'super_admin' ? 'f406351f-487b-47db-b0d3-bd5cb918b6c3' : null;
 
     if (!establishmentId) throw new Error("Não foi possível determinar o estabelecimento.");
 
@@ -622,7 +622,7 @@ export const duplicateCRMFlow = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("Acesso restrito.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     
-    const { data: flow } = await supabaseAdmin.from("crm_flows").select("*, steps:crm_flow_steps(*)").eq("id", data.flowId).single();
+    const { data: flow } = await supabaseAdmin.from("crm_flows").select("*, steps:crm_flow_steps!crm_flow_steps_flow_id_fkey(*)").eq("id", data.flowId).single();
     if (!flow) throw new Error("Fluxo não encontrado");
 
     const { data: newFlow, error: flowErr } = await supabaseAdmin.from("crm_flows").insert({
