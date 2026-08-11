@@ -42,74 +42,9 @@ export const Route = createFileRoute("/cardapio/$slug")({
     });
     return d;
   },
-  head: ({ params, loaderData }) => {
-    const url = `https://fidelizeapp.lovable.app/cardapio/${params.slug}`;
-    if (!loaderData) {
-      return {
-        meta: [
-          { title: "Cardápio não encontrado — Fidelize" },
-          { name: "robots", content: "noindex" },
-        ],
-      };
-    }
-    const name = loaderData.establishment.name;
-    const title = `${name} — Cardápio Digital`;
-    const description =
-      loaderData.menu?.tagline ||
-      loaderData.establishment.description ||
-      `Confira o cardápio digital de ${name}: pratos, bebidas, fotos e preços atualizados em tempo real.`;
-    const image =
-      loaderData.establishment.cover_url ||
-      loaderData.establishment.logo_url ||
-      null;
-    const absImage = image
-      ? image.startsWith("http")
-        ? image
-        : `https://fidelizeapp.lovable.app${image}`
-      : null;
-
-    return {
-      meta: [
-        { title },
-        { name: "description", content: description },
-        { property: "og:title", content: title },
-        { property: "og:description", content: description },
-        { property: "og:type", content: "restaurant.menu" },
-        { property: "og:url", content: url },
-        { property: "og:site_name", content: "Fidelize" },
-        { property: "og:locale", content: "pt_BR" },
-        { name: "twitter:card", content: "summary_large_image" },
-        { name: "twitter:title", content: title },
-        { name: "twitter:description", content: description },
-        ...(absImage
-          ? [
-              { property: "og:image", content: absImage },
-              { property: "og:image:alt", content: `Cardápio de ${name}` },
-              { name: "twitter:image", content: absImage },
-            ]
-          : []),
-      ],
-      links: [
-        { rel: "canonical", href: url },
-        { rel: "preconnect", href: "https://fonts.googleapis.com" },
-        { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-        {
-          rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap",
-        },
-        ...(absImage
-          ? [{ rel: "preload", as: "image", href: absImage, fetchpriority: "high" } as any]
-          : []),
-      ],
-      scripts: [
-        {
-          type: "application/ld+json",
-          children: JSON.stringify(buildMenuJsonLd({ loaderData, url, name, description, absImage })),
-        },
-      ],
-
-    };
-  },
+  head: () => ({
+    // Head metadata is now handled by the central SEO configuration.
+  }),
   component: PublicMenuPage,
   notFoundComponent: () => (
     <div className="min-h-dvh grid place-items-center p-6 text-center" style={{ background: "#FBF7F0", color: "#17130E" }}>
