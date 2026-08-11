@@ -180,6 +180,47 @@ const verifyOtpSchema = z.object({
   code: z.string().length(6),
 });
 
+async function findAuthUserByEmail(
+  supabaseAdmin: any,
+  email: string
+) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const perPage = 1000;
+  let page = 1;
+
+  while (true) {
+    const {
+      data,
+      error
+    } = await supabaseAdmin.auth.admin.listUsers({
+      page,
+      perPage,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    const users = data?.users || [];
+
+    const found = users.find(
+      (u: any) =>
+        typeof u?.email === "string" &&
+        u.email.toLowerCase() === normalizedEmail
+    );
+
+    if (found) {
+      return found;
+    }
+
+    if (users.length < perPage) {
+      return null;
+    }
+
+    page += 1;
+  }
+}
+
 export const verifyOTP = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => verifyOtpSchema.parse(d))
   .handler(async ({ data }) => {
@@ -228,8 +269,9 @@ export const verifyOTP = createServerFn({ method: "POST" })
     }
 
     // 3. Resolve User
-    const syntheticEmail = `wa${phone.replace(/\D/g, "")}@carteira.fidelize.app`;
-    
+    const syntheticEmail =
+      `wa${phone.replace(/\D/g, "")}@carteira.fidelize.app`;
+
     const { data: profile } = await supabaseAdmin
       .from("profiles")
       .select("id")
@@ -238,33 +280,93 @@ export const verifyOTP = createServerFn({ method: "POST" })
 
     let user;
 
-    if (!profile) {
-      // New User
-      const metadata = (otp.metadata as Record<string, any>) || {};
-      const { data: newUser, error: signUpErr } = await supabaseAdmin.auth.admin.createUser({
-        email: syntheticEmail,
-        email_confirm: true,
-        user_metadata: { 
-          full_name: metadata.name || "Cliente",
-          phone: phone,
-          whatsapp: phone
-        }
-      });
-      if (signUpErr) throw signUpErr;
-      user = newUser.user;
+    if (profile) {
+      const {
+        data: existingUser,
+        error: getUserErr
+      } =
+        await supabaseAdmin.auth.admin.getUserById(profile.id);
 
-      await supabaseAdmin.from("profiles").insert({
-        id: user.id,
-        full_name: metadata.name || "Cliente",
-        phone: phone,
-        account_type: "customer"
-      });
-    } else {
-      // Existing User
-      const { data: existingUser, error: getUserErr } = await supabaseAdmin.auth.admin.getUserById(profile.id);
-      if (getUserErr) throw getUserErr;
+      if (getUserErr) {
+        throw getUserErr;
+      }
+
+      if (!existingUser?.user) {
+        throw new Error(
+          "Cadastro encontrado, mas usuário de autenticação não existe."
+        );
+      }
+
       user = existingUser.user;
+    } else {
+      const metadata =
+        (otp.metadata as Record<string, any>) || {};
+
+      const {
+        data: newUser,
+        error: createErr
+      } =
+        await supabaseAdmin.auth.admin.createUser({
+          email: syntheticEmail,
+          email_confirm: true,
+          user_metadata: {
+            full_name: metadata.name || "Cliente",
+            phone,
+            whatsapp: phone,
+          },
+        });
+
+      if (!createErr && newUser?.user) {
+        user = newUser.user;
+      } else {
+        /*
+         * Recuperação idempotente:
+         * se o Auth já tinha esse usuário, não tentar recriar.
+         */
+        const existingAuthUser =
+          await findAuthUserByEmail(
+            supabaseAdmin,
+            syntheticEmail
+          );
+
+        if (!existingAuthUser) {
+          throw createErr ||
+            new Error(
+              "Não foi possível localizar ou criar o usuário."
+            );
+        }
+
+        user = existingAuthUser;
+      }
+
+      /*
+       * Reparar/criar profile faltante.
+       * O Auth é a identidade principal neste ponto.
+       */
+      const {
+        error: profileErr
+      } = await supabaseAdmin
+        .from("profiles")
+        .upsert(
+          {
+            id: user.id,
+            full_name:
+              metadata.name ||
+              user.user_metadata?.full_name ||
+              "Cliente",
+            phone,
+            account_type: "customer",
+          },
+          {
+            onConflict: "id"
+          }
+        );
+
+      if (profileErr) {
+        throw profileErr;
+      }
     }
+
 
     // 4. Generate Magic Link session
     const { data: link, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
