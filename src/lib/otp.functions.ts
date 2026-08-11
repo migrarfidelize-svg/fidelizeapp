@@ -211,14 +211,19 @@ export const verifyOTP = createServerFn({ method: "POST" })
     }
 
     // 2. Mark as used (Atomic update to prevent reuse)
-    const { error: updateErr, count: updateCount } = await supabaseAdmin
+    const { data: updatedOtp, error: updateErr } = await supabaseAdmin
       .from("auth_otps")
       .update({ used: true })
       .eq("id", otp.id)
-      .eq("used", false) // Invariant check
-      .select("id");
+      .eq("used", false)
+      .select("id")
+      .maybeSingle();
 
-    if (updateErr || !updateCount) {
+    if (updateErr) {
+      throw updateErr;
+    }
+
+    if (!updatedOtp) {
       throw new Error("Código já processado.");
     }
 
