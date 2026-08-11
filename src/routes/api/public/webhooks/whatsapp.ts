@@ -13,15 +13,23 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
         const active = await getActiveWhatsAppProvider(urlEst || undefined);
         if (!active) return new Response("No provider", { status: 500 });
         
-        const estId = (active.runtime as any).establishment_id;
-        if (!estId) return new Response("Missing establishment", { status: 500 });
+        const estId = active.establishmentId;
+        if (!estId) {
+          console.error("[Webhook] Active WhatsApp provider has no establishmentId");
+          return new Response("WhatsApp provider missing establishment", { status: 500 });
+        }
 
         const normalized = active.provider.parseWebhook?.(JSON.parse(rawBody), {});
         if (!normalized) return new Response("Ignored", { status: 200 });
 
         const customerPhone = normalized.fromPhone.replace(/\D/g, "");
         
-        let { data: conv } = await supabaseAdmin.from("crm_conversations").select("id").eq("establishment_id", estId).eq("customer_phone", customerPhone).maybeSingle();
+        let { data: conv } = await supabaseAdmin.from("crm_conversations")
+          .select("id")
+          .eq("establishment_id", estId)
+          .eq("customer_phone", customerPhone)
+          .maybeSingle();
+
         if (!conv) {
              const { data: contact } = await supabaseAdmin.from("crm_contacts").insert({ 
                phone: customerPhone,
