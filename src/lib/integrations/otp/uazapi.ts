@@ -185,7 +185,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
     return this.sendTestMessage(runtime, env, phone, message);
   },
 
-  async sendTestMessage(runtime: IntegrationRuntimeConfig, env: NodeEnv, phone: string, message: string) {
+  async sendTestMessage(runtime: IntegrationRuntimeConfig, env: NodeEnv, phone: string, message: string, options: any = {}) {
     const baseUrl = (runtime.config.baseUrl as string)?.replace(/\/$/, "");
     const token = resolveUazapiToken(runtime, env);
  
@@ -200,26 +200,66 @@ export const uazapiOtp: WhatsAppOTPProvider = {
     }
 
     try {
+      // 1. Detect Interactivity
+      let endpoint = "/send/text";
+      let payload: any = {
+        number: cleanPhone,
+        text: message,
+        linkPreview: false
+      };
+
+      if (options.type === 'options' && options.options?.length > 0) {
+        // UAZAPI v2 Supports Interactive Buttons (up to 3) or List
+        if (options.options.length <= 3) {
+          endpoint = "/send/button";
+          payload = {
+            number: cleanPhone,
+            text: message,
+            buttons: options.options.map((o: any) => ({
+              type: "reply",
+              reply: {
+                id: o.value || o.label,
+                title: o.label
+              }
+            }))
+          };
+        } else {
+          endpoint = "/send/list";
+          payload = {
+            number: cleanPhone,
+            text: message,
+            title: "Opções",
+            buttonText: "Ver Opções",
+            sections: [
+              {
+                title: "Selecione uma opção",
+                rows: options.options.map((o: any) => ({
+                  id: o.value || o.label,
+                  title: o.label
+                }))
+              }
+            ]
+          };
+        }
+      }
+
       // Sanitized log for debugging
       console.log("[UAZAPI] Sending message", {
-        endpoint: "/send/text",
+        endpoint,
         tokenPresent: Boolean(token),
         phonePresent: Boolean(cleanPhone),
       });
 
       // 2. Envio Real
-      const { response, body } = await timedFetch(`${baseUrl}/send/text`, {
+      const { response, body } = await timedFetch(`${baseUrl}${endpoint}`, {
         method: "POST",
         headers: { 
           "token": token,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          number: cleanPhone,
-          text: message,
-          linkPreview: false
-        })
+        body: JSON.stringify(payload)
       });
+
 
       const resBody = JSON.parse(body || "{}");
       
