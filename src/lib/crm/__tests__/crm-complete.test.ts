@@ -90,6 +90,7 @@ describe('CRM End-to-End Logic', () => {
         if (table === 'crm_flow_steps') return createMockChain(step);
         if (table === 'system_settings') return createMockChain({ enabled: true, provider_id: 'openai' });
         if (table === 'crm_messages') return createMockChain([]);
+        if (table === 'crm_contacts') return createMockChain({ name: 'João' });
         return createMockChain();
     });
 
