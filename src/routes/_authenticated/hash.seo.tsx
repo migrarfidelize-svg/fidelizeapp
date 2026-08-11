@@ -16,9 +16,6 @@ import {
   RefreshCw,
   Plus,
   Trash2,
-  Check,
-  X,
-  ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -341,7 +338,7 @@ function SeoAdmin() {
                   </div>
                   <div className="p-3 bg-[#f0f2f5] dark:bg-zinc-800 text-left space-y-1">
                     <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
-                      {new URL(formData.siteUrl || "https://afidelize.app").hostname}
+                      {formData.siteUrl ? new URL(formData.siteUrl).hostname : "afidelize.app"}
                     </div>
                     <div className="font-bold text-sm line-clamp-1">
                       {formData.routes["/"]?.title || formData.defaultTitle}
@@ -381,7 +378,7 @@ function SeoAdmin() {
             </Card>
           </div>
         </TabsContent>
-      </div>
+      </Tabs>
     </div>
   );
 }
