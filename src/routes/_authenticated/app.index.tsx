@@ -32,6 +32,7 @@ import { listTeam, getEstablishmentFull } from "@/lib/settings.functions";
 import { getMyShowcaseStatus } from "@/lib/showcase.functions";
 
 export const Route = createFileRoute("/_authenticated/app/")({
+  head: () => ({}),
   component: Dashboard,
 });
 
