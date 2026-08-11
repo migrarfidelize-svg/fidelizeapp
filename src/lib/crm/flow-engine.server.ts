@@ -59,7 +59,7 @@ export async function executeFlow(conversationId: string, messageBody: string) {
 
   if (!flow || !flow.is_active) return;
 
-  const steps = (flow.steps || []).sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0));
+  const steps = (flow.steps || []).sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
   
   if (currentStepId) {
     const lastStep = steps.find((s: any) => s.id === currentStepId);

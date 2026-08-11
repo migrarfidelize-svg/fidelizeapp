@@ -501,7 +501,7 @@ export const saveCRMFlow = createServerFn({ method: "POST" })
       const stepsToInsert = data.steps.map((step, index) => ({
         ...step,
         flow_id: flowId,
-        order_index: index
+        sort_order: index
       }));
       await supabaseAdmin.from("crm_flow_steps").insert(stepsToInsert);
     }
