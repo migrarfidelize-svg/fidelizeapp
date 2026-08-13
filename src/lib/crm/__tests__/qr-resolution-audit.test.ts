@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getEstablishmentBySlug } from "../../loyalty.functions";
 
-// Mock do supabaseAdmin
+// Mock do supabaseAdmin ANTES de qualquer import
 const mockSingle = vi.fn();
 vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: {
@@ -9,8 +8,27 @@ vi.mock("@/integrations/supabase/client.server", () => ({
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     maybeSingle: () => mockSingle(),
+    order: vi.fn().mockReturnThis(),
   },
 }));
+
+// Mock do createServerFn para evitar o erro de StartContext
+vi.mock("@tanstack/react-start", () => ({
+  createServerFn: (options: any) => {
+    const fn = (input: any) => options.handler(input);
+    fn.inputValidator = () => fn;
+    fn.middleware = () => fn;
+    fn.validator = () => fn;
+    fn.handler = (h: any) => {
+      const wrapped = (input: any) => h(input);
+      return wrapped;
+    };
+    return fn;
+  },
+}));
+
+// Agora importamos a função (que usará os mocks acima)
+import { getEstablishmentBySlug } from "../../loyalty.functions";
 
 describe("Auditoria de Resolução de Estabelecimento", () => {
   beforeEach(() => {
@@ -18,20 +36,22 @@ describe("Auditoria de Resolução de Estabelecimento", () => {
   });
 
   it("Cenário 1: active=true deve retornar o estabelecimento", async () => {
-    mockSingle.mockResolvedValue({
+    mockSingle.mockResolvedValueOnce({
       data: { id: "123", slug: "ativo", active: true, name: "Ativo" },
       error: null,
     });
+    mockSingle.mockResolvedValueOnce({
+      data: [],
+      error: null,
+    });
     
-    // O mock do campaigns também seria necessário aqui, mas para este teste unitário
-    // focamos no estabelecimento.
     const result = await getEstablishmentBySlug({ data: { slug: "ativo" } });
     expect(result.establishment.slug).toBe("ativo");
     expect(result.establishment.active).toBe(true);
   });
 
   it("Cenário 2: active=false deve lançar erro INACTIVE", async () => {
-    mockSingle.mockResolvedValue({
+    mockSingle.mockResolvedValueOnce({
       data: { id: "123", slug: "inativo", active: false, name: "Inativo" },
       error: null,
     });
@@ -41,7 +61,7 @@ describe("Auditoria de Resolução de Estabelecimento", () => {
   });
 
   it("Cenário 3: slug inexistente deve lançar erro NOT_FOUND", async () => {
-    mockSingle.mockResolvedValue({
+    mockSingle.mockResolvedValueOnce({
       data: null,
       error: null,
     });
@@ -51,7 +71,7 @@ describe("Auditoria de Resolução de Estabelecimento", () => {
   });
 
   it("Cenário 4: erro de banco deve lançar erro DATABASE_ERROR", async () => {
-    mockSingle.mockResolvedValue({
+    mockSingle.mockResolvedValueOnce({
       data: null,
       error: { message: "Internal Server Error" },
     });
