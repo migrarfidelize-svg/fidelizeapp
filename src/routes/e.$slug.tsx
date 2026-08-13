@@ -77,26 +77,61 @@ export function DiscoveryProfilePage() {
   const { slug } = useParams({ strict: false }) as { slug: string };
   const { data } = useSuspenseQuery(opts(slug));
 
-  if (!data.establishment) {
+  if (data.status === "NOT_FOUND") {
     return (
       <div className="min-h-dvh bg-background text-foreground">
         <div className="mx-auto max-w-2xl space-y-4 p-4 pt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-          >
+          <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
             <ChevronLeft className="h-4 w-4" /> Início
           </Link>
           <div className="rounded-3xl border border-dashed border-border/60 bg-card/30 p-8 text-center">
-            <div className="font-display text-sm font-bold text-destructive">Estabelecimento indisponível</div>
+            <div className="font-display text-sm font-bold text-destructive">Estabelecimento não encontrado</div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Este estabelecimento não foi encontrado ou não está mais ativo na Fidelize.
+              Verifique o link ou peça um novo QR Code.
             </p>
           </div>
         </div>
       </div>
     );
   }
+
+  if (data.status === "INACTIVE") {
+    return (
+      <div className="min-h-dvh bg-background text-foreground">
+        <div className="mx-auto max-w-2xl space-y-4 p-4 pt-6">
+          <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+            <ChevronLeft className="h-4 w-4" /> Início
+          </Link>
+          <div className="rounded-3xl border border-dashed border-border/60 bg-card/30 p-8 text-center">
+            <div className="font-display text-sm font-bold text-destructive">Estabelecimento indisponível</div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Este estabelecimento não está mais ativo na Fidelize.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (data.status === "DATABASE_ERROR") {
+    return (
+      <div className="min-h-dvh bg-background text-foreground">
+        <div className="mx-auto max-w-2xl space-y-4 p-4 pt-6">
+          <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+            <ChevronLeft className="h-4 w-4" /> Início
+          </Link>
+          <div className="rounded-3xl border border-dashed border-border/60 bg-card/30 p-8 text-center">
+            <div className="font-display text-sm font-bold text-destructive">Erro de carregamento</div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Não foi possível carregar o estabelecimento no momento.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data.establishment) return null;
 
   const est = data.establishment;
   const brand = est.primary_color || "hsl(var(--primary))";
