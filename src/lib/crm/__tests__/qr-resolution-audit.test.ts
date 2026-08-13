@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getEstablishmentBySlug } from "../loyalty.functions";
+import { getEstablishmentBySlug } from "../../loyalty.functions";
 
 // Mock do supabaseAdmin
 const mockSingle = vi.fn();

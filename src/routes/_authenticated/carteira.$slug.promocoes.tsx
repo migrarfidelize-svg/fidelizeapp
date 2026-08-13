@@ -247,7 +247,7 @@ function PromotionsListPage() {
 
       {globalLinks.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {globalLinks.map((l, i) => (
+          {globalLinks.map((l: { label: string; url: string }, i: number) => (
             <a
               key={`${l.url}-${i}`}
               href={l.url}
