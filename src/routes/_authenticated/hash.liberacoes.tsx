@@ -43,6 +43,7 @@ const FEATURE_GROUPS: { group: string; items: { key: string; label: string }[] }
       { key: "digital_catalog", label: "Catálogo digital" },
       { key: "qr_generator", label: "Gerador de QR Code / material impresso" },
       { key: "qrcode", label: "QR Code" },
+
     ],
   },
   {
