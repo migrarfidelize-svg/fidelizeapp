@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mock global robusto para @tanstack/react-start
+// Mock global robusto para @tanstack/react-start ANTES de qualquer import
 vi.mock("@tanstack/react-start", () => {
   const middleware = {
     server: (h: any) => h,
@@ -24,11 +24,18 @@ vi.mock("@tanstack/react-start", () => {
   };
 });
 
-// Mock do supabaseAdmin
+// Mock do auth-middleware para evitar o erro de createMiddleware
+vi.mock("@/integrations/supabase/auth-middleware", () => ({
+  requireSupabaseAuth: { server: (h: any) => h, client: (h: any) => h }
+}));
+
+// Mocks internos
 const mockSingle = vi.fn();
+const mockFrom = vi.fn().mockReturnThis();
+
 vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: {
-    from: vi.fn().mockReturnThis(),
+    from: (table: string) => mockFrom(table),
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     maybeSingle: () => mockSingle(),
@@ -36,12 +43,7 @@ vi.mock("@/integrations/supabase/client.server", () => ({
   },
 }));
 
-// Mock do auth-middleware para evitar o erro de createMiddleware
-vi.mock("@/integrations/supabase/auth-middleware", () => ({
-  requireSupabaseAuth: { server: (h: any) => h, client: (h: any) => h }
-}));
-
-// Agora importamos a função (que usará os mocks acima)
+// Agora importamos a função
 import { getEstablishmentBySlug } from "../../loyalty.functions";
 
 describe("Auditoria de Resolução de Estabelecimento", () => {
