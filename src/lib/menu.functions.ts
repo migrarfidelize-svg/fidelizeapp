@@ -3,6 +3,8 @@ import { createServerFn } from "@tanstack/react-start";
 
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { hasFeature } from "./plans.functions";
+
 
 
 // Removida função getPrivilegedClient redundante para evitar problemas de escopo de importação dinâmico em handlers.
