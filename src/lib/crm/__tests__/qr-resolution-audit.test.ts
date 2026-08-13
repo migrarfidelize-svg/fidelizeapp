@@ -12,20 +12,25 @@ vi.mock("@/integrations/supabase/client.server", () => ({
   },
 }));
 
-// Mock do createServerFn para evitar o erro de StartContext
-vi.mock("@tanstack/react-start", () => ({
-  createServerFn: (options: any) => {
-    const fn = (input: any) => options.handler(input);
+// Mock do createServerFn MAIS agressivo
+vi.mock("@tanstack/react-start", () => {
+  const createServerFn = (options: any) => {
+    // Retorna uma função que executa o handler diretamente ignorando o wrapper do TanStack
+    const fn = async (input: any) => {
+      // Se options for o objeto com .handler
+      if (options.handler) {
+        return options.handler(input);
+      }
+      return options(input);
+    };
     fn.inputValidator = () => fn;
     fn.middleware = () => fn;
     fn.validator = () => fn;
-    fn.handler = (h: any) => {
-      const wrapped = (input: any) => h(input);
-      return wrapped;
-    };
+    fn.handler = (h: any) => async (input: any) => h(input);
     return fn;
-  },
-}));
+  };
+  return { createServerFn };
+});
 
 // Agora importamos a função (que usará os mocks acima)
 import { getEstablishmentBySlug } from "../../loyalty.functions";
@@ -45,7 +50,9 @@ describe("Auditoria de Resolução de Estabelecimento", () => {
       error: null,
     });
     
-    const result = await getEstablishmentBySlug({ data: { slug: "ativo" } });
+    // Chamamos o handler diretamente se for uma server function mockada
+    // Dependendo de como o mock foi feito, pode ser await getEstablishmentBySlug({ data: ... })
+    const result = await (getEstablishmentBySlug as any)({ data: { slug: "ativo" } });
     expect(result.establishment.slug).toBe("ativo");
     expect(result.establishment.active).toBe(true);
   });
@@ -56,7 +63,7 @@ describe("Auditoria de Resolução de Estabelecimento", () => {
       error: null,
     });
     
-    await expect(getEstablishmentBySlug({ data: { slug: "inativo" } }))
+    await expect((getEstablishmentBySlug as any)({ data: { slug: "inativo" } }))
       .rejects.toThrow("INACTIVE");
   });
 
@@ -66,7 +73,7 @@ describe("Auditoria de Resolução de Estabelecimento", () => {
       error: null,
     });
     
-    await expect(getEstablishmentBySlug({ data: { slug: "inexistente" } }))
+    await expect((getEstablishmentBySlug as any)({ data: { slug: "inexistente" } }))
       .rejects.toThrow("NOT_FOUND");
   });
 
@@ -76,7 +83,7 @@ describe("Auditoria de Resolução de Estabelecimento", () => {
       error: { message: "Internal Server Error" },
     });
     
-    await expect(getEstablishmentBySlug({ data: { slug: "erro" } }))
+    await expect((getEstablishmentBySlug as any)({ data: { slug: "erro" } }))
       .rejects.toThrow("DATABASE_ERROR");
   });
 });
