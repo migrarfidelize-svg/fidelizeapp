@@ -1,26 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mocks internos
-const mockSingle = vi.fn();
-
-vi.mock("@/integrations/supabase/client.server", () => ({
-  supabaseAdmin: {
-    from: vi.fn().mockReturnThis(),
-    select: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    maybeSingle: () => mockSingle(),
-    order: vi.fn().mockReturnThis(),
-  },
-}));
-
-// Mock do auth-middleware
-vi.mock("@/integrations/supabase/auth-middleware", () => ({
-  requireSupabaseAuth: { server: (h: any) => h, client: (h: any) => h }
-}));
-
-// Mock do @tanstack/react-start
-vi.mock("@tanstack/react-start", () => ({
-  createServerFn: (options: any) => {
+// Mock global robusto para @tanstack/react-start
+vi.mock("@tanstack/react-start", () => {
+  const middleware = {
+    server: (h: any) => h,
+    client: (h: any) => h,
+  };
+  const fnWrapper = (options: any) => {
     const fn = async (input: any) => {
       if (options.handler) return options.handler(input);
       return options(input);
@@ -30,56 +16,63 @@ vi.mock("@tanstack/react-start", () => ({
     fn.validator = () => fn;
     fn.handler = (h: any) => async (input: any) => h(input);
     return fn;
-  },
-  createMiddleware: () => ({ server: (h: any) => h, client: (h: any) => h }),
-  registerGlobalMiddleware: () => {}
+  };
+  return { 
+    createServerFn: fnWrapper,
+    createMiddleware: () => middleware,
+    registerGlobalMiddleware: () => {}
+  };
+});
+
+// Mock do auth-middleware
+vi.mock("@/integrations/supabase/auth-middleware", () => ({
+  requireSupabaseAuth: { server: (h: any) => h, client: (h: any) => h }
 }));
 
-// Função local para teste (cópia fiel da lógica auditada)
-// Isso evita problemas de importação circular ou de mock de ambiente no Vitest
-async function testGetEstablishmentBySlug(data: { slug: string }, supabaseAdmin: any) {
-  const { data: est, error } = await supabaseAdmin
-    .from("establishments")
-    .select("id, active") // Simplificado para o teste
-    .eq("slug", data.slug)
-    .maybeSingle();
+// Mocks internos
+const mockSingle = vi.fn();
+const mockAdmin = {
+  from: vi.fn().mockReturnThis(),
+  select: vi.fn().mockReturnThis(),
+  eq: vi.fn().mockReturnThis(),
+  maybeSingle: () => mockSingle(),
+  order: vi.fn().mockReturnThis(),
+};
 
-  if (error) {
-    throw new Error("DATABASE_ERROR");
-  }
-  if (!est) {
-    throw new Error("NOT_FOUND");
-  }
-  if (!est.active) {
-    throw new Error("INACTIVE");
-  }
-  return { establishment: est };
-}
+vi.mock("@/integrations/supabase/client.server", () => ({
+  supabaseAdmin: mockAdmin,
+}));
+
+// Agora importamos a função
+import { getEstablishmentBySlug } from "../../loyalty.functions";
 
 describe("Auditoria de Resolução de Estabelecimento", () => {
-  const { supabaseAdmin } = require("@/integrations/supabase/client.server");
-
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("Cenário 1: active=true deve retornar o estabelecimento", async () => {
     mockSingle.mockResolvedValueOnce({
-      data: { id: "123", slug: "ativo", active: true },
+      data: { id: "123", slug: "ativo", active: true, name: "Ativo" },
+      error: null,
+    });
+    mockSingle.mockResolvedValueOnce({
+      data: [],
       error: null,
     });
     
-    const result = await testGetEstablishmentBySlug({ slug: "ativo" }, supabaseAdmin);
+    const result = await (getEstablishmentBySlug as any)({ data: { slug: "ativo" } });
+    expect(result.establishment.slug).toBe("ativo");
     expect(result.establishment.active).toBe(true);
   });
 
   it("Cenário 2: active=false deve lançar erro INACTIVE", async () => {
     mockSingle.mockResolvedValueOnce({
-      data: { id: "123", slug: "inativo", active: false },
+      data: { id: "123", slug: "inativo", active: false, name: "Inativo" },
       error: null,
     });
     
-    await expect(testGetEstablishmentBySlug({ slug: "inativo" }, supabaseAdmin))
+    await expect((getEstablishmentBySlug as any)({ data: { slug: "inativo" } }))
       .rejects.toThrow("INACTIVE");
   });
 
@@ -89,7 +82,7 @@ describe("Auditoria de Resolução de Estabelecimento", () => {
       error: null,
     });
     
-    await expect(testGetEstablishmentBySlug({ slug: "inexistente" }, supabaseAdmin))
+    await expect((getEstablishmentBySlug as any)({ data: { slug: "inexistente" } }))
       .rejects.toThrow("NOT_FOUND");
   });
 
@@ -99,7 +92,7 @@ describe("Auditoria de Resolução de Estabelecimento", () => {
       error: { message: "Internal Server Error" },
     });
     
-    await expect(testGetEstablishmentBySlug({ slug: "erro" }, supabaseAdmin))
+    await expect((getEstablishmentBySlug as any)({ data: { slug: "erro" } }))
       .rejects.toThrow("DATABASE_ERROR");
   });
 });
