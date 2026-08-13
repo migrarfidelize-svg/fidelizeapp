@@ -88,7 +88,7 @@ export const Route = createFileRoute("/cartao/$slug")({
   notFoundComponent: () => (
     <div className="min-h-dvh grid place-items-center p-6 text-center">
       <div>
-        <h1 className="font-display text-3xl font-bold">Não encontramos essa página</h1>
+        <h1 className="font-display text-3xl font-bold text-destructive">Estabelecimento não encontrado</h1>
         <p className="text-muted-foreground mt-2">Verifique o link ou peça um novo QR ao estabelecimento.</p>
         <Button asChild className="mt-6"><Link to="/">Ir para o início</Link></Button>
       </div>
@@ -250,7 +250,7 @@ function PromotionsSection({ slug, brand }: { slug: string; brand: string }) {
 
       {globalLinks.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">
-          {globalLinks.map((l, i) => (
+          {globalLinks.map((l: { label: string; url: string }, i: number) => (
             <a
               key={`${l.url}-${i}`}
               href={l.url}

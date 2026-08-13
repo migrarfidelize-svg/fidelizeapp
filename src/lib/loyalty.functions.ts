@@ -38,15 +38,19 @@ export const getEstablishmentBySlug = createServerFn({ method: "GET" })
         active
       `)
       .eq("slug", data.slug)
-      .eq("active", true)
       .maybeSingle();
 
     if (error) {
-      throw new Error(error.message);
+      console.error("[getEstablishmentBySlug] Database error:", error);
+      throw new Error("DATABASE_ERROR");
     }
 
     if (!est) {
-      return null;
+      throw new Error("NOT_FOUND");
+    }
+
+    if (!est.active) {
+      throw new Error("INACTIVE");
     }
 
     const { data: campaigns } = await supabaseAdmin

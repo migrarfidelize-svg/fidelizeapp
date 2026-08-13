@@ -183,6 +183,7 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
       instagram: string | null;
       website: string | null;
       business_hours: string | null;
+      active: boolean;
     };
     type PublicCampaign = {
       id: string;
@@ -197,7 +198,15 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
       stamp_validity_days: number | null;
       reward_validity_days: number | null;
     };
-    const empty: { establishment: PublicEst | null; promotions: PublicPromo[]; campaigns: PublicCampaign[]; has_menu: boolean; has_catalog: boolean } = {
+    const empty: { 
+      status: "ACTIVE" | "INACTIVE" | "NOT_FOUND" | "DATABASE_ERROR";
+      establishment: PublicEst | null; 
+      promotions: PublicPromo[]; 
+      campaigns: PublicCampaign[]; 
+      has_menu: boolean; 
+      has_catalog: boolean 
+    } = {
+      status: "NOT_FOUND",
       establishment: null,
       promotions: [],
       campaigns: [],
@@ -206,13 +215,21 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
     };
 
     const { supabaseAdmin: supabase } = await import("@/integrations/supabase/client.server");
-    const { data: est } = await supabase
+    
+    // Auditoria: capturando error explicitamente
+    const { data: est, error: estError } = await supabase
       .from("establishments")
       .select("id, name, slug, logo_url, primary_color, accent_color, external_links, active, description, address, city, phone, whatsapp, instagram, website, business_hours")
       .eq("slug", data.slug)
       .maybeSingle();
 
-    if (!est || !est.active) return empty;
+    if (estError) {
+      console.error("[listPublicPromotionsBySlug] Database error:", estError);
+      return { ...empty, status: "DATABASE_ERROR" };
+    }
+
+    if (!est) return { ...empty, status: "NOT_FOUND" };
+    if (!est.active) return { ...empty, status: "INACTIVE", establishment: est as any };
 
     const nowIso = new Date().toISOString();
     const [{ data: rows, error }, { data: camps }] = await Promise.all([
@@ -269,6 +286,7 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
     ]);
 
     return {
+      status: "ACTIVE",
       has_menu: hasMenu,
       has_catalog: hasCatalog,
       establishment: {
@@ -287,6 +305,7 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
         instagram: (est.instagram as string | null) ?? null,
         website: (est.website as string | null) ?? null,
         business_hours: (est.business_hours as string | null) ?? null,
+        active: true,
       },
       promotions,
       campaigns,
