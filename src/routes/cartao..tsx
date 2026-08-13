@@ -51,7 +51,7 @@ function getEstablishmentErrorCode(error: unknown) {
   return null;
 }
 
-export const Route = createFileRoute("/cartao/$slug")({
+export const Route = createFileRoute("/cartao/")({
   ssr: false,
   beforeLoad: async ({ params }) => {
     const slug = params.slug.trim().toLowerCase();

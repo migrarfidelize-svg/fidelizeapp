@@ -44,6 +44,7 @@ import { Route as AuthenticatedLgpdRouteImport } from './routes/_authenticated/l
 import { Route as AuthenticatedHashRouteImport } from './routes/_authenticated/hash'
 import { Route as AuthenticatedCarteiraRouteImport } from './routes/_authenticated/carteira'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
+import { Route as CartaoRouteImport } from './routes/cartao.'
 import { Route as SuporteSlugIndexRouteImport } from './routes/suporte.$slug.index'
 import { Route as AjudaCategoryIndexRouteImport } from './routes/ajuda.$category.index'
 import { Route as AuthenticatedHashIndexRouteImport } from './routes/_authenticated/hash.index'
@@ -326,6 +327,11 @@ const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   id: '/app',
   path: '/app',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const CartaoRoute = CartaoRouteImport.update({
+  id: '/cartao/',
+  path: '/cartao/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const SuporteSlugIndexRoute = SuporteSlugIndexRouteImport.update({
   id: '/suporte/$slug/',
@@ -960,6 +966,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
   '/videos': typeof VideosRoute
+  '/cartao/': typeof CartaoRoute
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/carteira': typeof AuthenticatedCarteiraRouteWithChildren
   '/hash': typeof AuthenticatedHashRouteWithChildren
@@ -1104,6 +1111,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
   '/videos': typeof VideosRoute
+  '/cartao': typeof CartaoRoute
   '/lgpd': typeof AuthenticatedLgpdRoute
   '/api/test-turnstile': typeof ApiTestTurnstileRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
@@ -1245,6 +1253,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
   '/videos': typeof VideosRoute
+  '/cartao/': typeof CartaoRoute
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/_authenticated/carteira': typeof AuthenticatedCarteiraRouteWithChildren
   '/_authenticated/hash': typeof AuthenticatedHashRouteWithChildren
@@ -1391,6 +1400,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/termos'
     | '/videos'
+    | '/cartao/'
     | '/app'
     | '/carteira'
     | '/hash'
@@ -1535,6 +1545,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/termos'
     | '/videos'
+    | '/cartao'
     | '/lgpd'
     | '/api/test-turnstile'
     | '/auth/nova-senha'
@@ -1675,6 +1686,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/termos'
     | '/videos'
+    | '/cartao/'
     | '/_authenticated/app'
     | '/_authenticated/carteira'
     | '/_authenticated/hash'
@@ -1821,6 +1833,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermosRoute: typeof TermosRoute
   VideosRoute: typeof VideosRoute
+  CartaoRoute: typeof CartaoRoute
   ApiTestTurnstileRoute: typeof ApiTestTurnstileRoute
   AvaliacoesSlugRoute: typeof AvaliacoesSlugRoute
   AvaliarSlugRoute: typeof AvaliarSlugRoute
@@ -2113,6 +2126,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app'
       preLoaderRoute: typeof AuthenticatedAppRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/cartao/': {
+      id: '/cartao/'
+      path: '/cartao'
+      fullPath: '/cartao/'
+      preLoaderRoute: typeof CartaoRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/suporte/$slug/': {
       id: '/suporte/$slug/'
@@ -3161,6 +3181,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermosRoute: TermosRoute,
   VideosRoute: VideosRoute,
+  CartaoRoute: CartaoRoute,
   ApiTestTurnstileRoute: ApiTestTurnstileRoute,
   AvaliacoesSlugRoute: AvaliacoesSlugRoute,
   AvaliarSlugRoute: AvaliarSlugRoute,
