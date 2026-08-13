@@ -397,7 +397,7 @@ function ReviewQrPage() {
     | { id: string; name: string; slug: string; primary_color?: string; accent_color?: string; logo_url?: string | null }
     | undefined;
 
-  const { allowed, isLoading: featLoading } = useMyFeature(est?.id, "public_reviews");
+  const { allowed, isLoading: featLoading } = useMyFeature(est?.id, "qr_generator");
 
 
   // Persisted preferences

@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { assertFeature } from "@/lib/plans.functions";
 
 /* ---------------- Poster designs (cloud share) ---------------- */
 
@@ -15,6 +16,7 @@ export const savePosterDesign = createServerFn({ method: "POST" })
   .inputValidator((v: unknown) => SaveDesignInput.parse(v))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    await assertFeature(supabase, data.establishmentId, "qr_generator");
     const { data: row, error } = await supabase
       .from("poster_designs")
       .insert({
@@ -34,6 +36,7 @@ export const listPosterDesigns = createServerFn({ method: "GET" })
   .inputValidator((v: unknown) => z.object({ establishmentId: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
+    await assertFeature(supabase, data.establishmentId, "qr_generator");
     const { data: rows, error } = await supabase
       .from("poster_designs")
       .select("id, name, data, created_by, created_at, applied_by, applied_at")
@@ -173,6 +176,7 @@ export const submitPrintOrder = createServerFn({ method: "POST" })
   .inputValidator((v: unknown) => PrintOrderInput.parse(v))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    await assertFeature(supabase, data.establishmentId, "qr_generator");
     const { data: row, error } = await supabase
       .from("print_orders")
       .insert({
@@ -200,6 +204,7 @@ export const listPrintOrders = createServerFn({ method: "GET" })
   .inputValidator((v: unknown) => z.object({ establishmentId: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase
+    await assertFeature(context.supabase, data.establishmentId, "qr_generator");
       .from("print_orders")
       .select("id, order_number, quantity, paper, finish, status, created_at")
       .eq("establishment_id", data.establishmentId)

@@ -430,6 +430,7 @@ const FEATURE_LABELS: Record<string, string> = {
   multi_units: "Múltiplas unidades",
   email_marketing: "E-mail marketing",
   whatsapp_notifications: "Notificações via WhatsApp",
+  qr_generator: "Gerador de QR Code / material impresso",
   public_reviews: "Avaliações públicas de atendimento (QR + página)",
 };
 
