@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { hasFeature } from "../plans.functions";
+import { describe, it, expect, vi } from "vitest";
+import { hasFeature } from "../../../lib/plans.functions";
 
 // Mocking the supabase client to simulate RPC and table lookups
 const mockSupabase = (planFeatureStrict: boolean, overrideExists: boolean) => ({
