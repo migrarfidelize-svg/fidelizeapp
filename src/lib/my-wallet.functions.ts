@@ -140,8 +140,26 @@ export const attachEstablishmentBySlug = createServerFn({ method: "POST" })
     const db: AttachDb = {
       async getEstablishmentBySlug(slug) {
         const res = await resolveEstablishmentBySlug(slug);
-        if (res.status === "DATABASE_ERROR") throw new Error("DATABASE_ERROR");
-        return res.establishment || null;
+
+        switch (res.status) {
+          case "ACTIVE":
+            if (!res.establishment) {
+              throw new Error("NOT_FOUND");
+            }
+            return res.establishment;
+
+          case "INACTIVE":
+            throw new Error("INACTIVE");
+
+          case "NOT_FOUND":
+            throw new Error("NOT_FOUND");
+
+          case "DATABASE_ERROR":
+            throw new Error("DATABASE_ERROR");
+
+          default:
+            throw new Error("DATABASE_ERROR");
+        }
       },
       async getProfile(userId) {
         const { data } = await supabaseAdmin
