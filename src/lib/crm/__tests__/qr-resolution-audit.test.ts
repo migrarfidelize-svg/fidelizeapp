@@ -1,8 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mock global
-vi.mock("@tanstack/react-start", () => ({
-  createServerFn: (options: any) => {
+// Mock global robusto para @tanstack/react-start
+vi.mock("@tanstack/react-start", () => {
+  const middleware = {
+    server: vi.fn((h: any) => h),
+    client: vi.fn((h: any) => h),
+  };
+  const fnWrapper = (options: any) => {
     const fn = async (input: any) => {
       if (options.handler) return options.handler(input);
       return options(input);
@@ -12,10 +16,13 @@ vi.mock("@tanstack/react-start", () => ({
     fn.validator = () => fn;
     fn.handler = (h: any) => async (input: any) => h(input);
     return fn;
-  },
-  createMiddleware: () => ({ middleware: (h: any) => h }),
-  registerGlobalMiddleware: () => {}
-}));
+  };
+  return { 
+    createServerFn: fnWrapper,
+    createMiddleware: () => middleware,
+    registerGlobalMiddleware: () => {}
+  };
+});
 
 // Mock do supabaseAdmin
 const mockSingle = vi.fn();
