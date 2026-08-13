@@ -390,11 +390,30 @@ export const changeEstablishmentPlan = createServerFn({ method: "POST" })
 
 
 // ---------- Feature gating (backend) ----------
-export async function hasFeature(supabase: any, establishmentId: string, featureKey: string): Promise<boolean> {
-  const { data, error } = await supabase.rpc("has_plan_feature", { _est: establishmentId, _feature: featureKey });
-  if (error) return false;
-  return !!data;
+export async function hasFeature(
+  supabase: any,
+  establishmentId: string,
+  featureKey: string,
+): Promise<boolean> {
+  const { data, error } = await supabase.rpc("has_plan_feature", {
+    _est: establishmentId,
+    _feature: featureKey,
+  });
+
+  if (error) {
+    console.error("[hasFeature] entitlement lookup failed", {
+      code: error.code,
+      message: error.message,
+      establishmentId,
+      featureKey,
+    });
+
+    throw new Error("FEATURE_CHECK_FAILED");
+  }
+
+  return data === true;
 }
+
 
 const FEATURE_LABELS: Record<string, string> = {
   customer_import: "Importação de clientes (CSV)",
@@ -417,10 +436,10 @@ const FEATURE_LABELS: Record<string, string> = {
 export async function assertFeature(supabase: any, establishmentId: string, featureKey: string) {
   const ok = await hasFeature(supabase, establishmentId, featureKey);
   if (!ok) {
-    const label = FEATURE_LABELS[featureKey] ?? featureKey;
-    throw new Error(`Recurso indisponível no seu plano: ${label}. Faça upgrade em /app/planos para liberar.`);
+    throw new Error(`Este recurso não está disponível para este estabelecimento. Faça upgrade do plano ou solicite uma liberação administrativa.`);
   }
 }
+
 
 // Client-callable feature check (used to hide/disable UI)
 export const checkMyFeature = createServerFn({ method: "POST" })
@@ -430,8 +449,18 @@ export const checkMyFeature = createServerFn({ method: "POST" })
     feature_key: z.string().min(1).max(60),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    const ok = await hasFeature(context.supabase, data.establishment_id, data.feature_key);
-    const { data: viaPlan } = await context.supabase.rpc("has_plan_feature_strict", {
+    const { supabase, userId } = context;
+    // Multi-tenant check: user must belong to establishment or be super admin
+    const { data: member } = await supabase.from("establishment_members")
+      .select("id").eq("establishment_id", data.establishment_id).eq("user_id", userId).eq("active", true).maybeSingle();
+    
+    if (!member) {
+       const { data: admin } = await supabase.rpc("is_super_admin", { _user: userId });
+       if (!admin) throw new Error("FORBIDDEN");
+    }
+
+    const ok = await hasFeature(supabase, data.establishment_id, data.feature_key);
+    const { data: viaPlan } = await supabase.rpc("has_plan_feature_strict", {
       _est: data.establishment_id,
       _feature: data.feature_key,
     });
@@ -442,6 +471,7 @@ export const checkMyFeature = createServerFn({ method: "POST" })
       via_override: ok && !viaPlan,
     };
   });
+
 
 
 // ---------- Usage vs limits ----------
