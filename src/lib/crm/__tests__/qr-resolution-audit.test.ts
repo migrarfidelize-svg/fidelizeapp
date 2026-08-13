@@ -1,6 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mock do supabaseAdmin ANTES de qualquer import
+// Mock global
+vi.mock("@tanstack/react-start", () => ({
+  createServerFn: (options: any) => {
+    const fn = async (input: any) => {
+      if (options.handler) return options.handler(input);
+      return options(input);
+    };
+    fn.inputValidator = () => fn;
+    fn.middleware = () => fn;
+    fn.validator = () => fn;
+    fn.handler = (h: any) => async (input: any) => h(input);
+    return fn;
+  },
+  createMiddleware: () => ({ middleware: (h: any) => h }),
+  registerGlobalMiddleware: () => {}
+}));
+
+// Mock do supabaseAdmin
 const mockSingle = vi.fn();
 vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: {
@@ -11,26 +28,6 @@ vi.mock("@/integrations/supabase/client.server", () => ({
     order: vi.fn().mockReturnThis(),
   },
 }));
-
-// Mock do @tanstack/react-start para incluir createMiddleware
-vi.mock("@tanstack/react-start", () => {
-  const fnWrapper = (options: any) => {
-    const fn = async (input: any) => {
-      if (options.handler) return options.handler(input);
-      return options(input);
-    };
-    fn.inputValidator = () => fn;
-    fn.middleware = () => fn;
-    fn.validator = () => fn;
-    fn.handler = (h: any) => async (input: any) => h(input);
-    return fn;
-  };
-  return { 
-    createServerFn: fnWrapper,
-    createMiddleware: () => ({ middleware: (h: any) => h }),
-    registerGlobalMiddleware: () => {}
-  };
-});
 
 // Agora importamos a função (que usará os mocks acima)
 import { getEstablishmentBySlug } from "../../loyalty.functions";
