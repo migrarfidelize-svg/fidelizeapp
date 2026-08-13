@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { normalizeQrDest, resolveQrTarget } from '../src/lib/qr-target.server';
+import { normalizeQrDest, resolveQrTarget } from './qr-target.server';
 
 describe('QR Flow Diagnostic', () => {
   it('should normalize destinations correctly', () => {
