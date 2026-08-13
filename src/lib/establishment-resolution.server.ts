@@ -1,86 +1,82 @@
-import { z } from "zod";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export type EstablishmentResolutionResult = {
   status: "ACTIVE" | "INACTIVE" | "NOT_FOUND" | "DATABASE_ERROR";
-  establishment?: any;
+  establishment?: {
+    id: string;
+    slug: string;
+    name: string;
+    logo_url: string | null;
+    primary_color: string;
+    accent_color: string;
+    description: string | null;
+    address: string | null;
+    phone: string | null;
+    active: boolean;
+    external_links: any;
+  };
   campaigns?: any[];
 };
 
-export async function resolveEstablishmentBySlug(rawSlug: string): Promise<EstablishmentResolutionResult> {
-  const slug = rawSlug.trim().toLowerCase();
+export async function resolveEstablishmentBySlug(
+  slug: string
+): Promise<EstablishmentResolutionResult> {
+  const normalized = slug.trim().toLowerCase();
   
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-  // 1. Establishment lookup
-  const { data: est, error: estError } = await supabaseAdmin
-    .from("establishments")
-    .select(`
-      id, 
-      slug, 
-      name, 
-      description, 
-      address, 
-      phone, 
-      whatsapp, 
-      instagram, 
-      business_hours, 
-      logo_url, 
-      cover_url, 
-      primary_color, 
-      accent_color, 
-      plan, 
-      active
-    `)
-    .eq("slug", slug)
-    .maybeSingle();
-
-  if (estError) {
-    console.error("[resolveEstablishmentBySlug] establishment lookup failed", {
-      code: estError.code,
-      message: estError.message,
-      slug
-    });
-    return { status: "DATABASE_ERROR" };
-  }
-
-  if (!est) {
+  if (!normalized) {
     return { status: "NOT_FOUND" };
   }
 
-  if (est.active !== true) {
-    return { status: "INACTIVE", establishment: est };
+  try {
+    const { data: establishment, error: estError } = await supabaseAdmin
+      .from("establishments")
+      .select("id, slug, name, logo_url, primary_color, accent_color, description, address, phone, active, external_links")
+      .eq("slug", normalized)
+      .maybeSingle();
+
+    if (estError) {
+      console.error("[resolveEstablishmentBySlug] establishment lookup failed", {
+        code: estError.code,
+        message: estError.message,
+        slug: normalized,
+      });
+      return { status: "DATABASE_ERROR" };
+    }
+
+    if (!establishment) {
+      return { status: "NOT_FOUND" };
+    }
+
+    if (!establishment.active) {
+      return { status: "INACTIVE" };
+    }
+
+    // Active, now get campaigns
+    const { data: campaigns, error: campError } = await supabaseAdmin
+      .from("campaigns")
+      .select("*")
+      .eq("establishment_id", establishment.id)
+      .eq("active", true)
+      .order("created_at", { ascending: false });
+
+    if (campError) {
+      console.error("[resolveEstablishmentBySlug] campaigns lookup failed", {
+        code: campError.code,
+        message: campError.message,
+        establishmentId: establishment.id,
+      });
+      // We still return the establishment but note the error? 
+      // Actually, for consistency, let's treat campaign load failure as DATABASE_ERROR if it's a real error.
+      return { status: "DATABASE_ERROR" };
+    }
+
+    return {
+      status: "ACTIVE",
+      establishment,
+      campaigns: campaigns || [],
+    };
+  } catch (error) {
+    console.error("[resolveEstablishmentBySlug] unexpected error", error);
+    return { status: "DATABASE_ERROR" };
   }
-
-  // 2. Campaigns lookup (only if ACTIVE)
-  const { data: campaigns, error: campaignsError } = await supabaseAdmin
-    .from("campaigns")
-    .select(`
-      id, 
-      name, 
-      type, 
-      stamps_required, 
-      reward_title, 
-      reward_description, 
-      rules, 
-      stamp_icon, 
-      reward_validity_days
-    `)
-    .eq("establishment_id", est.id)
-    .eq("active", true)
-    .order("created_at", { ascending: true });
-
-  if (campaignsError) {
-    console.error("[resolveEstablishmentBySlug] campaigns lookup failed", {
-      code: campaignsError.code,
-      message: campaignsError.message,
-      establishmentId: est.id
-    });
-    return { status: "DATABASE_ERROR", establishment: est };
-  }
-
-  return {
-    status: "ACTIVE",
-    establishment: est,
-    campaigns: campaigns ?? []
-  };
 }
