@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { getFriendlyDestinationName } from "../WalletQrSheet";
+import { getFriendlyDestinationName } from "../../../components/wallet/WalletQrSheet";
 
 // Mocking getMyWallet for structural tests
 const mockWallet = [
