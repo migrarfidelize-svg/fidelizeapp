@@ -16,7 +16,7 @@ type WalletItem = Awaited<ReturnType<typeof getMyWallet>>[number];
 /**
  * Mapeia o destino técnico do QR para um nome amigável para o cliente.
  */
-function getFriendlyDestinationName(dest: string | null | undefined): string {
+export function getFriendlyDestinationName(dest: string | null | undefined): string {
   const v = String(dest ?? "").toLowerCase();
   switch (v) {
     case "menu":
