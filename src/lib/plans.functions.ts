@@ -444,26 +444,72 @@ export async function assertFeature(supabase: any, establishmentId: string, feat
 // Client-callable feature check (used to hide/disable UI)
 export const checkMyFeature = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({
-    establishment_id: z.string().uuid(),
-    feature_key: z.string().min(1).max(60),
-  }).parse(d))
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        establishment_id: z.string().uuid(),
+        feature_key: z.string().min(1).max(60),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+
     // Multi-tenant check: user must belong to establishment or be super admin
-    const { data: member } = await supabase.from("establishment_members")
-      .select("id").eq("establishment_id", data.establishment_id).eq("user_id", userId).eq("active", true).maybeSingle();
-    
+    const { data: member, error: memberError } = await supabase
+      .from("establishment_members")
+      .select("id")
+      .eq("establishment_id", data.establishment_id)
+      .eq("user_id", userId)
+      .eq("active", true)
+      .maybeSingle();
+
+    if (memberError) {
+      console.error("[checkMyFeature] membership lookup failed", {
+        code: memberError.code,
+        message: memberError.message,
+        establishmentId: data.establishment_id,
+        userId,
+      });
+      throw new Error("FEATURE_CHECK_FAILED");
+    }
+
     if (!member) {
-       const { data: admin } = await supabase.rpc("is_super_admin", { _user: userId });
-       if (!admin) throw new Error("FORBIDDEN");
+      const { data: admin, error: adminError } = await supabase.rpc(
+        "is_super_admin",
+        { _user: userId },
+      );
+      if (adminError) {
+        console.error("[checkMyFeature] is_super_admin lookup failed", {
+          code: adminError.code,
+          message: adminError.message,
+          userId,
+        });
+        throw new Error("FEATURE_CHECK_FAILED");
+      }
+      if (!admin) throw new Error("FORBIDDEN");
     }
 
     const ok = await hasFeature(supabase, data.establishment_id, data.feature_key);
-    const { data: viaPlan } = await supabase.rpc("has_plan_feature_strict", {
-      _est: data.establishment_id,
-      _feature: data.feature_key,
-    });
+
+    const { data: viaPlan, error: viaPlanError } = await supabase.rpc(
+      "has_plan_feature_strict",
+      {
+        _est: data.establishment_id,
+        _feature: data.feature_key,
+      },
+    );
+
+    if (viaPlanError) {
+      console.error("[checkMyFeature] strict plan lookup failed", {
+        code: viaPlanError.code,
+        message: viaPlanError.message,
+        establishmentId: data.establishment_id,
+        featureKey: data.feature_key,
+      });
+      throw new Error("FEATURE_CHECK_FAILED");
+    }
+
     return {
       allowed: ok,
       feature_key: data.feature_key,
@@ -471,6 +517,7 @@ export const checkMyFeature = createServerFn({ method: "POST" })
       via_override: ok && !viaPlan,
     };
   });
+
 
 
 
