@@ -203,8 +203,8 @@ export const listPrintOrders = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) => z.object({ establishmentId: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }) => {
-    const { data: rows, error } = await context.supabase
     await assertFeature(context.supabase, data.establishmentId, "qr_generator");
+    const { data: rows, error } = await context.supabase
       .from("print_orders")
       .select("id, order_number, quantity, paper, finish, status, created_at")
       .eq("establishment_id", data.establishmentId)
