@@ -3,8 +3,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // Mock global robusto para @tanstack/react-start
 vi.mock("@tanstack/react-start", () => {
   const middleware = {
-    server: vi.fn((h: any) => h),
-    client: vi.fn((h: any) => h),
+    server: (h: any) => h,
+    client: (h: any) => h,
   };
   const fnWrapper = (options: any) => {
     const fn = async (input: any) => {
@@ -34,6 +34,11 @@ vi.mock("@/integrations/supabase/client.server", () => ({
     maybeSingle: () => mockSingle(),
     order: vi.fn().mockReturnThis(),
   },
+}));
+
+// Mock do auth-middleware para evitar o erro de createMiddleware
+vi.mock("@/integrations/supabase/auth-middleware", () => ({
+  requireSupabaseAuth: { server: (h: any) => h, client: (h: any) => h }
 }));
 
 // Agora importamos a função (que usará os mocks acima)
