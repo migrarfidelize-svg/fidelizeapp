@@ -43,6 +43,11 @@ vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: mockAdmin,
 }));
 
+// Mock do my-wallet para evitar erros de importação
+vi.mock("../../my-wallet.functions", () => ({
+  attachEstablishment: { handler: vi.fn() }
+}));
+
 // Agora importamos a função
 import { getEstablishmentBySlug } from "../../loyalty.functions";
 
