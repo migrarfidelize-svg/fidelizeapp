@@ -410,13 +410,13 @@ function WalletLayout() {
           
           if (tab.isFab) {
             return (
-              <Link
+              <button
                 key={tab.path}
-                to={tab.path}
+                onClick={() => setQrSheetOpen(true)}
                 className="relative -top-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/30 z-[110]"
               >
                 <Icon className="h-6 w-6" />
-              </Link>
+              </button>
             );
           }
 

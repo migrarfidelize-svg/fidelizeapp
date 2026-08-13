@@ -90,7 +90,7 @@ export function WalletQrSheet({ open, onOpenChange }: Props) {
 }
 
 function QrItem({ item }: { item: WalletItem }) {
-  const est = item.establishment as {
+  const est = item.establishment as unknown as {
     slug: string;
     name: string;
     logo_url: string | null;
