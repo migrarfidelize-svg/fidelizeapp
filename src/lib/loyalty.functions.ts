@@ -174,9 +174,14 @@ export const addStamp = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    const { assertFeature } = await import("./plans.functions");
+    
     const { data: card, error } = await supabase.from("loyalty_cards").select("*, campaigns(*)").eq("id", data.card_id).maybeSingle();
     if (error) throw new Error(error.message);
     if (!card) throw new Error("Cartão não encontrado");
+
+    await assertFeature(supabase, card.establishment_id, "stamps");
+
     // PIN gate (if enabled in settings)
     const { data: settings } = await supabase.from("establishment_settings").select("security").eq("establishment_id", card.establishment_id).maybeSingle();
     const requirePin = (settings as any)?.security?.require_pin_to_stamp === true;
@@ -316,8 +321,13 @@ export const redeemReward = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ reward_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    const { assertFeature } = await import("./plans.functions");
+
     const { data: reward } = await supabase.from("rewards").select("*").eq("id", data.reward_id).maybeSingle();
     if (!reward) throw new Error("Recompensa não encontrada");
+    
+    await assertFeature(supabase, reward.establishment_id, "loyalty_card");
+
     if (reward.redeemed_at) throw new Error("Já resgatada");
     await supabase.from("rewards").update({ redeemed_at: new Date().toISOString(), redeemed_by: userId }).eq("id", data.reward_id);
     await auditLog(reward.establishment_id, userId, "reward_redeemed", "reward", data.reward_id, {});
