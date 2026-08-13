@@ -29,6 +29,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { getMyWallet, getMyRewards } from "@/lib/my-wallet.functions";
 import { InboxBellBadge } from "@/components/wallet/InboxBellBadge";
+import { WalletQrSheet } from "@/components/wallet/WalletQrSheet";
 
 export const Route = createFileRoute("/_authenticated/carteira")({
   head: () => ({}),
@@ -55,7 +56,7 @@ function WalletLayout() {
   const tabs = [
     { icon: Home, label: "Início", path: "/carteira" },
     { icon: Compass, label: "Descobrir", path: "/carteira/descobrir" },
-    { icon: QrCode, label: "QR Code", path: "/carteira/scanner", isFab: true },
+    { icon: QrCode, label: "QR Codes", path: "/carteira/scanner", isFab: true },
     { icon: Wallet, label: "Vouchers", path: "/carteira/premios" },
     { icon: User, label: "Perfil", path: "/carteira/perfil" },
   ];
@@ -104,9 +105,11 @@ function WalletLayout() {
     .slice(0, 5);
 
 
+  const [qrSheetOpen, setQrSheetOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-[oklch(0.985_0.006_285)] dark:bg-[oklch(0.14_0.018_288)] font-sans transition-colors duration-300 flex">
+      <WalletQrSheet open={qrSheetOpen} onOpenChange={setQrSheetOpen} />
       
       {/* 1. SIDEBAR (DESKTOP) & DRAWER (MOBILE) */}
       <aside className={cn(
