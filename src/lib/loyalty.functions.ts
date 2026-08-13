@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { enforceLimit } from "@/lib/plans.functions";
 import type { Database } from "@/integrations/supabase/types";
+import { resolveEstablishmentBySlug } from "./establishment-resolution.server";
 
 // ---------- Public: get establishment by slug ----------
 export const getEstablishmentBySlug = createServerFn({ method: "GET" })
@@ -14,53 +15,22 @@ export const getEstablishmentBySlug = createServerFn({ method: "GET" })
     }).parse(d)
   )
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import(
-      "@/integrations/supabase/client.server"
-    );
+    const res = await resolveEstablishmentBySlug(data.slug);
 
-    const { data: est, error } = await supabaseAdmin
-      .from("establishments")
-      .select(`
-        id,
-        slug,
-        name,
-        description,
-        address,
-        phone,
-        whatsapp,
-        instagram,
-        business_hours,
-        logo_url,
-        cover_url,
-        primary_color,
-        accent_color,
-        plan,
-        active
-      `)
-      .eq("slug", data.slug)
-      .maybeSingle();
-
-    if (error) {
-      console.error("[getEstablishmentBySlug] Database error:", error);
+    if (res.status === "DATABASE_ERROR") {
       throw new Error("DATABASE_ERROR");
     }
-
-    if (!est) {
+    if (res.status === "NOT_FOUND") {
       throw new Error("NOT_FOUND");
     }
-
-    if (!est.active) {
+    if (res.status === "INACTIVE") {
       throw new Error("INACTIVE");
     }
 
-    const { data: campaigns } = await supabaseAdmin
-      .from("campaigns")
-      .select("id, name, type, stamps_required, reward_title, reward_description, rules, stamp_icon, reward_validity_days")
-      .eq("establishment_id", est.id)
-      .eq("active", true)
-      .order("created_at", { ascending: true });
-
-    return { establishment: est, campaigns: campaigns ?? [] };
+    return { 
+      establishment: res.establishment, 
+      campaigns: res.campaigns ?? [] 
+    };
   });
 
 // ---------- Public: create or fetch customer + card ----------
@@ -75,6 +45,24 @@ export const registerOrLoginCustomer = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Ensure campaign belongs to establishment and is active
+    const { data: campaign, error: cErr } = await supabaseAdmin
+      .from("campaigns")
+      .select("id, establishment_id")
+      .eq("id", data.campaign_id)
+      .eq("establishment_id", data.establishment_id)
+      .eq("active", true)
+      .maybeSingle();
+
+    if (cErr) {
+      console.error("[registerOrLoginCustomer] campaign lookup failed", cErr);
+      throw new Error("DATABASE_ERROR");
+    }
+    if (!campaign) {
+      throw new Error("Campanha não encontrada ou inativa.");
+    }
+
     // Try find existing
     const { data: existing } = await supabaseAdmin
       .from("customers")
