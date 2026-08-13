@@ -205,10 +205,10 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
       has_catalog: false,
     };
 
-    const { supabase } = await import("@/integrations/supabase/client");
-    const { data: est } = await supabase
-      .from("view_establishments")
-      .select("id, name, slug, logo_url, primary_color, accent_color, active, description, address, city, phone, whatsapp, instagram, updated_at")
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: est } = await supabaseAdmin
+      .from("establishments")
+      .select("id, name, slug, logo_url, primary_color, accent_color, external_links, active, description, address, phone, whatsapp, instagram, website, business_hours")
       .eq("slug", data.slug)
       .maybeSingle();
 

@@ -25,16 +25,16 @@ export const Route = createFileRoute("/api/public/r/t/$code")({
 
         const { data: tag } = await supabaseAdmin
           .from("qr_tags")
-          .select("id, establishment_id, label, destination, active, establishments(slug, qr_destination)")
+          .select("id, establishment_id, label, destination, active, establishments(slug, qr_destination, active)")
           .eq("code", code)
           .maybeSingle();
 
-        if (!tag || !tag.active) {
-          return new Response("QR não encontrado ou inativo.", { status: 404 });
-        }
+        const tagTyped = tag as any;
+        const est = tagTyped?.establishments as { slug: string; qr_destination: string | null; active: boolean } | null;
 
-        const est = (tag as any).establishments as { slug: string; qr_destination: string | null } | null;
-        if (!est?.slug) return new Response("Estabelecimento indisponível.", { status: 404 });
+        if (!tag || !tag.active || !est || !est.active) {
+          return new Response("QR não encontrado ou estabelecimento inativo.", { status: 404 });
+        }
 
         const { resolveQrTarget } = await import("@/lib/qr-target.server");
         const resolved = await resolveQrTarget({
