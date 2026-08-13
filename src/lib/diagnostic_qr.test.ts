@@ -46,3 +46,28 @@ describe('QR Flow Diagnostic', () => {
     expect(result.fellBack).toBe(true);
   });
 });
+
+  it('should redirect even if logging fails', async () => {
+    // This is more for manual verification of the logic in the route handler, 
+    // but we can test the resolveQrTarget robustness here.
+    const mockAdmin = {
+      rpc: vi.fn().mockRejectedValue(new Error('DB Error')),
+      from: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        maybeSingle: vi.fn().mockRejectedValue(new Error('DB Error'))
+      })
+    };
+
+    const result = await resolveQrTarget({
+      admin: mockAdmin,
+      origin: 'https://afidelize.app',
+      slug: 'test-slug',
+      establishmentId: 'uuid',
+      dest: 'menu'
+    });
+
+    // Should fallback to reviews because DB error makes destination invalid
+    expect(result.dest).toBe('reviews');
+    expect(result.url).toContain('/avaliar/test-slug');
+  });
