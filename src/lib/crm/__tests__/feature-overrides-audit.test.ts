@@ -27,7 +27,7 @@ const mockSupabase = (planFeatureStrict: boolean, overrideExists: boolean, rpcEr
       })
     })
   })
-});
+} as any);
 
 describe("Feature Overrides REAL Audit (15 Scenarios)", () => {
   const estA = "00000000-0000-0000-0000-00000000000a";
@@ -55,7 +55,7 @@ describe("Feature Overrides REAL Audit (15 Scenarios)", () => {
         if (args._est === estA) return { data: true, error: null };
         return { data: false, error: null };
       }
-    };
+    } as any;
     expect(await hasFeature(supabase, estA, feature)).toBe(true);
     expect(await hasFeature(supabase, estB, feature)).toBe(false);
   });
@@ -108,21 +108,21 @@ describe("Feature Overrides REAL Audit (15 Scenarios)", () => {
     // This is tested in checkMyFeature logic which we patched
     const supabase = {
        from: (table: string) => ({
-         select: () => ({
-           eq: () => ({
-             eq: () => ({
-               eq: () => ({
+         select: (cols: string) => ({
+           eq: (k: string, v: any) => ({
+             eq: (k2: string, v2: any) => ({
+               eq: (k3: string, v3: any) => ({
                  maybeSingle: async () => ({ data: null, error: null })
                })
              })
            })
          })
        }),
-       rpc: async (name: string) => {
-         if (name === "is_super_admin") return { data: false };
-         return { data: null };
+       rpc: async (name: string, args: any) => {
+         if (name === "is_super_admin") return { data: false, error: null };
+         return { data: null, error: null };
        }
-    };
+    } as any;
     
     // Simulating checkMyFeature handler logic
     const userId = "user-1";
@@ -131,11 +131,12 @@ describe("Feature Overrides REAL Audit (15 Scenarios)", () => {
       .select("id").eq("establishment_id", estId).eq("user_id", userId).eq("active", true).maybeSingle();
     
     let allowed = false;
+    let error = null;
     if (!member) {
        const { data: admin } = await supabase.rpc("is_super_admin", { _user: userId });
-       if (!admin) allowed = false;
+       if (!admin) error = "FORBIDDEN";
     }
-    expect(allowed).toBe(false);
+    expect(error).toBe("FORBIDDEN");
   });
 
   it("14. erro da RPC -> FEATURE_CHECK_FAILED, nunca false", async () => {
@@ -148,7 +149,7 @@ describe("Feature Overrides REAL Audit (15 Scenarios)", () => {
     let override = true;
     const supabase = {
       rpc: async () => ({ data: override, error: null })
-    };
+    } as any;
     expect(await hasFeature(supabase, estA, feature)).toBe(true);
     override = false;
     expect(await hasFeature(supabase, estA, feature)).toBe(false);
