@@ -134,11 +134,28 @@ function WalletLayout() {
               const isActive = activeTab === tab.path || (tab.path === "/carteira" && activeTab === "/carteira/");
               const Icon = tab.icon;
 
+              if (tab.isFab) {
+                return (
+                  <button
+                    key={tab.path}
+                    onClick={() => setQrSheetOpen(true)}
+                    className={cn(
+                      "w-full flex items-center gap-4 p-3 xl:p-4 rounded-[1.25rem] transition-all group lg:justify-center xl:justify-start",
+                      "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                    )}
+                  >
+                    <Icon className={cn("h-6 w-6 shrink-0 transition-transform group-hover:scale-110")} />
+                    <span className={cn("font-bold text-sm lg:hidden xl:block opacity-70 group-hover:opacity-100")}>
+                      {tab.label}
+                    </span>
+                  </button>
+                );
+              }
+
               return (
                 <Link
                   key={tab.path}
                   to={tab.path}
-                  onClick={() => {}}
                   className={cn(
                     "flex items-center gap-4 p-3 xl:p-4 rounded-[1.25rem] transition-all group lg:justify-center xl:justify-start",
                     isActive 

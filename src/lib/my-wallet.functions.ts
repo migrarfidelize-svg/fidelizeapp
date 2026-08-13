@@ -37,13 +37,17 @@ export const getMyWallet = createServerFn({ method: "GET" })
     if (!customerIds.length) return [];
 
     // Load cards + campaigns for progress
-    const { data: cards } = await context.supabase
+    const { data: cards, error: cardsError } = await context.supabase
       .from("loyalty_cards")
       .select(
         `id, customer_id, stamps, cycle, updated_at,
          campaign:campaigns!inner(id, name, stamps_required, reward_title, reward_description, active, stamp_icon, primary_color, accent_color)`,
       )
       .in("customer_id", customerIds);
+
+    if (cardsError) {
+      throw cardsError;
+    }
 
     return (rows ?? []).map((r) => {
       const myCards = (cards ?? []).filter((c) => c.customer_id === r.id);

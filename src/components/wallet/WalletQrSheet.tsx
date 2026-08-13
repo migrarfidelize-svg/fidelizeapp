@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
-import { QrCode, ExternalLink, X, Building2 } from "lucide-react";
+import { QrCode, ExternalLink, Building2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { getMyWallet } from "@/lib/my-wallet.functions";
