@@ -207,8 +207,8 @@ export const listPublicPromotionsBySlug = createServerFn({ method: "GET" })
 
     const { supabase } = await import("@/integrations/supabase/client");
     const { data: est } = await supabase
-      .from("establishments")
-      .select("id, name, slug, logo_url, primary_color, accent_color, external_links, active, description, address, city, phone, whatsapp, instagram, website, business_hours")
+      .from("view_establishments")
+      .select("id, name, slug, logo_url, primary_color, accent_color, active, description, address, city, phone, whatsapp, instagram, updated_at")
       .eq("slug", data.slug)
       .maybeSingle();
 

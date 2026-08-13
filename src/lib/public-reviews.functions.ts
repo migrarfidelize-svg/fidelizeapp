@@ -43,10 +43,10 @@ export const getPublicReviewForm = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: est } = await supabaseAdmin
       .from("establishments")
-      .select("id, name, slug, logo_url, primary_color, accent_color, description")
+      .select("id, name, slug, logo_url, primary_color, accent_color, description, active")
       .eq("slug", data.slug)
       .maybeSingle();
-    if (!est) return null;
+    if (!est || !est.active) return null;
 
     const { data: settings } = await supabaseAdmin
       .from("review_settings")

@@ -88,9 +88,9 @@ export function DiscoveryProfilePage() {
             <ChevronLeft className="h-4 w-4" /> Início
           </Link>
           <div className="rounded-3xl border border-dashed border-border/60 bg-card/30 p-8 text-center">
-            <div className="font-display text-sm font-bold">Estabelecimento indisponível</div>
+            <div className="font-display text-sm font-bold text-destructive">Estabelecimento indisponível</div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Este estabelecimento não está mais ativo na Fidelize.
+              Este estabelecimento não foi encontrado ou não está mais ativo na Fidelize.
             </p>
           </div>
         </div>
