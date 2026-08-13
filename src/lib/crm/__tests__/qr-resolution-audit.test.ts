@@ -32,7 +32,7 @@ vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: mockAdmin,
 }));
 
-import { resolveEstablishmentBySlug } from "../establishment-resolution.server";
+import { resolveEstablishmentBySlug } from "../../establishment-resolution.server";
 
 describe("Auditoria de Resolução de Estabelecimento (Código Real)", () => {
   beforeEach(() => {
