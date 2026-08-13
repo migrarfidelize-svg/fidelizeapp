@@ -64,6 +64,12 @@ export const registerOrLoginCustomer = createServerFn({ method: "POST" })
     }
 
     // Try find existing
+    const { data: existing } = await supabaseAdmin
+      .from("customers")
+      .select("*")
+      .eq("establishment_id", data.establishment_id)
+      .eq("phone", data.phone)
+      .maybeSingle();
 
     let customer = existing;
     if (!customer) {
