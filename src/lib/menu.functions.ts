@@ -152,13 +152,15 @@ export const setMenuStatus = createServerFn({ method: "POST" })
     // Publicar exige o recurso incluído no PLANO (liberações manuais do admin
     // dão acesso à área da vitrine, mas não permitem publicar).
     if (data.status === "published") {
-      const allowed = await hasFeature(supabase, data.establishment_id, kind === "catalog" ? "digital_catalog" : "digital_menu");
+      const featureKey = kind === "catalog" ? "digital_catalog" : "digital_menu";
+      const allowed = await hasFeature(supabase, data.establishment_id, featureKey);
       if (!allowed) {
         throw new Error(
-          `Publicar exige um plano com o recurso ${label}. Faça upgrade para publicar sua vitrine.`
+          `Publicar exige um plano com o recurso ${label}. Faça upgrade para liberar.`
         );
       }
     }
+
     const { data: menu, error } = await supabase
       .from("restaurant_menus")
       .update({ status: data.status })
