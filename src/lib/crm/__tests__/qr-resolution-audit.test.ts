@@ -12,15 +12,11 @@ vi.mock("@/integrations/supabase/client.server", () => ({
   },
 }));
 
-// Mock do createServerFn MAIS agressivo
+// Mock do @tanstack/react-start para incluir createMiddleware
 vi.mock("@tanstack/react-start", () => {
-  const createServerFn = (options: any) => {
-    // Retorna uma função que executa o handler diretamente ignorando o wrapper do TanStack
+  const fnWrapper = (options: any) => {
     const fn = async (input: any) => {
-      // Se options for o objeto com .handler
-      if (options.handler) {
-        return options.handler(input);
-      }
+      if (options.handler) return options.handler(input);
       return options(input);
     };
     fn.inputValidator = () => fn;
@@ -29,7 +25,11 @@ vi.mock("@tanstack/react-start", () => {
     fn.handler = (h: any) => async (input: any) => h(input);
     return fn;
   };
-  return { createServerFn };
+  return { 
+    createServerFn: fnWrapper,
+    createMiddleware: () => ({ middleware: (h: any) => h }),
+    registerGlobalMiddleware: () => {}
+  };
 });
 
 // Agora importamos a função (que usará os mocks acima)
@@ -50,8 +50,6 @@ describe("Auditoria de Resolução de Estabelecimento", () => {
       error: null,
     });
     
-    // Chamamos o handler diretamente se for uma server function mockada
-    // Dependendo de como o mock foi feito, pode ser await getEstablishmentBySlug({ data: ... })
     const result = await (getEstablishmentBySlug as any)({ data: { slug: "ativo" } });
     expect(result.establishment.slug).toBe("ativo");
     expect(result.establishment.active).toBe(true);
