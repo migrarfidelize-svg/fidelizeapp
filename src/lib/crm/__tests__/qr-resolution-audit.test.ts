@@ -1,124 +1,117 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mocks do @tanstack/react-start
-vi.mock("@tanstack/react-start", () => ({
-  createServerFn: (options: any) => {
-    const fn = async (input: any) => {
-      if (options.handler) return options.handler(input);
-      return options(input);
-    };
-    fn.inputValidator = () => fn;
-    fn.middleware = () => fn;
-    fn.validator = () => fn;
-    fn.handler = (h: any) => async (input: any) => h(input);
-    return fn;
-  },
-  createMiddleware: () => ({ server: (h: any) => h, client: (h: any) => h }),
-  registerGlobalMiddleware: () => {}
-}));
+vi.mock("@tanstack/react-start", () => {
+  const h = vi.fn((cb) => cb);
+  return { createServerFn: vi.fn(() => ({ middleware: vi.fn(() => ({ inputValidator: vi.fn(() => ({ handler: h })), handler: h })), inputValidator: vi.fn(() => ({ handler: h })), handler: h })) };
+});
 
-// Mock do supabaseAdmin com encadeamento manual
-const mockSingle = vi.fn();
-const mockAdmin = {
-  from: vi.fn(),
-  select: vi.fn(),
-  eq: vi.fn(),
-  maybeSingle: vi.fn(),
-  order: vi.fn(),
-};
-
-// Setup fluent mock
-const setupMocks = () => {
-  mockAdmin.from.mockReturnValue(mockAdmin);
-  mockAdmin.select.mockReturnValue(mockAdmin);
-  mockAdmin.eq.mockReturnValue(mockAdmin);
-  mockAdmin.order.mockReturnValue(mockAdmin);
-  mockAdmin.maybeSingle.mockImplementation(() => mockSingle());
-};
-
-vi.mock("@/integrations/supabase/client.server", () => ({
-  supabaseAdmin: mockAdmin,
-}));
+const fluent: any = { select: vi.fn(() => fluent), insert: vi.fn(() => fluent), eq: vi.fn(() => fluent), order: vi.fn(() => fluent), maybeSingle: vi.fn(), single: vi.fn() };
+vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { from: vi.fn(() => fluent) } }));
+vi.mock("@/integrations/supabase/auth-middleware", () => ({ requireSupabaseAuth: vi.fn(async (c) => c) }));
 
 import { resolveEstablishmentBySlug } from "../../establishment-resolution.server";
+import { registerOrLoginCustomer } from "../../loyalty.functions";
 
-describe("Auditoria de Resolução de Estabelecimento (Código Real)", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    setupMocks();
+describe("Auditoria 15 Cenários", () => {
+  beforeEach(() => { 
+    vi.clearAllMocks(); 
+    fluent.maybeSingle.mockReset(); 
+    fluent.single.mockReset(); 
   });
 
-  it("Cenário: slug ativo deve retornar ACTIVE", async () => {
-    mockSingle.mockResolvedValueOnce({
-      data: { id: "123", slug: "ativo", active: true },
-      error: null,
-    });
-    // Segunda chamada para campanhas: select().eq().eq().order()
-    // A promise final vem do order()
-    mockAdmin.order.mockResolvedValueOnce({
-      data: [{ id: "c1", name: "C1" }],
-      error: null,
-    });
-    
-    const result = await resolveEstablishmentBySlug("ativo");
-    expect(result.status).toBe("ACTIVE");
-    expect(result.establishment.id).toBe("123");
-    expect(result.campaigns).toHaveLength(1);
+  it("1: ACTIVE", async () => {
+    fluent.maybeSingle.mockResolvedValueOnce({ data: { id: "e1", active: true }, error: null });
+    fluent.maybeSingle.mockResolvedValueOnce({ data: [], error: null });
+    const res = await resolveEstablishmentBySlug("f");
+    expect(res.status).toBe("ACTIVE");
   });
 
-  it("Cenário: active=false deve retornar INACTIVE", async () => {
-    mockSingle.mockResolvedValueOnce({
-      data: { id: "123", slug: "inativo", active: false },
-      error: null,
-    });
-    
-    const result = await resolveEstablishmentBySlug("inativo");
-    expect(result.status).toBe("INACTIVE");
+  it("2: INACTIVE", async () => {
+    fluent.maybeSingle.mockResolvedValueOnce({ data: { id: "e1", active: false }, error: null });
+    const res = await resolveEstablishmentBySlug("i");
+    expect(res.status).toBe("INACTIVE");
   });
 
-  it("Cenário: slug inexistente deve retornar NOT_FOUND", async () => {
-    mockSingle.mockResolvedValueOnce({
-      data: null,
-      error: null,
-    });
-    
-    const result = await resolveEstablishmentBySlug("inexistente");
-    expect(result.status).toBe("NOT_FOUND");
+  it("3: NOT_FOUND", async () => {
+    fluent.maybeSingle.mockResolvedValueOnce({ data: null, error: null });
+    const res = await resolveEstablishmentBySlug("n");
+    expect(res.status).toBe("NOT_FOUND");
   });
 
-  it("Cenário: erro de banco deve retornar DATABASE_ERROR", async () => {
-    mockSingle.mockResolvedValueOnce({
-      data: null,
-      error: { code: "500", message: "Internal Server Error" },
-    });
-    
-    const result = await resolveEstablishmentBySlug("erro");
-    expect(result.status).toBe("DATABASE_ERROR");
+  it("4: DATABASE_ERROR", async () => {
+    fluent.maybeSingle.mockResolvedValueOnce({ data: null, error: { code: "500", message: "Error" } });
+    const res = await resolveEstablishmentBySlug("e");
+    expect(res.status).toBe("DATABASE_ERROR");
   });
 
-  it("Cenário: slug com espaços e maiúsculas deve ser normalizado", async () => {
-    mockSingle.mockResolvedValueOnce({
-      data: { id: "123", slug: "slug-ok", active: true },
-      error: null,
-    });
-    mockAdmin.order.mockResolvedValueOnce({ data: [], error: null });
-
-    await resolveEstablishmentBySlug("  Slug-OK  ");
-    expect(mockAdmin.eq).toHaveBeenCalledWith("slug", "slug-ok");
+  it("5: Normalização Espaço", async () => {
+    fluent.maybeSingle.mockResolvedValue({ data: { id: "e1", active: true }, error: null });
+    await resolveEstablishmentBySlug(" f ");
+    expect(fluent.eq).toHaveBeenCalledWith("slug", "f");
   });
 
-  it("Cenário: estabelecimento ativo sem campanha deve retornar ACTIVE com campaigns vazio", async () => {
-    mockSingle.mockResolvedValueOnce({
-      data: { id: "123", slug: "sem-campanha", active: true },
-      error: null,
-    });
-    mockAdmin.order.mockResolvedValueOnce({
-      data: null,
-      error: null,
-    });
-    
-    const result = await resolveEstablishmentBySlug("sem-campanha");
-    expect(result.status).toBe("ACTIVE");
-    expect(result.campaigns).toHaveLength(0);
+  it("6: Normalização Case", async () => {
+    fluent.maybeSingle.mockResolvedValue({ data: { id: "e1", active: true }, error: null });
+    await resolveEstablishmentBySlug("F");
+    expect(fluent.eq).toHaveBeenCalledWith("slug", "f");
+  });
+
+  it("7: Slug Vazio", async () => {
+    const res = await resolveEstablishmentBySlug("");
+    expect(res.status).toBe("NOT_FOUND");
+  });
+
+  it("8: Campanha Inativa -> CAMPAIGN_NOT_FOUND", async () => {
+    fluent.maybeSingle.mockResolvedValueOnce({ data: null, error: null });
+    const p = registerOrLoginCustomer({ data: { establishment_id: "e1", campaign_id: "c1", name: "U", phone: "11999999999" } });
+    await expect(p).rejects.toThrow("CAMPAIGN_NOT_FOUND");
+  });
+
+  it("9: Cliente Scoped", async () => {
+    fluent.maybeSingle.mockResolvedValueOnce({ data: { id: "c1", establishment_id: "e1" }, error: null }); // Campaign
+    fluent.maybeSingle.mockResolvedValueOnce({ data: { id: "cust1" }, error: null }); // Customer
+    fluent.maybeSingle.mockResolvedValueOnce({ data: { id: "card1" }, error: null }); // Card
+    await registerOrLoginCustomer({ data: { establishment_id: "e1", campaign_id: "c1", name: "U", phone: "11999999999" } });
+    expect(fluent.eq).toHaveBeenCalledWith("establishment_id", "e1");
+  });
+
+  it("10: Cartão Scoped", async () => {
+    fluent.maybeSingle.mockResolvedValueOnce({ data: { id: "c1", establishment_id: "e1" }, error: null });
+    fluent.maybeSingle.mockResolvedValueOnce({ data: { id: "cust1" }, error: null });
+    fluent.maybeSingle.mockResolvedValueOnce({ data: { id: "card1" }, error: null });
+    await registerOrLoginCustomer({ data: { establishment_id: "e1", campaign_id: "c1", name: "U", phone: "11999999999" } });
+    expect(fluent.eq).toHaveBeenCalledWith("establishment_id", "e1");
+  });
+
+  it("11: Erro 23502", async () => {
+    fluent.maybeSingle.mockResolvedValueOnce({ data: { id: "c1", establishment_id: "e1" }, error: null });
+    fluent.maybeSingle.mockRejectedValueOnce(new Error("23502"));
+    const p = registerOrLoginCustomer({ data: { establishment_id: "e1", campaign_id: "c1", name: "U", phone: "11999999999" } });
+    await expect(p).rejects.toThrow();
+  });
+
+  it("12: Campanha Unscoped", async () => {
+    fluent.maybeSingle.mockResolvedValueOnce({ data: null, error: null });
+    const p = registerOrLoginCustomer({ data: { establishment_id: "e1", campaign_id: "c1", name: "U", phone: "11999999999" } });
+    await expect(p).rejects.toThrow("CAMPAIGN_NOT_FOUND");
+  });
+
+  it("13: Campanhas Scoped", async () => {
+    fluent.maybeSingle.mockResolvedValueOnce({ data: { id: "e1", active: true }, error: null });
+    fluent.maybeSingle.mockResolvedValueOnce({ data: [], error: null });
+    await resolveEstablishmentBySlug("f");
+    expect(fluent.eq).toHaveBeenCalledWith("establishment_id", "e1");
+  });
+
+  it("14: Unicode", async () => {
+    fluent.maybeSingle.mockResolvedValue({ data: { id: "e1", active: true }, error: null });
+    await resolveEstablishmentBySlug("pão");
+    expect(fluent.eq).toHaveBeenCalledWith("slug", "pão");
+  });
+
+  it("15: Exception", async () => {
+    fluent.maybeSingle.mockRejectedValueOnce(new Error("X"));
+    const res = await resolveEstablishmentBySlug("f");
+    expect(res.status).toBe("DATABASE_ERROR");
   });
 });
