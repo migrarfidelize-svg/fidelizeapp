@@ -17,21 +17,24 @@ vi.mock("@tanstack/react-start", () => ({
   registerGlobalMiddleware: () => {}
 }));
 
-// Mock do supabaseAdmin com encadeamento correto
+// Mock do supabaseAdmin com encadeamento manual
 const mockSingle = vi.fn();
 const mockAdmin = {
-  from: vi.fn().mockReturnThis(),
-  select: vi.fn().mockReturnThis(),
-  eq: vi.fn().mockReturnThis(),
-  maybeSingle: vi.fn(() => mockSingle()), // Deve retornar a promise do mockSingle
-  order: vi.fn().mockReturnThis(),
+  from: vi.fn(),
+  select: vi.fn(),
+  eq: vi.fn(),
+  maybeSingle: vi.fn(),
+  order: vi.fn(),
 };
 
-// Re-injetar o mock a cada teste para garantir que o encadeamento funcione
-mockAdmin.from.mockReturnThis();
-mockAdmin.select.mockReturnThis();
-mockAdmin.eq.mockReturnThis();
-mockAdmin.order.mockReturnThis();
+// Setup fluent mock
+const setupMocks = () => {
+  mockAdmin.from.mockReturnValue(mockAdmin);
+  mockAdmin.select.mockReturnValue(mockAdmin);
+  mockAdmin.eq.mockReturnValue(mockAdmin);
+  mockAdmin.order.mockReturnValue(mockAdmin);
+  mockAdmin.maybeSingle.mockImplementation(() => mockSingle());
+};
 
 vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: mockAdmin,
@@ -42,11 +45,7 @@ import { resolveEstablishmentBySlug } from "../../establishment-resolution.serve
 describe("Auditoria de Resolução de Estabelecimento (Código Real)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Resetando os retornos fluent
-    mockAdmin.from.mockReturnThis();
-    mockAdmin.select.mockReturnThis();
-    mockAdmin.eq.mockReturnThis();
-    mockAdmin.order.mockReturnThis();
+    setupMocks();
   });
 
   it("Cenário: slug ativo deve retornar ACTIVE", async () => {
@@ -54,8 +53,8 @@ describe("Auditoria de Resolução de Estabelecimento (Código Real)", () => {
       data: { id: "123", slug: "ativo", active: true },
       error: null,
     });
-    // Segunda chamada para campanhas (a query de campanhas usa select().eq().eq().order())
-    // O mockReturnThis() cuida dos intermediários, o resultado final vem do mock que simula a promise
+    // Segunda chamada para campanhas: select().eq().eq().order()
+    // A promise final vem do order()
     mockAdmin.order.mockResolvedValueOnce({
       data: [{ id: "c1", name: "C1" }],
       error: null,
