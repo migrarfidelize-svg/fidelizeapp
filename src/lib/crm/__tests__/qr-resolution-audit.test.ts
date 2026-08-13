@@ -19,11 +19,12 @@ vi.mock("@tanstack/react-start", () => ({
 
 // Mock do supabaseAdmin
 const mockSingle = vi.fn();
+const mockSelect = vi.fn().mockReturnThis();
 const mockAdmin = {
   from: vi.fn().mockReturnThis(),
-  select: vi.fn().mockReturnThis(),
+  select: mockSelect,
   eq: vi.fn().mockReturnThis(),
-  maybeSingle: () => mockSingle(),
+  maybeSingle: mockSingle,
   order: vi.fn().mockReturnThis(),
 };
 
@@ -31,63 +32,83 @@ vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: mockAdmin,
 }));
 
-// Lógica de Auditoria (Implementação Real sob Teste)
-async function auditGetEstablishmentBySlug(data: { slug: string }, supabaseAdmin: any) {
-  const { data: est, error } = await supabaseAdmin
-    .from("establishments")
-    .select("id, active")
-    .eq("slug", data.slug)
-    .maybeSingle();
+import { resolveEstablishmentBySlug } from "../establishment-resolution.server";
 
-  if (error) throw new Error("DATABASE_ERROR");
-  if (!est) throw new Error("NOT_FOUND");
-  if (!est.active) throw new Error("INACTIVE");
-  
-  return { establishment: est };
-}
-
-describe("Auditoria de Resolução de Estabelecimento", () => {
+describe("Auditoria de Resolução de Estabelecimento (Código Real)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("Cenário 1: active=true deve retornar o estabelecimento", async () => {
+  it("Cenário: slug ativo deve retornar ACTIVE", async () => {
     mockSingle.mockResolvedValueOnce({
       data: { id: "123", slug: "ativo", active: true },
       error: null,
     });
+    // Segunda chamada para campanhas
+    mockSelect.mockResolvedValueOnce({
+      data: [{ id: "c1", name: "C1" }],
+      error: null,
+    });
     
-    const result = await auditGetEstablishmentBySlug({ slug: "ativo" }, mockAdmin);
-    expect(result.establishment.active).toBe(true);
+    const result = await resolveEstablishmentBySlug("ativo");
+    expect(result.status).toBe("ACTIVE");
+    expect(result.establishment.id).toBe("123");
+    expect(result.campaigns).toHaveLength(1);
   });
 
-  it("Cenário 2: active=false deve lançar erro INACTIVE", async () => {
+  it("Cenário: active=false deve retornar INACTIVE", async () => {
     mockSingle.mockResolvedValueOnce({
       data: { id: "123", slug: "inativo", active: false },
       error: null,
     });
     
-    await expect(auditGetEstablishmentBySlug({ slug: "inativo" }, mockAdmin))
-      .rejects.toThrow("INACTIVE");
+    const result = await resolveEstablishmentBySlug("inativo");
+    expect(result.status).toBe("INACTIVE");
   });
 
-  it("Cenário 3: slug inexistente deve lançar erro NOT_FOUND", async () => {
+  it("Cenário: slug inexistente deve retornar NOT_FOUND", async () => {
     mockSingle.mockResolvedValueOnce({
       data: null,
       error: null,
     });
     
-    await expect(auditGetEstablishmentBySlug({ slug: "inexistente" }, mockAdmin))
-      .rejects.toThrow("NOT_FOUND");
+    const result = await resolveEstablishmentBySlug("inexistente");
+    expect(result.status).toBe("NOT_FOUND");
   });
 
-  it("Cenário 4: erro de banco deve lançar erro DATABASE_ERROR", async () => {
+  it("Cenário: erro de banco deve retornar DATABASE_ERROR", async () => {
     mockSingle.mockResolvedValueOnce({
       data: null,
-      error: { message: "Internal Server Error" },
+      error: { code: "500", message: "Internal Server Error" },
     });
     
-    await expect(auditGetEstablishmentBySlug({ slug: "erro" }, mockAdmin))
-      .rejects.toThrow("DATABASE_ERROR");
+    const result = await resolveEstablishmentBySlug("erro");
+    expect(result.status).toBe("DATABASE_ERROR");
+  });
+
+  it("Cenário: slug com espaços e maiúsculas deve ser normalizado", async () => {
+    mockSingle.mockResolvedValueOnce({
+      data: { id: "123", slug: "slug-ok", active: true },
+      error: null,
+    });
+    mockSelect.mockResolvedValueOnce({ data: [], error: null });
+
+    await resolveEstablishmentBySlug("  Slug-OK  ");
+    expect(mockAdmin.eq).toHaveBeenCalledWith("slug", "slug-ok");
+  });
+
+  it("Cenário: estabelecimento ativo sem campanha deve retornar ACTIVE com campaigns vazio", async () => {
+    mockSingle.mockResolvedValueOnce({
+      data: { id: "123", slug: "sem-campanha", active: true },
+      error: null,
+    });
+    mockSelect.mockResolvedValueOnce({
+      data: null,
+      error: null,
+    });
+    
+    const result = await resolveEstablishmentBySlug("sem-campanha");
+    expect(result.status).toBe("ACTIVE");
+    expect(result.campaigns).toHaveLength(0);
   });
 });

@@ -15,26 +15,42 @@ import { StampCard } from "@/components/StampCard";
 import { PublicRatingBlock } from "@/components/PublicRatingBlock";
 import { useChannelPageView } from "@/lib/tracking";
 import { toast } from "sonner";
-import { Sparkles, MapPin, Phone, LogIn, Megaphone, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
+import { Sparkles, MapPin, Phone, LogIn, Megaphone, ExternalLink, ChevronLeft, ChevronRight, AlertCircle, RefreshCcw, Home } from "lucide-react";
 
 const opts = (slug: string) => queryOptions({
   queryKey: ["est", slug],
   queryFn: () => getEstablishmentBySlug({ data: { slug } }),
 });
 
+function getEstablishmentErrorCode(error: unknown) {
+  if (!error) return null;
+
+  const obj = error as {
+    code?: string;
+    message?: string;
+  };
+
+  const raw = String(obj.code || obj.message || "").toUpperCase();
+
+  if (raw.includes("INACTIVE")) return "INACTIVE";
+  if (raw.includes("NOT_FOUND")) return "NOT_FOUND";
+  if (raw.includes("DATABASE_ERROR")) return "DATABASE_ERROR";
+
+  return null;
+}
+
 export const Route = createFileRoute("/cartao/$slug")({
   ssr: false,
   beforeLoad: async ({ params }) => {
-    // Se o visitante já está logado, tenta vincular esta empresa à conta e
-    // manda direto para a carteira — sem re-preencher o formulário.
+    const slug = params.slug.trim().toLowerCase();
     try {
       const { data: sess } = await supabase.auth.getSession();
       if (!sess.session) return;
       const { data: accType } = await supabase.rpc("my_account_type");
-      // Só faz auto-attach para clientes; estabelecimento/admin veem a página pública.
       if (accType !== "customer") return;
-      const r = await attachEstablishmentBySlug({ data: { slug: params.slug } });
-      // Toast contextual mostrado após o redirect (persistido só entre navegações).
+
+      const r = await attachEstablishmentBySlug({ data: { slug } });
+      
       try {
         const msg = r.status === "created"
           ? `Cartão de ${r.name} adicionado à sua carteira.`
@@ -45,37 +61,101 @@ export const Route = createFileRoute("/cartao/$slug")({
       } catch { /* ignore */ }
       throw redirect({ to: `/carteira/${r.slug}` as any });
     } catch (e) {
-      // redirect() lança — deixa passar.
       if (e && typeof e === "object" && "to" in (e as object)) throw e;
-      // Erros de negócio (inativo/não encontrado): mostra toast e manda para a carteira.
-      const code = (e as { code?: string } | null)?.code;
-      const name = (e as { establishmentName?: string } | null)?.establishmentName;
-      if (code === "inactive" || code === "not_found") {
-        const msg = code === "inactive"
-          ? `${name ?? params.slug} está inativo/suspenso. Não vinculamos o cartão à sua carteira.`
-          : `Estabelecimento "${params.slug}" não encontrado. Verifique o QR ou peça um novo link.`;
+      
+      const code = getEstablishmentErrorCode(e);
+      if (code === "INACTIVE" || code === "NOT_FOUND") {
+        const name = (e as any)?.establishmentName;
+        const msg = code === "INACTIVE"
+          ? "Este estabelecimento está temporariamente indisponível."
+          : "Estabelecimento não encontrado. Verifique o QR Code.";
+        
         try {
-          sessionStorage.setItem("wallet:flash", JSON.stringify({ kind: "error", msg }));
-        } catch { /* ignore */ }
-        throw redirect({ to: "/carteira" });
+          const { data: sess } = await supabase.auth.getSession();
+          if (sess.session) {
+            sessionStorage.setItem("wallet:flash", JSON.stringify({ kind: "error", msg }));
+            throw redirect({ to: "/carteira" });
+          }
+        } catch (redirErr) {
+          if (redirErr && typeof redirErr === "object" && "to" in (redirErr as object)) throw redirErr;
+        }
       }
-      // Outros erros: cai no fluxo público.
+      
+      if (code === "DATABASE_ERROR") throw e;
+      throw e;
     }
   },
   loader: async ({ params, context }) => {
-    const d = await context.queryClient.ensureQueryData(opts(params.slug));
-    if (!d) throw notFound();
-    const { applySeoCacheHeaders } = await import("@/lib/seo-cache.server");
-    applySeoCacheHeaders({
-      version: [
-        (d as any).establishment?.updated_at,
-        (d as any).establishment?.logo_url,
-        (d as any).establishment?.primary_color,
-        (d as any).campaigns?.[0]?.id,
-      ],
-    });
-    return d;
+    const slug = params.slug.trim().toLowerCase();
+    try {
+      return await context.queryClient.ensureQueryData(opts(slug));
+    } catch (error) {
+      const code = getEstablishmentErrorCode(error);
+      if (code === "NOT_FOUND") throw notFound();
+      if (code === "INACTIVE") throw new Error("INACTIVE");
+      if (code === "DATABASE_ERROR") throw new Error("DATABASE_ERROR");
+      throw error;
+    }
   },
+  errorComponent: ({ error, reset }) => {
+    const code = getEstablishmentErrorCode(error);
+    const navigate = useNavigate();
+
+    if (code === "INACTIVE") {
+      return (
+        <div className="min-h-dvh grid place-items-center p-6 text-center">
+          <div className="max-w-sm">
+            <AlertCircle className="h-12 w-12 text-warning mx-auto mb-4" />
+            <h1 className="font-display text-2xl font-bold">Estabelecimento indisponível</h1>
+            <p className="text-muted-foreground mt-2">Este estabelecimento está temporariamente indisponível na Fidelize.</p>
+            <Button asChild className="mt-6 w-full" variant="outline">
+              <Link to="/"><Home className="mr-2 h-4 w-4" /> Ir para o início</Link>
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    if (code === "DATABASE_ERROR") {
+      return (
+        <div className="min-h-dvh grid place-items-center p-6 text-center">
+          <div className="max-w-sm">
+            <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <h1 className="font-display text-2xl font-bold">Não foi possível carregar</h1>
+            <p className="text-muted-foreground mt-2">Não conseguimos acessar este estabelecimento no momento. Tente novamente em alguns instantes.</p>
+            <div className="grid gap-3 mt-6">
+              <Button onClick={() => reset()} className="w-full">
+                <RefreshCcw className="mr-2 h-4 w-4" /> Tentar novamente
+              </Button>
+              <Button asChild variant="outline" className="w-full">
+                <Link to="/"><Home className="mr-2 h-4 w-4" /> Ir para o início</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="min-h-dvh grid place-items-center p-6 text-center">
+        <div>
+          <h1 className="font-display text-2xl font-bold">Algo deu errado</h1>
+          <p className="text-muted-foreground mt-2">{error instanceof Error ? error.message : "Erro inesperado"}</p>
+          <Button onClick={() => reset()} className="mt-6">Tentar novamente</Button>
+        </div>
+      </div>
+    );
+  },
+  notFoundComponent: () => (
+    <div className="min-h-dvh grid place-items-center p-6 text-center">
+      <div className="max-w-sm">
+        <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+        <h1 className="font-display text-2xl font-bold">Estabelecimento não encontrado</h1>
+        <p className="text-muted-foreground mt-2">Verifique o link ou escaneie novamente o QR Code do estabelecimento.</p>
+        <Button asChild className="mt-6 w-full"><Link to="/">Ir para o início</Link></Button>
+      </div>
+    </div>
+  ),
   head: ({ loaderData }) => ({
     meta: loaderData ? [
       { title: `${loaderData.establishment.name} — Cartão fidelidade digital` },
@@ -85,15 +165,6 @@ export const Route = createFileRoute("/cartao/$slug")({
     ] : [{ title: "Não encontrado" }, { name: "robots", content: "noindex" }],
   }),
   component: PublicPage,
-  notFoundComponent: () => (
-    <div className="min-h-dvh grid place-items-center p-6 text-center">
-      <div>
-        <h1 className="font-display text-3xl font-bold text-destructive">Estabelecimento não encontrado</h1>
-        <p className="text-muted-foreground mt-2">Verifique o link ou peça um novo QR ao estabelecimento.</p>
-        <Button asChild className="mt-6"><Link to="/">Ir para o início</Link></Button>
-      </div>
-    </div>
-  ),
 });
 
 function PublicPage() {
@@ -164,7 +235,7 @@ function PublicPage() {
             </div>
           )}
 
-          {campaign && (
+          {campaign ? (
             <div className="mt-8 grid gap-8 md:grid-cols-[1fr_320px]">
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full bg-primary-soft text-primary px-3 py-1 text-xs font-medium"><Sparkles className="h-3 w-3" /> Programa ativo</div>
@@ -212,6 +283,12 @@ function PublicPage() {
               <div className="hidden md:block">
                 <StampCard brandName={est.name} logoUrl={est.logo_url} stamps={0} required={campaign.stamps_required} reward={campaign.reward_title} primary={est.primary_color} accent={est.accent_color} icon={campaign.stamp_icon ?? "star"} />
               </div>
+            </div>
+          ) : (
+            <div className="mt-8 text-center py-12 px-4 border-2 border-dashed rounded-3xl">
+              <Sparkles className="h-10 w-10 text-primary/40 mx-auto mb-4" />
+              <h2 className="font-display text-xl font-bold">Programa de fidelidade em preparação</h2>
+              <p className="text-muted-foreground mt-2 max-w-sm mx-auto">Este estabelecimento está ativo, mas ainda não possui uma campanha de fidelidade disponível.</p>
             </div>
           )}
         </div>

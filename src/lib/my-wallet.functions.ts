@@ -133,15 +133,15 @@ export const attachEstablishmentBySlug = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1).max(80) }).parse(d))
   .handler(async ({ data, context }) => {
+    const { resolveEstablishmentBySlug } = await import("./establishment-resolution.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // Adapter fino: converte as chamadas do core em queries do supabaseAdmin.
     const db: AttachDb = {
       async getEstablishmentBySlug(slug) {
-        const { data, error } = await supabaseAdmin
-          .from("establishments").select("id, slug, name, active").eq("slug", slug).maybeSingle();
-        if (error) throw error;
-        return data ?? null;
+        const res = await resolveEstablishmentBySlug(slug);
+        if (res.status === "DATABASE_ERROR") throw new Error("DATABASE_ERROR");
+        return res.establishment || null;
       },
       async getProfile(userId) {
         const { data } = await supabaseAdmin
