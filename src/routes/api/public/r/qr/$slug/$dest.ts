@@ -36,9 +36,13 @@ export const Route = createFileRoute("/api/public/r/qr/$slug/$dest")({
 
         const { data: est } = await sb
           .from("establishments")
-          .select("id, qr_destination")
+          .select("id, qr_destination, active")
           .eq("slug", slug)
           .maybeSingle();
+
+        if (!est || !est.active) {
+          return new Response("Estabelecimento indisponível ou inativo.", { status: 404 });
+        }
 
         // Compute redirect target (never fail the redirect if logging fails)
         let target: string;
