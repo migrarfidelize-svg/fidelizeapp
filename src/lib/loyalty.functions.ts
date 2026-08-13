@@ -45,13 +45,25 @@ export const registerOrLoginCustomer = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    // Try find existing
-    const { data: existing } = await supabaseAdmin
-      .from("customers")
-      .select("*")
+
+    // Ensure campaign belongs to establishment and is active
+    const { data: campaign, error: cErr } = await supabaseAdmin
+      .from("campaigns")
+      .select("id, establishment_id")
+      .eq("id", data.campaign_id)
       .eq("establishment_id", data.establishment_id)
-      .eq("phone", data.phone)
+      .eq("active", true)
       .maybeSingle();
+
+    if (cErr) {
+      console.error("[registerOrLoginCustomer] campaign lookup failed", cErr);
+      throw new Error("DATABASE_ERROR");
+    }
+    if (!campaign) {
+      throw new Error("Campanha não encontrada ou inativa.");
+    }
+
+    // Try find existing
 
     let customer = existing;
     if (!customer) {
