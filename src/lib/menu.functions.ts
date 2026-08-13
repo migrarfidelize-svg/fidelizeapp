@@ -150,10 +150,7 @@ export const setMenuStatus = createServerFn({ method: "POST" })
     // Publicar exige o recurso incluído no PLANO (liberações manuais do admin
     // dão acesso à área da vitrine, mas não permitem publicar).
     if (data.status === "published") {
-      const { data: allowed } = await supabase.rpc("has_plan_feature_strict", {
-        _est: data.establishment_id,
-        _feature: kind === "catalog" ? "digital_catalog" : "digital_menu",
-      });
+      const allowed = await hasFeature(supabase, data.establishment_id, kind === "catalog" ? "digital_catalog" : "digital_menu");
       if (!allowed) {
         throw new Error(
           `Publicar exige um plano com o recurso ${label}. Faça upgrade para publicar sua vitrine.`
