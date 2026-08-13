@@ -17,16 +17,21 @@ vi.mock("@tanstack/react-start", () => ({
   registerGlobalMiddleware: () => {}
 }));
 
-// Mock do supabaseAdmin
+// Mock do supabaseAdmin com encadeamento correto
 const mockSingle = vi.fn();
-const mockSelect = vi.fn().mockReturnThis();
 const mockAdmin = {
   from: vi.fn().mockReturnThis(),
-  select: mockSelect,
+  select: vi.fn().mockReturnThis(),
   eq: vi.fn().mockReturnThis(),
-  maybeSingle: mockSingle,
+  maybeSingle: vi.fn(() => mockSingle()), // Deve retornar a promise do mockSingle
   order: vi.fn().mockReturnThis(),
 };
+
+// Re-injetar o mock a cada teste para garantir que o encadeamento funcione
+mockAdmin.from.mockReturnThis();
+mockAdmin.select.mockReturnThis();
+mockAdmin.eq.mockReturnThis();
+mockAdmin.order.mockReturnThis();
 
 vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: mockAdmin,
@@ -37,6 +42,11 @@ import { resolveEstablishmentBySlug } from "../../establishment-resolution.serve
 describe("Auditoria de Resolução de Estabelecimento (Código Real)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Resetando os retornos fluent
+    mockAdmin.from.mockReturnThis();
+    mockAdmin.select.mockReturnThis();
+    mockAdmin.eq.mockReturnThis();
+    mockAdmin.order.mockReturnThis();
   });
 
   it("Cenário: slug ativo deve retornar ACTIVE", async () => {
@@ -44,8 +54,9 @@ describe("Auditoria de Resolução de Estabelecimento (Código Real)", () => {
       data: { id: "123", slug: "ativo", active: true },
       error: null,
     });
-    // Segunda chamada para campanhas
-    mockSelect.mockResolvedValueOnce({
+    // Segunda chamada para campanhas (a query de campanhas usa select().eq().eq().order())
+    // O mockReturnThis() cuida dos intermediários, o resultado final vem do mock que simula a promise
+    mockAdmin.order.mockResolvedValueOnce({
       data: [{ id: "c1", name: "C1" }],
       error: null,
     });
@@ -91,7 +102,7 @@ describe("Auditoria de Resolução de Estabelecimento (Código Real)", () => {
       data: { id: "123", slug: "slug-ok", active: true },
       error: null,
     });
-    mockSelect.mockResolvedValueOnce({ data: [], error: null });
+    mockAdmin.order.mockResolvedValueOnce({ data: [], error: null });
 
     await resolveEstablishmentBySlug("  Slug-OK  ");
     expect(mockAdmin.eq).toHaveBeenCalledWith("slug", "slug-ok");
@@ -102,7 +113,7 @@ describe("Auditoria de Resolução de Estabelecimento (Código Real)", () => {
       data: { id: "123", slug: "sem-campanha", active: true },
       error: null,
     });
-    mockSelect.mockResolvedValueOnce({
+    mockAdmin.order.mockResolvedValueOnce({
       data: null,
       error: null,
     });
