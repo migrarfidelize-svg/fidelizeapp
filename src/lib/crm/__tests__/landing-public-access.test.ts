@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getPublicLandingBySlug } from "../linktree.server";
+import { getPublicLandingBySlug } from "../../linktree.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 vi.mock("@/integrations/supabase/client.server", () => ({
