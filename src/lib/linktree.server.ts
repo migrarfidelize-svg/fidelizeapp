@@ -1,7 +1,6 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { z } from "zod";
 
-export const getPublicLandingBySlug = async (slug: string) => {
+export const getPublicLinkTreeBySlug = async (slug: string) => {
   const normalizedSlug = slug.trim().toLowerCase();
 
   // 1. Buscar estabelecimento
@@ -15,17 +14,12 @@ export const getPublicLandingBySlug = async (slug: string) => {
   if (!establishment) throw new Error("NOT_FOUND");
   if (!establishment.active) throw new Error("INACTIVE");
 
-  // 2. Buscar landing page (linktree) publicada
-  // Vou assumir o nome da tabela baseada em app.linktree.tsx / hash.landing.tsx
-  // Pelas rotas, parece ser 'linktrees' ou algo similar.
-  // Vou verificar o schema real na próxima iteração se falhar, 
-  // mas primeiro procuro por 'linktree' no linktree.functions.ts
-  
+  // 2. Buscar landing page (link_tree_pages) publicada
   const { data: page, error: pageError } = await supabaseAdmin
-    .from("linktrees")
+    .from("link_tree_pages")
     .select("*")
     .eq("establishment_id", establishment.id)
-    .eq("status", "published")
+    .eq("published", true)
     .maybeSingle();
 
   if (pageError) throw new Error("DATABASE_ERROR");
@@ -33,12 +27,10 @@ export const getPublicLandingBySlug = async (slug: string) => {
 
   // 3. Buscar links
   const { data: links, error: linksError } = await supabaseAdmin
-    .from("linktree_links")
-    .select("id, label, url, kind, sort_order, active, visible")
-    .eq("establishment_id", establishment.id)
-    .eq("linktree_id", page.id)
-    .eq("active", true)
-    .eq("visible", true)
+    .from("link_tree_links")
+    .select("id, label, url, kind, sort_order, enabled, data")
+    .eq("page_id", page.id)
+    .eq("enabled", true)
     .order("sort_order", { ascending: true });
 
   if (linksError) throw new Error("DATABASE_ERROR");
@@ -69,7 +61,8 @@ export const getPublicLandingBySlug = async (slug: string) => {
       label: l.label,
       url: l.url,
       kind: l.kind,
-      sort_order: l.sort_order
+      sort_order: l.sort_order,
+      data: l.data
     }))
   };
 };
