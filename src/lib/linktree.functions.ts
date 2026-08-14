@@ -231,36 +231,24 @@ export const getQrDestinationStatus = createServerFn({ method: "GET" })
 export const getPublicLinkTreeBySlug = createServerFn({ method: "GET" })
   .inputValidator((d: { slug: string }) => z.object({ slug: z.string().min(1).max(80) }).parse(d))
   .handler(async ({ data }) => {
-    const s = publicClient();
-    const { data: est } = await s
-      .from("establishments")
-      .select("id, name, slug, logo_url, cover_url, description, primary_color, accent_color")
-      .eq("slug", data.slug)
-      .eq("active", true)
-      .maybeSingle();
-    if (!est) return null;
-    const { data: page } = await s
-      .from("link_tree_pages")
-      .select("*")
-      .eq("establishment_id", est.id)
-      .eq("published", true)
-      .maybeSingle();
-    if (!page) return { establishment: est, page: null, links: [] as any[] };
-    const { data: links } = await s
-      .from("link_tree_links")
-      .select("*")
-      .eq("page_id", page.id)
-      .eq("enabled", true)
-      .order("sort_order", { ascending: true });
-    return { establishment: est, page, links: links ?? [] };
+    try {
+      const { getPublicLandingBySlug } = await import("./linktree.server");
+      return await getPublicLandingBySlug(data.slug);
+    } catch (err: any) {
+      if (err.message === "NOT_FOUND") return null;
+      if (err.message === "INACTIVE") throw new Error("INACTIVE");
+      if (err.message === "UNPUBLISHED") throw new Error("UNPUBLISHED");
+      console.error("[getPublicLinkTreeBySlug] handler error:", err);
+      throw new Error("DATABASE_ERROR");
+    }
   });
 
 // ---------- Public: data for rich blocks (menu preview + reviews) ----------
 export const getLinkTreeBlockData = createServerFn({ method: "GET" })
   .inputValidator((d: { slug: string }) => z.object({ slug: z.string().min(1).max(80) }).parse(d))
   .handler(async ({ data }) => {
-    const s = publicClient();
-    const { data: est } = await s
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: est } = await supabaseAdmin
       .from("establishments")
       .select("id")
       .eq("slug", data.slug)
@@ -269,14 +257,14 @@ export const getLinkTreeBlockData = createServerFn({ method: "GET" })
     if (!est) return { menu: [], catalog: [], reviews: [], stats: null };
 
     // Cardápio publicado
-    const { data: menuRow } = await s
+    const { data: menuRow } = await supabaseAdmin
       .from("restaurant_menus")
       .select("id")
       .eq("establishment_id", est.id)
       .eq("kind", "menu")
       .eq("status", "published")
       .maybeSingle();
-    const { data: catalogRow } = await s
+    const { data: catalogRow } = await supabaseAdmin
       .from("restaurant_menus")
       .select("id")
       .eq("establishment_id", est.id)
@@ -285,7 +273,7 @@ export const getLinkTreeBlockData = createServerFn({ method: "GET" })
       .maybeSingle();
 
     const fetchItems = async (menu_id: string) => {
-      const { data } = await s
+      const { data } = await supabaseAdmin
         .from("menu_items")
         .select("id, name, short_desc, price, promo_price, image_url")
         .eq("menu_id", menu_id)
@@ -296,7 +284,7 @@ export const getLinkTreeBlockData = createServerFn({ method: "GET" })
     const catalog = catalogRow ? await fetchItems(catalogRow.id) : [];
 
     // Avaliações públicas (não ocultas) — apenas campos seguros
-    const { data: reviewsRaw } = await s
+    const { data: reviewsRaw } = await supabaseAdmin
       .from("customer_reviews")
       .select("id, rating, comment, customer_name, merchant_reply, submitted_at, anonymous")
       .eq("establishment_id", est.id)
