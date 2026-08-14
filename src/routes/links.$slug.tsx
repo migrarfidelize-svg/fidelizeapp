@@ -42,11 +42,45 @@ export const Route = createFileRoute("/links/$slug")({
       : [{ title: "Não encontrado" }, { name: "robots", content: "noindex" }],
   }),
   component: PublicLinkTreePage,
+  errorComponent: ({ error }) => {
+    const msg = error instanceof Error ? error.message : String(error);
+    if (msg === "INACTIVE") {
+      return (
+        <div className="min-h-dvh grid place-items-center p-6 text-center bg-neutral-950 text-white">
+          <div>
+            <h1 className="font-display text-3xl font-bold">Estabelecimento indisponível</h1>
+            <p className="text-white/60 mt-2">Esta página está temporariamente desativada.</p>
+            <Link to="/" className="mt-6 inline-block underline">Voltar</Link>
+          </div>
+        </div>
+      );
+    }
+    if (msg === "UNPUBLISHED") {
+      return (
+        <div className="min-h-dvh grid place-items-center p-6 text-center bg-neutral-950 text-white">
+          <div>
+            <h1 className="font-display text-3xl font-bold">Página em construção</h1>
+            <p className="text-white/60 mt-2">Este estabelecimento ainda não publicou seus links.</p>
+            <Link to="/" className="mt-6 inline-block underline">Voltar</Link>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="min-h-dvh grid place-items-center p-6 text-center bg-neutral-950 text-white">
+        <div>
+          <h1 className="font-display text-3xl font-bold">Ops! Algo deu errado</h1>
+          <p className="text-white/60 mt-2">Não foi possível carregar a página. Tente novamente em instantes.</p>
+          <Link to="/" className="mt-6 inline-block underline">Voltar</Link>
+        </div>
+      </div>
+    );
+  },
   notFoundComponent: () => (
     <div className="min-h-dvh grid place-items-center p-6 text-center bg-neutral-950 text-white">
       <div>
         <h1 className="font-display text-3xl font-bold">Página não encontrada</h1>
-        <p className="text-white/60 mt-2">O link pode ter sido removido ou não está publicado.</p>
+        <p className="text-white/60 mt-2">O link pode ter sido removido ou não existe.</p>
         <Link to="/" className="mt-6 inline-block underline">Voltar</Link>
       </div>
     </div>
