@@ -1,6 +1,11 @@
 import { RouteLoading } from "@/components/RouteLoading";
+import { cn } from "@/lib/utils";
+
 import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { motion, AnimatePresence } from "framer-motion";
+
 import { getWalletHint, setWalletHint, formatWalletHint } from "@/lib/wallet-hint";
 import { getKeepSignedIn, setKeepSignedIn } from "@/lib/session-keeper";
 import { getSettledSession } from "@/lib/session-ready";
@@ -11,7 +16,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
-import { Coffee, Check, ArrowRight, Sparkles, Wifi, Store, User, Loader2, Eye, EyeOff, Building2, Phone, MessageCircle } from "lucide-react";
+import { Coffee, Check, ArrowRight, Sparkles, Wifi, Store, User, Loader2, Eye, EyeOff, Building2, Phone, MessageCircle, AlertCircle } from "lucide-react";
 
 export const ONBOARDING_PREFILL_KEY = "fidelize:onboarding-prefill";
 import { claimCustomerByToken, attachEstablishmentBySlug } from "@/lib/my-wallet.functions";
@@ -131,6 +136,10 @@ function AuthPage() {
   const [otpStep, setOtpStep] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [otpCooldown, setOtpCooldown] = useState(0);
+  const [otpStatus, setOtpStatus] = useState<"default" | "verifying" | "success" | "error">("default");
+  const otpVerifyingRef = useRef(false);
+  const otpAutoSubmittedRef = useRef(false);
+
 
   useEffect(() => { setKeepSignedIn(keepSignedIn); }, [keepSignedIn]);
 
@@ -215,16 +224,28 @@ function AuthPage() {
     }
   }, [otpCooldown]);
 
-  async function handleVerifyOtp() {
-    if (otpCode.length !== 6) {
+  async function handleVerifyOtp(codeOverride?: string) {
+    const code = codeOverride || otpCode;
+    if (code.length !== 6) {
       toast.error("O código deve ter 6 dígitos.");
       return;
     }
-
+    
+    if (otpVerifyingRef.current) return;
+    otpVerifyingRef.current = true;
+    
     setLoading(true);
+    setOtpStatus("verifying");
+    
     try {
-      const res = await verifyOTP({ data: { whatsapp: whatsapp.replace(/\D/g, ""), code: otpCode } });
+      // Delay visual para animação de "decifrando"
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      const res = await verifyOTP({ data: { whatsapp: whatsapp.replace(/\D/g, ""), code } });
       if (res.ok && res.hashed_token) {
+        setOtpStatus("success");
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         const { data: authData, error } =
           await supabase.auth.verifyOtp({
             token_hash: res.hashed_token,
@@ -232,6 +253,7 @@ function AuthPage() {
           });
 
         if (error) {
+          setOtpStatus("error");
           console.error("[auth] Falha ao criar sessão após OTP:", {
             message: error.message,
             status: error.status,
@@ -240,6 +262,7 @@ function AuthPage() {
         }
 
         if (!authData.session || !authData.user) {
+          setOtpStatus("error");
           throw new Error(
             "Não foi possível iniciar sua sessão. Solicite um novo código."
           );
@@ -260,13 +283,20 @@ function AuthPage() {
           dest.to,
           isSignup ? "SIGNED_UP" : "SIGNED_IN"
         );
+      } else {
+        setOtpStatus("error");
+        toast.error("Código inválido. Confira os números e tente novamente.");
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Código inválido.");
+      setOtpStatus("error");
+      const msg = err instanceof Error ? err.message : "Código inválido.";
+      toast.error(msg);
     } finally {
       setLoading(false);
+      otpVerifyingRef.current = false;
     }
   }
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -458,26 +488,141 @@ function AuthPage() {
                   )}
                 </>
               ) : (
-                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-4">
-                  <div className="text-center space-y-2">
-                    <div className="flex justify-center"><div className="rounded-full bg-primary/10 p-3"><MessageCircle className="h-6 w-6 text-primary" /></div></div>
-                    <h3 className="font-display font-bold">Confirme seu número</h3>
-                    <p className="text-xs text-muted-foreground">Enviamos um código de 6 dígitos para <span className="font-bold text-foreground">{whatsapp}</span></p>
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ 
+                    opacity: 1, 
+                    y: 0,
+                    x: otpStatus === "error" ? [0, -10, 10, -10, 10, 0] : 0
+                  }}
+                  transition={{ 
+                    duration: otpStatus === "error" ? 0.4 : 0.5,
+                    ease: otpStatus === "error" ? "easeInOut" : "easeOut"
+                  }}
+                  className="space-y-6 py-2"
+                >
+                  <div className="text-center space-y-3">
+                    <motion.div 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10"
+                    >
+                      <MessageCircle className="h-7 w-7 text-primary" />
+                    </motion.div>
+                    <div className="space-y-1">
+                      <h3 className="font-display text-xl font-bold">Confirme seu WhatsApp</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Enviamos um código para <br />
+                        <span className="font-bold text-foreground text-base">{whatsapp}</span>
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex justify-center gap-2">
-                    <input autoFocus maxLength={6} value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))} className="auth-input text-center text-2xl tracking-[0.5em] font-mono h-14" placeholder="000000" />
+
+                  <div className="flex justify-center">
+                    <InputOTP
+                      maxLength={6}
+                      value={otpCode}
+                      disabled={loading || otpStatus === "success"}
+                      onComplete={(val) => {
+                        if (!otpAutoSubmittedRef.current) {
+                          otpAutoSubmittedRef.current = true;
+                          handleVerifyOtp(val);
+                        }
+                      }}
+                      onChange={(val) => {
+                        setOtpCode(val);
+                        if (otpStatus === "error") setOtpStatus("default");
+                        otpAutoSubmittedRef.current = false;
+                      }}
+                      render={({ slots }) => (
+                        <InputOTPGroup className="gap-2 sm:gap-3">
+                          {slots.map((slot, idx) => (
+                            <InputOTPSlot 
+                              key={idx} 
+                              index={idx}
+                              status={otpStatus}
+                            />
+                          ))}
+                        </InputOTPGroup>
+                      )}
+                    />
                   </div>
-                  <div className="flex flex-col items-center gap-2">
-                    <button type="button" disabled={otpCooldown > 0} onClick={handleRequestOtp} className="text-xs text-primary hover:underline disabled:text-muted-foreground disabled:no-underline">{otpCooldown > 0 ? `Reenviar código em ${otpCooldown}s` : "Não recebeu o código? Reenviar"}</button>
-                    <button type="button" onClick={() => { setOtpStep(false); setOtpCode(""); }} className="text-xs text-muted-foreground hover:text-foreground">Alterar número</button>
-                  </div>
-                </div>
+
+                  <AnimatePresence mode="wait">
+                    {otpStatus === "error" ? (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="flex items-center justify-center gap-2 text-xs font-medium text-destructive"
+                      >
+                        <AlertCircle className="h-3 w-3" />
+                        Código inválido. Confira os números e tente novamente.
+                      </motion.div>
+                    ) : otpStatus === "success" ? (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        className="flex items-center justify-center gap-2 text-xs font-medium text-success"
+                      >
+                        <Check className="h-3 w-3" />
+                        Código confirmado
+                      </motion.div>
+                    ) : (
+                      <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex flex-col items-center gap-3"
+                      >
+                        <button 
+                          type="button" 
+                          disabled={otpCooldown > 0 || loading} 
+                          onClick={handleRequestOtp} 
+                          className="text-xs font-semibold text-primary transition-colors hover:text-primary/80 disabled:text-muted-foreground"
+                        >
+                          {otpCooldown > 0 ? `Reenviar código em ${otpCooldown}s` : "Reenviar código"}
+                        </button>
+                        <button 
+                          type="button" 
+                          disabled={loading}
+                          onClick={() => { setOtpStep(false); setOtpCode(""); setOtpStatus("default"); }} 
+                          className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                          Alterar número
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
               )}
 
               {captchaRequired && captcha?.siteKey && <div className="flex justify-center py-2"><Turnstile siteKey={captcha.siteKey} onToken={setCaptchaToken} /></div>}
 
-              <button type="submit" disabled={loading} className="auth-submit mt-4">
-                {loading ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : (otpStep ? "Confirmar Código" : (walletFlow ? "Receber Código via WhatsApp" : "Continuar"))}
+              <button 
+                type="submit" 
+                disabled={loading || (otpStep && (otpCode.length < 6 || otpStatus === "success"))} 
+                className={cn(
+                  "auth-submit mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all",
+                  otpStatus === "success" && "bg-success hover:bg-success ring-0 shadow-lg shadow-success/20"
+                )}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Verificando...</span>
+                  </>
+                ) : otpStatus === "success" ? (
+                  <>
+                    <Check className="h-4 w-4" />
+                    <span>Código confirmado</span>
+                  </>
+                ) : (
+                  <>
+                    <span>{otpStep ? "Confirmar Código" : (walletFlow ? "Receber Código via WhatsApp" : "Continuar")}</span>
+                    {!otpStep && <ArrowRight className="h-4 w-4" />}
+                  </>
+                )}
               </button>
             </form>
           </div>
@@ -486,3 +631,4 @@ function AuthPage() {
     </div>
   );
 }
+
