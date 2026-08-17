@@ -96,8 +96,8 @@ export function AgentConfig() {
                 <div className="space-y-2">
                   <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Fluxo Principal (Base de Conhecimento)</Label>
                   <Select 
-                    value={settings.behavior?.mainFlowId} 
-                    onValueChange={val => setSettings({...settings, behavior: {...settings.behavior, mainFlowId: val}})}
+                    value={settings.flow_id} 
+                    onValueChange={val => setSettings({...settings, flow_id: val})}
                   >
                     <SelectTrigger className="h-11 bg-muted/20 border-border/50 font-bold">
                       <SelectValue placeholder="Selecione um fluxo automatizado..." />
@@ -109,6 +109,7 @@ export function AgentConfig() {
                     </SelectContent>
                   </Select>
                 </div>
+
               </div>
 
               <div className="grid md:grid-cols-2 gap-6">
