@@ -70,7 +70,7 @@ export const issueRedeemToken = createServerFn({ method: "POST" })
     const ownerUid =
       // deno-lint-ignore no-explicit-any
       (reward as any).loyalty_cards?.customers?.user_id as string | undefined;
-    if (ownerUid && ownerUid !== userId) throw new Error("Sem permissão para esta recompensa.");
+    if (!ownerUid || ownerUid !== userId) throw new Error("Sem permissão para esta recompensa.");
 
     const { randomBytes } = await import("crypto");
     const exp = Date.now() + TOKEN_TTL_MS;

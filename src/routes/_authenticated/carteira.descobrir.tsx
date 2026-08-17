@@ -2,7 +2,7 @@ import { RouteLoading } from "@/components/RouteLoading";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Compass, MapPin, Sparkles, ChevronRight, ShieldCheck, Tag, Search, ArrowLeft, X, RefreshCw, UtensilsCrossed, ShoppingBag, CheckCircle2 } from "lucide-react";
+import { Compass, MapPin, Sparkles, ChevronRight, ShieldCheck, Tag, Search, ArrowLeft, X, RefreshCw, UtensilsCrossed, ShoppingBag, CheckCircle2, Heart } from "lucide-react";
 import { getDiscoveryEstablishments } from "@/lib/my-wallet.functions";
 import { WalletErrorState, WithOfflineFallback } from "@/components/wallet/WalletStates";
 import { SponsoredAdsRail } from "@/components/wallet/SponsoredAdsRail";
@@ -426,6 +426,7 @@ function DiscoverRow({
     city: string | null;
     description: string | null;
     visited: boolean;
+    pinned: boolean;
     has_promotion: boolean;
     has_menu: boolean;
     has_catalog: boolean;
@@ -486,8 +487,8 @@ function DiscoverRow({
         
         <div className="flex flex-col items-end gap-2">
           {e.visited ? (
-            <div className="h-8 w-8 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground/40">
-              <CheckCircle2 className="h-4 w-4" />
+            <div className="h-8 w-8 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground/60" title={e.pinned ? "Favorito" : "Já está na carteira"}>
+              {e.pinned ? <Heart className="h-4 w-4 fill-red-500 text-red-500" /> : <CheckCircle2 className="h-4 w-4" />}
             </div>
           ) : (
             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary animate-pulse">

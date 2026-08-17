@@ -26,8 +26,9 @@ import { cn } from "@/lib/utils";
 import { LogoMark } from "@/components/LogoMark";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
-import { getMyWallet, getMyRewards } from "@/lib/my-wallet.functions";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getMyWallet, getMyRewards, getMyWalletProfile } from "@/lib/my-wallet.functions";
+import { countUnread } from "@/lib/inbox.functions";
 import { InboxBellBadge } from "@/components/wallet/InboxBellBadge";
 import { WalletQrSheet } from "@/components/wallet/WalletQrSheet";
 
@@ -49,6 +50,7 @@ export const Route = createFileRoute("/_authenticated/carteira")({
 });
 
 function WalletLayout() {
+  const queryClient = useQueryClient();
   const location = useLocation();
   const activeTab = location.pathname;
   
@@ -57,15 +59,15 @@ function WalletLayout() {
     { icon: Home, label: "Início", path: "/carteira" },
     { icon: Compass, label: "Descobrir", path: "/carteira/descobrir" },
     { icon: QrCode, label: "QR Codes", path: "/carteira/scanner", isFab: true },
-    { icon: Wallet, label: "Vouchers", path: "/carteira/premios" },
+    { icon: Wallet, label: "Recompensas", path: "/carteira/premios" },
     { icon: User, label: "Perfil", path: "/carteira/perfil" },
   ];
 
   const secondaryNav = [
-    { icon: Bell, label: "Notificações", count: 2 },
-    { icon: Star, label: "Favoritos" },
-    { icon: HelpCircle, label: "Ajuda" },
-    { icon: Settings, label: "Configurações" },
+    { icon: Bell, label: "Notificações", path: "/carteira/mensagens", count: 0 },
+    { icon: Star, label: "Favoritos", path: "/carteira/favoritos", count: 0 },
+    { icon: HelpCircle, label: "Ajuda", path: "/carteira/ajuda", count: 0 },
+    { icon: Settings, label: "Configurações", path: "/carteira/perfil", count: 0 },
   ];
 
   const { data: walletData = [] } = useQuery({ 
@@ -79,6 +81,23 @@ function WalletLayout() {
     queryFn: getMyRewards,
     staleTime: 30_000 
   });
+  const { data: unread = 0 } = useQuery({ queryKey: ["inbox-unread"], queryFn: () => countUnread(), staleTime: 15_000 });
+  const { data: profile } = useQuery({ queryKey: ["wallet-profile"], queryFn: () => getMyWalletProfile(), staleTime: 60_000 });
+  const [search, setSearch] = useState("");
+  const [mobileSearch, setMobileSearch] = useState(false);
+  const searchResults = search.trim() ? walletData.filter((item) => (item.establishment as { name: string }).name.toLowerCase().includes(search.trim().toLowerCase())).slice(0, 6) : [];
+  const profileName = profile?.name || "Cliente Fidelize";
+  const initials = profileName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "CF";
+  useEffect(() => {
+    let channel: { unsubscribe: () => void } | undefined;
+    import("@/integrations/supabase/client").then(({ supabase }) => {
+      channel = supabase.channel("wallet-inbox").on("postgres_changes", { event: "*", schema: "public", table: "user_notifications" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["inbox-unread"] });
+        queryClient.invalidateQueries({ queryKey: ["my-inbox"] });
+      }).subscribe();
+    });
+    return () => channel?.unsubscribe();
+  }, [queryClient]);
 
   const progressItems = walletData
     .filter(it => it.card)
@@ -180,20 +199,21 @@ function WalletLayout() {
             <div className="my-6 h-px bg-border/40 lg:w-8 lg:mx-auto xl:w-full" />
 
             {secondaryNav.map((item) => (
-              <button
+              <Link
                 key={item.label}
+                to={item.path}
                 className="w-full flex items-center gap-4 p-3 xl:p-4 rounded-[1.25rem] text-muted-foreground hover:bg-accent/60 hover:text-foreground transition-all group lg:justify-center xl:justify-start"
               >
                 <div className="relative">
                   <item.icon className="h-6 w-6 shrink-0 transition-transform group-hover:scale-110" />
-                  {item.count && (
+                  {(item.label === "Notificações" ? unread : item.count) > 0 && (
                     <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-black text-white ring-2 ring-background">
-                      {item.count}
+                      {item.label === "Notificações" ? unread : item.count}
                     </span>
                   )}
                 </div>
                 <span className="font-bold text-sm lg:hidden xl:block opacity-70 group-hover:opacity-100">{item.label}</span>
-              </button>
+              </Link>
             ))}
           </nav>
 
@@ -201,11 +221,10 @@ function WalletLayout() {
           <div className="mt-auto p-2 lg:p-0 xl:p-2">
              <div className="flex items-center gap-3 p-3 rounded-2xl bg-accent/40 border border-border/20 lg:justify-center xl:justify-start">
                 <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-black shadow-lg">
-                  JD
+                  {initials}
                 </div>
                 <div className="min-w-0 flex-1 lg:hidden xl:block text-left">
-                  <p className="text-xs font-black truncate">João Doria</p>
-                  <p className="text-[10px] text-muted-foreground font-bold truncate">Premium Member</p>
+                  <p className="text-xs font-black truncate">{profileName}</p>
                 </div>
                 <button 
                   className="text-muted-foreground hover:text-destructive transition-colors lg:hidden xl:block"
@@ -247,23 +266,27 @@ function WalletLayout() {
             <div className="hidden md:flex items-center relative group">
               <Search className="absolute left-4 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
               <input 
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
                 placeholder="Pesquisar estabelecimentos..." 
                 className="w-64 xl:w-80 h-11 bg-accent/40 border-none rounded-2xl pl-11 pr-4 text-sm font-medium focus:ring-4 focus:ring-primary/5 transition-all"
               />
+              {search.trim() && <div className="absolute top-12 z-50 w-full rounded-2xl border bg-background p-2 shadow-xl">{searchResults.length ? searchResults.map((item) => { const est = item.establishment as { slug: string; name: string }; return <Link key={est.slug} to="/carteira/$slug" params={{ slug: est.slug }} onClick={() => setSearch("")} className="block rounded-xl px-3 py-2 text-sm font-semibold hover:bg-muted">{est.name}</Link>; }) : <p className="p-3 text-xs text-muted-foreground">Nenhum estabelecimento encontrado.</p>}</div>}
             </div>
             
             <div className="flex items-center gap-2">
               <InboxBellBadge 
-                unread={0} 
+                unread={unread}
                 readyRewards={readyRewards.length}
                 active={activeTab === "/carteira/mensagens"} 
               />
-              <button className="md:hidden h-11 w-11 flex items-center justify-center rounded-2xl bg-accent/60 text-muted-foreground">
+              <button onClick={() => setMobileSearch((value) => !value)} aria-label="Pesquisar estabelecimentos" className="md:hidden h-11 w-11 flex items-center justify-center rounded-2xl bg-accent/60 text-muted-foreground">
                 <Search className="h-5 w-5" />
               </button>
             </div>
           </div>
         </header>
+        {mobileSearch && <div className="relative border-b bg-background p-3 md:hidden"><Search className="absolute left-6 top-6 h-4 w-4 text-muted-foreground" /><input autoFocus value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Pesquisar estabelecimentos..." className="h-10 w-full rounded-xl border bg-background pl-10 pr-3 text-sm" />{search.trim() && <div className="mt-2 space-y-1">{searchResults.length ? searchResults.map((item) => { const est = item.establishment as { slug: string; name: string }; return <Link key={est.slug} to="/carteira/$slug" params={{ slug: est.slug }} onClick={() => { setSearch(""); setMobileSearch(false); }} className="block rounded-xl bg-muted/50 px-3 py-2 text-sm font-semibold">{est.name}</Link>; }) : <p className="p-2 text-xs text-muted-foreground">Nenhum estabelecimento encontrado.</p>}</div>}</div>}
 
         {/* Scrollable Content Container */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar bg-[oklch(0.985_0.006_285)] dark:bg-[oklch(0.14_0.018_288)]">

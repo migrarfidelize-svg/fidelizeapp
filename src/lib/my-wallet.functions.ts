@@ -6,6 +6,41 @@ import { attachEstablishmentCore, AttachEstablishmentError, type AttachDb } from
 // Reexporta o erro para consumidores existentes.
 export { AttachEstablishmentError };
 
+export class WalletCardAccessError extends Error {
+  constructor(public readonly code: "NOT_FOUND" | "INACTIVE" | "DATABASE_ERROR" | "ACCESS_DENIED") {
+    super(code);
+    this.name = "WalletCardAccessError";
+  }
+}
+
+export interface WalletCardLookupDb {
+  findEstablishment(slug: string): Promise<{ data: any; error: any }>;
+  findCustomer(userId: string, establishmentId: string): Promise<{ data: any; error: any }>;
+}
+
+export async function resolveWalletCardOwner(db: WalletCardLookupDb, userId: string, rawSlug: string) {
+  const slug = rawSlug.trim().toLowerCase();
+  const establishmentResult = await db.findEstablishment(slug);
+  if (establishmentResult.error) throw new WalletCardAccessError(establishmentResult.error.code === "42501" ? "ACCESS_DENIED" : "DATABASE_ERROR");
+  if (!establishmentResult.data) throw new WalletCardAccessError("NOT_FOUND");
+  if (!establishmentResult.data.active) throw new WalletCardAccessError("INACTIVE");
+  const customerResult = await db.findCustomer(userId, establishmentResult.data.id);
+  if (customerResult.error) throw new WalletCardAccessError(customerResult.error.code === "42501" ? "ACCESS_DENIED" : "DATABASE_ERROR");
+  return { establishment: establishmentResult.data, customer: customerResult.data ?? null };
+}
+
+export const getMyWalletProfile = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("profiles")
+      .select("full_name, avatar_url")
+      .eq("id", context.userId)
+      .maybeSingle();
+    if (error) throw error;
+    return { name: data?.full_name || "Cliente Fidelize", avatarUrl: data?.avatar_url || null };
+  });
+
 /** Returns the current user's account type using the DB helper. */
 export const getMyAccountType = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -254,23 +289,16 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1) }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: row, error } = await context.supabase
-      .from("customers")
-      .select(
-        `id, name, code, access_token, last_visit_at, visits_count, tier, referral_code,
-         establishment:establishments!inner(
-           id, slug, name, logo_url, primary_color, address, phone, whatsapp,
-           instagram, active, description
-         )`,
-      )
-      .eq("user_id", context.userId)
-      .eq("establishments.slug", data.slug)
-      .maybeSingle();
-    if (error) throw error;
+    const lookup = await resolveWalletCardOwner({
+      findEstablishment: (slug) => context.supabase.from("establishments").select("id, slug, name, logo_url, primary_color, address, phone, whatsapp, instagram, active, description").eq("slug", slug).maybeSingle(),
+      findCustomer: (userId, establishmentId) => context.supabase.from("customers").select("id, name, code, access_token, last_visit_at, visits_count, tier, referral_code, establishment_id").eq("user_id", userId).eq("establishment_id", establishmentId).maybeSingle(),
+    }, context.userId, data.slug);
+    const establishment = lookup.establishment;
+    const row = lookup.customer;
     if (!row) return null;
 
 
-    const { data: cards } = await context.supabase
+    const { data: cards, error: cardsError } = await context.supabase
       .from("loyalty_cards")
       .select(
         `id, stamps, cycle, updated_at, created_at,
@@ -278,6 +306,7 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
       )
       .eq("customer_id", row.id)
       .order("updated_at", { ascending: false });
+    if (cardsError) throw new WalletCardAccessError(cardsError.code === "42501" ? "ACCESS_DENIED" : "DATABASE_ERROR");
 
     const cardIds = (cards ?? []).map((c) => c.id);
 
@@ -324,7 +353,7 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
       const { isShowcaseDestinationValid } = await import("@/lib/qr-target.server");
       hasMenu = await isShowcaseDestinationValid(
         context.supabase,
-        (row.establishment as unknown as { id: string }).id,
+        establishment.id,
         "menu"
       );
     } catch {
@@ -343,7 +372,7 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
         referralCode: row.referral_code,
       },
 
-      establishment: row.establishment,
+      establishment,
       hasMenu,
       cards: cards ?? [],
       recentStamps,
@@ -554,9 +583,10 @@ export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
     // apenas marcamos como "já visitados" para o cliente ver novidades/promoções.
     const { data: mine } = await context.supabase
       .from("customers")
-      .select("establishment_id")
+      .select("establishment_id, pinned_at")
       .eq("user_id", context.userId);
     const visited = new Set((mine ?? []).map((r) => r.establishment_id));
+    const pinned = new Set((mine ?? []).filter((r) => r.pinned_at).map((r) => r.establishment_id));
 
     const { data, error } = await context.supabase
       .from("establishments")
@@ -623,6 +653,7 @@ export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
       description: e.description,
       segment: e.segment,
       visited: visited.has(e.id),
+      pinned: pinned.has(e.id),
       has_promotion: promoted.has(e.id),
       has_menu: showcaseEnabled(e.id, e.plan, "menu"),
       has_catalog: showcaseEnabled(e.id, e.plan, "catalog"),
@@ -769,4 +800,3 @@ export const resolveWalletLoginByWhatsapp = createServerFn({ method: "POST" })
 
     return { found: true as const, email, password: syntheticPassword };
   });
-

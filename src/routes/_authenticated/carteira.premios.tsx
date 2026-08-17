@@ -10,6 +10,12 @@ import {
 } from "@/components/wallet/WalletStates";
 import { Gift, Sparkles, ChevronRight, CreditCard, Search, X, Clock } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useEffect } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { issueRedeemToken } from "@/lib/redeem.functions";
+import QRCode from "qrcode";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { z } from "zod";
 
 
@@ -361,6 +367,10 @@ function SubTab({
 type Reward = Awaited<ReturnType<typeof getMyRewards>>[number];
 
 function RewardRow({ r, highlight }: { r: Reward; highlight?: boolean }) {
+  const issue = useServerFn(issueRedeemToken);
+  const qc = useQueryClient();
+  const [redeem, setRedeem] = useState<{ token: string; expiresAt: number } | null>(null);
+  const [busy, setBusy] = useState(false);
   const est = r.establishment as {
     slug: string;
     name: string;
@@ -368,9 +378,7 @@ function RewardRow({ r, highlight }: { r: Reward; highlight?: boolean }) {
     primary_color: string;
   };
   return (
-    <Link
-      to="/carteira/$slug"
-      params={{ slug: est.slug }}
+    <article
       className={
         "group relative flex items-center gap-3 overflow-hidden rounded-2xl border p-3 transition-all " +
         (highlight
@@ -378,7 +386,7 @@ function RewardRow({ r, highlight }: { r: Reward; highlight?: boolean }) {
           : "border-border/60 bg-card/40 hover:border-primary/30")
       }
     >
-      <div
+      <Link to="/carteira/$slug" params={{ slug: est.slug }} className="contents"><div
         className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-xl border border-border/60 bg-muted text-sm font-bold uppercase"
         style={{ color: est.primary_color || undefined }}
       >
@@ -415,9 +423,20 @@ function RewardRow({ r, highlight }: { r: Reward; highlight?: boolean }) {
           )}
         </div>
       </div>
-      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-    </Link>
+      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" /></Link>
+      {r.ready && r.rewardId && <Button size="sm" disabled={busy} onClick={async () => { setBusy(true); try { setRedeem(await issue({ data: { reward_id: r.rewardId! } })); } finally { setBusy(false); } }} className="relative z-10 ml-2 shrink-0">{busy ? "Gerando…" : "Gerar QR de resgate"}</Button>}
+      <RedeemQrDialog redeem={redeem} onClose={() => { setRedeem(null); qc.invalidateQueries({ queryKey: ["my-rewards"] }); qc.invalidateQueries({ queryKey: ["my-wallet"] }); }} onRenew={async () => r.rewardId && setRedeem(await issue({ data: { reward_id: r.rewardId } }))} />
+    </article>
   );
+}
+
+function RedeemQrDialog({ redeem, onClose, onRenew }: { redeem: { token: string; expiresAt: number } | null; onClose: () => void; onRenew: () => Promise<void> }) {
+  const [image, setImage] = useState("");
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { if (redeem) QRCode.toDataURL(redeem.token, { width: 520, margin: 1, errorCorrectionLevel: "M" }).then(setImage); }, [redeem]);
+  useEffect(() => { if (!redeem) return; const timer = window.setInterval(() => setNow(Date.now()), 1000); return () => window.clearInterval(timer); }, [redeem]);
+  const seconds = redeem ? Math.max(0, Math.ceil((redeem.expiresAt - now) / 1000)) : 0;
+  return <Dialog open={!!redeem} onOpenChange={(open) => !open && onClose()}><DialogContent className="max-w-sm"><DialogHeader><DialogTitle>QR temporário de resgate</DialogTitle><DialogDescription>Apresente este QR ao funcionário. Ele autoriza somente esta recompensa.</DialogDescription></DialogHeader>{image && seconds > 0 ? <img src={image} alt="QR temporário RDM1 da recompensa" className="mx-auto h-64 w-64 rounded-2xl bg-white p-3" /> : <div className="grid h-64 place-items-center rounded-2xl bg-muted text-sm text-muted-foreground">QR expirado</div>}<p className="text-center text-sm font-semibold">{seconds > 0 ? `Expira em ${seconds}s` : "Este QR expirou."}</p>{seconds === 0 && <Button onClick={() => void onRenew()}>Gerar novo QR</Button>}</DialogContent></Dialog>;
 }
 
 /** Validade da recompensa liberada, em linguagem curta. */

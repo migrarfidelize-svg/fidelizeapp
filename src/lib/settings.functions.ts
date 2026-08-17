@@ -89,6 +89,29 @@ export const updateEstablishmentProfile = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** Atualiza somente o nome de exibição; o slug e dados fiscais nunca entram no UPDATE. */
+export const renameEstablishmentSchema = z.object({
+  establishment_id: z.string().uuid(),
+  name: z.string().trim().min(2, "Informe um nome válido.").max(120),
+});
+
+export const renameEstablishment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => renameEstablishmentSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertRole(supabase, userId, data.establishment_id, "manager");
+    const { data: updated, error } = await supabase
+      .from("establishments")
+      .update({ name: data.name })
+      .eq("id", data.establishment_id)
+      .select("id, name, slug")
+      .single();
+    if (error) throw new Error(error.message);
+    await audit(supabase, data.establishment_id, userId, "establishment.renamed", "establishment", data.establishment_id, { name: updated.name });
+    return updated;
+  });
+
 // ---------- Update establishment logo (quick action) ----------
 export const updateEstablishmentLogo = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

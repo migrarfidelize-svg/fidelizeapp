@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { getMyEstablishments, getDashboardData } from "@/lib/loyalty.functions";
@@ -28,7 +28,8 @@ import { MerchantInstallCard } from "@/components/merchant/MerchantInstallCard";
 import { MerchantPushCard } from "@/components/merchant/MerchantPushCard";
 import { FirstStepsCard } from "@/components/merchant/FirstStepsCard";
 import { getEstablishmentCampaigns } from "@/lib/loyalty.functions";
-import { listTeam, getEstablishmentFull } from "@/lib/settings.functions";
+import { listTeam, getEstablishmentFull, renameEstablishment } from "@/lib/settings.functions";
+import { Input } from "@/components/ui/input";
 import { getMyShowcaseStatus } from "@/lib/showcase.functions";
 
 export const Route = createFileRoute("/_authenticated/app/")({
@@ -38,6 +39,7 @@ export const Route = createFileRoute("/_authenticated/app/")({
 
 
 function Dashboard() {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const getEsts = useServerFn(getMyEstablishments);
   const getData = useServerFn(getDashboardData);
@@ -45,6 +47,22 @@ function Dashboard() {
   const est = memberships?.[0]?.establishment as { id: string; name: string; slug: string } | undefined;
   
   const [showcaseDialog, setShowcaseDialog] = useState(false);
+  const [establishmentName, setEstablishmentName] = useState("");
+  useEffect(() => { if (est?.name) setEstablishmentName(est.name); }, [est?.name]);
+  const rename = useMutation({
+    mutationFn: () => renameEstablishment({ data: { establishment_id: est!.id, name: establishmentName } }),
+    onSuccess: async (updated) => {
+      setEstablishmentName(updated.name);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["memberships"] }),
+        queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+        queryClient.invalidateQueries({ queryKey: ["est-full"] }),
+        queryClient.invalidateQueries({ queryKey: ["my-wallet"] }),
+      ]);
+      toast.success("Nome do estabelecimento atualizado.");
+    },
+    onError: (error) => { setEstablishmentName(est?.name || ""); toast.error(error instanceof Error ? error.message : "Não foi possível salvar o nome."); },
+  });
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     enabled: !!est,
@@ -194,6 +212,14 @@ function Dashboard() {
         stampsCount={data.stampsCount}
         teamCount={team?.members?.length ?? 0}
       />
+
+      <section className="rounded-2xl border bg-card/60 p-5">
+        <div className="mb-4"><h2 className="font-display text-lg font-bold">Dados do estabelecimento</h2><p className="text-sm text-muted-foreground">O nome de exibição é atualizado em toda a plataforma. O endereço público (slug) permanece inalterado.</p></div>
+        <form onSubmit={(event) => { event.preventDefault(); rename.mutate(); }} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <label className="flex-1 text-sm font-semibold">Nome do estabelecimento<Input value={establishmentName} onChange={(event) => setEstablishmentName(event.target.value)} minLength={2} maxLength={120} disabled={rename.isPending} className="mt-2" /></label>
+          <Button type="submit" disabled={rename.isPending || establishmentName.trim().length < 2 || establishmentName.trim() === est.name}>{rename.isPending ? "Salvando…" : "Salvar alteração"}</Button>
+        </form>
+      </section>
 
 
       <PageHero
