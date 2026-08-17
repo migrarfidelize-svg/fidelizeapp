@@ -433,7 +433,7 @@ export const updateCRMConversationStatus = createServerFn({ method: "POST" })
     if (data.status === "closed") {
       updateData.closed_at = new Date().toISOString();
       updateData.metadata = { ...((conversation.metadata as object) || {}), support: { ...((conversation.metadata as any)?.support || {}), active: false } };
-      const ticketResult = await (supabaseAdmin.from("crm_support_tickets" as any) as any)
+      const ticketResult = await supabaseAdmin.from("crm_support_tickets")
         .update({ status: "resolved", resolved_at: new Date().toISOString() })
         .eq("conversation_id", data.conversationId).eq("establishment_id", conversation.establishment_id)
         .in("status", ["open", "in_progress"]);
@@ -581,8 +581,8 @@ export const getAgentSettings = createServerFn({ method: "GET" })
     if (!isAdmin) throw new Error("Acesso restrito.");
 
     const establishmentId = await resolveCRMEstablishmentId();
-    const { data } = await (supabase.from("crm_agent_settings" as any) as any).select("enabled, flow_id, config").eq("establishment_id", establishmentId).maybeSingle();
-    return data ? { ...(data.config as object), enabled: (data as any).enabled, behavior: { ...((data as any).config?.behavior || {}), mainFlowId: (data as any).flow_id } } : {
+    const { data } = await supabase.from("crm_agent_settings").select("enabled, flow_id, config").eq("establishment_id", establishmentId).maybeSingle();
+    return data ? { ...(data.config as object), enabled: data.enabled, behavior: { ...((data.config as any)?.behavior || {}), mainFlowId: data.flow_id } } : {
       enabled: false,
       name: "Assistente Afidelize",
       presentation: "Olá! 👋 Sou o assistente da Afidelize. Como posso ajudar você hoje?",
@@ -628,11 +628,11 @@ export const saveAgentSettings = createServerFn({ method: "POST" })
     const establishmentId = await resolveCRMEstablishmentId();
     const flowId = data?.behavior?.mainFlowId;
     if (!flowId) throw new Error("Selecione o fluxo principal.");
-    const { data: flow } = await (supabaseAdmin.from("crm_flows" as any) as any).select("id").eq("id", flowId).eq("establishment_id", establishmentId).maybeSingle();
+    const { data: flow } = await supabaseAdmin.from("crm_flows").select("id").eq("id", flowId).eq("establishment_id", establishmentId).maybeSingle();
     if (!flow) throw new Error("Fluxo não pertence ao estabelecimento ativo.");
     const { behavior, enabled, ...config } = data;
     const { mainFlowId: _mainFlowId, ...behaviorConfig } = behavior || {};
-    const { error } = await (supabaseAdmin.from("crm_agent_settings" as any) as any).upsert({
+    const { error } = await supabaseAdmin.from("crm_agent_settings").upsert({
       establishment_id: establishmentId, flow_id: flowId, enabled: enabled ?? true,
       config: { ...config, behavior: behaviorConfig },
     }, { onConflict: "establishment_id" });
@@ -749,8 +749,8 @@ export const saveCRMContact = createServerFn({ method: "POST" })
 
     // Impedir telefone duplicado
     const phone = data.phone.replace(/\D/g, "");
-    const { data: existing } = await (supabaseAdmin
-      .from("crm_contacts" as any) as any)
+    const { data: existing } = await supabaseAdmin
+      .from("crm_contacts")
       .select("id")
       .eq("establishment_id", establishmentId)
       .eq("phone", phone)
@@ -760,8 +760,8 @@ export const saveCRMContact = createServerFn({ method: "POST" })
       throw new Error("Este número de telefone já está cadastrado.");
     }
 
-    const { error } = await (supabaseAdmin
-      .from("crm_contacts" as any) as any)
+    const { error } = await supabaseAdmin
+      .from("crm_contacts")
       .upsert({
         id: data.id || undefined,
         establishment_id: establishmentId,
