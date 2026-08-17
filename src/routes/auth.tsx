@@ -238,13 +238,14 @@ function AuthPage() {
     setOtpStatus("verifying");
     
     try {
-      // Delay visual para animação de "decifrando"
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      const res = await verifyOTP({ data: { whatsapp: whatsapp.replace(/\D/g, ""), code } });
+      // Chamada paralela: validação no backend + tempo mínimo de animação
+      const [res] = await Promise.all([
+        verifyOTP({ data: { whatsapp: whatsapp.replace(/\D/g, ""), code } }),
+        new Promise(resolve => setTimeout(resolve, 800)) // Tempo para animação de decifrando
+      ]);
+
       if (res.ok && res.hashed_token) {
-        setOtpStatus("success");
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // MANTER otpStatus = verifying enquanto valida sessão Supabase
         
         const { data: authData, error } =
           await supabase.auth.verifyOtp({
@@ -254,20 +255,18 @@ function AuthPage() {
 
         if (error) {
           setOtpStatus("error");
-          console.error("[auth] Falha ao criar sessão após OTP:", {
-            message: error.message,
-            status: error.status,
-          });
+          console.error("[auth] Falha ao criar sessão após OTP:", error);
           throw error;
         }
 
         if (!authData.session || !authData.user) {
           setOtpStatus("error");
-          throw new Error(
-            "Não foi possível iniciar sua sessão. Solicite um novo código."
-          );
+          throw new Error("Sessão não estabelecida. Solicite um novo código.");
         }
 
+        // AGORA SIM: Sucesso confirmado com sessão e usuário
+        setOtpStatus("success");
+        
         if (walletFlow) {
           setWalletHint(whatsapp);
         }
@@ -279,6 +278,9 @@ function AuthPage() {
           role,
         });
 
+        // Delay visual curto para o usuário ver o "verde" antes do redirect
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         await completeAuthRedirect(
           dest.to,
           isSignup ? "SIGNED_UP" : "SIGNED_IN"
@@ -289,7 +291,7 @@ function AuthPage() {
       }
     } catch (err) {
       setOtpStatus("error");
-      const msg = err instanceof Error ? err.message : "Código inválido.";
+      const msg = err instanceof Error ? err.message : "Erro ao validar código.";
       toast.error(msg);
     } finally {
       setLoading(false);
