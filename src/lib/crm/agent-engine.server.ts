@@ -7,10 +7,10 @@ export async function processAgentMessage(input: { conversationId: string; inbou
   const conv = convResult.data;
   if (conv.status !== "bot" || (conv.metadata as any)?.support?.active) return { action: "ignored" };
 
-  const configResult = await supabaseAdmin.from("crm_agent_settings").select("enabled, config")
+  const configResult = await (supabaseAdmin.from("crm_agent_settings" as any) as any).select("enabled, config")
     .eq("establishment_id", conv.establishment_id).eq("flow_id", input.flowId).maybeSingle();
   if (configResult.error) throw configResult.error;
-  if (!configResult.data?.enabled) return { action: "ignored" };
+  if (!(configResult.data as any)?.enabled) return { action: "ignored" };
   const config = (configResult.data.config as any) || {};
   const stepResult = await supabaseAdmin.from("crm_flow_steps").select("payload").eq("id", input.stepId)
     .eq("flow_id", input.flowId).eq("establishment_id", conv.establishment_id).maybeSingle();
