@@ -134,6 +134,10 @@ function AuthPage() {
   const [otpStep, setOtpStep] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [otpCooldown, setOtpCooldown] = useState(0);
+  const [otpStatus, setOtpStatus] = useState<"default" | "verifying" | "success" | "error">("default");
+  const otpVerifyingRef = useRef(false);
+  const otpAutoSubmittedRef = useRef(false);
+
 
   useEffect(() => { setKeepSignedIn(keepSignedIn); }, [keepSignedIn]);
 
