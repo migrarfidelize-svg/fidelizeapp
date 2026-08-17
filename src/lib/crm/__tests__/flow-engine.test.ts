@@ -1,117 +1,60 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { executeFlow } from '../flow-engine.server';
-import { supabaseAdmin } from '@/integrations/supabase/client.server';
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { executeFlow } from "../flow-engine.server";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { getActiveWhatsAppProvider } from "../../otp.functions";
 
-vi.mock('@/integrations/supabase/client.server', () => ({
-  supabaseAdmin: {
-    from: vi.fn(),
-    rpc: vi.fn(),
-    update: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-  },
-}));
+vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { from: vi.fn() } }));
+vi.mock("../../otp.functions", () => ({ getActiveWhatsAppProvider: vi.fn() }));
+vi.mock("../agent-engine.server", () => ({ processAgentMessage: vi.fn().mockResolvedValue({ action: "replied" }) }));
 
-vi.mock('../agent-engine.server', () => ({
-  processAgentMessage: vi.fn().mockResolvedValue(undefined),
-}));
+const state: Record<string, any[]> = {};
+class Q {
+  filters: Array<[string, any]> = []; op = "select"; value: any;
+  constructor(private table: string) {}
+  select() { return this; } eq(k: string, v: any) { this.filters.push([k, v]); return this; }
+  in(k: string, v: any[]) { this.filters.push([k, v]); return this; }
+  insert(v: any) { this.op = "insert"; this.value = v; return this; }
+  update(v: any) { this.op = "update"; this.value = v; return this; }
+  order() { return this; } limit() { return this; }
+  rows() { return (state[this.table] ||= []).filter((r) => this.filters.every(([k, v]) => Array.isArray(v) ? v.includes(r[k]) : r[k] === v)); }
+  result() {
+    if (this.op === "insert") { const row = { id: `${this.table}-${state[this.table].length + 1}`, ...this.value }; state[this.table].push(row); return { data: [row], error: null }; }
+    if (this.op === "update") this.rows().forEach((r) => Object.assign(r, this.value));
+    const data = this.rows().map((row) => this.table === "crm_flows" ? { ...row, steps: state.crm_flow_steps.filter((s) => s.flow_id === row.id) } : row);
+    return { data, error: null };
+  }
+  single() { const r = this.result(); return Promise.resolve({ data: r.data[0], error: null }); }
+  maybeSingle() { const r = this.result(); return Promise.resolve({ data: r.data[0] || null, error: null }); }
+  then(fn: any) { return Promise.resolve(this.result()).then(fn); }
+}
 
-vi.mock('../bootstrap.server', () => ({
-  ensureDefaultWhatsAppFlow: vi.fn().mockResolvedValue({ flowId: 'flow-123' }),
-}));
+const steps = [
+  { id: "welcome", flow_id: "flow-a", establishment_id: "tenant-a", step_key: "welcome", sort_order: 0, payload: { type: "message", text: "Olá" } },
+  { id: "menu", flow_id: "flow-a", establishment_id: "tenant-a", step_key: "main_menu", sort_order: 1, payload: { type: "options", text: "1 a 5", options: [1,2,3,4].map((n) => ({ value: String(n), nextStepId: `agent-${n}` })).concat([{ value: "5", nextStepId: "handoff" }]) } },
+  ...[1,2,3,4].map((n) => ({ id: `agent-${n}`, flow_id: "flow-a", establishment_id: "tenant-a", step_key: `agent-${n}`, sort_order: n + 1, payload: { type: "agent" } })),
+  { id: "handoff", flow_id: "flow-a", establishment_id: "tenant-a", step_key: "human_handoff", sort_order: 6, payload: { type: "transfer_to_queue", text: "Suporte" } },
+];
 
-vi.mock('../../otp.functions', () => ({
-  getActiveWhatsAppProvider: vi.fn().mockResolvedValue({
-    provider: { meta: { id: 'test' }, sendTestMessage: vi.fn().mockResolvedValue({ ok: true }) },
-    runtime: {}
-  }),
-}));
-
-describe('CRM Flow Engine', () => {
+describe("CRM flow/handoff", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    Object.keys(state).forEach((key) => delete state[key]);
+    state.crm_conversations = [{ id: "conv-a", establishment_id: "tenant-a", customer_phone: "5511", status: "bot", metadata: {} }];
+    state.crm_agent_settings = [{ establishment_id: "tenant-a", flow_id: "flow-a", enabled: true, config: {} }];
+    state.crm_flows = [{ id: "flow-a", establishment_id: "tenant-a", is_active: true }];
+    state.crm_flow_steps = structuredClone(steps); state.crm_messages = []; state.crm_support_tickets = [];
+    vi.mocked(supabaseAdmin.from).mockImplementation((table: string) => new Q(table) as any);
+    vi.mocked(getActiveWhatsAppProvider).mockResolvedValue({ establishmentId: "tenant-a", runtime: {}, provider: { meta: { id: "uazapi" }, sendTestMessage: vi.fn().mockResolvedValue({ ok: true, providerMessageId: crypto.randomUUID() }) } } as any);
   });
 
-  it('primeira mensagem -> welcome + menu', async () => {
-    const conv = { id: 'conv-123', status: 'bot', customer_phone: '12345', establishment_id: 'est-123', metadata: {} };
-    const steps = [
-      { id: 'step-0', flow_id: 'flow-123', step_key: 'message', sort_order: 0, payload: { type: 'message', text: 'Welcome' } },
-      { id: 'step-1', flow_id: 'flow-123', step_key: 'options', sort_order: 1, payload: { type: 'options', text: 'Menu', options: [] } }
-    ];
-
-    (supabaseAdmin.from as any).mockImplementation((table: string) => {
-      if (table === 'crm_conversations') {
-        return {
-          select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: conv }) }) }),
-          update: () => ({ eq: () => Promise.resolve({ error: null }) })
-        };
-      }
-      if (table === 'crm_flows') {
-        return {
-          select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { steps } }) }) })
-        };
-      }
-      if (table === 'crm_messages') {
-        return { insert: () => Promise.resolve({ error: null }) };
-      }
-      if (table === 'system_settings') {
-        return { select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: { value: { enabled: true } } }) }) }) }) };
-      }
-    });
-
-    const result = await executeFlow('conv-123', 'oi');
-    expect(result.ok).toBe(true);
-    expect(result.action).toBe('menu'); // Because step 0 advances to step 1 (options), which returns 'menu'
+  it("7. primeira mensagem envia boas-vindas e menu", async () => { expect((await executeFlow("conv-a", "oi")).action).toBe("menu"); expect(state.crm_messages).toHaveLength(2); });
+  for (const option of ["1", "2", "3", "4"]) it(`${7 + Number(option)}. opção ${option} entra no Agent correto`, async () => {
+    state.crm_conversations[0].metadata = { flow_state: { flowId: "flow-a", stepId: "menu" } };
+    expect((await executeFlow("conv-a", option)).action).toBe("agent");
+    expect((state.crm_conversations[0].metadata as any).flow_state.stepId).toBe(`agent-${option}`);
   });
-
-  it('comando menu -> volta para o menu', async () => {
-    const conv = { id: 'conv-123', status: 'bot', metadata: { flow_state: { flowId: 'flow-123', stepId: 'step-agent', mode: 'agent' } } };
-    const steps = [
-      { id: 'step-0', flow_id: 'flow-123', step_key: 'message', sort_order: 0, payload: { type: 'message' } },
-      { id: 'step-1', flow_id: 'flow-123', step_key: 'options', sort_order: 1, payload: { type: 'options', text: 'Menu' } }
-    ];
-
-    (supabaseAdmin.from as any).mockImplementation((table: string) => {
-      if (table === 'crm_conversations') {
-        return {
-          select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: conv }) }) }),
-          update: () => ({ eq: () => Promise.resolve({ error: null }) })
-        };
-      }
-      if (table === 'crm_flows') {
-        return {
-          select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { steps } }) }) })
-        };
-      }
-      if (table === 'crm_messages') {
-        return { insert: () => Promise.resolve({ error: null }) };
-      }
-      if (table === 'system_settings') {
-        return { select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: { value: { enabled: true } } }) }) }) }) };
-      }
-    });
-
-    const result = await executeFlow('conv-123', 'menu');
-    expect(result.action).toBe('menu');
-  });
-
-  it('handoff por palavra-chave -> waiting', async () => {
-    const conv = { id: 'conv-123', status: 'bot', metadata: {} };
-    (supabaseAdmin.from as any).mockImplementation((table: string) => {
-      if (table === 'crm_conversations') {
-        return {
-          select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: conv }) }) }),
-          update: () => ({ eq: () => Promise.resolve({ error: null }) })
-        };
-      }
-      if (table === 'system_settings') {
-        return { select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: { value: { enabled: true } } }) }) }) }) };
-      }
-      if (table === 'crm_messages') {
-        return { insert: () => Promise.resolve({ error: null }) };
-      }
-    });
-
-    const result = await executeFlow('conv-123', 'falar com atendente');
-    expect(result.action).toBe('handoff');
-  });
+  it("12. opção 5 cria handoff SUPORTE", async () => { expect((await executeFlow("conv-a", "5")).action).toBe("handoff"); expect(state.crm_support_tickets).toHaveLength(1); expect((state.crm_conversations[0].metadata as any).support.active).toBe(true); });
+  it("13. texto suporte cria handoff", async () => { expect((await executeFlow("conv-a", "preciso falar com suporte")).action).toBe("handoff"); });
+  it("14. ticket de suporte não duplica", async () => { await executeFlow("conv-a", "suporte"); state.crm_conversations[0].status = "bot"; await executeFlow("conv-a", "atendente"); expect(state.crm_support_tickets).toHaveLength(1); });
+  it("15. bot fica silencioso durante suporte", async () => { state.crm_conversations[0].status = "waiting"; expect((await executeFlow("conv-a", "oi")).action).toBe("ignored"); expect(state.crm_messages).toHaveLength(0); });
+  it("16. flow do tenant B nunca é carregado", async () => { state.crm_flows.push({ id: "flow-b", establishment_id: "tenant-b", is_active: true }); await executeFlow("conv-a", "oi"); expect(state.crm_messages.every((m) => m.establishment_id === "tenant-a")).toBe(true); });
 });

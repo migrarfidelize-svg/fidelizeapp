@@ -382,7 +382,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
       false
     );
 
-    if (fromMe && process.env.NODE_ENV !== 'test') {
+    if (fromMe) {
       return null;
     }
 

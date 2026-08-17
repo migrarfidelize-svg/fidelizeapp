@@ -1,60 +1,44 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { generateAgentResponse } from "./ai-adapter.server";
-import { Json } from "@/integrations/supabase/types";
 
-export async function processAgentMessage(input: {
-  conversationId: string;
-  customerPhone: string;
-  inboundText: string;
-  flowId: string;
-  stepId: string;
-}) {
-  const { conversationId, inboundText, stepId } = input;
-  const { data: conv } = await supabaseAdmin.from("crm_conversations").select("*").eq("id", conversationId).single();
-  if (conv?.status !== 'bot') return;
+export async function processAgentMessage(input: { conversationId: string; inboundText: string; flowId: string; stepId: string }) {
+  const convResult = await supabaseAdmin.from("crm_conversations").select("*").eq("id", input.conversationId).single();
+  if (convResult.error || !convResult.data) throw convResult.error ?? new Error("CRM_CONVERSATION_NOT_FOUND");
+  const conv = convResult.data;
+  if (conv.status !== "bot" || (conv.metadata as any)?.support?.active) return { action: "ignored" };
 
-  const { data: agentConfigRow } = await supabaseAdmin.from("system_settings").select("value").eq("namespace", "crm").eq("key", "agent_config").maybeSingle();
-  const agentConfig = (agentConfigRow?.value as any) || {};
-
-  let stepContext = "";
-  if (stepId) {
-    const { data: stepData } = await supabaseAdmin.from("crm_flow_steps").select("payload").eq("id", stepId).maybeSingle();
-    const payload = stepData?.payload as { context?: string } | null;
-    stepContext = payload?.context || "";
-  }
-
-  const { data: messagesData } = await supabaseAdmin.from("crm_messages")
-    .select("body, direction")
-    .eq("conversation_id", conversationId)
-    .order("created_at", { ascending: true })
-    .limit(10);
-
-  const messages: { role: "user" | "assistant" | "system"; content: string }[] = (messagesData || []).map(m => ({
-    role: (m.direction === 'inbound' ? 'user' : 'assistant') as "user" | "assistant",
-    content: m.body || ""
-  }));
-
-  const systemPrompt = `Você é ${agentConfig.name || "Assistente"}. Contexto: ${stepContext}. ${agentConfig.systemPrompt || ""}`;
+  const configResult = await supabaseAdmin.from("crm_agent_settings").select("enabled, config")
+    .eq("establishment_id", conv.establishment_id).eq("flow_id", input.flowId).maybeSingle();
+  if (configResult.error) throw configResult.error;
+  if (!configResult.data?.enabled) return { action: "ignored" };
+  const config = (configResult.data.config as any) || {};
+  const stepResult = await supabaseAdmin.from("crm_flow_steps").select("payload").eq("id", input.stepId)
+    .eq("flow_id", input.flowId).eq("establishment_id", conv.establishment_id).maybeSingle();
+  if (stepResult.error) throw stepResult.error;
+  const historyResult = await supabaseAdmin.from("crm_messages").select("body, direction")
+    .eq("conversation_id", input.conversationId).eq("establishment_id", conv.establishment_id)
+    .order("created_at", { ascending: true }).limit(10);
+  if (historyResult.error) throw historyResult.error;
 
   const response = await generateAgentResponse({
-    providerId: agentConfig.provider_id || "openai",
-    systemPrompt,
-    messages
+    providerId: config.provider_id || "openai",
+    systemPrompt: `Você é ${config.name || "Assistente"}. Contexto: ${(stepResult.data?.payload as any)?.context || ""}. ${config.systemPrompt || ""}`,
+    messages: (historyResult.data || []).map((message) => ({
+      role: message.direction === "inbound" ? "user" as const : "assistant" as const,
+      content: message.body || "",
+    })),
   });
-
-  await supabaseAdmin.from("crm_messages").insert({
-    conversation_id: conversationId,
-    establishment_id: conv.establishment_id,
-    body: response.text,
-    direction: 'outbound',
-    provider: agentConfig.provider_id || 'openai',
-    provider_message_id: `agent-${Date.now()}`,
-    message_type: 'text'
-  });
-
   const { getActiveWhatsAppProvider } = await import("../otp.functions");
   const active = await getActiveWhatsAppProvider(conv.establishment_id);
-  if (active) {
-    await active.provider.sendTestMessage(active.runtime, process.env as any, conv.customer_phone, response.text);
-  }
+  if (!active) throw new Error("CRM_WHATSAPP_PROVIDER_NOT_FOUND");
+  const sent = await active.provider.sendTestMessage(active.runtime, process.env as any, conv.customer_phone, response.text);
+  if (!sent.ok) throw new Error(sent.message || "CRM_AGENT_SEND_FAILED");
+  const persisted = await supabaseAdmin.from("crm_messages").insert({
+    conversation_id: input.conversationId, establishment_id: conv.establishment_id, body: response.text,
+    direction: "outbound", provider: active.provider.meta.id,
+    provider_message_id: sent.providerMessageId || `agent-${crypto.randomUUID()}`,
+    message_type: "text", metadata: { source: "agent", ai_provider: config.provider_id || "openai" },
+  });
+  if (persisted.error) throw persisted.error;
+  return { action: "replied" };
 }
