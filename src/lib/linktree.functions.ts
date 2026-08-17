@@ -1,6 +1,5 @@
 import { assertActiveSubscription } from "@/lib/subscription-guard";
 import { createServerFn } from "@tanstack/react-start";
-import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
@@ -45,21 +44,6 @@ const SocialInput = z.object({
   google: z.string().max(300).optional().nullable(),
   maps: z.string().max(300).optional().nullable(),
 }).partial();
-
-function publicClient() {
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
-  return createClient<Database>(process.env.SUPABASE_URL!, key, {
-    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
-    global: {
-      fetch: (input, init) => {
-        const h = new Headers(init?.headers);
-        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
-        h.set("apikey", key);
-        return fetch(input, { ...init, headers: h });
-      },
-    },
-  });
-}
 
 // ---------- Merchant: get my linktree page ----------
 export const getMyLinkTree = createServerFn({ method: "GET" })
@@ -235,9 +219,9 @@ export const getPublicLinkTreeBySlug = createServerFn({ method: "GET" })
       const { getPublicLandingBySlug } = await import("./linktree.server");
       return await getPublicLandingBySlug(data.slug);
     } catch (err: any) {
-      if (err.message === "NOT_FOUND") return null;
-      if (err.message === "INACTIVE") throw new Error("INACTIVE");
-      if (err.message === "UNPUBLISHED") throw new Error("UNPUBLISHED");
+      if (err instanceof Error && err.message === "NOT_FOUND") return null;
+      if (err instanceof Error && err.message === "INACTIVE") throw new Error("INACTIVE");
+      if (err instanceof Error && err.message === "UNPUBLISHED") throw new Error("UNPUBLISHED");
       console.error("[getPublicLinkTreeBySlug] handler error:", err);
       throw new Error("DATABASE_ERROR");
     }
