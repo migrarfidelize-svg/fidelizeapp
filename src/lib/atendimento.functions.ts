@@ -433,7 +433,7 @@ export const updateCRMConversationStatus = createServerFn({ method: "POST" })
     if (data.status === "closed") {
       updateData.closed_at = new Date().toISOString();
       updateData.metadata = { ...((conversation.metadata as object) || {}), support: { ...((conversation.metadata as any)?.support || {}), active: false } };
-      const ticketResult = await supabaseAdmin.from("crm_support_tickets")
+      const ticketResult = await (supabaseAdmin.from("crm_support_tickets" as any) as any)
         .update({ status: "resolved", resolved_at: new Date().toISOString() })
         .eq("conversation_id", data.conversationId).eq("establishment_id", conversation.establishment_id)
         .in("status", ["open", "in_progress"]);
