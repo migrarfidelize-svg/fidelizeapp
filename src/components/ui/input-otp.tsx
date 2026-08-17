@@ -91,8 +91,8 @@ const InputOTPSlot = React.forwardRef<
         status === "error" && "text-destructive",
         className
       )}
-      {...props}
     >
+
       <AnimatePresence mode="wait">
         <motion.span
           key={displayChar || "empty"}
