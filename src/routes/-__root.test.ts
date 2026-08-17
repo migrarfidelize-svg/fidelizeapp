@@ -17,6 +17,9 @@ vi.mock('@/lib/seo.server', () => ({
 // Mock Supabase Admin
 vi.mock('@/integrations/supabase/client.server', () => ({
   supabaseAdmin: {
+    // The wildcard test exercises the configured fallback when a public
+    // catalog lookup legitimately has no published result.
+    rpc: vi.fn(async () => ({ data: null, error: null })),
     from: () => ({
       select: () => ({
         eq: () => ({
