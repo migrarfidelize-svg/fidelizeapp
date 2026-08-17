@@ -27,16 +27,16 @@ async function updateState(conv: any, flowId: string | null, stepId: string | nu
 }
 
 async function handoff(conv: any, confirmation: string) {
-  const existing = await (supabaseAdmin.from("crm_support_tickets" as any) as any).select("id")
+  const existing = await supabaseAdmin.from("crm_support_tickets").select("id")
     .eq("conversation_id", conv.id).eq("establishment_id", conv.establishment_id).in("status", ["open", "in_progress"]).maybeSingle();
   if (existing.error) throw existing.error;
-  let ticketId = (existing.data as any)?.id;
+  let ticketId = existing.data?.id;
   if (!ticketId) {
-    const ticket = await (supabaseAdmin.from("crm_support_tickets" as any) as any).insert({
+    const ticket = await supabaseAdmin.from("crm_support_tickets").insert({
       conversation_id: conv.id, establishment_id: conv.establishment_id, status: "open",
     }).select("id").single();
     if (ticket.error || !ticket.data) throw ticket.error ?? new Error("CRM_SUPPORT_TICKET_FAILED");
-    ticketId = (ticket.data as any).id;
+    ticketId = ticket.data.id;
   }
   const metadata = { ...((conv.metadata as object) || {}), support: { active: true, ticketId }, flow_state: { mode: "manual", flowId: null, stepId: null } };
   const updated = await supabaseAdmin.from("crm_conversations").update({
@@ -84,12 +84,12 @@ export async function executeFlow(conversationId: string, messageBody: string): 
     return handoff(conv, "Entendi. Vou encaminhar você para nossa equipe de suporte. 💜");
   }
 
-  const settings = await (supabaseAdmin.from("crm_agent_settings" as any) as any).select("flow_id, enabled, config")
+  const settings = await supabaseAdmin.from("crm_agent_settings").select("flow_id, enabled, config")
     .eq("establishment_id", conv.establishment_id).maybeSingle();
   if (settings.error) throw settings.error;
-  if (!(settings.data as any)?.enabled) return { ok: true, action: "ignored" };
+  if (!settings.data?.enabled) return { ok: true, action: "ignored" };
   const state = (conv.metadata as any)?.flow_state;
-  const flowId = state?.flowId || (settings.data as any).flow_id;
+  const flowId = state?.flowId || settings.data.flow_id;
   const flowResult = await supabaseAdmin.from("crm_flows")
     .select("*, steps:crm_flow_steps!crm_flow_steps_flow_id_fkey(*)")
     .eq("id", flowId).eq("establishment_id", conv.establishment_id).eq("is_active", true).single();

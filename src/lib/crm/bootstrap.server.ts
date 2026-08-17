@@ -66,11 +66,11 @@ export async function ensureDefaultWhatsAppFlow(establishmentId: string) {
     if (result.error) throw result.error;
   }
 
-  const currentConfig = await (supabaseAdmin.from("crm_agent_settings" as any) as any).select("establishment_id")
+  const currentConfig = await supabaseAdmin.from("crm_agent_settings").select("establishment_id")
     .eq("establishment_id", establishmentId).maybeSingle();
   if (currentConfig.error) throw currentConfig.error;
   if (!currentConfig.data) {
-    const configInsert = await (supabaseAdmin.from("crm_agent_settings" as any) as any).insert({ establishment_id: establishmentId, flow_id: flow.id });
+    const configInsert = await supabaseAdmin.from("crm_agent_settings").insert({ establishment_id: establishmentId, flow_id: flow.id });
     if (configInsert.error) throw configInsert.error;
   }
   return { flowId: flow.id, created, stepsCount: definitions.length };
