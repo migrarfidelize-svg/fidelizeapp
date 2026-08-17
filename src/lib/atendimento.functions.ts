@@ -460,33 +460,24 @@ export const updateCRMConversationStatus = createServerFn({ method: "POST" })
 export const getCRMFlows = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    const { userId, supabase } = context;
+    const { data: isAdmin } = await (supabase as any).rpc("is_super_admin", { _user: userId });
     if (!isAdmin) throw new Error("Acesso restrito.");
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const establishmentId = await resolveCRMEstablishmentId();
+    
+    // Ensure default flow exists for this tenant
+    const { ensureDefaultWhatsAppFlow } = await import("./crm/bootstrap.server");
+    await ensureDefaultWhatsAppFlow(establishmentId);
 
-    try {
-      const { ensureDefaultWhatsAppFlow } = await import("./crm/bootstrap.server");
-      await ensureDefaultWhatsAppFlow(establishmentId);
-    } catch (err: any) {
-      console.error("[CRM Functions] Bootstrap failure in getCRMFlows:", err);
-      // Erro explícito de bootstrap parcial ou falha crítica
-      if (err.message?.includes("CRM_DEFAULT_FLOW_PARTIAL")) {
-        throw new Error(err.message);
-      }
-      throw err;
-    }
-
-    const { data, error } = await supabaseAdmin
+    const { data: flows, error } = await (supabase as any)
       .from("crm_flows")
-      .select("*")
+      .select("id, name, is_active")
       .eq("establishment_id", establishmentId)
-      .order("created_at", { ascending: false });
-
+      .eq("is_active", true);
+      
     if (error) throw error;
-    return data || [];
+    return flows || [];
   });
 
 export const getCRMFlowWithSteps = createServerFn({ method: "GET" })
