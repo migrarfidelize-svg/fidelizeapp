@@ -27,15 +27,16 @@ const InputOTPGroup = React.forwardRef<
 ))
 InputOTPGroup.displayName = "InputOTPGroup"
 
-interface InputOTPSlotProps extends React.ComponentPropsWithoutRef<"div"> {
+interface InputOTPSlotProps extends React.HTMLAttributes<HTMLDivElement> {
   index: number
   status?: "default" | "verifying" | "success" | "error"
 }
 
 const InputOTPSlot = React.forwardRef<
-  React.ElementRef<"div">,
+  HTMLDivElement,
   InputOTPSlotProps
 >(({ index, className, status = "default", ...props }, ref) => {
+
   const inputOTPContext = React.useContext(OTPInputContext)
   const { char, hasFakeCaret, isActive } = inputOTPContext.slots[index]
   const [displayChar, setDisplayChar] = React.useState(char)
