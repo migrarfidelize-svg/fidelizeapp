@@ -656,29 +656,6 @@ export const saveCRMTag = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const getCRMFlows = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { userId, supabase } = context;
-    const { data: isAdmin } = await (supabase as any).rpc("is_super_admin", { _user: userId });
-    if (!isAdmin) throw new Error("Acesso restrito.");
-
-    const establishmentId = await resolveCRMEstablishmentId();
-    
-    // Ensure default flow exists for this tenant
-    const { ensureDefaultWhatsAppFlow } = await import("./crm/bootstrap.server");
-    await ensureDefaultWhatsAppFlow(establishmentId);
-
-    const { data: flows, error } = await (supabase as any)
-      .from("crm_flows")
-      .select("id, name, is_active")
-      .eq("establishment_id", establishmentId)
-      .eq("is_active", true);
-      
-    if (error) throw error;
-    return flows || [];
-  });
-
 export const deleteCRMFlow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ flowId: z.string().uuid() }).parse(d))
