@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { getPublicLandingBySlug } from "../../linktree.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
+// We use any to avoid the proxy type issues during testing and cast supabaseAdmin to any
 vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: {
     from: vi.fn().mockReturnThis(),
@@ -9,8 +10,10 @@ vi.mock("@/integrations/supabase/client.server", () => ({
     eq: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(),
     maybeSingle: vi.fn(),
-  } as any,
+  },
 }));
+
+const adminMock = supabaseAdmin as any;
 
 describe("Landing Public Access Audit", () => {
   beforeEach(() => {
@@ -22,10 +25,10 @@ describe("Landing Public Access Audit", () => {
     const mockPage = { id: "p1", establishment_id: "1", published: true, title: "Links", updated_at: "2024-01-01" };
     const mockLinks = [{ id: "l1", label: "Insta", url: "...", enabled: true, sort_order: 0 }];
 
-    (supabaseAdmin.maybeSingle as any)
+    adminMock.maybeSingle
       .mockResolvedValueOnce({ data: mockEst, error: null })
       .mockResolvedValueOnce({ data: mockPage, error: null });
-    (supabaseAdmin.order as any).mockResolvedValueOnce({ data: mockLinks, error: null });
+    adminMock.order.mockResolvedValueOnce({ data: mockLinks, error: null });
 
     const res = await getPublicLandingBySlug("cafe");
     expect(res.establishment.name).toBe("Cafe");
@@ -35,19 +38,19 @@ describe("Landing Public Access Audit", () => {
 
   it("2. estabelecimento inativo bloqueia acesso", async () => {
     const mockEst = { id: "1", slug: "cafe", name: "Cafe", active: false };
-    (supabaseAdmin.maybeSingle as any).mockResolvedValueOnce({ data: mockEst, error: null });
+    adminMock.maybeSingle.mockResolvedValueOnce({ data: mockEst, error: null });
 
     await expect(getPublicLandingBySlug("cafe")).rejects.toThrow("INACTIVE");
   });
 
   it("3. slug inexistente retorna NOT_FOUND", async () => {
-    (supabaseAdmin.maybeSingle as any).mockResolvedValueOnce({ data: null, error: null });
+    adminMock.maybeSingle.mockResolvedValueOnce({ data: null, error: null });
     await expect(getPublicLandingBySlug("unknown")).rejects.toThrow("NOT_FOUND");
   });
 
   it("4. landing despublicada bloqueia acesso", async () => {
     const mockEst = { id: "1", slug: "cafe", active: true };
-    (supabaseAdmin.maybeSingle as any)
+    adminMock.maybeSingle
       .mockResolvedValueOnce({ data: mockEst, error: null })
       .mockResolvedValueOnce({ data: null, error: null });
 
@@ -58,19 +61,19 @@ describe("Landing Public Access Audit", () => {
      const mockEst = { id: "tenant-a", slug: "a", active: true };
      const mockPage = { id: "page-a", establishment_id: "tenant-a", published: true };
      
-     (supabaseAdmin.maybeSingle as any)
+     adminMock.maybeSingle
       .mockResolvedValueOnce({ data: mockEst, error: null })
       .mockResolvedValueOnce({ data: mockPage, error: null });
-     (supabaseAdmin.order as any).mockResolvedValueOnce({ data: [], error: null });
+     adminMock.order.mockResolvedValueOnce({ data: [], error: null });
 
      await getPublicLandingBySlug("a");
      
      // Verifica se a query de links usou o page_id correto
-     expect(supabaseAdmin.eq).toHaveBeenCalledWith("page_id", "page-a");
+     expect(adminMock.eq).toHaveBeenCalledWith("page_id", "page-a");
   });
 
   it("6. DATABASE_ERROR capturado corretamente", async () => {
-    (supabaseAdmin.maybeSingle as any).mockResolvedValueOnce({ data: null, error: { message: "Fail", code: "500" } });
+    adminMock.maybeSingle.mockResolvedValueOnce({ data: null, error: { message: "Fail", code: "500" } });
     await expect(getPublicLandingBySlug("cafe")).rejects.toThrow("DATABASE_ERROR");
   });
   
@@ -78,10 +81,10 @@ describe("Landing Public Access Audit", () => {
     const mockEst = { id: "uuid-interno", slug: "cafe", name: "Cafe", active: true };
     const mockPage = { id: "p-uuid", establishment_id: "uuid-interno", published: true };
     
-    (supabaseAdmin.maybeSingle as any)
+    adminMock.maybeSingle
       .mockResolvedValueOnce({ data: mockEst, error: null })
       .mockResolvedValueOnce({ data: mockPage, error: null });
-    (supabaseAdmin.order as any).mockResolvedValueOnce({ data: [], error: null });
+    adminMock.order.mockResolvedValueOnce({ data: [], error: null });
 
     const res = await getPublicLandingBySlug("cafe");
     expect((res.establishment as any).id).toBeUndefined();
