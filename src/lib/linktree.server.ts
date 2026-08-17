@@ -1,4 +1,14 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import type { Json } from "@/integrations/supabase/types";
+
+export type PublicLandingErrorCode = "NOT_FOUND" | "INACTIVE" | "UNPUBLISHED" | "DATABASE_ERROR";
+
+export class PublicLandingError extends Error {
+  constructor(public readonly code: PublicLandingErrorCode) {
+    super(code);
+    this.name = "PublicLandingError";
+  }
+}
 
 export type PublicLandingDTO = {
   establishment: {
@@ -15,7 +25,7 @@ export type PublicLandingDTO = {
     id: string;
     title: string | null;
     description: string | null;
-    theme: any;
+    theme: Json;
     logo_url: string | null;
     cover_url: string | null;
     updated_at: string;
@@ -26,7 +36,7 @@ export type PublicLandingDTO = {
     url: string;
     kind: string;
     sort_order: number;
-    data: any;
+    data: Json;
   }>;
 };
 
@@ -34,36 +44,38 @@ export const getPublicLandingBySlug = async (slug: string): Promise<PublicLandin
   const normalizedSlug = slug.trim().toLowerCase();
 
   if (!normalizedSlug) {
-    throw new Error("NOT_FOUND");
+    throw new PublicLandingError("NOT_FOUND");
   }
 
   // 1. Buscar estabelecimento (bypassing RLS for public read)
   const { data: establishment, error: estError } = await supabaseAdmin
     .from("establishments")
-    .select("id, slug, name, logo_url, cover_url, primary_color, accent_color, active, description, updated_at")
+    .select(
+      "id, slug, name, logo_url, cover_url, primary_color, accent_color, active, description, updated_at",
+    )
     .eq("slug", normalizedSlug)
     .maybeSingle();
 
   if (estError) {
     console.error("[getPublicLandingBySlug] establishment lookup error:", estError);
-    throw new Error("DATABASE_ERROR");
+    throw new PublicLandingError("DATABASE_ERROR");
   }
-  if (!establishment) throw new Error("NOT_FOUND");
-  if (!establishment.active) throw new Error("INACTIVE");
+  if (!establishment) throw new PublicLandingError("NOT_FOUND");
+  if (establishment.active !== true) throw new PublicLandingError("INACTIVE");
 
   // 2. Buscar landing page (link_tree_pages) publicada
   const { data: page, error: pageError } = await supabaseAdmin
     .from("link_tree_pages")
-    .select("*")
+    .select("id, title, description, theme, logo_url, cover_url, updated_at")
     .eq("establishment_id", establishment.id)
     .eq("published", true)
     .maybeSingle();
 
   if (pageError) {
     console.error("[getPublicLandingBySlug] page lookup error:", pageError);
-    throw new Error("DATABASE_ERROR");
+    throw new PublicLandingError("DATABASE_ERROR");
   }
-  if (!page) throw new Error("UNPUBLISHED");
+  if (!page) throw new PublicLandingError("UNPUBLISHED");
 
   // 3. Buscar links ativos
   const { data: links, error: linksError } = await supabaseAdmin
@@ -75,7 +87,7 @@ export const getPublicLandingBySlug = async (slug: string): Promise<PublicLandin
 
   if (linksError) {
     console.error("[getPublicLandingBySlug] links lookup error:", linksError);
-    throw new Error("DATABASE_ERROR");
+    throw new PublicLandingError("DATABASE_ERROR");
   }
 
   // 4. DTO Seguro
@@ -99,13 +111,13 @@ export const getPublicLandingBySlug = async (slug: string): Promise<PublicLandin
       cover_url: page.cover_url,
       updated_at: page.updated_at,
     },
-    links: (links || []).map(l => ({
+    links: (links || []).map((l) => ({
       id: l.id,
       label: l.label,
       url: l.url,
       kind: l.kind,
       sort_order: l.sort_order,
-      data: l.data
-    }))
+      data: l.data,
+    })),
   };
 };

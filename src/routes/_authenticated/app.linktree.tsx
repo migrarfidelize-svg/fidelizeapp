@@ -4,11 +4,12 @@ import { LogoPaletteSync } from "@/components/LogoPaletteSync";
 import { ConfigureQrButton } from "@/components/merchant/ConfigureQrButton";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getErrorMessage as friendlyError } from "@/lib/error-messages";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { getMyLinkTree, upsertLinkTree } from "@/lib/linktree.functions";
+import { getPublicLinkTreeUrl } from "@/lib/public-link-url";
 import { validatePixKey, PIX_TYPE_LABEL } from "@/lib/pix-validation";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -167,6 +168,7 @@ const THEME_PRESETS: ThemePreset[] = [
 ];
 
 function LinkTreeEditor() {
+  const queryClient = useQueryClient();
   const getEsts = useServerFn(getMyEstablishments);
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
   const est = memberships?.[0]?.establishment as
@@ -229,7 +231,9 @@ function LinkTreeEditor() {
     );
   }, [q.data, est]);
 
-  const publicUrl = est ? `${typeof window !== "undefined" ? window.location.origin : ""}/links/${est.slug}` : "";
+  const publicUrl = est
+    ? getPublicLinkTreeUrl(est.slug, typeof window !== "undefined" ? window.location.origin : undefined)
+    : "";
 
   function addLink(kind: LinkKind) {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
@@ -346,6 +350,7 @@ function LinkTreeEditor() {
         },
       });
       if (typeof publish === "boolean") setPublished(!!res.published);
+      await queryClient.invalidateQueries({ queryKey: ["public-linktree", est.slug] });
       toast.success(publish === true ? "Página publicada!" : publish === false ? "Página despublicada." : "Alterações salvas.");
       q.refetch();
     } catch (e) {
@@ -1085,5 +1090,4 @@ function BlockFields({ row, onChange }: { row: LinkRow; onChange: (patch: Partia
   }
   return null;
 }
-
 

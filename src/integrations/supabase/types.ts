@@ -78,7 +78,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
-          establishment_id: string
+          establishment_id: string | null
           findings_json: Json
           id: string
           model: string | null
@@ -91,7 +91,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
-          establishment_id: string
+          establishment_id?: string | null
           findings_json?: Json
           id?: string
           model?: string | null
@@ -1871,11 +1871,24 @@ export type Database = {
           },
         ]
       }
+      crm_agent_settings: {
+        Row: { establishment_id: string; flow_id: string; enabled: boolean; config: Json; created_at: string; updated_at: string }
+        Insert: { establishment_id: string; flow_id: string; enabled?: boolean; config?: Json; created_at?: string; updated_at?: string }
+        Update: { establishment_id?: string; flow_id?: string; enabled?: boolean; config?: Json; created_at?: string; updated_at?: string }
+        Relationships: []
+      }
+      crm_support_tickets: {
+        Row: { id: string; establishment_id: string; conversation_id: string; status: string; assigned_to: string | null; resolved_at: string | null; created_at: string; updated_at: string }
+        Insert: { id?: string; establishment_id: string; conversation_id: string; status?: string; assigned_to?: string | null; resolved_at?: string | null; created_at?: string; updated_at?: string }
+        Update: { id?: string; establishment_id?: string; conversation_id?: string; status?: string; assigned_to?: string | null; resolved_at?: string | null; created_at?: string; updated_at?: string }
+        Relationships: []
+      }
       crm_contacts: {
         Row: {
           accept_communications: boolean
           created_at: string
           email: string | null
+          establishment_id: string
           id: string
           metadata: Json
           name: string
@@ -1891,6 +1904,7 @@ export type Database = {
           accept_communications?: boolean
           created_at?: string
           email?: string | null
+          establishment_id: string
           id?: string
           metadata?: Json
           name: string
@@ -1906,6 +1920,7 @@ export type Database = {
           accept_communications?: boolean
           created_at?: string
           email?: string | null
+          establishment_id?: string
           id?: string
           metadata?: Json
           name?: string

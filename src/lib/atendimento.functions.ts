@@ -8,6 +8,13 @@ async function assertSuperAdmin(supabase: any, userId: string) {
   if (!data) throw new Error("Acesso restrito: apenas administradores da plataforma.");
 }
 
+async function resolveCRMEstablishmentId(): Promise<string> {
+  const { getActiveWhatsAppProvider } = await import("./otp.functions");
+  const active = await getActiveWhatsAppProvider();
+  if (!active?.establishmentId) throw new Error("Não foi possível determinar o estabelecimento da integração WhatsApp ativa.");
+  return active.establishmentId;
+}
+
 const saveOtpTemplateSchema = z.object({
   template: z.string().min(10).max(500),
 });
@@ -365,7 +372,7 @@ export const sendCRMMessage = createServerFn({ method: "POST" })
     if (convErr || !conv) throw new Error("Conversa não encontrada.");
 
     const { getActiveWhatsAppProvider } = await import("./otp.functions");
-    const active = await getActiveWhatsAppProvider();
+    const active = await getActiveWhatsAppProvider(conv.establishment_id);
     if (!active) throw new Error("Nenhum provedor de WhatsApp ativo.");
 
     const res = await active.provider.sendTestMessage(
@@ -399,6 +406,7 @@ export const sendCRMMessage = createServerFn({ method: "POST" })
         last_message_at: new Date().toISOString() 
       })
       .eq("id", data.conversationId)
+      .eq("establishment_id", conv.establishment_id)
       .not("status", "eq", "closed");
 
     return { ok: true };
@@ -418,9 +426,18 @@ export const updateCRMConversationStatus = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     
+    const { data: conversation, error: conversationError } = await supabase
+      .from("crm_conversations").select("establishment_id, metadata").eq("id", data.conversationId).single();
+    if (conversationError || !conversation) throw new Error("Conversa não encontrada.");
     const updateData: any = { status: data.status, updated_at: new Date().toISOString() };
     if (data.status === "closed") {
       updateData.closed_at = new Date().toISOString();
+      updateData.metadata = { ...((conversation.metadata as object) || {}), support: { ...((conversation.metadata as any)?.support || {}), active: false } };
+      const ticketResult = await supabaseAdmin.from("crm_support_tickets")
+        .update({ status: "resolved", resolved_at: new Date().toISOString() })
+        .eq("conversation_id", data.conversationId).eq("establishment_id", conversation.establishment_id)
+        .in("status", ["open", "in_progress"]);
+      if (ticketResult.error) throw ticketResult.error;
     } else if (data.status === "assigned") {
       updateData.assigned_at = new Date().toISOString();
       updateData.assigned_to = data.assignedTo || userId;
@@ -432,7 +449,8 @@ export const updateCRMConversationStatus = createServerFn({ method: "POST" })
     const { error } = await supabaseAdmin
       .from("crm_conversations")
       .update(updateData)
-      .eq("id", data.conversationId);
+      .eq("id", data.conversationId)
+      .eq("establishment_id", conversation.establishment_id);
 
     if (error) throw error;
     return { ok: true };
@@ -447,11 +465,11 @@ export const getCRMFlows = createServerFn({ method: "GET" })
     if (!isAdmin) throw new Error("Acesso restrito.");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const ESTABLISHMENT_ID = 'f406351f-487b-47db-b0d3-bd5cb918b6c3';
+    const establishmentId = await resolveCRMEstablishmentId();
 
     try {
       const { ensureDefaultWhatsAppFlow } = await import("./crm/bootstrap.server");
-      await ensureDefaultWhatsAppFlow();
+      await ensureDefaultWhatsAppFlow(establishmentId);
     } catch (err: any) {
       console.error("[CRM Functions] Bootstrap failure in getCRMFlows:", err);
       // Erro explícito de bootstrap parcial ou falha crítica
@@ -464,7 +482,7 @@ export const getCRMFlows = createServerFn({ method: "GET" })
     const { data, error } = await supabaseAdmin
       .from("crm_flows")
       .select("*")
-      .eq("establishment_id", ESTABLISHMENT_ID)
+      .eq("establishment_id", establishmentId)
       .order("created_at", { ascending: false });
 
     if (error) throw error;
@@ -488,7 +506,6 @@ export const getCRMFlowWithSteps = createServerFn({ method: "GET" })
         steps:crm_flow_steps!crm_flow_steps_flow_id_fkey(*)
       `)
       .eq("id", data.flowId)
-      .eq("establishment_id", "f406351f-487b-47db-b0d3-bd5cb918b6c3")
       .single();
 
     if (error) throw error;
@@ -515,10 +532,7 @@ export const saveCRMFlow = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("Acesso restrito.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: accountType } = await supabase.rpc("my_account_type");
-    const establishmentId = accountType === 'super_admin' ? 'f406351f-487b-47db-b0d3-bd5cb918b6c3' : null;
-
-    if (!establishmentId) throw new Error("Não foi possível determinar o estabelecimento.");
+    const establishmentId = await resolveCRMEstablishmentId();
 
     const flowData = { 
       name: data.name, 
@@ -566,8 +580,9 @@ export const getAgentSettings = createServerFn({ method: "GET" })
     const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
     if (!isAdmin) throw new Error("Acesso restrito.");
 
-    const { data } = await supabase.from("system_settings").select("*").eq("namespace", "crm").eq("key", "agent_config").maybeSingle();
-    return data?.value || {
+    const establishmentId = await resolveCRMEstablishmentId();
+    const { data } = await supabase.from("crm_agent_settings").select("enabled, flow_id, config").eq("establishment_id", establishmentId).maybeSingle();
+    return data ? { ...(data.config as object), enabled: data.enabled, behavior: { ...((data.config as any)?.behavior || {}), mainFlowId: data.flow_id } } : {
       enabled: false,
       name: "Assistente Afidelize",
       presentation: "Olá! 👋 Sou o assistente da Afidelize. Como posso ajudar você hoje?",
@@ -610,11 +625,17 @@ export const saveAgentSettings = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("Acesso restrito.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { error } = await supabaseAdmin.from("system_settings").upsert({
-      namespace: "crm",
-      key: "agent_config",
-      value: data
-    }, { onConflict: "namespace,key" });
+    const establishmentId = await resolveCRMEstablishmentId();
+    const flowId = data?.behavior?.mainFlowId;
+    if (!flowId) throw new Error("Selecione o fluxo principal.");
+    const { data: flow } = await supabaseAdmin.from("crm_flows").select("id").eq("id", flowId).eq("establishment_id", establishmentId).maybeSingle();
+    if (!flow) throw new Error("Fluxo não pertence ao estabelecimento ativo.");
+    const { behavior, enabled, ...config } = data;
+    const { mainFlowId: _mainFlowId, ...behaviorConfig } = behavior || {};
+    const { error } = await supabaseAdmin.from("crm_agent_settings").upsert({
+      establishment_id: establishmentId, flow_id: flowId, enabled: enabled ?? true,
+      config: { ...config, behavior: behaviorConfig },
+    }, { onConflict: "establishment_id" });
 
     if (error) throw error;
     return { ok: true };
@@ -724,12 +745,14 @@ export const saveCRMContact = createServerFn({ method: "POST" })
     const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
     if (!isAdmin) throw new Error("Acesso restrito.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const establishmentId = await resolveCRMEstablishmentId();
 
     // Impedir telefone duplicado
     const phone = data.phone.replace(/\D/g, "");
     const { data: existing } = await supabaseAdmin
       .from("crm_contacts")
       .select("id")
+      .eq("establishment_id", establishmentId)
       .eq("phone", phone)
       .maybeSingle();
     
@@ -741,6 +764,7 @@ export const saveCRMContact = createServerFn({ method: "POST" })
       .from("crm_contacts")
       .upsert({
         id: data.id || undefined,
+        establishment_id: establishmentId,
         name: data.name,
         phone: phone,
         email: data.email,
@@ -858,4 +882,3 @@ export const saveCRMQuickReply = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true };
   });
-
