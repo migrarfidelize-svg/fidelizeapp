@@ -1,4 +1,6 @@
 import { RouteLoading } from "@/components/RouteLoading";
+import { cn } from "@/lib/utils";
+
 import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState, useMemo } from "react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
