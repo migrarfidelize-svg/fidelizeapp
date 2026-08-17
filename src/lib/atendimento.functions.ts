@@ -433,7 +433,7 @@ export const updateCRMConversationStatus = createServerFn({ method: "POST" })
     if (data.status === "closed") {
       updateData.closed_at = new Date().toISOString();
       updateData.metadata = { ...((conversation.metadata as object) || {}), support: { ...((conversation.metadata as any)?.support || {}), active: false } };
-      const ticketResult = await supabaseAdmin.from("crm_support_tickets")
+      const ticketResult = await (supabaseAdmin as any).from("crm_support_tickets")
         .update({ status: "resolved", resolved_at: new Date().toISOString() })
         .eq("conversation_id", data.conversationId).eq("establishment_id", conversation.establishment_id)
         .in("status", ["open", "in_progress"]);
@@ -576,64 +576,58 @@ export const saveCRMFlow = createServerFn({ method: "POST" })
 export const getAgentSettings = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    const { userId, supabase } = context;
+    const { data: isAdmin } = await (supabase as any).rpc("is_super_admin", { _user: userId });
     if (!isAdmin) throw new Error("Acesso restrito.");
 
     const establishmentId = await resolveCRMEstablishmentId();
-    const { data } = await supabase.from("crm_agent_settings").select("enabled, flow_id, config").eq("establishment_id", establishmentId).maybeSingle();
-    return data ? { ...(data.config as object), enabled: data.enabled, behavior: { ...((data.config as any)?.behavior || {}), mainFlowId: data.flow_id } } : {
-      enabled: false,
-      name: "Assistente Afidelize",
-      presentation: "Olá! 👋 Sou o assistente da Afidelize. Como posso ajudar você hoje?",
-      behavior: {
-        autoReply: true,
-        welcomeNew: true,
-        welcomeKnown: true,
-        afterHuman: "stay_closed",
-        timeoutMinutes: 10,
-        timeoutAction: "transfer_to_queue"
-      },
-      handoff: {
-        keywords: ["atendente", "humano", "falar com alguém", "suporte", "reclamação"],
-        message: "Vou encaminhar você para nossa equipe. Aguarde um momento."
-      },
-      fallback: {
-        message: "Não consegui identificar sua solicitação.",
-        maxFailures: 3,
-        action: "transfer_to_queue"
-      },
-      schedule: {
-        mon: { active: true, start: "08:00", end: "18:00" },
-        tue: { active: true, start: "08:00", end: "18:00" },
-        wed: { active: true, start: "08:00", end: "18:00" },
-        thu: { active: true, start: "08:00", end: "18:00" },
-        fri: { active: true, start: "08:00", end: "18:00" },
-        sat: { active: false, start: "09:00", end: "13:00" },
-        sun: { active: false, start: "00:00", end: "00:00" },
-        outOfOfficeMessage: "Nosso atendimento humano está indisponível agora, mas posso continuar ajudando você."
-      }
-    };
+    
+    // Ensure default flow and agent settings exist for this tenant
+    const { ensureDefaultWhatsAppFlow } = await import("./crm/bootstrap.server");
+    await ensureDefaultWhatsAppFlow(establishmentId);
+
+    const { data, error } = await (supabase as any).from("crm_agent_settings")
+      .select("enabled, flow_id, config")
+      .eq("establishment_id", establishmentId)
+      .maybeSingle();
+      
+    if (error) throw error;
+    
+    return data ? { 
+      ...(data.config as object), 
+      enabled: data.enabled, 
+      behavior: { ...((data.config as any)?.behavior || {}), mainFlowId: data.flow_id } 
+    } : null;
   });
 
 export const saveAgentSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.any().parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    const { userId, supabase } = context;
+    const { data: isAdmin } = await (supabase as any).rpc("is_super_admin", { _user: userId });
     if (!isAdmin) throw new Error("Acesso restrito.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const establishmentId = await resolveCRMEstablishmentId();
     const flowId = data?.behavior?.mainFlowId;
     if (!flowId) throw new Error("Selecione o fluxo principal.");
-    const { data: flow } = await supabaseAdmin.from("crm_flows").select("id").eq("id", flowId).eq("establishment_id", establishmentId).maybeSingle();
+
+    // Provider validation
+    if (!data.provider_id) {
+       throw new Error("Selecione um provedor de IA.");
+    }
+
+    const { data: flow } = await (supabaseAdmin as any).from("crm_flows").select("id").eq("id", flowId).eq("establishment_id", establishmentId).maybeSingle();
     if (!flow) throw new Error("Fluxo não pertence ao estabelecimento ativo.");
+
     const { behavior, enabled, ...config } = data;
     const { mainFlowId: _mainFlowId, ...behaviorConfig } = behavior || {};
-    const { error } = await supabaseAdmin.from("crm_agent_settings").upsert({
-      establishment_id: establishmentId, flow_id: flowId, enabled: enabled ?? true,
+
+    const { error } = await (supabaseAdmin as any).from("crm_agent_settings").upsert({
+      establishment_id: establishmentId, 
+      flow_id: flowId, 
+      enabled: enabled ?? true,
       config: { ...config, behavior: behaviorConfig },
     }, { onConflict: "establishment_id" });
 
@@ -749,7 +743,7 @@ export const saveCRMContact = createServerFn({ method: "POST" })
 
     // Impedir telefone duplicado
     const phone = data.phone.replace(/\D/g, "");
-    const { data: existing } = await supabaseAdmin
+    const { data: existing } = await (supabaseAdmin as any)
       .from("crm_contacts")
       .select("id")
       .eq("establishment_id", establishmentId)
@@ -760,7 +754,7 @@ export const saveCRMContact = createServerFn({ method: "POST" })
       throw new Error("Este número de telefone já está cadastrado.");
     }
 
-    const { error } = await supabaseAdmin
+    const { error } = await (supabaseAdmin as any)
       .from("crm_contacts")
       .upsert({
         id: data.id || undefined,
