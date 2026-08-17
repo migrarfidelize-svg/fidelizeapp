@@ -222,16 +222,28 @@ function AuthPage() {
     }
   }, [otpCooldown]);
 
-  async function handleVerifyOtp() {
-    if (otpCode.length !== 6) {
+  async function handleVerifyOtp(codeOverride?: string) {
+    const code = codeOverride || otpCode;
+    if (code.length !== 6) {
       toast.error("O código deve ter 6 dígitos.");
       return;
     }
-
+    
+    if (otpVerifyingRef.current) return;
+    otpVerifyingRef.current = true;
+    
     setLoading(true);
+    setOtpStatus("verifying");
+    
     try {
-      const res = await verifyOTP({ data: { whatsapp: whatsapp.replace(/\D/g, ""), code: otpCode } });
+      // Delay visual para animação de "decifrando"
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      const res = await verifyOTP({ data: { whatsapp: whatsapp.replace(/\D/g, ""), code } });
       if (res.ok && res.hashed_token) {
+        setOtpStatus("success");
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         const { data: authData, error } =
           await supabase.auth.verifyOtp({
             token_hash: res.hashed_token,
@@ -239,6 +251,7 @@ function AuthPage() {
           });
 
         if (error) {
+          setOtpStatus("error");
           console.error("[auth] Falha ao criar sessão após OTP:", {
             message: error.message,
             status: error.status,
@@ -247,6 +260,7 @@ function AuthPage() {
         }
 
         if (!authData.session || !authData.user) {
+          setOtpStatus("error");
           throw new Error(
             "Não foi possível iniciar sua sessão. Solicite um novo código."
           );
@@ -267,13 +281,20 @@ function AuthPage() {
           dest.to,
           isSignup ? "SIGNED_UP" : "SIGNED_IN"
         );
+      } else {
+        setOtpStatus("error");
+        toast.error("Código inválido. Confira os números e tente novamente.");
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Código inválido.");
+      setOtpStatus("error");
+      const msg = err instanceof Error ? err.message : "Código inválido.";
+      toast.error(msg);
     } finally {
       setLoading(false);
+      otpVerifyingRef.current = false;
     }
   }
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
