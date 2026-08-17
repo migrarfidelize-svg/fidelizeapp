@@ -318,7 +318,7 @@ export const getCRMConversations = createServerFn({ method: "GET" })
 
     let query = supabase
       .from("crm_conversations")
-      .select("*, messages:crm_messages(body, created_at, direction)")
+      .select("*, contact:crm_contacts(id, name, phone, email, type, created_at, updated_at), messages:crm_messages(body, created_at, direction), support_tickets:crm_support_tickets(id, status, assigned_to, created_at, resolved_at)")
       .eq("establishment_id", establishmentId)
       .order("last_message_at", { ascending: false });
 
@@ -350,7 +350,7 @@ export const getCRMConversationMessages = createServerFn({ method: "GET" })
 
     const { data: messages, error } = await supabase
       .from("crm_messages")
-      .select("*")
+      .select("*, steps:crm_flow_steps(*)")
       .eq("conversation_id", data.conversationId)
       .eq("establishment_id", establishmentId)
       .order("created_at", { ascending: true });
@@ -626,6 +626,8 @@ export const getAgentSettings = createServerFn({ method: "GET" })
     if (!isAdmin) throw new Error("Acesso restrito.");
 
     const establishmentId = await assertCRMEstablishmentAccess(supabase, userId, data.establishment_id);
+    const { ensureDefaultWhatsAppFlow } = await import("./crm/bootstrap.server");
+    await ensureDefaultWhatsAppFlow(establishmentId);
     const { data: settings } = await supabase.from("crm_agent_settings").select("enabled, flow_id, config").eq("establishment_id", establishmentId).maybeSingle();
     return settings ? { ...(settings.config as object), enabled: settings.enabled, behavior: { ...((settings.config as any)?.behavior || {}), mainFlowId: settings.flow_id } } : {
       enabled: false,

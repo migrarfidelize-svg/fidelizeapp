@@ -41,6 +41,12 @@ export function AgentConfig() {
 
   return (
     <div className="bg-background min-h-full p-6 lg:p-8">
+      {settings.providerPending && (
+        <div className="mb-4 flex items-center gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-700 dark:text-amber-300">
+          <AlertTriangle className="h-5 w-5" />
+          <strong>Provider de IA pendente.</strong> A configuração foi preparada, mas o Agente continuará em standby até existir um provider utilizável.
+        </div>
+      )}
       {/* Header Central do Agente */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 bg-card p-6 border rounded-xl shadow-sm">
         <div className="flex items-center gap-4">
@@ -117,13 +123,14 @@ export function AgentConfig() {
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">IA Provider</label>
                   <Select 
-                    value={settings.provider_id || "openai"} 
+                    value={settings.provider_id || "pending"}
                     onValueChange={val => setSettings({...settings, provider_id: val})}
                   >
                     <SelectTrigger className="h-11 bg-muted/20 border-border/50 font-bold">
                       <SelectValue placeholder="Selecione o provedor..." />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="pending" disabled>Provider pendente</SelectItem>
                       <SelectItem value="openai">OpenAI (GPT-4o)</SelectItem>
                       <SelectItem value="groq">Groq (Llama 3 / Mixtral)</SelectItem>
                       <SelectItem value="deepseek">DeepSeek</SelectItem>

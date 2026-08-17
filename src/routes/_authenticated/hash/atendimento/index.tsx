@@ -22,8 +22,9 @@ import { FlowsView } from "@/components/crm/FlowsView";
 import { WhatsAppManager } from "@/components/crm/WhatsAppManager";
 
 import { BroadcastManager } from "@/components/crm/broadcasts/BroadcastManager";
-import { MessageSquare, History, Contact, UserCheck, GitBranch, FileText, Smartphone, Settings2, Moon, Sun, Search, Bell, Plus, Filter, SendHorizontal } from "lucide-react";
+import { MessageSquare, Contact, UserCheck, GitBranch, FileText, Smartphone, Settings2, Moon, Sun, SendHorizontal, Bot, Headphones, Clock3, CheckCircle2 } from "lucide-react";
 import { useTheme } from "@/components/ThemeToggle";
+import { getCRMConversationBadge, getCRMOperationalTab, type CRMOperationalTab } from "@/lib/crm/conversation-presentation";
 
 export const Route = createFileRoute("/_authenticated/hash/atendimento/")({
   component: AtendimentoCRM,
@@ -41,7 +42,6 @@ function AtendimentoCRM() {
   const navItems = [
     { group: "Operação", items: [
       { id: "conversas", label: "Conversas", icon: MessageSquare },
-      { id: "fila", label: "Fila", icon: History },
       { id: "contatos", label: "Contatos", icon: Contact },
       { id: "disparos", label: "Disparos", icon: SendHorizontal },
     ]},
@@ -101,10 +101,9 @@ function AtendimentoCRM() {
       <main className="flex-1 overflow-hidden relative">
         {!selectedEstablishmentId ? <div className="grid h-full place-items-center text-sm text-muted-foreground">Selecione um estabelecimento com WhatsApp ativo.</div> :
         activeTab === "conversas" ? (
-          <ConversationQueue establishmentId={selectedEstablishmentId} />
+          <ConversationQueue establishmentId={selectedEstablishmentId} establishmentName={establishments.data?.find((item) => item.id === selectedEstablishmentId)?.name} />
         ) : (
           <div className="h-full overflow-y-auto p-8">
-            {activeTab === "fila" && <p>Visualização de Fila</p>}
             {activeTab === "contatos" && <ContactManager />}
             {activeTab === "disparos" && <BroadcastManager />}
             {activeTab === "agente" && <AgentConfig />}
@@ -139,9 +138,10 @@ function AtendimentoCRM() {
   );
 }
 
-function ConversationQueue({ establishmentId }: { establishmentId: string }) {
+function ConversationQueue({ establishmentId, establishmentName }: { establishmentId: string; establishmentName?: string }) {
   const queryClient = useQueryClient();
   const [selectedId, setSelectedId] = useState<string>();
+  const [operation, setOperation] = useState<CRMOperationalTab>("open");
   const [body, setBody] = useState("");
   const conversations = useQuery({ queryKey: ["crm-conversations", establishmentId], queryFn: () => getCRMConversations({ data: { status: "all", establishment_id: establishmentId } }) });
   const selected = conversations.data?.find((item: any) => item.id === selectedId);
@@ -156,30 +156,48 @@ function ConversationQueue({ establishmentId }: { establishmentId: string }) {
   };
   const send = useMutation({ mutationFn: () => sendCRMMessage({ data: { conversationId: selectedId!, body } }), onSuccess: () => { setBody(""); refresh(); } });
   const status = useMutation({ mutationFn: (value: "assigned" | "closed") => updateCRMConversationStatus({ data: { conversationId: selectedId!, status: value } }), onSuccess: refresh });
-  const supportActive = Boolean((selected?.metadata as any)?.support?.active);
-  return <div className="flex h-full w-full">
-    <aside className="w-80 border-r bg-card overflow-y-auto">
-      <div className="h-12 border-b flex items-center px-4 gap-2"><Search className="h-4 w-4" /><span className="text-xs">Fila de atendimento</span></div>
-      {(conversations.data || []).map((conversation: any) => {
-        const support = Boolean(conversation.metadata?.support?.active);
+  const tabs: Array<{ id: CRMOperationalTab; label: string; icon: typeof Bot }> = [
+    { id: "open", label: "EM ABERTO", icon: Bot }, { id: "assigned", label: "EM ATENDIMENTO", icon: Headphones },
+    { id: "queue", label: "FILA", icon: Clock3 }, { id: "closed", label: "ENCERRADOS", icon: CheckCircle2 },
+  ];
+  const visible = (conversations.data || []).filter((item: any) => getCRMOperationalTab(item) === operation);
+  const ticket = selected?.support_tickets?.find((item: any) => item.status !== "resolved" && item.status !== "closed") || selected?.support_tickets?.[0];
+  const contact = selected?.contact;
+  const badgeClass = (tone: string) => cn("rounded-full border px-2 py-0.5 text-[10px] font-black", tone === "success" && "border-green-500/40 bg-green-500/10 text-green-700", tone === "danger" && "border-red-500/40 bg-red-500/10 text-red-600", tone === "info" && "border-blue-500/40 bg-blue-500/10 text-blue-700", tone === "neutral" && "border-border bg-muted text-muted-foreground");
+  return <div className="flex h-full min-h-0 flex-col bg-muted/20">
+    <nav className="flex h-14 shrink-0 items-end gap-1 border-b bg-card px-5" aria-label="Estados das conversas">
+      {tabs.map((tab) => { const count = (conversations.data || []).filter((item: any) => getCRMOperationalTab(item) === tab.id).length; return <button key={tab.id} onClick={() => { setOperation(tab.id); setSelectedId(undefined); }} className={cn("flex h-11 items-center gap-2 border-b-2 px-4 text-xs font-black tracking-wide", operation === tab.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground")}><tab.icon className="h-4 w-4" />{tab.label}<span className="rounded-full bg-muted px-2 py-0.5 text-[10px]">{count}</span></button>; })}
+    </nav>
+    <div className="flex min-h-0 flex-1">
+    <aside className="w-80 shrink-0 border-r bg-card overflow-y-auto">
+      <div className="border-b px-4 py-3"><strong className="text-sm">{tabs.find((tab) => tab.id === operation)?.label}</strong><p className="text-xs text-muted-foreground">Conversas do estabelecimento selecionado</p></div>
+      {visible.map((conversation: any) => {
+        const badge = getCRMConversationBadge(conversation);
         const last = [...(conversation.messages || [])].sort((a: any, b: any) => String(b.created_at).localeCompare(String(a.created_at)))[0];
-        return <button key={conversation.id} onClick={() => setSelectedId(conversation.id)} className={cn("w-full border-b p-3 text-left", selectedId === conversation.id && "bg-muted") }>
-          <div className="flex justify-between gap-2"><strong className="text-sm">{conversation.customer_phone}</strong>{support && <span className="rounded-full border border-red-500/40 bg-red-500/15 px-2 py-0.5 text-[10px] font-black text-red-600">SUPORTE</span>}</div>
-          <p className="truncate text-xs text-muted-foreground">{last?.body || "Nova conversa"}</p>
-          <span className="text-[10px] uppercase text-muted-foreground">{conversation.status}</span>
+        const unread = Number(conversation.metadata?.unread_count || 0);
+        return <button key={conversation.id} onClick={() => setSelectedId(conversation.id)} className={cn("w-full border-b p-4 text-left transition-colors hover:bg-muted/50", selectedId === conversation.id && "border-l-4 border-l-primary bg-primary/5") }>
+          <div className="flex justify-between gap-2"><strong className="truncate text-sm">{conversation.contact?.name || conversation.customer_name || conversation.customer_phone}</strong><span className="text-[10px] text-muted-foreground">{last?.created_at ? new Date(last.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : ""}</span></div>
+          {(conversation.contact?.name || conversation.customer_name) && <p className="text-[11px] text-muted-foreground">{conversation.customer_phone}</p>}
+          <p className="my-2 truncate text-xs text-muted-foreground">{last?.body || "Nova conversa"}</p>
+          <div className="flex items-center gap-1.5"><span className="rounded-full border bg-green-500/10 px-2 py-0.5 text-[10px] font-bold text-green-700">WhatsApp</span><span className={badgeClass(badge.tone)}>{badge.label}</span>{unread > 0 && <span className="ml-auto grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">{unread}</span>}</div>
         </button>;
       })}
-      {!conversations.isLoading && !conversations.data?.length && <p className="p-6 text-center text-xs text-muted-foreground">Nenhuma conversa.</p>}
+      {!conversations.isLoading && !visible.length && <p className="p-8 text-center text-xs text-muted-foreground">Nenhuma conversa neste estado.</p>}
     </aside>
     <section className="flex min-w-0 flex-1 flex-col">
       {!selected ? <div className="grid flex-1 place-items-center text-sm text-muted-foreground">Selecione uma conversa.</div> : <>
-        <header className="flex h-14 items-center justify-between border-b px-4">
-          <div><strong>{selected.customer_phone}</strong>{supportActive && <span className="ml-3 rounded-full border border-red-500/40 bg-red-500/15 px-2 py-1 text-xs font-black text-red-600">SUPORTE</span>}</div>
-          <div className="flex gap-2">{selected.status === "waiting" && <button onClick={() => status.mutate("assigned")} className="rounded bg-primary px-3 py-1 text-xs text-primary-foreground">Assumir</button>}<button onClick={() => status.mutate("closed")} className="rounded border px-3 py-1 text-xs">Resolver</button></div>
+        <header className="flex h-16 items-center justify-between border-b bg-card px-5">
+          <div><strong>{contact?.name || selected.customer_name || selected.customer_phone}</strong><p className="text-xs text-muted-foreground">{selected.customer_phone}</p></div>
+          <div className="flex gap-2">{selected.status === "waiting" && <button onClick={() => status.mutate("assigned")} className="rounded-md bg-primary px-3 py-2 text-xs font-bold text-primary-foreground">Assumir atendimento</button>}{selected.status !== "closed" && selected.status !== "bot" && <button onClick={() => status.mutate("closed")} className="rounded-md border px-3 py-2 text-xs font-bold">Resolver</button>}</div>
         </header>
+        {selected.status === "bot" && <div className="border-b border-green-500/30 bg-green-500/10 px-5 py-2 text-xs font-medium text-green-700">IA está atendendo esta conversa.</div>}
+        {selected.status === "waiting" && <div className="border-b border-red-500/30 bg-red-500/10 px-5 py-2 text-xs font-medium text-red-700">Cliente aguardando atendimento humano.</div>}
+        {selected.status === "assigned" && <div className="border-b border-blue-500/30 bg-blue-500/10 px-5 py-2 text-xs font-medium text-blue-700">Atendimento humano em andamento.</div>}
         <div className="flex-1 space-y-2 overflow-y-auto p-4">{(messages.data || []).map((message: any) => <div key={`${message.type}-${message.id}`} className={cn("max-w-[75%] rounded-lg p-3 text-sm", message.direction === "outbound" ? "ml-auto bg-primary text-primary-foreground" : message.direction === "internal" ? "mx-auto bg-amber-500/10" : "bg-muted")}>{message.body || message.content}</div>)}</div>
-        <footer className="flex gap-2 border-t p-3"><textarea value={body} onChange={(event) => setBody(event.target.value)} className="min-h-12 flex-1 rounded border bg-background p-2 text-sm" placeholder="Responder pelo WhatsApp..." /><button disabled={!body.trim() || send.isPending} onClick={() => send.mutate()} className="rounded bg-primary px-4 text-sm text-primary-foreground">Enviar</button></footer>
+        <footer className="flex gap-2 border-t bg-card p-3"><textarea disabled={selected.status !== "assigned"} value={body} onChange={(event) => setBody(event.target.value)} className="min-h-12 flex-1 rounded-md border bg-background p-2 text-sm disabled:cursor-not-allowed disabled:opacity-60" placeholder={selected.status === "assigned" ? "Responder pelo WhatsApp..." : "Assuma o atendimento para responder"} /><button disabled={selected.status !== "assigned" || !body.trim() || send.isPending} onClick={() => send.mutate()} className="rounded-md bg-primary px-4 text-sm font-bold text-primary-foreground disabled:opacity-50">Enviar</button></footer>
       </>}
     </section>
+    {selected && <aside className="hidden w-72 shrink-0 overflow-y-auto border-l bg-card p-5 xl:block"><h3 className="mb-5 text-xs font-black uppercase tracking-widest">Contato e contexto</h3><dl className="space-y-4 text-xs">{[["Nome", contact?.name || selected.customer_name], ["Telefone", selected.customer_phone], ["E-mail", contact?.email], ["Estabelecimento", establishmentName], ["Origem / canal", "WhatsApp"], ["Status", getCRMConversationBadge(selected).label], ["Responsável", selected.assigned_to], ["Ticket de suporte", ticket ? `${ticket.status} · ${ticket.id}` : undefined], ["Início", selected.created_at ? new Date(selected.created_at).toLocaleString("pt-BR") : undefined], ["Último atendimento", selected.last_message_at ? new Date(selected.last_message_at).toLocaleString("pt-BR") : undefined]].filter(([, value]) => value).map(([label, value]) => <div key={label}><dt className="font-bold text-muted-foreground">{label}</dt><dd className="mt-1 break-words text-foreground">{value}</dd></div>)}</dl></aside>}
+    </div>
   </div>;
 }

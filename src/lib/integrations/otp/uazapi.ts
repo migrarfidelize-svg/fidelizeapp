@@ -181,7 +181,9 @@ export const uazapiOtp: WhatsAppOTPProvider = {
   },
 
   async sendOtp(runtime: IntegrationRuntimeConfig, env: NodeEnv, phone: string, code: string) {
-    const message = `Seu código de acesso Afidelize é: ${code}`;
+    // Esta modalidade da UAZAPI envia texto/lista/reply button, mas não expõe
+    // authentication template/COPY_CODE. Um reply button não copia conteúdo.
+    const message = `Seu código de acesso Afidelize é:\n\n${code}\n\nEste código é válido por alguns minutos. Não compartilhe com ninguém.`;
     return this.sendTestMessage(runtime, env, phone, message);
   },
 

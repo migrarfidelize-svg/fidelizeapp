@@ -2,6 +2,24 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const FLOW_NAME = "Atendimento WhatsApp";
 const STEP_KEYS = ["welcome", "main_menu", "agent_loyalty", "agent_promotions", "agent_access", "agent_general", "human_handoff"] as const;
+const DEFAULT_AGENT_CONFIG = {
+  name: "Assistente Fidelize",
+  model: "gpt-4o-mini",
+  systemPrompt: "Você é o Assistente Fidelize do estabelecimento. Atenda de forma objetiva, educada e útil. Utilize apenas informações disponíveis no contexto e no sistema. Não invente dados, saldo, promoções, regras ou informações do cliente. Quando não puder resolver com segurança, quando o cliente solicitar uma pessoa ou quando houver necessidade de ação humana, encaminhe para SUPORTE.",
+  presentation: "Olá! 👋 Sou o assistente virtual. Como posso ajudar?",
+  behavior: { autoReply: true, welcomeNew: true, welcomeKnown: true, afterHuman: "stay_closed", timeoutMinutes: 10, timeoutAction: "transfer_to_queue" },
+  handoff: {
+    keywords: ["suporte", "atendente", "humano", "falar com atendente", "falar com suporte", "quero falar com alguém", "preciso de ajuda humana"],
+    message: "Entendi. Vou encaminhar você para nossa equipe de suporte. 💜",
+  },
+  fallback: { message: "Não consegui identificar sua solicitação. Posso encaminhar você para o suporte.", maxFailures: 3, action: "transfer_to_queue" },
+};
+
+function mergeMissing(current: Record<string, any>, defaults: Record<string, any>) {
+  const merged = { ...defaults, ...current };
+  for (const key of ["behavior", "handoff", "fallback"]) merged[key] = { ...defaults[key], ...(current[key] || {}) };
+  return merged;
+}
 
 export async function ensureDefaultWhatsAppFlow(establishmentId: string) {
   if (!establishmentId) throw new Error("CRM_ESTABLISHMENT_REQUIRED");
@@ -66,12 +84,28 @@ export async function ensureDefaultWhatsAppFlow(establishmentId: string) {
     if (result.error) throw result.error;
   }
 
-  const currentConfig = await supabaseAdmin.from("crm_agent_settings").select("establishment_id")
+  const currentConfig = await supabaseAdmin.from("crm_agent_settings").select("establishment_id, enabled, flow_id, config")
     .eq("establishment_id", establishmentId).maybeSingle();
   if (currentConfig.error) throw currentConfig.error;
   if (!currentConfig.data) {
-    const configInsert = await supabaseAdmin.from("crm_agent_settings").insert({ establishment_id: establishmentId, flow_id: flow.id });
+    const providerId = process.env.OPENAI_API_KEY ? "openai" : undefined;
+    const configInsert = await supabaseAdmin.from("crm_agent_settings").insert({
+      establishment_id: establishmentId,
+      flow_id: flow.id,
+      enabled: Boolean(providerId),
+      config: { ...DEFAULT_AGENT_CONFIG, provider_id: providerId, providerPending: !providerId },
+    });
     if (configInsert.error) throw configInsert.error;
+  } else {
+    const configured = (currentConfig.data.config || {}) as Record<string, any>;
+    const providerId = configured.provider_id || (process.env.OPENAI_API_KEY ? "openai" : undefined);
+    const merged = mergeMissing(configured, { ...DEFAULT_AGENT_CONFIG, provider_id: providerId, providerPending: !providerId });
+    const update = await supabaseAdmin.from("crm_agent_settings").update({
+      flow_id: currentConfig.data.flow_id || flow.id,
+      enabled: providerId ? currentConfig.data.enabled : false,
+      config: merged,
+    }).eq("establishment_id", establishmentId);
+    if (update.error) throw update.error;
   }
   return { flowId: flow.id, created, stepsCount: definitions.length };
 }

@@ -77,4 +77,30 @@ describe("CRM bootstrap multi-tenant", () => {
   it("6. exige establishment real", async () => {
     await expect(ensureDefaultWhatsAppFlow("")).rejects.toThrow("CRM_ESTABLISHMENT_REQUIRED");
   });
+
+  it("7. cria Agent padrão em standby sem provider e vinculado ao fluxo", async () => {
+    delete process.env.OPENAI_API_KEY;
+    const result = await ensureDefaultWhatsAppFlow("tenant-a");
+    expect(db.crm_agent_settings[0]).toMatchObject({ establishment_id: "tenant-a", flow_id: result.flowId, enabled: false });
+    expect(db.crm_agent_settings[0].config).toMatchObject({ name: "Assistente Fidelize", providerPending: true });
+    expect(db.crm_agent_settings[0].config.handoff.keywords).toContain("falar com suporte");
+  });
+
+  it("8. bootstrap repetido preserva configuração personalizada", async () => {
+    await ensureDefaultWhatsAppFlow("tenant-a");
+    db.crm_agent_settings[0].config.name = "Agente personalizado";
+    db.crm_agent_settings[0].config.systemPrompt = "Prompt próprio";
+    await ensureDefaultWhatsAppFlow("tenant-a");
+    expect(db.crm_agent_settings[0].config.name).toBe("Agente personalizado");
+    expect(db.crm_agent_settings[0].config.systemPrompt).toBe("Prompt próprio");
+  });
+
+  it("9. fluxo persistido contém menu 1–5 e handoff", async () => {
+    await ensureDefaultWhatsAppFlow("tenant-a");
+    const menu = db.crm_flow_steps.find((row) => row.step_key === "main_menu");
+    expect(menu.payload.options.map((option: any) => option.value)).toEqual(["1", "2", "3", "4", "5"]);
+    const handoff = db.crm_flow_steps.find((row) => row.step_key === "human_handoff");
+    expect(menu.payload.options[4].nextStepId).toBe(handoff.id);
+    expect(handoff.payload.type).toBe("transfer_to_queue");
+  });
 });
