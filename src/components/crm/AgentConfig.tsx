@@ -10,11 +10,13 @@ import { getAgentSettings, saveAgentSettings, getCRMFlows } from "@/lib/atendime
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
+import { useCRMEstablishmentId } from "./CRMEstablishmentContext";
 
 export function AgentConfig() {
+  const establishmentId = useCRMEstablishmentId();
   const queryClient = useQueryClient();
-  const { data: currentSettings, isLoading } = useQuery({ queryKey: ["crm-agent-settings"], queryFn: () => getAgentSettings() });
-  const { data: flows } = useQuery({ queryKey: ["crm-flows"], queryFn: () => getCRMFlows() });
+  const { data: currentSettings, isLoading } = useQuery({ queryKey: ["crm-agent-settings", establishmentId], queryFn: () => getAgentSettings({ data: { establishment_id: establishmentId } }) });
+  const { data: flows } = useQuery({ queryKey: ["crm-flows", establishmentId], queryFn: () => getCRMFlows({ data: { establishment_id: establishmentId } }) });
   
   const [settings, setSettings] = useState<any>(null);
 
@@ -23,7 +25,7 @@ export function AgentConfig() {
   }, [currentSettings]);
 
   const saveMutation = useMutation({
-    mutationFn: (data: any) => saveAgentSettings({ data }),
+    mutationFn: (settings: any) => saveAgentSettings({ data: { establishment_id: establishmentId, settings } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-agent-settings"] });
       toast.success("Configurações do Agente salvas!");

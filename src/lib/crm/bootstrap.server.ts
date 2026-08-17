@@ -1,117 +1,77 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-export async function ensureDefaultWhatsAppFlow() {
-  const ESTABLISHMENT_ID = 'f406351f-487b-47db-b0d3-bd5cb918b6c3';
-  const flowName = "Atendimento Inteligente Fidelize";
+const FLOW_NAME = "Atendimento WhatsApp";
+const STEP_KEYS = ["welcome", "main_menu", "agent_loyalty", "agent_promotions", "agent_access", "agent_general", "human_handoff"] as const;
 
-  console.log(`[CRM Bootstrap] Starting for establishment ${ESTABLISHMENT_ID}...`);
+export async function ensureDefaultWhatsAppFlow(establishmentId: string) {
+  if (!establishmentId) throw new Error("CRM_ESTABLISHMENT_REQUIRED");
 
-  try {
-    let { data: flow, error: findErr } = await supabaseAdmin
-      .from("crm_flows")
-      .select("id")
-      .eq("establishment_id", ESTABLISHMENT_ID)
-      .eq("name", flowName)
-      .maybeSingle();
+  let { data: flow, error: flowError } = await supabaseAdmin
+    .from("crm_flows").select("id").eq("establishment_id", establishmentId).eq("name", FLOW_NAME).maybeSingle();
+  if (flowError) throw flowError;
 
-    if (findErr) throw findErr;
-
-    if (!flow) {
-      console.log("[CRM Bootstrap] Creating flow...");
-      const { data: newFlow, error: flowErr } = await supabaseAdmin
-        .from("crm_flows")
-        .insert({
-          name: flowName,
-          description: "Atendimento principal WhatsApp com menu, IA e transferência humana.",
-          is_active: true,
-          establishment_id: ESTABLISHMENT_ID
-        })
-        .select("id")
-        .single();
-      
-      if (flowErr) throw flowErr;
-      flow = newFlow;
-    }
-    
-    if (!flow) throw new Error("Flow could not be found or created");
-    const flowId = flow.id;
-
-    const { data: existingSteps, error: stepsErr } = await supabaseAdmin
-      .from("crm_flow_steps")
-      .select("id, step_key")
-      .eq("flow_id", flowId);
-
-    if (stepsErr) throw stepsErr;
-
-    const stepsCount = existingSteps?.length || 0;
-    
-    if (stepsCount === 0) {
-      console.log("[CRM Bootstrap] Creating 7 steps with unique keys...");
-      const stepIds = {
-        s0: crypto.randomUUID(), s1: crypto.randomUUID(), s2: crypto.randomUUID(),
-        s3: crypto.randomUUID(), s4: crypto.randomUUID(), s5: crypto.randomUUID(), s6: crypto.randomUUID()
-      };
-
-      const steps = [
-        { id: stepIds.s0, flow_id: flowId, establishment_id: ESTABLISHMENT_ID, step_key: "welcome", sort_order: 0, payload: { type: "message", text: "Olá! Bem-vindo à Fidelize. 💜\n\nComo posso ajudar hoje?" } },
-        { id: stepIds.s1, flow_id: flowId, establishment_id: ESTABLISHMENT_ID, step_key: "main_menu", sort_order: 1, payload: { type: "options", text: "Menu Principal:", options: [
-            { label: "1 — Cartão e Recompensas", value: "1", nextStepId: stepIds.s2 },
-            { label: "2 — Promoções", value: "2", nextStepId: stepIds.s3 },
-            { label: "3 — Acesso à conta", value: "3", nextStepId: stepIds.s4 },
-            { label: "4 — Dúvidas", value: "4", nextStepId: stepIds.s5 },
-            { label: "5 — Falar com atendente", value: "5", nextStepId: stepIds.s6 }
-        ] } },
-        { id: stepIds.s2, flow_id: flowId, establishment_id: ESTABLISHMENT_ID, step_key: "agent_loyalty", sort_order: 2, payload: { type: "agent", text: "Entrando em contato com nosso assistente...", context: "Atendimento sobre cartão e recompensas." } },
-        { id: stepIds.s3, flow_id: flowId, establishment_id: ESTABLISHMENT_ID, step_key: "agent_promotions", sort_order: 3, payload: { type: "agent", text: "Entrando em contato com nosso assistente...", context: "Atendimento sobre promoções." } },
-        { id: stepIds.s4, flow_id: flowId, establishment_id: ESTABLISHMENT_ID, step_key: "agent_access", sort_order: 4, payload: { type: "agent", text: "Entrando em contato com nosso assistente...", context: "Atendimento sobre problemas de acesso." } },
-        { id: stepIds.s5, flow_id: flowId, establishment_id: ESTABLISHMENT_ID, step_key: "agent_general", sort_order: 5, payload: { type: "agent", text: "Entrando em contato com nosso assistente...", context: "Atendimento geral." } },
-        { id: stepIds.s6, flow_id: flowId, establishment_id: ESTABLISHMENT_ID, step_key: "human_handoff", sort_order: 6, payload: { type: "transfer_to_queue", text: "Vou encaminhar você para nossa equipe. Aguarde um momento. 💜" } }
-      ];
-
-      const { error: insertErr } = await supabaseAdmin.from("crm_flow_steps").insert(steps);
-      if (insertErr) {
-          console.error("[CRM Bootstrap] insert steps failed:", insertErr);
-          throw insertErr;
-      }
-    } else if (stepsCount > 0 && stepsCount !== 7) {
-      throw new Error(`CRM_DEFAULT_FLOW_PARTIAL:${stepsCount}`);
-    }
-
-    const { data: agentConfigRow } = await supabaseAdmin
-      .from("system_settings")
-      .select("value")
-      .eq("namespace", "crm")
-      .eq("key", "agent_config")
-      .maybeSingle();
-    
-    const currentConfig = (agentConfigRow?.value as any) || {};
-    
-    const { data: integration } = await supabaseAdmin
-        .from("integrations")
-        .select("id, provider")
-        .eq("enabled", true)
-        .eq("category", "ai")
-        .maybeSingle();
-
-    const newConfig = {
-      ...currentConfig,
-      enabled: currentConfig.enabled ?? (!!integration),
-      name: currentConfig.name || "Assistente Fidelize",
-      provider_id: currentConfig.provider_id || (integration?.provider || "openai"),
-      model: currentConfig.model || "gpt-4o-mini",
-      behavior: {
-        ...(currentConfig.behavior || {}),
-        mainFlowId: flowId
-      }
-    };
-
-    await supabaseAdmin
-      .from("system_settings")
-      .upsert({ namespace: "crm", key: "agent_config", value: newConfig as any }, { onConflict: "namespace,key" });
-
-    return { flowId, created: !flow, stepsCount: stepsCount === 0 ? 7 : stepsCount };
-  } catch (error) {
-    console.error("[CRM Bootstrap] Critical Failure:", error);
-    throw error;
+  let created = false;
+  if (!flow) {
+    const result = await supabaseAdmin.from("crm_flows").insert({
+      establishment_id: establishmentId,
+      name: FLOW_NAME,
+      description: "Atendimento principal WhatsApp com menu, Agent e transferência humana.",
+      is_active: true,
+    }).select("id").single();
+    if (result.error || !result.data) throw result.error ?? new Error("CRM_FLOW_CREATE_FAILED");
+    flow = result.data;
+    created = true;
   }
+
+  const { data: existingRows, error: stepsError } = await supabaseAdmin
+    .from("crm_flow_steps").select("id, step_key, payload, sort_order").eq("flow_id", flow.id).eq("establishment_id", establishmentId);
+  if (stepsError) throw stepsError;
+  const existing = existingRows ?? [];
+  const byKey = new Map(existing.map((step) => [step.step_key, step]));
+  const ids = Object.fromEntries(STEP_KEYS.map((key) => [key, byKey.get(key)?.id ?? crypto.randomUUID()])) as Record<typeof STEP_KEYS[number], string>;
+  const menuText = "Olá! 👋 Como posso ajudar?\n\n1 — Cartão e recompensas\n2 — Promoções\n3 — Acesso à conta\n4 — Dúvidas\n5 — Falar com suporte";
+  const definitions = [
+    { step_key: "welcome", sort_order: 0, payload: { type: "message", text: "Olá! 👋 Como posso ajudar?" } },
+    { step_key: "main_menu", sort_order: 1, payload: { type: "options", text: menuText, options: [
+      { label: "1 — Cartão e recompensas", value: "1", nextStepId: ids.agent_loyalty },
+      { label: "2 — Promoções", value: "2", nextStepId: ids.agent_promotions },
+      { label: "3 — Acesso à conta", value: "3", nextStepId: ids.agent_access },
+      { label: "4 — Dúvidas", value: "4", nextStepId: ids.agent_general },
+      { label: "5 — Falar com suporte", value: "5", nextStepId: ids.human_handoff },
+    ] } },
+    { step_key: "agent_loyalty", sort_order: 2, payload: { type: "agent", context: "Cartão fidelidade e recompensas." } },
+    { step_key: "agent_promotions", sort_order: 3, payload: { type: "agent", context: "Promoções do estabelecimento." } },
+    { step_key: "agent_access", sort_order: 4, payload: { type: "agent", context: "Acesso à conta." } },
+    { step_key: "agent_general", sort_order: 5, payload: { type: "agent", context: "Dúvidas gerais." } },
+    { step_key: "human_handoff", sort_order: 6, payload: { type: "transfer_to_queue", text: "Entendi. Vou encaminhar você para nossa equipe de suporte. 💜" } },
+  ];
+
+  for (const definition of definitions) {
+    const current = byKey.get(definition.step_key);
+    let payload = definition.payload;
+    if (current?.payload && typeof current.payload === "object") {
+      payload = current.payload as typeof definition.payload;
+      if (definition.step_key === "main_menu") {
+        const desired = (definition.payload as any).options;
+        const configured = Array.isArray((current.payload as any).options) ? (current.payload as any).options : [];
+        payload = { ...(definition.payload as any), ...(current.payload as any), options: desired.map((option: any) => ({
+          ...option, ...(configured.find((item: any) => item.value === option.value) || {}), nextStepId: option.nextStepId,
+        })) } as typeof definition.payload;
+      }
+    }
+    const row = { ...definition, payload, id: ids[definition.step_key as keyof typeof ids], flow_id: flow.id, establishment_id: establishmentId };
+    const result = current
+      ? await supabaseAdmin.from("crm_flow_steps").update({ payload: row.payload, sort_order: row.sort_order }).eq("id", current.id).eq("establishment_id", establishmentId)
+      : await supabaseAdmin.from("crm_flow_steps").insert(row);
+    if (result.error) throw result.error;
+  }
+
+  const currentConfig = await supabaseAdmin.from("crm_agent_settings").select("establishment_id")
+    .eq("establishment_id", establishmentId).maybeSingle();
+  if (currentConfig.error) throw currentConfig.error;
+  if (!currentConfig.data) {
+    const configInsert = await supabaseAdmin.from("crm_agent_settings").insert({ establishment_id: establishmentId, flow_id: flow.id });
+    if (configInsert.error) throw configInsert.error;
+  }
+  return { flowId: flow.id, created, stepsCount: definitions.length };
 }

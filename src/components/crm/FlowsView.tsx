@@ -5,11 +5,13 @@ import { GitBranch, Plus, Play, Trash2, Edit2, CheckCircle2, Circle } from "luci
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
+import { useCRMEstablishmentId } from "./CRMEstablishmentContext";
 
 export function FlowsView({ onEdit }: { onEdit: (flow: any) => void }) {
+  const establishmentId = useCRMEstablishmentId();
   const { data: flows, isLoading } = useQuery({
-    queryKey: ["crm-flows"],
-    queryFn: () => getCRMFlows(),
+    queryKey: ["crm-flows", establishmentId],
+    queryFn: () => getCRMFlows({ data: { establishment_id: establishmentId } }),
   });
 
   if (isLoading) {

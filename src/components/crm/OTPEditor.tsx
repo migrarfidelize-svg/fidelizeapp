@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getOTPSettingsDetailed, saveOTPTemplate, sendOTPTestMessage } from "@/lib/atendimento.functions";
+import { useCRMEstablishmentId } from "./CRMEstablishmentContext";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -13,11 +14,12 @@ import { Link } from "@tanstack/react-router";
 import { Label } from "@/components/ui/label";
 
 export function OTPEditor() {
+  const establishmentId = useCRMEstablishmentId();
   const queryClient = useQueryClient();
 
   const { data: otpData, isLoading } = useQuery({ 
     queryKey: ["crm-otp-settings"], 
-    queryFn: () => getOTPSettingsDetailed() 
+    queryFn: () => getOTPSettingsDetailed({ data: { establishment_id: establishmentId } })
   });
   
   const [template, setTemplate] = useState("");

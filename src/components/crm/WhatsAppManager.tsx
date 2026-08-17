@@ -24,14 +24,16 @@ import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
+import { useCRMEstablishmentId } from "./CRMEstablishmentContext";
 
 export function WhatsAppManager() {
+  const establishmentId = useCRMEstablishmentId();
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { data: status, isLoading: isLoadingStatus, error: statusError } = useQuery({
     queryKey: ["whatsapp-status"],
-    queryFn: () => getWhatsAppInstanceStatus(),
+    queryFn: () => getWhatsAppInstanceStatus({ data: { establishment_id: establishmentId } }),
     refetchInterval: (query) => {
       const data = query.state.data as any;
       return (data?.status === "QRCODE" || data?.status === "DISCONNECTED") ? 10000 : 30000;
@@ -40,11 +42,11 @@ export function WhatsAppManager() {
 
   const { data: settings } = useQuery({
     queryKey: ["otp-settings"],
-    queryFn: () => getOTPSettingsDetailed(),
+    queryFn: () => getOTPSettingsDetailed({ data: { establishment_id: establishmentId } }),
   });
 
   const disconnectMutation = useMutation({
-    mutationFn: () => disconnectWhatsAppInstance(),
+    mutationFn: () => disconnectWhatsAppInstance({ data: { establishment_id: establishmentId } }),
     onSuccess: () => {
       toast.success("Instância desconectada com sucesso.");
       queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
@@ -214,14 +216,14 @@ export function WhatsAppManager() {
                   </label>
                   <div className="flex items-center gap-2">
                     <code className="flex-1 truncate text-xs bg-muted px-2 py-2 rounded border font-mono">
-                      {typeof window !== 'undefined' ? `${window.location.origin}/api/public/webhooks/whatsapp` : "/api/public/webhooks/whatsapp"}
+                      {typeof window !== 'undefined' ? `${window.location.origin}/api/public/webhooks/whatsapp?integration_id=${settings?.provider?.integrationId || ""}` : "/api/public/webhooks/whatsapp"}
                     </code>
                     <Button 
                       size="sm" 
                       variant="outline" 
                       className="h-8 w-8 p-0"
                       onClick={() => {
-                        const url = `${window.location.origin}/api/public/webhooks/whatsapp`;
+                        const url = `${window.location.origin}/api/public/webhooks/whatsapp?integration_id=${settings?.provider?.integrationId || ""}`;
                         navigator.clipboard.writeText(url);
                         toast.success("URL do webhook copiada!");
                       }}

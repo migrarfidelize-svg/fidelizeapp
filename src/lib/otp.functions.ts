@@ -35,6 +35,21 @@ export async function getActiveWhatsAppProvider(establishmentId?: string) {
   }
 
   if (!integration) return null;
+  return buildWhatsAppProvider(integration);
+}
+
+/** Resolves a webhook by its integration capability id, never by a public tenant id. */
+export async function getWhatsAppProviderForWebhook(integrationId: string) {
+  const parsedId = z.string().uuid().safeParse(integrationId);
+  if (!parsedId.success) return null;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: integration, error } = await supabaseAdmin.from("integrations").select("*")
+    .eq("id", parsedId.data).eq("category", "otp").eq("enabled", true).maybeSingle();
+  if (error || !integration?.establishment_id) return null;
+  return buildWhatsAppProvider(integration);
+}
+
+async function buildWhatsAppProvider(integration: any) {
 
   const { getProvider } =
     await import("./integrations/registry");
@@ -84,6 +99,7 @@ export async function getActiveWhatsAppProvider(establishmentId?: string) {
 
   return {
     provider,
+    integrationId: integration.id as string,
     establishmentId: integration.establishment_id as string,
     runtime: {
       enabled: integration.enabled,

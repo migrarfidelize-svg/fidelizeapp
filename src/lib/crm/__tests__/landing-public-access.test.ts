@@ -22,7 +22,13 @@ describe("Landing Public Access Audit", () => {
 
   it("1. landing publicada abre com dados corretos", async () => {
     const mockEst = { id: "1", slug: "cafe", name: "Cafe", active: true, updated_at: "2024-01-01" };
-    const mockPage = { id: "p1", establishment_id: "1", published: true, title: "Links", updated_at: "2024-01-01" };
+    const mockPage = {
+      id: "p1",
+      establishment_id: "1",
+      published: true,
+      title: "Links",
+      updated_at: "2024-01-01",
+    };
     const mockLinks = [{ id: "l1", label: "Insta", url: "...", enabled: true, sort_order: 0 }];
 
     adminMock.maybeSingle
@@ -58,29 +64,32 @@ describe("Landing Public Access Audit", () => {
   });
 
   it("5. multi-tenant: links filtrados por page_id", async () => {
-     const mockEst = { id: "tenant-a", slug: "a", active: true };
-     const mockPage = { id: "page-a", establishment_id: "tenant-a", published: true };
-     
-     adminMock.maybeSingle
+    const mockEst = { id: "tenant-a", slug: "a", active: true };
+    const mockPage = { id: "page-a", establishment_id: "tenant-a", published: true };
+
+    adminMock.maybeSingle
       .mockResolvedValueOnce({ data: mockEst, error: null })
       .mockResolvedValueOnce({ data: mockPage, error: null });
-     adminMock.order.mockResolvedValueOnce({ data: [], error: null });
+    adminMock.order.mockResolvedValueOnce({ data: [], error: null });
 
-     await getPublicLandingBySlug("a");
-     
-     // Verifica se a query de links usou o page_id correto
-     expect(adminMock.eq).toHaveBeenCalledWith("page_id", "page-a");
+    await getPublicLandingBySlug("a");
+
+    // Verifica se a query de links usou o page_id correto
+    expect(adminMock.eq).toHaveBeenCalledWith("page_id", "page-a");
   });
 
   it("6. DATABASE_ERROR capturado corretamente", async () => {
-    adminMock.maybeSingle.mockResolvedValueOnce({ data: null, error: { message: "Fail", code: "500" } });
+    adminMock.maybeSingle.mockResolvedValueOnce({
+      data: null,
+      error: { message: "Fail", code: "500" },
+    });
     await expect(getPublicLandingBySlug("cafe")).rejects.toThrow("DATABASE_ERROR");
   });
-  
+
   it("7. DTO não contém campos sensíveis (establishment_id interno)", async () => {
     const mockEst = { id: "uuid-interno", slug: "cafe", name: "Cafe", active: true };
     const mockPage = { id: "p-uuid", establishment_id: "uuid-interno", published: true };
-    
+
     adminMock.maybeSingle
       .mockResolvedValueOnce({ data: mockEst, error: null })
       .mockResolvedValueOnce({ data: mockPage, error: null });
@@ -88,5 +97,70 @@ describe("Landing Public Access Audit", () => {
 
     const res = await getPublicLandingBySlug("cafe");
     expect((res.establishment as any).id).toBeUndefined();
+    expect((res.page as any).establishment_id).toBeUndefined();
+    expect(JSON.stringify(res)).not.toContain("uuid-interno");
+  });
+
+  it("8. normaliza o slug antes da resolução", async () => {
+    adminMock.maybeSingle.mockResolvedValueOnce({ data: null, error: null });
+
+    await expect(getPublicLandingBySlug("  Cafe-Aurora  ")).rejects.toThrow("NOT_FOUND");
+    expect(adminMock.eq).toHaveBeenCalledWith("slug", "cafe-aurora");
+  });
+
+  it("9. erro ao buscar a landing continua sendo DATABASE_ERROR", async () => {
+    adminMock.maybeSingle
+      .mockResolvedValueOnce({ data: { id: "tenant-a", active: true }, error: null })
+      .mockResolvedValueOnce({ data: null, error: { message: "timeout" } });
+
+    await expect(getPublicLandingBySlug("cafe")).rejects.toThrow("DATABASE_ERROR");
+  });
+
+  it("10. erro ao buscar links continua sendo DATABASE_ERROR", async () => {
+    adminMock.maybeSingle
+      .mockResolvedValueOnce({ data: { id: "tenant-a", active: true }, error: null })
+      .mockResolvedValueOnce({ data: { id: "page-a" }, error: null });
+    adminMock.order.mockResolvedValueOnce({ data: null, error: { message: "timeout" } });
+
+    await expect(getPublicLandingBySlug("cafe")).rejects.toThrow("DATABASE_ERROR");
+  });
+
+  it("11. consulta somente links habilitados e ordenados da página do tenant", async () => {
+    adminMock.maybeSingle
+      .mockResolvedValueOnce({ data: { id: "tenant-a", active: true }, error: null })
+      .mockResolvedValueOnce({ data: { id: "page-a" }, error: null });
+    adminMock.order.mockResolvedValueOnce({ data: [], error: null });
+
+    await getPublicLandingBySlug("tenant-a");
+
+    expect(adminMock.eq).toHaveBeenCalledWith("establishment_id", "tenant-a");
+    expect(adminMock.eq).toHaveBeenCalledWith("published", true);
+    expect(adminMock.eq).toHaveBeenCalledWith("page_id", "page-a");
+    expect(adminMock.eq).toHaveBeenCalledWith("enabled", true);
+    expect(adminMock.order).toHaveBeenCalledWith("sort_order", { ascending: true });
+  });
+
+  it("12. não consulta páginas ou links quando o estabelecimento está inativo", async () => {
+    adminMock.maybeSingle.mockResolvedValueOnce({
+      data: { id: "tenant-a", active: false },
+      error: null,
+    });
+
+    await expect(getPublicLandingBySlug("tenant-a")).rejects.toThrow("INACTIVE");
+    expect(adminMock.select).toHaveBeenCalledTimes(1);
+    expect(adminMock.order).not.toHaveBeenCalled();
+  });
+
+  it("13. usa seleções explícitas, sem carregar registros administrativos inteiros", async () => {
+    adminMock.maybeSingle
+      .mockResolvedValueOnce({ data: { id: "tenant-a", active: true }, error: null })
+      .mockResolvedValueOnce({ data: { id: "page-a" }, error: null });
+    adminMock.order.mockResolvedValueOnce({ data: [], error: null });
+
+    await getPublicLandingBySlug("tenant-a");
+
+    const selections = adminMock.select.mock.calls.map(([columns]: [string]) => columns);
+    expect(selections).not.toContain("*");
+    expect(selections.join(",")).not.toMatch(/user_id|billing|token|secret|membership/);
   });
 });

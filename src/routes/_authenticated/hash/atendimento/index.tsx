@@ -1,10 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { 
   getCRMStats,
-  getWhatsAppInstanceStatus
+  getWhatsAppInstanceStatus,
+  getCRMConversations,
+  getCRMConversationMessages,
+  sendCRMMessage,
+  updateCRMConversationStatus,
+  getCRMEstablishments,
 } from "@/lib/atendimento.functions";
+import { useCRMRealtime } from "@/hooks/use-crm-realtime";
+import { CRMEstablishmentContext } from "@/components/crm/CRMEstablishmentContext";
 import { cn } from "@/lib/utils";
 import { TemplateManager } from "@/components/crm/TemplateManager";
 import { OTPEditor } from "@/components/crm/OTPEditor";
@@ -23,9 +30,13 @@ export const Route = createFileRoute("/_authenticated/hash/atendimento/")({
 });
 
 function AtendimentoCRM() {
+  useCRMRealtime();
   const { theme, toggle } = useTheme();
   const [activeTab, setActiveTab] = useState("conversas");
   const [selectedFlow, setSelectedFlow] = useState<any>(null);
+  const establishments = useQuery({ queryKey: ["crm-establishments"], queryFn: () => getCRMEstablishments() });
+  const [establishmentId, setEstablishmentId] = useState("");
+  const selectedEstablishmentId = establishmentId || (establishments.data?.length === 1 ? establishments.data[0].id : "");
   
   const navItems = [
     { group: "Operação", items: [
@@ -75,6 +86,10 @@ function AtendimentoCRM() {
           ))}
         </div>
         <div className="flex items-center gap-2">
+            <select value={selectedEstablishmentId} onChange={(event) => setEstablishmentId(event.target.value)} className="h-8 rounded-md border bg-background px-2 text-xs">
+              <option value="">Selecione o estabelecimento</option>
+              {(establishments.data || []).map((establishment) => <option key={establishment.id} value={establishment.id}>{establishment.name}</option>)}
+            </select>
             <button onClick={toggle} className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground">
                 {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
             </button>
@@ -82,35 +97,11 @@ function AtendimentoCRM() {
       </header>
 
       {/* Conteúdo CRM */}
+      <CRMEstablishmentContext.Provider value={selectedEstablishmentId || null}>
       <main className="flex-1 overflow-hidden relative">
-        {activeTab === "conversas" ? (
-          <div className="flex h-full w-full">
-            <div className="w-80 border-r flex flex-col bg-card">
-              <div className="h-12 border-b flex items-center px-4 gap-2">
-                <Search className="h-3.5 w-3.5 text-muted-foreground" />
-                <input className="flex-1 text-xs bg-transparent outline-none" placeholder="Buscar..." />
-                <Filter className="h-3.5 w-3.5 text-muted-foreground" />
-              </div>
-              <div className="flex-1 p-2 space-y-1">
-                <div className="text-xs text-muted-foreground p-4 text-center">Nenhuma conversa.</div>
-              </div>
-            </div>
-            <div className="flex-1 flex flex-col bg-background">
-              <div className="h-12 border-b flex items-center px-4 justify-between">
-                <span className="font-semibold text-sm">Selecione uma conversa</span>
-              </div>
-              <div className="flex-1 flex items-center justify-center text-muted-foreground text-xs">
-                Selecione uma conversa para começar a atender.
-              </div>
-              <div className="h-16 border-t p-2 flex items-center gap-2">
-                <textarea className="flex-1 bg-muted/30 rounded-md p-2 text-xs h-full resize-none" placeholder="Digite uma mensagem..." />
-                <button className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-xs font-semibold">Enviar</button>
-              </div>
-            </div>
-            <div className="w-72 border-l bg-card hidden md:block">
-              <div className="h-12 border-b flex items-center px-4 text-sm font-semibold">Contato</div>
-            </div>
-          </div>
+        {!selectedEstablishmentId ? <div className="grid h-full place-items-center text-sm text-muted-foreground">Selecione um estabelecimento com WhatsApp ativo.</div> :
+        activeTab === "conversas" ? (
+          <ConversationQueue establishmentId={selectedEstablishmentId} />
         ) : (
           <div className="h-full overflow-y-auto p-8">
             {activeTab === "fila" && <p>Visualização de Fila</p>}
@@ -143,6 +134,52 @@ function AtendimentoCRM() {
           </div>
         )}
       </main>
+      </CRMEstablishmentContext.Provider>
     </div>
   );
+}
+
+function ConversationQueue({ establishmentId }: { establishmentId: string }) {
+  const queryClient = useQueryClient();
+  const [selectedId, setSelectedId] = useState<string>();
+  const [body, setBody] = useState("");
+  const conversations = useQuery({ queryKey: ["crm-conversations", establishmentId], queryFn: () => getCRMConversations({ data: { status: "all", establishment_id: establishmentId } }) });
+  const selected = conversations.data?.find((item: any) => item.id === selectedId);
+  const messages = useQuery({
+    queryKey: ["crm-messages", selectedId],
+    queryFn: () => getCRMConversationMessages({ data: { conversationId: selectedId!, establishment_id: establishmentId } }),
+    enabled: !!selectedId,
+  });
+  const refresh = () => {
+    queryClient.invalidateQueries({ queryKey: ["crm-conversations"] });
+    if (selectedId) queryClient.invalidateQueries({ queryKey: ["crm-messages", selectedId] });
+  };
+  const send = useMutation({ mutationFn: () => sendCRMMessage({ data: { conversationId: selectedId!, body } }), onSuccess: () => { setBody(""); refresh(); } });
+  const status = useMutation({ mutationFn: (value: "assigned" | "closed") => updateCRMConversationStatus({ data: { conversationId: selectedId!, status: value } }), onSuccess: refresh });
+  const supportActive = Boolean((selected?.metadata as any)?.support?.active);
+  return <div className="flex h-full w-full">
+    <aside className="w-80 border-r bg-card overflow-y-auto">
+      <div className="h-12 border-b flex items-center px-4 gap-2"><Search className="h-4 w-4" /><span className="text-xs">Fila de atendimento</span></div>
+      {(conversations.data || []).map((conversation: any) => {
+        const support = Boolean(conversation.metadata?.support?.active);
+        const last = [...(conversation.messages || [])].sort((a: any, b: any) => String(b.created_at).localeCompare(String(a.created_at)))[0];
+        return <button key={conversation.id} onClick={() => setSelectedId(conversation.id)} className={cn("w-full border-b p-3 text-left", selectedId === conversation.id && "bg-muted") }>
+          <div className="flex justify-between gap-2"><strong className="text-sm">{conversation.customer_phone}</strong>{support && <span className="rounded-full border border-red-500/40 bg-red-500/15 px-2 py-0.5 text-[10px] font-black text-red-600">SUPORTE</span>}</div>
+          <p className="truncate text-xs text-muted-foreground">{last?.body || "Nova conversa"}</p>
+          <span className="text-[10px] uppercase text-muted-foreground">{conversation.status}</span>
+        </button>;
+      })}
+      {!conversations.isLoading && !conversations.data?.length && <p className="p-6 text-center text-xs text-muted-foreground">Nenhuma conversa.</p>}
+    </aside>
+    <section className="flex min-w-0 flex-1 flex-col">
+      {!selected ? <div className="grid flex-1 place-items-center text-sm text-muted-foreground">Selecione uma conversa.</div> : <>
+        <header className="flex h-14 items-center justify-between border-b px-4">
+          <div><strong>{selected.customer_phone}</strong>{supportActive && <span className="ml-3 rounded-full border border-red-500/40 bg-red-500/15 px-2 py-1 text-xs font-black text-red-600">SUPORTE</span>}</div>
+          <div className="flex gap-2">{selected.status === "waiting" && <button onClick={() => status.mutate("assigned")} className="rounded bg-primary px-3 py-1 text-xs text-primary-foreground">Assumir</button>}<button onClick={() => status.mutate("closed")} className="rounded border px-3 py-1 text-xs">Resolver</button></div>
+        </header>
+        <div className="flex-1 space-y-2 overflow-y-auto p-4">{(messages.data || []).map((message: any) => <div key={`${message.type}-${message.id}`} className={cn("max-w-[75%] rounded-lg p-3 text-sm", message.direction === "outbound" ? "ml-auto bg-primary text-primary-foreground" : message.direction === "internal" ? "mx-auto bg-amber-500/10" : "bg-muted")}>{message.body || message.content}</div>)}</div>
+        <footer className="flex gap-2 border-t p-3"><textarea value={body} onChange={(event) => setBody(event.target.value)} className="min-h-12 flex-1 rounded border bg-background p-2 text-sm" placeholder="Responder pelo WhatsApp..." /><button disabled={!body.trim() || send.isPending} onClick={() => send.mutate()} className="rounded bg-primary px-4 text-sm text-primary-foreground">Enviar</button></footer>
+      </>}
+    </section>
+  </div>;
 }

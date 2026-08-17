@@ -12,20 +12,22 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useCRMEstablishmentId } from "./CRMEstablishmentContext";
 
 export function ContactManager({ onSelectConversation }: { onSelectConversation?: (contact: any) => void }) {
+  const establishmentId = useCRMEstablishmentId();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingContact, setEditingContact] = useState<any>(null);
 
   const { data: contacts, isLoading } = useQuery({ 
-    queryKey: ["crm-contacts"], 
-    queryFn: () => getCRMContacts() 
+    queryKey: ["crm-contacts", establishmentId],
+    queryFn: () => getCRMContacts({ data: { establishment_id: establishmentId } })
   });
 
   const saveMutation = useMutation({
-    mutationFn: (data: any) => saveCRMContact({ data }),
+    mutationFn: (data: any) => saveCRMContact({ data: { ...data, establishment_id: establishmentId } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-contacts"] });
       setIsDialogOpen(false);
@@ -36,7 +38,7 @@ export function ContactManager({ onSelectConversation }: { onSelectConversation?
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (contactId: string) => deleteCRMContact({ data: { contactId } }),
+    mutationFn: (contactId: string) => deleteCRMContact({ data: { contactId, establishment_id: establishmentId } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-contacts"] });
       toast.success("Contato excluído");

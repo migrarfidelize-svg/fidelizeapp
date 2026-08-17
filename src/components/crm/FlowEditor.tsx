@@ -11,14 +11,16 @@ import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { saveCRMFlow } from "@/lib/atendimento.functions";
 import { cn } from "@/lib/utils";
+import { useCRMEstablishmentId } from "./CRMEstablishmentContext";
 
 export function FlowEditor({ flow, onBack }: { flow: any; onBack: () => void }) {
+  const establishmentId = useCRMEstablishmentId();
   const queryClient = useQueryClient();
   const [steps, setSteps] = useState<any[]>(flow?.steps || []);
   const [flowName, setFlowName] = useState(flow?.name || "Novo Fluxo de Atendimento");
 
   const saveMutation = useMutation({
-    mutationFn: (vars: any) => saveCRMFlow({ data: vars }),
+    mutationFn: (vars: any) => saveCRMFlow({ data: { ...vars, establishment_id: establishmentId } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-flows"] });
       toast.success("Arquitetura de fluxo salva com sucesso");
