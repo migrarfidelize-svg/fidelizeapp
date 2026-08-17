@@ -749,8 +749,7 @@ export const saveCRMContact = createServerFn({ method: "POST" })
 
     // Impedir telefone duplicado
     const phone = data.phone.replace(/\D/g, "");
-    const { data: existing } = await supabaseAdmin
-      .from("crm_contacts")
+    const { data: existing } = await (supabaseAdmin.from("crm_contacts" as any) as any)
       .select("id")
       .eq("establishment_id", establishmentId)
       .eq("phone", phone)
@@ -760,8 +759,7 @@ export const saveCRMContact = createServerFn({ method: "POST" })
       throw new Error("Este número de telefone já está cadastrado.");
     }
 
-    const { error } = await supabaseAdmin
-      .from("crm_contacts")
+    const { error } = await (supabaseAdmin.from("crm_contacts" as any) as any)
       .upsert({
         id: data.id || undefined,
         establishment_id: establishmentId,
