@@ -581,7 +581,7 @@ export const getAgentSettings = createServerFn({ method: "GET" })
     if (!isAdmin) throw new Error("Acesso restrito.");
 
     const establishmentId = await resolveCRMEstablishmentId();
-    const { data } = await supabase.from("crm_agent_settings").select("enabled, flow_id, config").eq("establishment_id", establishmentId).maybeSingle();
+    const { data } = await (supabase.from("crm_agent_settings" as any) as any).select("enabled, flow_id, config").eq("establishment_id", establishmentId).maybeSingle();
     return data ? { ...(data.config as object), enabled: data.enabled, behavior: { ...((data.config as any)?.behavior || {}), mainFlowId: data.flow_id } } : {
       enabled: false,
       name: "Assistente Afidelize",
@@ -628,11 +628,11 @@ export const saveAgentSettings = createServerFn({ method: "POST" })
     const establishmentId = await resolveCRMEstablishmentId();
     const flowId = data?.behavior?.mainFlowId;
     if (!flowId) throw new Error("Selecione o fluxo principal.");
-    const { data: flow } = await supabaseAdmin.from("crm_flows").select("id").eq("id", flowId).eq("establishment_id", establishmentId).maybeSingle();
+    const { data: flow } = await (supabaseAdmin.from("crm_flows" as any) as any).select("id").eq("id", flowId).eq("establishment_id", establishmentId).maybeSingle();
     if (!flow) throw new Error("Fluxo não pertence ao estabelecimento ativo.");
     const { behavior, enabled, ...config } = data;
     const { mainFlowId: _mainFlowId, ...behaviorConfig } = behavior || {};
-    const { error } = await supabaseAdmin.from("crm_agent_settings").upsert({
+    const { error } = await (supabaseAdmin.from("crm_agent_settings" as any) as any).upsert({
       establishment_id: establishmentId, flow_id: flowId, enabled: enabled ?? true,
       config: { ...config, behavior: behaviorConfig },
     }, { onConflict: "establishment_id" });
