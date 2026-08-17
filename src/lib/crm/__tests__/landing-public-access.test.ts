@@ -2,14 +2,20 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { getPublicLandingBySlug } from "../../linktree.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-vi.mock("@/integrations/supabase/client.server", () => ({
-  supabaseAdmin: {
+// Mock helper to create a chaining mock
+const createMockSupabase = () => {
+  const mock: any = {
     from: vi.fn().mockReturnThis(),
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(),
     maybeSingle: vi.fn(),
-  },
+  };
+  return mock;
+};
+
+vi.mock("@/integrations/supabase/client.server", () => ({
+  supabaseAdmin: createMockSupabase(),
 }));
 
 describe("Landing Public Access Audit", () => {
