@@ -536,18 +536,17 @@ function AuthPage() {
                         if (otpStatus === "error") setOtpStatus("default");
                         otpAutoSubmittedRef.current = false;
                       }}
-                      render={({ slots }) => (
-                        <InputOTPGroup className="gap-2 sm:gap-3">
-                          {slots.map((slot, idx) => (
-                            <InputOTPSlot 
-                              key={idx} 
-                              index={idx}
-                              status={otpStatus}
-                            />
-                          ))}
-                        </InputOTPGroup>
-                      )}
-                    />
+                    >
+                      <InputOTPGroup className="gap-2 sm:gap-3">
+                        {Array.from({ length: 6 }).map((_, idx) => (
+                          <InputOTPSlot
+                            key={idx}
+                            index={idx}
+                            status={otpStatus}
+                          />
+                        ))}
+                      </InputOTPGroup>
+                    </InputOTP>
                   </div>
 
                   <AnimatePresence mode="wait">
@@ -633,4 +632,3 @@ function AuthPage() {
     </div>
   );
 }
-

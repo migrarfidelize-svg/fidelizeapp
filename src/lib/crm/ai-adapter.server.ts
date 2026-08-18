@@ -14,9 +14,10 @@ export interface AIProviderRuntime {
  * Centraliza a lógica de busca em integrações, decriptografia e mapeamento de chaves.
  */
 export async function resolveAIProviderRuntime(
+  establishmentId: string,
   providerId?: string | null
 ): Promise<AIProviderRuntime | null> {
-  if (!providerId) return null;
+  if (!establishmentId || !providerId) return null;
 
   // 1. Localizar Provider
   const provider = aiProviders.find(p => p.meta.id === providerId);
@@ -26,6 +27,8 @@ export async function resolveAIProviderRuntime(
   const { data: integration, error } = await supabaseAdmin
     .from("integrations")
     .select("*")
+    .eq("establishment_id", establishmentId)
+    .eq("category", "ai")
     .eq("provider", providerId)
     .eq("enabled", true)
     .maybeSingle();
@@ -81,10 +84,11 @@ export async function resolveAIProviderRuntime(
  * Verifica se um provider de IA está pronto para uso.
  */
 export async function isAIProviderUsable(
+  establishmentId: string,
   providerId?: string | null
 ): Promise<boolean> {
   try {
-    const runtime = await resolveAIProviderRuntime(providerId);
+    const runtime = await resolveAIProviderRuntime(establishmentId, providerId);
     return Boolean(runtime);
   } catch (e) {
     console.error(`[AI Adapter] Error checking usability for ${providerId}:`, e);
@@ -99,6 +103,7 @@ export interface AgentResponse {
 }
 
 export interface AgentMessageInput {
+  establishmentId: string;
   providerId: string;
   model?: string;
   systemPrompt: string;
@@ -111,10 +116,10 @@ export interface AgentMessageInput {
  * Normaliza a chamada para diferentes providers de IA configurados no sistema.
  */
 export async function generateAgentResponse(input: AgentMessageInput): Promise<AgentResponse> {
-  const { providerId, model, systemPrompt, messages, temperature = 0.7, maxTokens = 500 } = input;
+  const { establishmentId, providerId, model, systemPrompt, messages, temperature = 0.7, maxTokens = 500 } = input;
 
   // Usar helper centralizado para resolução
-  const runtime = await resolveAIProviderRuntime(providerId);
+  const runtime = await resolveAIProviderRuntime(establishmentId, providerId);
   if (!runtime) {
     throw new Error(`AI Integration not usable for provider: ${providerId}`);
   }
