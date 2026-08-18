@@ -461,7 +461,7 @@ export const getCRMFlows = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { userId, supabase } = context;
-    const { data: isAdmin } = await (supabase as any).rpc("is_super_admin", { _user: userId });
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
     if (!isAdmin) throw new Error("Acesso restrito.");
 
     const establishmentId = await resolveCRMEstablishmentId();
