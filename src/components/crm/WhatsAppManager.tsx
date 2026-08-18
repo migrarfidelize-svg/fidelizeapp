@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   getWhatsAppInstanceStatus, 
   disconnectWhatsAppInstance,
-  getOTPSettingsDetailed 
+  getCRMWhatsAppWebhookUrl,
 } from "@/lib/atendimento.functions";
 import { 
   Smartphone, 
@@ -25,26 +25,27 @@ import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 
-export function WhatsAppManager() {
+export function WhatsAppManager({ establishmentId }: { establishmentId: string }) {
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { data: status, isLoading: isLoadingStatus, error: statusError } = useQuery({
-    queryKey: ["whatsapp-status"],
-    queryFn: () => getWhatsAppInstanceStatus(),
+    queryKey: ["whatsapp-status", establishmentId],
+    queryFn: () => getWhatsAppInstanceStatus({ data: { establishmentId } }),
     refetchInterval: (query) => {
       const data = query.state.data as any;
       return (data?.status === "QRCODE" || data?.status === "DISCONNECTED") ? 10000 : 30000;
     },
   });
-
-  const { data: settings } = useQuery({
-    queryKey: ["otp-settings"],
-    queryFn: () => getOTPSettingsDetailed(),
+  const webhookUrl = useQuery({
+    queryKey: ["whatsapp-webhook-url", establishmentId],
+    queryFn: () => getCRMWhatsAppWebhookUrl({ data: { establishmentId } }),
+    enabled: !!establishmentId,
+    staleTime: Infinity,
   });
 
   const disconnectMutation = useMutation({
-    mutationFn: () => disconnectWhatsAppInstance(),
+    mutationFn: () => disconnectWhatsAppInstance({ data: { establishmentId } }),
     onSuccess: () => {
       toast.success("Instância desconectada com sucesso.");
       queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
@@ -71,7 +72,7 @@ export function WhatsAppManager() {
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-foreground uppercase">WhatsApp Business</h2>
           <p className="text-xs text-muted-foreground uppercase tracking-widest mt-1">
-            Gerencie a conexão da instância ativa para atendimento e OTP.
+            Gerencie a conexão CRM exclusiva do estabelecimento selecionado.
           </p>
           </div>
           <Button 
@@ -90,7 +91,7 @@ export function WhatsAppManager() {
           </Button>
         </div>
 
-        {!settings?.provider && (
+        {!status?.provider && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Nenhum Provedor Ativo</AlertTitle>
@@ -109,7 +110,7 @@ export function WhatsAppManager() {
                 Status da Conexão
               </CardTitle>
               <CardDescription>
-                Provedor Atual: <span className="font-semibold text-foreground">{settings?.provider?.name || "Nenhum"}</span>
+                Provedor Atual: <span className="font-semibold text-foreground">{status?.provider?.name || "Nenhum"}</span>
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -181,7 +182,7 @@ export function WhatsAppManager() {
                 </Alert>
               )}
 
-              {!isConnected && !hasQR && !isError && settings?.provider && (
+              {!isConnected && !hasQR && !isError && status?.provider && (
                 <div className="py-12 flex flex-col items-center justify-center border-2 border-dashed rounded-2xl bg-muted/5 border-border/40">
                   <Smartphone className="w-12 h-12 mb-4 text-muted-foreground opacity-20" />
                   <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Instância Pronta</p>
@@ -214,15 +215,15 @@ export function WhatsAppManager() {
                   </label>
                   <div className="flex items-center gap-2">
                     <code className="flex-1 truncate text-xs bg-muted px-2 py-2 rounded border font-mono">
-                      {typeof window !== 'undefined' ? `${window.location.origin}/api/public/webhooks/whatsapp` : "/api/public/webhooks/whatsapp"}
+                      {webhookUrl.data || "Configurando URL autenticada..."}
                     </code>
                     <Button 
                       size="sm" 
                       variant="outline" 
                       className="h-8 w-8 p-0"
                       onClick={() => {
-                        const url = `${window.location.origin}/api/public/webhooks/whatsapp`;
-                        navigator.clipboard.writeText(url);
+                        if (!webhookUrl.data) return;
+                        navigator.clipboard.writeText(webhookUrl.data);
                         toast.success("URL do webhook copiada!");
                       }}
                     >
@@ -260,13 +261,13 @@ export function WhatsAppManager() {
               <div className="space-y-1">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">ID do Provedor</label>
                 <div className="text-sm font-mono truncate bg-muted px-2 py-1 rounded">
-                  {settings?.provider?.id || "---"}
+                  {status?.provider?.id || "---"}
                 </div>
               </div>
               
               <div className="pt-4 border-t">
                 <p className="text-xs text-muted-foreground mb-4">
-                  As credenciais de API (URL, Key, Instance) são gerenciadas centralmente para garantir segurança e reuso entre Atendimento e OTP.
+                  As credenciais de API são vinculadas somente a este estabelecimento e não são reutilizadas pelo OTP global.
                 </p>
                 <Button variant="outline" size="sm" className="w-full" asChild>
                   <a href="/hash/integracoes">

@@ -1,6 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { authorizeCRMEstablishment } from "./atendimento.functions";
+
+const tenantSchema = z.object({ establishmentId: z.string().uuid() });
 
 async function assertSuperAdmin(supabase: any, userId: string) {
   const { data, error } = await supabase.rpc("is_super_admin", { _user: userId });
@@ -10,12 +13,14 @@ async function assertSuperAdmin(supabase: any, userId: string) {
 
 export const getBroadcasts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((d: unknown) => tenantSchema.parse(d))
+  .handler(async ({ data: input, context }) => {
     const { supabase, userId } = context;
-    await assertSuperAdmin(supabase, userId);
-    const { data, error } = await supabase
+    const establishmentId = await authorizeCRMEstablishment(supabase, userId, input.establishmentId);
+    const { data, error } = await (supabase as any)
       .from("crm_broadcasts")
       .select("*")
+      .eq("establishment_id", establishmentId)
       .order("created_at", { ascending: false });
     if (error) throw error;
     return data || [];
@@ -23,14 +28,15 @@ export const getBroadcasts = createServerFn({ method: "GET" })
 
 export const getBroadcastDetails = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .inputValidator((d: unknown) => tenantSchema.extend({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertSuperAdmin(supabase, userId);
-    const { data: broadcast, error } = await supabase
+    const establishmentId = await authorizeCRMEstablishment(supabase, userId, data.establishmentId);
+    const { data: broadcast, error } = await (supabase as any)
       .from("crm_broadcasts")
       .select("*, recipients:crm_broadcast_recipients(*)")
       .eq("id", data.id)
+      .eq("establishment_id", establishmentId)
       .single();
     if (error) throw error;
     return broadcast;
@@ -39,6 +45,7 @@ export const getBroadcastDetails = createServerFn({ method: "GET" })
 export const createBroadcast = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
+    establishmentId: z.string().uuid(),
     name: z.string().min(3),
     message_template: z.string().min(1),
     scheduled_at: z.string().optional(),
@@ -49,21 +56,22 @@ export const createBroadcast = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertSuperAdmin(supabase, userId);
+    const establishmentId = await authorizeCRMEstablishment(supabase, userId, data.establishmentId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // 1. Get eligible contacts
-    let query = supabaseAdmin
+    let query = (supabaseAdmin as any)
       .from("crm_contacts")
       .select("id, phone, name")
       .eq("opt_out", false)
-      .eq("accept_communications", true);
+      .eq("accept_communications", true)
+      .eq("establishment_id", establishmentId);
     
     const { data: contacts, error: contactErr } = await query;
     if (contactErr) throw contactErr;
 
     // 2. Create broadcast record
-    const { data: broadcast, error: broadcastErr } = await supabaseAdmin
+    const { data: broadcast, error: broadcastErr } = await (supabaseAdmin as any)
       .from("crm_broadcasts")
       .insert({
         name: data.name,
@@ -71,6 +79,7 @@ export const createBroadcast = createServerFn({ method: "POST" })
         status: data.scheduled_at ? 'scheduled' : 'draft',
         scheduled_at: data.scheduled_at,
         created_by: userId,
+        establishment_id: establishmentId,
         total_contacts: contacts?.length || 0,
         queued_count: contacts?.length || 0
       })
@@ -81,14 +90,15 @@ export const createBroadcast = createServerFn({ method: "POST" })
 
     // 3. Queue recipients
     if (contacts && contacts.length > 0) {
-      const recipients = contacts.map(c => ({
+      const recipients = contacts.map((c: any) => ({
         broadcast_id: broadcast.id,
+        establishment_id: establishmentId,
         contact_id: c.id,
         phone: c.phone,
         status: 'queued'
       }));
 
-      const { error: queueErr } = await supabaseAdmin
+      const { error: queueErr } = await (supabaseAdmin as any)
         .from("crm_broadcast_recipients")
         .insert(recipients);
       
@@ -100,13 +110,13 @@ export const createBroadcast = createServerFn({ method: "POST" })
 
 export const startBroadcast = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .inputValidator((d: unknown) => tenantSchema.extend({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertSuperAdmin(supabase, userId);
+    const establishmentId = await authorizeCRMEstablishment(supabase, userId, data.establishmentId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { error } = await supabaseAdmin
+    const { error } = await (supabaseAdmin as any)
       .from("crm_broadcasts")
       .update({ 
         status: 'queued', 
@@ -114,6 +124,7 @@ export const startBroadcast = createServerFn({ method: "POST" })
         updated_at: new Date().toISOString()
       })
       .eq("id", data.id)
+      .eq("establishment_id", establishmentId)
       .eq("status", 'draft');
 
     if (error) throw error;
@@ -121,23 +132,24 @@ export const startBroadcast = createServerFn({ method: "POST" })
     // Server-side Engine Trigger (Batch sending)
     const { processNextBroadcastBatch } = await import("./broadcasts-engine.server");
     // We trigger the first batch immediately
-    processNextBroadcastBatch().catch(console.error);
+    processNextBroadcastBatch(establishmentId).catch(console.error);
 
     return { ok: true };
   });
 
 export const pauseBroadcast = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .inputValidator((d: unknown) => tenantSchema.extend({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertSuperAdmin(supabase, userId);
+    const establishmentId = await authorizeCRMEstablishment(supabase, userId, data.establishmentId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { error } = await supabaseAdmin
+    const { error } = await (supabaseAdmin as any)
       .from("crm_broadcasts")
       .update({ status: 'paused', updated_at: new Date().toISOString() })
       .eq("id", data.id)
+      .eq("establishment_id", establishmentId)
       .in("status", ['queued', 'running']);
 
     if (error) throw error;

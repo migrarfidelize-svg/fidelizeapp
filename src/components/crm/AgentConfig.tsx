@@ -11,10 +11,10 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 
-export function AgentConfig() {
+export function AgentConfig({ establishmentId }: { establishmentId: string }) {
   const queryClient = useQueryClient();
-  const { data: currentSettings, isLoading } = useQuery({ queryKey: ["crm-agent-settings"], queryFn: () => getAgentSettings() });
-  const { data: flows } = useQuery({ queryKey: ["crm-flows"], queryFn: () => getCRMFlows() });
+  const { data: currentSettings, isLoading } = useQuery({ queryKey: ["crm-agent-settings", establishmentId], queryFn: () => getAgentSettings({ data: { establishmentId } }) });
+  const { data: flows } = useQuery({ queryKey: ["crm-flows", establishmentId], queryFn: () => getCRMFlows({ data: { establishmentId } }) });
   
   const [settings, setSettings] = useState<any>(null);
 
@@ -23,7 +23,7 @@ export function AgentConfig() {
   }, [currentSettings]);
 
   const saveMutation = useMutation({
-    mutationFn: (data: any) => saveAgentSettings({ data }),
+    mutationFn: (data: any) => saveAgentSettings({ data: { ...data, establishmentId } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-agent-settings"] });
       toast.success("Configurações do Agente salvas!");
@@ -125,10 +125,10 @@ export function AgentConfig() {
                       <SelectValue placeholder="Selecione um provedor..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="openai">OpenAI (GPT-4o)</SelectItem>
-                      <SelectItem value="groq">Groq (Llama 3 / Mixtral)</SelectItem>
+                      <SelectItem value="openai">OpenAI</SelectItem>
                       <SelectItem value="deepseek">DeepSeek</SelectItem>
                       <SelectItem value="openrouter">OpenRouter</SelectItem>
+                      <SelectItem value="grok">Grok (xAI)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -186,6 +186,15 @@ export function AgentConfig() {
                   />
                   <p className="text-[9px] text-muted-foreground leading-tight">Separe termos por vírgula. A IA detectará essas intenções e enviará para a fila humana.</p>
                 </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Mensagem de Transferência</Label>
+                  <Textarea
+                    value={settings.handoff?.message || ""}
+                    onChange={e => setSettings({...settings, handoff: {...settings.handoff, message: e.target.value}})}
+                    rows={3}
+                    className="bg-muted/20 border-border/50 text-xs resize-none"
+                  />
+                </div>
               </div>
             </div>
 
@@ -218,6 +227,51 @@ export function AgentConfig() {
                     onChange={e => setSettings({...settings, fallback: {...settings.fallback, maxFailures: Number(e.target.value)}})} 
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Ação após o limite</Label>
+                  <Select value={settings.fallback?.action || "transfer_to_queue"} onValueChange={value => setSettings({...settings, fallback: {...settings.fallback, action: value}})}>
+                    <SelectTrigger className="h-10 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="transfer_to_queue">Transferir para fila</SelectItem>
+                      <SelectItem value="close">Encerrar conversa</SelectItem>
+                      <SelectItem value="stay_silent">Permanecer em silêncio</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="crm-card">
+            <div className="p-6 border-b"><h4 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">Automação e continuidade</h4></div>
+            <div className="grid gap-5 p-6 md:grid-cols-2">
+              {[
+                ["autoReply", "Responder automaticamente", "Permite que o Agent responda mensagens."],
+                ["welcomeNew", "Recepcionar novos contatos", "Executa a recepção para novos contatos."],
+                ["welcomeKnown", "Recepcionar contatos conhecidos", "Executa a recepção ao retornar ao bot."],
+              ].map(([key, label, description]) => (
+                <div key={key} className="flex items-center justify-between gap-4 rounded-lg border p-4">
+                  <div><Label className="text-xs font-bold">{label}</Label><p className="text-[10px] text-muted-foreground">{description}</p></div>
+                  <Switch checked={settings.behavior?.[key] ?? true} onCheckedChange={value => setSettings({...settings, behavior: {...settings.behavior, [key]: value}})} />
+                </div>
+              ))}
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Após atendimento humano</Label>
+                <Select value={settings.behavior?.afterHuman || "stay_closed"} onValueChange={value => setSettings({...settings, behavior: {...settings.behavior, afterHuman: value}})}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="stay_closed">Manter encerrado</SelectItem><SelectItem value="return_to_bot">Retornar ao bot</SelectItem><SelectItem value="restart_flow">Reiniciar fluxo</SelectItem></SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Timeout sem resposta (minutos)</Label>
+                <Input type="number" min={1} max={1440} value={settings.behavior?.timeoutMinutes ?? 10} onChange={event => setSettings({...settings, behavior: {...settings.behavior, timeoutMinutes: Number(event.target.value)}})} />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Ação no timeout</Label>
+                <Select value={settings.behavior?.timeoutAction || "transfer_to_queue"} onValueChange={value => setSettings({...settings, behavior: {...settings.behavior, timeoutAction: value}})}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="transfer_to_queue">Transferir para fila</SelectItem><SelectItem value="close">Encerrar</SelectItem><SelectItem value="restart_flow">Reiniciar fluxo</SelectItem></SelectContent>
+                </Select>
               </div>
             </div>
           </div>

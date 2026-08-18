@@ -13,6 +13,7 @@ export async function processAgentMessage(input: { conversationId: string; inbou
   
   if (!configResult.data?.enabled) return { action: "ignored" };
   const config = (configResult.data.config as any) || {};
+  if (config.behavior?.autoReply === false) return { action: "ignored" };
   
   const handoffKeywords = Array.isArray(config.handoff?.keywords) ? config.handoff.keywords : [];
   const inputLower = input.inboundText.trim().toLowerCase();
@@ -22,14 +23,14 @@ export async function processAgentMessage(input: { conversationId: string; inbou
 
   if (!config.provider_id) {
     console.warn(`[AgentEngine] AI provider missing for establishment ${conv.establishment_id}`);
-    return { action: "ignored" };
+    return { action: "failed", reason: "provider_missing" };
   }
 
   // A validação e a resolução das credenciais permanecem vinculadas ao tenant da conversa.
   const providerUsable = await isAIProviderUsable(conv.establishment_id, config.provider_id);
   if (!providerUsable) {
     console.warn(`[AgentEngine] AI provider unavailable for establishment ${conv.establishment_id}`);
-    return { action: "ignored" };
+    return { action: "failed", reason: "provider_unavailable" };
   }
 
   const stepResult = await supabaseAdmin.from("crm_flow_steps").select("payload").eq("id", input.stepId)
@@ -45,6 +46,7 @@ export async function processAgentMessage(input: { conversationId: string; inbou
     const response = await generateAgentResponse({
       establishmentId: conv.establishment_id,
       providerId: config.provider_id,
+      model: config.model || undefined,
       systemPrompt: `Você é ${config.name || "Assistente"}. Contexto: ${(stepResult.data?.payload as any)?.context || ""}. ${config.systemPrompt || ""}`,
       messages: (historyResult.data || []).map((message: any) => ({
         role: message.direction === "inbound" ? "user" as const : "assistant" as const,
@@ -56,7 +58,12 @@ export async function processAgentMessage(input: { conversationId: string; inbou
     const active = await getActiveWhatsAppProvider(conv.establishment_id);
     if (!active) throw new Error("CRM_WHATSAPP_PROVIDER_NOT_FOUND");
     
-    const sent = await active.provider.sendTestMessage(active.runtime, process.env as any, conv.customer_phone, response.text);
+    const providerEnv = { ...process.env } as Record<string, string | undefined>;
+    for (const [field, envName] of Object.entries(active.runtime.credentials_ref || {})) {
+      const credential = active.runtime.db_credentials?.[field];
+      if (credential) providerEnv[envName] = credential;
+    }
+    const sent = await active.provider.sendTestMessage(active.runtime, providerEnv, conv.customer_phone, response.text);
     if (!sent.ok) throw new Error(sent.message || "CRM_AGENT_SEND_FAILED");
     
     const persisted = await supabaseAdmin.from("crm_messages").insert({
@@ -69,6 +76,6 @@ export async function processAgentMessage(input: { conversationId: string; inbou
     return { action: "replied" };
   } catch (err) {
     console.error("[AgentEngine] AI response generation failed:", err);
-    throw err; 
+    return { action: "failed", reason: err instanceof Error ? err.message : String(err) };
   }
 }

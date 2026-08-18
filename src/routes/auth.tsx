@@ -206,7 +206,11 @@ function AuthPage() {
 
     setLoading(true);
     try {
-      await requestOTP({ data: { whatsapp: digits, name: isSignup ? name : undefined } });
+      const result = await requestOTP({ data: { whatsapp: digits, name: isSignup ? name : undefined } });
+      if (!result.ok) {
+        toast.error(result.error.message);
+        return;
+      }
       setOtpStep(true);
       setOtpCooldown(60);
       toast.success("Código enviado para seu WhatsApp!");

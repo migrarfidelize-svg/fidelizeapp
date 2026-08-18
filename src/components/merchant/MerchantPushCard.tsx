@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ensurePwaRegistration } from "@/lib/pwa-register";
-import { VAPID_PUBLIC_KEY, urlBase64ToUint8Array } from "@/lib/vapid";
+import { ensureCompatiblePushSubscription, isPushSubscriptionCompatible } from "@/lib/vapid";
 import { subscribeAdminPush, getAdminPushStatus } from "@/lib/push.functions";
 import { trackEngagement } from "@/lib/engagement";
 import { IosSetupGuide } from "@/components/pwa/IosSetupGuide";
@@ -91,7 +91,7 @@ export function MerchantPushCard() {
       try {
         const reg = await ensurePwaRegistration();
         const sub = await reg.pushManager.getSubscription();
-        if (!sub) return setSubscribed(false);
+        if (!isPushSubscriptionCompatible(sub)) return setSubscribed(false);
         const st = await getStatus({ data: { endpoint: sub.endpoint } });
         setSubscribed(!!st.subscribed);
       } catch {
@@ -158,13 +158,12 @@ export function MerchantPushCard() {
       }
 
       const reg = await ensurePwaRegistration();
-      let sub = await reg.pushManager.getSubscription();
-      if (!sub) {
+      let sub: PushSubscription;
+      let previousEndpoint: string | undefined;
         try {
-          sub = await reg.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource,
-          });
+          const ensured = await ensureCompatiblePushSubscription(reg);
+          sub = ensured.subscription;
+          previousEndpoint = ensured.previousEndpoint;
         } catch (err) {
           const name = (err as { name?: string })?.name;
           if (name === "NotAllowedError") {
@@ -182,7 +181,6 @@ export function MerchantPushCard() {
           }
           return;
         }
-      }
 
       const json = sub.toJSON();
       await subscribe({
@@ -190,6 +188,7 @@ export function MerchantPushCard() {
           endpoint: sub.endpoint,
           p256dh: json.keys?.p256dh ?? "",
           auth: json.keys?.auth ?? "",
+          previousEndpoint,
           user_agent: navigator.userAgent.slice(0, 300),
           permission_status: "granted",
         },

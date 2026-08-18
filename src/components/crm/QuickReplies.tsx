@@ -8,15 +8,15 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getCRMQuickReplies, saveCRMQuickReply } from "@/lib/atendimento.functions";
 import { toast } from "sonner";
 
-export function QuickRepliesManager() {
+export function QuickRepliesManager({ establishmentId }: { establishmentId: string }) {
   const queryClient = useQueryClient();
-  const { data: replies } = useQuery({ queryKey: ["crm-quick-replies"], queryFn: () => getCRMQuickReplies() });
+  const { data: replies } = useQuery({ queryKey: ["crm-quick-replies", establishmentId], queryFn: () => getCRMQuickReplies({ data: { establishmentId } }) });
   
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ shortcut: "/", message: "" });
 
   const saveMutation = useMutation({
-    mutationFn: (data: any) => saveCRMQuickReply({ data }),
+    mutationFn: (data: any) => saveCRMQuickReply({ data: { ...data, establishmentId } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-quick-replies"] });
       setEditingId(null);

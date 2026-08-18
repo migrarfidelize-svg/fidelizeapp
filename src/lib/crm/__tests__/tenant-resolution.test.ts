@@ -6,9 +6,11 @@ const createMockChain = (data: any = null, error: any = null) => {
     const chain: any = {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
         maybeSingle: vi.fn().mockImplementation(() => Promise.resolve({ data, error })),
         single: vi.fn().mockImplementation(() => Promise.resolve({ data, error })),
-        then: (onfulfilled: any) => Promise.resolve({ data, error }).then(onfulfilled),
+        then: (onfulfilled: any) => Promise.resolve({ data: data ? [data] : [], error }).then(onfulfilled),
     };
     return chain;
 };
@@ -49,11 +51,20 @@ describe('Multi-tenant Provider Resolution', () => {
         return createMockChain();
     });
 
-    const active = await getActiveWhatsAppProvider();
+    const active = await getActiveWhatsAppProvider(mockIntegration.establishment_id);
     
     expect(active).not.toBeNull();
     expect(active?.establishmentId).toBe('f406351f-487b-47db-b0d3-bd5cb918b6c3');
     // Invariante: não deve usar runtime para o tenant ID
     expect((active?.runtime as any).establishment_id).toBeUndefined();
+  });
+
+  it('não promove provider tenant único a provider global de OTP', async () => {
+    const tenantOnly = {
+      id: 'int-tenant', provider: 'uazapi', category: 'otp', enabled: true,
+      establishment_id: 'f406351f-487b-47db-b0d3-bd5cb918b6c3', credentials: {}, config: {}, mode: 'production'
+    };
+    (supabaseAdmin.from as any).mockReturnValue(createMockChain(tenantOnly));
+    await expect(getActiveWhatsAppProvider()).resolves.toBeNull();
   });
 });

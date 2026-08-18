@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ensurePwaRegistration } from "@/lib/pwa-register";
-import { VAPID_PUBLIC_KEY, urlBase64ToUint8Array } from "@/lib/vapid";
+import { ensureCompatiblePushSubscription, isPushSubscriptionCompatible } from "@/lib/vapid";
 import {
   subscribePushForAllMyCards,
   unsubscribePushForAllMyCards,
@@ -46,7 +46,7 @@ export function PushStatusCard() {
   async function getBrowserSubscription() {
     const reg = await ensurePwaRegistration();
     const sub = await reg.pushManager.getSubscription();
-    if (!sub) return null;
+    if (!isPushSubscriptionCompatible(sub)) return null;
     const json = sub.toJSON();
     return {
       sub,
@@ -78,7 +78,7 @@ export function PushStatusCard() {
       const sub = await reg.pushManager.getSubscription();
       setEndpoint(sub?.endpoint ?? null);
 
-      if (!sub) {
+      if (!isPushSubscriptionCompatible(sub)) {
         setSubState("inactive");
         setCardCount(0);
         return;
@@ -111,19 +111,15 @@ export function PushStatusCard() {
         );
       }
       const reg = await ensurePwaRegistration();
-      let sub = await reg.pushManager.getSubscription();
-      if (!sub) {
-        sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource,
-        });
-      }
+      const ensured = await ensureCompatiblePushSubscription(reg);
+      const sub = ensured.subscription;
       const json = sub.toJSON();
       const res = await subscribeAll({
         data: {
           endpoint: sub.endpoint,
           p256dh: json.keys?.p256dh ?? "",
           auth: json.keys?.auth ?? "",
+          previousEndpoint: ensured.previousEndpoint,
           user_agent: navigator.userAgent.slice(0, 300),
         },
       });

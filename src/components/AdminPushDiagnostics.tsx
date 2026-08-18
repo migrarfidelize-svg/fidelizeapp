@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Bell, Loader2, Send, Copy, RefreshCw, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { canRegisterServiceWorker, ensurePwaRegistration } from "@/lib/pwa-register";
-import { VAPID_PUBLIC_KEY, urlBase64ToUint8Array } from "@/lib/vapid";
+import { VAPID_PUBLIC_KEY, ensureCompatiblePushSubscription, isPushSubscriptionCompatible } from "@/lib/vapid";
 import {
   subscribeAdminPush,
   getAdminPushStatus,
@@ -87,7 +87,7 @@ export function AdminPushDiagnostics() {
       setSwActive(!!mine?.active);
       if (mine) {
         const sub = await mine.pushManager.getSubscription();
-        if (sub) {
+        if (isPushSubscriptionCompatible(sub)) {
           setEndpoint(sub.endpoint);
           const st = await statusFn({ data: { endpoint: sub.endpoint } });
           setSubscribed(!!st.subscribed);
@@ -145,21 +145,19 @@ export function AdminPushDiagnostics() {
       setSwActive(!!reg.active);
       await logFn({ data: { event_type: "service_worker_registration_success", status: "active" } });
 
-      let sub = await reg.pushManager.getSubscription();
-      if (!sub) {
-        await logFn({ data: { event_type: "push_subscription_started" } });
-        try {
-          sub = await reg.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource,
-          });
-          await logFn({ data: { event_type: "push_subscription_created" } });
+      let sub: PushSubscription;
+      let previousEndpoint: string | undefined;
+      await logFn({ data: { event_type: "push_subscription_started" } });
+      try {
+          const ensured = await ensureCompatiblePushSubscription(reg);
+          sub = ensured.subscription;
+          previousEndpoint = ensured.previousEndpoint;
+          await logFn({ data: { event_type: ensured.rotated ? "push_subscription_rotated" : "push_subscription_ready" } });
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
           await logFn({ data: { event_type: "push_subscription_failed", error_message: msg } });
           throw new Error(`Falha ao criar subscription: ${msg}`);
         }
-      }
 
       const json = sub.toJSON();
       await logFn({ data: { event_type: "subscription_persist_started" } });
@@ -169,6 +167,7 @@ export function AdminPushDiagnostics() {
             endpoint: sub.endpoint,
             p256dh: json.keys?.p256dh ?? "",
             auth: json.keys?.auth ?? "",
+            previousEndpoint,
             user_agent: navigator.userAgent.slice(0, 300),
             device_type: deviceType,
             operating_system: os,
@@ -204,7 +203,7 @@ export function AdminPushDiagnostics() {
     try {
       const reg = await ensurePwaRegistration();
       const sub = await reg.pushManager.getSubscription();
-      if (!sub) throw new Error("Este aparelho ainda não tem assinatura do navegador. Ative as notificações primeiro.");
+      if (!isPushSubscriptionCompatible(sub)) throw new Error("A assinatura deste aparelho usa uma chave antiga. Ative as notificações novamente.");
       const json = sub.toJSON();
       setEndpoint(sub.endpoint);
       const r = await testFn({

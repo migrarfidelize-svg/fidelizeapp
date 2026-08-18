@@ -13,7 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
-export function TemplateManager() {
+export function TemplateManager({ establishmentId }: { establishmentId: string }) {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
@@ -23,12 +23,12 @@ export function TemplateManager() {
   const [previewContent, setPreviewContent] = useState("");
 
   const { data: templates, isLoading } = useQuery({ 
-    queryKey: ["crm-templates"], 
-    queryFn: () => getCRMTemplates() 
+    queryKey: ["crm-templates", establishmentId],
+    queryFn: () => getCRMTemplates({ data: { establishmentId } })
   });
 
   const saveMutation = useMutation({
-    mutationFn: (data: any) => saveCRMTemplate({ data }),
+    mutationFn: (data: any) => saveCRMTemplate({ data: { ...data, establishmentId } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-templates"] });
       setIsDialogOpen(false);
@@ -39,7 +39,7 @@ export function TemplateManager() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (templateId: string) => deleteCRMTemplate({ data: { templateId } }),
+    mutationFn: (templateId: string) => deleteCRMTemplate({ data: { establishmentId, templateId } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-templates"] });
       toast.success("Template excluído");

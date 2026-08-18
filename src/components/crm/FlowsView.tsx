@@ -6,10 +6,10 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 
-export function FlowsView({ onEdit }: { onEdit: (flow: any) => void }) {
+export function FlowsView({ establishmentId, onEdit }: { establishmentId: string; onEdit: (flow: any) => void }) {
   const { data: flows, isLoading } = useQuery({
-    queryKey: ["crm-flows"],
-    queryFn: () => getCRMFlows(),
+    queryKey: ["crm-flows", establishmentId],
+    queryFn: () => getCRMFlows({ data: { establishmentId } }),
   });
 
   if (isLoading) {

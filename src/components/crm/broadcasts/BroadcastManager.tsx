@@ -45,7 +45,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-export function BroadcastManager() {
+export function BroadcastManager({ establishmentId }: { establishmentId: string }) {
   const [activeTab, setActiveTab] = useState('list');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [broadcasts, setBroadcasts] = useState<any[]>([]);
@@ -66,7 +66,7 @@ export function BroadcastManager() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const data = await fetchBroadcasts();
+      const data = await fetchBroadcasts({ data: { establishmentId } });
       setBroadcasts(data);
     } catch (err) {
       toast.error("Erro ao carregar disparos");
@@ -79,7 +79,7 @@ export function BroadcastManager() {
     loadData();
     const interval = setInterval(loadData, 10000); // Poll every 10s
     return () => clearInterval(interval);
-  }, []);
+  }, [establishmentId]);
 
   const handleCreate = async () => {
     if (!newCampaign.name || !newCampaign.message_template) {
@@ -90,6 +90,7 @@ export function BroadcastManager() {
     try {
       await saveBroadcast({ 
         data: {
+          establishmentId,
           name: newCampaign.name,
           message_template: newCampaign.message_template,
           filters: { allContacts: newCampaign.allContacts }
@@ -105,7 +106,7 @@ export function BroadcastManager() {
 
   const handleStart = async (id: string) => {
     try {
-      await triggerBroadcast({ data: { id } });
+      await triggerBroadcast({ data: { establishmentId, id } });
       toast.success("Disparo iniciado");
       loadData();
     } catch (err) {

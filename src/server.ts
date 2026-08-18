@@ -1,7 +1,12 @@
 import "./lib/error-capture";
+import { startCRMTimeoutWorker } from "./lib/crm/flow-engine.server";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+
+// This is the Node/Nitro server entry, so PM2 starts the persisted timeout
+// worker independently of browser sessions or inbound webhook traffic.
+startCRMTimeoutWorker();
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
