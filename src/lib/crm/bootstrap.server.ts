@@ -117,7 +117,8 @@ export async function ensureDefaultAgentSettings(establishmentId: string, flowId
   };
 
   if (!existing) {
-    const { error: insertError } = await (supabaseAdmin as any).from("crm_agent_settings")
+    const { error: insertError } = await (supabaseAdmin as any)
+      .from("crm_agent_settings")
       .from("crm_agent_settings")
       .insert({
         establishment_id: establishmentId,
@@ -137,7 +138,8 @@ export async function ensureDefaultAgentSettings(establishmentId: string, flowId
     // Requirement 1: Only use default flowId if the current one is missing
     const finalFlowId = (existing as any).flow_id || (existing as any).config?.behavior?.mainFlowId || flowId;
 
-    const { error: updateError } = await (supabaseAdmin as any).from("crm_agent_settings")
+    const { error: updateError } = await (supabaseAdmin as any)
+      .from("crm_agent_settings")
       .from("crm_agent_settings")
       .update({ 
         config: updatedConfig,
