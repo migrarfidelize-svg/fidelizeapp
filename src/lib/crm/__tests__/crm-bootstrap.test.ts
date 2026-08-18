@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ensureDefaultWhatsAppFlow } from "../bootstrap.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { from: vi.fn() } }));
+vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { from: vi.fn().mockImplementation((t) => new Query(t) as any) } }));
 
 type Row = Record<string, any>;
 const db: Record<string, Row[]> = {};
