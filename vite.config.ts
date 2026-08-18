@@ -7,13 +7,22 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { VitePWA } from "vite-plugin-pwa";
 
-export default defineConfig({
+const config = defineConfig({
+  // Produção oficial: processo HTTP Node para PM2/Nginx. Sem esta definição o
+  // pacote Lovable usa cloudflare-module, cujo index.mjs expõe fetch mas não
+  // abre uma porta TCP quando executado diretamente pelo PM2.
+  nitro: { preset: "node-server" },
   tanstackStart: {
     server: { entry: "server" },
   },
   plugins: [
     VitePWA({
       strategies: "generateSW",
+      // Nitro node-server serves this directory verbatim. The Lovable wrapper
+      // runs multiple Vite environments, whose generic fallback is `dist`;
+      // pinning the PWA output prevents the final SSR pass from separating the
+      // generated Workbox runtime from the service worker served by Node.
+      outDir: ".output/public",
       registerType: "autoUpdate",
       injectRegister: null, // wrapper is the only registrar
       devOptions: { enabled: false },
@@ -86,3 +95,25 @@ export default defineConfig({
     }),
   ],
 });
+
+// The Lovable wrapper intentionally replaces every user Nitro preset with
+// cloudflare-module when LOVABLE_SANDBOX or DEV_SERVER__PROJECT_PATH is set.
+// `npm run build` is the official VPS build, so hide only those build-host
+// signals while the wrapper composes the production configuration. Development
+// and preview behavior remains unchanged.
+export default async function defineVpsProductionConfig(env: Parameters<typeof config>[0]) {
+  if (env.command !== "build" || env.mode === "development") return config(env);
+
+  const buildHostVariables = ["LOVABLE_SANDBOX", "DEV_SERVER__PROJECT_PATH", "LOVABLE_NITRO_PRESET"] as const;
+  const previousValues = new Map(buildHostVariables.map((name) => [name, process.env[name]]));
+
+  for (const name of buildHostVariables) delete process.env[name];
+  try {
+    return await config(env);
+  } finally {
+    for (const [name, value] of previousValues) {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
+  }
+}

@@ -1,11 +1,35 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getRequest } from "@tanstack/react-start/server";
+import { randomBytes, timingSafeEqual } from "node:crypto";
 
 const sendOtpSchema = z.object({
   whatsapp: z.string().min(10).max(25),
   name: z.string().max(100).optional(), // Only for signup
 });
+
+export type OTPRequestErrorCode =
+  | "rate_limited"
+  | "whatsapp_not_configured"
+  | "provider_unavailable"
+  | "invalid_credentials"
+  | "temporary_send_failure"
+  | "server_configuration";
+
+type OTPRequestResult =
+  | { ok: true; phone: string }
+  | { ok: false; error: { code: OTPRequestErrorCode; message: string } };
+
+export class WhatsAppProviderResolutionError extends Error {
+  constructor(
+    public readonly code: "ambiguous_provider" | "invalid_credentials" | "server_configuration",
+    message: string,
+    options?: ErrorOptions,
+  ) {
+    super(message, options);
+    this.name = "WhatsAppProviderResolutionError";
+  }
+}
 
 /**
  * Gets the active WhatsApp provider and its runtime config.
@@ -18,20 +42,48 @@ export async function getActiveWhatsAppProvider(establishmentId?: string) {
     .from("integrations")
     .select("*")
     .eq("category", "otp")
-    .eq("enabled", true);
+    .eq("enabled", true)
+    .order("updated_at", { ascending: false })
+    .limit(20);
 
   if (establishmentId) {
     query = query.eq("establishment_id", establishmentId);
   }
 
-  const { data: integration, error } = await query.maybeSingle();
+  const { data: rows, error } = await query;
 
   if (error) {
-    console.error(
-      "[WhatsApp] Failed to load active provider:",
-      error.message
+    throw new WhatsAppProviderResolutionError(
+      "server_configuration",
+      "Falha ao consultar a integração WhatsApp.",
+      { cause: error },
     );
-    return null;
+  }
+
+  const integrations = rows || [];
+  let integration: (typeof integrations)[number] | undefined;
+
+  if (establishmentId) {
+    if (integrations.length > 1) {
+      throw new WhatsAppProviderResolutionError(
+        "ambiguous_provider",
+        "Há mais de uma integração WhatsApp OTP ativa para este estabelecimento.",
+      );
+    }
+    integration = integrations[0];
+  } else {
+    const explicitGlobal = integrations.filter((row: any) => {
+      const config = row.config && typeof row.config === "object" ? row.config : {};
+      return row.establishment_id === null || config.auth_scope === "global" || config.use_for_auth === true;
+    });
+
+    if (explicitGlobal.length === 1) integration = explicitGlobal[0];
+    else if (explicitGlobal.length > 1) {
+      throw new WhatsAppProviderResolutionError(
+        "ambiguous_provider",
+        "Configure exatamente uma integração WhatsApp OTP global para o login.",
+      );
+    }
   }
 
   if (!integration) return null;
@@ -42,14 +94,15 @@ export async function getActiveWhatsAppProvider(establishmentId?: string) {
   const { decryptSecret } =
     await import("./integrations/crypt.server");
 
-  const provider =
-    getProvider("otp", integration.provider) as any;
-
-  if (!provider) {
-    console.error(
-      `[WhatsApp] Provider not registered: ${integration.provider}`
+  let provider: any;
+  try {
+    provider = getProvider("otp", integration.provider) as any;
+  } catch (cause) {
+    throw new WhatsAppProviderResolutionError(
+      "server_configuration",
+      `Provider WhatsApp não registrado: ${integration.provider}`,
+      { cause },
     );
-    return null;
   }
 
   const encryptedCredentials =
@@ -72,17 +125,19 @@ export async function getActiveWhatsAppProvider(establishmentId?: string) {
 
     if (!value) continue;
 
-    dbCredentials[field] =
-      await decryptSecret(value);
+    try {
+      dbCredentials[field] = await decryptSecret(value);
+    } catch (cause) {
+      throw new WhatsAppProviderResolutionError(
+        "invalid_credentials",
+        "Não foi possível descriptografar as credenciais do WhatsApp.",
+        { cause },
+      );
+    }
   }
 
-  console.log("[WhatsApp] Active provider runtime ready", {
-    provider: integration.provider,
-    credentialFields: Object.keys(dbCredentials),
-    hasToken: Boolean(dbCredentials.token),
-  });
-
   return {
+    integrationId: integration.id as string,
     provider,
     establishmentId: integration.establishment_id as string,
     runtime: {
@@ -101,15 +156,97 @@ export async function getActiveWhatsAppProvider(establishmentId?: string) {
   };
 }
 
-export const requestOTP = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => sendOtpSchema.parse(d))
-  .handler(async ({ data }) => {
+/**
+ * Resolve the secret dedicated to a tenant's inbound WhatsApp webhook.  It is
+ * deliberately separate from the provider token and is stored encrypted with
+ * the other integration credentials.
+ */
+/** Reads an already configured secret. Safe for the unauthenticated webhook path. */
+export async function getExistingWhatsAppWebhookSecret(establishmentId: string) {
+  const active = await getActiveWhatsAppProvider(establishmentId);
+  if (!active?.integrationId || active.establishmentId !== establishmentId) return null;
+
+  const existing = active.runtime.db_credentials?.webhook_secret;
+  if (typeof existing === "string" && existing.length > 0) return existing;
+  return null;
+}
+
+/**
+ * Creates the per-integration secret only after the caller has authorized the
+ * establishment. Never call this from a public webhook request.
+ */
+export async function ensureWhatsAppWebhookSecret(establishmentId: string) {
+  const active = await getActiveWhatsAppProvider(establishmentId);
+  if (!active?.integrationId || active.establishmentId !== establishmentId) return null;
+
+  const existing = active.runtime.db_credentials?.webhook_secret;
+  if (typeof existing === "string" && existing.length > 0) return existing;
+
+  const { encryptSecret } = await import("./integrations/crypt.server");
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const secret = randomBytes(32).toString("base64url");
+  const encryptedSecret = await encryptSecret(secret);
+  const { data: integration, error } = await supabaseAdmin.from("integrations")
+    .select("credentials, establishment_id")
+    .eq("id", active.integrationId)
+    .eq("establishment_id", establishmentId)
+    .single();
+  if (error || !integration || integration.establishment_id !== establishmentId) throw error ?? new Error("WHATSAPP_INTEGRATION_NOT_FOUND");
+
+  const credentials = integration.credentials && typeof integration.credentials === "object"
+    ? integration.credentials as Record<string, unknown>
+    : {};
+  if (typeof credentials.webhook_secret === "string" && credentials.webhook_secret) {
+    const { decryptSecret } = await import("./integrations/crypt.server");
+    return decryptSecret(credentials.webhook_secret);
+  }
+
+  const saved = await supabaseAdmin.from("integrations").update({
+    credentials: { ...credentials, webhook_secret: encryptedSecret },
+  }).eq("id", active.integrationId).eq("establishment_id", establishmentId);
+  if (saved.error) throw saved.error;
+  return secret;
+}
+
+export function hasValidWebhookSecret(expected: string, received: string | null | undefined) {
+  if (!received || !expected) return false;
+  const expectedBytes = Buffer.from(expected);
+  const receivedBytes = Buffer.from(received);
+  return expectedBytes.length === receivedBytes.length && timingSafeEqual(expectedBytes, receivedBytes);
+}
+
+function controlledRequestError(error: unknown): OTPRequestResult {
+  const raw = error instanceof Error ? error.message : String(error);
+  console.error("[OTP] request failed", {
+    name: error instanceof Error ? error.name : "UnknownError",
+    message: raw,
+  });
+
+  if (error instanceof WhatsAppProviderResolutionError) {
+    if (error.code === "invalid_credentials") {
+      return { ok: false, error: { code: "invalid_credentials", message: "A credencial do WhatsApp é inválida. Avise o administrador." } };
+    }
+    return { ok: false, error: { code: "server_configuration", message: "Há um erro na configuração do envio por WhatsApp. Avise o administrador." } };
+  }
+  if (/Muitas tentativas|rate.?limit/i.test(raw)) {
+    return { ok: false, error: { code: "rate_limited", message: "Muitas tentativas. Aguarde alguns minutos." } };
+  }
+  if (/AUTH_OTP_HMAC_SECRET|INTEGRATIONS_ENCRYPTION_KEY/i.test(raw)) {
+    return { ok: false, error: { code: "server_configuration", message: "O servidor de autenticação não está configurado corretamente." } };
+  }
+  return { ok: false, error: { code: "temporary_send_failure", message: "Falha temporária ao enviar o código. Tente novamente em alguns minutos." } };
+}
+
+export async function requestOTPHandler(
+  data: z.infer<typeof sendOtpSchema>,
+  headers?: Headers,
+): Promise<OTPRequestResult> {
+    try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { generateOTP, normalizeWhatsApp } = await import("./otp.server");
     const { checkAuthRateLimit, clientIpFromHeaders } = await import("./auth-rate-limit.server");
     
-    const req = getRequest();
-    const ip = req?.headers ? clientIpFromHeaders(req.headers) : null;
+    const ip = headers ? clientIpFromHeaders(headers) : null;
     const phone = normalizeWhatsApp(data.whatsapp);
     const identifier = `wa:${phone.replace(/\+/g, "")}`;
 
@@ -122,10 +259,7 @@ export const requestOTP = createServerFn({ method: "POST" })
     // 2. Check if WhatsApp OTP is active and configured
     const active = await getActiveWhatsAppProvider();
     if (!active) {
-      // If not configured, we might allow fallback to env vars if they exist
-      if (!process.env.WHATSAPP_API_KEY) {
-        throw new Error("O envio de WhatsApp não está configurado. Tente novamente mais tarde.");
-      }
+      return { ok: false, error: { code: "whatsapp_not_configured", message: "A integração WhatsApp não está configurada." } };
     }
 
     // 3. Generate OTP with HMAC
@@ -164,26 +298,83 @@ export const requestOTP = createServerFn({ method: "POST" })
     if (otpErr) throw otpErr;
 
     // 5. Send via WhatsApp
-    if (active) {
-      const res = await active.provider.sendTestMessage(active.runtime, process.env as any, phone, message);
-      if (!res.ok) {
-        console.error(`[OTP] Failed to send via provider ${active.provider.meta.id}: ${res.message}`);
-        throw new Error("Não foi possível enviar o código no momento. Tente novamente em alguns minutos.");
-      }
-    } else {
-      // Fallback logic could go here if we wanted to support direct env-based calls
-      // For now, if active is null but we didn't throw, we assume we want a mock or dev behavior?
-      // Actually the prompt says "Ausência de configuração: Não quebrar a aplicação, mostrar mensagem controlada".
-      console.log(`[OTP] Sending (MOCK) ${code} to ${phone}`);
+    const providerEnv = { ...process.env } as Record<string, string | undefined>;
+    for (const [field, envName] of Object.entries(active.runtime.credentials_ref)) {
+      const credential = active.runtime.db_credentials?.[field];
+      if (credential) providerEnv[envName] = credential;
+    }
+    let res;
+    try {
+      res = await active.provider.sendTestMessage(active.runtime, providerEnv, phone, message);
+    } catch (sendError) {
+      await supabaseAdmin.from("auth_otps").update({ used: true })
+        .eq("identifier", identifier).eq("code_hash", hash).eq("used", false);
+      throw sendError;
+    }
+    if (!res.ok) {
+      await supabaseAdmin
+        .from("auth_otps")
+        .update({ used: true })
+        .eq("identifier", identifier)
+        .eq("code_hash", hash)
+        .eq("used", false);
+      console.error(`[OTP] Provider ${active.provider.meta.id} rejected send`, {
+        httpStatus: res.httpStatus,
+        message: res.message,
+      });
+      const credentialFailure = res.httpStatus === 401 || res.httpStatus === 403 || /credencial|token|unauthorized|forbidden/i.test(res.message || "");
+      return credentialFailure
+        ? { ok: false, error: { code: "invalid_credentials", message: "A credencial do WhatsApp é inválida. Avise o administrador." } }
+        : { ok: false, error: { code: "provider_unavailable", message: "O provedor WhatsApp está indisponível no momento." } };
     }
 
     return { ok: true, phone };
+    } catch (error) {
+      return controlledRequestError(error);
+    }
+}
+
+export const requestOTP = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => sendOtpSchema.parse(d))
+  .handler(async ({ data }): Promise<OTPRequestResult> => {
+    const request = getRequest();
+    return requestOTPHandler(data, request?.headers);
   });
 
 const verifyOtpSchema = z.object({
   whatsapp: z.string(),
   code: z.string().length(6),
 });
+
+export async function consumeValidOTP(
+  supabaseAdmin: any,
+  identifier: string,
+  codeHash: string,
+  now = new Date(),
+) {
+  const { data: otp, error: findErr } = await supabaseAdmin
+    .from("auth_otps")
+    .select("*")
+    .eq("identifier", identifier)
+    .eq("code_hash", codeHash)
+    .eq("used", false)
+    .gt("expires_at", now.toISOString())
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (findErr || !otp) return null;
+
+  const { data: updatedOtp, error: updateErr } = await supabaseAdmin
+    .from("auth_otps")
+    .update({ used: true })
+    .eq("id", otp.id)
+    .eq("used", false)
+    .select("id")
+    .maybeSingle();
+  if (updateErr) throw updateErr;
+  return updatedOtp ? otp : null;
+}
 
 async function findAuthUserByEmail(
   supabaseAdmin: any,
@@ -239,41 +430,14 @@ export const verifyOTP = createServerFn({ method: "POST" })
     const identifier = `wa:${phone.replace(/\+/g, "")}`;
     const codeHash = hashOTP(data.code, identifier);
 
-    // 1. Find and validate OTP using atomic lookup for code_hash
-    const { data: otp, error: findErr } = await supabaseAdmin
-      .from("auth_otps")
-      .select("*")
-      .eq("identifier", identifier)
-      .eq("code_hash", codeHash)
-      .eq("used", false)
-      .gt("expires_at", new Date().toISOString())
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (findErr || !otp) {
+    // 1. Find, validate and consume OTP with a compare-and-set on used=false.
+    const otp = await consumeValidOTP(supabaseAdmin, identifier, codeHash);
+    if (!otp) {
       await recordAuthAttempt({ ip, identifier, action: "login", success: false });
       throw new Error("Código inválido ou expirado.");
     }
 
-    // 2. Mark as used (Atomic update to prevent reuse)
-    const { data: updatedOtp, error: updateErr } = await supabaseAdmin
-      .from("auth_otps")
-      .update({ used: true })
-      .eq("id", otp.id)
-      .eq("used", false)
-      .select("id")
-      .maybeSingle();
-
-    if (updateErr) {
-      throw updateErr;
-    }
-
-    if (!updatedOtp) {
-      throw new Error("Código já processado.");
-    }
-
-    // 3. Resolve User
+    // 2. Resolve User
     const syntheticEmail =
       `wa${phone.replace(/\D/g, "")}@carteira.fidelize.app`;
 

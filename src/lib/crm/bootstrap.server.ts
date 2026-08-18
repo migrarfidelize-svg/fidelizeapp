@@ -60,9 +60,17 @@ export async function ensureDefaultWhatsAppFlow(establishmentId: string) {
       if (definition.step_key === "main_menu") {
         const desired = (definition.payload as any).options;
         const configured = Array.isArray((current.payload as any).options) ? (current.payload as any).options : [];
-        payload = { ...(definition.payload as any), ...(current.payload as any), options: desired.map((option: any) => ({
-          ...option, ...(configured.find((item: any) => item.value === option.value) || {}), nextStepId: option.nextStepId,
-        })) } as any;
+        const knownStepIds = new Set(Object.values(ids));
+        payload = { ...(definition.payload as any), ...(current.payload as any), options: desired.map((option: any) => {
+          const saved = configured.find((item: any) => item.value === option.value) || {};
+          return {
+            ...option,
+            ...saved,
+            // Preserva destinos personalizados válidos e repara somente links
+            // quebrados por remoção/migração de steps.
+            nextStepId: knownStepIds.has(saved.nextStepId) ? saved.nextStepId : option.nextStepId,
+          };
+        }) } as any;
       }
     }
     const row = { ...definition, payload, id: ids[definition.step_key as keyof typeof ids], flow_id: (flow as any).id, establishment_id: establishmentId };

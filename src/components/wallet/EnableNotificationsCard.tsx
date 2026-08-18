@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ensurePwaRegistration } from "@/lib/pwa-register";
-import { VAPID_PUBLIC_KEY, urlBase64ToUint8Array } from "@/lib/vapid";
+import { ensureCompatiblePushSubscription, isPushSubscriptionCompatible } from "@/lib/vapid";
 import {
   subscribePushForAllMyCards,
   unsubscribePushForAllMyCards,
@@ -76,7 +76,7 @@ export function EnableNotificationsCard() {
       try {
         const reg = await ensurePwaRegistration();
         const sub = await reg.pushManager.getSubscription();
-        if (sub) {
+        if (isPushSubscriptionCompatible(sub)) {
           const st = await getStatus({ data: { endpoint: sub.endpoint } });
           setSubscribed(!!st.subscribed);
         } else {
@@ -119,19 +119,15 @@ export function EnableNotificationsCard() {
         return;
       }
       const reg = await ensurePwaRegistration();
-      let sub = await reg.pushManager.getSubscription();
-      if (!sub) {
-        sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource,
-        });
-      }
+      const ensured = await ensureCompatiblePushSubscription(reg);
+      const sub = ensured.subscription;
       const json = sub.toJSON();
       const res = await subscribeAll({
         data: {
           endpoint: sub.endpoint,
           p256dh: json.keys?.p256dh ?? "",
           auth: json.keys?.auth ?? "",
+          previousEndpoint: ensured.previousEndpoint,
           user_agent: navigator.userAgent.slice(0, 300),
         },
       });

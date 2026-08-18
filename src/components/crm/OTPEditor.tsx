@@ -124,7 +124,7 @@ export function OTPEditor() {
               )}>
                 GATEWAY {providerStatus}
               </Badge>
-              <span className="text-xs text-muted-foreground">• Responsável pelo login passwordless da Carteira</span>
+              <span className="text-xs text-muted-foreground">• Provider global exclusivo do login passwordless; não usa a instância CRM do tenant</span>
             </div>
           </div>
         </div>

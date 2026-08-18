@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { GitBranch, MessageSquare, List, HelpCircle, ArrowRight, UserCheck, CheckCircle2, Trash2, Plus, Save, ChevronLeft, Layout, Settings2, PlayCircle, Loader2, Bot } from "lucide-react";
+import { GitBranch, MessageSquare, List, HelpCircle, ArrowRight, UserCheck, CheckCircle2, Trash2, Plus, Save, ChevronLeft, Layout, Settings2, PlayCircle, Loader2, Bot, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,14 +11,24 @@ import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { saveCRMFlow } from "@/lib/atendimento.functions";
 import { cn } from "@/lib/utils";
+import { FlowSimulator } from "@/components/crm/FlowSimulator";
 
-export function FlowEditor({ flow, onBack }: { flow: any; onBack: () => void }) {
+export function updateFlowStepPayload(steps: any[], id: string, patch: Record<string, unknown>) {
+  return steps.map((step) => step.id === id
+    ? { ...step, payload: { ...(step.payload || {}), ...patch } }
+    : step);
+}
+
+export function FlowEditor({ establishmentId, flow, onBack }: { establishmentId: string; flow: any; onBack: () => void }) {
   const queryClient = useQueryClient();
   const [steps, setSteps] = useState<any[]>(flow?.steps || []);
   const [flowName, setFlowName] = useState(flow?.name || "Novo Fluxo de Atendimento");
+  const [flowDescription, setFlowDescription] = useState(flow?.description || "");
+  const [isActive, setIsActive] = useState(flow?.is_active ?? true);
+  const [simulating, setSimulating] = useState(false);
 
   const saveMutation = useMutation({
-    mutationFn: (vars: any) => saveCRMFlow({ data: vars }),
+    mutationFn: (vars: any) => saveCRMFlow({ data: { ...vars, establishmentId } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-flows"] });
       toast.success("Arquitetura de fluxo salva com sucesso");
@@ -41,7 +51,7 @@ export function FlowEditor({ flow, onBack }: { flow: any; onBack: () => void }) 
   };
 
   const updateStepPayload = (id: string, payload: any) => {
-    setSteps(steps.map(s => s.id === id ? { ...s, payload } : s));
+    setSteps((current) => updateFlowStepPayload(current, id, payload));
   };
 
   const moveStep = (index: number, direction: 'up' | 'down') => {
@@ -78,11 +88,11 @@ export function FlowEditor({ flow, onBack }: { flow: any; onBack: () => void }) 
         </div>
 
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <button className="crm-button-secondary h-11 px-4 text-xs font-bold uppercase tracking-widest">
+          <button type="button" onClick={() => setSimulating(true)} className="crm-button-secondary h-11 px-4 text-xs font-bold uppercase tracking-widest">
             <PlayCircle className="h-4 w-4 mr-2" /> Simular
           </button>
           <button 
-            onClick={() => saveMutation.mutate({ id: flow?.id, name: flowName, steps, is_active: flow?.is_active })} 
+            onClick={() => saveMutation.mutate({ id: flow?.id, name: flowName, description: flowDescription, steps, is_active: isActive })}
             disabled={saveMutation.isPending}
             className="crm-button-primary h-11 px-8 text-xs font-bold uppercase tracking-widest"
           >
@@ -123,7 +133,7 @@ export function FlowEditor({ flow, onBack }: { flow: any; onBack: () => void }) 
           <div className="space-y-4 pt-4 border-t border-border/30">
             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-70">Estrutura do Fluxo</h4>
             <div className="text-[10px] text-muted-foreground italic leading-relaxed">
-              Arraste e solte os blocos no canvas central para definir a lógica de resposta do assistente autônomo.
+              Adicione blocos e use as setas de cada bloco para definir a ordem de execução.
             </div>
           </div>
         </aside>
@@ -131,6 +141,13 @@ export function FlowEditor({ flow, onBack }: { flow: any; onBack: () => void }) 
         {/* Canvas de Construção Central */}
         <main className="flex-1 bg-muted/10 overflow-y-auto p-8 crm-scrollbar">
           <div className="max-w-3xl mx-auto space-y-6">
+            <Card className="grid gap-4 p-4 sm:grid-cols-[1fr_auto]">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Descrição</label>
+                <Input value={flowDescription} onChange={(event) => setFlowDescription(event.target.value)} placeholder="Objetivo deste fluxo" />
+              </div>
+              <label className="flex items-end gap-2 pb-2 text-xs font-bold"><input type="checkbox" checked={isActive} onChange={(event) => setIsActive(event.target.checked)} /> Fluxo ativo</label>
+            </Card>
             {steps.map((step, idx) => (
               <div key={step.id} className="relative">
                 {/* Linha de Conexão */}
@@ -158,6 +175,12 @@ export function FlowEditor({ flow, onBack }: { flow: any; onBack: () => void }) 
                       </Badge>
                     </div>
                     <div className="flex items-center gap-1">
+                      <button type="button" aria-label={`Mover bloco ${idx + 1} para cima`} disabled={idx === 0} onClick={() => moveStep(idx, 'up')} className="h-7 w-7 rounded-md hover:bg-muted text-muted-foreground flex items-center justify-center transition-colors disabled:opacity-30">
+                        <ArrowUp className="h-3.5 w-3.5" />
+                      </button>
+                      <button type="button" aria-label={`Mover bloco ${idx + 1} para baixo`} disabled={idx === steps.length - 1} onClick={() => moveStep(idx, 'down')} className="h-7 w-7 rounded-md hover:bg-muted text-muted-foreground flex items-center justify-center transition-colors disabled:opacity-30">
+                        <ArrowDown className="h-3.5 w-3.5" />
+                      </button>
                       <button onClick={() => removeStep(step.id)} className="h-7 w-7 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive flex items-center justify-center transition-colors">
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -175,6 +198,19 @@ export function FlowEditor({ flow, onBack }: { flow: any; onBack: () => void }) 
                         onChange={(e) => updateStepPayload(step.id, { ...step.payload, text: e.target.value })}
                       />
                     </div>
+
+                    {step.step_key !== 'options' && step.step_key !== 'transfer_to_queue' && step.step_key !== 'close' && (
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground opacity-60">Próximo bloco</label>
+                        <Select value={step.payload.nextStepId || "__sequential"} onValueChange={(value) => updateStepPayload(step.id, { ...step.payload, nextStepId: value === "__sequential" ? undefined : value })}>
+                          <SelectTrigger className="h-10 text-xs"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__sequential">Próximo na ordem</SelectItem>
+                            {steps.filter((candidate) => candidate.id !== step.id).map((candidate, candidateIndex) => <SelectItem key={candidate.id} value={candidate.id}>Bloco {candidateIndex + 1} ({candidate.step_key})</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                     
                     {step.step_key === 'agent' && (
                       <div className="space-y-4 pt-2 border-t border-border/30">
@@ -214,8 +250,18 @@ export function FlowEditor({ flow, onBack }: { flow: any; onBack: () => void }) 
                                  className="h-10 text-xs font-bold bg-muted/20 border-border/50"
                                  onChange={(e) => {
                                    const newOpts = [...step.payload.options];
-                                   newOpts[optIdx].label = e.target.value;
-                                   newOpts[optIdx].value = e.target.value;
+                                   newOpts[optIdx] = { ...newOpts[optIdx], label: e.target.value };
+                                   updateStepPayload(step.id, { ...step.payload, options: newOpts });
+                                 }}
+                               />
+                               <Input
+                                 aria-label="Valor da opção"
+                                 placeholder="Valor recebido"
+                                 value={opt.value || ""}
+                                 className="h-10 w-32 text-xs bg-muted/20 border-border/50"
+                                 onChange={(event) => {
+                                   const newOpts = [...step.payload.options];
+                                   newOpts[optIdx] = { ...newOpts[optIdx], value: event.target.value };
                                    updateStepPayload(step.id, { ...step.payload, options: newOpts });
                                  }}
                                />
@@ -287,6 +333,12 @@ export function FlowEditor({ flow, onBack }: { flow: any; onBack: () => void }) 
           <span>Status: Edição em Tempo Real</span>
         </div>
       </div>
+
+      {simulating && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-label="Simulador de fluxo">
+          <div className="w-full max-w-xl"><FlowSimulator flow={{ ...flow, name: flowName, steps }} onClose={() => setSimulating(false)} /></div>
+        </div>
+      )}
     </div>
   );
 }

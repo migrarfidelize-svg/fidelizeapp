@@ -1,6 +1,7 @@
 /**
  * Server-only helpers for the "Inteligência com IA" module.
- * Uses raw fetch against Lovable AI Gateway (same pattern as faq-ai.functions.ts).
+ * Uses an OpenAI-compatible provider. A direct provider is preferred on self-hosted VPS;
+ * Lovable AI Gateway remains available as a backwards-compatible fallback.
  * Shared between menu.ai and catalog.ai — the surface param drives prompt tone.
  */
 import { createHash } from "crypto";
@@ -37,19 +38,40 @@ export function itemHash(item: {
 }
 
 async function callGateway(body: Record<string, unknown>): Promise<any> {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("LOVABLE_API_KEY ausente");
+  const openRouterKey = process.env.OPENROUTER_API_KEY;
+  const openAIKey = process.env.OPENAI_API_KEY;
+  const lovableKey = process.env.LOVABLE_API_KEY;
 
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  let url: string;
+  let headers: Record<string, string>;
+  let requestBody = body;
+
+  if (openRouterKey) {
+    url = "https://openrouter.ai/api/v1/chat/completions";
+    headers = { "Content-Type": "application/json", Authorization: `Bearer ${openRouterKey}` };
+    requestBody = { ...body, model: process.env.AI_MENU_MODEL || body.model };
+  } else if (openAIKey) {
+    const baseUrl = (process.env.OPENAI_BASE_URL || "https://api.openai.com/v1").replace(/\/$/, "");
+    url = `${baseUrl}/chat/completions`;
+    headers = { "Content-Type": "application/json", Authorization: `Bearer ${openAIKey}` };
+    requestBody = { ...body, model: process.env.AI_MENU_MODEL || "gpt-4o-mini" };
+  } else if (lovableKey) {
+    url = "https://ai.gateway.lovable.dev/v1/chat/completions";
+    headers = { "Content-Type": "application/json", "Lovable-API-Key": lovableKey };
+  } else {
+    throw new Error("IA não configurada: defina OPENROUTER_API_KEY, OPENAI_API_KEY ou LOVABLE_API_KEY no ambiente da VPS.");
+  }
+
+  const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
-    body: JSON.stringify(body),
+    headers,
+    body: JSON.stringify(requestBody),
   });
   if (res.status === 429) throw new Error("Muitas solicitações. Aguarde alguns segundos e tente novamente.");
   if (res.status === 402) throw new Error("Créditos de IA esgotados. Recarregue seus créditos ou aguarde a próxima cobrança.");
   if (!res.ok) {
     const txt = await res.text().catch(() => "");
-    throw new Error(`Gateway ${res.status}: ${txt.slice(0, 200)}`);
+    throw new Error(`Provedor de IA ${res.status}: ${txt.slice(0, 200)}`);
   }
   return res.json();
 }

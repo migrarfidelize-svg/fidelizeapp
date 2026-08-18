@@ -1,18 +1,18 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { getActiveWhatsAppProvider } from "./otp.functions";
-import { decryptSecret } from "./integrations/crypt.server";
 
 /**
  * Motor Profissional de Disparos Server-Side
  * Responsável por processar a fila de destinatários em lotes,
  * respeitando limites de velocidade e atualizando o CRM.
  */
-export async function processNextBroadcastBatch() {
+export async function processNextBroadcastBatch(establishmentId: string) {
   // 1. Localizar campanha ativa ou na fila
-  const { data: broadcast, error: broadcastErr } = await supabaseAdmin
+  const { data: broadcast, error: broadcastErr } = await (supabaseAdmin as any)
     .from("crm_broadcasts")
     .select("*")
     .in("status", ["queued", "running"])
+    .eq("establishment_id", establishmentId)
     .order("updated_at", { ascending: true })
     .limit(1)
     .maybeSingle();
@@ -47,7 +47,7 @@ export async function processNextBroadcastBatch() {
   }
 
   // 4. Carregar Provedor WhatsApp
-  const active = await getActiveWhatsAppProvider();
+  const active = await getActiveWhatsAppProvider(establishmentId);
   if (!active) {
     await supabaseAdmin
       .from("crm_broadcasts")
@@ -63,12 +63,7 @@ export async function processNextBroadcastBatch() {
   }
 
   // Descriptografar credenciais
-  const runtimeObj = active.runtime as any;
-  const dbCredsEncrypted = runtimeObj.db_credentials || runtimeObj.credentials || {};
-  const dbCreds: Record<string, string> = {};
-  for (const [k, v] of Object.entries(dbCredsEncrypted)) {
-    dbCreds[k] = typeof v === "string" && v.length > 20 ? await decryptSecret(v) : v as string;
-  }
+  const dbCreds = (active.runtime.db_credentials || {}) as Record<string, string>;
   const runtime = { ...active.runtime, db_credentials: dbCreds };
   const mergedEnv = { ...process.env } as Record<string, string | undefined>;
   const credentialsRef = (runtime.credentials_ref as Record<string, string>) || {};
@@ -135,6 +130,7 @@ export async function processNextBroadcastBatch() {
           .from("crm_conversations") as any)
           .select("id")
           .eq("customer_phone", recipient.phone)
+          .eq("establishment_id", establishmentId)
           .neq("status", "closed")
           .maybeSingle();
         
@@ -145,6 +141,7 @@ export async function processNextBroadcastBatch() {
             .insert({ 
                 customer_phone: recipient.phone, 
                 contact_id: recipient.contact_id,
+                establishment_id: establishmentId,
                 status: "waiting" 
             })
             .select("id")
@@ -155,6 +152,7 @@ export async function processNextBroadcastBatch() {
         if (convId) {
           await (supabaseAdmin.from("crm_messages") as any).insert({
             conversation_id: convId,
+            establishment_id: establishmentId,
             body: renderedMessage,
             direction: "outbound",
             provider: active.provider.meta.id,
@@ -203,5 +201,5 @@ export async function processNextBroadcastBatch() {
   }
 
   // 6. Recursividade controlada (agendar próximo lote)
-  setTimeout(() => processNextBroadcastBatch().catch(console.error), 1000);
+  setTimeout(() => processNextBroadcastBatch(establishmentId).catch(console.error), 1000);
 }

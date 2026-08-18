@@ -34,7 +34,10 @@ export async function sendPushToSub(
   const privateKey = process.env.VAPID_PRIVATE_KEY;
   const subject = process.env.VAPID_SUBJECT || "mailto:contato@fidelize.app";
   if (!publicKey || !privateKey) {
-    return { ok: false, error: "vapid_not_configured" };
+    return {
+      ok: false,
+      error: "Push não configurado no servidor: defina VAPID_PUBLIC_KEY e VAPID_PRIVATE_KEY no ambiente da VPS.",
+    };
   }
 
   try {

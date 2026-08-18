@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ensurePwaRegistration } from "@/lib/pwa-register";
-import { VAPID_PUBLIC_KEY, urlBase64ToUint8Array } from "@/lib/vapid";
+import { ensureCompatiblePushSubscription, isPushSubscriptionCompatible } from "@/lib/vapid";
 import {
   subscribeCustomerPush,
   unsubscribeCustomerPush,
@@ -96,7 +96,7 @@ export function PushOptIn({ token }: { token: string }) {
       try {
         const reg = await ensurePwaRegistration();
         const sub = await reg.pushManager.getSubscription();
-        if (sub) {
+        if (isPushSubscriptionCompatible(sub)) {
           setEndpoint(sub.endpoint);
           const st = await getStatus({ data: { token, endpoint: sub.endpoint } });
           setSubscribed(!!st.subscribed);
@@ -150,13 +150,12 @@ export function PushOptIn({ token }: { token: string }) {
       }
 
       // Step 3: subscribe with VAPID
-      let sub = await reg.pushManager.getSubscription();
-      if (!sub) {
+      let sub: PushSubscription;
+      let previousEndpoint: string | undefined;
         try {
-          sub = await reg.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource,
-          });
+          const ensured = await ensureCompatiblePushSubscription(reg);
+          sub = ensured.subscription;
+          previousEndpoint = ensured.previousEndpoint;
         } catch (e) {
           const raw = e instanceof Error ? e.message : String(e);
           if (/permission/i.test(raw)) {
@@ -171,7 +170,6 @@ export function PushOptIn({ token }: { token: string }) {
           }
           throw new Error(`SUBSCRIBE_ERROR::Falha ao registrar no serviço de push. Detalhe: ${raw}`);
         }
-      }
 
       // Step 4: persist on server. Do NOT unsubscribe the browser on failure —
       // the subscription is valid; the server rejection is either transient
@@ -184,6 +182,7 @@ export function PushOptIn({ token }: { token: string }) {
             endpoint: sub.endpoint,
             p256dh: json.keys?.p256dh ?? "",
             auth: json.keys?.auth ?? "",
+            previousEndpoint,
             user_agent: navigator.userAgent.slice(0, 300),
           },
         });

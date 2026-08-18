@@ -9,6 +9,7 @@ const subInput = z.object({
   endpoint: z.string().url(),
   p256dh: z.string().min(10),
   auth: z.string().min(4),
+  previousEndpoint: z.string().url().optional(),
   user_agent: z.string().max(400).optional(),
   preferences: z
     .object({
@@ -70,6 +71,10 @@ export const subscribeCustomerPush = createServerFn({ method: "POST" })
         .from("push_subscriptions")
         .insert(patch);
       if (insErr) throw insErr;
+    }
+    if (data.previousEndpoint && data.previousEndpoint !== data.endpoint) {
+      await supabaseAdmin.from("push_subscriptions").update({ active: false, last_error: "vapid_key_rotated" })
+        .eq("customer_id", customer.id).eq("endpoint", data.previousEndpoint);
     }
     return { ok: true };
   });
@@ -841,6 +846,7 @@ const walletSubInput = z.object({
   endpoint: z.string().url(),
   p256dh: z.string().min(10),
   auth: z.string().min(4),
+  previousEndpoint: z.string().url().optional(),
   user_agent: z.string().max(400).optional(),
 });
 
@@ -939,6 +945,10 @@ export const subscribePushForAllMyCards = createServerFn({ method: "POST" })
         { ...basePatch, customer_id: c.id, establishment_id: c.establishment_id },
         { customer_id: c.id },
       );
+    }
+    if (data.previousEndpoint && data.previousEndpoint !== data.endpoint) {
+      await supabaseAdmin.from("push_subscriptions").update({ active: false, last_error: "vapid_key_rotated" })
+        .eq("user_id", context.userId).eq("endpoint", data.previousEndpoint);
     }
 
     const { data: activeRows } = await supabaseAdmin
@@ -1185,6 +1195,7 @@ const adminSubInput = z.object({
   endpoint: z.string().url(),
   p256dh: z.string().min(10),
   auth: z.string().min(4),
+  previousEndpoint: z.string().url().optional(),
   user_agent: z.string().max(400).optional(),
   device_type: z.string().max(40).optional(),
   operating_system: z.string().max(60).optional(),
@@ -1266,6 +1277,10 @@ export const subscribeAdminPush = createServerFn({ method: "POST" })
         browser: data.browser ?? null,
         operating_system: data.operating_system ?? null,
       });
+      if (data.previousEndpoint && data.previousEndpoint !== data.endpoint) {
+        await supabaseAdmin.from("push_subscriptions").update({ active: false, last_error: "vapid_key_rotated" })
+          .eq("user_id", context.userId).eq("endpoint", data.previousEndpoint);
+      }
       return { ok: true, id: existing.id, created: false };
     }
     const { data: inserted, error } = await supabaseAdmin
@@ -1282,6 +1297,10 @@ export const subscribeAdminPush = createServerFn({ method: "POST" })
       browser: data.browser ?? null,
       operating_system: data.operating_system ?? null,
     });
+    if (data.previousEndpoint && data.previousEndpoint !== data.endpoint) {
+      await supabaseAdmin.from("push_subscriptions").update({ active: false, last_error: "vapid_key_rotated" })
+        .eq("user_id", context.userId).eq("endpoint", data.previousEndpoint);
+    }
     return { ok: true, id: inserted.id, created: true };
   });
 

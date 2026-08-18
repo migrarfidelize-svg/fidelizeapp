@@ -51,11 +51,31 @@ export async function decryptSecret(data: string): Promise<string> {
     return decoded;
   }
 
-  // Tenta parsear o novo formato JSON AES-256-GCM
+  // Tenta parsear o novo formato JSON AES-256-GCM. Um payload que declara o
+  // formato criptografado jamais pode cair silenciosamente para texto puro:
+  // isso faria uma chave ausente/corrompida parecer uma credencial válida.
+  let parsed: Record<string, unknown> | null = null;
   try {
-    const { v, iv, ciphertext, tag } = JSON.parse(data);
-    
+    parsed = JSON.parse(data) as Record<string, unknown>;
+  } catch {
+    // Credenciais legadas em texto puro continuam suportadas até serem
+    // regravadas pelo painel.
+    return data;
+  }
+
+  const looksEncrypted =
+    parsed !== null &&
+    ("v" in parsed || "iv" in parsed || "ciphertext" in parsed || "tag" in parsed);
+
+  if (!looksEncrypted) return data;
+
+  try {
+    const { v, iv, ciphertext, tag } = parsed;
+
     if (v !== VERSION) throw new Error(`Unsupported encryption version: ${v}`);
+    if (typeof iv !== "string" || typeof ciphertext !== "string" || typeof tag !== "string") {
+      throw new Error("Encrypted credential payload is incomplete.");
+    }
     
     const masterKey = process.env.INTEGRATIONS_ENCRYPTION_KEY;
     if (!masterKey) throw new Error("INTEGRATIONS_ENCRYPTION_KEY is missing.");
@@ -70,8 +90,7 @@ export async function decryptSecret(data: string): Promise<string> {
     ]);
     
     return decrypted.toString("utf8");
-  } catch (e) {
-    // Se não for JSON ou falhar AES, e não for legado "enc:", retorna como está (possivelmente texto plano antigo)
-    return data;
+  } catch (cause) {
+    throw new Error("Não foi possível descriptografar a credencial da integração.", { cause });
   }
 }

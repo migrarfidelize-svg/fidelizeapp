@@ -17,6 +17,7 @@ vi.mock('@/lib/seo.server', () => ({
 // Mock Supabase Admin
 vi.mock('@/integrations/supabase/client.server', () => ({
   supabaseAdmin: {
+    rpc: async () => ({ data: null, error: { message: "not configured in unit test" } }),
     from: () => ({
       select: () => ({
         eq: () => ({

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { executeFlow } from "../flow-engine.server";
+import { executeFlow, processCRMTimeouts } from "../flow-engine.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { getActiveWhatsAppProvider } from "../../otp.functions";
 
@@ -10,13 +10,15 @@ vi.mock("../agent-engine.server", () => ({ processAgentMessage: vi.fn().mockReso
 const state: Record<string, any[]> = {};
 class Q {
   filters: Array<[string, any]> = []; op = "select"; value: any;
+  rangeStart?: number; rangeEnd?: number;
   constructor(private table: string) {}
   select() { return this; } eq(k: string, v: any) { this.filters.push([k, v]); return this; }
   in(k: string, v: any[]) { this.filters.push([k, v]); return this; }
   insert(v: any) { this.op = "insert"; this.value = v; return this; }
   update(v: any) { this.op = "update"; this.value = v; return this; }
   order() { return this; } limit() { return this; }
-  rows() { return (state[this.table] ||= []).filter((r) => this.filters.every(([k, v]) => Array.isArray(v) ? v.includes(r[k]) : r[k] === v)); }
+  range(start: number, end: number) { this.rangeStart = start; this.rangeEnd = end; return this; }
+  rows() { const rows = (state[this.table] ||= []).filter((r) => this.filters.every(([k, v]) => Array.isArray(v) ? v.includes(r[k]) : r[k] === v)); return this.rangeStart === undefined ? rows : rows.slice(this.rangeStart, this.rangeEnd! + 1); }
   result() {
     if (this.op === "insert") { const row = { id: `${this.table}-${state[this.table].length + 1}`, ...this.value }; state[this.table].push(row); return { data: [row], error: null }; }
     if (this.op === "update") this.rows().forEach((r) => Object.assign(r, this.value));
@@ -57,4 +59,38 @@ describe("CRM flow/handoff", () => {
   it("14. ticket de suporte não duplica", async () => { await executeFlow("conv-a", "suporte"); state.crm_conversations[0].status = "bot"; await executeFlow("conv-a", "atendente"); expect(state.crm_support_tickets).toHaveLength(1); });
   it("15. bot fica silencioso durante suporte", async () => { state.crm_conversations[0].status = "waiting"; expect((await executeFlow("conv-a", "oi")).action).toBe("ignored"); expect(state.crm_messages).toHaveLength(0); });
   it("16. flow do tenant B nunca é carregado", async () => { state.crm_flows.push({ id: "flow-b", establishment_id: "tenant-b", is_active: true }); await executeFlow("conv-a", "oi"); expect(state.crm_messages.every((m) => m.establishment_id === "tenant-a")).toBe(true); });
+
+  it("processa timeout persistido somente depois do prazo e sem duplicar handoff", async () => {
+    state.crm_conversations[0].metadata = { flow_state: { flowId: "flow-a", stepId: "menu", updatedAt: "2026-01-01T00:00:00Z" } };
+    state.crm_agent_settings[0].config = { behavior: { timeoutMinutes: 10, timeoutAction: "transfer_to_queue" } };
+    expect((await processCRMTimeouts(Date.parse("2026-01-01T00:09:00Z"))).processed).toBe(0);
+    expect((await processCRMTimeouts(Date.parse("2026-01-01T00:11:00Z"))).processed).toBe(1);
+    expect(state.crm_conversations[0].status).toBe("waiting");
+    expect(state.crm_support_tickets).toHaveLength(1);
+    expect((await processCRMTimeouts(Date.parse("2026-01-01T00:12:00Z"))).processed).toBe(0);
+  });
+
+  it("fecha automaticamente e reinicia com apresentação/menu", async () => {
+    state.crm_conversations[0].metadata = { flow_state: { flowId: "flow-a", stepId: "menu", updatedAt: "2026-01-01T00:00:00Z" } };
+    state.crm_agent_settings[0].config = { behavior: { timeoutMinutes: 1, timeoutAction: "close" } };
+    await processCRMTimeouts(Date.parse("2026-01-01T00:02:00Z"));
+    expect(state.crm_conversations[0].status).toBe("closed");
+
+    state.crm_conversations[0].status = "bot";
+    state.crm_conversations[0].metadata = { contact_is_new: true, flow_state: { flowId: "flow-a", stepId: "menu", updatedAt: "2026-01-01T00:00:00Z" } };
+    state.crm_agent_settings[0].config = { presentation: "Bem-vindo", behavior: { timeoutMinutes: 1, timeoutAction: "restart_flow" } };
+    await processCRMTimeouts(Date.parse("2026-01-01T00:02:00Z"));
+    expect(state.crm_messages.map((m) => m.body)).toContain("Bem-vindo");
+    expect((state.crm_conversations[0].metadata as any).flow_state.stepId).toBe("menu");
+  });
+
+  it("processa candidato expirado depois do primeiro lote de 200", async () => {
+    state.crm_conversations = Array.from({ length: 201 }, (_, index) => ({
+      id: `conv-${index}`, establishment_id: "tenant-a", customer_phone: `55${index}`, status: "bot",
+      metadata: { flow_state: { flowId: "flow-a", stepId: "menu", updatedAt: "2026-01-01T00:00:00Z" } },
+    }));
+    state.crm_agent_settings[0].config = { behavior: { timeoutMinutes: 1, timeoutAction: "close" } };
+    expect((await processCRMTimeouts(Date.parse("2026-01-01T00:02:00Z"))).processed).toBe(201);
+    expect(state.crm_conversations[200].status).toBe("closed");
+  });
 });
