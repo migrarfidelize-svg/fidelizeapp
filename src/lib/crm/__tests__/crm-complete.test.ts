@@ -5,7 +5,10 @@ import { generateAgentResponse } from "../ai-adapter.server";
 import { getActiveWhatsAppProvider } from "../../otp.functions";
 
 vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { from: vi.fn() } }));
-vi.mock("../ai-adapter.server", () => ({ generateAgentResponse: vi.fn().mockResolvedValue({ text: "Resposta IA" }) }));
+vi.mock("../ai-adapter.server", () => ({ 
+  generateAgentResponse: vi.fn().mockResolvedValue({ text: "Resposta IA" }),
+  isAIProviderUsable: vi.fn().mockResolvedValue(true)
+}));
 vi.mock("../../otp.functions", () => ({ getActiveWhatsAppProvider: vi.fn() }));
 
 const rows: Record<string, any[]> = {};
