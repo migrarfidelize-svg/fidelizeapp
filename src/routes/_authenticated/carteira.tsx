@@ -57,16 +57,16 @@ function WalletLayout() {
     { icon: Home, label: "Início", path: "/carteira" },
     { icon: Compass, label: "Descobrir", path: "/carteira/descobrir" },
     { icon: QrCode, label: "QR Codes", path: "/carteira/scanner", isFab: true },
-    { icon: Wallet, label: "Vouchers", path: "/carteira/premios" },
+    { icon: Wallet, label: "Recompensas", path: "/carteira/premios" },
     { icon: User, label: "Perfil", path: "/carteira/perfil" },
   ];
 
   const secondaryNav = [
-    { icon: Bell, label: "Notificações", count: 2 },
-    { icon: Star, label: "Favoritos" },
-    { icon: HelpCircle, label: "Ajuda" },
-    { icon: Settings, label: "Configurações" },
-  ];
+  { icon: Bell, label: "Notificações", path: "/carteira/mensagens" },
+  { icon: Star, label: "Favoritos", path: "/carteira/favoritos" },
+  { icon: HelpCircle, label: "Ajuda", path: "/carteira/ajuda" },
+  { icon: Settings, label: "Configurações", path: "/carteira/perfil" },
+];
 
   const { data: walletData = [] } = useQuery({ 
     queryKey: ["my-wallet"], 
@@ -106,7 +106,47 @@ function WalletLayout() {
 
 
   const [qrSheetOpen, setQrSheetOpen] = useState(false);
+const [profileName, setProfileName] = useState("Cliente Fidelize");
+const [profileEmail, setProfileEmail] = useState("");
+useEffect(() => {
+  let mounted = true;
 
+  void (async () => {
+    const { supabase } = await import("@/integrations/supabase/client");
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!mounted || !user) return;
+setProfileEmail(user.email ?? "");
+    const { data } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!mounted) return;
+
+    const resolvedName =
+      data?.full_name?.trim() ||
+      user.email?.split("@")[0] ||
+      "Cliente Fidelize";
+
+    setProfileName(resolvedName);
+  })();
+
+  return () => {
+    mounted = false;
+  };
+}, []);
+
+const profileInitials = profileName
+  .split(/\s+/)
+  .filter(Boolean)
+  .slice(0, 2)
+  .map((part) => part[0]?.toUpperCase())
+  .join("");
   return (
     <div className="min-h-screen bg-[oklch(0.985_0.006_285)] dark:bg-[oklch(0.14_0.018_288)] font-sans transition-colors duration-300 flex">
       <WalletQrSheet open={qrSheetOpen} onOpenChange={setQrSheetOpen} />
@@ -179,34 +219,36 @@ function WalletLayout() {
 
             <div className="my-6 h-px bg-border/40 lg:w-8 lg:mx-auto xl:w-full" />
 
-            {secondaryNav.map((item) => (
-              <button
-                key={item.label}
-                className="w-full flex items-center gap-4 p-3 xl:p-4 rounded-[1.25rem] text-muted-foreground hover:bg-accent/60 hover:text-foreground transition-all group lg:justify-center xl:justify-start"
-              >
-                <div className="relative">
-                  <item.icon className="h-6 w-6 shrink-0 transition-transform group-hover:scale-110" />
-                  {item.count && (
-                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-black text-white ring-2 ring-background">
-                      {item.count}
-                    </span>
-                  )}
-                </div>
-                <span className="font-bold text-sm lg:hidden xl:block opacity-70 group-hover:opacity-100">{item.label}</span>
-              </button>
-            ))}
-          </nav>
+           {secondaryNav.map((item) => (
+  <Link
+    key={item.label}
+    to={item.path}
+    className="w-full flex items-center gap-4 p-3 xl:p-4 rounded-[1.25rem] text-muted-foreground hover:bg-accent/60 hover:text-foreground transition-all group lg:justify-center xl:justify-start"
+  >
+    <div className="relative">
+      <item.icon className="h-6 w-6 shrink-0 transition-transform group-hover:scale-110" />
+    </div>
+
+    <span className="font-bold text-sm lg:hidden xl:block opacity-70 group-hover:opacity-100">
+      {item.label}
+    </span>
+  </Link>
+))}
+</nav>
 
           {/* User Profile Mini (Sidebar Bottom) */}
           <div className="mt-auto p-2 lg:p-0 xl:p-2">
              <div className="flex items-center gap-3 p-3 rounded-2xl bg-accent/40 border border-border/20 lg:justify-center xl:justify-start">
                 <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-black shadow-lg">
-                  JD
-                </div>
-                <div className="min-w-0 flex-1 lg:hidden xl:block text-left">
-                  <p className="text-xs font-black truncate">João Doria</p>
-                  <p className="text-[10px] text-muted-foreground font-bold truncate">Premium Member</p>
-                </div>
+  {profileInitials || "CF"}
+</div>
+
+<div className="min-w-0 flex-1 lg:hidden xl:block text-left">
+  <p className="text-xs font-black truncate">{profileName}</p>
+<p className="text-[10px] text-muted-foreground font-bold truncate">
+  {profileEmail || "Minha conta"}
+</p>
+</div>
                 <button 
                   className="text-muted-foreground hover:text-destructive transition-colors lg:hidden xl:block"
                   onClick={async () => {

@@ -248,26 +248,74 @@ export const attachEstablishmentBySlug = createServerFn({ method: "POST" })
 
     return attachEstablishmentCore(db, { userId: context.userId, slug: data.slug });
   });
+export const setWalletFavorite = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        customerId: z.string().uuid(),
+        pinned: z.boolean(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: customer, error } = await context.supabase
+      .from("customers")
+      .update({
+        pinned_at: data.pinned ? new Date().toISOString() : null,
+      })
+      .eq("id", data.customerId)
+      .eq("user_id", context.userId)
+      .select("id")
+      .maybeSingle();
 
+    if (error) throw error;
+
+    if (!customer) {
+      throw new Error("Cliente não encontrado.");
+    }
+
+    return {
+      ok: true,
+      pinned: data.pinned,
+    };
+  });
 /** Wallet detail: one establishment's card for the current user. */
 export const getMyEstablishmentCard = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1) }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: row, error } = await context.supabase
-      .from("customers")
-      .select(
-        `id, name, code, access_token, last_visit_at, visits_count, tier, referral_code,
-         establishment:establishments!inner(
-           id, slug, name, logo_url, primary_color, address, phone, whatsapp,
-           instagram, active, description
-         )`,
-      )
-      .eq("user_id", context.userId)
-      .eq("establishments.slug", data.slug)
+  const normalizedSlug = data.slug.trim().toLowerCase();
+
+  const { supabaseAdmin } = await import(
+    "@/integrations/supabase/client.server"
+  );
+
+  const { data: establishment, error: establishmentError } =
+    await supabaseAdmin
+      .from("establishments")
+      .select("id")
+      .eq("slug", normalizedSlug)
       .maybeSingle();
-    if (error) throw error;
-    if (!row) return null;
+
+  if (establishmentError) throw establishmentError;
+  if (!establishment) return null;
+
+  const { data: row, error } = await context.supabase
+    .from("customers")
+    .select(
+      `id, name, code, access_token, last_visit_at, visits_count, tier, referral_code,
+       establishment:establishments!inner(
+         id, slug, name, logo_url, primary_color, address, phone, whatsapp,
+         instagram, active, description
+       )`,
+    )
+    .eq("user_id", context.userId)
+    .eq("establishment_id", establishment.id)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!row) return null;
 
 
     const { data: cards } = await context.supabase
