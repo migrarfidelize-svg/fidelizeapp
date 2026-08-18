@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 
 async function assertSuperAdmin(supabase: any, userId: string) {
   const { data, error } = await supabase.rpc("is_super_admin", { _user: userId });
@@ -8,11 +10,20 @@ async function assertSuperAdmin(supabase: any, userId: string) {
   if (!data) throw new Error("Acesso restrito: apenas administradores da plataforma.");
 }
 
-async function resolveCRMEstablishmentId(): Promise<string> {
-  const { getActiveWhatsAppProvider } = await import("./otp.functions");
-  const active = await getActiveWhatsAppProvider();
-  if (!active?.establishmentId) throw new Error("Não foi possível determinar o estabelecimento da integração WhatsApp ativa.");
-  return active.establishmentId;
+async function resolveCRMEstablishmentId(supabase: SupabaseClient<Database>, userId: string): Promise<string> {
+  const { data: membership, error } = await supabase
+    .from("establishment_members")
+    .select("establishment_id")
+    .eq("user_id", userId)
+    .eq("active", true)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!membership?.establishment_id) {
+    throw new Error("Não foi possível determinar o estabelecimento do usuário autenticado.");
+  }
+  return membership.establishment_id;
 }
 
 const saveOtpTemplateSchema = z.object({
@@ -464,7 +475,7 @@ export const getCRMFlows = createServerFn({ method: "GET" })
     const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
     if (!isAdmin) throw new Error("Acesso restrito.");
 
-    const establishmentId = await resolveCRMEstablishmentId();
+    const establishmentId = await resolveCRMEstablishmentId(supabase, userId);
     
     // Ensure default flow exists for this tenant
     const { ensureDefaultWhatsAppFlow } = await import("./crm/bootstrap.server");
@@ -523,7 +534,7 @@ export const saveCRMFlow = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("Acesso restrito.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const establishmentId = await resolveCRMEstablishmentId();
+    const establishmentId = await resolveCRMEstablishmentId(supabase, userId);
 
     const flowData = { 
       name: data.name, 
@@ -571,7 +582,7 @@ export const getAgentSettings = createServerFn({ method: "GET" })
     const { data: isAdmin } = await (supabase as any).rpc("is_super_admin", { _user: userId });
     if (!isAdmin) throw new Error("Acesso restrito.");
 
-    const establishmentId = await resolveCRMEstablishmentId();
+    const establishmentId = await resolveCRMEstablishmentId(supabase, userId);
     
     // Ensure default flow and agent settings exist for this tenant
     const { ensureDefaultWhatsAppFlow } = await import("./crm/bootstrap.server");
@@ -589,7 +600,7 @@ export const getAgentSettings = createServerFn({ method: "GET" })
     if (!data) return null;
 
     const config = (data.config || {}) as Record<string, any>;
-    const providerUsable = await isAIProviderUsable(config.provider_id);
+    const providerUsable = await isAIProviderUsable(establishmentId, config.provider_id);
 
     return {
       ...config,
@@ -611,7 +622,7 @@ export const saveAgentSettings = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("Acesso restrito.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const establishmentId = await resolveCRMEstablishmentId();
+    const establishmentId = await resolveCRMEstablishmentId(supabase, userId);
     
     const {
       behavior,
@@ -744,7 +755,7 @@ export const saveCRMContact = createServerFn({ method: "POST" })
     const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
     if (!isAdmin) throw new Error("Acesso restrito.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const establishmentId = await resolveCRMEstablishmentId();
+    const establishmentId = await resolveCRMEstablishmentId(supabase, userId);
 
     // Impedir telefone duplicado
     const phone = data.phone.replace(/\D/g, "");
