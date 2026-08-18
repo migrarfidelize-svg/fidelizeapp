@@ -14,22 +14,22 @@ export async function processAgentMessage(input: { conversationId: string; inbou
   if (!configResult.data?.enabled) return { action: "ignored" };
   const config = (configResult.data.config as any) || {};
   
+  const handoffKeywords = Array.isArray(config.handoff?.keywords) ? config.handoff.keywords : [];
+  const inputLower = input.inboundText.trim().toLowerCase();
+  if (handoffKeywords.some((kw: string) => inputLower.includes(kw.toLowerCase()))) {
+    return { action: "handoff_requested", message: config.handoff?.message };
+  }
+
   if (!config.provider_id) {
     console.warn(`[AgentEngine] AI provider missing for establishment ${conv.establishment_id}`);
     return { action: "ignored" };
   }
 
-  // Usar helper centralizado
-  const providerUsable = await isAIProviderUsable(config.provider_id);
+  // A validação e a resolução das credenciais permanecem vinculadas ao tenant da conversa.
+  const providerUsable = await isAIProviderUsable(conv.establishment_id, config.provider_id);
   if (!providerUsable) {
     console.warn(`[AgentEngine] AI provider unavailable for establishment ${conv.establishment_id}`);
     return { action: "ignored" };
-  }
-
-  const handoffKeywords = Array.isArray(config.handoff?.keywords) ? config.handoff.keywords : [];
-  const inputLower = input.inboundText.trim().toLowerCase();
-  if (handoffKeywords.some((kw: string) => inputLower.includes(kw.toLowerCase()))) {
-    return { action: "handoff_requested", message: config.handoff?.message };
   }
 
   const stepResult = await supabaseAdmin.from("crm_flow_steps").select("payload").eq("id", input.stepId)
@@ -43,6 +43,7 @@ export async function processAgentMessage(input: { conversationId: string; inbou
 
   try {
     const response = await generateAgentResponse({
+      establishmentId: conv.establishment_id,
       providerId: config.provider_id,
       systemPrompt: `Você é ${config.name || "Assistente"}. Contexto: ${(stepResult.data?.payload as any)?.context || ""}. ${config.systemPrompt || ""}`,
       messages: (historyResult.data || []).map((message: any) => ({

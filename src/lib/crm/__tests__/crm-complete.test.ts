@@ -26,6 +26,9 @@ class Query {
 describe("CRM Agent tenant-safe", () => {
   const send = vi.fn();
   beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(generateAgentResponse).mockResolvedValue({ text: "Resposta IA", action: "reply" });
+    vi.mocked(isAIProviderUsable).mockResolvedValue(true);
     Object.keys(rows).forEach((key) => delete rows[key]);
     rows.crm_conversations = [{ id: "conv-a", establishment_id: "tenant-a", customer_phone: "5511", status: "bot", metadata: {} }];
     rows.crm_agent_settings = [{ establishment_id: "tenant-a", flow_id: "flow-a", enabled: true, config: { name: "Agent A", provider_id: "openai" } }];
@@ -38,9 +41,12 @@ describe("CRM Agent tenant-safe", () => {
   });
 
   it("17. Agent usa contexto e configuração do tenant", async () => { await processAgentMessage({ conversationId: "conv-a", inboundText: "ajuda", flowId: "flow-a", stepId: "step-a" }); const calls = vi.mocked(generateAgentResponse).mock.calls; expect(calls[0][0].systemPrompt).toContain("Conta A"); });
+  it("17b. Agent propaga o tenant para validação e geração da IA", async () => { await processAgentMessage({ conversationId: "conv-a", inboundText: "ajuda", flowId: "flow-a", stepId: "step-a" }); expect(isAIProviderUsable).toHaveBeenCalledWith("tenant-a", "openai"); expect(generateAgentResponse).toHaveBeenCalledWith(expect.objectContaining({ establishmentId: "tenant-a", providerId: "openai" })); });
   it("18. Agent envia e persiste a resposta", async () => { await processAgentMessage({ conversationId: "conv-a", inboundText: "ajuda", flowId: "flow-a", stepId: "step-a" }); expect(send).toHaveBeenCalled(); expect(rows.crm_messages[rows.crm_messages.length - 1].body).toBe("Resposta IA"); });
   it("19. falha do provider não persiste falso sucesso", async () => { send.mockResolvedValue({ ok: false, message: "offline" }); await expect(processAgentMessage({ conversationId: "conv-a", inboundText: "ajuda", flowId: "flow-a", stepId: "step-a" })).rejects.toThrow(); expect(rows.crm_messages).toHaveLength(1); });
   it("20. Agent ignora conversa humana", async () => { rows.crm_conversations[0].status = "assigned"; expect(await processAgentMessage({ conversationId: "conv-a", inboundText: "oi", flowId: "flow-a", stepId: "step-a" })).toEqual({ action: "ignored" }); expect(send).not.toHaveBeenCalled(); });
   it("21. Agent ignora suporte ativo mesmo em status bot", async () => { rows.crm_conversations[0].metadata = { support: { active: true } }; await processAgentMessage({ conversationId: "conv-a", inboundText: "oi", flowId: "flow-a", stepId: "step-a" }); expect(send).not.toHaveBeenCalled(); });
   it("22. histórico é sempre filtrado pela conversa e tenant", async () => { rows.crm_messages.push({ conversation_id: "conv-b", establishment_id: "tenant-b", body: "SEGREDO B", direction: "inbound" }); await processAgentMessage({ conversationId: "conv-a", inboundText: "oi", flowId: "flow-a", stepId: "step-a" }); const calls = vi.mocked(generateAgentResponse).mock.calls; expect(JSON.stringify(calls[0][0])).not.toContain("SEGREDO B"); });
+  it("23. Agent não responde quando o provider não é utilizável no tenant", async () => { vi.mocked(isAIProviderUsable).mockResolvedValueOnce(false); expect(await processAgentMessage({ conversationId: "conv-a", inboundText: "oi", flowId: "flow-a", stepId: "step-a" })).toEqual({ action: "ignored" }); expect(generateAgentResponse).not.toHaveBeenCalled(); expect(send).not.toHaveBeenCalled(); });
+  it("24. handoff funciona sem carregar provider de IA", async () => { rows.crm_agent_settings[0].config.handoff = { keywords: ["suporte"], message: "Encaminhando" }; vi.mocked(isAIProviderUsable).mockResolvedValueOnce(false); expect(await processAgentMessage({ conversationId: "conv-a", inboundText: "quero suporte", flowId: "flow-a", stepId: "step-a" })).toEqual({ action: "handoff_requested", message: "Encaminhando" }); expect(isAIProviderUsable).not.toHaveBeenCalled(); expect(send).not.toHaveBeenCalled(); });
 });
