@@ -1,11 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { processAgentMessage } from "../agent-engine.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { generateAgentResponse } from "../ai-adapter.server";
+import { generateAgentResponse, isAIProviderUsable } from "../ai-adapter.server";
 import { getActiveWhatsAppProvider } from "../../otp.functions";
 
 vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { from: vi.fn() } }));
-vi.mock("../ai-adapter.server", () => ({ generateAgentResponse: vi.fn().mockResolvedValue({ text: "Resposta IA" }) }));
+vi.mock("../ai-adapter.server", () => ({ 
+  generateAgentResponse: vi.fn().mockResolvedValue({ text: "Resposta IA" }),
+  isAIProviderUsable: vi.fn().mockResolvedValue(true)
+}));
 vi.mock("../../otp.functions", () => ({ getActiveWhatsAppProvider: vi.fn() }));
 
 const rows: Record<string, any[]> = {};

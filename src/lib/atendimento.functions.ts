@@ -577,47 +577,62 @@ export const getAgentSettings = createServerFn({ method: "GET" })
     const { ensureDefaultWhatsAppFlow } = await import("./crm/bootstrap.server");
     await ensureDefaultWhatsAppFlow(establishmentId);
 
-    const { data, error } = await (supabase as any).from("crm_agent_settings")
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { isAIProviderUsable } = await import("./crm/ai-adapter.server");
+
+    const { data, error } = await (supabaseAdmin as any).from("crm_agent_settings")
       .select("enabled, flow_id, config")
       .eq("establishment_id", establishmentId)
       .maybeSingle();
       
     if (error) throw error;
-    
-    return data ? { 
-      ...(data.config as object), 
-      enabled: data.enabled, 
-      behavior: { ...((data.config as any)?.behavior || {}), mainFlowId: data.flow_id } 
-    } : null;
+    if (!data) return null;
+
+    const config = (data.config || {}) as Record<string, any>;
+    const providerUsable = await isAIProviderUsable(config.provider_id);
+
+    return {
+      ...config,
+      enabled: data.enabled,
+      providerUsable,
+      behavior: {
+        ...(config.behavior || {}),
+        mainFlowId: data.flow_id
+      }
+    };
   });
 
 export const saveAgentSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.any().parse(d))
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data: inputData, context }) => {
     const { userId, supabase } = context;
     const { data: isAdmin } = await (supabase as any).rpc("is_super_admin", { _user: userId });
     if (!isAdmin) throw new Error("Acesso restrito.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const establishmentId = await resolveCRMEstablishmentId();
-    const flowId = data?.behavior?.mainFlowId;
-    if (!flowId) throw new Error("Selecione o fluxo principal.");
+    
+    const {
+      behavior,
+      enabled,
+      providerUsable: _providerUsable,
+      ...config
+    } = inputData || {};
 
-    // Provider validation
-    if (!data.provider_id) {
-       throw new Error("Selecione um provedor de IA.");
+    const {
+      mainFlowId: flowId,
+      ...behaviorConfig
+    } = behavior || {};
+
+    if (flowId) {
+      const { data: flow } = await supabaseAdmin.from("crm_flows").select("id").eq("id", flowId).eq("establishment_id", establishmentId).maybeSingle();
+      if (!flow) throw new Error("Fluxo não pertence ao estabelecimento ativo.");
     }
-
-    const { data: flow } = await supabaseAdmin.from("crm_flows").select("id").eq("id", flowId).eq("establishment_id", establishmentId).maybeSingle();
-    if (!flow) throw new Error("Fluxo não pertence ao estabelecimento ativo.");
-
-    const { behavior, enabled, ...config } = data;
-    const { mainFlowId: _mainFlowId, ...behaviorConfig } = behavior || {};
 
     const { error } = await (supabaseAdmin as any).from("crm_agent_settings").upsert({
       establishment_id: establishmentId, 
-      flow_id: flowId, 
+      flow_id: flowId || null, 
       enabled: enabled ?? true,
       config: { ...config, behavior: behaviorConfig },
     }, { onConflict: "establishment_id" });

@@ -1,5 +1,5 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { generateAgentResponse } from "./ai-adapter.server";
+import { generateAgentResponse, isAIProviderUsable } from "./ai-adapter.server";
 
 export async function processAgentMessage(input: { conversationId: string; inboundText: string; flowId: string; stepId: string }) {
   const convResult = await supabaseAdmin.from("crm_conversations").select("*").eq("id", input.conversationId).single();
@@ -19,15 +19,10 @@ export async function processAgentMessage(input: { conversationId: string; inbou
     return { action: "ignored" };
   }
 
-  const { data: providerIntegration } = await supabaseAdmin
-    .from("integrations")
-    .select("id, enabled")
-    .eq("provider", config.provider_id)
-    .eq("enabled", true)
-    .maybeSingle();
-
-  if (!providerIntegration) {
-    console.warn(`[AgentEngine] AI Provider ${config.provider_id} not enabled for establishment ${conv.establishment_id}`);
+  // Usar helper centralizado
+  const providerUsable = await isAIProviderUsable(config.provider_id);
+  if (!providerUsable) {
+    console.warn(`[AgentEngine] AI provider unavailable for establishment ${conv.establishment_id}`);
     return { action: "ignored" };
   }
 
@@ -73,7 +68,6 @@ export async function processAgentMessage(input: { conversationId: string; inbou
     return { action: "replied" };
   } catch (err) {
     console.error("[AgentEngine] AI response generation failed:", err);
-    throw err; // Propagate error for critical failures instead of just ignoring
+    throw err; 
   }
 }
-

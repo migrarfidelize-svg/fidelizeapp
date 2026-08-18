@@ -2,6 +2,96 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { aiProviders } from "@/lib/integrations/ai";
 import { decryptSecret } from "@/lib/integrations/crypt.server";
 
+export interface AIProviderRuntime {
+  provider: any;
+  integration: any;
+  finalEnv: Record<string, string>;
+  integrationConfig: Record<string, any>;
+}
+
+/**
+ * Resolve e valida o runtime de um provider de IA.
+ * Centraliza a lógica de busca em integrações, decriptografia e mapeamento de chaves.
+ */
+export async function resolveAIProviderRuntime(
+  providerId?: string | null
+): Promise<AIProviderRuntime | null> {
+  if (!providerId) return null;
+
+  // 1. Localizar Provider
+  const provider = aiProviders.find(p => p.meta.id === providerId);
+  if (!provider) return null;
+
+  // 2. Buscar Integração no Banco
+  const { data: integration, error } = await supabaseAdmin
+    .from("integrations")
+    .select("*")
+    .eq("provider", providerId)
+    .eq("enabled", true)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!integration) return null;
+
+  // 3. Resolver/Decriptar Credenciais
+  const encryptedCredentials = (integration.credentials || {}) as Record<string, any>;
+  const credentialsRef = (integration.credentials_ref || {}) as Record<string, string>;
+  const integrationConfig = (integration.config || {}) as Record<string, any>;
+
+  const decryptedEnv: Record<string, string> = {};
+  for (const [field, encryptedValue] of Object.entries(encryptedCredentials)) {
+    const envKey = credentialsRef[field] || field;
+    if (typeof encryptedValue === 'string' && encryptedValue.length > 20) {
+      decryptedEnv[envKey] = await decryptSecret(encryptedValue);
+    } else {
+      decryptedEnv[envKey] = String(encryptedValue);
+    }
+  }
+
+  // Montar finalEnv
+  const finalEnv = {
+    ...process.env,
+    ...decryptedEnv
+  } as Record<string, string>;
+
+  // 4. Mapear chave obrigatória e validar suporte
+  const providerKeyMap: Record<string, string> = {
+    openai: 'OPENAI_API_KEY',
+    groq: 'GROQ_API_KEY',
+    openrouter: 'OPENROUTER_API_KEY',
+    deepseek: 'DEEPSEEK_API_KEY',
+    grok: 'XAI_API_KEY'
+  };
+
+  const apiKeyVar = providerKeyMap[providerId];
+  if (!apiKeyVar) return null;
+
+  const apiKey = finalEnv[apiKeyVar];
+  if (!apiKey || apiKey.trim() === '') return null;
+
+  return {
+    provider,
+    integration,
+    finalEnv,
+    integrationConfig
+  };
+}
+
+/**
+ * Verifica se um provider de IA está pronto para uso.
+ */
+export async function isAIProviderUsable(
+  providerId?: string | null
+): Promise<boolean> {
+  try {
+    const runtime = await resolveAIProviderRuntime(providerId);
+    return Boolean(runtime);
+  } catch (e) {
+    console.error(`[AI Adapter] Error checking usability for ${providerId}:`, e);
+    return false;
+  }
+}
+
 export interface AgentResponse {
   text: string;
   action: "reply" | "handoff";
@@ -23,49 +113,21 @@ export interface AgentMessageInput {
 export async function generateAgentResponse(input: AgentMessageInput): Promise<AgentResponse> {
   const { providerId, model, systemPrompt, messages, temperature = 0.7, maxTokens = 500 } = input;
 
-  // 1. Localizar Provider
-  const provider = aiProviders.find(p => p.meta.id === providerId);
-  if (!provider) {
-    throw new Error(`AI Provider not found: ${providerId}`);
+  // Usar helper centralizado para resolução
+  const runtime = await resolveAIProviderRuntime(providerId);
+  if (!runtime) {
+    throw new Error(`AI Integration not usable for provider: ${providerId}`);
   }
 
-  // 2. Resolver Credenciais Decriptografadas
-  const { data: integration } = await supabaseAdmin
-    .from("integrations")
-    .select("*")
-    .eq("provider", providerId)
-    .eq("enabled", true)
-    .maybeSingle();
+  const { provider, integration, finalEnv, integrationConfig } = runtime;
 
-  if (!integration) {
-    throw new Error(`AI Integration not enabled for provider: ${providerId}`);
-  }
-
-  const encryptedCredentials = (integration.credentials || {}) as Record<string, any>;
-  const credentialsRef = (integration.credentials_ref || {}) as Record<string, string>;
-  const integrationConfig = (integration.config || {}) as Record<string, any>;
-
-  const decryptedEnv: Record<string, string> = {};
-  
-  for (const [field, encryptedValue] of Object.entries(encryptedCredentials)) {
-    const envKey = credentialsRef[field] || field;
-    if (typeof encryptedValue === 'string' && encryptedValue.length > 20) {
-      decryptedEnv[envKey] = await decryptSecret(encryptedValue);
-    } else {
-      decryptedEnv[envKey] = String(encryptedValue);
-    }
-  }
-
-  // Fallback para variáveis de ambiente se não estiver no DB
-  const finalEnv = { ...process.env, ...decryptedEnv } as Record<string, string>;
-
-  // 3. Preparar Mensagens (incluindo System Prompt)
+  // Preparar Mensagens (incluindo System Prompt)
   const fullMessages = [
     { role: "system", content: systemPrompt },
     ...messages
   ];
 
-  // 4. Chamar Provider
+  // Chamar Provider
   let resultText = "";
 
   try {
@@ -137,7 +199,7 @@ export async function generateAgentResponse(input: AgentMessageInput): Promise<A
       throw new Error(`Chat implementation for provider ${providerId} not yet ready in AI Adapter.`);
     }
 
-    // 5. Parsear e Validar Resposta Estruturada
+    // Parsear e Validar Resposta Estruturada
     try {
       const jsonMatch = resultText.match(/\{[\s\S]*\}/);
       const cleanJson = jsonMatch ? jsonMatch[0] : resultText;
