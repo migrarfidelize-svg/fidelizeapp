@@ -40,7 +40,10 @@ const InputOTPSlot = React.forwardRef<
 
 
   const inputOTPContext = React.useContext(OTPInputContext)
-  const { char, hasFakeCaret, isActive } = inputOTPContext.slots[index]
+  const slot = inputOTPContext?.slots?.[index]
+  const char = slot?.char ?? null
+  const hasFakeCaret = slot?.hasFakeCaret ?? false
+  const isActive = slot?.isActive ?? false
   const [displayChar, setDisplayChar] = React.useState(char)
   const [isAnimating, setIsAnimating] = React.useState(false)
 
@@ -138,4 +141,3 @@ const InputOTPSeparator = React.forwardRef<
 InputOTPSeparator.displayName = "InputOTPSeparator"
 
 export { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator }
-
