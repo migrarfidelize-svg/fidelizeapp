@@ -53,7 +53,7 @@ export function AgentConfig() {
                 settings.enabled ? "bg-green-500 animate-pulse" : "bg-muted"
               )} />
               <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                {settings.enabled ? "Processamento Ativo" : "Agente em Standby"}
+                {settings.enabled ? (settings.provider_id ? "Processamento Ativo" : "Provider de IA pendente") : "Agente em Standby"}
               </span>
             </div>
           </div>
@@ -61,7 +61,7 @@ export function AgentConfig() {
         <div className="flex items-center gap-6 bg-muted/30 px-6 py-3 rounded-xl border border-border/50">
           <div className="flex flex-col text-right">
             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">IA Engine</span>
-            <span className="text-xs font-bold">{settings.enabled ? "ONLINE" : "OFFLINE"}</span>
+            <span className="text-xs font-bold">{settings.enabled ? (settings.provider_id ? "ONLINE" : "PENDENTE") : "OFFLINE"}</span>
           </div>
           <Switch 
             checked={settings.enabled} 
@@ -96,8 +96,8 @@ export function AgentConfig() {
                 <div className="space-y-2">
                   <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Fluxo Principal (Base de Conhecimento)</Label>
                   <Select 
-                    value={settings.flow_id} 
-                    onValueChange={val => setSettings({...settings, flow_id: val})}
+                    value={settings.behavior?.mainFlowId || ""} 
+                    onValueChange={val => setSettings({...settings, behavior: {...(settings.behavior || {}), mainFlowId: val}})}
                   >
                     <SelectTrigger className="h-11 bg-muted/20 border-border/50 font-bold">
                       <SelectValue placeholder="Selecione um fluxo automatizado..." />
@@ -116,11 +116,11 @@ export function AgentConfig() {
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">IA Provider</label>
                   <Select 
-                    value={settings.provider_id || "openai"} 
+                    value={settings.provider_id || ""} 
                     onValueChange={val => setSettings({...settings, provider_id: val})}
                   >
                     <SelectTrigger className="h-11 bg-muted/20 border-border/50 font-bold">
-                      <SelectValue placeholder="Selecione o provedor..." />
+                      <SelectValue placeholder="Selecione um provedor..." />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="openai">OpenAI (GPT-4o)</SelectItem>
