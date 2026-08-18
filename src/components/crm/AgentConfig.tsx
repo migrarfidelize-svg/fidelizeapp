@@ -50,10 +50,10 @@ export function AgentConfig() {
             <div className="flex items-center gap-2 mt-1">
               <div className={cn(
                 "h-2 w-2 rounded-full",
-                settings.enabled ? "bg-green-500 animate-pulse" : "bg-muted"
+                (settings.enabled && settings.providerUsable) ? "bg-green-500 animate-pulse" : "bg-muted"
               )} />
               <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                {settings.enabled ? (settings.provider_id ? "Processamento Ativo" : "Provider de IA pendente") : "OFFLINE / Agente em Standby"}
+                {settings.enabled ? (settings.providerUsable ? "Processamento Ativo" : "Provider de IA pendente") : "OFFLINE / Agente em Standby"}
               </span>
             </div>
           </div>
@@ -61,7 +61,9 @@ export function AgentConfig() {
         <div className="flex items-center gap-6 bg-muted/30 px-6 py-3 rounded-xl border border-border/50">
           <div className="flex flex-col text-right">
             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">IA Engine</span>
-            <span className="text-xs font-bold">{settings.enabled ? (settings.provider_id ? "ONLINE" : "PENDENTE") : "OFFLINE"}</span>
+            <span className="text-xs font-bold">
+              {!settings.enabled ? "OFFLINE" : (settings.providerUsable ? "ONLINE" : "PENDENTE")}
+            </span>
           </div>
           <Switch 
             checked={settings.enabled} 
