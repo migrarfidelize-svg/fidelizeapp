@@ -76,7 +76,7 @@ export async function ensureDefaultWhatsAppFlow(establishmentId: string) {
 }
 
 export async function ensureDefaultAgentSettings(establishmentId: string, flowId: string) {
-  const { data: existing, error } = await supabaseAdmin
+  const { data: existing, error } = await (supabaseAdmin as any)
     .from("crm_agent_settings")
     .select("*")
     .eq("establishment_id", establishmentId)
@@ -117,7 +117,7 @@ export async function ensureDefaultAgentSettings(establishmentId: string, flowId
   };
 
   if (!existing) {
-    const { error: insertError } = await supabaseAdmin
+    const { error: insertError } = await (supabaseAdmin as any).from("crm_agent_settings")
       .from("crm_agent_settings")
       .insert({
         establishment_id: establishmentId,
@@ -135,9 +135,9 @@ export async function ensureDefaultAgentSettings(establishmentId: string, flowId
     updatedConfig.behavior = { ...defaults.behavior, ...(currentConfig.behavior || {}) };
 
     // Requirement 1: Only use default flowId if the current one is missing
-    const finalFlowId = (existing as any).flow_id || flowId;
+    const finalFlowId = (existing as any).flow_id || (existing as any).config?.behavior?.mainFlowId || flowId;
 
-    const { error: updateError } = await supabaseAdmin
+    const { error: updateError } = await (supabaseAdmin as any).from("crm_agent_settings")
       .from("crm_agent_settings")
       .update({ 
         config: updatedConfig,

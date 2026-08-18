@@ -27,12 +27,12 @@ async function updateState(conv: any, flowId: string | null, stepId: string | nu
 }
 
 async function handoff(conv: any, confirmation: string) {
-  const existing = await supabaseAdmin.from("crm_support_tickets").select("id")
+  const existing = await (supabaseAdmin as any).from("crm_support_tickets").select("id")
     .eq("conversation_id", conv.id).eq("establishment_id", conv.establishment_id).in("status", ["open", "in_progress"]).maybeSingle();
   if (existing.error) throw existing.error;
   let ticketId = (existing.data as any)?.id;
   if (!ticketId) {
-    const ticket = await supabaseAdmin.from("crm_support_tickets").insert({
+    const ticket = await (supabaseAdmin as any).from("crm_support_tickets").insert({
       conversation_id: conv.id, establishment_id: conv.establishment_id, status: "open",
     }).select("id").single();
     if (ticket.error || !ticket.data) throw ticket.error ?? new Error("CRM_SUPPORT_TICKET_FAILED");
@@ -94,7 +94,7 @@ export async function executeFlow(conversationId: string, messageBody: string): 
 
   const input = messageBody.trim().toLocaleLowerCase("pt-BR");
 
-  const settingsResult = await supabaseAdmin.from("crm_agent_settings").select("flow_id, enabled, config")
+  const settingsResult = await (supabaseAdmin as any).from("crm_agent_settings").select("flow_id, enabled, config")
     .eq("establishment_id", conv.establishment_id).maybeSingle();
   if (settingsResult.error) throw settingsResult.error;
   
