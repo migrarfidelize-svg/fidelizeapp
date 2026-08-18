@@ -609,7 +609,7 @@ export const saveAgentSettings = createServerFn({ method: "POST" })
        throw new Error("Selecione um provedor de IA.");
     }
 
-    const { data: flow } = await (supabaseAdmin as any).from("crm_flows").select("id").eq("id", flowId).eq("establishment_id", establishmentId).maybeSingle();
+    const { data: flow } = await supabaseAdmin.from("crm_flows").select("id").eq("id", flowId).eq("establishment_id", establishmentId).maybeSingle();
     if (!flow) throw new Error("Fluxo não pertence ao estabelecimento ativo.");
 
     const { behavior, enabled, ...config } = data;

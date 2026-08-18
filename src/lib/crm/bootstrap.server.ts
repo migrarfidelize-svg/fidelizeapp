@@ -13,7 +13,7 @@ export async function ensureDefaultWhatsAppFlow(establishmentId: string) {
 
   let created = false;
   if (!flow) {
-    const result = await (supabaseAdmin as any).from("crm_flows").insert({
+    const result = await supabaseAdmin.from("crm_flows").insert({
       establishment_id: establishmentId,
       name: FLOW_NAME,
       description: "Atendimento principal WhatsApp com menu, Agent e transferência humana.",
@@ -67,8 +67,8 @@ export async function ensureDefaultWhatsAppFlow(establishmentId: string) {
     }
     const row = { ...definition, payload, id: ids[definition.step_key as keyof typeof ids], flow_id: (flow as any).id, establishment_id: establishmentId };
     const result = current
-      ? await (supabaseAdmin as any).from("crm_flow_steps").update({ payload: row.payload, sort_order: row.sort_order }).eq("id", current.id).eq("establishment_id", establishmentId)
-      : await (supabaseAdmin as any).from("crm_flow_steps").insert(row);
+      ? await supabaseAdmin.from("crm_flow_steps").update({ payload: row.payload, sort_order: row.sort_order }).eq("id", current.id).eq("establishment_id", establishmentId)
+      : await supabaseAdmin.from("crm_flow_steps").insert(row);
     if (result.error) throw result.error;
   }
 
@@ -97,7 +97,8 @@ export async function ensureDefaultAgentSettings(establishmentId: string, flowId
         "falar com suporte",
         "quero falar com alguém",
         "preciso de ajuda humana"
-      ]
+      ],
+      message: "Entendi. Vou encaminhar você para nossa equipe de suporte. 💜"
     },
     fallback: {
       message: "Não consegui resolver sua solicitação com segurança. Posso encaminhar você para o suporte.",
@@ -110,7 +111,8 @@ export async function ensureDefaultAgentSettings(establishmentId: string, flowId
       welcomeKnown: true,
       afterHuman: "stay_closed",
       timeoutMinutes: 10,
-      timeoutAction: "transfer_to_queue"
+      timeoutAction: "transfer_to_queue",
+      mainFlowId: flowId
     }
   };
 
@@ -132,11 +134,14 @@ export async function ensureDefaultAgentSettings(establishmentId: string, flowId
     updatedConfig.fallback = { ...defaults.fallback, ...(currentConfig.fallback || {}) };
     updatedConfig.behavior = { ...defaults.behavior, ...(currentConfig.behavior || {}) };
 
+    // Requirement 1: Only use default flowId if the current one is missing
+    const finalFlowId = (existing as any).flow_id || flowId;
+
     const { error: updateError } = await (supabaseAdmin as any)
       .from("crm_agent_settings")
       .update({ 
         config: updatedConfig,
-        flow_id: flowId 
+        flow_id: finalFlowId 
       })
       .eq("establishment_id", establishmentId);
     if (updateError) throw updateError;

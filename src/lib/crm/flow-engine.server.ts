@@ -9,7 +9,7 @@ async function sendAndPersist(conv: any, text: string, options: any = {}, source
   if (!active) throw new Error("CRM_WHATSAPP_PROVIDER_NOT_FOUND");
   const sent = await active.provider.sendTestMessage(active.runtime, process.env as any, conv.customer_phone, text, options);
   if (!sent.ok) throw new Error(sent.message || "CRM_WHATSAPP_SEND_FAILED");
-  const persisted = await (supabaseAdmin as any).from("crm_messages").insert({
+  const persisted = await supabaseAdmin.from("crm_messages").insert({
     conversation_id: conv.id, establishment_id: conv.establishment_id, body: text,
     direction: "outbound", provider: active.provider.meta.id,
     provider_message_id: sent.providerMessageId || `${source}-${crypto.randomUUID()}`,
@@ -20,7 +20,7 @@ async function sendAndPersist(conv: any, text: string, options: any = {}, source
 
 async function updateState(conv: any, flowId: string | null, stepId: string | null, extra: Record<string, unknown> = {}) {
   const metadata = (conv.metadata as Record<string, unknown>) || {};
-  const result = await (supabaseAdmin as any).from("crm_conversations").update({
+  const result = await supabaseAdmin.from("crm_conversations").update({
     metadata: { ...metadata, flow_state: { ...((metadata.flow_state as object) || {}), flowId, stepId, ...extra } },
   }).eq("id", conv.id).eq("establishment_id", conv.establishment_id);
   if (result.error) throw result.error;
@@ -45,7 +45,7 @@ async function handoff(conv: any, confirmation: string) {
     flow_state: { mode: "manual", flowId: null, stepId: null } 
   };
   
-  const updated = await (supabaseAdmin as any).from("crm_conversations").update({
+  const updated = await supabaseAdmin.from("crm_conversations").update({
     status: "waiting", assigned_to: null, assigned_at: null, metadata,
   }).eq("id", conv.id).eq("establishment_id", conv.establishment_id);
   
@@ -86,7 +86,7 @@ export async function processStep(conv: any, step: any, steps: any[]): Promise<F
 }
 
 export async function executeFlow(conversationId: string, messageBody: string): Promise<FlowActionResult> {
-  const conversationResult = await (supabaseAdmin as any).from("crm_conversations").select("*").eq("id", conversationId).single();
+  const conversationResult = await supabaseAdmin.from("crm_conversations").select("*").eq("id", conversationId).single();
   if (conversationResult.error || !conversationResult.data) throw conversationResult.error ?? new Error("CRM_CONVERSATION_NOT_FOUND");
   const conv = conversationResult.data;
   
@@ -105,13 +105,13 @@ export async function executeFlow(conversationId: string, messageBody: string): 
   const supportTerms = [...new Set([...DEFAULT_SUPPORT_TERMS, ...customKeywords])];
 
   if (supportTerms.some((term) => input === term || (term.length > 3 && input.includes(term)))) {
-    return handoff(conv, config.fallback?.message || "Entendi. Vou encaminhar você para nossa equipe de suporte. 💜");
+    return handoff(conv, config.handoff?.message || "Entendi. Vou encaminhar você para nossa equipe de suporte. 💜");
   }
 
   const state = (conv.metadata as any)?.flow_state;
   const flowId = state?.flowId || (settingsResult.data as any).flow_id;
   
-  const flowResult = await (supabaseAdmin as any).from("crm_flows")
+  const flowResult = await supabaseAdmin.from("crm_flows")
     .select("*, steps:crm_flow_steps!crm_flow_steps_flow_id_fkey(*)")
     .eq("id", flowId).eq("establishment_id", conv.establishment_id).eq("is_active", true).single();
   if (flowResult.error || !flowResult.data) throw flowResult.error ?? new Error("CRM_FLOW_NOT_FOUND");
@@ -125,7 +125,7 @@ export async function executeFlow(conversationId: string, messageBody: string): 
     const agentResult = await processAgentMessage({ conversationId, inboundText: messageBody, flowId, stepId: state.stepId });
     
     if (agentResult.action === "handoff_requested") {
-      return handoff(conv, config.fallback?.message || "Entendi. Vou encaminhar você para nossa equipe de suporte. 💜");
+      return handoff(conv, config.handoff?.message || "Entendi. Vou encaminhar você para nossa equipe de suporte. 💜");
     }
     
     return { ok: true, action: "agent" };
