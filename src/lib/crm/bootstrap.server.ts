@@ -7,13 +7,13 @@ export async function ensureDefaultWhatsAppFlow(establishmentId: string) {
   if (!establishmentId) throw new Error("CRM_ESTABLISHMENT_REQUIRED");
 
   // 1. Ensure Flow first to get flow_id
-  let { data: flow, error: flowError } = await supabaseAdmin
+  let { data: flow, error: flowError } = await (supabaseAdmin as any)
     .from("crm_flows").select("id").eq("establishment_id", establishmentId).eq("name", FLOW_NAME).maybeSingle();
   if (flowError) throw flowError;
 
   let created = false;
   if (!flow) {
-    const result = await supabaseAdmin.from("crm_flows").insert({
+    const result = await (supabaseAdmin as any).from("crm_flows").insert({
       establishment_id: establishmentId,
       name: FLOW_NAME,
       description: "Atendimento principal WhatsApp com menu, Agent e transferência humana.",
@@ -27,7 +27,7 @@ export async function ensureDefaultWhatsAppFlow(establishmentId: string) {
   // 2. Ensure Agent Settings (Requirement 1 & 2)
   await ensureDefaultAgentSettings(establishmentId, (flow as any).id);
 
-  const { data: existingRows, error: stepsError } = await supabaseAdmin
+  const { data: existingRows, error: stepsError } = await (supabaseAdmin as any)
     .from("crm_flow_steps").select("id, step_key, payload, sort_order").eq("flow_id", (flow as any).id).eq("establishment_id", establishmentId);
   if (stepsError) throw stepsError;
   const existing = existingRows ?? [];
@@ -67,8 +67,8 @@ export async function ensureDefaultWhatsAppFlow(establishmentId: string) {
     }
     const row = { ...definition, payload, id: ids[definition.step_key as keyof typeof ids], flow_id: (flow as any).id, establishment_id: establishmentId };
     const result = current
-      ? await supabaseAdmin.from("crm_flow_steps").update({ payload: row.payload, sort_order: row.sort_order }).eq("id", current.id).eq("establishment_id", establishmentId)
-      : await supabaseAdmin.from("crm_flow_steps").insert(row);
+      ? await (supabaseAdmin as any).from("crm_flow_steps").update({ payload: row.payload, sort_order: row.sort_order }).eq("id", current.id).eq("establishment_id", establishmentId)
+      : await (supabaseAdmin as any).from("crm_flow_steps").insert(row);
     if (result.error) throw result.error;
   }
 
@@ -76,7 +76,7 @@ export async function ensureDefaultWhatsAppFlow(establishmentId: string) {
 }
 
 export async function ensureDefaultAgentSettings(establishmentId: string, flowId: string) {
-  const { data: existing, error } = await supabaseAdmin
+  const { data: existing, error } = await (supabaseAdmin as any)
     .from("crm_agent_settings")
     .select("*")
     .eq("establishment_id", establishmentId)
@@ -117,7 +117,7 @@ export async function ensureDefaultAgentSettings(establishmentId: string, flowId
   };
 
   if (!existing) {
-    const { error: insertError } = await supabaseAdmin
+    const { error: insertError } = await (supabaseAdmin as any)
       .from("crm_agent_settings")
       .insert({
         establishment_id: establishmentId,
@@ -137,7 +137,7 @@ export async function ensureDefaultAgentSettings(establishmentId: string, flowId
     // Requirement 1: Only use default flowId if the current one is missing
     const finalFlowId = (existing as any).flow_id || (existing as any).config?.behavior?.mainFlowId || flowId;
 
-    const { error: updateError } = await supabaseAdmin
+    const { error: updateError } = await (supabaseAdmin as any)
       .from("crm_agent_settings")
       .update({ 
         config: updatedConfig,
