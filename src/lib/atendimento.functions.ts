@@ -464,80 +464,405 @@ export const getCRMFlows = createServerFn({ method: "GET" })
     const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
     if (!isAdmin) throw new Error("Acesso restrito.");
 
-    const { data: flows, error } = await supabase
-      .from("crm_flows")
-      .select("*")
-      .eq("is_active", true)
-      .order("created_at", { ascending: false });
+    const establishmentId = await resolveCRMEstablishmentId();
+    
+    // Ensure default flow exists for this tenant
+    const { ensureDefaultWhatsAppFlow } = await import("./crm/bootstrap.server");
+    await ensureDefaultWhatsAppFlow(establishmentId);
 
+    const { data: flows, error } = await (supabase as any)
+      .from("crm_flows")
+      .select("id, name, is_active")
+      .eq("establishment_id", establishmentId)
+      .eq("is_active", true);
+      
     if (error) throw error;
     return flows || [];
   });
 
+export const getCRMFlowWithSteps = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ flowId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: flow, error } = await supabaseAdmin
+      .from("crm_flows")
+      .select(`
+        *,
+        steps:crm_flow_steps!crm_flow_steps_flow_id_fkey(*)
+      `)
+      .eq("id", data.flowId)
+      .single();
+
+    if (error) throw error;
+
+    if (flow && flow.steps) {
+      flow.steps.sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+    }
+
+    return flow;
+  });
+
+export const saveCRMFlow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ 
+    id: z.string().uuid().optional(),
+    name: z.string().min(3),
+    description: z.string().optional(),
+    is_active: z.boolean().optional(),
+    steps: z.array(z.any())
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const establishmentId = await resolveCRMEstablishmentId();
+
+    const flowData = { 
+      name: data.name, 
+      description: data.description, 
+      is_active: data.is_active ?? false,
+      establishment_id: establishmentId,
+      updated_at: new Date().toISOString()
+    };
+
+    let flowId = data.id;
+    if (flowId) {
+      await supabaseAdmin.from("crm_flows").update(flowData).eq("id", flowId);
+    } else {
+      const { data: newFlow, error } = await supabaseAdmin.from("crm_flows").insert(flowData).select("id").single();
+      if (error) throw error;
+      flowId = newFlow.id;
+    }
+
+    // Upsert steps
+    if (data.steps && data.steps.length > 0) {
+      const { error: deleteErr } = await supabaseAdmin.from("crm_flow_steps").delete().eq("flow_id", flowId);
+      if (deleteErr) throw deleteErr;
+
+      const stepsToInsert = data.steps.map((step, index) => {
+        const { id, created_at, updated_at, ...cleanStep } = step; 
+        return {
+          ...cleanStep,
+          flow_id: flowId,
+          establishment_id: establishmentId,
+          sort_order: step.sort_order ?? index
+        };
+      });
+      const { error: insertErr } = await supabaseAdmin.from("crm_flow_steps").insert(stepsToInsert);
+      if (insertErr) throw insertErr;
+    }
+
+    return { id: flowId };
+  });
+
+// --- AGENT SETTINGS ---
 export const getAgentSettings = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
+    const { userId, supabase } = context;
+    const { data: isAdmin } = await (supabase as any).rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+
     const establishmentId = await resolveCRMEstablishmentId();
+    
+    // Ensure default flow and agent settings exist for this tenant
+    const { ensureDefaultWhatsAppFlow } = await import("./crm/bootstrap.server");
+    await ensureDefaultWhatsAppFlow(establishmentId);
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { isAIProviderUsable } = await import("./crm/ai-adapter.server");
-
-    const { data, error } = await (supabaseAdmin as any)
-      .from("crm_agent_settings")
-      .select("*")
+    const { data, error } = await (supabase as any).from("crm_agent_settings")
+      .select("enabled, flow_id, config")
       .eq("establishment_id", establishmentId)
       .maybeSingle();
-
+      
     if (error) throw error;
-    if (!data) return null;
-
-    const config = (data.config || {}) as Record<string, any>;
-    const providerUsable = await isAIProviderUsable(config.provider_id);
-
-    return {
-      ...config,
-      enabled: data.enabled,
-      providerUsable,
-      behavior: {
-        ...(config.behavior || {}),
-        mainFlowId: data.flow_id
-      }
-    };
+    
+    return data ? { 
+      ...(data.config as object), 
+      enabled: data.enabled, 
+      behavior: { ...((data.config as any)?.behavior || {}), mainFlowId: data.flow_id } 
+    } : null;
   });
 
 export const saveAgentSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ data: z.any() }).parse(d))
-  .handler(async ({ data: inputData, context }) => {
-    const { supabase, userId } = context;
-    const establishmentId = await resolveCRMEstablishmentId();
+  .inputValidator((d: unknown) => z.any().parse(d))
+  .handler(async ({ data, context }) => {
+    const { userId, supabase } = context;
+    const { data: isAdmin } = await (supabase as any).rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const {
-      behavior,
-      enabled,
-      providerUsable: _providerUsable,
-      ...config
-    } = inputData;
+    const establishmentId = await resolveCRMEstablishmentId();
+    const flowId = data?.behavior?.mainFlowId;
+    if (!flowId) throw new Error("Selecione o fluxo principal.");
 
-    const {
-      mainFlowId: flowId,
-      ...behaviorConfig
-    } = behavior || {};
+    // Provider validation
+    if (!data.provider_id) {
+       throw new Error("Selecione um provedor de IA.");
+    }
+
+    const { data: flow } = await supabaseAdmin.from("crm_flows").select("id").eq("id", flowId).eq("establishment_id", establishmentId).maybeSingle();
+    if (!flow) throw new Error("Fluxo não pertence ao estabelecimento ativo.");
+
+    const { behavior, enabled, ...config } = data;
+    const { mainFlowId: _mainFlowId, ...behaviorConfig } = behavior || {};
+
+    const { error } = await (supabaseAdmin as any).from("crm_agent_settings").upsert({
+      establishment_id: establishmentId, 
+      flow_id: flowId, 
+      enabled: enabled ?? true,
+      config: { ...config, behavior: behaviorConfig },
+    }, { onConflict: "establishment_id" });
+
+    if (error) throw error;
+    return { ok: true };
+  });
+
+// --- TAGS ---
+export const getCRMTags = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+    const { data } = await supabase.from("crm_tags").select("*").order("name");
+    return data || [];
+  });
+
+export const saveCRMTag = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ name: z.string(), color: z.string() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("crm_tags").insert(data);
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const deleteCRMFlow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ flowId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("crm_flows").delete().eq("id", data.flowId);
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const duplicateCRMFlow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ flowId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    
+    const { data: flow } = await supabaseAdmin.from("crm_flows").select("*, steps:crm_flow_steps!crm_flow_steps_flow_id_fkey(*)").eq("id", data.flowId).single();
+    if (!flow) throw new Error("Fluxo não encontrado");
+
+    const { data: newFlow, error: flowErr } = await supabaseAdmin.from("crm_flows").insert({
+      name: `${flow.name} (Cópia)`,
+      description: flow.description,
+      establishment_id: flow.establishment_id,
+      is_active: false
+    }).select("id").single();
+
+    if (flowErr) throw flowErr;
+
+    if (flow.steps && flow.steps.length > 0) {
+      const stepsToInsert = flow.steps.map((s: any) => ({
+        flow_id: newFlow.id,
+        establishment_id: flow.establishment_id,
+        step_key: s.step_key,
+        payload: s.payload,
+        sort_order: s.order_index ?? 0
+      }));
+      await supabaseAdmin.from("crm_flow_steps").insert(stepsToInsert);
+    }
+
+    return { id: newFlow.id };
+  });
+
+// --- CRM CONTACTS ---
+export const getCRMContacts = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+    
+    // In CRM, contacts are the 'crm_contacts' table (manual/external) 
+    // PLUS we might want to see 'profiles' (auth users).
+    // The requirement says "crm_contacts" and "contact manual NÃO cria usuário Auth".
+    const { data, error } = await supabase
+      .from("crm_contacts")
+      .select("*, tags:crm_contact_tags(tag:crm_tags(*))")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  });
+
+export const saveCRMContact = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    id: z.string().uuid().optional(),
+    name: z.string().min(2),
+    phone: z.string().min(10),
+    email: z.string().email().optional().nullable(),
+    notes: z.string().optional().nullable()
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const establishmentId = await resolveCRMEstablishmentId();
+
+    // Impedir telefone duplicado
+    const phone = data.phone.replace(/\D/g, "");
+    const { data: existing } = await (supabaseAdmin as any)
+      .from("crm_contacts")
+      .select("id")
+      .eq("establishment_id", establishmentId)
+      .eq("phone", phone)
+      .maybeSingle();
+    
+    if (existing && existing.id !== data.id) {
+      throw new Error("Este número de telefone já está cadastrado.");
+    }
 
     const { error } = await (supabaseAdmin as any)
-      .from("crm_agent_settings")
+      .from("crm_contacts")
       .upsert({
+        id: data.id || undefined,
         establishment_id: establishmentId,
-        flow_id: flowId,
-        enabled: enabled ?? true,
-        config: {
-          ...config,
-          behavior: behaviorConfig
-        }
-      }, { onConflict: "establishment_id" });
+        name: data.name,
+        phone: phone,
+        email: data.email,
+        notes: data.notes
+      });
 
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const deleteCRMContact = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ contactId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    
+    const { error } = await supabaseAdmin
+      .from("crm_contacts")
+      .delete()
+      .eq("id", data.contactId);
+    
+    if (error) throw error;
+    return { ok: true };
+  });
+
+// --- CRM TEMPLATES ---
+export const getCRMTemplates = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+    
+    const { data, error } = await supabase
+      .from("crm_templates")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  });
+
+export const saveCRMTemplate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    id: z.string().uuid().optional(),
+    name: z.string().min(2),
+    content: z.string().min(1),
+    category: z.string().default("general"),
+    is_active: z.boolean().default(true)
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { error } = await supabaseAdmin
+      .from("crm_templates")
+      .upsert({
+        id: data.id || undefined,
+        name: data.name,
+        body: data.content,
+        category: data.category,
+        is_active: data.is_active
+      });
+
+
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const deleteCRMTemplate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ templateId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    
+    const { error } = await supabaseAdmin
+      .from("crm_templates")
+      .delete()
+      .eq("id", data.templateId);
+    
+    if (error) throw error;
+    return { ok: true };
+  });
+
+// --- CRM QUICK REPLIES ---
+export const getCRMQuickReplies = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
+    if (!isAdmin) throw new Error("Acesso restrito.");
+    const { data } = await supabase.from("crm_quick_replies").select("*").order("shortcut");
+    return data || [];
+  });
+
+export const saveCRMQuickReply = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ 
+    id: z.string().uuid().optional(),
+    shortcut: z.string().min(2),
+    message: z.string().min(1)
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("crm_quick_replies").upsert(data);
     if (error) throw error;
     return { ok: true };
   });
