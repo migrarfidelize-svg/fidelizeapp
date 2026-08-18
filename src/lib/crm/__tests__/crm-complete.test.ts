@@ -29,8 +29,9 @@ describe("CRM Agent tenant-safe", () => {
     rows.crm_flow_steps = [{ id: "step-a", flow_id: "flow-a", establishment_id: "tenant-a", payload: { context: "Conta A" } }];
     rows.crm_messages = [{ conversation_id: "conv-a", establishment_id: "tenant-a", body: "Olá", direction: "inbound" }];
     vi.mocked(supabaseAdmin.from).mockImplementation((table: string) => new Query(table) as any);
+    rows.integrations = [{ id: "int-1", provider: "openai", enabled: true }];
     send.mockReset().mockResolvedValue({ ok: true, providerMessageId: "out-1" });
-    vi.mocked(getActiveWhatsAppProvider).mockResolvedValue({ establishmentId: "tenant-a", runtime: {}, provider: { meta: { id: "uazapi" }, sendTestMessage: send } } as any);
+    vi.mocked(getActiveWhatsAppProvider).mockResolvedValue({ establishmentId: "tenant-a", runtime: { credentials_ref: {} }, provider: { meta: { id: "uazapi" }, sendTestMessage: send } } as any);
   });
 
   it("17. Agent usa contexto e configuração do tenant", async () => { await processAgentMessage({ conversationId: "conv-a", inboundText: "ajuda", flowId: "flow-a", stepId: "step-a" }); const calls = vi.mocked(generateAgentResponse).mock.calls; expect(calls[calls.length - 1][0].systemPrompt).toContain("Conta A"); });
