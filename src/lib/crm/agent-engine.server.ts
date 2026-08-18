@@ -7,7 +7,7 @@ export async function processAgentMessage(input: { conversationId: string; inbou
   const conv = convResult.data;
   if (conv.status !== "bot" || (conv.metadata as any)?.support?.active) return { action: "ignored" };
 
-  const configResult = await (supabaseAdmin as any).from("crm_agent_settings").select("enabled, config")
+  const configResult = await supabaseAdmin.from("crm_agent_settings").select("enabled, config")
     .eq("establishment_id", conv.establishment_id).maybeSingle();
   if (configResult.error) throw configResult.error;
   

@@ -7,7 +7,7 @@ export async function ensureDefaultWhatsAppFlow(establishmentId: string) {
   if (!establishmentId) throw new Error("CRM_ESTABLISHMENT_REQUIRED");
 
   // 1. Ensure Flow first to get flow_id
-  let { data: flow, error: flowError } = await (supabaseAdmin as any)
+  let { data: flow, error: flowError } = await supabaseAdmin
     .from("crm_flows").select("id").eq("establishment_id", establishmentId).eq("name", FLOW_NAME).maybeSingle();
   if (flowError) throw flowError;
 
@@ -27,7 +27,7 @@ export async function ensureDefaultWhatsAppFlow(establishmentId: string) {
   // 2. Ensure Agent Settings (Requirement 1 & 2)
   await ensureDefaultAgentSettings(establishmentId, (flow as any).id);
 
-  const { data: existingRows, error: stepsError } = await (supabaseAdmin as any)
+  const { data: existingRows, error: stepsError } = await supabaseAdmin
     .from("crm_flow_steps").select("id, step_key, payload, sort_order").eq("flow_id", (flow as any).id).eq("establishment_id", establishmentId);
   if (stepsError) throw stepsError;
   const existing = existingRows ?? [];
@@ -76,7 +76,7 @@ export async function ensureDefaultWhatsAppFlow(establishmentId: string) {
 }
 
 export async function ensureDefaultAgentSettings(establishmentId: string, flowId: string) {
-  const { data: existing, error } = await (supabaseAdmin as any)
+  const { data: existing, error } = await supabaseAdmin
     .from("crm_agent_settings")
     .select("*")
     .eq("establishment_id", establishmentId)
@@ -117,7 +117,7 @@ export async function ensureDefaultAgentSettings(establishmentId: string, flowId
   };
 
   if (!existing) {
-    const { error: insertError } = await (supabaseAdmin as any)
+    const { error: insertError } = await supabaseAdmin
       .from("crm_agent_settings")
       .insert({
         establishment_id: establishmentId,
@@ -137,7 +137,7 @@ export async function ensureDefaultAgentSettings(establishmentId: string, flowId
     // Requirement 1: Only use default flowId if the current one is missing
     const finalFlowId = (existing as any).flow_id || flowId;
 
-    const { error: updateError } = await (supabaseAdmin as any)
+    const { error: updateError } = await supabaseAdmin
       .from("crm_agent_settings")
       .update({ 
         config: updatedConfig,

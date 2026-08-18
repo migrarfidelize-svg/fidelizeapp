@@ -53,7 +53,7 @@ export function AgentConfig() {
                 settings.enabled ? "bg-green-500 animate-pulse" : "bg-muted"
               )} />
               <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                {settings.enabled ? (settings.provider_id ? "Processamento Ativo" : "Provider de IA pendente") : "Agente em Standby"}
+                {settings.enabled ? (settings.provider_id ? "Processamento Ativo" : "Provider de IA pendente") : "OFFLINE / Agente em Standby"}
               </span>
             </div>
           </div>
